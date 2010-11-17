@@ -1,0 +1,16 @@
+syntax:glob
+.DS_Store
+pear
+_Stuff_from_gavin
+_STUFF_FROM_GAVIN
+downloads/temp
+includes/tht.ini
+data.csv
+rawdata
+raw
+raw/phenotype
+gbrowse2
+gbrowse
+SumanDirectory
+JulieWorking
+uploaded_datafiles

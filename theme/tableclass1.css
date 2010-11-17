@@ -1,0 +1,75 @@
+/* ********************************
+   Project: CSS Table Galery
+   Title: Like Adwords
+   Author: Cleiton Francisco
+   URL: http://www.cleiton.net/
+   Country: Brazil
+   Update: 2005-12-18
+ ****************************** */
+table.tableclass1  {
+	border-collapse: collapse;
+	border: 2px solid #3f7c5f;
+	font: normal 80%/140% arial, verdana, helvetica, sans-serif;
+	color: #000;
+	background: #fff;
+}
+table.tableclass1 caption {
+	padding: 0 0.6em 0.8em;
+	font-size: 1.3em;
+	font-weight: bold;
+	text-align: left;
+	color: #000;
+	background: transparent;
+}
+table.tableclass1 td, th {
+	border: 1px solid #e0e0e0;
+	padding: 0.5em;
+}
+table.tableclass1 thead th, table.tableclass1 thead td {
+	border: 1px solid #e0e0e0;
+	text-align: left;
+	font-size: 1em;
+	font-weight: bold;
+	background: #c6d7cf;
+}
+table.tableclass1 tfoot th, tfoot td {
+	border: 1px solid #e0e0e0;
+	text-align: left;
+	font-size: 1em;
+	background: #e8e8cf;
+}
+table.tableclass1 tfoot th {
+	font-weight: bold;
+}
+table.tableclass1 tbody td a {
+	background: transparent;
+	color: #00c;
+	text-decoration: underline;
+}
+table.tableclass1 tbody td a:hover {
+	background: transparent;
+	color: #00c;
+	text-decoration: underline;
+}
+table.tableclass1 tbody th a {
+	background: transparent;
+	color: #3f7c5f;
+	text-decoration: underline;
+	font-weight: bold;
+}
+table.tableclass1 tbody th a:visited {
+	color: #b98b00;
+}
+table.tableclass1 tbody th, tbody td {
+	vertical-align: top;
+	text-align: left;
+}
+table.tableclass1 tfoot td {
+	border: 1px solid #996;
+}
+table.tableclass1 tbody tr:hover {
+	background: #ffffd9;
+}
+table.tableclass1 tbody tr.nohover:hover {
+	background: #ffffff;
+}

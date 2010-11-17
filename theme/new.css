@@ -1,0 +1,304 @@
+/******************************************************************************
+   * new.css                                                                    *
+   *                                                                            *
+   * @author Gavin Monroe                                                       *
+   ******************************************************************************/
+body
+{
+    background: #85CACF;
+    font-family: arial, helvitca, sans-serif;
+    font-size: 62.5%; /* 1 em = 10px */
+}
+
+div.section p
+{
+    color: #000;
+    font-weight: normal
+}
+
+/***** Links/Anchors **********************************************************/
+a
+{
+    color: #000;
+    text-decoration: none;
+    border-bottom: 1px solid #000
+}
+a:hover
+{
+    color:#4DAAB1;
+    border-bottom-color: #4DAAB1
+}
+
+#footer a
+{
+    color: #000;
+    border: none
+}
+#footer a:hover
+{
+    color: #5B53A6
+}
+
+/***** Layout *****************************************************************/
+#container
+{
+    min-width: 100%;
+    top: 0;
+    position:absolute;
+    background: #fff url('images/headbg.jpg') repeat-x
+}
+
+/* dynamic image replacement */
+html>body #logo
+{
+    letter-spacing: normal;
+    text-indent: -999em;
+    overflow: hidden
+}
+#logo
+{
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+    width: 318px;
+    height: 27px;
+    top: 40px;
+    left: 10px;
+    background: url('images/logo.png') no-repeat
+}
+#barleyimg
+{
+    position: absolute;
+    right: 0;
+    width: 225px;
+    height: 141px;
+    background: url('images/headrt.jpg') no-repeat
+}
+#util {
+    position: absolute;
+    right: 200px;
+    width: 138px;
+    height: 26px;
+    background: url('images/utilbg.jpg') no-repeat;
+    text-align: center;
+    margin: 0 auto;
+    padding-left: 4px;
+    font-size: 1.2em
+}
+#utilright
+{
+    float: right;
+    width: 4px;
+    height: 26px;
+    background: url('images/utilright.jpg') no-repeat
+}
+#quicklinks
+{
+    position: absolute;
+    top: 141px;
+    left: 10px;
+    width: 150px;
+    margin-top: 15px;
+    padding: 15px 25px;
+    background: url('images/gradient.png') repeat-x;
+    text-align: left;
+    border-top: 1px solid #5B53A6;
+    z-index: 0
+}
+
+#searchbox
+{
+    width: 180px;
+    padding: 15px 10px 3px;
+    margin-left: -25px;
+    margin-top: 25px;
+    background-color: #C2BDEA;
+    border-bottom: 1px solid #5B53A6;
+    text-align:right
+}
+
+#footer
+{
+    margin-top: 50px;
+    padding-top: 25px;
+    background: #85cacf url('images/foothdg.png') repeat-x;
+    text-align: center;
+    clear: both
+}
+#quicklinks h2
+{
+    color: #4DAAB1;
+    margin: 0 0 5px;
+    padding: 0;
+    font-size: 1.6em
+}
+#quicklinks ul, #nav ul
+{
+    list-style:none;
+    margin:0;
+    padding:0
+}
+
+#quicklinks li
+{
+    margin: 0;
+    padding: 0 0 5px;
+    font-size: 1.2em
+}
+
+#util, #util a
+{
+    color: #fff;
+    text-decoration: none
+}
+
+#util a
+{
+    vertical-align: middle;
+    border-bottom: 1px solid #4DABB1
+}
+
+#searchbox, #searchbox a
+{
+    color: #fff
+}
+#searchbox a
+{
+    border:none
+}
+#searchbox a:hover, #util a:hover
+{
+    border-bottom: 1px solid #fff
+}
+
+#searchbox input
+{
+    border:1px solid #5B53A6;
+    background-color: #fff;
+    padding:5px;
+    color:#5B53A6;
+    font-size: .9em
+}
+
+#main h1, #main h2
+{
+    color:#4DAAB1;
+    margin: 0;
+    padding: 0;
+    font-size: 1.5em;
+    margin-bottom: 1em
+}
+
+#main {
+    margin-right: 10px;
+    margin-top: 160px;
+    margin-left: 245px;
+    font-size: 1.2em
+}
+
+.section, .boxContent {width: auto; padding:12px; border-top:1px solid #5B53A6;
+    background:url('images/sectionhd.png') repeat-x;}
+.section p, .boxContent p{margin:1.5em 0; line-height:1.5em}
+
+.descript {margin-top:8px}
+
+html, body, form, table, tr, th, td, pre
+{
+    margin: 0;
+    padding: 0;
+}
+
+table
+{
+    background: url('images/tblbg.png') repeat-x;
+    border-collapse: collapse;
+}
+table tr
+{
+    min-height: 30px;
+}
+table th
+{
+    border-bottom: 1px solid #5B53A6;
+    border-top: 1px solid #5B53A6;
+    background: url('images/tblhdg.png') repeat-x;
+    padding: 7px;
+    color: #5B53A6;
+}
+table td
+{
+    border: 1px solid #E3E0FF;
+    border-left: 0;
+    border-right: 0;
+    padding: 7px;
+    text-align: center;
+}
+
+
+
+
+
+
+#nav {position:absolute; top:99px; left:11px; height:42px;
+    background:url('images/btnlt.png') no-repeat;
+    padding-left:1px;z-index:5999}
+
+#nav ul{margin:0; padding:0}
+
+#nav li {float:left; list-style-type:none; text-align:center;
+    display:block; margin:0; padding:0; margin-left:-1px; height:42px;
+    background:url('images/btnbg.png') no-repeat left top; font-size: 1.7em}
+
+#nav li a {display:block;  background:url('images/btnrt.png') no-repeat right top;
+    padding:5px 15px; color:#D5D2EF; text-decoration:none; border-bottom:none}
+
+#nav li a:hover {color:#FFF}
+
+#nav li#active,
+#nav li:hover {background-image:url('images/abtnbg.png')}
+#nav li#active a,
+#nav li:hover a{background-image:url('images/abtnrt.png'); color:#FFF}
+
+#nav li li,
+#nav li#active li{text-align:left; height:auto; top:0; background:#5B53A6; float:none; font-size: .7em}
+
+#nav li li a, #nav li#active li a, #nav li:hover li a, #nav li.over li a
+{
+    display: block;
+    width: 190px;
+    background: #C2BDEA;
+    color: #fff;
+    border: 1px solid #5B53A6;
+    border-top: none;
+    padding: 5px
+}
+
+#nav li li a:hover, #nav #active li a:hover
+{
+    background: #fff;
+    color: #5B53A6
+}
+
+#nav li ul{display:none; position:absolute; top:42px; z-index:6000; width:200px}
+
+#nav li:hover ul,
+#nav li.over ul {display:block; z-index:6000}
+
+select{font-size:9pt}
+textarea{font-size:9pt}
+
+div#form_error
+{
+    padding: 5px;
+    border: 1px solid red;
+    background: pink;
+    color: red;
+    margin: 10px 0
+}
+
+.inprogress {
+    background-image: url('./images/progress.gif');
+    background-position: right top;
+    background-repeat: no-repeat;
+}

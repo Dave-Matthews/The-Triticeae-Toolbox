@@ -1,0 +1,42 @@
+<?php
+
+/*
+ * Logged in page initialization
+ */
+
+include("../includes/bootstrap.inc");
+
+connect();
+loginTest();
+
+/* ******************************* */
+$row = loadUser($_SESSION['username']);
+
+include("../theme/cheader.php")
+
+?>
+<p><strong>Developer Note:</strong> To prove this is working, try the following lines: tmp9, morex, tmp4, and cree.</p>
+<p>Right now you enter a child and the function generates a tree tracing the parents back.</p>
+<p>Also the function does not have any protection against circular lineage. The algorithm I wrote is recursive in pedigree.inc. Be careful when you edit it, its sensitive.</p>
+<p>Also for debugging purposes, notice that m28 and morex both have the same parents</p>
+
+<?php
+if(isset($_REQUEST['line'])) {
+	echo "<div class=\"box\" style=\"text-align: left;\"><pre>\n";
+	$nvisited=array();
+	// print_r(getPedigrees($_REQUEST['line']));
+	print_r(array($_REQUEST['line']=>getPedigrees_r($_REQUEST['line'],$nvisited)));
+	echo "\n</pre></div>";
+}
+?>
+
+<form action="login/pedigree_tree.php" method="post">
+<p><strong>Line Name</strong><br />
+<input type="text" name="line" value="<?php echo $_REQUEST['line']; ?>" /></p>
+
+<p><input type="submit" value="Get Tree" /></p>
+</form>
+
+<p><?php echo $row['name']; ?> you last accessed the system on <?php echo $row['lastaccess']; ?></p>
+
+<?php include("../theme/footer.php");?>

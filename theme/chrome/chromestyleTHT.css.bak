@@ -1,0 +1,98 @@
+.chromestyle{
+align: center;
+width: 99%;
+font-weight: bold;
+}
+
+.chromestyle:after{ /*Add margin between menu and rest of content in Firefox*/
+content: "."; 
+display: block; 
+height: 0; 
+clear: both; 
+visibility: hidden;
+}
+
+.chromestyle ul{
+margin: 4px;
+/* border: 1px solid #BBB;
+width: auto;
+font: bold 18px verdana;
+
+padding: 4px 0;
+text-align: center; /*set value to "left", "center", or "right"*/
+}
+
+.chromestyle ul li{
+font: bold 22px verdana;
+border: 1px solid #BBB;
+background: url(chromebg2-over.gif) center center repeat-x; /*THEME CHANGE HERE*/
+display: inline;
+margin: 0;
+}
+
+.chromestyle ul li a{
+color: #494949;
+padding: 4px 7px;
+margin: 0;
+text-decoration: none;
+border-right: 0px solid #DADADA;
+}
+
+.chromestyle ul li a:hover{
+background: url(chromebg2.gif) center center repeat-x; /*THEME CHANGE HERE*/
+}
+
+.chromestyle ul li a[rel]:after{ /*HTML to indicate drop down link*/
+/*content: " v";
+/*content: " " url(downimage.gif); /*uncomment this line to use an image instead*/
+}
+
+
+/* ######### Style for Drop Down Menu ######### */
+
+.dropmenudiv{
+position:absolute;
+top: 0;
+border: 1px solid #BBB; /*THEME CHANGE HERE*/
+border-bottom-width: 0;
+font:normal 12px Verdana;
+line-height:18px;
+z-index:100;
+background-color: white;
+width: 200px;
+visibility: hidden;
+filter: progid:DXImageTransform.Microsoft.Shadow(color=#CACACA,direction=135,strength=4); /*Add Shadow in IE. Remove if desired*/
+}
+
+
+.dropmenudiv a{
+width: auto;
+display: block;
+text-indent: 3px;
+border-bottom: 1px solid #BBB; /*THEME CHANGE HERE*/
+padding: 2px 0;
+text-decoration: none;
+font-weight: bold;
+color: black;
+}
+
+* html .dropmenudiv a{ /*IE only hack*/
+width: 100%;
+}
+
+.dropmenudiv a:hover{ /*THEME CHANGE HERE*/
+background-color: #F0F0F0;
+}
+
+.tabcontainer{
+clear: left;
+width:95%; /*width of 2nd level sub menus*/
+height:1.5em; /*height of 2nd level sub menus. Set to largest's sub menu's height to avoid jittering.*/
+}
+
+.tabcontent{
+color: DarkGreen;
+text-align: center;
+font-style: italic;
+display:none;
+}

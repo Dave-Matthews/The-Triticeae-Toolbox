@@ -1,0 +1,36 @@
+# This file contains information about the structure of this directory
+# ====================================================================
+# Contact Gavin Monroe <gmone@cox.net> or <gemonroe@iastate.edu> if you
+# have any questions
+
+Excel:
+  description: Contains a library for parsing Microsoft Excel spreadsheets
+
+Spyc:
+  description: Contains a library for parsing YAML formatted files (like this one)
+  
+model:
+  description: Contains auto-generated classes that together model the mysql database.
+  note:
+    Do not modify these files unless you absolutely have to. If you choose to modify
+    a model file, read the instructions inside the file first.
+    
+peer:
+  description: Contains auto-generated classes that link the mysql database to the models
+  note:
+    Do not modify these files unless you absolutely have to. If you choose to modify
+    a peer file, read the instructions inside the file first.
+    
+mymodel:
+  description: Contains user-generated classes that extend the auto-generated models.
+  note:
+    This is the method you should use to add more functionality to an auto-generated
+    model. Only directly modify the model file if you absolutely have to. Try
+    extending it first.
+    
+mypeer:
+  description: Contains user-generated classes that extend the auto-generated peers.
+  note:
+    This is the method you should use to add more functionality to an auto-generated
+    peer. Only directly modify the peer file if you absolutely have to. Try
+    extending it first.

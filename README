@@ -1,0 +1,556 @@
+****************************************************************************************************************
+*                                                                                                                                         *
+*                                             The Hordeum Toolbox REAME                                               *
+*                                                            8-14-07                                                                  *
+*                                                                                                                                         *
+****************************************************************************************************************
+
+
+
+Purpose
+------------
+This document is intended to be an introduction and overview of the code used 
+in The Hordeum Toolbox. Therefore the ideal reader is one who will be actually
+workign with the code and not just using the system. This will describe the inner 
+workings of the system and have little to do with the features and how to use 
+them from a user standpoint. 
+
+This document can also be thought of as an informal "programmer to programmer" 
+document.
+
+
+
+Introduction
+-----------------
+Greetings. I'm Ethan Wilder. I'm one of the two original programmers for the 
+THT (The Hordeum Toolbox). I wrote this to you primarily so that you would
+not simply get the THT dumped on your lap without knowing really how
+to get from function to function.  
+
+You should be aware that there were 2 of us working on this thing. Each of us
+has a very different style from the other. This will become obvious as you 
+get into the code. 
+
+
+
+Programmer Requirements 
+(Things that you need to be capable of)
+--------------------------------------------------------
+I assume you've talked to Julie Dickerson about the project and already and 
+have a pretty good understanding of PHP, MYSQL, and Javascript. A basic 
+understanding of genetics and/or barley doesn't hurt either.
+
+Be familiar with database normalization and I strongly recommend getting
+DB Designer or some equivilent. Our biggest query is an 8 table join. The 
+pedigree section also utilizes a lot of subqueries due to their tree structure.
+
+If you are not comfortable with regular expressions then I would recommend 
+picking up a book or having a regular expression reference guide handy. We used
+them frequently.
+
+This system does use Ajax. If you're not familiar with ajax, don't be intimidated
+by the hype, its actually very simple.  I wrote a tutorial at
+http://www.ethanwilder.com/projects/ajaxtutorial/ which explains everything and 
+includes a complete reference of the XMLHttpRequest object, complete with
+code and examples. http://www.tizag.com also has a nice set of tutorials. 
+
+I can't possibly imagine someone being familiar with PHP and not familiar
+with HTML, but if for some reason that's you, then just visit 
+http://www.w3schools.com
+
+Most of the code is pretty easy to follow and understand. Some of it, like the 
+MS Excel Spreadsheet reader, the ajax system, and especially the image generation
+system, will require some study before you're able to confidently modify or work
+with it. I will do my best to describe those subsystems here.
+
+
+
+System Requirements
+(Things the system needs in order to function)
+-------------------------------------------------------------------
+We developed the THT on a test server. Since we're both leaving and haven't moved
+the application over, I figured it'd be wise to inform you of what the system requires.
+
+In the main directory, we included phpinfo.php. That runs phpinfo() so you can see the 
+sever specifications. 
+
+- PHP version >= 5.2 
+        - GD library : this is the library used to do all the image work on the app, so it needs to 
+                     be bundled with PHP.   http://www.php.net/image for more details
+
+        - Safe Mode needs to be off. We're using ini_set() to change memory 
+                     requirements for the imaging subsystem. 
+
+        - DOM/XML : This needs to be enabled, we use it in the ajax library.
+
+        - Session : This needs to be supported/enabled. By default it is but this is a reminder.
+                      NOTE: sessions are passed by cookie, you can try it with URL passing but
+                                  you may encouter strange behavior.
+
+- MySQL version >= 5 
+
+NOTE: The system was origianlly coded on a Windows Server. This should not
+            effect how the system functions if moved to a Linux Server.
+
+
+
+Database Design and Policies
+--------------------------------------------
+I recommend using DB Designer 4 or some other equivilent program to look at the 
+structure of the database in a graphical environment. Staring at the SQL probably 
+won't do it. 
+
+I'm not going to talk much about the Database Design here because there's just too much
+to discuss. The design we came up with was a result of an existing database design, combined
+with the data we were going to receive to store, and the functionality described in the 
+specification.
+
+There are approximately 30 tables are linked together. 
+
+Each table follows a format. Some tables deviate because they have to, again 
+refer to the graphical representation.
+
+The primary key of each table typically is " 'tablename'_uid "
+Each table typically has a unique name field  " 'tablename'_name "
+
+We wrote functions to handle a lot of this for you but its good to be aware of them:
+        get_pkey()       -      gets the primary key column name for a given table.
+        get_unique_name()       - gets the unique name column name for a given table.
+        chk_references()        - gets all of the foreign key column names for the given table.
+        etc.... please refer to "includes/common.inc"
+
+Every table also has has a created_on and updated_on fields.  You won't have to 
+worry about these fields when you're querying the database because they're automatic.
+
+"created_on" is of the type "timestamp" and is automatically set when an entry is entered into
+                the table using the INSERT query.
+"updated_on" is of the type "timestamp" and is automatically set whenever an entry is updated
+                using the UPDATE query.
+
+These fields are tricky to setup when creating a new table so be aware of that. If you need to 
+feel free to use the "SHOW CREATE TABLE line_records" query to see the table creation
+string for a common table.
+
+
+
+Software Design
+-----------------------
+The THT is a relational database driven web application. It completely relies on a central 
+repository to function. It's no secret that the design is centered around the database. 
+
+The database is a relational database in which the data is combined and cross referenced in
+all different kinds of ways. It was concluded that an object oriented design was not going to be
+the most efficent. I personally like OO but its just not practical here. 
+
+Instead we took a layered approach. 
+
+                Theme
+                -----------
+                Function
+                ---------------
+                Database
+
+We didn't do too much abstracting in this department because we didn't need to. The less code
+the better imho. The implementation is a little counter-intuitive but easy to work with after you
+get used to it.
+
+The Theme Layer is kept in the "theme/" directory. It's mostly all HTML. We didn't abstract it so
+far as to use an actual Theme Engine like SMARTY.  
+
+The Function Layer is embodied by the pages themselves. Think of the Function layer as the 
+layer that glues the Theme to the Database. Essentially, that is exactly what the page does.
+
+        Example: view.php - It acts like a template. It gets the user input, calls the database 
+                        functions with the user input to get a result, and wraps that result in the 
+                        theme. 
+
+Ideally there will be no mysql functions directly inside of a page in the function layer. 
+
+The Database Layer is embodied in the function libraries. These are found in the includes/ 
+directory and is basically the core of the system. 
+
+
+
+
+
+
+****************************************************************************************************************
+
+                   The rest of the document is an overview of the directory layout.
+                              We describe each directory and the files in them.
+
+****************************************************************************************************************
+
+These descriptions are just general descriptions. There is more specific documentation inside
+each file.
+
+
+/ (main directory)
+-------------------------
+
+403.php  - 
+        This is the forbidden page. It's just a message displaying what's forbidden
+
+advanced_search.php -
+        This is probably one of the only functional pages with mysql functions inside
+        it. This contains the functionality for advanced searching: searching for a line 
+        by phenotype or selecting lines by a haplotype (ABAABA)
+
+index.php -
+        Basic page containing a webform, nothing complicated here.
+
+login.php -
+        This is actually a remnant page from a previous theme where we did not have 
+        the option to login up at the top left. When we got the new theme, we kept this 
+        file as an alternative login page. It also provides a page to return to when the user
+        logs out. 
+
+phpinfo.php -
+        Runs the phpinfo() function. I would recommend deleting this or doing something
+        with it that prevents people from viewing it.
+
+search.php -
+        This is the return page when someone performs a general search using the orange 
+        box on the left. This page will typically display results. It also possesses functionality
+        for handling the advanced search IF the forms on advanced_search.php pointed to
+        search.php. This extra functionality is not needed, just an option.
+
+view.php -
+        This page essentially is the browsing page. If anyone chooses to browse line records, or
+        view a line record, dataset, experiment, whatever, this page will show it. This page 
+        requires the table and the uid of the row to select OR the unique name.
+
+fromemail.php - 
+	Handles links which were sent by mail.
+fromcapemail.php -
+	Handles cap participant verification.
+
+/dbtest (database directory)
+---------------------------------------
+This directory is typically not supposed to be viewed by the public. It's used for administration
+purposes. It doesn't have any direct purpose with the system. Just tools for you to use.
+
+alterall.php -
+        This is quick file I wrote to alter all of the tables in the database and set their created_on
+        and updated_on fields so that they would automatically update when they're supposed to. 
+        It's tricky setting them up right so this file is a good reference for when you create a new
+        table.
+
+backupDB.php -
+        Obviously this file makes a complete backup of the database. It executes the command
+        mysql_dump and then prompts the user to download. 
+
+        WARNING: The larger the database gets, the more memory this thing takes up. If you
+                move the server to linux, you may want to change this file so that it simply dumps
+                to another file and doesn't prompt you to download.
+
+deleteTable.php -
+        This page will delete all the contents of a particular table. This was used during creation 
+        and all links to this page have been removed. It's good to have around incase you ever
+        need it but is slightly dangerous.
+
+exportQueryResults.php -
+        This page is actually used by the system. It takes a query, executes the query, and then
+        dumps the query results to a spreadsheet and prompts the user for download. Fairly useful
+        but probably shouldn't be in this directory. (Yea we don't always follow our own rules)
+
+exportTable.php -
+        Similar to above but instead of executing a query, it just dumps the entire table into 
+        spreadsheet. Also used by the general public.
+
+index.php -
+        The dbtest directory allows you to view all the tables in the database and the contents of 
+        those tables very quickly. It's a stripped down simplified peek into the database. It's meant
+        to be quickand painless. This page is the part that shows you all the tables.
+
+slow.php -
+        This page is meant to dump the contents of the slow query log. It's useful for debugging.
+        Right now its basically a web command shell. This is a result of the slow query log
+        being on windows and moving around all the time. 
+
+viewTable.php -
+        This page goes in conjunction with index.php. As index.php allows you to see all the tables
+        this file dumps the contents of a particular table. 
+
+myadmin/ - 
+        This is a directory inside of dbtest. In here is the application PHPMyAdmin. It's a full
+        database administration program, very very useful, allows you to run raw SQL. Great for
+        testing.
+
+
+docs/  (documentation)
+---------------------------------
+This directory just contains a lot of backups and various documents, such as this readme.
+
+
+downloadlite/ (downloads)
+-------------------------------------
+This is a previously written web application that provides a list of files to download to 
+the general user and provides a log of the number of times a file is downloaded and who it was
+downloaded by. This was specially requested by Julie.
+
+
+genotyping/ (genotyping related files) 
+-----------------------------------------------------
+
+mapdisplay_iframe.php -
+        This page will show a particular map and all the markers associated with the map in
+        a nice little image file  - complete with image map for marker selection, and functionality
+        to move around in the image inside an iframe. It's one of the most complicated files
+        that we have.  See the file itself.
+
+marker_selection.php -
+        This page allows the user to select a set of markers. The markers selected are stored in
+        the session variable  $_SESSION['clicked_buttons'].  
+
+show.php -
+        This page will show all the markers associated with a given line record. It shows in table
+        format. 
+
+
+images/ (image generation subsystem)
+--------------------------------------------------------
+There are a couple images here, the images/ directory just seemed like a good place
+to put them. This directory primarily contains all the image drawing functions. 
+
+map_image.php -
+        This page is basically the wrapper that draws out the image matrix saved in the session
+        variable.
+
+pedi_image_imgmap.inc -
+        This file contains all the functions associated with drawing an image map over an image
+        that was created. Yes, that's right, we made a GUI framework using raw images and 
+        image maps. 
+
+pedi_image.php -
+        This file contains the functions associated with drawing the pedigree tree image.
+
+
+includes/  (the core)
+-----------------------------
+
+ajaxlib.php -
+        This is probably the only php file in this directory. This file is the library of php functions 
+        that are called from ajax routines found in core.js. This is also the ONLY place that
+        the ajax functions are called from. 
+
+boostrap.inc -
+        This is the loader. This loads all the functionality. It includes all the function libraries, 
+        performs XSS/SQL Injection filtration,  word censoring, initial database connection, and 
+        a function that will make the page password protected. Every page should include this 
+        file and will only need to include this file. 
+
+common.inc -
+        This library contains (mostly) all the functions that don't belong to a specific region of 
+        the site. For Example, phenotype, pedigree, and genotype functions are stored in their 
+        respective libraries. Common functions are found in common.inc.   
+
+        Note: database functions such as get_pkey() are found in this file as well.
+
+core.js -
+        This is the core javascript library. All javascript functions are found in here. This is the 
+        other half of the ajax subsystem. Typically all the javascript functions need to do is 
+        call the php function in ajax library.  See core.js for more details.
+
+error.inc -
+        This is a small little library that wraps error messages. Instead of having to type out
+        the HTML for an error, you can simply call error(1, $msg).  
+
+        Note: A complicated error handling system was originally going to be made but due 
+                to simplicity requirements it was scrapped. 
+
+general.inc -
+        Try not to confuse this library with common.inc  Common stores all the common functions
+        that are common amongst all the different regions. This library represents a reigion,
+        the "other" region.  Browsing functions for example are stored here. The names 
+        can be confusing. Essentially the functions that view.php call can be found here.
+
+history.inc -
+        Originally the system was going to have a comprehensive breadcrumb history system. 
+        I wrote this object at home and brought it here, its possesses all the functionality to restore
+        pretty much anything. It's not used as of right now.
+
+image.inc -
+        This is part of the image subsystem. This contains the basic framework for the functions
+        in the image subsystem. The files in the images/ directory are like wrappers to achieve 
+        a specific function using functions in this library.
+
+login.inc -
+        A while back I wrote general login. I took that and modified it. This library contains all
+        the login functions associated with the THT, including the encryption (sha1) scheme 
+        and all functions relating to adding a user, checking good passwords, etc.
+
+marker.inc -
+        This is a small library also, this contains functions associated with the genotyping reigion,
+        markers and haplotypes.
+
+pedigree.inc -
+        This is a big library. This contains functions associated with the pedigree region. 
+        Pedigrees are essentially big trees so there's a lot of tree manipulation functions in here.
+        
+        Note: The tree structure we use is strictly a php array tree implementation. No objects
+                are used.
+
+search.inc -
+        This library contains the functions associated with general searches. Advanced searches
+        are not handled in this library, just general keyword searches.
+
+SpryEffects.js -
+        This is a 3rd party library provided by Adobe. This library is responsible for the nifty sliding
+        registration form found on the left when a user pushes "register" up by the login.
+
+traits.inc -
+        This library contains phenotype related functions, including the biggest query we have. It's
+        all actually fairly simple though.
+
+
+login/ (authenticated pages)
+----------------------------------------
+All of the pages in this directory utilize the loginTest() function found in bootstrap.inc. That
+function will test if a user is logged in, check the login credentials, and determine whether or 
+not the user can proceed to view the page.
+
+cleanup_temporary_dir -
+        This page deletes all the temporary directories that are created in login/uploads/ when
+        a user uploads a file. All of the data input is through Excel files and these need to be 
+        uploaded. This is just a cleanup mechanism. 
+
+downloads.php -
+        Raw datafiles after being uploaded are moved to the downloadlite/downloads/ directory. 
+        This page is basically an extention of downloadlite, this is the page where users can 
+        actually download the raw datafiles. Downloadlite also maintains a log of what was 
+        downloaded, how many times, and by who.
+
+edit_line.php -
+        This page allows the user to edit line records incase any information was incorrect. There 
+        is no global edit page yet as one has not been requested. So right now there's edit_line.php
+        and edit_traits.php
+
+edit_pedigree.php -
+        This is different from edit_line and edit_traits in that we're dealing with pedigrees which
+        are more sensitive. (They're part of a tree). So more error checking is taken into
+        consideration here.
+
+edit_traits.php -
+        Same as edit line except it edits the phenotype definitions, not actual phenotype data.
+
+export_gateway.php -
+        This page is a gateway page to all the different methods of getting data out of the system
+        into exel spreadsheets. It's the opposite of the import gateway.
+
+general_table_input.php -
+        This is a crude method of getting data into the database. You select which table you
+        want to insert data into, and then fill out a very basic form. It's crude and not very
+        user friendly, but handy if you want to add one new institution or something.
+
+index.php -
+        This is the splash page after someone logs in. This pages shows the number of 
+        entries each table. The tables are organized by region. The function that organizes 
+        the tables by region is hardcoded in search.inc for some reason.
+
+input_gateway.php -
+        This page is the opposite of export_gateway.php. Instead of being a gateway to all the
+        ways of getting data out of a system. This page is a gateway to all the ways of getting
+        data into a system.
+
+markerAdd.php -
+        There are some customized ways of adding data. This is one of those pages. This 
+        will take a specifically formatted excel file containing marker data and add it to
+        the database. This page is redundant due to parser_add.php
+
+parser_add.php -
+        This page is a global input page. Any data can be entered this way. It requires a 
+        formatted excel document containing the data and another formatted excel document
+        called a "definition" that defines what column is what in the data document and 
+        where it goes in the database. It's fairly complicated but nice.
+
+pedigreeAdd.php -
+        This is a special page that will take formatted pedigree data and add that to the system.
+        This also has options of adding a single pedigree or a "pedigree string" to the database. 
+
+store_marker.php -
+        This is the back half of markerAdd.php, this is what does the heavy lifting and actually
+        adds the data to the database.
+
+store_parser.php -
+        Same as store_marker but for parser_add.php
+
+store_pedigree.php and store_traits.php -
+        Same as above
+
+str2table.php -
+        This is a very special page. It can take a pedigree string, which is a tree in some wacky
+        string format, parse it, and put it into the database. Be careful when using this function
+        as string parsing is not always perfect. Some people use a modified pedigree string
+        format and the resutl will be a mess in the pedigree tree.  If you ever use this page,
+        test the pedigree string in "pedigree/parse_pedigree.php" that page will parse the 
+        string into a tree format and display it for you.
+
+traitAdd.php -
+        Special page for adding traits, not really used anymore.
+
+uploader.php -
+        This page is used during the upload process, it actually uploads the file to the server 
+        and displays it for the user to see to ensure that the data and parsing is correct
+
+vurvUp. php -
+        This was a page that used a relatively complicated update query with a subquery which
+        added an id into all the line records. It's mostly just a reference now. 
+
+
+pedigree/ (pedigrees)
+--------------------------------
+
+line_selection.php -
+        This page is used for selecting certain lines and putting them inside 
+        $_SESSION['selected_lines']
+
+parse_pedigree.php -
+        This page will take a formatted pedigree string and parse it into a tree and
+        then display that tree. It's a good test to ensure that the pedigree string is formatted
+        properly
+
+pedigree_markers.php -
+        This page will show the alleles for all selected markers for selected lines. It's basically
+        an intersection between the values of $_SESSION['clicked_buttons'] and 
+        $_SESSION['selected_lines'].
+
+pedigree_tree.php -
+        This page will show the graphical pedigree tree for a given line record.
+
+reerse_pedigree.php -
+        Pedigrees are organized by parents. Reverse pedigree is finding all the children of a
+        particular parent.
+
+show_pedigree.php -
+        This is a wrapper for view.php?table=line_records&uid=x  where x is the line_record_uid
+        for a particular line. 
+
+
+phenotype/ (phenotypes)
+------------------------------------
+
+compare.php -
+        This page will select lines based on phenotype data. It can narrow down search results
+        if $_SESSION['selected_lines'] is filled.
+
+show.php -
+        This page shows all the phenotypic data for a particular line record.
+
+
+theme/ (the theme)
+----------------------------
+
+admin_header.php -
+        This page contains all of the theme information, including 2 menus, one for when a user
+        is logged in and one for when they're not. This is also the only other page where 
+        database information, such as host, user, pass, and dbname is hardcoded. bootstrap.inc
+        and this page. 
+
+The rest of the files in this directory are all theme related information, css files and old back
+ ups. 
+
+securimage/ (captcha support)
+------------------------------
+
+Code from http://www.phpcaptcha.org/

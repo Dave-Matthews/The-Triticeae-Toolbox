@@ -1,0 +1,8 @@
+From John.Lee@ARS.USDA.GOV  Tue Aug 31 19:52:29 2010
+
+1. Login to mysql as root (or some other admin acct)
+2. Drop the current gtht DB. (ie drop database gtht)
+3. create an empty gtht DB. (ie create database gtht)
+4. Goto to /home/www/htdocs/tht/gbrowse-generated
+5. Run this command:
+   bp_seqfeature_load.pl -c -u root -p [mysql root password] -d gtht tht.gff3
