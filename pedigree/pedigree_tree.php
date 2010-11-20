@@ -69,7 +69,7 @@ if(isset($_GET['line_name'])) {
 
 
 
-if(isset($_REQUEST['line'])) {
+if(isset($_REQUEST['line']) && ($_REQUEST['line'] != "")) {
 
 	echo "<div style=\"text-align: left;border:none\"><pre>\n";
 
@@ -100,7 +100,7 @@ if(isset($_REQUEST['line'])) {
 }
 ?>
 
-<p>Examples: morex, tmp101, and nd20448</p>
+<p>Examples: nd20448, morex</p>
 
 <form action="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" method="post">
 <p><strong>Line Name</strong><br />

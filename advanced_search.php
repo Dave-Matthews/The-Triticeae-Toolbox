@@ -16,7 +16,6 @@ connect();
 
      /* Search Within  certain Lines */
     $in_these_lines = "";
-    print "<span style=\"color: red\">Warning: Row type, variety and end_use information is not complete for every line</span>";
     if((is_array($_SESSION['selected_lines'])) && (count($_SESSION['selected_lines']) > 0) && ($_REQUEST['selectWithin'] == "Yes") ) {
                 $_GET['selectWithin'] = "Yes";
 		$in_these_lines = "AND line_records.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")";
@@ -34,13 +33,14 @@ connect();
 
 	/* identify lines with the same marker haplotypes */
     if(isset($_POST['haplotype'])) {
-		print "<h2>Search Results by Haplotypes</h2>";
+		print "<h2>Results of Search by Haplotype</h2>";
     		/* Get the Marker Uids */
 			$markers = array();
 			foreach($_POST as $k=>$v) {
 				if(strpos(strtolower($k), "marker") !== FALSE) {
+				  // example "marker_784=>BB"
 					$tm = explode("_", $k);
-                                        if($v != "Ignore")
+                                        if($v != "Any")
 					   $markers[$tm[1]] = $v;
 				}
 			}
@@ -49,14 +49,15 @@ connect();
                                 warning("No marker values selected");
                                 $marker_instr="";
 			}
-            $in_these_lines = str_replace("line_records.", "A.", $in_these_lines);
-			$query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, value
+			$in_these_lines = str_replace("line_records.", "A.", $in_these_lines);
+			$query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, E.allele_1, E.allele_2
 						from line_records as A, tht_base as B, genotyping_data as C, markers as D, alleles as E
 						where A.line_record_uid=B.line_record_uid and B.tht_base_uid=C.tht_base_uid and
 						C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid
                         $marker_instr $in_these_lines";
 			// print $query_str;
-			$result=mysql_query($query_str);
+			$result=mysql_query($query_str) or die(mysql_error());
+			//print "Number of rows = ". mysql_num_rows($result) . "\n";
 			$lines = array();
 			$line_uids=array();
 			$line_names=array();
@@ -64,7 +65,7 @@ connect();
 				$linename=$row['line_record_name'];
 				$lineuid=$row['line_record_uid'];
 				$mkruid=$row['marker_uid'];
-				$alleleval=$row['value'];
+				$alleleval=$row['allele_1'].$row['allele_2'];
 				$line_uids[$linename]=$lineuid;
 				$line_names[$lineuid]=$linename;
 				if (! isset($lines[$linename])) $lines[$linename]=array();
@@ -91,26 +92,31 @@ connect();
 				}
 				$selLines=$_SESSION['selected_lines'];
 				sort($selLines);
-				print "<p><a href=\"pedigree/pedigree_markers.php\">Display the lines and markers</a>";
-				print "<p><a href=\"advanced_search.php?searchtype=idMkrs\">Identify Markers that are identical for these lines</a>";
-				print "<table class='tableclass1'><thead><tr><td>Line names</td></tr></thead><tbody>";
+				print "<table class='tableclass1' style=\"float: left;\"><thead><tr><td>Line names</td></tr></thead><tbody>";
 				foreach ($selLines as $luid) {
 					print "<tr><td>";
 					print "<a href=\"pedigree/show_pedigree.php?line=$luid\">".$line_names[$luid]."</a>";
 					print "</td></tr>";
 				}
 				print "</tbody></table>";
+				print "<div style='float: left; margin-left: 10px;'>";
+				print "<p><a href=\"pedigree/pedigree_markers.php\">Display the lines and markers</a>";
+				print "<p><a href=\"advanced_search.php?searchtype=idMkrs\">Identify Markers that are identical for these lines</a>";
+				print "<div id='ajaxMsg'></div>";
+				print "<input type=\"button\" id=\"storeLineButton\" value=\"Store Line Names\" onclick=\"callAjaxFunc('ajaxSessionVariableFunc','&action=store&svkey=selected_lines',this.id)\" >";
+				print "</div><div style='clear: left;'></div>";
+				print "<p><hr><p>";
 			}
 			else {
 				echo "<p>Sorry, no records found<p>";
+				//print_r($_POST);
 			}
-			print "<div id='ajaxMsg'></div>";
-			print "<input type=\"button\" id=\"storeLineButton\" value=\"Store Line Names\" onclick=\"callAjaxFunc('ajaxSessionVariableFunc','&action=store&svkey=selected_lines',this.id)\" >";
 	}
-	/* identify linse with particular phenotype values */
+
+	/* identify lines with particular phenotype values */
 	if(isset($_POST['phenoSearch'])) {
 		// Find all lines associated with the given phenotype data.
-		print "<h2>Search Results by Phenotype</h2>";
+		print "<h2>Results of Search by Phenotype</h2>";
 		$phenotype = $_POST['phenotype'];
 		if (! isset($phenotype) || strlen($phenotype)<1) {
 			print "<p><a href=\"".$_SERVER['PHP_SELF']."\">Go Back</a></p>";
@@ -242,34 +248,30 @@ connect();
 	<form action="advanced_search.php" method="post">
 
         <div class="boxContent">
-        <h3>Search Within</h3>
-        <p>Selected lines (Choose "No" to search in all the lines)?
-        	<ul>
-                <li style="display: inline"><input type="radio" name="selectWithin" value="Yes"> Yes</li>
-                <li style="display: inline"><input type="radio" name="selectWithin" value="No"  checked> No</li>
-            </ul></p>
+        <h3>Line properties</h3>
 
-        <p>Row type?
-        	<ul>
-            	<li style="display: inline"><input type="radio" name="rowType" value="ignore" checked /> Ignore</li>
-                <li style="display: inline"><input type="radio" name="rowType" value="2" /> 2</li>
-                <li style="display: inline"><input type="radio" name="rowType" value="6" /> 6</li>
-            </ul></p>
+	  Row type:<br>
+                <li style="display: inline"><input type="radio" name="rowType" value="2" /> Two</li>
+                <li style="display: inline"><input type="radio" name="rowType" value="6" /> Six</li>
+            	<li style="display: inline"><input type="radio" name="rowType" value="ignore" checked /> Either</li>
 
-        <p>Variety (Growth habit)?
-        	<ul>
-            	<li style="display: inline"><input type="radio" name="variety" value="ignore" checked /> Ignore </li>
+	  <br><br>Growth habit:<br>
                 <li style="display: inline"><input type="radio" name="variety" value="winter" /> Winter </li>
                 <li style="display: inline"><input type="radio" name="variety" value="spring" /> Spring </li>
-            </ul></p>
+            	<li style="display: inline"><input type="radio" name="variety" value="ignore" checked /> Either </li>
 
-        <p>Primary end use ?
-        	<ul>
-            	<li style="display: inline"><input type="radio" name="primary_end_use" value="ignore" checked /> Ignore </li>
-                <li style="display: inline"><input type="radio" name="primary_end_use" value="malt" /> Malt </li>
+	  <br><br>End use:<br>
+            	<li style="display: inline"><input type="radio" name="primary_end_use" value="malt" /> Malt </li>
                 <li style="display: inline"><input type="radio" name="primary_end_use" value="Feed" /> Feed </li>
+	        <li style="display: inline"><input type="radio" name="primary_end_use" value="ignore" checked /> Either</li>
+
+        <br><br>Search within Selected lines only?<br>
+                <li style="display: inline"><input type="radio" name="selectWithin" value="Yes"> Selection list only</li>
+                <li style="display: inline"><input type="radio" name="selectWithin" value="No"  checked> All lines</li>
             </ul></p>
 
+
+<p><i>Note</i>: Row type, growth habit and end use information is not complete for every line.
 
 	<h3> Select Phenotype </h3>
 	<div id="phenotypeSel" class="boxContent">
@@ -291,14 +293,17 @@ connect();
 		</td>
 		<td><p>Select a phenotype category from the left most column</p>
 		</td>
-		<td><p>Select a phenotype category from the left most column</p>
-		</td>
+		<td></td>
 	</tr>
+	<tr>
+		<td>&nbsp;</td><td></td><td></td>
+        </tr>
 	</tbody>
 	</table>
 	</div>
 
 	<p><input type="submit" name="phenoSearch" value="Search"></p>
+
 	<h3>Select Haplotype</h3>
 	<div class="boxContent">
     <p>Note: the results of this search will replace any lines that are currently remembered for you.</p>
@@ -322,6 +327,8 @@ connect();
 	</tbody>
 	<tr>
 	<?php
+									 //clicked_buttons = the uids of the markers in the 
+									 //current selection list.
 		if(isset($_SESSION['clicked_buttons']) && count($_SESSION['clicked_buttons']) > 0) {
 			$i = 0;
 			foreach($_SESSION['clicked_buttons'] as $marker) {
@@ -334,18 +341,30 @@ connect();
 				echo "\n\t<td>$row[marker_name]</td>\n\t<td>";
 
 				// Show Alleles corresponding to the marker.
-				$allele = mysql_query("SELECT DISTINCT value
+				$allele = mysql_query("SELECT DISTINCT allele_1, allele_2
 							FROM alleles, genotyping_data
 							WHERE genotyping_data.marker_uid = $marker
 								AND genotyping_data.genotyping_data_uid = alleles.genotyping_data_uid
-							ORDER BY value ASC
+							ORDER BY allele_1 ASC
 						") or die(mysql_error());
-
 				if(mysql_num_rows($allele) > 0) {
-					echo "<select name='marker_$marker' style='width: 80px;'><option selected>Ignore</option>";
-					while ($row = mysql_fetch_assoc($allele))
-						echo "<option value=\"$row[value]\">$row[value]</option>";
-					echo "</select>";
+				  echo "<select name='marker_$marker' style='width: 80px;'>";
+				  while ($row = mysql_fetch_assoc($allele)) {
+				    $alleles = $row[allele_1].$row[allele_2];
+				    if ($alleles == $_POST['marker_'.$marker]) {
+				      echo "<option selected value=\"$alleles\">$alleles</option>";
+				    }
+				    else {
+				      echo "<option value=\"$alleles\">$alleles</option>";
+				    }
+				  }
+				  if ($_POST['marker_'.$marker] == "Any") {
+  				      echo "<option selected value=\"Any\">Any</option>";
+  				    }
+				  else {
+				  echo "<option value=\"Any\">Any</option>";
+				  }
+				  echo "</select>";
 
 				}
 				else {
@@ -364,9 +383,9 @@ connect();
 	</tbody>
 	</table>
 	<p><a href="genotyping/marker_selection.php">Re-Select Markers</a></p>
+	<input type="submit" name="haplotype" value="Search">
 	</div>
 
-	<p><input type="submit" name="haplotype" value="Search"></p>
 	</form>
 		</div>
 	</div>

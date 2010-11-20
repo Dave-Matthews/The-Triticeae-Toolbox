@@ -89,7 +89,8 @@ function draw_sequence($im, $seq, $nx, $ny, $nwidth, $nheight, $bmg, $cmg, $im_t
 function draw_character($im, $fontsize, $chr, $dx1, $dy1, $dx2, $dy2, $im_tomato, $im_seagreen, $im_royalblue, $im_salmon, $im_gray, $im_black) {
 	global $im;
 	$chrval=$chr;
-	$cls=array('A'=>'im_tomato', 'B'=>'im_royalblue', '-'=>'im_seagreen', 'N'=>'im_gray');
+	$cls=array('AA'=>'im_tomato', 'BB'=>'im_royalblue', 'AB'=>'im_purple', '--'=>'im_whitesmoke', 'N'=>'im_gray');
+	//		$cls=array('A'=>'im_tomato', 'B'=>'im_royalblue', '-'=>'im_seagreen', 'N'=>'im_gray');
 	if (!isset($chr) || $chr=="" || ! array_key_exists($chr, $cls)) {
 		$chr='N';
 	}
@@ -416,12 +417,13 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
     		for ($i=0; $i<count($selected_markers); $i++) {
     			$mkruid=$selected_markers[$i];
     			$mkrval="";
-    			$result=mysql_query("select marker_name, line_record_name, value from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E 
+    			$result=mysql_query("select marker_name, line_record_name, allele_1, allele_2 from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E 
 									 where A.marker_uid=B.marker_uid and B.genotyping_data_uid=C.genotyping_data_uid and B.tht_base_uid=D.tht_base_uid 
-                                     and D.line_record_uid=E.line_record_uid and line_record_name=\"$linename\" and A.marker_uid=$mkruid");
+                                     and D.line_record_uid=E.line_record_uid and line_record_name=\"$linename\" and A.marker_uid=$mkruid")
+			  or die (mysql_error());
     			if (mysql_num_rows($result)>=1) {
 					$row = mysql_fetch_assoc($result);
-					$mkrval=$row['value'];
+					$mkrval=$row['allele_1'].$row['allele_2'];
     			}
     			else {
     				// print "$linename no marker information\n";

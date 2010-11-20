@@ -44,7 +44,7 @@ function get_imagemap (array $blks, $umapname) {
 <div id="primaryContentContainer">
 	<div id="primaryContent">
 		<div class="box">
-		<h2>Display SNP Data for Selected Lines and Markers</h2>
+		<h2>Haplotype Data for Selected Lines and Markers</h2>
 
 <?php
 if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
@@ -60,19 +60,18 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	if ((count($smkrs_all)-$page*$mkrppg)<$mprppg) $spl_len=count($smkrs_all)-$page*$mkrppg;
 	$smkrs=array_splice($smkrs_all, $page*$mkrppg, $spl_len);
 	/* the size specifications for the drawing elements */
-	$x=50; // the left margin
-	$y=50; // the top margin
-	$cwd=40; // the cell width for the lines
-	$cht=$cwd; // the cell height
-	$nwd=20; // the width of a SNP character
-	$nht=$cht; // the height of a SNP character
+	$x=20; // the left margin
+	$y=20; // the top margin
+	$cwd=95; // the cell width for the lines
+	$cht=16; // the cell height for the lines
+	$nwd=16; // the width of a SNP character
+	$nht=33; // the height of a SNP character
 	$hlw=1; // half of the line width;
-	$bmg=5; // margins
-	$cmg=10; // marging for characters.
-	$disp_len=4;
+	$bmg=1; // margins
+	$cmg=10; // margins for characters?
+	$disp_len=14; // length of line name
 	$imw=$x+$cwd+count($smkrs)*$nwd+100;
 	$imh=$y+count($slines)*$cht+100;
-
 
 	/* the drawing blocks, texts and lines */
 	$blks=array();
@@ -80,35 +79,37 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	$dtxs=array();
 
 	/* draw a more sign if there is more markers outside smkrs */
+	if (($page>0) || ($cnt_all>$page*$mkrppg+$spl_len)) {
 	$leftlink="";
 	$leftsign="start";
 	$rightlink="";
 	$rightsign="end";
-	if ($page>0) {
-		$leftlink=$_SERVER['PHP_SELF']."?pagenum=".($page-1);
-		$leftsign=" <<";
-	}
-	if ($cnt_all>$page*$mkrppg+$spl_len) {
-		$rightlink=$_SERVER['PHP_SELF']."?pagenum=".($page+1);
-		$rightsign=" >>";
-	}
-	array_push($blks, array('coords'=>array($bmg,$bmg,$cwd-$bmg,$cht-$bmg),
-		'imgclr'=>'im_khaki3',
-		'text'=>$leftsign,
-		'textsize'=>2,
-		'border'=>1,
-		'border_color'=>'im_skyblue',
-		'link'=>$leftlink,
-		'title'=>"Display previous $mkrppg markers"));
-	array_push($blks, array('coords'=>array($cwd+$bmg,$bmg,$cwd+$cwd-$bmg,$cht-$bmg),
-		'imgclr'=>'im_khaki3',
-		'text'=>$rightsign,
-		'textsize'=>2,
-		'border'=>1,
-		'border_color'=>'im_skyblue',
-		'link'=>$rightlink,
-		'title'=>"Display next $mkrppg markers"));
-	array_push($dtxs, array('x'=>2*$cwd, 'y'=>10, 'text'=>$spl_len." markers from number ".($page*$mkrppg+1)." of total $cnt_all", 'fontsize'=>3, 'text_clr'=>'im_black'));
+	  if ($page>0) {
+	    $leftlink=$_SERVER['PHP_SELF']."?pagenum=".($page-1);
+	    $leftsign=" <<";
+	  }
+	  if ($cnt_all>$page*$mkrppg+$spl_len) {
+	    $rightlink=$_SERVER['PHP_SELF']."?pagenum=".($page+1);
+	    $rightsign=" >>";
+	  }
+	  array_push($blks, array('coords'=>array($bmg,$bmg,$cwd-$bmg,$cht-$bmg),
+				  'imgclr'=>'im_khaki3',
+				  'text'=>$leftsign,
+				  'textsize'=>2,
+				  'border'=>1,
+				  'border_color'=>'im_skyblue',
+				  'link'=>$leftlink,
+				  'title'=>"Display previous $mkrppg markers"));
+	  array_push($blks, array('coords'=>array($cwd+$bmg,$bmg,$cwd+$cwd-$bmg,$cht-$bmg),
+				  'imgclr'=>'im_khaki3',
+				  'text'=>$rightsign,
+				  'textsize'=>2,
+				  'border'=>1,
+				  'border_color'=>'im_skyblue',
+				  'link'=>$rightlink,
+				  'title'=>"Display next $mkrppg markers"));
+	  array_push($dtxs, array('x'=>2*$cwd, 'y'=>10, 'text'=>$spl_len." markers from number ".($page*$mkrppg)." of total $cnt_all", 'fontsize'=>3, 'text_clr'=>'im_black'));
+	  }
 
 	// print $cnt_all." ".($page*$mkrppg+$spl_len)."<br>";
 	// print_r($blks);
@@ -124,14 +125,14 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 		}
 		array_push($line_names, $linename);
 		$dispname=$linename;
-		if (strlen($linename)>$disp_len) $dispname=substr($linename, 0, $disp_len).".";
+		if (strlen($linename)>$disp_len) $dispname=substr($linename, 0, $disp_len)."\\";
 		$xcoord=$x;
 		$ycoord=$y+$cht*($i+1);
 		array_push($blks, array('coords'=>array($xcoord+$bmg,$ycoord+$bmg,$xcoord+$cwd-$bmg,$ycoord+$cht-$bmg),
-							    'imgclr'=>'im_mediumseagreen',
+					'imgclr'=>'im_whitesmoke',
 								'text'=>$dispname,
 								'textsize'=>2,
-								'border'=>0,
+							'border'=>0,
 								'border_color'=>'im_khaki3',
 								'link'=>"pedigree/show_pedigree.php?line=$linename",
 								'title'=>$linename));
@@ -139,12 +140,12 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 
 	/* draw the markers */
 	// draw the logo
-	$ycoord=$y+$cht-30;
-	$xcoord=$x+$cwd;
-	array_push($dtxs, array('x'=>$xcoord, 'y'=>$ycoord, 'text'=>"Markers->", 'fontsize'=>8, 'text_clr'=>'im_black'));
+	$ycoord=$y-14;
+	$xcoord=$x+$cwd+10;
+	array_push($dtxs, array('x'=>$xcoord, 'y'=>$ycoord, 'text'=>"Markers", 'fontsize'=>2, 'text_clr'=>'im_black'));
 
 	// draw the markers
-	$nx=$xcoord+80;
+	$nx=$xcoord;
 	$ny=$y;
 	for ($i=0; $i<count($smkrs); $i++) {
 		$mkrname="";
@@ -156,10 +157,10 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
     	else continue;
     	$xcoord=$nx+$i*$nwd;
     	$ycoord=$ny;
-    	array_push($blks, array('coords'=>array($xcoord+1,$ycoord+$cmg,$xcoord+$nwd-1,$ycoord+$nht-$cmg),
+    	array_push($blks, array('coords'=>array($xcoord+1,$ycoord,$xcoord+$nwd-1,$ycoord+14),
 							    'imgclr'=>'im_grayblue',
-								'text'=>$i,
-								'textsize'=>4,
+								'text'=>$i+1,
+								'textsize'=>2,
 								'border'=>0,
 								'border_color'=>'im_khaki3',
 								'link'=>"view.php?table=markers&name=$mkrname",
@@ -176,25 +177,26 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
    		for ($j=0; $j<count($smkrs); $j++) {
     		$mkruid=$smkrs[$j];
     		$mkrval="";
-    		$result=mysql_query("select marker_name, line_record_name, value from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E
+    		$result=mysql_query("select marker_name, line_record_name, allele_1, allele_2 from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E
 								 where A.marker_uid=B.marker_uid and B.genotyping_data_uid=C.genotyping_data_uid and B.tht_base_uid=D.tht_base_uid
-                                 and D.line_record_uid=E.line_record_uid and E.line_record_uid=$lineuid and A.marker_uid=$mkruid");
+                                 and D.line_record_uid=E.line_record_uid and E.line_record_uid=$lineuid and A.marker_uid=$mkruid") 
+		  or die (mysql_error());
     		if (mysql_num_rows($result)>=1) {
 				$row = mysql_fetch_assoc($result);
-				$mkrval=$row['value'];
+				$mkrval=$row['allele_1'].$row['allele_2'];
     		}
     		else {
     			// print "$linename no marker information\n";
     		}
     		$dispval=$mkrval;
     		$dnx=$nx+$j*$nwd;
-    		$dny=$y+$cht*($i+1);
-    		$cls=array('A'=>'im_tomato', 'B'=>'im_royalblue', '-'=>'im_seagreen', 'N'=>'im_gray');
+    		$dny=$y+7+$cht*($i);
+		$cls=array('AA'=>'im_tomato', 'BB'=>'im_grayblue', 'AB'=>'im_purple', '--'=>'im_whitesmoke', 'N'=>'im_gray');
     		if (! isset($mkrval) || strlen($mkrval)<1) $mkrval="N";
     		array_push($blks, array('coords'=>array($dnx+1,$dny+$cmg,$dnx+$nwd-1,$dny+$nht-$cmg),
 							    'imgclr'=>$cls[$mkrval],
 								'text'=>$dispval,
-								'textsize'=>4,
+								'textsize'=>2,
 								'border'=>0,
 								'border_color'=>'im_khaki3',
 								'link'=>'',
