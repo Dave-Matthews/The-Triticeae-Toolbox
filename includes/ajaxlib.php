@@ -1027,7 +1027,7 @@ function DispPhenotypeSel($arr) {
  */
 function DispTrialSel($arr) {
 	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
-		echo "<br>Please Select A Trial";
+		echo "<br>No trials selected";
 		return;
 	}
 	// make local the array variables please.  

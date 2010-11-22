@@ -81,8 +81,8 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	$bmg=1; // margins
 	$cmg=10; // margins for characters?
 	$disp_len=14; // length of line name
-	$imw=$x+$cwd+count($smkrs)*$nwd+100;
-	$imh=$y+count($slines)*$cht+100;
+	$imw=$x+$cwd+count($smkrs)*$nwd+120; //image width
+	$imh=$y+count($slines)*$cht+50; // image height
 
 	/* the drawing blocks, texts and lines */
 	$blks=array();
