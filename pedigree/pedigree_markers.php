@@ -155,8 +155,10 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	$xcoord=$x+$cwd+10;
 	array_push($dtxs, array('x'=>$xcoord, 'y'=>$ycoord, 'text'=>"Markers", 'fontsize'=>2, 'text_clr'=>'im_black'));
 	if (isset($phenotypename)) {
-	array_push($dtxs, array('x'=>$xcoord + 90, 'y'=>$ycoord, 'text'=>'Trait', 'fontsize'=>2, 'text_clr'=>'im_black'));
-	array_push($dtxs, array('x'=>$xcoord + 140, 'y'=>$ycoord, 'text'=>'Expts', 'fontsize'=>2, 'text_clr'=>'im_black'));
+	  $xtrait=$x+$cwd+10+count($smkrs)*$nwd+10;
+	  array_push($dtxs, array('x'=>$xtrait, 'y'=>$ycoord, 'text'=>'Trait', 'fontsize'=>2, 'text_clr'=>'im_black'));
+	  $xexpts=$xtrait+$twd+10;
+	  array_push($dtxs, array('x'=>$xexpts, 'y'=>$ycoord, 'text'=>'Expts', 'fontsize'=>2, 'text_clr'=>'im_black'));
 	}
 
 	// draw the markers
@@ -256,10 +258,17 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 		$trtval = $row['avg(value)'];
 		$cntval = $row['count(value)'];
 		if ($cntval == 0) { $trtval = ""; }
-		$dispval = number_format($trtval);
-		$dnx=$nx+ 5 * $nwd + 10;  // to be adjusted; replace 5 with number of markers
+// 		/* Get the number of significant digits for this unit. */
+// 		$getsigdig = "SELECT sigdigits_display FROM units, phenotypes
+// 			WHERE phenotypes.phenotype_uid = '$phenotype'
+// 			AND units.unit_uid = phenotypes.unit_uid";
+// 		$r = mysql_query($getsigdig) or die(mysql_error());
+// 		$sigdig = mysql_fetch_row($r);
+// 		$sigdig = (int) $sigdig[0];
+// 		//$dispval = number_format($trtval,$sigdig); //Not used, too long.
+		$dispval = number_format($trtval,1);
 		$dny=$y+7+$cht*($i);
-		array_push($blks, array('coords'=>array($dnx+1,$dny+$cmg,$dnx+$twd-1,$dny+$nht-$cmg),
+		array_push($blks, array('coords'=>array($xtrait,$dny+$cmg,$xtrait+$twd-1,$dny+$nht-$cmg),
 					'imgclr'=>'im_whitesmoke',
 					'text'=>$dispval,
 					'textsize'=>2,
@@ -268,7 +277,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 					'link'=>'',
 					'title'=>''));
 		$dnx=$dnx+$twd+10;
-		array_push($blks, array('coords'=>array($dnx+1,$dny+$cmg,$dnx+20,$dny+$nht-$cmg),
+		array_push($blks, array('coords'=>array($xexpts,$dny+$cmg,$xexpts+20,$dny+$nht-$cmg),
 					'imgclr'=>'im_whitesmoke',
 					'text'=>$cntval,
 					'textsize'=>2,
@@ -300,12 +309,13 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	  $num = $i + 1;
 	  echo "<b>$num</b> $markername<br>";
 	}
-	echo "<br><b>Trait</b><br>";
-	echo "$phenotypename<br>";
-	echo "<br><b>Experiments</b><br>";
-	// Find which experiments the results were found in.
-	$theselines = implode(",", $slines);
-	$trials_found = mysql_query("
+	if (isset($phenotype)) {
+	    echo "<br><b>Trait</b><br>";
+	    echo "$phenotypename<br>";
+	    echo "<br><b>Experiments</b><br>";
+	    // Find which experiments the results were found in.
+	    $theselines = implode(",", $slines);
+	    $trials_found = mysql_query("
 	    select distinct e.trial_code
 	    from line_records as lr, phenotype_data as pd, tht_base as tb, experiments as e
 	    where lr.line_record_uid = tb.line_record_uid
@@ -315,13 +325,14 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	    and lr.line_record_uid in ($theselines)
 	    $in_these_experiments
 	    ") or die (mysql_error());
-	for ($i=0; $i<mysql_num_rows($trials_found); $i++) {
-	  $tf = mysql_fetch_assoc($trials_found);
-	  $tfc = $tf['trial_code'];
-	  echo "$tfc<br>";
-	  //	  echo "$tf['trial_code']<br>";  //??? Why doesn't this work?
-	}
-	echo "<br><i>Trait value is mean over experiments.</i><br>";
+	    for ($i=0; $i<mysql_num_rows($trials_found); $i++) {
+	      $tf = mysql_fetch_assoc($trials_found);
+	      $tfc = $tf['trial_code'];
+	      echo "$tfc<br>";
+	      //	  echo "$tf['trial_code']<br>";  //??? Why doesn't this work?
+	    }
+	    echo "<br><i>Trait value is mean over experiments.</i><br>";
+	  }
 
 	echo "</td></tr></table>";
 
