@@ -137,6 +137,7 @@ connect();
 			$compare = "na_value=$value";
 			}
 		else {
+		  $_SESSION['phenotype'] = $phenotype;
 			$first = $_POST['first_value'] == "" ? getMaxMinPhenotype("min", $phenotype) : $_POST['first_value'];
 			$last = $_POST['last_value'] == "" ? getMaxMinPhenotype("max", $phenotype) : $_POST['last_value'];
 			$search_str="SELECT line_records.line_record_uid, line_record_name FROM line_records, tht_base, phenotype_data
@@ -245,7 +246,10 @@ connect();
 	</div>
 	<div class="box">
 	<h2>Advanced Search</h2>
-	<form action="advanced_search.php" method="post">
+	  <!-- Cannot jump directly to pedigree_markers.php, the alleles are not updated.
+	<form action="pedigree/pedigree_markers.php" method="post">
+	  -->
+	<form action="advanced_search.php" method="post"> 
 
         <div class="boxContent">
         <h3>Line properties</h3>
@@ -281,7 +285,7 @@ connect();
 	<tr>
 		<th>Category</th>
 		<th>Phenotype</th>
-		<th>Value</th>
+		<th>Experiment</th>
 	</tr>
 	</thead>
 	<tbody>

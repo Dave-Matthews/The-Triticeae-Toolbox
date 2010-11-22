@@ -997,6 +997,11 @@ function DispPhenotypeSel($arr) {
 	// make local the array variables please.
 	extract($arr);
 
+	// Store the current phenotype in a cookie.
+	$_SESSION['phenotype'] = $id;
+	// No experiments selected yet so unset the cookie.
+	unset($_SESSION['experiments']);
+
 	// query please
 	$pquery = mysql_query("SELECT phenotypes_name from phenotypes where phenotype_uid = $id") or die(mysql_error());
 	$pname = mysql_fetch_row($pquery);
@@ -1033,6 +1038,8 @@ function DispTrialSel($arr) {
 	
 	// Remove the trailing ",".
 	$trialsSelected = trim($trialsSelected, ",");
+	// Store it in a cookie.
+	$_SESSION['experiments'] = $trialsSelected;
 
 	$query = mysql_query("
 select avg(value) as avg,
