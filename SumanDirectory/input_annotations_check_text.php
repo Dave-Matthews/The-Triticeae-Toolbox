@@ -124,8 +124,9 @@ private function typeAnnotationCheck()
 	ini_set("memory_limit","24M");
 	
 	$username=$row['name'];
-	
-	$tmp_dir="uploads/tmpdir_".$username."_".rand();
+
+        $tmp_dir="uploads/tmpdir_".$username."_".rand();	
+		      //$tmp_dir=$config['base_url']."curator_data/uploads/tmpdir_".$username."_".rand();
 	
 //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
 //	copy($_FILES['file']['tmp_name'][1], $raw_path);

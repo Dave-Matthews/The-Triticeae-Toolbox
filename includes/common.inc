@@ -137,7 +137,9 @@ function get_unique_name($table) {
 
 	for($i = 2; $i<count($parts); $i++) {
 
-		if(preg_match("/_name/", $parts[$i], $matches)) {
+	  // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
+	  // if(preg_match("/_name/", $parts[$i], $matches)) {
+	  if(preg_match("/name/", $parts[$i], $matches)) {
 			$line = explode("`", $parts[$i]);
 			return $line[1];
 		}

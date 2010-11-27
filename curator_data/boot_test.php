@@ -15,10 +15,8 @@ function connect_dev() {
 //	if ($dontconnect == true) return null;
 
 	$database = "THT_database";
-	$db_user = "tht_admin";
-	$db_pass = "tht@Admin";
-	//$db_user = "curatoruser";
-	//$db_pass = "put1nthtD@t@";
+	$db_user = "publicuser";
+	$db_pass = "thtisfun";
 	$host = "localhost";
 	$linkID_dev = mysql_connect($host, $db_user, $db_pass);
 	if(!$linkID_dev) {
