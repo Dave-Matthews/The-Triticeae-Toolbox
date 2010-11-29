@@ -43,6 +43,10 @@ function generalTermSearch(array $tableTree, $searchQ) {
 	//Special % escape. PHP does not have a function to do this for us.
 	//$searchQ = preg_replace('/%/', '\\%', $searchQ);
 
+  // Square brackets don't work in a regexp search, must be escaped.
+  $searchQ = preg_replace('/\[/', '\\\\\[', $searchQ);
+  $searchQ = preg_replace('/\]/', '\\\\\]', $searchQ);
+
 	$tablenames = array_keys($tableTree);
 	$tables = count($tablenames);
 
