@@ -236,15 +236,29 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	  if (isset($experiments)) {
 	    $in_these_experiments = "and tb.experiment_uid in ($experiments)";
 	  }
+	  $these_lines = implode(",", $slines);
+	  // Show mean over selected experiments.
+	  $result=mysql_query("
+	      select lr.line_record_uid, avg(value), count(value)
+	      from line_records as lr, phenotype_data as pd, tht_base as tb
+	      where lr.line_record_uid = tb.line_record_uid
+	      and tb.tht_base_uid = pd.tht_base_uid
+	      and pd.phenotype_uid = $phenotype
+	      and lr.line_record_uid in ($these_lines)
+	      $in_these_experiments
+              order by avg(value) desc
+	      -- and value is not null
+	      ") or die (mysql_error());
+
+
 	  for ($i=0; $i<count($slines); $i++) {
 	    $lineuid=$slines[$i];
 	    if (array_key_exists($lineuid, $line_trt)) continue;
 	    else {
 	      $line_trt[$lineuid]=1;
 	      $trtval = "";
-	      // Show mean over selected experiments.
 	      $result=mysql_query("
-			      select avg(value), count(value)
+			      select lr.line_record_uid, avg(value), count(value)
 			      from line_records as lr, phenotype_data as pd, tht_base as tb
 			      where lr.line_record_uid = tb.line_record_uid
 			      and tb.tht_base_uid = pd.tht_base_uid

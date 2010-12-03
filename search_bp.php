@@ -17,7 +17,7 @@ connect();
 	$dptype = $row_dpname['program_type'];
 	echo "<h1> $dpname </h1>";
 
-	if ($dptype =='breeding')
+        if (($dptype =='breeding') || ($dptype =='mapping')) 
 		$sql1="SELECT datasets_uid FROM datasets WHERE CAPdata_programs_uid='$uid'";
 	else {
 		$sql1="SELECT experiment_uid FROM experiments WHERE CAPdata_programs_uid='$uid'";
@@ -31,7 +31,7 @@ connect();
 			</div>
 			<?php
 	} else {
-		if ($dptype =='breeding') {
+	       if (($dptype =='breeding') || ($dptype =='mapping')) {
 			// updated to allow for multiple datasets across years
 			while ($row1=mysql_fetch_array($res1)){
 				$datasets_uid[]=$row1['datasets_uid'];
