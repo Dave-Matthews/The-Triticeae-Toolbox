@@ -92,18 +92,18 @@ connect();
 				}
 				$selLines=$_SESSION['selected_lines'];
 				sort($selLines);
-				print "<table class='tableclass1' style=\"float: left;\"><thead><tr><td>Line names</td></tr></thead><tbody>";
+				print "<table class='tableclass1' style=\"float: left;\"><thead><tr><th><b>Lines found</b></th></tr></thead><tbody>";
 				foreach ($selLines as $luid) {
-					print "<tr><td>";
+				  print "<tr><td style='padding: 1px'>";
 					print "<a href=\"pedigree/show_pedigree.php?line=$luid\">".$line_names[$luid]."</a>";
 					print "</td></tr>";
 				}
 				print "</tbody></table>";
 				print "<div style='float: left; margin-left: 10px;'>";
-				print "<p><a href=\"pedigree/pedigree_markers.php\">Display the lines and markers</a>";
-				print "<p><a href=\"advanced_search.php?searchtype=idMkrs\">Identify Markers that are identical for these lines</a>";
+				print "<p><a href=\"pedigree/pedigree_markers.php\">Display the haplotypes</a>";
+				print "<p><a href=\"advanced_search.php?searchtype=idMkrs\">Identify markers that are identical for these lines</a><br>";
 				print "<div id='ajaxMsg'></div>";
-				print "<input type=\"button\" id=\"storeLineButton\" value=\"Store Line Names\" onclick=\"callAjaxFunc('ajaxSessionVariableFunc','&action=store&svkey=selected_lines',this.id)\" >";
+				print "<p><input type=\"button\" id=\"storeLineButton\" value=\"Store line names\" onclick=\"callAjaxFunc('ajaxSessionVariableFunc','&action=store&svkey=selected_lines',this.id)\" >";
 				print "</div><div style='clear: left;'></div>";
 				print "<p><hr><p>";
 			}
@@ -167,7 +167,7 @@ connect();
 				if (! in_array($sline, $_SESSION['selected_lines'])) array_push($_SESSION['selected_lines'], $sline);
 			}
 			$selLines=$_SESSION['selected_lines'];
-			print "<table class='tableclass1' style=\"float: left;\"><thead><tr><td>Line names</td></tr></thead><tbody>";
+			print "<table class='tableclass1' style=\"float: left;\"><thead><tr><th><b>Lines found</b></th></tr></thead><tbody>";
 			foreach ($selLines as $luid) {
 					print "<tr><td>";
 					print "<a href=\"pedigree/show_pedigree.php?line=$luid\">".$linenames[$luid]."</a>";
@@ -191,7 +191,7 @@ connect();
 		print "<h2>Identify identical markers for the selected lines</h2>";
 		$lines=$_SESSION['selected_lines'];
 		$lines_instr=implode(",", $lines);
-		$query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, value
+		$query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, allele_1, allele_2
 				from line_records as A, tht_base as B, genotyping_data as C, markers as D, alleles as E
 				where A.line_record_uid=B.line_record_uid and B.tht_base_uid=C.tht_base_uid and
 				C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid and
@@ -206,7 +206,7 @@ connect();
 			$linename=$row['line_record_name'];
 			$lineuid=$row['line_record_uid'];
 			$mkruid=$row['marker_uid'];
-			$alleleval=$row['value'];
+			$alleleval=$row['allele_1'].$row['allele_2'];
 			$line_uids[$linename]=$lineuid;
 			$line_names[$lineuid]=$linename;
 			if (! isset($lines[$linename])) $lines[$linename]=array();

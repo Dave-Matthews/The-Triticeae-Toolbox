@@ -193,10 +193,10 @@ private function typeGenoType()
                 </style>
 		
 		<div style="float: left; margin-bottom: 1.5em;">
-		<h3> Breeding Program & Year</h3>
+		<h3>Data Program & Year</h3>
 			<table>
 				<tr>
-					<th>Breeding Program</th>
+					<th>Data Program</th>
 					<th>Year</th>
 				</tr>
 				<tr>
@@ -208,7 +208,7 @@ private function typeGenoType()
 		// Select breeding programs for the drop down menu
 		//Note this will need to change to allow data from all programs, breeding and mapping
 		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-				FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
+				FROM CAPdata_programs WHERE program_type='breeding' OR program_type='mapping' ORDER BY name";
 
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))

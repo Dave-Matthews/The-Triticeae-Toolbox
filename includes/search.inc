@@ -200,12 +200,23 @@ function displayTermSearchResults(array $found) {
 
 		$type = beautifulTableName($line[0]);
 
-		$query = mysql_query("SELECT $line[1] FROM $line[0] WHERE $key = '$line[2]'");
-		
-		while($row = mysql_fetch_assoc($query)) {
-			echo "<p title=\"$type\"><strong><a href=\"view.php?table=" . urlencode($line[0]) . "&uid=" . urlencode($line[2]) ."\">" . $row[$line[1]] . "</a></strong> &mdash; " . $type . "</p>\n";
+		// Intercept marker synonyms that are identical to marker name.
+		$skip = "";
+		if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
+		  $msquery = mysql_query("select marker_name 
+                    from markers, marker_synonyms 
+                    where marker_synonym_uid = '$line[2]'
+                    and markers.marker_uid = marker_synonyms.marker_uid
+                    and markers.marker_name = marker_synonyms.value");
+		  if (mysql_num_rows($msquery) > 0) { $skip = "yes"; }
 		}
-
+		if (! $skip) {
+		  $query = mysql_query("SELECT $line[1] FROM $line[0] WHERE $key = '$line[2]'");
+		  while($row = mysql_fetch_assoc($query)) {
+echo "<p title=\"$type\"><strong><a href=\"view.php?table=" . urlencode($line[0]) . "&uid=" . urlencode($line[2]) ."\">" . $row[$line[1]] . "</a></strong> &mdash; " . $type . "</p>\n";
+		  }
+		}
+		
 	}
 
 }
