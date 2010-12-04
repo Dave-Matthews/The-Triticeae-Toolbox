@@ -74,7 +74,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	$y=20; // the top margin
 	$cwd=95; // the cell width for the lines
 	$cht=16; // the cell height for the lines
-	$twd=40; // the cell width for trait values
+	$twd=50; // the cell width for trait values
 	$nwd=16; // the width of a SNP character
 	$nht=33; // the height of a SNP character
 	$hlw=1; // half of the line width;
@@ -124,6 +124,41 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 
 	// print $cnt_all." ".($page*$mkrppg+$spl_len)."<br>";
 	// print_r($blks);
+
+
+ 	/* If a phenotype is selected, sort the lines by the value of that phenotype. */
+ 	if (isset($phenotype)) {
+ 	  $sorted_lines=array(); 
+ 	  $in_these_experiments = "";
+ 	  if (isset($experiments)) {
+ 	    $in_these_experiments = "and tb.experiment_uid in ($experiments)";
+ 	  }
+ 	  for ($i=0; $i < count($slines); $i++) {
+ 	    $lineuid = $slines[$i];
+ 	    $trtval = -9999;
+ 	    // Show mean over selected experiments.
+ 	    $result = mysql_query("
+ 			      select avg(value)
+ 			      from line_records as lr, phenotype_data as pd, tht_base as tb
+ 			      where lr.line_record_uid = tb.line_record_uid
+ 			      and tb.tht_base_uid = pd.tht_base_uid
+ 			      and pd.phenotype_uid = $phenotype
+ 			      and lr.line_record_uid = $lineuid
+                               $in_these_experiments
+                               -- and value is not null
+ 			      ") or die (mysql_error());
+ 	    if (mysql_num_rows($result) > 0) {
+ 	      $row = mysql_fetch_assoc($result);
+ 	      $trtval = $row['avg(value)'];
+ 	    }
+	    $sorted_lines[$lineuid] = $trtval;
+ 	  }
+	  // Sort descending.
+ 	  arsort($sorted_lines, SORT_NUMERIC);
+	  $slines = array_keys($sorted_lines);
+	}
+
+
 	/* draw the lines */
 	$line_names=array();
 	for ($i=0; $i<count($slines); $i++) {
