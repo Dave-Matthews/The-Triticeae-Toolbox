@@ -13,7 +13,7 @@ include($config['root_dir'] . 'includes/bootstrap.inc');
 //include($config['root_dir'] . 'SumanDirectory/boot_test.php');
 include($config['root_dir'] . 'curator_data/boot_test.php');
 //include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
-include($config['root_dir'] . 'SumanDirectory/lineuid.php');
+include($config['root_dir'] . 'curator_data/lineuid.php');
 
 
 
@@ -88,12 +88,7 @@ private function typeAnnotationCheck()
 			// Opens the url in the same window
 	   	window.open(url, "_self");
 	}
-	
-	
-	
-	
 	</script>
-
 
 	<style type="text/css">
 			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
@@ -113,11 +108,10 @@ private function typeAnnotationCheck()
                 </style>
 		
 		
-		
 <?php
 		      // dem 3dec10: Must include these files again, don't know why.
-require 'config.php';
-include($config['root_dir'] . 'curator_data/lineuid.php');
+		      require 'config.php';
+		      //include($config['root_dir'] . 'curator_data/lineuid.php');
 
   $row = loadUser($_SESSION['username']);
 	
@@ -175,12 +169,8 @@ include($config['root_dir'] . 'curator_data/lineuid.php');
 /* Read the annotation file */
 	 $handle = fopen($annotfile, "r");
 	 $header = fgetcsv($handle, 0, "\t");
+
         // Set up column indices; all columns are required
-		//echo "<pre>";
-		//		print_r($header);
-		//print_r(find("Breeding_Program", $header));
-		//$x = implode(find("Breeding_Program", $header),"") or die("no implode"); echo "find = $x<br>";
-        
         $capyear_idx = implode(find("CAP_Year", $header),"");
         $bp_idx =  implode(find("Breeding_Program", $header),"");
         $location_idx = implode(find("Location", $header),"");
@@ -539,7 +529,7 @@ include($config['root_dir'] . 'curator_data/lineuid.php');
 	global $config;
 	include($config['root_dir'] . 'theme/admin_header.php');
 	//dem 3dec10: Must include this again.  Don't know why.
-	include($config['root_dir'] . 'curator_data/lineuid.php');
+	//	include($config['root_dir'] . 'curator_data/lineuid.php');
 
 	connect_dev();
 	
@@ -916,7 +906,7 @@ include($config['root_dir'] . 'curator_data/lineuid.php');
         echo " <b>The Data is inserted/updated successfully </b>";
 				echo"<br/><br/>";
 	?>
-	<a href="http://tht.vrac.iastate.edu:8080/SumanDirectory/input_annotations_upload_text.php"> Go Back To Main Page </a>
+	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"> Go Back To Main Page </a>
 	<?
 	
 	$sql = "INSERT INTO input_file_log (file_name,users_name)

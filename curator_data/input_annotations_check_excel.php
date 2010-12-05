@@ -114,10 +114,8 @@ private function typeAnnotationCheck()
 		
 		
 		
-<?
-
-
-
+		      <?php                      // dem 3dec10: Must include these files again, don't know why. 
+		      require 'config.php';
 
   $row = loadUser($_SESSION['username']);
 	
@@ -125,15 +123,14 @@ private function typeAnnotationCheck()
 	
 	$username=$row['name'];
 	
-	$tmp_dir="uploads/tmpdir_".$username."_".rand();
+		      	$tmp_dir=$config['root_dir']."curator_data/uploads/tmpdir_".$username."_".rand();
 	
 //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
 //	copy($_FILES['file']['tmp_name'][1], $raw_path);
 	umask(0);
 	
-	
 	if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
-		mkdir($tmp_dir, 0777);
+	  mkdir($tmp_dir, 0777) or die("Couldn't mkdir $tmp_dir");
 	}
 
 	$target_path=$tmp_dir."/";
@@ -161,10 +158,8 @@ private function typeAnnotationCheck()
 		}
 		else {
 		
-		
 			if(move_uploaded_file($_FILES['file']['tmp_name'][0], $target_path.$uploadfile)) 
 			{
-
 
     			/* start reading the excel */
 		
@@ -187,8 +182,6 @@ private function typeAnnotationCheck()
 	$rows = $reader->sheets[0]['numRows'];
 	
 	//	echo "nrows ".$rows." ncols ".$cols."\n";
-	
-	
 	
 	// find location for each row of data; find where data starts in file
 	for ($i = 1; $i <= $rows; $i++) {
@@ -633,7 +626,6 @@ private function typeAnnotationCheck()
 	
 	global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
-
 	
 	//connect_dev();
 	

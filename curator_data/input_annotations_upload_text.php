@@ -72,7 +72,7 @@ private function typeAnnotations()
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
 		
-		<form action="SumanDirectory/input_annotations_check_text.php" method="post" enctype="multipart/form-data">
+		<form action="<?php echo $config['root_dir']; ?>curator_data/input_annotations_check_text.php" method="post" enctype="multipart/form-data">
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
 	<p><strong>Annotation File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/Annot_test.txt">Example Annotation File(.txt)</a></p>

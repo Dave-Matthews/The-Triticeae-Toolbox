@@ -73,7 +73,7 @@ private function typeExperiments()
 		</style>
 		
 		<p><strong>Note: </strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font size="2px">Please upload the relevant annotation file before uploading Means Data File. </font></p>
-		<form action="SumanDirectory/input_experiments_check_text.php" method="post" enctype="multipart/form-data">
+		<form action="<?php echo $config['base_url']; ?>curator_data/input_experiments_check_text.php" method="post" enctype="multipart/form-data">
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
 	<p><strong>Means Data File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/Expt_test.txt">Example Means Input File</a></p>
