@@ -234,10 +234,14 @@ function show_general($tabl, $id, $resource="") {
 		foreach($row as $k=>$v) {
 
 			if(!in_array($k, $foreign_keys)) {
+			  // Omit the _uid and created_on columns.
+			  if (! strpos($k, "_uid") && ($k != "created_on")) {
+			  //if ( ($k != "created_on")) {
 				echo "\t<tr>\n";
 				echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
 				echo "\t\t<td>$v</td>\n";
 				echo "\t</tr>\n";
+			}
 			}
 
 		}
