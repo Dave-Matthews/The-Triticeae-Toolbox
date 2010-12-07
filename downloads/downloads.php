@@ -519,7 +519,8 @@ class Downloads
 				
 				while ($row = mysql_fetch_array($res)){
 					$marker_uid[] = $row["marker"];
-					$maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/$row["total"],($row["sumab"]+2*$row["sumbb"])/$row["total"]),1);
+// 					$maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/$row["total"],($row["sumab"]+2*$row["sumbb"])/$row["total"]),1);
+					$maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 					$miss = round(100*$row["summis"]/$row["total"],1);
 					if ($maf>$min_maf)
 						$num_maf++;
@@ -909,18 +910,18 @@ class Downloads
 
 			$res = mysql_query($sql_mstat) or die(mysql_error());
 			$num_maf = $num_miss = 0;
-
 			while ($row = mysql_fetch_array($res)){
-                $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/$row["total"],($row["sumab"]+2*$row["sumbb"])/$row["total"]),1);
-                $miss = round(100*$row["summis"]/$row["total"],1);
-					if (($maf>=$min_maf)AND ($miss<=$max_missing)) {
-						$marker_names[] = $row["name"];
-						$outputheader .= $row["name"].$delimiter;
-						$marker_uid[] = $row["marker"];
-					}
+			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+			  $miss = round(100*$row["summis"]/$row["total"],1);
+			  //if (($maf>=$min_maf)AND ($miss<=$max_missing)) {   Note: $maf must be > , not >= .
+			  if (($maf > $min_maf)AND ($miss<=$max_missing)) {
+			    $marker_names[] = $row["name"];
+			    $outputheader .= $row["name"].$delimiter;
+			    $marker_uid[] = $row["marker"];
+			  }
 			}
+			$nelem = count($marker_names);
 			$marker_uid = implode(",",$marker_uid);
-
         
 		if ($dtype=='qtlminer') {
 		  $lookup = array(
@@ -938,17 +939,6 @@ class Downloads
 		  );
 		}
 		
-		// get a list of marker names which meet the criteria selected by the user
-          $sql_mstat = "SELECT marker_name as name
-					FROM markers
-					WHERE marker_uid IN ($marker_uid)"; 
-			$res = mysql_query($sql_mstat) or die(mysql_error());
-
-			while ($row = mysql_fetch_array($res)){
-						$marker_names[] = $row["name"];
-			}
-			$nelem = count($marker_uid);
-
 			// make an empty line with the markers as array keys, set default value
 			//  to the default missing value for either qtlminer or tassel
 			// places where the lines may have different values
@@ -1054,9 +1044,9 @@ class Downloads
 			$num_maf = $num_miss = 0;
 
 			while ($row = mysql_fetch_array($res)){
-                $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/$row["total"],($row["sumab"]+2*$row["sumbb"])/$row["total"]),1);
-                $miss = round(100*$row["summis"]/$row["total"],1);
-					if (($maf>=$min_maf)AND ($miss<=$max_missing)) {
+			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+			  $miss = round(100*$row["summis"]/$row["total"],1);
+					if (($maf > $min_maf)AND ($miss<=$max_missing)) {
 						$marker_names[] = $row["name"];
 						$outputheader .= $delimiter.$row["name"];
 						$marker_uid[] = $row["marker"];

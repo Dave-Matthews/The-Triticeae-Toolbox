@@ -379,9 +379,9 @@ private function type_Download()
 			$num_maf = $num_miss = 0;
 
 			while ($row = mysql_fetch_array($res)){
-                $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/$row["total"],($row["sumab"]+2*$row["sumbb"])/$row["total"]),1);
+			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
                 $miss = round(100*$row["summis"]/$row["total"],1);
-					if (($maf>=$min_maf)AND ($miss<=$max_missing)) {
+					if (($maf > $min_maf)AND ($miss<=$max_missing)) {
 						$marker_names[] = $row["name"];
 						$outputheader .= $delimiter.$row["name"];
 						$marker_uid[] = $row["marker"];
