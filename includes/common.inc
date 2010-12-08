@@ -1,5 +1,7 @@
 <?php
 
+  /* DEM 7dec10: Revised updateTable() to handle enum and longtext columns. */
+
 /*
  * Generic / Common functions are stored here. 
  */
@@ -442,13 +444,22 @@ function updateTable(array $values, $table, array $pkey) {
 		// if the column name is in the $values array, then we want to update it
 		if(array_key_exists($column, $values)) {
 		
-			if( (strpos($type, "varchar") !== FALSE) || 
-			    ($values[$column] != "")
-			  )
-				$strs[$count++] = "$column = '" . $values[$column] . "'";
+ 		  if ( (strpos($type, "enum") !== FALSE) && ($values[$column] != "") ) {
+		      // Get allowed values for enum columns.
+		      $allowed = preg_replace("/enum|[\\(\\)']/", "", $type);
+ 		      if ( in_array($values[$column], explode(",", $allowed)) === FALSE )
+			echo "<font color=red>Allowed values of $column are $allowed.</font><br><br>";
+		  }
 
-			else    //default 0 for numberic fields with empty values
-				$strs[$count++] = "$column = 0";	
+		  if( (strpos($type, "varchar") !== FALSE) || 
+		      (strpos($type, "longtext") !== FALSE) ||
+		      (strpos($type, "enum") !== FALSE) ||
+		      ($values[$column] != "")
+		      )
+		    $strs[$count++] = "$column = '" . $values[$column] . "'";
+
+		  else    //default 0 for numberic fields with empty values
+		    $strs[$count++] = "$column = 0";	
 		}
 	}
 

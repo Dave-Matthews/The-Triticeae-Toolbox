@@ -154,6 +154,45 @@ function show_experiments($id) {
 }
 
 /**
+ * Show markers with view.php.  Example marker 11_11346.
+ */
+function show_markers($id) {
+
+  show_general("markers", $id);
+
+  echo "<p><h1>Annotations</h1>";
+  echo "<table><thead><tr><th>Dataset<th>Entry</tr></thead>";
+  $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation 
+          FROM  markers m, marker_annotations ma, marker_annotation_types mat
+          WHERE m.marker_uid = $id AND
+	    m.marker_uid = ma.marker_uid AND
+	    ma.marker_annotation_type_uid = mat.marker_annotation_type_uid 
+          ORDER BY mat.name_annotation";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($row = mysql_fetch_assoc($res)) {
+    $reg_pattern = "XXXX";
+    $replace_string = $row['value'];
+    $source_string = $row['linkout_string_for_annotation'];
+    $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
+    $url = "<a href=\"$linkString\" target=\"_blank\">";
+    if ($linkString == "")
+      echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."</tr>";
+    else 
+      echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."</a></tr>";    
+  }
+  echo "</table>";
+
+  $sql = "select ms.marker_synonym_uid, ms.value, mst.name
+	  from markers m, marker_synonyms ms, marker_synonym_types mst
+	  where m.marker_uid = $id and
+	    ms.marker_uid = m.marker_uid and
+	    mst.marker_synonym_type_uid = ms.marker_synonym_type_uid";
+  $synonyms = mysql_query($sql) or die(mysql_error());
+  if (mysql_num_rows($synonyms) > 0)
+    echo viewTable($synonyms, "marker_synonyms");
+}
+
+/**
  * Breeding program special case for view.php. This will show all the experiments associated with a CAPdata program. 
 */
 function show_breeding_programs($id) {
