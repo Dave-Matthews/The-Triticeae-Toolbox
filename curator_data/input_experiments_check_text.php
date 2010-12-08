@@ -178,7 +178,7 @@ private function typeExperimentCheck()
    $phenoids = array();
    
    /* connecting to development database */
-   //connect_dev();	
+   connect_dev();	
    
 	for ($i = $offset; $i <= count($header); $i++)
 
@@ -747,7 +747,7 @@ function ForceValue(& $arg1, $msg)
 		include($config['root_dir'] . 'theme/admin_header.php');
 
 	
-	//connect_dev();	/* connecting to development database */
+	connect_dev();	/* connecting to development database */
 	
 	$meansfile = $_GET['expdata'];
 	$filename = $_GET['file_name'];
@@ -799,7 +799,7 @@ function ForceValue(& $arg1, $msg)
    $phenoids = array();
    
    /* connecting to development database */
-   //connect_dev();	
+   connect_dev();	
    
 	for ($i = $offset; $i <= count($header); $i++)
 

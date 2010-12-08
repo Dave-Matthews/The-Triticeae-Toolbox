@@ -215,7 +215,7 @@ private function typeExperimentCheck()
    $phenonames = array();
    $phenoids = array();
    
-   //connect_dev();	/* connecting to development database */
+   connect_dev();	/* connecting to development database */
 	for ($i = $offset; $i <= $cols; $i++)
    {
       $teststr= addcslashes(trim($means['cells'][1][$i]),"\0..\37!@\177..\377");
@@ -765,7 +765,7 @@ function ForceValue(& $arg1, $msg)
 		include($config['root_dir'] . 'theme/admin_header.php');
 
 	
-	//connect_dev();	/* connecting to development database */
+	connect_dev();	/* connecting to development database */
 	
 	$meansfile = $_GET['expdata'];
 	$filename = $_GET['file_name'];
@@ -841,7 +841,7 @@ function ForceValue(& $arg1, $msg)
 	}
 	$offset = $COL_LINENAME + 1;//column where phenotype data starts
 
-//connect_dev();	/* connecting to development database */
+connect_dev();	/* connecting to development database */
 
 
    $phenonames = array();

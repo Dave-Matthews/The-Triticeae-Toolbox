@@ -4,6 +4,7 @@ require 'config.php';
  * Logged in page initialization
  */
 include($config['root_dir'] . 'includes/bootstrap.inc');
+include($config['root_dir'] . 'curator_data/boot_test.php');
 
 connect();
 loginTest();
@@ -16,6 +17,7 @@ ob_start();
 include($config['root_dir'] . 'theme/admin_header.php');
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
+connect_dev();  /* Connect with write-access. */
 ////////////////////////////////////////////////////////////////////////////////
 
 /*

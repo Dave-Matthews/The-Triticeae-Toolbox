@@ -124,7 +124,7 @@ private function typePedigreeCheck()
 	
 	$username=$row['name'];
 	
-	$tmp_dir="uploads_pedigree/tmpdir_".$username."_".rand();
+	$tmp_dir="uploads/tmpdir_".$username."_".rand();
 	umask(0);
 	
 	if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
@@ -172,7 +172,7 @@ private function typePedigreeCheck()
 	
 	
     // Connect to the database
-    	//	connect_dev();	/* connecting to development database */
+    		connect_dev();	/* connecting to development database */
     		
     		
     		//  Step 2. Read in data, a line at a time  
@@ -477,7 +477,7 @@ private function typePedigreeCheck()
 	global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
-	//connect_dev();
+	connect_dev();
 	
 	$datafile = $_GET['pedigreedata'];
 	$filename_old = $_GET['file_name'];

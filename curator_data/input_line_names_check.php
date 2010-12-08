@@ -297,7 +297,7 @@ private function typeLineNameCheck()
 				
 				
 				
-			//connect_dev();	/* connecting to development database */
+			connect_dev();	/* connecting to development database */
 			
 		
 				
@@ -802,7 +802,7 @@ private function typeLineNameCheck()
 		include($config['root_dir'] . 'theme/admin_header.php');
 
 	
-	//connect_dev();
+	connect_dev();
 	
 	$datafile = $_GET['linedata'];
 	$filename_old = $_GET['file_name'];

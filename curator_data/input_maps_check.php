@@ -336,6 +336,7 @@ $row = loadUser($_SESSION['username']);
 	global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
+	connect_dev();  /* Connect with write-access. */
 	
 	$mapfilename = $_GET['file_name'];
 	$mapset_name = $_GET['mapset_name'];

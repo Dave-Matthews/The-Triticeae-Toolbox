@@ -272,7 +272,7 @@ private function typeAnnotationCheck()
 	
 	//echo " we go tthe data from excel". $year_row.$trialcode_row.$seedingrate_row;
 	
-	//	connect_dev();	/* connecting to development database */
+		connect_dev();	/* connecting to development database */
 		
 		
 			$n_trials = 0;
@@ -627,7 +627,7 @@ private function typeAnnotationCheck()
 	global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 	
-	//connect_dev();
+	connect_dev();
 	
 	$datafile = $_GET['linedata'];
 	$filename_old = $_GET['file_name'];
@@ -743,7 +743,7 @@ private function typeAnnotationCheck()
 	
 	
 	
-		//connect_dev();	/* connecting to development database */
+		connect_dev();	/* connecting to development database */
 		
 			$n_trials = 0;
 	for ($i = 2; $cols >= $i; $i++)
