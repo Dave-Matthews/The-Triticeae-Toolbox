@@ -23,7 +23,7 @@
 		   $name = get_unique_name($_REQUEST['table']);		   ?>
 
 		<!--<div class="box">-->
-<h1>View <?php echo beautifulTableName($_REQUEST['table'], 0) . " " . $row[$name] ?></h1>
+<h1><?php echo beautifulTableName($_REQUEST['table'], 0) . " " . $row[$name] ?></h1>
 <div class="boxContent">
 
 		<?php 

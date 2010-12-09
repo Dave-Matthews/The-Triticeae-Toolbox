@@ -160,7 +160,7 @@ function show_markers($id) {
 
   show_general("markers", $id);
 
-  echo "<p><h1>Annotations</h1>";
+  echo "<p><h3>Annotations</h3>";
   echo "<table><thead><tr><th>Dataset<th>Entry</tr></thead>";
   $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation 
           FROM  markers m, marker_annotations ma, marker_annotation_types mat
@@ -190,6 +190,13 @@ function show_markers($id) {
   $synonyms = mysql_query($sql) or die(mysql_error());
   if (mysql_num_rows($synonyms) > 0)
     echo viewTable($synonyms, "marker_synonyms");
+
+  echo "<h3>Allele Information</h3>";
+  echo "<table><tr><td>";
+  echo "<strong>Line Data: </strong>";
+  echo "<td><a href=\"genotyping/showlines.php?marker=$id\">Show alleles for all lines</a>";
+  echo "</tr></table>";
+
 }
 
 /**
