@@ -915,14 +915,14 @@ function DispMapSel ($arr) {
 		$res2=mysql_query("select min(start_position), max(start_position) from markers_in_maps where map_uid=$mapuid");
 		if (mysql_num_rows($res2)>0) {
 			$row=mysql_fetch_assoc($res2);
-			$mstt=array_shift($row);
-			$mend=array_shift($row);
-			print "<p>Map Start $mstt</p>";
-			print "<p>Map End $mend</p>";
-			print "<p>Choose a range between Map Start and Map End:</p>";
-			print "<p>From <input type='text' id='mapstt' value=\"$mstt\"></p>";
-			print "<p>To <input type='text' id='mapend' value=\"$mend\"></p>";
-			print "<p><input type='button' style=\"color: black\" value=\"Show Markers\" onClick=\"DispMarkers('$mapuid')\"></p>";
+			$mstt=round(array_shift($row));
+			$mend=round(array_shift($row));
+			print "Map start: $mstt<br>";
+			print "Map end: $mend<br>";
+			print "Range:<br>";
+			print "From <input type='text' style='width:30px' id='mapstt' value=\"$mstt\"> ";
+			print "to <input type='text' style='width:30px' id='mapend' value=\"$mend\"><br>";
+			print "<input type='button' style=\"color: black\" value=\"Show markers\" onClick=\"DispMarkers('$mapuid')\"><br>";
 		}
 	}
 
@@ -954,6 +954,8 @@ function DispMarkers ($arr) {
 			}
 		}
 		print "</select>";
+		print "<p><input type='submit' value='Select markers' style='color: blue'>";
+
 	}
 }
 

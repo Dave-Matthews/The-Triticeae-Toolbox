@@ -194,9 +194,20 @@ function show_markers($id) {
   echo "<h3>Allele Information</h3>";
   echo "<table><tr><td>";
   echo "<strong>Line Data: </strong>";
-  echo "<td><a href=\"genotyping/showlines.php?marker=$id\">Show alleles for all lines</a>";
+  echo "<td><a href=\"".$config['base_url']."genotyping/showlines.php?marker=$id\">Show alleles for all lines</a>";
   echo "</tr></table>";
 
+  echo "<h3>Selection List</h3>";
+  // marker_selection.php wants the name of a map the marker is on.  Probably doesn't matter which.
+  $sql = "select map_name from map, markers_in_maps mm where mm.marker_uid = $id and mm.map_uid = map.map_uid";
+  $r = mysql_query($sql);
+  $row = mysql_fetch_row($r);
+  $mapname = $row[0];
+  echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
+  echo "<input type='hidden' name='selMkrs[]' value='$id'>";
+  echo "<input type='hidden' name='mapname' value='$mapname'>";
+  echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
+  echo "</form>";
 }
 
 /**
@@ -360,7 +371,9 @@ function viewTable($resource, $table) {
 
 	$pkey = get_pkey($table);
 
-       $ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
+	// DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
+	//$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
+       $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
 
 	if(mysql_num_rows($resource) < 1) {
 		return $ret  .=  "<p>No Records Found </p>";
@@ -377,7 +390,8 @@ function viewTable($resource, $table) {
 					$ret .= "\t\t<td><strong>" . ucwords(str_replace("_", " ", $k)) . "</strong></td>\n";
 			}
 
-			$ret.= "\t\t<td><strong>View</strong></td>\n\t</tr>\n</thead><tbody>\n";		
+			//$ret.= "\t\t<td><strong>View</strong></td>\n\t</tr>\n</thead><tbody>\n";		
+			$ret.= "</tr></thead><tbody>\n";
 			$first = FALSE;
 		}
 
