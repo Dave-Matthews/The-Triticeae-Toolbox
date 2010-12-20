@@ -1,8 +1,11 @@
 <?php
+// 12/14/2010 JLee  Change to use curator bootstrap
+
+
 session_start();
 $_SESSION['login_referer_override'] = '/';
 require_once 'config.php';
-require_once($config['root_dir'].'includes/bootstrap.inc');
+require_once($config['root_dir'].'includes/bootstrap_curator.inc');
 require_once($config['root_dir'].'includes/aes.inc');
 
 if (!isset($_GET['token'])) {

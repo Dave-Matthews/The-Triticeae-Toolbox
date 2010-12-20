@@ -1,10 +1,13 @@
 <?php
+
+// 12/14/2010 JLee  Change to use curator bootstrap
+
 session_start();
 $root = "http://".$_SERVER['HTTP_HOST'];
 $root .= str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
 $config['base_url'] = "$root";
 $config['root_dir'] = (dirname(__FILE__) . '/');
-require_once $config['root_dir'] . 'includes/bootstrap.inc';
+require_once $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require_once $config['root_dir'] . 'includes/email.inc';
 require_once $config['root_dir'] . 'includes/aes.inc';
 require_once $config['root_dir'] . 'theme/normal_header.php';
