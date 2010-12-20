@@ -182,6 +182,7 @@ function show_markers($id) {
   }
   echo "</table>";
 
+  // Marker Synonyms
   $sql = "select ms.marker_synonym_uid, ms.value, mst.name
 	  from markers m, marker_synonyms ms, marker_synonym_types mst
 	  where m.marker_uid = $id and
@@ -207,6 +208,16 @@ function show_markers($id) {
   echo "<input type='hidden' name='selMkrs[]' value='$id'>";
   echo "<input type='hidden' name='mapname' value='$mapname'>";
   echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
+  echo "</form>";
+
+  echo "<h3>Map locations</h3>";
+  $sql = "select marker_name from markers where marker_uid = $id";
+  $r = mysql_query($sql);
+  $row = mysql_fetch_row($r);
+  $markername = $row[0];
+  echo "<form method='GET' action=http://".$_SERVER['HTTP_HOST']."/cgi-bin/gbrowse/tht>";
+  echo "<input type='hidden' name='name' value='$markername'>";
+  echo "<input type='submit' value='View in GBrowse'></p>";
   echo "</form>";
 }
 
