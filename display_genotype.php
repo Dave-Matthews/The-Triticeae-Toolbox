@@ -187,11 +187,14 @@ private function type_DataInformation($trial_code)
 	
 	
 	
-	
+	// dem 14dec10, revised query.  Concatenating marker_synonyms.value to the
+	// marker name screws up the alignment of columns to header, e.g. for 2008BOPA2_BA_Plate7.
+        // Also it seems like a bad idea since a marker can have several synonyms.
 	$sql_Gen_Stat = "
                 SELECT
                     m.marker_uid,
-                    CONCAT(m.marker_name,' (',ms.value,')') AS name,
+                    -- CONCAT(m.marker_name,' (',ms.value,')') AS name,
+                    m.marker_name AS name,
                     CONCAT(map.map_name,' ',cast(mim.start_position as char),' cM') as position,
                     a.missing,
                     a.aa_freq,
@@ -230,7 +233,7 @@ $res_Gen_Stat = mysql_query($sql_Gen_Stat) or die(mysql_error());
 
 	<tr> 
 		
-		<th style="width: 180px;" > Marker Name </th>
+		<th style="width: 100px;" > Marker Name </th>
 		<th style="width: 100px;" > Map Name and Position  </th>
 		<th style="width: 60px;" >  Missing    </th>
 		<th style="width: 100px;" >  AA Freq    </th>

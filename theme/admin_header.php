@@ -124,7 +124,7 @@ EOD;
   <?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
    <li> <a title="Curate the Database">Curation</a>
       <ul>
-      <li><a href="<?php echo $config['base_url']; ?>login/input_trait_router.php" title="Add/Edit Trait Definitions">
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Add/Edit Trait Definitions">
       Add/Edit Trait Definitions</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Add Line Names">
       Add Line Names</a></li>

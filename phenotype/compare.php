@@ -167,9 +167,9 @@ include($config['root_dir'] . 'theme/admin_header.php');
 	<table id="phenotypeSelTab" class="tableclass1">
 	<thead>
 	<tr>
-		<td>Category</td>
-		<td>Phenotype</td>
-                <td>Trial</td>
+		<th>Category</th>
+		<th>Phenotype</th>
+                <th>Trial</th>
 	</tr>
 	</thead>
 	<tbody>

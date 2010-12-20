@@ -557,7 +557,7 @@ private function type_Marker_Annotation()
 			{
 ?>
 
-<tr><th> Database</th><th>Link</th></tr>
+<tr><th> Dataset</th><th>Entry</th></tr>
 
 	<tr>
         <td>

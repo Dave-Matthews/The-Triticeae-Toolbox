@@ -154,6 +154,63 @@ function show_experiments($id) {
 }
 
 /**
+ * Show markers with view.php.  Example marker 11_11346.
+ */
+function show_markers($id) {
+
+  show_general("markers", $id);
+
+  echo "<p><h3>Annotations</h3>";
+  echo "<table><thead><tr><th>Dataset<th>Entry</tr></thead>";
+  $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation 
+          FROM  markers m, marker_annotations ma, marker_annotation_types mat
+          WHERE m.marker_uid = $id AND
+	    m.marker_uid = ma.marker_uid AND
+	    ma.marker_annotation_type_uid = mat.marker_annotation_type_uid 
+          ORDER BY mat.name_annotation";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($row = mysql_fetch_assoc($res)) {
+    $reg_pattern = "XXXX";
+    $replace_string = $row['value'];
+    $source_string = $row['linkout_string_for_annotation'];
+    $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
+    $url = "<a href=\"$linkString\" target=\"_blank\">";
+    if ($linkString == "")
+      echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."</tr>";
+    else 
+      echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."</a></tr>";    
+  }
+  echo "</table>";
+
+  $sql = "select ms.marker_synonym_uid, ms.value, mst.name
+	  from markers m, marker_synonyms ms, marker_synonym_types mst
+	  where m.marker_uid = $id and
+	    ms.marker_uid = m.marker_uid and
+	    mst.marker_synonym_type_uid = ms.marker_synonym_type_uid";
+  $synonyms = mysql_query($sql) or die(mysql_error());
+  if (mysql_num_rows($synonyms) > 0)
+    echo viewTable($synonyms, "marker_synonyms");
+
+  echo "<h3>Allele Information</h3>";
+  echo "<table><tr><td>";
+  echo "<strong>Line Data: </strong>";
+  echo "<td><a href=\"".$config['base_url']."genotyping/showlines.php?marker=$id\">Show alleles for all lines</a>";
+  echo "</tr></table>";
+
+  echo "<h3>Selection List</h3>";
+  // marker_selection.php wants the name of a map the marker is on.  Probably doesn't matter which.
+  $sql = "select map_name from map, markers_in_maps mm where mm.marker_uid = $id and mm.map_uid = map.map_uid";
+  $r = mysql_query($sql);
+  $row = mysql_fetch_row($r);
+  $mapname = $row[0];
+  echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
+  echo "<input type='hidden' name='selMkrs[]' value='$id'>";
+  echo "<input type='hidden' name='mapname' value='$mapname'>";
+  echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
+  echo "</form>";
+}
+
+/**
  * Breeding program special case for view.php. This will show all the experiments associated with a CAPdata program. 
 */
 function show_breeding_programs($id) {
@@ -314,7 +371,9 @@ function viewTable($resource, $table) {
 
 	$pkey = get_pkey($table);
 
-       $ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
+	// DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
+	//$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
+       $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
 
 	if(mysql_num_rows($resource) < 1) {
 		return $ret  .=  "<p>No Records Found </p>";
@@ -331,7 +390,8 @@ function viewTable($resource, $table) {
 					$ret .= "\t\t<td><strong>" . ucwords(str_replace("_", " ", $k)) . "</strong></td>\n";
 			}
 
-			$ret.= "\t\t<td><strong>View</strong></td>\n\t</tr>\n</thead><tbody>\n";		
+			//$ret.= "\t\t<td><strong>View</strong></td>\n\t</tr>\n</thead><tbody>\n";		
+			$ret.= "</tr></thead><tbody>\n";
 			$first = FALSE;
 		}
 
