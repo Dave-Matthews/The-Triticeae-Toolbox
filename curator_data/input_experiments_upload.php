@@ -1,10 +1,13 @@
 <?php
 // uploading it to main server
+
+// 12/14/2010 JLee  Change to use curator bootstrap
+
 require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
+include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 
 connect();
 loginTest();

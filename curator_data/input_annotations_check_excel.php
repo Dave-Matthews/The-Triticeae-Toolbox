@@ -1,16 +1,17 @@
 <?
+// 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
 //require_once("../includes/common_import.inc");
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
+include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 //include($config['root_dir'] . 'includes/common_import.inc');
 
 //include($config['root_dir'] . 'SumanDirectory/bootstrap_dev.inc');
 
-include($config['root_dir'] . 'curator_data/boot_test.php');
+//include($config['root_dir'] . 'curator_data/boot_test.php');
 //include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
 include($config['root_dir'] . 'curator_data/lineuid.php');
 
@@ -272,7 +273,7 @@ private function typeAnnotationCheck()
 	
 	//echo " we go tthe data from excel". $year_row.$trialcode_row.$seedingrate_row;
 	
-		connect_dev();	/* connecting to development database */
+		//connect_dev();	/* connecting to development database */
 		
 		
 			$n_trials = 0;
@@ -627,7 +628,7 @@ private function typeAnnotationCheck()
 	global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 	
-	connect_dev();
+	//connect_dev();
 	
 	$datafile = $_GET['linedata'];
 	$filename_old = $_GET['file_name'];
@@ -743,7 +744,7 @@ private function typeAnnotationCheck()
 	
 	
 	
-		connect_dev();	/* connecting to development database */
+		//connect_dev();	/* connecting to development database */
 		
 			$n_trials = 0;
 	for ($i = 2; $cols >= $i; $i++)

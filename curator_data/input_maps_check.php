@@ -1,16 +1,18 @@
 <?php
 
+// 12/14/2010 JLee  Change to use curator bootstrap
+
 require 'config.php';
 //require_once("../includes/common_import.inc");
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
+include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 //include($config['root_dir'] . 'includes/common_import.inc');
 
 //include($config['root_dir'] . 'SumanDirectory/bootstrap_dev.inc');
 
-include($config['root_dir'] . 'curator_data/boot_test.php');
+//include($config['root_dir'] . 'curator_data/boot_test.php');
 //include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
 include($config['root_dir'] . 'curator_data/lineuid.php');
 
@@ -336,7 +338,7 @@ $row = loadUser($_SESSION['username']);
 	global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
-	connect_dev();  /* Connect with write-access. */
+	//connect_dev();  /* Connect with write-access. */
 	
 	$mapfilename = $_GET['file_name'];
 	$mapset_name = $_GET['mapset_name'];

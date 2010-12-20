@@ -1,16 +1,17 @@
 <?php
+// 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
 //require_once("../includes/common_import.inc");
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
+include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 //include($config['root_dir'] . 'includes/common_import.inc');
 
 //include($config['root_dir'] . 'SumanDirectory/bootstrap_dev.inc');
 
-include($config['root_dir'] . 'curator_data/boot_test.php');
+//include($config['root_dir'] . 'curator_data/boot_test.php');
 
 include($config['root_dir'] . 'curator_data/lineuid.php');
 
@@ -172,7 +173,7 @@ private function typePedigreeCheck()
 	
 	
     // Connect to the database
-    		connect_dev();	/* connecting to development database */
+    		//connect_dev();	/* connecting to development database */
     		
     		
     		//  Step 2. Read in data, a line at a time  
@@ -477,7 +478,7 @@ private function typePedigreeCheck()
 	global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
-	connect_dev();
+	//connect_dev();
 	
 	$datafile = $_GET['pedigreedata'];
 	$filename_old = $_GET['file_name'];

@@ -1,11 +1,12 @@
 <?php
 // 20100629 JLee - make link to edit_line.php relative
+// 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
+include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 
 connect();
 loginTest();
