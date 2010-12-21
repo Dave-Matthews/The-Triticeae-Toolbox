@@ -20,7 +20,7 @@ include($config['root_dir'] . 'theme/admin_header.php');
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-connect_dev();  /* Connect with write-access. */
+//connect_dev();  /* Connect with write-access. */
 
 /*
  * Has an update been submitted?
