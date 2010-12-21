@@ -70,33 +70,30 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 //var test = new Array("<?/*php echo $selLines*/?>");
 //test1 =  test.length;
 // Select All
-            function exclude_all() {
+function exclude_all() {
             
-            //alert ("hi");
-            	count = document.lines.elements.length;
+    //alert ("hi");
+   	count = document.lines.elements.length;
     for (i=0; i < count; i++) 
 	{
-    if(document.lines.elements[i].checked == 0)
-    	{document.lines.elements[i].checked = 1; }
-   // else {document.lines.elements[i].checked = 1;}
+		if(document.lines.elements[i].checked == 0) {
+			document.lines.elements[i].checked = 1; 
+		}
+   		// else {document.lines.elements[i].checked = 1;}
 	}
 
-          document.lines.btn1.checked = "checked";                     
-            }
+	document.lines.btn1.checked = "checked";                     
+}
             
-            function exclude_none()
-            {
-            count = document.lines.elements.length;
-    for (i=0; i < count; i++) 
-	{
-    if(document.lines.elements[i].checked == 1)
-    	{document.lines.elements[i].checked = 0; }
-    //else {document.lines.elements[i].checked = 1;}
-	}
-            }
-            
-            
-            
+function exclude_none() {
+	count = document.lines.elements.length;
+    for (i=0; i < count; i++) {
+		if(document.lines.elements[i].checked == 1) {
+			document.lines.elements[i].checked = 0; 
+		}
+		//else {document.lines.elements[i].checked = 1;}
+	}	
+}
 </script>
 
 <style type="text/css">
@@ -316,6 +313,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     var_dump($lineStr);
     var_dump($test); */
    // var_dump($breedingCode);
+
     
    // var_dump ($breedingProgram);
     //var_dump ($breedingCode);
