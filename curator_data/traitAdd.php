@@ -12,7 +12,7 @@ include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 //include($config['root_dir'] . 'curator_data/boot_test.php');
 
 connect();
-//loginTest();
+loginTest();
 
 /* ******************************* */
 $row = loadUser($_SESSION['username']);

@@ -11,7 +11,7 @@ require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 
 connect();
-//loginTest();
+loginTest();
 
 
 /* ******************************* */

@@ -10,7 +10,7 @@ include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/boot_test.php');
 
 connect();
-//loginTest();
+loginTest();
 
 /* ******************************* */
 $row = loadUser($_SESSION['username']);
@@ -21,7 +21,7 @@ include($config['root_dir'] . 'theme/admin_header.php');
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-connect_dev();  /* Connect with write-access. */
+//connect_dev();  /* Connect with write-access. */
 
 /*
  * Has it been submitted?
