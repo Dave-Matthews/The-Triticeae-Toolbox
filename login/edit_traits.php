@@ -26,7 +26,7 @@ authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 ////////////////////////////////////////////////////////////////////////////////
 
-connect_dev();  /* Connect with write-access. */
+//connect_dev();  /* Connect with write-access. */
 
 /*
  * Session variable stores duplicate records, do we wish to edit duplicates?
