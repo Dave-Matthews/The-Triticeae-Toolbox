@@ -1,5 +1,7 @@
 <?php
-include("includes/bootstrap.inc");
+// 12/14/2010 JLee  Change to use curator bootstrap
+
+include("includes/bootstrap_curator.inc");
 connect();
 $row = loadUser($_SESSION['username']);
 ob_start();
