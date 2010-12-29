@@ -3,124 +3,100 @@ require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
 connect();
 include($config['root_dir'] . 'theme/admin_header.php');
-?>
 
-
-<?php
 if($_SERVER['REQUEST_METHOD'] == "POST")
-{
-       
-        $name = $_POST['LineSearchInput'];
-        $hullType = $_POST['Hull'];
-        $rowType = $_POST['RowType'];
-        $severity = $_POST['severity'];
-        $description = $_POST['description'];
-       
-			 
-        $typeSelected[$rowType] = 'checked="checked"';
-        $hullSelected[$hullType] = 'checked="checked"';
-       /* $severitySelected[$severity] = 'selected="selected"'; */
-
-
-        if(is_array($_POST['breedingprogramcode']))
-        {
-                foreach ($_POST['breedingprogramcode'] as $key => $value)
-                {
-                       // echo "Problem Type $key: $value<br/>";
-                        $breeding[$value] = 'selected="selected"';
-                }
-        }  
-        
-        if(is_array($_POST['primaryenduse']))
-        {
-                foreach ($_POST['primaryenduse'] as $key => $value)
-                {
-                       // echo "Problem Type $key: $value<br/>";
-                        $primary[$value] = 'selected="selected"';
-                }
-        }  
-        
-        if(is_array($_POST['growthhabit']))
-        {
-                foreach ($_POST['growthhabit'] as $key => $value)
-                {
-                       // echo "Problem Type $key: $value<br/>";
-                        $growth[$value] = 'selected="selected"';
-                }
-        } 
-        
-        
-        
-
-}
-
-
-
+  // Store what the user's previous selections were so we can
+  // redisplay them as the page is redrawn.
+  {
+    $name = $_POST['LineSearchInput'];
+    $hullType = $_POST['Hull'];
+    $rowType = $_POST['RowType'];
+    $severity = $_POST['severity'];
+    $description = $_POST['description'];
+    $typeSelected[$rowType] = 'checked="checked"';
+    $hullSelected[$hullType] = 'checked="checked"';
+    if(is_array($_POST['breedingprogramcode']))
+      {
+	foreach ($_POST['breedingprogramcode'] as $key => $value)
+	  {
+	    // echo "Problem Type $key: $value<br/>";
+	    $breeding[$value] = 'selected="selected"';
+	  }
+      }  
+    if(is_array($_POST['primaryenduse']))
+      {
+	foreach ($_POST['primaryenduse'] as $key => $value)
+	  {
+	    $primary[$value] = 'selected="selected"';
+	  }
+      }  
+    if(is_array($_POST['growthhabit']))
+      {
+	foreach ($_POST['growthhabit'] as $key => $value)
+	  {
+	    $growth[$value] = 'selected="selected"';
+	  }
+      } 
+    if(is_array($_POST['year']))
+      {
+	foreach ($_POST['year'] as $key => $value)
+	  {
+	    $yr[$value] = 'selected="selected"';
+	  }
+      } 
+  }
 ?>
-
-
-
-
-
-
-
-
 
 <script type="text/javascript">
 //var test = new Array("<?/*php echo $selLines*/?>");
 //test1 =  test.length;
 // Select All
-            function exclude_all() {
-            
-            //alert ("hi");
-            	count = document.lines.elements.length;
-    for (i=0; i < count; i++) 
-	{
-    if(document.lines.elements[i].checked == 0)
+  function exclude_all() {
+  count = document.lines.elements.length;
+  for (i=0; i < count; i++) 
+    {
+      if(document.lines.elements[i].checked == 0)
     	{document.lines.elements[i].checked = 1; }
-   // else {document.lines.elements[i].checked = 1;}
-	}
+    }
+  document.lines.btn1.checked = "checked";                     
+}
 
-          document.lines.btn1.checked = "checked";                     
-            }
-            
-            function exclude_none()
-            {
-            count = document.lines.elements.length;
-    for (i=0; i < count; i++) 
-	{
-    if(document.lines.elements[i].checked == 1)
+function exclude_none()
+{
+  count = document.lines.elements.length;
+  for (i=0; i < count; i++) 
+    {
+      if(document.lines.elements[i].checked == 1)
     	{document.lines.elements[i].checked = 0; }
-    //else {document.lines.elements[i].checked = 1;}
-	}
-            }
-            
-            
-            
+    }
+}
 </script>
 
 <style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
+  th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+  // h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+</style>
 
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h2> Search Lines</h2>
-  <br/>
+  <h2> Select Lines by Properties</h2>
   <div class="boxContent">
-  <h3> Search for line records: </h3>
-  <table width="850px">
+  <h3> Select any combination of properties </h3>
+  <table width="650px">
   <form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
   
 	<tr> <td>
-  <b>Name</b> <br/><br/><input type="text" name="LineSearchInput" value="<?php echo $name?>"/> <br/><br/> Eg: Excel,Morex,.. </td>
+  <b>Name</b> <br/><br/><input type="text" name="LineSearchInput" value="<?php echo $name?>"/> 
+  <br/><br/> Eg: Excel,Morex, FEG148-16
+  <br><br></td>
+
+
   <td> 
-	<b> Breeding Program </b> <br/><br/>
+	<b> Data program </b> <br/><br/>
 		
 	
-	<select name="breedingprogramcode[]" multiple="multiple" size="4" style="width: 12em height: 12em;">
+	<select name="breedingprogramcode[]" multiple="multiple" size="6" style="width: 12em height: 12em;">
 				<?php 
 		
 		$sql = "SELECT DISTINCT(l.breeding_program_code), c.data_program_name FROM line_records l, CAPdata_programs c WHERE l.breeding_program_code = c.data_program_code ";
@@ -132,15 +108,33 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 			<?php
 		}
 		?>
-						</select><br/><br/><br/>
+						</select><br/><br/>
 	</td>
-	<td> <b> Primary End Use </b> <br/><br/>
+
+
+<td><b>Year</b><br><br>
+<select name="year[]" multiple="multiple" size="6">
+<?php
+$sql = "select distinct experiment_year from experiments";
+		$res = mysql_query($sql) or die(mysql_error());
+		while ($resp = mysql_fetch_assoc($res))
+		{
+		  ?>
+		  <option value="<?php echo $resp['experiment_year'] ?>" <?php echo $yr[$resp['experiment_year']]?>> <?php echo $resp['experiment_year'] ?> </option>
+<?php
+		    }
+?>
+</select>
+<br><br></td>
+
+
+	<td> <b> Primary end use </b> <br/><br/>
 	
-	<select name="primaryenduse[]" multiple="multiple" size="4" style="width: 12em height: 12em;">
+	<select name="primaryenduse[]" multiple="multiple" size="6" style="width: 12em height: 12em;">
 				<?php
 		
 		
-		$sql = "SELECT DISTINCT(primary_end_use) FROM line_records WHERE primary_end_use NOT LIKE 'NULL'";
+		$sql = "SELECT DISTINCT(primary_end_use) FROM line_records WHERE primary_end_use NOT LIKE 'NULL' AND NOT primary_end_use = ''";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($resp = mysql_fetch_assoc($res))
 		{
@@ -150,19 +144,18 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 			<?php
 		}
 		?>
-						</select><br/><br/><br/>
-	
-	
+						</select><br/><br/>
 	</td>
   </tr>
+
   <tr>
   <td>
-  <b>Growth Habit </b> <br/> <br/>
+  <b>Growth habit </b> <br/> <br/>
 	
-	<select name="growthhabit[]" multiple="multiple" size="4" style="width: 10em;height: 4em;">
+	<select name="growthhabit[]" multiple="multiple" size="4" style="width: 10em;height: 3em;">
 				<?php
 		
-		$sql = "SELECT DISTINCT(growth_habit) FROM line_records WHERE growth_habit NOT LIKE 'NULL'";
+		$sql = "SELECT DISTINCT(growth_habit) FROM line_records WHERE growth_habit NOT LIKE 'NULL' AND NOT growth_habit = ''";
 		$res = mysql_query($sql) or die(mysql_error());
 		//$count = 1;
 		while ($resp = mysql_fetch_assoc($res))
@@ -174,30 +167,29 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 			//	$count++;
 		}
 		?>
-						</select>
-	
-	
+			    </select>
+<br><br>	
 	</td>
   <td>
-  <b>Row Type </b> <br/><br/>
-	<input type="radio" name="RowType" value="2" <?php echo $typeSelected['2'] ?>/> 2 &nbsp;&nbsp; <input type="radio" name="RowType" value="6" <?php echo $typeSelected['6'] ?>/> 6 
+  <b>Row type </b> <br/><br/>
+	<input type="radio" name="RowType" value="2" <?php echo $typeSelected['2'] ?>/> 2<br><input type="radio" name="RowType" value="6" <?php echo $typeSelected['6'] ?>/> 6 
+<br><br>
 	</td>
 	<td>
-	<b> Hull </b> <br/><br/>
-	<input type="radio" name="Hull" value="hulled" <?php echo $hullSelected['hulled']?>/> Hulled &nbsp;&nbsp; <input type="radio" name="Hull" value="hulless" <?php echo $hullSelected['hulless']?>/> Hulless
+	<b> Hull type </b> <br/><br/>
+			    <input type="radio" name="Hull" value="hulled" <?php echo $hullSelected['hulled']?>/> Hulled<br>&nbsp;<input type="radio" name="Hull" value="hulless" <?php echo $hullSelected['hulless']?>/>Hulless
+<br><br>
 	</td>
+<td></td>
 	</tr>
-	<tr align="center">
-	<td></td>
-	<td >
-  <p ><input type="submit" style="height:2em; width:8em;" value="Search"/></p>
-  </td>
-  </tr>
-  </form>
   </table>
-  
+
+  <p ><input type="submit" style="height:2em; width:6em;" value="Search"/></p>
+  </form>
+</div>
+
+
 	<?php 
-		
   if (isset($_POST['LineSearchInput'])) {
     $linename = $_POST['LineSearchInput'];
     $breedingProgram = $_POST['breedingprogramcode'];
@@ -205,6 +197,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     $rowType = $_POST['RowType'];
     $hull = $_POST['Hull'];
     $primaryEndUse = $_POST['primaryenduse'];
+    $year = $_POST['year'];
     
     if (count($breedingProgram) != 0)
     {
@@ -220,6 +213,10 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     {
     $primaryUse = implode("','", $primaryEndUse);
     }
+    if (count($year) != 0)
+      {
+	$yearStr = implode("','", $year);
+      }
     $count = 0;
     
     
@@ -301,6 +298,20 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 			}
 			$count++;
 		}
+
+    if (count($year) != 0)
+      {
+    	if ($count == 0)
+    	{
+	  $where .= "line_record_uid IN (select line_record_uid from tht_base, experiments
+where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
+	}
+	else
+	  {
+	    $where .= " AND line_record_uid IN (select line_record_uid from tht_base, experiments 
+where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
+	  }
+      }
 		
     
     // $test = "'CC','SM'";
@@ -345,7 +356,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 
 */
       
-    if ( (strlen($linename) < 1) AND (strlen($hull) < 1) AND (strlen($rowType) < 1) AND (count($breedingProgram) == 0) AND  (count($growthHabit) == 0) AND (count($primaryEndUse) == 0)  )
+			if ( (strlen($linename) < 1) AND (strlen($hull) < 1) AND (strlen($rowType) < 1) AND (count($breedingProgram) == 0) AND  (count($growthHabit) == 0) AND (count($primaryEndUse) == 0) AND (count($year) == 0)  )
     {
 			$result=mysql_query("select line_record_uid, line_record_name from line_records ");
 		}
@@ -362,8 +373,10 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
   	//	var_dump($result);
   	}
 	?>
-  <h2> Select Lines</h2>
-	<div style="width: 420px; height: 280px; overflow: scroll;border: 1px solid #5b53a6;">
+
+  <div class="boxContent">
+  <h3>Lines found</h3>
+	<div style="width: 420px; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">
 	<?php 
 		
    //  echo "<input type='submit' value='Select Lines'><br/>";
@@ -382,11 +395,8 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 	$line_record_uid = $row['line_record_uid'];
 	?>
 	<tr>
-	
-
-	<td><input type='checkbox' value="<?php echo $line_record_uid?>" name='selLines[]'id="exbx_<?php echo $line_record_uid ?>"/>
+	<td><input type='checkbox' checked value="<?php echo $line_record_uid?>" name='selLines[]'id="exbx_<?php echo $line_record_uid ?>"/>
 	</td>
-	
 	<td>
 	 <?php echo $line_record_name ?> 
 	</td>
@@ -399,15 +409,12 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
   </div>
     <?php
    
-   // echo "</div>";
-    echo "<input type='submit' value='Select Lines'>";
+    echo "<p><input type='submit' value='Add to Selected' style='color:blue'>";
     echo "</form>";
+    echo "</div>";
   }
   ?>
 
-</div>	
-</div>
-</div>
 
 <?php 
 $verify_selected_lines = $_POST['selLines'];
@@ -416,7 +423,6 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0)
 {
 
 ?>
-<div>
 
   <?php 
   if (isset($_POST['selLines'])) {  
@@ -432,6 +438,7 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0)
     }
     $_SESSION['selected_lines'] = $selected_lines;
   }
+
 if (isset($_POST['deselLines'])) {
   $selected_lines = $_SESSION['selected_lines'];
   foreach ($_POST['deselLines'] as $line_uid) {
@@ -451,9 +458,10 @@ $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
 
 
 
+print "<div class='boxContent'>";
+echo "<h3>Currently selected lines</h3>";
 
 print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
-echo "<h3>Currently selected lines</h3>";
 print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
 foreach ($_SESSION['selected_lines'] as $lineuid) {
   $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
@@ -463,37 +471,22 @@ foreach ($_SESSION['selected_lines'] as $lineuid) {
   }
 }
 print "</select>";
-print "<p><input type=\"submit\" value=\"Deselect Lines\" /></p>";
+print "<p><input type=\"submit\" value=\"Deselect highlighted lines\" /></p>";
 print "</form>";
-
-
 	
 $display1 = $_SESSION['selected_lines'] ? "":" style='display: none;'";	
 print "<form id=\"showPedigreeInfo\" action=\"pedigree/pedigree_info.php\" method=\"post\" $display1>";
-print "<p><input type=\"submit\" value=\"Show Line Information\" /></p></form>";
+print "<p><input type=\"submit\" value=\"Show line information\" /></p></form>";
 
 // store the selected markers into the database
 if ($username)
   store_session_variables('selected_lines', $username);
 ?>
 </div>
+</div>
+</div>
 <?php 
 }
-?>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-<?php 
 require $config['root_dir'] . 'theme/footer.php';
 ?>
