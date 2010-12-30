@@ -81,11 +81,11 @@ private function typeAnnotationCheck()
 	?>
 	<script type="text/javascript">
 	
-	function update_database(filepath, filename, username)
+	    function update_database(filepath, filename, username, data_public_flag)
 	{
 			
 			
-			var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
+			var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&public=' + data_public_flag;
 	
 			// Opens the url in the same window
 	   	window.open(url, "_self");
@@ -602,7 +602,7 @@ private function typeAnnotationCheck()
 			
 		
 		
-		<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $annotfile?>','<?echo $uploadfile?>','<?echo $username?>' )"/>
+		<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $annotfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $data_public_flag?>' )"/>
     <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
 	
 		<?
@@ -634,6 +634,7 @@ private function typeAnnotationCheck()
 	$filename_old = $_GET['file_name'];
 	$filename = $filename_old.rand();
 	$username = $_GET['user_name'];
+	$data_public_flag = $_GET['public'];
 	
 	
 	
@@ -1050,7 +1051,7 @@ private function typeAnnotationCheck()
 	echo " <b>The Data is inserted/updated successfully </b>";
 	echo"<br/><br/>";
 	?>
-	<a href="http://tht.vrac.iastate.edu:8080/curator_data/input_annotations_upload_excel.php"> Go Back To Main Page </a>
+	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"> Go Back To Main Page </a>
 	<?
 	
 	$sql = "INSERT INTO input_file_log (file_name,users_name)

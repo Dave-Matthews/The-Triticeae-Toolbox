@@ -79,7 +79,7 @@ private function typeAnnotations()
 	<p><strong>Annotation File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/AB08Aberdeen_Annot_2009_07_24.xls">Example Annotation File</a></p>
 	
 	
-	<p> <strong> Do You Want This Data To Be Public: </strong> <input type='radio' name='flag' value="1"/> Yes &nbsp;&nbsp; <input type='radio' name='flag' value="0"/> No
+	<p> <strong> Do You Want This Data To Be Public: </strong> <input type='radio' name='flag' value="1" checked/> Yes &nbsp;&nbsp; <input type='radio' name='flag' value="0"/> No
 	<p><input type="submit" value="Upload Annotations File" /></p>
 	
 	
