@@ -270,12 +270,23 @@ function HTMLProcessLogin() {
   $password = $_POST['password'];
   $rv = '';
   if (isUser($email, $password)) {
+    // Successful login
     $_SESSION['username'] = $email;
     $_SESSION['password'] = md5($password);
     $sql = "update users set lastaccess = now() where
 users_name = '$email'";
     mysql_query($sql) or die("<pre>" . mysql_error() .
 			     "\n\n\n$sql.</pre>");
+    // Retrieve stored selection of lines, markers and maps.
+    $stored = retrieve_session_variables('selected_lines', $email);
+    if (-1 != $stored)
+      $_SESSION['selected_lines'] = $stored;
+    $stored = retrieve_session_variables('clicked_buttons', $email);
+    if (-1 != $stored)
+      $_SESSION['clicked_buttons'] = $stored;
+    $stored = retrieve_session_variables('mapids', $email);
+    if (-1 != $stored)
+      $_SESSION['mapids'] = $stored;
     $rv = HTMLLoginSuccess();
   }
   else
