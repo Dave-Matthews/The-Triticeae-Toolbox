@@ -866,7 +866,7 @@ private function typeAnnotationCheck()
 								
 								//get experiment_uid set genotype experiments info table
 								$sql = "SELECT experiment_uid FROM experiments
-												WHERE trial_code = '{$experiment->trialcode}' limit 1";
+												WHERE trial_code = '{$trialcode}' limit 1";
 								$res = mysql_query($sql) or die(mysql_error());
 								$row = mysql_fetch_assoc($res);
 								$exp_id = $row['experiment_uid'];
