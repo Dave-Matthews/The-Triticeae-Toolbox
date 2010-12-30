@@ -37,7 +37,7 @@ if (!isset($_GET['yes']) && !isset($_GET['no'])) {
   $htmltoken = htmlentities($token);
   echo <<< HTML
     <p> Hi {$name}, please confirm that you registered {$email}
-  with the Hordeum Toolbox? <br />
+  with The Hordeum Toolbox. <br /><br>
     <form action="">
       <input type="hidden" name="token"
 	     value="{$htmltoken}"></input>
@@ -56,7 +56,7 @@ HTML;
    if (isset($_GET['yes']))
      echo "<h3>Your registration was confirmed.</h3>";
    else 
-     echo "<h3>We removed the record, sorry for bothering.</h3>";
+     echo "We have removed the record. Sorry for bothering you.";
  }
 
 $footer_div = 1;

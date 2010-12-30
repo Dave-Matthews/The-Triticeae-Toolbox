@@ -6,6 +6,7 @@ session_start();
 $root = "http://".$_SERVER['HTTP_HOST'];
 $root .= str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
 $config['base_url'] = "$root";
+$root = preg_replace("/\/\/$/", "/", $root);
 $config['root_dir'] = (dirname(__FILE__) . '/');
 require_once $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require_once $config['root_dir'] . 'includes/email.inc';
@@ -143,11 +144,12 @@ function HTMLLoginForm($msg = "") {
   $retval .= <<<HTML
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
-  If you&#39;re a member of the Barley Cap team, then you can get full
-  access to all the phenotype and genotype data from the project as
-  soon as it posted.
-  <br> All non-CAP registered users can save data from the advanced
-    phenotype search in their account.
+  Registered members of the Barley CAP team have pre-release
+  access to all phenotype and genotype data from the project.
+
+    <p>For registered non-CAP users, selections made during
+    their searches are saved from session to session.
+
     <h3>What is your e-mail address?</h3>
     My e-mail address is:
     <input type="text" name="email" value="$email" />
@@ -190,13 +192,17 @@ HTML;
  */
 function HTMLRegistrationSuccess($name, $email) {
   $_SESSION['login_referer_override'] = '/';
+  $em = $email;
   $email = base64_encode($email);
   return <<< HTML
-<p>Welcome, $name. You have been registered. An email with the purpose of confirming your registration was sent.
+<p>Welcome, $name. You are being registered. An email has been sent to
+$em describing how to confirm your registration.
+<!--
 Please wait while you are being redirected to login page
 or click <a href="{$_SERVER['SCRIPT_NAME']}">here</a>.</p>
 <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
 <meta http-equiv="refresh" content="2;url={$_SERVER['SCRIPT_NAME']}"/>
+-->
 HTML;
 }
 
@@ -312,9 +318,9 @@ function HTMLProcessForgot() {
     send_email($email, "Hordeum Toolbox : Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
-$root/resetpass.php?token=$urltoken");
-    return "<h3>An email was sent to you with a link to reset your
-password</h3>";
+{$root}resetpass.php?token=$urltoken");
+    return "An email has been sent to you with a link to reset your
+password.";
   }
 }
 
@@ -442,13 +448,17 @@ $safe_institution)";
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-     send_email($email, "Please Confirm Your Registration with Hordeum Toolbox",
-		"Hi $name,
-According to our records, you've created account with Hordeum Toolbox.
-Please confirm that this is so by visiting the following URL:
-$root/fromemail.php?token=$urltoken
+     send_email($email, "Hordeum Toolbox registration in progress",
+"Dear $name,
 
---
+Thank you for requesting an account on The Hordeum Toolbox.
+
+To complete your registration, please confirm that you requested it 
+by visiting the following URL:
+{$root}fromemail.php?token=$urltoken
+
+Your registration will be complete when you have performed this step.
+
 Sincerely,
 The Hordeum Toolbox Team
 ");
@@ -457,13 +467,17 @@ The Hordeum Toolbox Team
        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
        send_email(setting('capmail'),
 		  "[THT] Validate CAP Participant $email",
-		  "Participant data:
-Email: $email,
-Name (as entered by the user): $name,
-Institution (as entered by the user): $institution
+"Email: $email
+Name: $name
+Institution: $institution
 
-Please use the following link to confirm or reject participant status of this user:
-$root/fromcapemail.php?token=$capurltoken
+Please use the following link to confirm or reject participant status 
+of this user:
+{$root}fromcapemail.php?token=$capurltoken
+
+A message has been sent to the user that he must confirm his email 
+address at
+{$root}fromemail.php?token=$urltoken
 ");
      }
      echo HTMLRegistrationSuccess($name, $email);
