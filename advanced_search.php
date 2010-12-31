@@ -14,21 +14,22 @@ connect();
 	<div class="box">
 	<?php
 
-     /* Search Within  certain Lines */
-    $in_these_lines = "";
-    if((is_array($_SESSION['selected_lines'])) && (count($_SESSION['selected_lines']) > 0) && ($_REQUEST['selectWithin'] == "Yes") ) {
-                $_GET['selectWithin'] = "Yes";
-		$in_these_lines = "AND line_records.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")";
-    }
-    if($_POST['rowType'] != "ignore") {
-                $in_these_lines .= " AND line_records.row_type =" . $_POST['rowType'] ;
-    }
-    if($_POST['variety'] != "ignore") {
-                $in_these_lines .= " AND line_records.variety = '" . $_POST['variety']  . "'";
-    }
-    if($_POST['primary_end_use'] != "ignore") {
-                $in_these_lines .= " AND line_records.primary_end_use REGEXP '" . $_POST['primary_end_use']  . "'";
-    }
+  // dem 31dec10: We may want to use the 'selectWithin' option.
+//      /* Search Within  certain Lines */
+//     $in_these_lines = "";
+//     if((is_array($_SESSION['selected_lines'])) && (count($_SESSION['selected_lines']) > 0) && ($_REQUEST['selectWithin'] == "Yes") ) {
+//                 $_GET['selectWithin'] = "Yes";
+// 		$in_these_lines = "AND line_records.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")";
+//     }
+//     if($_POST['rowType'] != "ignore") {
+//                 $in_these_lines .= " AND line_records.row_type =" . $_POST['rowType'] ;
+//     }
+//     if($_POST['variety'] != "ignore") {
+//                 $in_these_lines .= " AND line_records.variety = '" . $_POST['variety']  . "'";
+//     }
+//     if($_POST['primary_end_use'] != "ignore") {
+//                 $in_these_lines .= " AND line_records.primary_end_use REGEXP '" . $_POST['primary_end_use']  . "'";
+//     }
 
 
 	/* identify lines with the same marker haplotypes */
@@ -245,72 +246,14 @@ connect();
 	?>
 	</div>
 	<div class="box">
-	<h2>Advanced Search</h2>
+	<h2>View Haplotypes</h2>
 	  <!-- Cannot jump directly to pedigree_markers.php, the alleles are not updated.
 	<form action="pedigree/pedigree_markers.php" method="post">
 	  -->
 	<form action="advanced_search.php" method="post"> 
 
-        <div class="boxContent">
-        <h3>Line properties</h3>
-
-	  Row type:<br>
-                <li style="display: inline"><input type="radio" name="rowType" value="2" /> Two</li>
-                <li style="display: inline"><input type="radio" name="rowType" value="6" /> Six</li>
-            	<li style="display: inline"><input type="radio" name="rowType" value="ignore" checked /> Either</li>
-
-	  <br><br>Growth habit:<br>
-                <li style="display: inline"><input type="radio" name="variety" value="winter" /> Winter </li>
-                <li style="display: inline"><input type="radio" name="variety" value="spring" /> Spring </li>
-            	<li style="display: inline"><input type="radio" name="variety" value="ignore" checked /> Either </li>
-
-	  <br><br>End use:<br>
-            	<li style="display: inline"><input type="radio" name="primary_end_use" value="malt" /> Malt </li>
-                <li style="display: inline"><input type="radio" name="primary_end_use" value="Feed" /> Feed </li>
-	        <li style="display: inline"><input type="radio" name="primary_end_use" value="ignore" checked /> Either</li>
-
-        <br><br>Search within Selected lines only?<br>
-                <li style="display: inline"><input type="radio" name="selectWithin" value="Yes"> Selection list only</li>
-                <li style="display: inline"><input type="radio" name="selectWithin" value="No"  checked> All lines</li>
-            </ul></p>
-
-
-<p><i>Note</i>: Row type, growth habit and end use information is not complete for every line.
-
-	<h3> Select Phenotype </h3>
-	<div id="phenotypeSel" class="boxContent">
-    <p>Note: the results of this search will replace any lines that are currently remembered for you.</p>
-	<table id="phenotypeSelTab" class="tableclass1" cellspacing=0; cellpadding=0;>
-	<thead>
-	<tr>
-		<th>Category</th>
-		<th>Phenotype</th>
-		<th>Experiment</th>
-	</tr>
-	</thead>
-	<tbody>
-	<tr class="nohover">
-		<td>
-			<select name='phenotypecategory' size=10 onfocus="DispPhenoSel(this.value, 'Category')" onchange="DispPhenoSel(this.value, 'Category')">;
-			<?php showTableOptions("phenotype_category"); ?>
-			</select>
-		</td>
-		<td><p>Select a phenotype category from the left most column</p>
-		</td>
-		<td></td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td><td></td><td></td>
-        </tr>
-	</tbody>
-	</table>
-	</div>
-
-	<p><input type="submit" name="phenoSearch" value="Search"></p>
-
-	<h3>Select Haplotype</h3>
+	<h3>Select haplotype</h3>
 	<div class="boxContent">
-    <p>Note: the results of this search will replace any lines that are currently remembered for you.</p>
 	<table id="haplotypeSelTab" class="tableclass1" cellpadding=0 cellspacing=0>
 	<thead>
 	<tr>
@@ -381,19 +324,48 @@ connect();
 			echo "</tr>";
 		}
 		else {
-			echo "<tr class='nohover'><td>No Markers Selected <br / > <a href=\"genotyping/marker_selection.php\">Select Markers Here</a></td></tr>";
+		  echo "<td>No markers selected";
 		}
 	?>
 	</tbody>
 	</table>
-	<p><a href="genotyping/marker_selection.php">Re-Select Markers</a></p>
-	<input type="submit" name="haplotype" value="Search">
+	<p><a href="genotyping/marker_selection.php">Select markers</a></p>
 	</div>
+
+	  <h3> Optionally, also select a phenotype </h3>
+	<div id="phenotypeSel">
+	<table id="phenotypeSelTab" class="tableclass1" cellspacing=0; cellpadding=0;>
+	<thead>
+	<tr>
+		<th>Category</th>
+		<th>Phenotype</th>
+		<th>Experiment</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr class="nohover">
+		<td>
+			<select name='phenotypecategory' size=10 onfocus="DispPhenoSel(this.value, 'Category')" onchange="DispPhenoSel(this.value, 'Category')">;
+			<?php showTableOptions("phenotype_category"); ?>
+			</select>
+		</td>
+		<td><p>Select a phenotype category from the left most column</p>
+		</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td><td></td><td></td>
+        </tr>
+	</tbody>
+	</table>
+	</div>
+
+        <p>Note: the results of this search will replace any lines that are currently remembered for you.</p>
+	<p><input type="submit" name="haplotype" value="Search"></p>
 
 	</form>
 		</div>
 	</div>
-</div>
 </div>
 </div>
 
