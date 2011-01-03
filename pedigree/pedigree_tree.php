@@ -70,9 +70,16 @@ if(isset($_GET['line_name'])) {
 
 
 if(isset($_REQUEST['line']) && ($_REQUEST['line'] != "")) {
-
-	echo "<div style=\"text-align: left;border:none\"><pre>\n";
-
+	echo "<div style=\"text-align: left;border:none\">\n";
+	print "Alleles of selected markers are shown on the right. &nbsp;&nbsp;<br>";
+	$markers = $_SESSION['clicked_buttons'];
+	for ($i = 0; $i<count($markers); $i++) {
+	  $res = mysql_query("select marker_name from markers where marker_uid = $markers[$i]");
+	  $markername = mysql_fetch_row($res);
+	  $num = $i+1;
+	  print "<b>$num</b>: $markername[0]<br>";
+	}
+	print "<a href = ".$config['base_url']."genotyping/marker_selection.php>Select markers.</a>";
 	// Search the pedigree relations to get the pedigree tree
 	$nvisited=array();
 	$pediarr=array($_REQUEST['line']=>getPedigrees_r($_REQUEST['line'],$nvisited));
@@ -100,15 +107,13 @@ if(isset($_REQUEST['line']) && ($_REQUEST['line'] != "")) {
 }
 ?>
 
-<p>Examples: nd20448, morex</p>
-
 <form action="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" method="post">
 <p><strong>Line Name</strong><br />
 <?php 
 if(isset($_GET['line_name'])) 
 {
 ?>
-<input type="text" name="line" value="<?php echo $_GET['line_name']; ?>" /></p>
+<input type="text" name="line" value="<?php echo $_GET['line_name']; ?>" />
 
 <?php
 
@@ -117,11 +122,12 @@ else
 {
 ?>
 
-<input type="text" name="line" value="<?php echo $_REQUEST['line']; ?>" /></p>
+<input type="text" name="line" value="<?php echo $_REQUEST['line']; ?>" />
 
 <?php
 }
 ?>
+&nbsp;&nbsp;&nbsp;Examples: cree, nd20448
 
 <p><input type="submit" value="Get Tree" /></p>
 </form>
