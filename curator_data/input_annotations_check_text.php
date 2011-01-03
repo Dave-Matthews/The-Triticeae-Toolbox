@@ -176,9 +176,9 @@ private function typeAnnotationCheck()
         $capyear_idx = implode(find("CAP Year", $header),"");
         $bp_idx =  implode(find("Breeding Program", $header),"");
         $location_idx = implode(find("Location", $header),"");
-        $latlong_idx = implode(find("Lat/Long_of_field", $header),"");
+        $latlong_idx = implode(find("Lat/Long of field", $header),"");
         $collab_idx = implode(find("Collaborator", $header),"");
-        $collabcode_idx = implode(find("Collaborator_Code", $header),"");
+        $collabcode_idx = implode(find("Collaborator Code", $header),"");
         //$test_idx = implode(find("Testing", $header),"");
         $experiment_idx = implode(find("Experiment", $header),"");
         $descexperiment_idx = implode(find("Descriptive Name of Experiment", $header),"");
@@ -546,16 +546,16 @@ private function typeAnnotationCheck()
         $header = fgetcsv($handle, 0, "\t");
 
         // Set up column indices; all columns are required
-        $capyear_idx = implode(find("CAP_Year", $header),"");
+        $capyear_idx = implode(find("CAP Year", $header),"");
         $bp_idx =  implode(find("Breeding_Program", $header),"");
         $location_idx = implode(find("Location", $header),"");
-        $latlong_idx = implode(find("Lat/Long_of_field", $header),"");
+        $latlong_idx = implode(find("Lat/Long of field", $header),"");
         $collab_idx = implode(find("Collaborator", $header),"");
-        $collabcode_idx = implode(find("Collaborator_Code", $header),"");
+        $collabcode_idx = implode(find("Collaborator Code", $header),"");
         $test_idx = implode(find("Testing", $header),"");
         $experiment_idx = implode(find("Experiment", $header),"");
-        $descexperiment_idx = implode(find("Descriptive_Name_of_Experiment", $header),"");
-        $trialcode_idx = implode(find("Trial_Code", $header),"");
+        $descexperiment_idx = implode(find("Descriptive Name of Experiment", $header),"");
+        $trialcode_idx = implode(find("Trial Code", $header),"");
 				$planting_date_idx = implode(find("Planting date", $header),"");
 				$seeding_rate_idx = implode(find("Seeding rate", $header),"");
 				$experimental_design_idx = implode(find("Experimental design", $header),"");
