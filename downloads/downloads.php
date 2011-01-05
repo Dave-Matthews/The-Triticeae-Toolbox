@@ -469,7 +469,7 @@ class Downloads
 	  $sub_ckd = "checked"; $all_ckd = "";
 	}
 	else {
-	  $sub_ckd = ""; $all_ckd = "checked";
+	  $sub_ckd = "disabled"; $all_ckd = "checked";
 	}
 		?>
 	<h3>4. Lines</h3>
@@ -818,12 +818,12 @@ selected lines</a>.<br>
          $outputheader3 .= $row['trial_code'].$delimiter;
          $keys[] = $row['phenotype_uid'].$row['experiment_uid'];
       }
-      // $firephp->log("trait_location information ".$outputheader2."  ".$outputheader3);
+		//$firephp->log("trait_location information ".$outputheader2."  ".$outputheader3);
 		// $firephp->table('keys label ', $keys); 
 
 		// dem 5jan11: If $subset="yes", use $_SESSION['selected_lines'].
 		$intheselines = "";
-		if ($subset = "yes") {
+		if ($subset == "yes" && count($_SESSION['selected_lines']) > 0) {
 		  $selectedlines = implode(",", $_SESSION['selected_lines']);
 		  $intheselines = "AND line_records.line_record_uid IN ($selectedlines)";
 		}
