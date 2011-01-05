@@ -9,6 +9,10 @@ ini_set('magic_quotes_gpc', '0');
 require_once $config['root_dir'] . 'securimage/securimage.php';
 ?>
 <h1>Feedback</h1>
+Please send your questions or suggestions or complaints to the 
+THT curators.  We'll get back to you if you<br>
+include your email address.
+<p>
 <?php
 function feedbackForm($name='', $email='', $feedback='') {
   if (!$email) {
@@ -29,23 +33,23 @@ function feedbackForm($name='', $email='', $feedback='') {
   $html_feedback=htmlspecialchars($feedback, ENT_QUOTES);
   $rv = <<< HTML
 <form action="" method="post">
-<label for="name">Your name (optional):</label>
+<label for="name">Your name (optional) </label>
 <input name="name" value="$html_name" /><br>
-<label for="email">Your email (optional):</label>
+<label for="email">Your email (optional) </label>
 <input name="email" value="$html_email" />
-<h3>Please enter your feedback in the area below</h3>
-<textarea name="feedback" cols="80" rows="20" >$html_feedback</textarea>
+<p>Message:
+<p><textarea name="feedback" cols="80" rows="20" >$html_feedback</textarea>
 <br />
 <table border="0" cellspacing="0" cellpadding="0"
        style="border: none; background: none">
   <tr><td><img id="captcha" src="./securimage/securimage_show.php"
 	       alt="CAPTCHA image" /><br />
       <a href="#" onclick="document.getElementById('captcha').src = './securimage/securimage_show.php?' + Math.random(); return false">
-	Reload Image</a></td>
+	Reload image</a></td>
     <td><input type="text" name="captcha_code" size="10"
 	       maxlength="6" /> - CAPTCHA</td></tr></table>
 <br />
-<input type="submit" value="Send Feedback" />
+<input type="submit" value="Send feedback" />
 </form>
 HTML;
   return $rv;
