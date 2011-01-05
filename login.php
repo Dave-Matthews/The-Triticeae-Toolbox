@@ -131,8 +131,8 @@ function HTMLLoginForm($msg = "") {
   $email = "";
   if (isset($_GET['e']) && !empty($_GET['e']))
     $email = base64_decode($_GET['e']);
-  $c_no = "checked=\"checked\"";
-  $c_yes = "";
+  $c_no = "";
+  $c_yes = "checked=\"checked\"";
   if (isset($_GET['a']) && !empty($_GET['a'])) {
     $c_no = "";
     $c_yes = "checked=\"checked\"";
@@ -150,22 +150,22 @@ function HTMLLoginForm($msg = "") {
     <p>For registered non-CAP users, selections made during
     their searches are saved from session to session.
 
-    <h3>What is your e-mail address?</h3>
-    My e-mail address is:
+    <h3>What is your email address?</h3>
+    My email address is:
     <input type="text" name="email" value="$email" />
     <h3>Do you have a password?</h3>
-    <input id="answer_no" $c_no type="radio" name="answer" value="no" />
-    <label for="answer_no">No, I am a new user.</label>
-    <br />
     <input id="answer_yes" $c_yes type="radio" name="answer" value="yes" />
     <label for="answer_yes">Yes, I have a password:</label>
     <input type="password" name="password" onfocus="$('answer_yes').checked = true"/>
     <br />
+    <input id="answer_no" $c_no type="radio" name="answer" value="no" />
+    <label for="answer_no">No, I am a new user.</label>
+    <br />
     <input id="answer_forgot" $c_forgot type="radio" name="answer" value="forgot" />
-    <label for="answer_forgot">I forgot my password</label>
+    <label for="answer_forgot">I forgot my password.</label>
     <br />
     <input id="answer_change" $c_change type="radio" name="answer" value="change" />
-    <label for="answer_change">I want to change my Password.</label>
+    <label for="answer_change">I want to change my password.</label>
     <br />
     <br />
     <input type="submit" name="submit_login" value="Continue" />
