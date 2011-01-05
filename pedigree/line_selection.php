@@ -172,20 +172,20 @@ $sql = "select distinct experiment_year from experiments";
 	</td>
   <td>
   <b>Row type </b> <br/><br/>
-	<input type="radio" name="RowType" value="2" <?php echo $typeSelected['2'] ?>/> 2<br><input type="radio" name="RowType" value="6" <?php echo $typeSelected['6'] ?>/> 6 
-<br><br>
+      <input type="radio" name="RowType" value="2" <?php echo $typeSelected['2'] ?>/> 2<br>
+      <input type="radio" name="RowType" value="6" <?php echo $typeSelected['6'] ?>/> 6<br><br>
 	</td>
 	<td>
 	<b> Hull type </b> <br/><br/>
-			    <input type="radio" name="Hull" value="hulled" <?php echo $hullSelected['hulled']?>/> Hulled<br>&nbsp;<input type="radio" name="Hull" value="hulless" <?php echo $hullSelected['hulless']?>/>Hulless
-<br><br>
+      <input type="radio" name="Hull" value="hulled" <?php echo $hullSelected['hulled']?>/>&nbsp;&nbsp;Hulled<br>
+      <input type="radio" name="Hull" value="hulless" <?php echo $hullSelected['hulless']?>/>Hulless<br><br>
 	</td>
 <td></td>
 	</tr>
   </table>
 
   <p ><input type="submit" style="height:2em; width:6em;" value="Search"/></p>
-  </form>
+</form>
 </div>
 
 
@@ -372,23 +372,18 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
   	
   	//	var_dump($result);
   	}
+     $linesfound = mysql_num_rows($result);
 	?>
-
   <div class="boxContent">
-  <h3>Lines found</h3>
-	<div style="width: 420px; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">
-	<?php 
+    <h3>Lines found: <?php echo "$linesfound"; ?></h3>
+    <div style="width: 420px; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">
+    <table width='400px' id='linesTab' class='tableclass1'>
+    <tr><th>Check <br/>
+    <input type="radio" name="btn1" value="ALL" onclick="javascript:exclude_all();"/>All
+    <input type="radio" name="btn1" value="NONE" onclick="javascript:exclude_none();"/>None</th><th><b>Line name</b></th></tr>
+    <?php
 		
-   //  echo "<input type='submit' value='Select Lines'><br/>";
-  	
-    echo "<table width='400px' id='linesTab' class='tableclass1'>";
-    ?><tr><th>Check <br/>
-		 <input type="radio" name="btn1" value="ALL" onclick="javascript:exclude_all();"/>All
-		 <input type="radio" name="btn1" value="NONE" onclick="javascript:exclude_none();"/>None</th><th><b>Line name</b></th></tr>
-		<?php
-		
-		 echo "<form name='lines' id='selectLines' action='pedigree/line_selection.php' method='post'>";
-    
+    echo "<form name='lines' id='selectLines' action='pedigree/line_selection.php' method='post'>";
     if (mysql_num_rows($result) > 0) {
       while($row = mysql_fetch_assoc($result)) {
 	$line_record_name = $row['line_record_name'];
@@ -408,35 +403,41 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
   </table>    
   </div>
     <?php
-   
-    echo "<p><input type='submit' value='Add to Selected' style='color:blue'>";
+    if (!isset($_SESSION['selected_lines']) || count($_SESSION['selected_lines']) == 0) {   
+      echo "<p><input type='submit' value='Add to Selected' style='color:blue'>";
+    }
+    else {
+?>
+    <p>Combine with <font color=blue>currently selected lines</font>:<br>
+    <input type="radio" name="selectWithin" value="Yes" checked/>Intersect (AND)<br>
+    <input type="radio" name="selectWithin" value="Add"/>Add (OR)<br>
+    <input type="radio" name="selectWithin" value="Replace"/>Replace<br>
+    <input type="submit" value="Combine" style='color:blue'>
+<?php }
     echo "</form>";
     echo "</div>";
   }
-  ?>
 
-
-<?php 
 $verify_selected_lines = $_POST['selLines'];
 $verify_session = $_SESSION['selected_lines'];
 if (count($verify_selected_lines)!=0 OR count($verify_session)!=0)
 {
-
-?>
-
-  <?php 
   if (isset($_POST['selLines'])) {  
-  
-	    $selLines = $_POST['selLines'];
-    $selected_lines = $_SESSION['selected_lines'];
-    if (!isset($selected_lines))
-      $selected_lines = array();
-    foreach($selLines as $line_uid) {
-      if (!in_array($line_uid, $selected_lines)) {
-	array_push($selected_lines, $line_uid);
+    if ($_POST['selectWithin'] == "Replace") 
+      $_SESSION['selected_lines'] = $_POST['selLines'];
+    elseif ($_POST['selectWithin'] == "Yes")
+      $_SESSION['selected_lines'] = array_intersect($_SESSION['selected_lines'], $_POST['selLines']);
+    else {  // Add.
+      $selLines = $_POST['selLines'];
+      $selected_lines = $_SESSION['selected_lines'];
+      if (!isset($selected_lines))
+	$selected_lines = array();
+      foreach($selLines as $line_uid) {
+	if (!in_array($line_uid, $selected_lines)) 
+	  array_push($selected_lines, $line_uid);
       }
+      $_SESSION['selected_lines'] = $selected_lines;
     }
-    $_SESSION['selected_lines'] = $selected_lines;
   }
 
 if (isset($_POST['deselLines'])) {
@@ -448,6 +449,7 @@ if (isset($_POST['deselLines'])) {
   }
   $_SESSION['selected_lines']=$selected_lines;
  }
+
 $username=$_SESSION['username'];
 if ($username && !isset($_SESSION['selected_lines'])) {
   $stored = retrieve_session_variables('selected_lines', $username);
@@ -456,10 +458,9 @@ if ($username && !isset($_SESSION['selected_lines'])) {
  }
 $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
 
-
-
 print "<div class='boxContent'>";
-echo "<h3>Currently selected lines</h3>";
+$selectedcount = count($_SESSION['selected_lines']);
+echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
 
 print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
 print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
@@ -478,15 +479,14 @@ $display1 = $_SESSION['selected_lines'] ? "":" style='display: none;'";
 print "<form id=\"showPedigreeInfo\" action=\"pedigree/pedigree_info.php\" method=\"post\" $display1>";
 print "<p><input type=\"submit\" value=\"Show line information\" /></p></form>";
 
-// store the selected markers into the database
+// Store the selected lines in the database.
 if ($username)
   store_session_variables('selected_lines', $username);
-?>
-</div>
-</div>
-</div>
-<?php 
+ print "</div>";
 }
+ print "</div>";
+ print "</div>";
+ print "</div>";
 
 require $config['root_dir'] . 'theme/footer.php';
 ?>

@@ -1049,17 +1049,14 @@ function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
 
 	$first = TRUE;
 	while($row = mysql_fetch_assoc($query)) {
-		
-		$ret .= "\n<tr>\n";
-
 		if($first) {
-			$ret .= "<thead>\n";
+		  $ret .= "<thead>\n";
 			foreach($row as $k=>$v) {
 				
 				if(strpos($k, "_name") !== FALSE)
 					$tables[$k] = getTableByName($k);
 
-				$ret .= "\t<td><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
+				$ret .= "<td><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
 
 				if($sortable) {
 					unset($_GET['sortby']);
@@ -1073,10 +1070,11 @@ function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
 
 				$ret .= "</td>\n";
 			}
-			$ret .= "</thead>\n</tr>\n<tbody>\n<tr>\n";
+			$ret .= "</tr></thead>\n<tbody>\n";
 			$first = FALSE;
 		}
 
+		$ret .= "\n<tr>\n";
 		foreach($row as $k=>$v) {
 			if(isset($tables[$k])) {
 				$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";

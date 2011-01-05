@@ -111,8 +111,9 @@ EOD;
   </ul>
   <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analysis</a>
   <ul>
-  <li><a href="<?php echo $config['base_url']; ?>advanced_search.php" title="View Haplotypes">View Haplotypes</a>
-  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker polymorphisms</a>
+  <li><a href="<?php echo $config['base_url']; ?>advanced_search.php" title="Alleles for selected markers">View Haplotypes</a>
+  <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
+<!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
   </ul>
   <li>
   <a title="<?php echo $lang["desc_sc2"]; ?>">Data Sources</a>

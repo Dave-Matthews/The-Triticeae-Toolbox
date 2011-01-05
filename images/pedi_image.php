@@ -89,13 +89,13 @@ function draw_sequence($im, $seq, $nx, $ny, $nwidth, $nheight, $bmg, $cmg, $im_t
 function draw_character($im, $fontsize, $chr, $dx1, $dy1, $dx2, $dy2, $im_tomato, $im_seagreen, $im_royalblue, $im_salmon, $im_gray, $im_black) {
 	global $im;
 	$chrval=$chr;
-	$cls=array('AA'=>'im_tomato', 'BB'=>'im_royalblue', 'AB'=>'im_purple', '--'=>'im_whitesmoke', 'N'=>'im_gray');
+	$cls=array('AA'=>'im_tomato', 'BB'=>'im_royalblue', 'AB'=>'im_purple', '--'=>'im_gray', 'N'=>'im_gray');
 	//		$cls=array('A'=>'im_tomato', 'B'=>'im_royalblue', '-'=>'im_seagreen', 'N'=>'im_gray');
 	if (!isset($chr) || $chr=="" || ! array_key_exists($chr, $cls)) {
 		$chr='N';
 	}
-	imagefilledrectangle($im, $dx1, $dy1, $dx2, $dy2, ${$cls[$chr]});
-	imagestring($im, $fontsize, $dx1+5, $dy1+($dy2-$dy1)/2-10, $chrval, $im_black);
+	imagefilledrectangle($im, $dx1, $dy1+3, $dx2, $dy2-3, ${$cls[$chr]});
+	imagestring($im, $fontsize, $dx1+1, $dy1+($dy2-$dy1)/2-6, $chrval, $im_black);
 }
 
 function draw_cladematrix (array $mx, array $mxnm, $dstr, $cell_size) {
@@ -212,19 +212,23 @@ function draw_cladematrix (array $mx, array $mxnm, $dstr, $cell_size) {
 function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
 	$maxlv=count($mx);
 	$maxcol=count($mx[0])-1;
-	$cell_width=50;
-	$cell_height=50;
 	if ($cell_size>10 && $cell_size<50) {
 		$cell_width=$cell_size;
 		$cell_height=$cell_size;
 	}
-	$hlw=1; // half of line width
-	$bmg=5; // margin for button
-	$cmg=10; // margin for characters
-	$nwidth=20; // width of a character
-	$nheight=$cell_height; // height of a character
+	//dem 31dec10, tinkering.
+	//Note: These changes also need to be made in the imagemap so the mouseover
+	//regions match where the objects are displayed.
+	$cell_width=60; // for line names
+	$cell_height=11; // for line names
+	$hlw=0.5; // half of line width for connector lines
+	$bmg=1; // margin for button. The gap between line-name rectangles.  Larger values shrink the rectangle.
+	$cmg=2; // vertical margin for allele values.
+	$nwidth=14; // width of allele values
+//  	$nheight=$cell_height; // height of a character
+ 	$nheight=11; // height of a character. Used for marker alleles
 	// $imw=$maxcol*$cell_width+100+3*$cell_width+$nwidth*strlen($dstr);
-	$nummkrs=20; // default marker numbers
+	$nummkrs=5; // default marker numbers
 	// if (isset($_SESSION['clicked_buttons']) && count($_SESSION['clicked_buttons'])>10) $nummkrs=count($_SESSION['clicked_buttons']);
 	$imw=$maxcol*$cell_width+100+3*$cell_width+$nwidth*$nummkrs;
 	$imh=$maxlv*$cell_height+100;
@@ -261,13 +265,13 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
     for ($i=$maxcol-1; $i>=0; $i--) {
     		for ($j=0; $j<$maxlv; $j++) {
     			$xcoor=$x+($maxcol-1-$i)*$cell_width;
-    			$ycoor=$y+$j*$cell_height;
+    			$ycoor=$y+$j*($cell_height);
     			// if ($i==0) imageline($im, $x, $ycoor+$cell_height, $x+($maxcol+1)*$cell_width, $ycoor+$cell_height, IMG_COLOR_STYLED);
     			if ($mx[$j][$i]==2) { // draw a T
-					imagefilledrectangle($im, $xcoor, $ycoor+$cell_height/2-$hlw, $xcoor+$bmg, $ycoor+$cell_height/2+$hlw, $im_black);
+ 					imagefilledrectangle($im, $xcoor, $ycoor+$cell_height/2-$hlw, $xcoor+$bmg, $ycoor+$cell_height/2+$hlw, $im_black);
     				imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor, $xcoor+$cell_width/2+$hlw, $ycoor+$bmg, $im_black);
     				imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor+$cell_height-$bmg, $xcoor+$cell_width/2+$hlw, $ycoor+$cell_height, $im_black);
-    				imagefilledrectangle($im, $xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-$bmg, $im_mediumseagreen);
+    				imagefilledrectangle($im, $xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-$bmg, $im_salmon);
     				$bstr=$mxnm[$j][$i];
     				// if it is number*name then draw the number in the upper left corner of the block 
 					if (preg_match('/(\d\*)(.*?)/', $bstr, $mts)) {
@@ -279,12 +283,13 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
 						imagestring($im, 2, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-$bmg, $mts[2], $im_black);
 					}
 					$inner_lines[$j]=$bstr;
-    				$display_string_len=6;
-    				if ($cell_size<50) $display_string_len=4;
-    				if (strlen($bstr)>$display_string_len) {
-    					$bstr=substr($bstr, 0, $display_string_len).".";
+      				$display_string_len=10;
+//       				$display_string_len=6;
+//      				if ($cell_size<50) $display_string_len=4;
+if (strlen($bstr)>$display_string_len) {
+     					$bstr=substr($bstr, 0, $display_string_len-1)."\\";
     				}
-    				imagestring($im, 2, $xcoor+$bmg+1, $ycoor+$cell_height/2-10, $bstr, $im_black);
+    				imagestring($im, 2, $xcoor+$bmg+1, $ycoor+$cell_height/2-6, $bstr, $im_black);
     			}
     			elseif ($mx[$j][$i]==1) { // draw a -
 					imagefilledrectangle($im, $xcoor, $ycoor+$cell_height/2-$hlw, $xcoor+$cell_width, $ycoor+$cell_height/2+$hlw, $im_black);
@@ -306,12 +311,13 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
     		}
     }
     $xcoor=$x+($maxcol)*$cell_width;
+    // Draw the leaves of the tree.
     for ($k=0; $k<$maxlv; $k++) {
     	$lstr=$mx[$k][$maxcol];
     	if (! isset($lstr) || $lstr=='') continue;
     	$ycoor=$y+$k*$cell_height;
     	imagefilledrectangle($im, $xcoor, $ycoor+$cell_height/2-$hlw, $xcoor+$bmg, $ycoor+$cell_height/2+$hlw, $im_black);
-    	imagefilledrectangle($im, $xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-$bmg, $im_skyblue);
+    	imagefilledrectangle($im, $xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-$bmg, $im_salmon);
     	if (preg_match('/^(\d+\*)(.*)/', $lstr, $mts)) {
 			$lstr=$mts[2];
 			imagestring($im, 2, $xcoor, $ycoor,$mts[1], $im_black);
@@ -320,22 +326,23 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
 			$lstr=$mts[1];
 			imagestring($im, 2, $xcoor+$cell_width-$bmg*2, $ycoor+$cell_height-$bmg*2, $mts[2], $im_black);
 		}
-    	$display_string_len=6;
-    	if ($cell_size<50) $display_string_len=4;
-    	if (strlen($lstr)>$display_string_len) $lstr=substr($lstr, 0, $display_string_len).".";
-    	imagestring($im, 2, $xcoor+$bmg+1, $ycoor+$cell_height/2-10, $lstr, $im_black);
+        $display_string_len=10;
+//     	$display_string_len=6;
+//     	if ($cell_size<50) $display_string_len=4;
+    	if (strlen($lstr)>$display_string_len) $lstr=substr($lstr, 0, $display_string_len-1)."\\";
+    	imagestring($im, 2, $xcoor+$bmg+1, $ycoor+$cell_height/2-6, $lstr, $im_black);
         // draw_sequence($im, $dstr, $nx, $ycoor, $nwidth, $nheight, $bmg, $cmg, $im_orange, $im_green, $im_blue, $im_purple, $im_gray, $im_black);
     }	
     
     // Draw the markers
     
-    imagestring($im, 8, $xcoor-10, $y-30, "Markers->", $im_black);
-    $nx=$xcoor+2*$cell_width;
-    $ny=$y-$cell_height;
+//     imagestring($im, 8, $xcoor-10, $y-30, "Markers->", $im_black);
+    $nx=$xcoor+$cell_width;
+    $ny=$y-$cell_height-2;
     // $mkrmap=array();
     $selected_markers=array();
-    if (isset($_SESSION['clicked_buttons'])) {
-    	// draw a block for each marker
+    if (isset($_SESSION['clicked_buttons'])) { 
+   	// draw a block for each marker
 		// the marker names will be show as title
 		$selected_markers_all=$_SESSION['clicked_buttons'];
 		$cnt_all=count($selected_markers_all);
@@ -352,9 +359,9 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
 		
     	/* draw a more sign if there is more markers outside smkrs */
 		$leftlink="";
-		$leftsign="start";
+		$leftsign="Start";
 		$rightlink="";
-		$rightsign="end";
+		$rightsign="End";
 		if ($page>0) {
 			$leftlink="pedigree/pedigree_tree.php?pagenum=".($page-1)."&line=$lnm";
 			$leftsign=" <<";
@@ -363,11 +370,13 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
 			$rightlink=$_SERVER['PHP_SELF']."?pagenum=".($page+1)."&line=$lnm";
 			$rightsign=" >>";
 		}
-		imagefilledrectangle($im, $bmg, $bmg, $cell_width-$bmg, $cell_height-$bmg, $im_darkyellow);
-		imagestring($im, 2, $bmg+1, $bmg+10, $leftsign, $im_black);
-		imagefilledrectangle($im, $cell_width+$bmg, $bmg, $cell_width*2-$bmg, $cell_height-$bmg, $im_darkyellow);
-		imagestring($im, 2, $cell_width+$bmg+1, $bmg+10, $rightsign, $im_black);
-		imagestring($im, 2, $nx+$bmg+1, $bmg, "markers from number ".($page*$mkrppg+1)." to ".($page*$mkrppg+1+$spl_len)." of total $cnt_all", $im_black);
+// Omit the "Start" and "End" buttons.
+// 		imagefilledrectangle($im, $bmg, $bmg, $cell_width-$bmg, $cell_height-$bmg, $im_darkyellow);
+// 		imagestring($im, 2, $bmg+1, $bmg+1, $leftsign, $im_black);
+// 		imagefilledrectangle($im, $cell_width+$bmg, $bmg, $cell_width*2-$bmg, $cell_height-$bmg, $im_darkyellow);
+// 		imagestring($im, 2, $cell_width+$bmg+1, $bmg+1, $rightsign, $im_black);
+// 		imagestring($im, 2, $nx+$bmg+1, $bmg, "Markers from number ".($page*$mkrppg+1)." to ".($page*$mkrppg+1+$spl_len), $im_black);
+		imagestring($im, 2, $nx+$bmg+1, $cell_height+$bmg, "Markers from number ".($page*$mkrppg+1)." to ".$cnt_all, $im_black);
     	for ($i=0; $i<count($selected_markers); $i++) {
     		$mkrname="";
     		$result=mysql_query("SELECT marker_name from markers where marker_uid=".$selected_markers[$i]);
@@ -379,10 +388,10 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
     			
     		$dnx=$nx+$i*$nwidth;
     		$dny=$ny;
-    		imagefilledrectangle($im, $dnx+1, $dny+$cmg, $dnx+$nwidth-1, $dny+$nheight-$cmg, $im_grayblue);
-    		$ipadding=1; // compensation for the length of i
+    		imagefilledrectangle($im, $dnx+1, $dny+1, $dnx+$nwidth-1, $dny+$nheight+1, $im_grayblue);
+    		$ipadding=2; // compensation for the length of i
 			if (strlen($i)>1) $ipadding=-3;
-    		imagestring($im, 4, $dnx+$bmg+$ipadding, $dny+$nheight/2-10, $i, $im_black);
+    		imagestring($im, 2, $dnx+$ipadding, $dny+$nheight/2-5, $i+1, $im_black);
     		/*array_push($mkrmap, array('coords'=>array($dnx+1, $dny+$cmg, $dnx+$nwidth-1, $dny+$nheight-$cmg), 
 									  'imgclr'=>$im_grayblue, 
 									  'text'=>"", 
@@ -432,7 +441,7 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
     			$dnx=$nx+$i*$nwidth;
     			$dny=$ycoor;
     			// imagefilledrectangle($im, $dnx+1, $dny+$cmg, $dnx+$nwidth-1, $dny+$nheight-$cmg, $im_grayblue);
-    			draw_character($im, 4, $mkrval, $dnx+1, $dny+$cmg, $dnx+$nwidth-1, $dny+$nheight-$cmg, $im_tomato, $im_seagreen, $im_royalblue, $im_salmon, $im_gray, $im_black);
+    			draw_character($im, 2, $mkrval, $dnx+1, $dny-$cmg, $dnx+$nwidth-1, $dny+$nheight+$cmg, $im_tomato, $im_seagreen, $im_grayblue, $im_salmon, $im_gray, $im_black);
     		}
 		}
 		$line_mkr[$linename]=1;

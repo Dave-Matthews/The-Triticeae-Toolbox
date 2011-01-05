@@ -46,7 +46,6 @@ include($config['root_dir'] . 'theme/admin_header.php');
 	else if(isset($_REQUEST['triallist']) && $_REQUEST['triallist'] != "") {
 	  $in_these_trials = "AND e.experiment_uid IN (" . $_REQUEST['triallist'] . ")";
 	}
-
         // DLH R plotting for histogram
         $phen_name = mysql_query("select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotype
                                         AND units.unit_uid = phenotypes.unit_uid;");
@@ -71,9 +70,26 @@ include($config['root_dir'] . 'theme/admin_header.php');
 	//$xlab "xlab='" . $pname[1] . "'";
         $rcmd = "hist(x,$title,$xlab)";
         exec("echo \"$x;$out;$rcmd\" | R --vanilla");
-        echo "<img src=\"/tht/downloads/temp/bighistogram.jpg?d=$date\"><br><hr>\n";
+        echo "<img src=\"/tht/downloads/temp/bighistogram.jpg?d=$date\">\n";
 	//
 
+	// Show mean, std. dev., and number of entries
+	$meanquery = mysql_query("
+select avg(value) as avg,
+       stddev_samp(value) as std,
+       count(value) as num
+from phenotypes, phenotype_data, tht_base, experiments as e
+where phenotypes.phenotype_uid = $phenotype
+and tht_base.experiment_uid = e.experiment_uid
+and phenotype_data.tht_base_uid = tht_base.tht_base_uid
+and phenotype_data.phenotype_uid = phenotypes.phenotype_uid
+$in_these_trials
+") or die(mysql_error());
+	$row = mysql_fetch_assoc($meanquery);
+	$avg = number_format($row['avg'],1);
+	$std = number_format($row['std'],1);
+	$num = $row['num'];
+	echo "<br>Mean: $avg &plusmn; $std, n = $num<br><hr><p>";
 
 	//setting for sort callback
 	$_GET['phenotype'] = $phenotype;
@@ -99,9 +115,9 @@ include($config['root_dir'] . 'theme/admin_header.php');
 		$searchVal = "REGEXP '". $_REQUEST['na_value'] ."'";
 	}
 
+	$_GET['selectWithin'] = $_REQUEST['selectWithin'];
 	$in_these_lines = "";
 	if((is_array($_SESSION['selected_lines'])) && (count($_SESSION['selected_lines']) > 0) && ($_REQUEST['selectWithin'] == "Yes") ) {
-                $_GET['selectWithin'] = "Yes";
 		$in_these_lines = "AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")";
 	}
 
@@ -119,12 +135,18 @@ include($config['root_dir'] . 'theme/admin_header.php');
 				$order";
 	$search = mysql_query($query) or die(mysql_error());
 
-	// DEM 7nov10: Should we leave the existing selection-list and just add to it?
-	$_SESSION['selected_lines'] = array(); // resetting the session array
+	if ($_REQUEST['selectWithin'] != "Add") {
+	  // selectWithin = Yes or Replace
+	  $_SESSION['selected_lines'] = array(); // Empty the session array.
+	}  
 	while($row = mysql_fetch_assoc($search)) {
 		if(!in_array($row['line_record_uid'], $_SESSION['selected_lines']))
 			array_push($_SESSION['selected_lines'], $row['line_record_uid']);
 	}
+	// Store the selected lines in the database.
+	$username=$_SESSION['username'];
+	if ($username)
+	  store_session_variables('selected_lines', $username);
 
 	$query = str_replace("SELECT lr.line_record_uid, ", "SELECT ", $query);
 	$search = mysql_query($query) or die(mysql_error());
@@ -154,15 +176,11 @@ include($config['root_dir'] . 'theme/admin_header.php');
 ?>
 
 	<div class="box">
-	<h2>Select Lines based on Phenotype Data and Compare Values</h2>
-	<form action="<?php echo $config['base_url']; ?>phenotype/compare.php" method="post">
+	<h2>Select Lines by Phenotype</h2>
 
 	<div id="phenotypeSel" class="boxContent">
   <h3> Select Phenotype and (optionally) Trials</h3>
-
-        <p>Would you like to narrow your results by selecting lines within your current set of remembered selected lines?
-                <input type="radio" name="selectWithin" value="Yes"/> Yes
-                <input type="radio" name="selectWithin" value="No"  checked /> No </p>
+	<form action="<?php echo $config['base_url']; ?>phenotype/compare.php" method="post">
 
 	<table id="phenotypeSelTab" class="tableclass1">
 	<thead>
@@ -187,15 +205,46 @@ include($config['root_dir'] . 'theme/admin_header.php');
         <tr><td></td><td></td><td></td></tr>
 	</tbody>
 	</table>
-	</div>
-
-	<p><input type="submit" value="Compare"></p>
-	</form>
-
-			</div>
-	</div>
 </div>
-</div>
+<?php
+// Test for currently selected lines.
+$username=$_SESSION['username'];
+if ($username && !isset($_SESSION['selected_lines'])) {
+  $stored = retrieve_session_variables('selected_lines', $username);
+  if (-1 != $stored)
+    $_SESSION['selected_lines'] = $stored;
+ }
+if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
+?>
+    Combine with <font color=blue>currently selected lines</font>:<br>
+    <input type="radio" name="selectWithin" value="Yes" checked/>Intersect (AND)<br>
+    <input type="radio" name="selectWithin" value="Add"/>Add (OR)<br>
+    <input type="radio" name="selectWithin" value="Replace"/>Replace<br>
+<?php } ?>
+    <input type="submit" value="Search">
+  </form>
+  <br><br>
+  </div>
+<?php
+if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
+  print "<div class='boxContent'>";
+  $selectedcount = count($_SESSION['selected_lines']);
+  echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
+  print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
+  foreach ($_SESSION['selected_lines'] as $lineuid) {
+    $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+    while ($row=mysql_fetch_assoc($result)) {
+      $selval=$row['line_record_name'];
+      print "<option value=\"$lineuid\">$selval</option>\n";
+    }
+  }
+  print "</select>";
+  print "</div>";
+}
+?>
+  </div>
+  </div>
+  </div>
 
 
 <?php include($config['root_dir'] . 'theme/footer.php'); ?>

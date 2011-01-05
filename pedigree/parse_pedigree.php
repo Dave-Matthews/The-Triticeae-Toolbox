@@ -12,17 +12,26 @@ include($config['root_dir'] . 'theme/admin_header.php');
 ?>
 
 <div id="primaryContentContainer">
-	<div id="primaryContent">
-  		<div class="box">
-		<h2>Turn a string based pedigree notation into a tree based pedigree</h2>
+  <div id="primaryContent">
+		<h2>Display a Purdy pedigree</h2>
+  <div class="boxContent">
 
 <?php
 $pstr=$_REQUEST['pstr'];
 if(isset($pstr) && $pstr!=='') {
-	echo "<div style=\"text-align: left;\"><pre>\n";
+	echo "<div style=\"text-align: left;\">";
 	// The following is exactly the same with the pedigree_tree.php program.
     // The difference between the programs are just where the pedigree string
     // is passed from.
+	print "Alleles of selected markers are shown on the right. &nbsp;&nbsp;<br>";
+$markers = $_SESSION['clicked_buttons'];
+	for ($i = 0; $i<count($markers); $i++) {
+	  $res = mysql_query("select marker_name from markers where marker_uid = $markers[$i]");
+	  $markername = mysql_fetch_row($res);
+	  $num = $i+1;
+	  print "<b>$num</b>: $markername[0]<br>";
+	}
+	print "<a href = ".$config['base_url']."genotyping/marker_selection.php>Select markers.</a><p>";
 	$pdarr=generate_pedigree_matrix($pstr);
 	unset($_SESSION['draw_pedigree_matrix']); // necessary, ow the figure is not refreshed
 	unset($_SESSION['draw_snps']);
@@ -32,17 +41,15 @@ if(isset($pstr) && $pstr!=='') {
 
 	include("../images/pedi_image_imgmap.inc");
 	$imgmap=get_imgmap($pdarr);
-	echo "\n</pre></div>";
+	echo "</div>";
 	print write_imagemap("pedimap", $imgmap);
 }
 ?>
 
-<div class="boxContent">
-<p>Example: park/3/bonanza/cree//tmp32</p>
-
 <form action="pedigree/parse_pedigree.php" method="post">
 <p><strong>String based pedigree</strong><br />
-<input type="text" name="pstr" value="<?php echo $_REQUEST['pstr']; ?>" /></p>
+<input type="text" name="pstr" size = 40 value="<?php echo $_REQUEST['pstr']; ?>" />
+  &nbsp;&nbsp;&nbsp;Example: Robust/3/Hazen//Glenn/Karl
 
 <p><input type="submit" value="Get Tree" /></p>
 </form>
@@ -51,7 +58,6 @@ if(isset($pstr) && $pstr!=='') {
 			</div>
 		</div>
 	</div>
-</div>
 </div>
 
 <?php include($config['root_dir'] . 'theme/footer.php'); ?>
