@@ -258,9 +258,15 @@ class Downloads
 			    var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
 
+<<<<<<< HEAD
 			    var subset = $('subset').getValue();
 
 				document.location = '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1build_tassel&bp='+ breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf+'&subset='+subset;
+=======
+			var subset = $('subset').getValue();
+
+					document.location = '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1build_tassel&bp='+ breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf+'&subset='+subset;
+>>>>>>> 469bffd094e6fd3b5510c99bcc50a9338ddd9345
 
 			}
 

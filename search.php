@@ -76,10 +76,11 @@
 				error(1, "No Markers Selected");
 			}
 			
-			$query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, value 
-						from line_records as A, tht_base as B, genotyping_data as C, markers as D, alleles as E 
-						where A.line_record_uid=B.line_record_uid and B.tht_base_uid=C.tht_base_uid and 
-						C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid and 
+			$query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, 
+                            concat(allele_1,allele_2) as value 
+			    from line_records as A, tht_base as B, genotyping_data as C, markers as D, alleles as E 
+			    where A.line_record_uid=B.line_record_uid and B.tht_base_uid=C.tht_base_uid and 
+			    C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid and 
 						D.marker_uid in (".$marker_instr.")";
 			$result=mysql_query($query_str);
 			$lines = array();
@@ -179,7 +180,13 @@
 		}
 
 		/* Handle the results */
-		if(count($found) > 0) {
+// If there's only one hit, jump directly to it.
+if (count($found) == 1) {
+  $line = explode("@@", $found[0]);
+  echo "Single result, redirecting.<br>";
+  echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."view.php?table=".urlencode($line[0])."&uid=$line[2]\">";
+ }
+		elseif(count($found) > 0) {
 			displayTermSearchResults($found);
 		}
 		else {
@@ -189,7 +196,6 @@
 					<p><strong>General Search</strong>:</p>
 					<input type="text" maxlength="32" name="keywords" ><br />
 					<input type="submit" class="button" value="Search">
-					<a href="advanced_search.php">Advanced search</a>
 				</div>
 			</form>
 _SEARCHFORM;

@@ -1046,6 +1046,7 @@ function DispTrialSel($arr) {
 	$query = mysql_query("
 select avg(value) as avg,
        stddev_samp(value) as std,
+       count(value) as num,
        min(cast(value as decimal(10,4))) as min, 
        max(cast(value as decimal(10,4))) as max
 from phenotypes, phenotype_data, tht_base, experiments
@@ -1061,15 +1062,16 @@ and experiments.experiment_uid IN ($trialsSelected)
 	  // Actually number_format should use units.sigdigits_display as done in compare.php.
 	  $avg = number_format($row['avg'],1);
 	  $std = number_format($row['std'],1);
+	  $num = $row['num'];
 	  $min = number_format($row['min'],1);
 	  $max = number_format($row['max'],1);
-	  // Oh foo!  number_format adds commas for thousands!
-	  $min = str_replace(",","",$min);
-	  $max = str_replace(",","",$max);
 
-	  echo "<p>Values</p>";
-	  echo "<p>Mean: $avg &plusmn; $std<br>";
+	  echo "<p><b>Values</b></p>";
+	  echo "<p>Mean: $avg &plusmn; $std, n = $num<br>";
 	  echo "Range: " . $min . " - " . $max . "</p>";
+	  // number_format adds commas for thousands, and rounds. Better be inclusive by default.
+	  $min = floor(str_replace(",","",$min));
+	  $max = ceil(str_replace(",","",$max));
 	  echo "<p>Search between:<br /> <input type=\"text\" name=\"first_value\" value=$min /> <br /> and <br /> <input type=\"text\" name=\"last_value\" value=$max /></p>";
 
 	  // DLH R plotting for histogram      

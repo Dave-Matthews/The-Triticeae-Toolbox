@@ -3,17 +3,18 @@
 function get_imgmap_cladematrix (array $mx, array $mxnm, $cell_size, $lnm) {
 	$maxlv=count($mx);
 	$maxcol=count($mx[0])-1;
-	$cell_width=50;
-	$cell_height=50;
 	if ($cell_size>10 && $cell_size<50) {
 		$cell_width=$cell_size;
 		$cell_height=$cell_size;
 	}
-	$hlw=1; // half of line width
-	$bmg=5; // margin for button
-	$cmg=10; // margin for characters
-	$nwidth=20; // width of a character
-	$nheight=$cell_height; // height of a character
+	$cell_width=60; // for line names
+	$cell_height=11; // for line names
+	$hlw=0.5; // half of line width
+	$bmg=1; // margin for button. The gap between line-name rectangles.  Larger values shrink the rectangle.
+	$cmg=2; // vertical margin for allele values.
+	$nwidth=14; // width of allele values
+// 	$nheight=$cell_height; // height of a character
+ 	$nheight=11; // height of a character. Used for marker alleles
 	$imw=$maxcol*$cell_width+100+3*$cell_width+$nwidth*strlen($dstr);
 	$imh=$maxlv*$cell_height+100;
 	$x=50;
@@ -51,8 +52,8 @@ function get_imgmap_cladematrix (array $mx, array $mxnm, $cell_size, $lnm) {
     }
     	
     // image map for the markers
-	$nx=$xcoor+2*$cell_width;
-    $ny=$y-$cell_height;
+	$nx=$xcoor+$cell_width;
+    $ny=$y-$cell_height-1;
     if (isset($_SESSION['clicked_buttons'])) {
 		$selected_markers=$_SESSION['clicked_buttons'];
     	for ($i=0; $i<count($selected_markers); $i++) {

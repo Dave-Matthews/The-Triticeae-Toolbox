@@ -63,8 +63,7 @@ EOD;
   <div id="util">
   <div id="utilright">
   </div>
-  <a href="about.php">
-  about</a> | <a href="./feedback.php">feedback
+  <a href="./feedback.php">Feedback</a> | <a href="about.php">About THT</a>
   </a>
   </div>
 
@@ -72,11 +71,12 @@ EOD;
   //The navigation tab menus 
   //Tooltips:
   $lang = array(
-		"desc_sc1" => "Search by Pedigree Related Information.",
+		"desc_sc1" => "Search by germplasm and phenotype information",
 		"desc_sc2" => "Credits",
-		"desc_sc3" => "Search by Genotyping Related Information.",
+		"desc_sc3" => "Search by genotyping information",
 		"desc_sc4" => "Search by Expression Related information.",
 		"desc_sc5" => "Database administration",
+		"desc_sc6" => "Visualization tools",
 		);
 ?>
  <div id="nav">
@@ -108,6 +108,12 @@ EOD;
   <a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
   <li><a href="<?php echo $config['base_url']; ?>snps.php" title="SNP alleles and sequences">SNP alleles and sequences</a>
   </ul>
+  <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analysis</a>
+  <ul>
+  <li><a href="<?php echo $config['base_url']; ?>advanced_search.php" title="Alleles for selected markers">View Haplotypes</a>
+  <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
+<!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
+  </ul>
   <li>
   <a title="<?php echo $lang["desc_sc2"]; ?>">Data Sources</a>
   <ul>
@@ -115,12 +121,12 @@ EOD;
   <a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Show CAP Data Programs">
   CAP Data Programs</a>
   </ul>
-  <li>
+<!--  <li>
   <a title="<?php echo $lang["desc_sc4"]; ?>">Expression</a>
   <ul>
   <li>
   <a href="http://plexdb.org" title="PLEXdb">PLEXdb</a>
-  </ul>
+  </ul> -->
   <?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
    <li> <a title="Curate the Database">Curation</a>
       <ul>
@@ -213,7 +219,8 @@ EOD;
   <input style="width:170px" type="text" name="keywords" value="Quick search..." onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
   </div>
   </form>
-  <a href="<?php echo $config['base_url']; ?>advanced_search.php">Advanced Search</a>
+  <br>
+<!--  <a href="<?php echo $config['base_url']; ?>advanced_search.php">Advanced Search</a> -->
   </div>
   </div>
   <div id="main">

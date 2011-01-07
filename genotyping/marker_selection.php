@@ -135,7 +135,6 @@ where marker_uid=$mkruid" . ($mapid ? " and mm.map_uid=$mapid":"");
       print "<option value='$mkruid'>$selval</option>\n";
     }
   }
-
   $chrlist = array_unique($chrlist);
   $chrlist.sort();
  print "</select>";
@@ -144,6 +143,7 @@ where marker_uid=$mkruid" . ($mapid ? " and mm.map_uid=$mapid":"");
 var mlist = \$j('#mlist option').map(function () { return \$j(this).text(); });
 </script>";
 
+ // Show GBrowse maps.
  foreach ($chrlist as $chr) {
    echo "<div id='gbrowse_$chr'></div>\n";
    echo <<<EOD

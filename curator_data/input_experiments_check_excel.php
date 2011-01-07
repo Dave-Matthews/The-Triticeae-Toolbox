@@ -1380,10 +1380,11 @@ function ForceValue(& $arg1, $msg)
 		
 		/* this part id not necessary as we want to replace the raw data file name and append to the existing raw data file name */	
 		
-			$sql = "UPDATE experiments SET raw_data_file_name = '$infile_raw', updated_on=NOW()
+			if ($rawdatafile) {
+			  $sql = "UPDATE experiments SET raw_data_file_name = '$infile_raw', updated_on=NOW()
                   WHERE experiment_uid = '$experiment_uids[$i]'";
 			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-			
+			}
 		
 			
 			if (DEBUG>2) echo $sql."\n";
@@ -1420,7 +1421,7 @@ while ($row = mysql_fetch_array($res)){
    	echo " <b>The Data is inserted/updated successfully </b>";
    	echo"<br/><br/>";
 	?>
-	<a href="http://tht.vrac.iastate.edu:8080/curator_data/input_experiments_upload_excel.php"> Go Back To Main Page </a>
+	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php"> Go Back To Main Page </a>
 	<?
    
 	$footer_div = 1;

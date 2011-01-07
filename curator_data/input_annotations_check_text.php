@@ -80,11 +80,11 @@ private function typeAnnotationCheck()
 	?>
 	<script type="text/javascript">
 	
-	function update_database(filepath, filename, username)
+	    function update_database(filepath, filename, username, data_public_flag)
 	{
 			
 			
-			var url='<?php echo $_SERVER[PHP_SELF]; ?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
+			var url='<?php echo $_SERVER[PHP_SELF]; ?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&public=' + data_public_flag;
 	
 			// Opens the url in the same window
 	   	window.open(url, "_self");
@@ -136,11 +136,11 @@ private function typeAnnotationCheck()
 
 	$target_path=$tmp_dir."/";
 
-	
+
 	if($_SERVER['REQUEST_METHOD'] == "POST")
 	{
 		$data_public_flag = $_POST['flag']; //1:yes, 0:no
-		//echo" we got the value for data flag".$data_public_flag1;
+ 		//echo" we got the value for data flag".$data_public_flag1;
 	}
 	
 	if ($_FILES['file']['name'][0] == ""){
@@ -173,16 +173,16 @@ private function typeAnnotationCheck()
 	 $header = fgetcsv($handle, 0, "\t");
 
         // Set up column indices; all columns are required
-        $capyear_idx = implode(find("CAP_Year", $header),"");
-        $bp_idx =  implode(find("Breeding_Program", $header),"");
+        $capyear_idx = implode(find("CAP Year", $header),"");
+        $bp_idx =  implode(find("Breeding Program", $header),"");
         $location_idx = implode(find("Location", $header),"");
-        $latlong_idx = implode(find("Lat/Long_of_field", $header),"");
+        $latlong_idx = implode(find("Lat/Long of field", $header),"");
         $collab_idx = implode(find("Collaborator", $header),"");
-        $collabcode_idx = implode(find("Collaborator_Code", $header),"");
+        $collabcode_idx = implode(find("Collaborator Code", $header),"");
         //$test_idx = implode(find("Testing", $header),"");
         $experiment_idx = implode(find("Experiment", $header),"");
-        $descexperiment_idx = implode(find("Descriptive_Name_of_Experiment", $header),"");
-        $trialcode_idx = implode(find("Trial_Code", $header),"");
+        $descexperiment_idx = implode(find("Descriptive Name of Experiment", $header),"");
+        $trialcode_idx = implode(find("Trial Code", $header),"");
 				$planting_date_idx = implode(find("Planting date", $header),"");
 				$seeding_rate_idx = implode(find("Seeding rate", $header),"");
 				$experimental_design_idx = implode(find("Experimental design", $header),"");
@@ -309,7 +309,7 @@ private function typeAnnotationCheck()
 						{
 								/* adding the trial code to the array */
 									$trialcode_data[] = $trialcode;
-									
+
 							$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$trialcode}'";
 							$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 					
@@ -508,7 +508,7 @@ private function typeAnnotationCheck()
 			
 		
 		
-		<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $annotfile?>','<?echo $uploadfile?>','<?echo $username?>' )"/>
+		<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $annotfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $data_public_flag?>' )"/>
     <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
 	
 		<?php
@@ -539,22 +539,23 @@ private function typeAnnotationCheck()
 	$filename_old = $_GET['file_name'];
 	$filename = $filename_old.rand();
 	$username = $_GET['user_name'];
+	$data_public_flag = $_GET['public'];
 	
 	/* Read the annotation file */
 	 $handle = fopen($datafile, "r");
         $header = fgetcsv($handle, 0, "\t");
 
         // Set up column indices; all columns are required
-        $capyear_idx = implode(find("CAP_Year", $header),"");
+        $capyear_idx = implode(find("CAP Year", $header),"");
         $bp_idx =  implode(find("Breeding_Program", $header),"");
         $location_idx = implode(find("Location", $header),"");
-        $latlong_idx = implode(find("Lat/Long_of_field", $header),"");
+        $latlong_idx = implode(find("Lat/Long of field", $header),"");
         $collab_idx = implode(find("Collaborator", $header),"");
-        $collabcode_idx = implode(find("Collaborator_Code", $header),"");
+        $collabcode_idx = implode(find("Collaborator Code", $header),"");
         $test_idx = implode(find("Testing", $header),"");
         $experiment_idx = implode(find("Experiment", $header),"");
-        $descexperiment_idx = implode(find("Descriptive_Name_of_Experiment", $header),"");
-        $trialcode_idx = implode(find("Trial_Code", $header),"");
+        $descexperiment_idx = implode(find("Descriptive Name of Experiment", $header),"");
+        $trialcode_idx = implode(find("Trial Code", $header),"");
 				$planting_date_idx = implode(find("Planting date", $header),"");
 				$seeding_rate_idx = implode(find("Seeding rate", $header),"");
 				$experimental_design_idx = implode(find("Experimental design", $header),"");
@@ -568,7 +569,7 @@ private function typeAnnotationCheck()
 				
 				$collab_idx = substr($collab_idx,0,1);
 				$experiment_idx = substr($experiment_idx,0,1);
-			//	echo "exp short". $experiment_idx . "collab code" . $collabcode_idx;
+	                //	echo "exp short". $experiment_idx . "collab code" . $collabcode_idx;
 				
 /*	echo " indexes". "plant date".$planting_date_idx."seed rate". $seeding_rate_idx . "exp design" . $experimental_design_idx
 					. "num of entries" . $num_of_entries_idx . "num of repli" . $num_of_replications_idx . "plot" . $plot_size_idx .
@@ -671,8 +672,6 @@ private function typeAnnotationCheck()
             /* check if trial code is empty */
             
             $trialcode = addslashes(trim($data[$trialcode_idx]));//trial code
-           
-            
             if (is_null($trialcode)) 
 						{
 							echo "Trial code ".$trialcode." is empty "."<br/>";
@@ -680,7 +679,8 @@ private function typeAnnotationCheck()
 						} 
 						else 
 						{
-			
+						  /* adding the trial code to the array */
+						  $trialcode_data[] = $trialcode;
 							$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$trialcode}'";
 							$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 					
@@ -689,9 +689,6 @@ private function typeAnnotationCheck()
 								$row = mysql_fetch_assoc($res);
 								$exp_id = $row['experiment_uid'];
 							
-								/* adding the trial code to the array */
-									$trialcode_data[] = $trialcode;
-								
 								if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 							} elseif (mysql_num_rows($res)>1) //yes, experiment found more than once, bad
 							{
@@ -719,10 +716,8 @@ private function typeAnnotationCheck()
           
           
           /* database manipulation */
-          
           for ($i=0;$i<sizeof($trialcode_data);$i++)
 					{
-					
 						/* dealing with escaping and other stuff */
 						
 						$trialcode = mysql_real_escape_string(trim($trialcode_data[$i]));
@@ -807,7 +802,7 @@ private function typeAnnotationCheck()
 						// if no then insert into table
 						$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$trialcode}'";
 						$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-						
+
 						if (mysql_num_rows($res)!==0) //yes, experiment found, so update
 						{
 								$row = mysql_fetch_assoc($res);
@@ -871,7 +866,7 @@ private function typeAnnotationCheck()
 								
 								//get experiment_uid set genotype experiments info table
 								$sql = "SELECT experiment_uid FROM experiments
-												WHERE trial_code = '{$experiment->trialcode}' limit 1";
+												WHERE trial_code = '{$trialcode}' limit 1";
 								$res = mysql_query($sql) or die(mysql_error());
 								$row = mysql_fetch_assoc($res);
 								$exp_id = $row['experiment_uid'];
@@ -903,8 +898,8 @@ private function typeAnnotationCheck()
 						
 						} 
 					}// end of for loop
-          
-          
+
+
         echo " <b>The Data is inserted/updated successfully </b>";
 				echo"<br/><br/>";
 	?>

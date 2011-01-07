@@ -93,8 +93,11 @@ $query = 	"SELECT experiments.trial_code, marker_type_name, marker_name, alleles
  * 
  * @return void - this function outputs its result .
  */
-function showLineForMarker($markername, $order="line_record_name") {
+function showLineForMarker($markername, $order="ORDER BY line_record_name") {
 
+  if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
+    $order = "ORDER BY " . $_GET['sortby'] . " " . $_GET['sorttype'];
+  }
   $query = "SELECT lr.line_record_name, a.allele_1, a.allele_2           
 	    FROM markers as m, line_records as lr, alleles as a,                                                      
 		 tht_base as tb, genotyping_data as gd
@@ -102,7 +105,8 @@ function showLineForMarker($markername, $order="line_record_name") {
 	      AND m.marker_uid = gd.marker_uid               
 	      AND a.genotyping_data_uid = gd.genotyping_data_uid                     
 	      AND tb.line_record_uid = lr.line_record_uid    
-	      AND gd.tht_base_uid = tb.tht_base_uid";
+	      AND gd.tht_base_uid = tb.tht_base_uid
+            $order";
   $resource = mysql_query($query) or die(mysql_error());
 
   if(mysql_num_rows($resource) < 1) {
