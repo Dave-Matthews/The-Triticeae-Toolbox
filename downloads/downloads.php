@@ -13,6 +13,8 @@
 // +----------------------------------------------------------------------+
 // +----------------------------------------------------------------------+
 // | Change log															  |
+// | 1/5/01:  JLee - Add support to generate datafile for Tassel V3       |  
+// |                                                                      |
 // | 2/28/09: removed table summarizing all allelles to avoid timeout	  |
 // |          problems when getting SNP data across multiple programs
 // |May 2009: added in tassel support functionality and commented out
@@ -75,6 +77,10 @@ class Downloads
 			case 'type1build_tassel':
 				echo $this->type1_build_tassel();
 				break;
+			case 'type1build_tassel_v3':
+				echo $this->type1_build_tassel_v3();
+				break;
+
 			default:
 				$this->type1();
 				break;
@@ -90,7 +96,7 @@ class Downloads
 		global $config;
 		include($config['root_dir'].'theme/normal_header.php');
 
-		echo "<h2>Download Gateway</h2>";
+		echo "<h2>Tassel Download</h2>";
 		echo "<p><em>Select multiple options by holding down the Ctrl key while clicking.
 		</em></p>";
 	
@@ -252,10 +258,26 @@ class Downloads
 			    var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
 
-					document.location = '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1build_tassel&bp='+ breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+			    var subset = $('subset').getValue();
+
+				document.location = '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1build_tassel&bp='+ breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf+'&subset='+subset;
 
 			}
 
+			function getdownload_tassel_v3()
+			{
+				if (selectedTraits() == '') {
+					alert('Please select at least one trait!');
+					return false;
+				}
+			    var mm = $('mm').getValue();
+                var mmaf = $('mmaf').getValue();
+
+    			var subset = $('subset').getValue();
+
+				document.location = '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1build_tassel_v3&bp='+ breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf+'&subset='+subset;
+
+			}
 
             function mrefresh() {
                 var mm = $('mm').getValue();
@@ -460,8 +482,23 @@ class Downloads
 		$CAPdataprogram = $_GET['bp'];
 		$years = $_GET['yrs'];
 		
+	/**
+	 * Use currently selected lines?
+	 */
+	if (count($_SESSION['selected_lines']) > 0) {
+	  $sub_ckd = "checked"; $all_ckd = "";
+	}
+	else {
+	  $sub_ckd = "disabled"; $all_ckd = "checked";
+	}
 		?>
-        <h3>4. Markers</h3>
+	<h3>4. Lines</h3>
+				<input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?>>Include 
+only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently 
+selected lines</a>.<br>
+				<input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?>>Include all.<br>
+
+        <h3>5. Markers</h3>
 		<div>
 		<?php
 		//// $firephp = FirePHP::getInstance(true);
@@ -546,9 +583,13 @@ class Downloads
 				    <br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 				    <br>Note: monomorphic markers (MAF = 0) will </i><b>not</b><i> be included in the download.
 				    </i>
-				    <br><input type="button" value="Refresh" onclick="javascript:mrefresh();return false;" />
-				    <br><input type="button" value="Download for Tassel" onclick="javascript:getdownload_tassel();return false;" />
 
+				    <br><input type="button" value="Refresh" onclick="javascript:mrefresh();return false;" /><br>
+					<table ALIGN="left" > <tr> <td COLSPAN="3">
+				    <br><input type="button" value="Download for Tassel V2" onclick="javascript:getdownload_tassel();return false;" />
+					<h4> or </h4>
+				    <input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel_v3();return false;" /> <br>
+					</td> </tr> </table>	
 				    <?php
 				     } else {
 				  ?><p style="font-weight: bold">No Data</p><?php
@@ -643,7 +684,8 @@ class Downloads
 		$traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
 		$CAPdataprogram = (isset($_GET['bp']) && !empty($_GET['bp'])) ? $_GET['bp'] : null;
 		$years = (isset($_GET['yrs']) && !empty($_GET['yrs'])) ? $_GET['yrs'] : null;
-		
+		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+
 		$dtype = "tassel";
 		
 				// Get dataset IDs
@@ -691,7 +733,7 @@ class Downloads
 		$zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
 		$zip->newFile("traits.txt");
 		// $firephp->log("into traits ".$experiments_t." N".$traits." N".$datasets_exp);
-		$zip->writeData($this->type1_build_tassel_traits_download($experiments_t, $traits, $datasets_exp));
+		$zip->writeData($this->type1_build_tassel_traits_download($experiments_t, $traits, $datasets_exp, $subset));
 		// $firephp->log("after traits 1 ".$experiments_t);
 
 		$zip->newFile("snpfile.txt");
@@ -706,6 +748,79 @@ class Downloads
 		
 		header("Location: ".$dir.$filename);
 	}
+
+	function type1_build_tassel_v3()
+	{
+		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
+		$traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
+		$CAPdataprogram = (isset($_GET['bp']) && !empty($_GET['bp'])) ? $_GET['bp'] : null;
+		$years = (isset($_GET['yrs']) && !empty($_GET['yrs'])) ? $_GET['yrs'] : null;
+		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+		
+		$dtype = "tassel";
+		
+				// Get dataset IDs
+			$sql_exp = "SELECT DISTINCT dse.datasets_experiments_uid as id
+							FROM  datasets as ds, CAPdata_programs as cd, datasets_experiments as dse
+							WHERE cd.CAPdata_programs_uid = ds.CAPdata_programs_uid
+								AND dse.datasets_uid = ds.datasets_uid
+								AND ds.breeding_year IN ($years)
+								AND ds.CAPdata_programs_uid IN ($CAPdataprogram)";
+			$res = mysql_query($sql_exp) or die(mysql_error());
+			
+			while ($row = mysql_fetch_array($res)){
+				$datasets[] = $row["id"];
+			}
+			
+			$datasets_exp = implode(',',$datasets);		
+		
+		// Get genotype experiments
+		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
+				FROM experiments e, experiment_types et, datasets_experiments as dse
+				WHERE
+					e.experiment_type_uid = et.experiment_type_uid
+					AND et.experiment_type_name = 'genotype'
+					AND e.experiment_uid = dse.experiment_uid
+					AND dse.datasets_experiments_uid IN ($datasets_exp)";
+		$res = mysql_query($sql_exp) or die(mysql_error());
+			
+		while ($row = mysql_fetch_array($res)){
+				$exp[] = $row["exp_uid"];
+		}
+		$experiments_g = implode(',',$exp);
+		//$firephp = FirePHP::getInstance(true);
+
+		//$firephp->error("Curent location: ". getcwd());
+		$dir = 'temp/';
+		$filename = 'THTdownload_tasselV3_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
+		
+        // File_Archive doesn't do a good job of creating files, so we'll create it first
+		if(!file_exists($dir.$filename)){
+			$h = fopen($dir.$filename, "w+");
+			fclose($h);
+		}
+		
+        // Now let File_Archive do its thing
+		$zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
+		$zip->newFile("traits.txt");
+		// $firephp->log("into traits ".$experiments_t." N".$traits." N".$datasets_exp);
+		$zip->writeData($this->type1_build_tassel_traits_download($experiments_t, $traits, $datasets_exp, $subset));
+		// $firephp->log("after traits 1 ".$experiments_t);
+
+		$zip->newFile("snpfile.txt");
+		// $firephp->log("before first marker file".$experiments_g);
+		$zip->writeData($this->type1_build_markers_download($experiments_g, $dtype));
+		// $firephp->log("after first marker file".$experiments_g);
+		$zip->newFile("geneticMap.txt");
+		$zip->writeData($this->type1_build_geneticMap($experiments_g));
+		// $firephp->log("after alignment marker file".$experiments_g);
+
+		$zip->close();
+		
+		header("Location: ".$dir.$filename);
+	}
+
+
 	
 	private function type1_build_traits_download($experiments, $traits, $datasets)
 	{
@@ -767,7 +882,7 @@ class Downloads
 	}
 
 /* Build trait download file for Tassel program interface */
-	private function type1_build_tassel_traits_download($experiments, $traits, $datasets)
+    private function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
 	{
      	//$firephp = FirePHP::getInstance(true);
 		$delimiter = "\t";
@@ -800,16 +915,23 @@ class Downloads
          $outputheader3 .= $row['trial_code'].$delimiter;
          $keys[] = $row['phenotype_uid'].$row['experiment_uid'];
       }
-      // $firephp->log("trait_location information ".$outputheader2."  ".$outputheader3);
-	  // $firephp->table('keys label ', $keys); 
-	  
+		//$firephp->log("trait_location information ".$outputheader2."  ".$outputheader3);
+		// $firephp->table('keys label ', $keys); 
+
+		// dem 5jan11: If $subset="yes", use $_SESSION['selected_lines'].
+		$intheselines = "";
+		if ($subset == "yes" && count($_SESSION['selected_lines']) > 0) {
+		  $selectedlines = implode(",", $_SESSION['selected_lines']);
+		  $intheselines = "AND line_records.line_record_uid IN ($selectedlines)";
+		}
       // get a list of all line names in the selected datasets and experiments,
 	  // INCLUDING the check lines // AND tht_base.check_line IN ('no')
       $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid
                FROM line_records, tht_base
                WHERE tht_base.experiment_uid IN ($experiments)
+                 $intheselines
                  AND line_records.line_record_uid=tht_base.line_record_uid
-                  AND ((tht_base.datasets_experiments_uid in ($datasets)AND tht_base.check_line='no') 
+                 AND ((tht_base.datasets_experiments_uid in ($datasets)AND tht_base.check_line='no') 
                   	OR (tht_base.check_line='yes'))";
       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
       while($row = mysql_fetch_array($res)) {
@@ -1165,6 +1287,143 @@ class Downloads
 		  return $outputheader.$output;
 
 	}
+
+	private function type1_build_geneticMap($experiments)
+	{
+		$delimiter ="\t";
+		// $firephp = FirePHP::getInstance(true);
+		$output = '';
+		$doneheader = false;
+		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
+            $max_missing = $_GET['mm'];
+		if ($max_missing>100)
+			$max_missing = 100;
+		elseif ($max_missing<0)
+			$max_missing = 0;
+			// $firephp->log("in sort markers2");
+        $min_maf = 0;//IN PERCENT
+        if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+            $min_maf = $_GET['mmaf'];
+		if ($min_maf>100)
+			$min_maf = 100;
+		elseif ($min_maf<0)
+			$min_maf = 0;
+		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
+
+        //get lines and filter to get a list of markers which meet the criteria selected by the user
+        $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+					SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+					FROM allele_frequencies AS af, markers as m
+					WHERE m.marker_uid = af.marker_uid
+						AND af.experiment_uid in ($experiments)
+					group by af.marker_uid"; 
+
+		$res = mysql_query($sql_mstat) or die(mysql_error());
+		$num_maf = $num_miss = 0;
+
+		while ($row = mysql_fetch_array($res)){
+			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+			  $miss = round(100*$row["summis"]/$row["total"],1);
+					if (($maf > $min_maf)AND ($miss<=$max_missing)) {
+						$marker_names[] = $row["name"];
+						$outputheader .= $delimiter.$row["name"];
+						$marker_uid[] = $row["marker"];
+						
+					}
+		}
+		// $firephp->log($marker_uid);
+   		
+	    $lookup_chrom = array(
+		  '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
+		  '6H' => '6','7H' => '7','UNK'  => '10'
+        );
+		
+        // finish writing file header using a list of line names
+        $sql = "SELECT DISTINCT lr.line_record_name AS line_name
+			 FROM line_records AS lr, tht_base AS tb
+			 WHERE
+				  lr.line_record_uid = tb.line_record_uid
+				  AND tb.experiment_uid IN ($experiments)
+				  ORDER BY line_name";
+        $res = mysql_query($sql) or die(mysql_error());
+        while ($row = mysql_fetch_array($res)) {
+            $line_names[] = $row['line_name'];
+        }
+			  
+        // make an empty marker with the lines as array keys 
+        $nelem = count($marker_uid);
+        $n_lines = count($line_names);
+		$empty = array_combine($line_names,array_fill(0,$n_lines,'-'));
+		$nemp = count($empty);
+		$marker_uid = implode(",",$marker_uid);
+		$line_str = implode($delimiter,$line_names);
+		// $firephp = log($nelem." ".$n_lines);
+			
+		// write output file header
+		$outputheader = "<Map>\n";
+	    // $firephp = log($outputheader);
+
+		// get marker map data, line and marker names; use latest consensus map
+		// as the map default
+        $mapset = 1;	
+
+        $sql = "SELECT mim.chromosome, mim.start_position, lr.line_record_name as lname, m.marker_name AS mname                    
+			FROM
+            markers as m,
+			markers_in_maps as mim,
+			map,
+			mapset,
+            line_records as lr,
+            alleles as a,
+            tht_base as tb,
+            genotyping_data as gd
+			WHERE
+            a.genotyping_data_uid = gd.genotyping_data_uid
+				AND mim.marker_uid = m.marker_uid
+				AND m.marker_uid = gd.marker_uid
+				AND gd.marker_uid IN ($marker_uid)
+				AND mim.map_uid = map.map_uid
+				AND map.mapset_uid = mapset.mapset_uid
+				AND mapset.mapset_uid = '$mapset'
+				AND tb.line_record_uid = lr.line_record_uid
+				AND gd.tht_base_uid = tb.tht_base_uid
+				AND tb.experiment_uid IN ($experiments)
+		  ORDER BY mim.chromosome,mim.start_position, m.marker_uid, lname";
+
+        $last_marker = "somemarkername";
+		$res = mysql_query($sql) or die(mysql_error());
+		
+		$cnt = $num_markers = 0;
+		while ($row = mysql_fetch_array($res)){
+				//first time through loop
+            if ($cnt==0) {
+                $last_marker = $row['mname'];
+				$pos = $row['start_position'];
+				$chrom = $lookup_chrom[$row['chromosome']];
+			}
+				
+			if ($last_marker != $row['mname']){  
+				// Close out the last marker
+				$output .= "$last_marker\t$chrom\t$pos\t";
+				$output .= "\n";
+				$lname = $row['lname'];	//start new line			
+				$last_marker = $row['mname'];
+				$pos = $row['start_position'];
+				$chrom = $lookup_chrom[$row['chromosome']];
+				$num_markers++;
+    		} else {
+				 $lname = $row['lname'];				
+			}
+			$cnt++;
+		}
+		
+	  //save data from the last line
+	  $output .= "$last_marker\t$chrom\t$pos\t";
+	  $output .= "\n";
+	  $num_markers++;
+
+	  return $outputheader.$output;
+    }
 
 	
 	private function type1_build_pedigree_download($experiments)
