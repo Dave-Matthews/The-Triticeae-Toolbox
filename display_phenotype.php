@@ -1,4 +1,3 @@
-
 <?php session_start();
 
 /*
@@ -8,28 +7,27 @@
 
 //Author: Kartic Ramesh; drastically rewritten by Julie Dickerson, 2009 to make usable and use sessions
 
-// 2/18/2010 J.Lee Fix "Download Raw Data" button not showing with IE browser 
-// 3/01/2010 J.Lee Handle missing Raw Data files 
-// 6/24/2010 J.Lee Merged with Julie's changes 
-// 6/29/2010 J.Lee Fixed table display issue with MSIE7 and realign dataset download button
-// 8/19/2010 DEM Fixed scrolling table to work in IE too.
-// 9/22/2010 DEM Output CAP Code for each germplasm line as column 2 of the data table.
-// 9/22/2010 DEM Output Source files loaded at the bottom of the page.
-// 9/28/2010 J.Lee Add "Number of Entries" to display list
-// 9/30/2010 DEM Add "Experiment" to display list. 
-// 9/30/2010 DEM Fixed comma-separated header line in tab-delimited "Download Experiment Data" output.
+// 01/12/2011 JLee  Add so experiment download data displays on separate page
+// 01/12/2011 JLee  Mod so mean and std.err values in experiment datafile do have signif digit applied to them   
 // 10/07/2010 DEM Stop rounding-off values when exported via "Download Experiment Data".
+// 9/30/2010 DEM Fixed comma-separated header line in tab-delimited "Download Experiment Data" output.
+// 9/30/2010 DEM Add "Experiment" to display list. 
+// 9/28/2010 J.Lee Add "Number of Entries" to display list
+// 9/22/2010 DEM Output Source files loaded at the bottom of the page.
+// 9/22/2010 DEM Output CAP Code for each germplasm line as column 2 of the data table.
+// 8/19/2010 DEM Fixed scrolling table to work in IE too.
+// 6/29/2010 J.Lee Fixed table display issue with MSIE7 and realign dataset download button
+// 6/24/2010 J.Lee Merged with Julie's changes 
+// 3/01/2010 J.Lee Handle missing Raw Data files 
+// 2/18/2010 J.Lee Fix "Download Raw Data" button not showing with IE browser 
 */
-
 
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'theme/normal_header.php');
 $delimiter = "\t";
-
-
 connect();
-    //-----------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------
     $trial_code=$_GET['trial_code'];
     //echo $trial_code."<br>";
     $sql_auth="SELECT data_public_flag FROM experiments WHERE trial_code='$trial_code'";
@@ -124,11 +122,10 @@ connect();
         
         $myFile = "THT_Phenotypes_".chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).".txt";//auto generate a delimited file with the queried data
 		
-		$dir =$config['root_dir'].'downloads/temp/';		
+        $dir ='./downloads/temp/';				
         // create a download file
-		$fh = fopen($dir.$myFile, "w");
-
-
+        $downloadFile = $dir.$myFile;
+		$fh = fopen($downloadFile, "w");
         
         $stringData = implode($delimiter,$titles);
        // echo $stringData."<br>";
@@ -198,7 +195,7 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
 			$val = "--"; 
 			$val_long = "--";
 		    }
-                $single_row[$i+2]=$val;
+        $single_row[$i+2]=$val;
 		$single_row_long[$i+2]=$val_long;
             }
         //-----------------------------------------check line addition
@@ -210,7 +207,7 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
             $single_row_long[$num_phenotypes+2]=$check;
             //-----------------------------------------
             //var_dump($single_row_long);
- 	    $stringData= implode($delimiter,$single_row_long);
+            $stringData= implode($delimiter,$single_row_long);
             //echo $stringData."<br>";
             $stringData.="\n";
             
@@ -221,6 +218,10 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
             //-----------------------------------------get statistics
         $mean_arr=array('Mean','');
         $se_arr=array('Standard Error','');
+        // Unformatted mean and SE 
+        $unformat_mean_arr=array('Mean','');
+        $unformat_se_arr=array('Standard Error','');
+ 
         $nr_arr=array('Number Replicates','');
         $prob_arr=array('Prob > F','');
             
@@ -228,13 +229,12 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
         $fse="SE,";
         $fnr="Number Replicates,";
         $fprob="Prob gt F,";
-        
-        
+         
         for($i=0;$i<$num_phenotypes;$i++)
         {
             $puid=$phenotype_uid[$i];
             $sigdig=$unit_sigdigits[$i];
-            
+         
             $sql_mdata="SELECT mean_value,standard_error,number_replicates,prob_gt_F
                 FROM phenotype_mean_data
                 WHERE phenotype_uid='$puid'
@@ -247,19 +247,21 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
             $prob=$row_mdata['prob_gt_F'];
         
             if($mean!=0) {	
-                if ($sigdig>=0)
-                    $mean=number_format($mean,$sigdig);
+                $unformat_mean_arr[] = $mean;
+                if ($sigdig>=0) $mean=number_format($mean,$sigdig);
                 $mean_arr[] = $mean;
             } else {
+                $unformat_mean_arr[] = "--";
                 $mean_arr[]="--";
             }
             
             if($se!=0) {	
-                if ($sigdig>=0)
-                    $se=number_format($se,$sigdig);
+                $unformat_se_arr[] = $se;                
+                if ($sigdig>=0) $se=number_format($se,$sigdig);
                 $se_arr[] = $se;
             } else {	
                 $se_arr[]="--";
+                $unformat_se_arr[] = "--";
             }
             
             if($nr==0) {
@@ -281,9 +283,12 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
         $fse= implode($delimiter,$se_arr)."\n";
         $fnr= implode($delimiter,$nr_arr)."\n";
         $fprob= implode($delimiter,$prob_arr)."\n";
+
+        $ufmean= implode($delimiter,$unformat_mean_arr)."\n";
+        $ufse= implode($delimiter,$unformat_se_arr)."\n";
         
-        fwrite($fh,$fmean);
-        fwrite($fh,$fse);
+        fwrite($fh,$ufmean);
+        fwrite($fh,$ufse);
         fwrite($fh,$fnr);
         fwrite($fh,$fprob);
         
@@ -297,23 +302,24 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
         $all_rows_long[]=$prob_arr;
         
         //-----------------------------------------
-        
-        
         $total_rows=count($all_rows); //used to determine the number of rows to be displayed in the result page
-        
-        
         fclose($fh);
-        
-        
-         ?>
+?>
        
-			 <!--Style sheet for better user interface-->
-		<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
+<!--Style sheet for better user interface-->
+<style type="text/css">
+	th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+	table {background: none; border-collapse: collapse}
+	td {border: 1px solid #eee !important;}
+	h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+</style>
+
+<script type="text/javascript">
+
+function output_file(url) {
+	window.open(url);
+}
+</script>
 
 <!-- Calculate the width of the table based on the number of columns. -->		
 <?php $tablewidth = count($single_row) * 92 + 10;  ?>
@@ -360,17 +366,13 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
 </table>
 </div>			
         
-        <?php
-        echo "<br>";
-//        echo "<form action='downloads/temp/THT_Phenotypes.txt'>";
-        echo "<form action='downloads/temp/$myFile'>";
-        //echo "<form action=<?php header("Location: ".$dir.$myFile);
-        //header("Location: ".$dir.$filename);
-        echo "<input type='submit' value='Download Experiment Data'>";
-        echo "</form><p>";
-       // header("Location: ".$dir.$myFile);
-	
-        
+<?php
+    echo "<br>";
+	echo "<form>";
+	echo "<input type='button' value='Download Experiment Data' onclick=\"javascript:output_file('$downloadFile');\" />";
+    echo "</form><p>";
+	// header("Location: ".$dir.$myFile);
+   
     } else {
         	?>	
 
@@ -399,12 +401,14 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
 			    $sourceres=mysql_query($sourcesql) or die(mysql_error());
 			    $sourcerow=mysql_fetch_array($sourceres);
 			    $sources=$sourcerow['input_data_file_name'];
-			    echo "<p>Source files loaded: $sources";
-
-    
+			    //echo "<p>Source files loaded: $sources";
+			    //echo "<br>";
+			    //echo "<p>data files loaded: $downloadFile";
+  
     //-----------------------------------------------------------------------------------
     $footer_div = 1;
     include($config['root_dir'].'theme/footer.php'); 
     ?>
+
 
         
