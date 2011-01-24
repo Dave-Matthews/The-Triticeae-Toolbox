@@ -1,5 +1,8 @@
 <?php 
 
+// 01/24/2011 JLee  Redirect flapjack download file to ./downloads/temp, address possible concurrency issue 
+
+
 require_once('config.php');
 include($config['root_dir'].'includes/bootstrap.inc');
 connect();
@@ -336,7 +339,7 @@ private function type_Download()
     $trial_code = stripslashes($_GET['trialcode']);
     $trial_code = stripslashes($trial_code);
 		
-		$myFile = "tht_FlapJack_genotypetest.txt";
+		$myFile = "./downloads/temp/tht_FlapJack_genotype_".chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).".txt";
 		
 		$fh = fopen($myFile, 'w') or die("can't open file"); 
 		
