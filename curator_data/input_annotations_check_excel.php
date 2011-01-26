@@ -401,10 +401,29 @@ private function typeAnnotationCheck()
 		$experiments[$index]->experimentname = mysql_real_escape_string(trim($experimentname_row[$i]));
 		$experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
 		
-		// Number of Replications
-		$experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
-		$experiments[$index]->numberofreplications = intval($numberofreplications_row[$i]);
-		
+        // Check for floating point values 
+        if ((strpos($numberofentries_row[$i], '.') != 0) || (strpos($numberofreplications_row[$i], '.') != 0)) {
+            echo "<b>ERROR: Not an integer value encountered in either the 'Number of entries' or 'Number of replication' field. </b><br/><br/>";
+		    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+
+        }
+ 
+       //Check number of entries
+        if ((is_numeric($numberofentries_row[$i])) || ($numberofentries_row[$i] == '' )) {
+            $experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
+        } else {
+		    echo "<b>ERROR: Value for 'Number of entries' must be an integer </b><br/><br/>";
+		    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+        }
+ 
+        //Check Number of replications column 
+        if ((is_numeric($numberofreplications_row[$i])) || ($numberofreplications_row[$i] == '' )) {
+   	        $experiments[$index]->numberofreplications = intval($numberofreplications_row[$i]);
+        } else {
+            echo "<b>ERROR: Value for 'Number of replications' must be an integer </b><br/><br/>";
+            exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+        }
+
 		// Plot Size
 		$experiments[$index]->plotsize = mysql_real_escape_string($plotsize_row[$i]);
 		
@@ -700,17 +719,11 @@ private function typeAnnotationCheck()
 		$OTHERREMARKS = $i;
 	  }
 	}
-	
-		
-		
-		
-		
-		// Check if required rows are present
+
+// Check if required rows are present
 // Required rows are: CAPYear, breeding program, location, collaborator, collaborator code,
 // Experiment (short name), Trial code, number of replications; If any of these column is missing (empty), then
 // the annotation fil must be corrected
-
-
 
 /*
  * Process the annotations file
@@ -855,10 +868,30 @@ private function typeAnnotationCheck()
 
 		$experiments[$index]->experimentname = mysql_real_escape_string(trim($experimentname_row[$i]));
 		$experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
-		
-		// Number of Replications
-		$experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
-		$experiments[$index]->numberofreplications = intval($numberofreplications_row[$i]);
+
+        // Check for floating point values 
+        if ((strpos($numberofentries_row[$i], '.') != 0) || (strpos($numberofreplications_row[$i], '.') != 0)) {
+            echo "<b>ERROR: Not an integer value encountered in either the 'Number of entries' or 'Number of replication' field. </b><br/><br/>";
+		    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+
+        }
+
+        //Check number of entries
+        if ((is_numeric($numberofentries_row[$i])) || ($numberofentries_row[$i] == '' )) {
+            $experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
+        } else {
+		    echo "<b>ERROR: Value for 'Number of entries' must be an integer </b><br/><br/>";
+		    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+        }
+ 
+        //Check Number of replications column 
+        if ((is_numeric($numberofreplications_row[$i])) || ($numberofreplications_row[$i] == '' )) {
+   	        $experiments[$index]->numberofreplications = intval($numberofreplications_row[$i]);
+        } else {
+            echo "<b>ERROR: Value for 'Number of replications' must be an integer </b><br/><br/>";
+            exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+        }
+
 		
 		// Plot Size
 		$experiments[$index]->plotsize = mysql_real_escape_string($plotsize_row[$i]);

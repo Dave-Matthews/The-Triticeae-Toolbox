@@ -264,11 +264,11 @@ $sql = "select distinct experiment_year from experiments";
 		{
 		if ($count == 0)
     	{
-    	$where .= "line_record_name regexp ('".$linename."')";
+    	$where .= "line_record_name in ('".$linename."')";
     	}
     else
     	{
-			$where .= " AND line_record_name regexp ('".$linename."')";
+			$where .= " AND line_record_name in ('".$linename."')";
 			}
 			$count++;
 		}
