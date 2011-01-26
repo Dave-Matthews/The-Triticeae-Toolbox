@@ -62,7 +62,7 @@ html>body #logo
     display: block;
     position: absolute;
     width: 318px;
-    height: 27px;
+    height: 50px;
     top: 40px;
     left: 10px;
     background: url('images/logo.png') no-repeat
@@ -128,7 +128,7 @@ html>body #logo
 }
 #quicklinks h2
 {
-    color: #4DAAB1;
+    color: #de5414;
     margin: 0 0 5px;
     padding: 0;
     font-size: 1.6em
@@ -183,7 +183,8 @@ html>body #logo
 
 #main h1, #main h2
 {
-    color:#4DAAB1;
+/*    color:#4DAAB1;*/
+    color:#de5414;
     margin: 0;
     padding: 0;
     font-size: 1.5em;
@@ -250,8 +251,10 @@ table td
     display:block; margin:0; padding:0; margin-left:-1px; height:42px;
     background:url('images/btnbg.png') no-repeat left top; font-size: 1.7em}
 
+/*#nav li a {display:block;  background:url('images/btnrt.png') no-repeat right top;
+    padding:5px 15px; color:#D5D2EF; text-decoration:none; border-bottom:none} */
 #nav li a {display:block;  background:url('images/btnrt.png') no-repeat right top;
-    padding:5px 15px; color:#D5D2EF; text-decoration:none; border-bottom:none}
+    padding:5px 15px; color:#FFFFFF; text-decoration:none; border-bottom:none}
 
 #nav li a:hover {color:#FFF}
 
