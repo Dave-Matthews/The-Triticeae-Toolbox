@@ -73,7 +73,7 @@ html>body #logo
     right: 0;
     width: 225px;
     height: 141px;
-    background: url('images/headrt.jpg') no-repeat
+    background: url('images/headrt.png') no-repeat
 }
 #util {
     position: absolute;
@@ -113,7 +113,7 @@ html>body #logo
     padding: 15px 10px 3px;
     margin-left: -25px;
     margin-top: 25px;
-    background-color: #C2BDEA;
+    background-color: #f9cb73;
     border-bottom: 1px solid #5B53A6;
     text-align:right
 }
