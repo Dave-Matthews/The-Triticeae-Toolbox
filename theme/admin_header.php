@@ -81,7 +81,7 @@ EOD;
 ?>
  <div id="nav">
   <ul>
-  <li id="active">
+  <li>
   <a href="">
   Home
   </a>
