@@ -1,4 +1,6 @@
 <?
+
+// 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
