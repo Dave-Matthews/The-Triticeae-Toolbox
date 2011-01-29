@@ -121,13 +121,10 @@ EOD;
   <a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Show CAP Data Programs">
   CAP Data Programs</a>
   </ul>
-<!--  <li>
-  <a title="<?php echo $lang["desc_sc4"]; ?>">Expression</a>
-  <ul>
-  <li>
-  <a href="http://plexdb.org" title="PLEXdb">PLEXdb</a>
-  </ul> -->
-  <?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
+
+  <?php 
+  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  ?> 
    <li> <a title="Curate the Database">Curation</a>
       <ul>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Add/Edit Trait Definitions">
@@ -144,7 +141,16 @@ EOD;
       Add Map Data</a></li>
       </ul>
       <?php endif ?>
-			
+
+  <?php  			
+  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+    ?>
+  <li> <a title="Manage access to my data">Share data</a>
+  <ul>
+  <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a>
+  </ul>
+  <?php endif ?>
+
       <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
       <li>
 	 <a title="<?php echo $lang["desc_sc5"]; ?>">

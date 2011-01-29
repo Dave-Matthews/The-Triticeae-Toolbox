@@ -5,7 +5,7 @@
    ******************************************************************************/
 body
 {
-    background: #85CACF;
+    background: #f9b738;
     font-family: arial, helvitca, sans-serif;
     font-size: 62.5%; /* 1 em = 10px */
 }
@@ -36,7 +36,7 @@ a:hover
 }
 #footer a:hover
 {
-    color: #5B53A6
+    color: #9a292c
 }
 
 /***** Layout *****************************************************************/
@@ -103,7 +103,7 @@ html>body #logo
     padding: 15px 25px;
     background: url('images/gradient.png') repeat-x;
     text-align: left;
-    border-top: 1px solid #5B53A6;
+    border-top: 1px solid #9a292c;
     z-index: 0
 }
 
@@ -114,7 +114,7 @@ html>body #logo
     margin-left: -25px;
     margin-top: 25px;
     background-color: #f9cb73;
-    border-bottom: 1px solid #5B53A6;
+    border-bottom: 1px solid #9a292c;
     text-align:right
 }
 
@@ -174,10 +174,10 @@ html>body #logo
 
 #searchbox input
 {
-    border:1px solid #5B53A6;
+    border:1px solid #9a292c;
     background-color: #fff;
     padding:5px;
-    color:#5B53A6;
+    color:#9a292c;
     font-size: .9em
 }
 
@@ -198,7 +198,7 @@ html>body #logo
     font-size: 1.2em
 }
 
-.section, .boxContent {width: auto; padding:12px; border-top:1px solid #5B53A6;
+.section, .boxContent {width: auto; padding:12px; border-top:1px solid #9a292c;
     background:url('images/sectionhd.png') repeat-x;}
 .section p, .boxContent p{margin:1.5em 0; line-height:1.5em}
 
@@ -221,11 +221,11 @@ table tr
 }
 table th
 {
-    border-bottom: 1px solid #5B53A6;
-    border-top: 1px solid #5B53A6;
+    border-bottom: 1px solid #9a292c;
+    border-top: 1px solid #9a292c;
     background: url('images/tblhdg.png') repeat-x;
     padding: 7px;
-    color: #5B53A6;
+    color: #9a292c;
 }
 table td
 {
@@ -264,7 +264,7 @@ table td
 #nav li:hover a{background-image:url('images/abtnrt.png'); color:#FFF}
 
 #nav li li,
-#nav li#active li{text-align:left; height:auto; top:0; background:#5B53A6; float:none; font-size: .7em}
+#nav li#active li{text-align:left; height:auto; top:0; background:#9a292c; float:none; font-size: .7em}
 
 #nav li li a, #nav li#active li a, #nav li:hover li a, #nav li.over li a
 {
@@ -272,7 +272,7 @@ table td
     width: 190px;
     background: #f9cb73;
     color: #fff;
-    border: 1px solid #5B53A6;
+    border: 1px solid #9a292c;
     border-top: none;
     padding: 5px
 }
@@ -280,7 +280,7 @@ table td
 #nav li li a:hover, #nav #active li a:hover
 {
     background: #fff;
-    color: #5B53A6
+    color: #9a292c
 }
 
 #nav li ul{display:none; position:absolute; top:42px; z-index:6000; width:200px}
