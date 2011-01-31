@@ -195,10 +195,8 @@ function connect() {
   $ini_config = is_readable($ini_path) ?
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
-  $db_config = array('db_name' => 'THT_database',
-		     'db_user' => 'publicuser',
-		     'db_pass' => 'thtisfun',
-		     'db_host' => 'localhost');
+  // Get $db_config = array(db_name,db_user,db_pass,db_host).
+  include('/data/tht_data/mysql_connections/T3wheat_readonly.inc');
   $db_config = array_merge_recursive_unique($db_config,
 					    $ini_config);
   extract($db_config);

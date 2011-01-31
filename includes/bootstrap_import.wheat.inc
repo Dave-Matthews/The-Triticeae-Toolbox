@@ -113,17 +113,15 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
 function connect() {
 	global $dontconnect;
 	if ($dontconnect == true) return null;
-
-	$database = "THT_database";
-	$db_user = "tht";
-	$db_pass = "wheat_2008";
-	$host = "localhost";
-	$linkID = mysql_connect($host, $db_user, $db_pass);
+	// Get $db_config = array(db_name,db_user,db_pass,db_host).
+	include('/data/tht_data/mysql_connections/T3wheat_writeaccess.inc');
+	extract($db_config);
+	$linkID = mysql_connect($db_host, $db_user, $db_pass);
 	if(!$linkID) {
 		die(mysql_error());
 	}
     	else {
-		mysql_select_db($database, $linkID);
+		mysql_select_db($db_name, $linkID);
 	}
 	return $linkID;
 }
