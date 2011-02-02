@@ -145,8 +145,9 @@ function HTMLLoginForm($msg = "") {
   $retval .= <<<HTML
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
-  Registered members of the Barley CAP team have pre-release
-  access to all phenotype and genotype data from the project.
+  Registered members of the Triticeae CAP team have pre-release
+    access to all phenotype and genotype data from the project, 
+    and are allowed to add their own private data to the database.
 
     <p>For registered non-CAP users, selections made during
     their searches are saved from session to session.
@@ -327,7 +328,7 @@ function HTMLProcessForgot() {
   else {
     $key = setting('passresetkey');
     $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-    send_email($email, "Hordeum Toolbox : Reset Your Password",
+    send_email($email, "Triticeae Toolbox : Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
 {$root}resetpass.php?token=$urltoken");
@@ -460,10 +461,10 @@ $safe_institution)";
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-     send_email($email, "Hordeum Toolbox registration in progress",
+     send_email($email, "Triticeae Toolbox registration in progress",
 "Dear $name,
 
-Thank you for requesting an account on The Hordeum Toolbox.
+Thank you for requesting an account on The Triticeae Toolbox.
 
 To complete your registration, please confirm that you requested it 
 by visiting the following URL:
@@ -472,7 +473,7 @@ by visiting the following URL:
 Your registration will be complete when you have performed this step.
 
 Sincerely,
-The Hordeum Toolbox Team
+The Triticeae Toolbox Team
 ");
      if ($desired_usertype == USER_TYPE_PARTICIPANT) {
        $capkey = setting('capencryptionkey');

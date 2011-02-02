@@ -37,7 +37,7 @@ if (!isset($_GET['yes']) && !isset($_GET['no'])) {
   $htmltoken = htmlentities($token);
   echo <<< HTML
     <p> Hi {$name}, please confirm that you registered {$email}
-  with The Hordeum Toolbox. <br /><br>
+  with The Triticeae Toolbox. <br /><br>
     <form action="">
       <input type="hidden" name="token"
 	     value="{$htmltoken}"></input>
