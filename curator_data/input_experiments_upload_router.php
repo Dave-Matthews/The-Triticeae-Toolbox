@@ -48,7 +48,7 @@ private function typeAnnotations()
 		global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
-		echo "<h2>Add Experiment Annotation Information </h2>"; 
+		echo "<h2>Add Phenotype Experiment Data </h2>"; 
 		
 			
 		$this->type_Annotation_Name();
