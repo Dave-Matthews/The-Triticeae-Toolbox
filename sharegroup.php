@@ -18,6 +18,23 @@ connect();
   use of it.
 
 <?php
+
+// If we're re-entering the script with data, handle it.
+
+  if ( isset($_POST['newshare']) && $_POST['newshare'] != "" ) {
+    print "<pre>"; print_r($_POST); print "</pre>";
+    $newshare = $_POST['newshare'];
+    $sql="select users_uid from users where users_name = '$newshare'";
+    $r = mysql_query($sql);
+    if (mysql_num_rows($r) == 0)
+      echo "<font color=red>\"$newshare\" not found.</font><br>";
+    else {
+      $row = mysql_fetch_row($r);
+      
+    }
+  }
+
+
 echo "<h3><font color=blue>Current group members</font></h3>";
 
 print "<form id=\"deselGroupForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\">";
@@ -31,17 +48,18 @@ print "<option value=\"$user_uid\">Chiang Kai-Shek</option>\n";
 print "</select>";
 print "&nbsp;&nbsp;&nbsp;<input type=\"submit\" value=\"Remove highlighted members\" /></p>";
 print "</form>";
+
+print "<p>";
+print "<form action = \"".$_SERVER['PHP_SELF']."\" method=\"post\">";
+print "Add a member<br>";
+print "<input type=text name=newshare>";
+print "<input type=submit value=\"Add\"><br>";
+print "User's T3 email address";
+print "</form>";
+print "<p>";
+
+
 ?>
-
-<p>
-<form action = "">
-  Add a member<br>
-  <input type=text> <input type=submit value="Add"><br>
-  User's T3 email address
-  </form>
-  <p>
-
-
 
 </div></div></div>
 
