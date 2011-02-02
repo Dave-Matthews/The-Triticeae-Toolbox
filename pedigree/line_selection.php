@@ -1,4 +1,7 @@
 <?php session_start();
+
+// 1/28/2011  JLee  Add ability to add muliple lines and synonym translation
+
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
 connect();
@@ -87,8 +90,11 @@ function exclude_none()
   <form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
   
 	<tr> <td>
-  <b>Name</b> <br/><br/><input type="text" name="LineSearchInput" value="<?php echo $name?>"/> 
-  <br/><br/> Eg: Excel,Morex, FEG148-16
+  <b>Name</b> <br/><br/>
+  <!-- <input type="text" name="LineSearchInput" value="<?php echo $name?>"/> --> 
+  <textarea name="LineSearchInput" rows="4" cols="20"></textarea>
+      <br/> Eg: Morex, FEG148-16, 06VT-01<br/>
+  Synonyms will be translated.
   <br><br></td>
 
 
@@ -191,13 +197,60 @@ $sql = "select distinct experiment_year from experiments";
 
 	<?php 
   if (isset($_POST['LineSearchInput'])) {
-    $linename = $_POST['LineSearchInput'];
+    $linenames = $_POST['LineSearchInput'];
     $breedingProgram = $_POST['breedingprogramcode'];
     $growthHabit = $_POST['growthhabit'];
     $rowType = $_POST['RowType'];
     $hull = $_POST['Hull'];
     $primaryEndUse = $_POST['primaryenduse'];
     $year = $_POST['year'];
+    $lineArr = array();
+
+    // Translate synonym
+    if (strlen($linenames) != 0)
+    {
+        $lineList = explode('\r\n',$linenames);
+        $items = implode("','", $lineList);
+        $mStatment = "SELECT distinct (lr.line_record_name) FROM line_synonyms ls, line_records lr where ls.line_record_uid = lr.line_record_uid and (ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "'));";
+ 
+        $res = mysql_query($mStatment) or die(mysql_error());
+
+        if (mysql_num_rows($res) != 0) {         
+            while($myRow = mysql_fetch_assoc($res)) {
+    	        array_push ($lineArr,$myRow['line_record_name']);
+            }  
+        
+            // Generate the translated line names
+            $linenames =  implode("','", $lineArr);         
+        } else {
+            $linenames = ''; 
+        }
+
+        // Find any none hit items 
+        $mStatment = "SELECT distinct (ls.line_synonym_name) FROM line_synonyms ls where ls.line_synonym_name in ('" .$items. "');";
+        $res = mysql_query($mStatment) or die(mysql_error());
+        while($myRow = mysql_fetch_assoc($res)) {
+            $items = str_ireplace($myRow['line_synonym_name'], '', $items);
+            $items = str_replace(",,",",", $items);
+        }
+
+        $items = trim($items,',');
+        if (strlen($items) != 0) {
+            $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr where lr.line_record_name in ('" .$items. "');";
+            $res = mysql_query($mStatment) or die(mysql_error());
+            while($myRow = mysql_fetch_assoc($res)) {
+                $items = str_ireplace($myRow['line_record_name'], '', $items);
+                $items = str_replace(",,",",", $items);
+            }
+        }
+        $items = str_replace("'","", $items);
+        $items = trim($items,',');
+        if (strlen($items) != 0) {
+            $nonHits = explode(',',$items);
+        } else {
+            $nonHits = array();
+        }
+    }
     
     if (count($breedingProgram) != 0)
     {
@@ -260,15 +313,15 @@ $sql = "select distinct experiment_year from experiments";
 			$count++;
 		}
 		
-		if (strlen($linename) > 0)
+		if (strlen($linenames) > 0)
 		{
 		if ($count == 0)
     	{
-    	$where .= "line_record_name regexp ('".$linename."')";
+    	$where .= "line_record_name in ('".$linenames."')";
     	}
     else
     	{
-			$where .= " AND line_record_name regexp ('".$linename."')";
+			$where .= " AND line_record_name in ('".$linenames."')";
 			}
 			$count++;
 		}
@@ -336,8 +389,8 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     var_dump($growthHabit);
     var_dump($primaryEndUse); 
     
-    if (strlen($linename) < 1)
-      $linename = ".";
+    if (strlen($linenames) < 1)
+      $linenames = ".";
    
     if (count($breedingProgram) < 1)
       $breedingProgram = ".";
@@ -355,16 +408,12 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
       $primaryEndUse = ".";   
 
 */
-      
-			if ( (strlen($linename) < 1) AND (strlen($hull) < 1) AND (strlen($rowType) < 1) AND (count($breedingProgram) == 0) AND  (count($growthHabit) == 0) AND (count($primaryEndUse) == 0) AND (count($year) == 0)  )
-    {
-			$result=mysql_query("select line_record_uid, line_record_name from line_records ");
-		}
-  	else
-  	{
-    // echo "select line_record_uid, line_record_name from line_records where line_record_name regexp \"$linename\"";
-    
-   // $result=mysql_query("select line_record_uid, line_record_name from line_records where line_record_name regexp '".$linename."' ");
+    if ( (strlen($linenames) < 1) AND (strlen($hull) < 1) AND (strlen($rowType) < 1) AND (count($breedingProgram) == 0) AND  (count($growthHabit) == 0) AND (count($primaryEndUse) == 0) AND (count($year) == 0)  ) {
+        $result = mysql_query("SELECT line_record_name FROM line_records where line_record_name = NULL");
+	} else  {
+    // echo "select line_record_uid, line_record_name from line_records where line_record_name regexp \"$linenames\"";
+// echo "I am here <br>";   
+   // $result=mysql_query("select line_record_uid, line_record_name from line_records where line_record_name regexp '".$linenames."' ");
     
     //$result=mysql_query("select line_record_uid, line_record_name from line_records where ('".$where."') ");
 		$result=mysql_query("select line_record_uid, line_record_name from line_records where $where ");
@@ -372,9 +421,17 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
   	
   	//	var_dump($result);
   	}
-     $linesfound = mysql_num_rows($result);
+    $linesfound = mysql_num_rows($result);
+
+    echo "<div class='boxContent'>";
+    if (count($nonHits) != 0 ){
+        foreach ($nonHits as &$i) {
+            echo "<font color=red>\"$i\" not found.</font><br>";
+        }
+        echo "<br>";        
+    }   
+    
 	?>
-  <div class="boxContent">
     <h3>Lines found: <?php echo "$linesfound"; ?></h3>
     <div style="width: 420px; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">
     <table width='400px' id='linesTab' class='tableclass1'>
