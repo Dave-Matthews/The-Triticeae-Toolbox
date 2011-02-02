@@ -185,18 +185,18 @@ WHERE line_synonyms.line_record_uid = '$linerecorduid'";
                     AND phenotype_uid = '$puid'";
                 //echo $sql_val."<br>";
                 $result_val=mysql_query($sql_val);
-                if (mysql_num_rows($result_val)>0){
+                if (mysql_num_rows($result_val) > 0){
                 	$row_val=mysql_fetch_assoc($result_val);
                 	$val=$row_val['value'];
-			$val_long=$val;
-			if ($sigdig>=0)
-			    $val=number_format($val,$sigdig);
-		    }else {
-			$val = "--"; 
-			$val_long = "--";
-		    }
-        $single_row[$i+2]=$val;
-		$single_row_long[$i+2]=$val_long;
+			        $val_long=$val;
+			        if ($sigdig >= 0)
+			            $val=number_format($val,$sigdig);
+		        } else {
+			        $val = "--"; 
+			        $val_long = "--";
+		        }
+                $single_row[$i+2]=$val;
+		        $single_row_long[$i+2]=$val_long;
             }
         //-----------------------------------------check line addition
 
