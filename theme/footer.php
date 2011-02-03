@@ -18,7 +18,7 @@
 									</span>
 								</p>
 								<p style="margin: 0; font-size: 8pt;">
-									Copyright &copy; 2009 <a href="http://www.iastate.edu/" title="Iowa State University">Iowa State University</a>. All rights reserved.
+									Copyright &copy; 2006 - 2010 <a href="http://www.iastate.edu/" title="Iowa State University">Iowa State University</a>. All rights reserved.
 								</p>
 							</td>
 						</tr>
