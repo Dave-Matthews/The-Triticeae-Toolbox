@@ -1,4 +1,6 @@
 <?php
+
+// 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
@@ -15,9 +17,6 @@ include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 //include($config['root_dir'] . 'curator_data/boot_test.php');
 //include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
 include($config['root_dir'] . 'curator_data/lineuid.php');
-
-
-
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
 connect();
@@ -228,29 +227,12 @@ private function typeAnnotationCheck()
             
 						$bp = trim($data[$bp_idx]);
             $bp_data[] = $bp;
-            
-							    
-            
-            
-            
-          
-            
             $location = trim($data[$location_idx]);//location
-            
-          
-            
-            
             $location_data[] = $location;
-            
-            
             $latlong = trim($data[$latlong_idx]);//latlong
             $latlong_data[] = $latlong;
             
             $collab[] = trim($data[$collab_idx]);//collabarator
-            
-            
-            
-            
             /* checking for a valid cap code */
             
             $collabCodeTest = trim($data[$collabcode_idx]);
@@ -334,8 +316,31 @@ private function typeAnnotationCheck()
             $plantingDate[] = trim($data[$planting_date_idx]);//planting date
            	$seedingRate[] = trim($data[$seeding_rate_idx]);//seeding Rate
            	$expDesign[] = trim($data[$experimental_design_idx]);//Experimental Design
-           	$numEntries[] = trim($data[$num_of_entries_idx]);//number of entries
-           	$numReplications[] = trim($data[$num_of_replications_idx]);//number of replications
+
+           	//$numEntries[] = trim($data[$num_of_entries_idx]);//number of entries
+
+            // Check for floating point values 
+            if ((strpos($data[$num_of_entries_idx], '.') != 0) || (strpos($data[$num_of_replications_idx], '.') != 0)) {
+                echo "<b>ERROR: Not an integer value encountered in either the 'Number of entries' or 'Number of replication' field. </b><br/><br/>";
+                exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            }
+
+            //Check number of entries
+            if ((is_numeric($data[$num_of_entries_idx])) || ($data[$num_of_entries_idx] == '' )) {
+                $numEntries[] = trim($data[$num_of_entries_idx]);//number of entries
+            } else {
+				echo "<b>ERROR: Value for 'Number of entries' must be an integer </b><br/><br/>";
+				exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            }
+ 
+             //Check Number of replications column 
+            if ((is_numeric($data[$num_of_replications_idx])) || ($data[$num_of_replications_idx] == '' )) {
+           	    $numReplications[] = trim($data[$num_of_replications_idx]);//number of replications
+            } else {
+				echo "<b>ERROR: Value for 'Number of replications' must be an integer </b><br/><br/>";
+				exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            }
+
             $plotSize[] = trim($data[$plot_size_idx]);//Plot Size
             $harvestArea[] = trim($data[$harvested_area_idx]);//Harvested Area
             $irrigation[] = trim($data[$irrigation_idx]);//Irrigation
@@ -343,16 +348,10 @@ private function typeAnnotationCheck()
             $otherRemarks[] = trim($data[$other_remarks_idx]);//Other Remarks
             
           } /* end of while*/  
-            
-            
-            
+          
      //var_dump($trialcode_data);  
 			
 		//	echo "count" .count($trialcode_data);   
-            
-	
-	
-	
 ?>
 		
 		<h3>We are reading following data from the uploaded Input Data File</h3>
@@ -602,29 +601,12 @@ private function typeAnnotationCheck()
             
 						$bp = trim($data[$bp_idx]);
             $bp_data[] = $bp;
-            
-							    
-            
-            
-            
-          
-            
             $location = trim($data[$location_idx]);//location
-            
-          
-            
-            
             $location_data[] = $location;
-            
-            
             $latlong = trim($data[$latlong_idx]);//latlong
             $latlong_data[] = $latlong;
             
             $collab[] = trim($data[$collab_idx]);//collabarator
-            
-            
-            
-            
             /* checking for a valid cap code */
             
             $collabCodeTest = trim($data[$collabcode_idx]);
@@ -703,8 +685,29 @@ private function typeAnnotationCheck()
             $plantingDate[] = trim($data[$planting_date_idx]);//planting date
            	$seedingRate[] = trim($data[$seeding_rate_idx]);//seeding Rate
            	$expDesign[] = trim($data[$experimental_design_idx]);//Experimental Design
-           	$numEntries[] = trim($data[$num_of_entries_idx]);//number of entries
-           	$numReplications[] = trim($data[$num_of_replications_idx]);//number of replications
+           	
+            // Check for floating point values 
+            if ((strpos($data[$num_of_entries_idx], '.') != 0) || (strpos($data[$num_of_replications_idx], '.') != 0)) {
+                echo "<b>ERROR: Not an integer value encountered in either the 'Number of entries' or 'Number of replication' field. </b><br/><br/>";
+                exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            }
+
+            //Check number of entries column
+            if ((is_numeric($data[$num_of_entries_idx])) || ($data[$num_of_entries_idx] == '' )) {
+                $numEntries[] = trim($data[$num_of_entries_idx]);//number of entries
+            } else {
+				echo "<b>ERROR: Value for 'Number of entries' must be an integer </b><br/><br/>";
+				exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            }
+
+            //Check Number of replications column 
+            if ((is_numeric($data[$num_of_replications_idx])) || ($data[$num_of_replications_idx] == '' )) {
+           	    $numReplications[] = trim($data[$num_of_replications_idx]);//number of replications
+            } else {
+				echo "<b>ERROR: Value for 'Number of replications' must be an integer </b><br/><br/>";
+				exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            }
+
             $plotSize[] = trim($data[$plot_size_idx]);//Plot Size
             $harvestArea[] = trim($data[$harvested_area_idx]);//Harvested Area
             $irrigation[] = trim($data[$irrigation_idx]);//Irrigation
@@ -922,9 +925,5 @@ private function typeAnnotationCheck()
 
 
 } /* end of class */
-
-
-
-
 ?>
 
