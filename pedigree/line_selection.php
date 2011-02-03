@@ -1,5 +1,6 @@
 <?php session_start();
 
+// 2/2/2011  JLee  Add ability to parse tab-delimited and comma separate line inputs
 // 1/28/2011  JLee  Add ability to add muliple lines and synonym translation
 
 require 'config.php';
@@ -92,10 +93,10 @@ function exclude_none()
 	<tr> <td>
   <b>Name</b> <br/><br/>
   <!-- <input type="text" name="LineSearchInput" value="<?php echo $name?>"/> --> 
-  <textarea name="LineSearchInput" rows="4" cols="20"></textarea>
+  <textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"></textarea>
       <br/> Eg: Morex, FEG148-16, 06VT-01<br/>
   Synonyms will be translated.
-  <br><br></td>
+  <br></td>
 
 
   <td> 
@@ -209,7 +210,15 @@ $sql = "select distinct experiment_year from experiments";
     // Translate synonym
     if (strlen($linenames) != 0)
     {
-        $lineList = explode('\r\n',$linenames);
+     	if (strpos($linenames, ',') > 0 ) {
+			$linenames = str_replace(", ",",", $linenames);	
+			$lineList = explode(',',$linenames);
+		} elseif (preg_match("/\t/", $linenames)) {
+			$lineList = explode("\t",$linenames);
+		} else {
+			$lineList = explode('\r\n',$linenames);
+		}
+	   	
         $items = implode("','", $lineList);
         $mStatment = "SELECT distinct (lr.line_record_name) FROM line_synonyms ls, line_records lr where ls.line_record_uid = lr.line_record_uid and (ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "'));";
  
