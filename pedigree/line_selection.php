@@ -93,10 +93,10 @@ function exclude_none()
 	<tr> <td>
   <b>Name</b> <br/><br/>
   <!-- <input type="text" name="LineSearchInput" value="<?php echo $name?>"/> --> 
-  <textarea name="LineSearchInput" rows="4" cols="20"></textarea>
+  <textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"></textarea>
       <br/> Eg: Morex, FEG148-16, 06VT-01<br/>
   Synonyms will be translated.
-  <br><br></td>
+  <br></td>
 
 
   <td> 
