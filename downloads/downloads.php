@@ -506,7 +506,7 @@ selected lines</a>.<br>
 		//// $firephp->log($experiments);
 		    		
 		// initialize markers and flags if not already set
-        $max_missing = 100;//IN PERCENT
+        $max_missing = 99.9;//IN PERCENT
         if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
             $max_missing = $_GET['mm'];
 		if ($max_missing>100)
@@ -562,9 +562,9 @@ selected lines</a>.<br>
 					$miss = round(100*$row["summis"]/$row["total"],1);
 					if ($maf >= $min_maf)
 						$num_maf++;
-					if ($miss>=$max_missing)
+					if ($miss > $max_missing)
 						$num_miss++;
-					if (($miss>=$max_missing) OR ($maf < $min_maf))
+					if (($miss > $max_missing) OR ($maf < $min_maf))
 						$num_removed++; 
 					//$mmarray[$row["marker"]]= array("maf"=>$maf,"miss"=>$miss);
 				}
