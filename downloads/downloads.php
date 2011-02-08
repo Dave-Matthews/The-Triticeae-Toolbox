@@ -579,8 +579,8 @@ selected lines</a>.<br>
 				    &nbsp;&nbsp;&nbsp;&nbsp;
 				  Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
 				    <i>
-				    <br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) larger than </i><b><?php echo ($min_maf) ?></b><i>%.
-				    <br></i><b><?php echo ($num_miss) ?></b><i> markers are missing at least </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
+				    <br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
+				    <br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
 				    <br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 				    </i>
 
