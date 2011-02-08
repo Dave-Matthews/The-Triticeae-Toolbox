@@ -575,9 +575,9 @@ selected lines</a>.<br>
 				//// $firephp->log($num_mark,"number of markers");
 				if (mysql_num_rows($res) >= 1) {
 				  ?>
-				  <p>Minimum MAF: <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+				  <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
 				    &nbsp;&nbsp;&nbsp;&nbsp;
-				  Maximum missing data: <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
+				  Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
 				    <i>
 				    <br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) larger than </i><b><?php echo ($min_maf) ?></b><i>%.
 				    <br></i><b><?php echo ($num_miss) ?></b><i> markers are missing at least </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
