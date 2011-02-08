@@ -93,7 +93,7 @@ function exclude_none()
 	<tr> <td>
   <b>Name</b> <br/><br/>
   <!-- <input type="text" name="LineSearchInput" value="<?php echo $name?>"/> --> 
-  <textarea name="LineSearchInput" rows="4" cols="20"></textarea>
+  <textarea name="LineSearchInput" rows="3" cols="20"></textarea>
       <br/> Eg: Morex, FEG148-16, 06VT-01<br/>
   Synonyms will be translated.
   <br><br></td>
@@ -184,7 +184,7 @@ $sql = "select distinct experiment_year from experiments";
 	</td>
 	<td>
 	<b> Hull type </b> <br/><br/>
-      <input type="radio" name="Hull" value="hulled" <?php echo $hullSelected['hulled']?>/>&nbsp;&nbsp;Hulled<br>
+	  <input type="radio" name="Hull" value="hulled" <?php echo $hullSelected['hulled']?>/>&nbsp;&nbsp;Hulled<br>
       <input type="radio" name="Hull" value="hulless" <?php echo $hullSelected['hulless']?>/>Hulless<br><br>
 	</td>
 <td></td>
