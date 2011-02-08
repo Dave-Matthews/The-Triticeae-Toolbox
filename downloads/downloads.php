@@ -12,7 +12,8 @@
 // | Updated: December 2008 by Julie A Dickerson, julied@iastate.edu	  |
 // +----------------------------------------------------------------------+
 // +----------------------------------------------------------------------+
-// | Change log															  |
+// | Change log								  |
+// | 2/8/11:  DEM - Include markers with MAF = 0 too if user wishes.      |
 // | 1/5/01:  JLee - Add support to generate datafile for Tassel V3       |  
 // |                                                                      |
 // | 2/28/09: removed table summarizing all allelles to avoid timeout	  |
@@ -512,7 +513,7 @@ selected lines</a>.<br>
 			$max_missing = 100;
 		elseif ($max_missing<0)
 			$max_missing = 0;
-        $min_maf = 0;//IN PERCENT
+        $min_maf = 0.01;//IN PERCENT
         if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
 		if ($min_maf>100)
@@ -559,11 +560,11 @@ selected lines</a>.<br>
 // 					$maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/$row["total"],($row["sumab"]+2*$row["sumbb"])/$row["total"]),1);
 					$maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 					$miss = round(100*$row["summis"]/$row["total"],1);
-					if ($maf>$min_maf)
+					if ($maf >= $min_maf)
 						$num_maf++;
 					if ($miss>=$max_missing)
 						$num_miss++;
-					if (($miss>=$max_missing) OR ($maf<=$min_maf))
+					if (($miss>=$max_missing) OR ($maf < $min_maf))
 						$num_removed++; 
 					//$mmarray[$row["marker"]]= array("maf"=>$maf,"miss"=>$miss);
 				}
@@ -581,7 +582,6 @@ selected lines</a>.<br>
 				    <br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) larger than </i><b><?php echo ($min_maf) ?></b><i>%.
 				    <br></i><b><?php echo ($num_miss) ?></b><i> markers are missing at least </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
 				    <br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
-				    <br>Note: monomorphic markers (MAF = 0) will </i><b>not</b><i> be included in the download.
 				    </i>
 
 				    <br><input type="button" value="Refresh" onclick="javascript:mrefresh();return false;" /><br>
@@ -1013,7 +1013,7 @@ selected lines</a>.<br>
 		elseif ($max_missing<0)
 			$max_missing = 0;
 			// $firephp->log("in sort markers2");
-        $min_maf = 0;//IN PERCENT
+        $min_maf = 0.01;//IN PERCENT
         if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
 		if ($min_maf>100)
@@ -1035,8 +1035,7 @@ selected lines</a>.<br>
 			while ($row = mysql_fetch_array($res)){
 			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 			  $miss = round(100*$row["summis"]/$row["total"],1);
-			  //if (($maf>=$min_maf)AND ($miss<=$max_missing)) {   Note: $maf must be > , not >= .
-			  if (($maf > $min_maf)AND ($miss<=$max_missing)) {
+			  if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
 			    $marker_names[] = $row["name"];
 			    $outputheader .= $row["name"].$delimiter;
 			    $marker_uid[] = $row["marker"];
@@ -1145,7 +1144,7 @@ selected lines</a>.<br>
 		elseif ($max_missing<0)
 			$max_missing = 0;
 			// $firephp->log("in sort markers2");
-        $min_maf = 0;//IN PERCENT
+        $min_maf = 0.01;//IN PERCENT
         if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
 		if ($min_maf>100)
@@ -1168,7 +1167,7 @@ selected lines</a>.<br>
 			while ($row = mysql_fetch_array($res)){
 			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 			  $miss = round(100*$row["summis"]/$row["total"],1);
-					if (($maf > $min_maf)AND ($miss<=$max_missing)) {
+					if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
 						$marker_names[] = $row["name"];
 						$outputheader .= $delimiter.$row["name"];
 						$marker_uid[] = $row["marker"];
@@ -1301,7 +1300,7 @@ selected lines</a>.<br>
 		elseif ($max_missing<0)
 			$max_missing = 0;
 			// $firephp->log("in sort markers2");
-        $min_maf = 0;//IN PERCENT
+        $min_maf = 0.01;//IN PERCENT
         if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
 		if ($min_maf>100)
@@ -1324,7 +1323,7 @@ selected lines</a>.<br>
 		while ($row = mysql_fetch_array($res)){
 			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 			  $miss = round(100*$row["summis"]/$row["total"],1);
-					if (($maf > $min_maf)AND ($miss<=$max_missing)) {
+					if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
 						$marker_names[] = $row["name"];
 						$outputheader .= $delimiter.$row["name"];
 						$marker_uid[] = $row["marker"];
