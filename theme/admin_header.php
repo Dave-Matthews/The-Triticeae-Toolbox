@@ -130,17 +130,17 @@ EOD;
   <?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
    <li> <a title="Curate the Database">Curation</a>
       <ul>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Add/Edit Trait Definitions">
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
       Add/Edit Trait Definitions</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Add Line Names">
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
       Add Line Names</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Add/Edit Pedigree">
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
       Add/Edit Pedigree</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Add Annotations Data">
-      Add Annotations Data</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Add Experiments Data">
-      Add Experiments Data</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Add Map Data">
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
+      Add Experiment Annotations</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data">
+      Add Experiment Results</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
       Add Map Data</a></li>
       </ul>
       <?php endif ?>
