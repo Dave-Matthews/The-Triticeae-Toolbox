@@ -94,7 +94,7 @@ function exclude_none()
   <b>Name</b> <br/><br/>
   <!-- <input type="text" name="LineSearchInput" value="<?php echo $name?>"/> --> 
   <textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"></textarea>
-      <br/> Eg: Morex, FEG148-16, 06VT-01<br/>
+  <br/> Eg: M25, FEG148-16, Doyce<br/>
   Synonyms will be translated.
   <br></td>
 
