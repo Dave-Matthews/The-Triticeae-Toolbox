@@ -514,7 +514,7 @@ selected lines</a>.<br>
 		elseif ($max_missing<0)
 			$max_missing = 0;
         $min_maf = 0.01;//IN PERCENT
-        if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
 		if ($min_maf>100)
 			$min_maf = 100;
@@ -1014,7 +1014,7 @@ selected lines</a>.<br>
 			$max_missing = 0;
 			// $firephp->log("in sort markers2");
         $min_maf = 0.01;//IN PERCENT
-        if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
 		if ($min_maf>100)
 			$min_maf = 100;
@@ -1145,7 +1145,7 @@ selected lines</a>.<br>
 			$max_missing = 0;
 			// $firephp->log("in sort markers2");
         $min_maf = 0.01;//IN PERCENT
-        if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
 		if ($min_maf>100)
 			$min_maf = 100;
@@ -1301,7 +1301,7 @@ selected lines</a>.<br>
 			$max_missing = 0;
 			// $firephp->log("in sort markers2");
         $min_maf = 0.01;//IN PERCENT
-        if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
 		if ($min_maf>100)
 			$min_maf = 100;
