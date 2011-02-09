@@ -220,8 +220,8 @@ function loginTest() {
 		session_start();
 	}
 	if(!isLoggedIn($_SESSION['username'], $_SESSION['password'])) {
-	   	header("Location: ".$config['base_url']."403.php");
-	   	die();
+	  header("Location: ".$config['base_url']."403.php");
+	  die();
 	}
 
 }
@@ -357,8 +357,8 @@ function tht_session_cleanup() {
  */
 function authenticate_redirect($allowed_user_types){
 	if(!authenticate($allowed_user_types)){
-		header("Location: ".$config['base_url']."401.php");
-		die();
+	  header("Location: ".$config['base_url']."401.php");
+	  die();
 	}
 }
 
@@ -367,7 +367,7 @@ function authenticate_redirect($allowed_user_types){
  * @author Gavin Monroe
  */
 function authenticate($allowed_user_types){
-	connect();
+  	connect();
 	if(loginTest2()){
 		$row = loadUser($_SESSION['username']);
 		$user_type_id = $row['user_types_uid'];

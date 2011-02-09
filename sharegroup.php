@@ -1,16 +1,19 @@
 <?php
 require 'config.php';
-//include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'].'theme/normal_header.php');
 connect();
+
 loginTest();
-$row = loadUser($_SESSION['username']);
-$myname = $row['users_name'];
-$myid = $row['users_uid'];
-ob_start();
-authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR, USER_TYPE_PARTICIPANT));
-ob_end_flush();
+if (loginTest2()) {
+  $row = loadUser($_SESSION['username']);
+  $myname = $row['users_name'];
+  $myid = $row['users_uid'];
+ }
+//ob_start();
+//authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR, USER_TYPE_PARTICIPANT));
+authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
+//ob_end_flush();
+include($config['root_dir'].'theme/admin_header.php');
 ?>
 
 <div id="primaryContentContainer">

@@ -123,7 +123,8 @@ EOD;
   </ul>
 
   <?php 
-  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
   ?> 
    <li> <a title="Curate the Database">Curation</a>
       <ul>
@@ -143,7 +144,8 @@ EOD;
       <?php endif ?>
 
   <?php  			
-  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+//   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
     ?>
   <li> <a title="Manage access to my data">Share data</a>
   <ul>

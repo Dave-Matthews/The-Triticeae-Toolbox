@@ -8,11 +8,14 @@ ini_set('magic_quotes_gpc', '0');
 
 require_once $config['root_dir'] . 'securimage/securimage.php';
 ?>
+
 <h1>Feedback</h1>
+
 Please send your questions or suggestions or complaints to the 
-THT curators.  We'll get back to you if you<br>
+T3 curators.  We'll get back to you if you<br>
 include your email address.
 <p>
+
 <?php
 function feedbackForm($name='', $email='', $feedback='') {
   if (!$email) {
@@ -31,6 +34,7 @@ function feedbackForm($name='', $email='', $feedback='') {
   $html_name=htmlspecialchars($name, ENT_QUOTES);
   $html_email=htmlspecialchars($email, ENT_QUOTES);
   $html_feedback=htmlspecialchars($feedback, ENT_QUOTES);
+
   $rv = <<< HTML
 <form action="" method="post">
 <label for="name">Your name (optional) </label>
@@ -54,6 +58,7 @@ function feedbackForm($name='', $email='', $feedback='') {
 HTML;
   return $rv;
 }
+
 // us_ prefix means "unsafe", i.e. the raw input from user
 $us_name=isset($_POST['name']) ? $_POST['name']:'';
 $us_email=isset($_POST['email']) ? $_POST['email']:'';
@@ -62,15 +67,17 @@ $footer_div = 1;
 $securimage = new Securimage();
 $capcha_pass = $securimage->check($_POST['captcha_code']);
 if ($us_feedback && $capcha_pass) {
-  send_email(setting('feedbackmail'), 'THT Feedback',
+  send_email(setting('feedbackmail'), 'T3 Feedback',
 	     "User's reported name: $us_name
 User's reported email: $us_email\nfeedback:\n$us_feedback");
-  echo "<h3>Thank You for the feedback, it was sent to the webmaster</h3>";
+
+  echo "<h3>Thank you for your feedback. It has been sent to the T3 curators.</h3>";
  }
  else {
    if ($us_feedback && !$capcha_pass)
      echo "<h3 style='color: red'>Please enter the CAPTCHA code</h3>";
    echo feedbackForm($us_name, $us_email, $us_feedback);
  }
+
 require_once($config['root_dir'] . 'theme/footer.php');
 ?>
