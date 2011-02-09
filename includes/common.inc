@@ -66,7 +66,7 @@ function validateForm($array) {
  *
  * @return void - this function prints its output.
  */
-function showTableOptions($table, $selected="null") {
+function showTableOptions($table, $selected="null", $orderby="uid") {
 
 
 	$uid = get_pkey($table);
@@ -82,9 +82,20 @@ function showTableOptions($table, $selected="null") {
 	}
 	else
 	{
-	$q = mysql_query("SELECT $uid, $name
+	  // DEM 9feb11: I think it's (almost?) always better to sort by name than by uid.
+	  // To do it, use optional third parameter = "name".
+// 	$q = mysql_query("SELECT $uid, $name
+// 			  FROM $table 
+// 			  ORDER BY $uid
+// 			")
+// 	     or die(mysql_error());
+	  $sortorder = $uid;
+	  if (isset($orderby) && $orderby == "name") {
+	      $sortorder = $name;
+	    }
+	    $q = mysql_query("SELECT $uid, $name
 			  FROM $table 
-			  ORDER BY $uid
+			  ORDER BY $sortorder
 			")
 	     or die(mysql_error());
 	}
