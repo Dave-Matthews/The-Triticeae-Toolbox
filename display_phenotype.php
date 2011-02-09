@@ -7,6 +7,7 @@
 
 //Author: Kartic Ramesh; drastically rewritten by Julie Dickerson, 2009 to make usable and use sessions
 
+// 02/07/2011 DEM   Add CAPdata_program and Collaborator to the first table.
 // 01/12/2011 JLee  Add so experiment download data displays on separate page
 // 01/12/2011 JLee  Mod so mean and std.err values in experiment datafile do have signif digit applied to them   
 // 10/07/2010 DEM Stop rounding-off values when exported via "Download Experiment Data".
@@ -60,6 +61,16 @@ connect();
         $row_exp=mysql_fetch_array($result_exp); 
 	$exptname=$row_exp['experiment_desc_name']; 
 
+	// Get CAPdata_program too.
+	$query="SELECT data_program_name, collaborator_name 
+	  from CAPdata_programs, experiments
+	  where experiment_uid = $experiment_uid
+	  and experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid";
+	$result_cdp=mysql_query($query) or die(mysql_error());
+	$row_cdp=mysql_fetch_array($result_cdp);
+	$dataprogram = $row_cdp['data_program_name'];
+	$collaborator = $row_cdp['collaborator_name'];
+
         echo "<table>";
 	if ($exptname) {echo "<tr> <td>Experiment</td><td>".$exptname."</td></tr>";}
         echo "<tr> <td>Location (Latitude/Longitude)</td><td>".$row_pei['location']."  ".$row_pei['latitude_longitude']."</td></tr>";
@@ -73,6 +84,8 @@ connect();
         echo "<tr> <td>Number of Replications</td><td>".$row_pei['number_replications']."</td></tr>";
 		echo "<tr> <td>Number of Entries</td><td>".$row_pei['number_entries']."</td></tr>";
         echo "<tr> <td>Comments</td><td>".$row_pei['other_remarks']."</td></tr>";
+	echo "<tr> <td>Data Program</td><td>".$dataprogram."</td></tr>";
+	echo "<tr> <td>Collaborator</td><td>".$collaborator."</td></tr>";
         echo "</table><p>";
 
         // get all line data for this experiment
