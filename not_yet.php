@@ -1,7 +1,7 @@
 <?php
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
+include($config['root_dir'].'theme/admin_header.php');
 connect();
 ?>
 
