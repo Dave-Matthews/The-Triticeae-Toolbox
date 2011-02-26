@@ -19,20 +19,24 @@ connect();
   the clusters color-coded.  If you enter some line names below, the legend will indicate
   which cluster they fall into.  
 
-  <p>When you have examined the results you can request the list 
-  of lines in the cluster of interest.
+  <p>When you have examined the results you can select the clusters you want to work with.
 
   <form action="cluster_show.php">
   <p>How many clusters should pam divide the lines into?  &nbsp;&nbsp;
-<input type=text name="clusters" value="5" size="1">  (Maximum 8.)
-<p>Lines to label in the legend:<br>
-<textarea name="labels" rows="4">
-MOREX
-</textarea>
-E.g. MERIT, FEG148-16, ND24205, VA07B-54
+  <input type=text name="clusters" value="5" size="1">  (Maximum 8.)
+  <p>Lines to label in the legend:<br>
+  <textarea name="labels" rows="4">
+  </textarea>
+  E.g. MERIT, FEG148-16, ND24205, VA07B-54
 
-<p><input type="submit" value="Analyze">
-</form>
+<?php 
+// Use the incoming value of $time instead of a new one.  Does it work?
+if (isset($_GET['time'])) $time = $_GET['time'];
+ else $time = date("U");
+print "<input type='hidden' name='time' value=$time>";
+?>
+  <p><input type="submit" value="Analyze">
+  </form>
   </div>
 
 <?php
@@ -41,16 +45,18 @@ E.g. MERIT, FEG148-16, ND24205, VA07B-54
 if (isset($_GET['mycluster'])) {
   $mycluster = $_GET['mycluster'];
   $where_in = "";
-  // Todo: Give the file a unique name to avoid concurrency problem.
-  $clustertable = file("R/temp/clustertable.txt");
+  $clustertable = file($config['root_dir']."downloads/temp/clustertable.txt".$time);
+  unlink($config['root_dir']."downloads/temp/clustertable.txt".$time);
   $clustertable = preg_replace("/\n/", "", $clustertable);
   // Remove first line, "x".
   array_shift($clustertable);
   for ($i=0;$i<count($clustertable);$i++) {
-    $line = explode("\t", $clustertable[$i]);
-    if ($line[1] == $mycluster) {
-      // Build query for line_record_uids for these names.
-      $where_in .= "'".$line[0]."',";
+    for ($j=0;$j<count($mycluster);$j++) {
+      $line = explode("\t", $clustertable[$i]);
+      if ($line[1] == $mycluster[$j]) {
+	// Build query for line_record_uids for these names.
+	$where_in .= "'".$line[0]."',";
+      }
     }
   }
   $where_in = trim($where_in, ",");
@@ -112,7 +118,9 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
    // Save the list of marker names to the output file.
    // Todo: Make the filename unique to deal with concurrency.
    $outputheader = trim($outputheader, ",")."\n";
-   file_put_contents("R/temp/mrkData.csv", $outputheader);
+   $outfile = $config['root_dir']."downloads/temp/mrkData.csv".$time;
+   file_put_contents($outfile, $outputheader);
+
    $markers = implode(",",$marker_uid);
    $lookup = array(
 		  'AA' => '1',
@@ -135,7 +143,6 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
 	      AND gd.marker_uid IN ($markers)
 	      AND tb.line_record_uid = lr.line_record_uid
 	      AND gd.tht_base_uid = tb.tht_base_uid
-              -- and lr.line_record_name in ('VA06B-91','F5-6','F5-7','MOREX','FEG148-16')
               AND lr.line_record_uid IN ($lines)
 	  ORDER BY lr.line_record_name, m.marker_uid";
   $res = mysql_query($sql) or die(mysql_error());
@@ -151,10 +158,12 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
     if ($last_line != $row['line_record_name']) {  
       // Done collecting alleles for this germplasm line.  Output it.
       $mname = $row['markername'];				
-      $outarray[$mname] = $lookup[$row['value']];
+      if ($lookup[$row['value']] != "--") {
+	// (For missing data, use the default value.)
+	$outarray[$mname] = $lookup[$row['value']];
+      }
       $outarray = implode($delimiter,$outarray);
-      //      $output .= $last_line.$delimiter.$outarray."\n";
-      file_put_contents("R/temp/mrkData.csv", $last_line.$delimiter.$outarray."\n", FILE_APPEND);
+      file_put_contents($outfile, $last_line.$delimiter.$outarray."\n", FILE_APPEND);
       // Reset for the next line.
       $outarray = $empty;
       $last_line = $row['line_record_name'];
@@ -172,17 +181,8 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
   // //NOTE: there is a problem with the last line logic here. Must fix.
   //Save data from the last line.
   $outarray = implode($delimiter,$outarray);
-  //$output .= $last_line.$delimiter;
-  //$output .= $outarray."\n";
-  file_put_contents("R/temp/mrkData.csv", $last_line.$delimiter.$outarray."\n", FILE_APPEND);
+  file_put_contents($outfile, $last_line.$delimiter.$outarray."\n", FILE_APPEND);
  }
-
-//file_put_contents("R/temp/mrkData.csv", $output, FILE_APPEND);
-
-// For testing:
-//echo "<pre>$outputheader<br>";		  
-//echo "$output<br>";
-
 
 echo "</div></div>";
 $footer_div=1;
