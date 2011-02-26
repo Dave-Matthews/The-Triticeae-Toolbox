@@ -1,22 +1,16 @@
-# tht/R/VisualCluster.R
-# called by tht/cluster_show.php, which prepends several commands in setupcluster.txt
-
 # from Jean-Luc Jannink 9feb11, ./VisualCluster.R.orig
 # Clusters the input lines and marker alleles for the user to select cluster of interest.
-# The marker data represents the full set of lines that a user has selected.
 
-# Delete the prepended command file.
-system("rm temp/setupcluster*")
-
-mrkData <- read.csv(mrkDataFile)
-system2("rm", mrkDataFile)
+# The marker data represents the full set of lines that a user has selected
+#load("/www/htdocs/matthews/tht/R/mrkData.RData")
+mrkData <- read.csv("temp/mrkData.csv")
 
 library(cluster)
 scaledMrk <- scale(mrkData, TRUE, FALSE)
 
 # R runs a cluster analysis and a principal components analysis for display
 whichClust <- pam(scaledMrk, nClust, metric="manhattan", cluster.only=TRUE)
-write.table(whichClust, clustertableFile, sep="\t", quote=FALSE)
+write.table(whichClust, "temp/clustertable.txt", sep="\t", quote=FALSE)
 twoPCs <- svd(scaledMrk, 2, 2)
 eigVec1 <- twoPCs$u[,1]
 eigVec2 <- twoPCs$u[,2]
@@ -65,7 +59,7 @@ for (i in 1:4){
 clustInfo <- (paste(lineCol, lineNames, nInClust, sep=", "))
 legend(pc1seq[putLegend[1]], pc2seq[putLegend[2] + 1], clustInfo, lty=0, pch=16, col=lineCol)
 
-write(clustInfo, clustInfoFile)
+write(clustInfo, "temp/clustInfo.txt")
 
 # By looking at the graph and the legend, the user would be able to specify which cluster
 # They actually wanted to download out of the full set of lines they had selected...
