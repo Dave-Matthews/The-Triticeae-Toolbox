@@ -414,7 +414,7 @@ function output_file(url) {
 			    $sourceres=mysql_query($sourcesql) or die(mysql_error());
 			    $sourcerow=mysql_fetch_array($sourceres);
 			    $sources=$sourcerow['input_data_file_name'];
-			    //echo "<p>Source files loaded: $sources";
+			    echo "<p>Source files loaded: $sources";
 			    //echo "<br>";
 			    //echo "<p>data files loaded: $downloadFile";
   
