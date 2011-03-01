@@ -84,8 +84,9 @@ if ($selectedcount != 0) {
   }
   print "</textarea>";
  }
-print "</div>";
-
+// Clean up all old copies.
+// No, bad idea, it could be another user's file.  Use a cron job.
+//array_map("unlink", glob($config['root_dir']."downloads/temp/clustertable.txt*"));
 
 // Adapted from download/downloads.php:
 // 2D array of alleles for all markers x currently selected lines
@@ -145,10 +146,16 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
 	      AND gd.tht_base_uid = tb.tht_base_uid
               AND lr.line_record_uid IN ($lines)
 	  ORDER BY lr.line_record_name, m.marker_uid";
-  $res = mysql_query($sql) or die(mysql_error());
-		
+   $starttime = time();
+   $res = mysql_query($sql) or die(mysql_error());
+   $elapsed = time() - $starttime;
+   $numrows = number_format(mysql_num_rows($res));
+   echo "<p>Query time: $elapsed sec<br>";
+   echo "$numrows alleles<br>";
+
   $outarray = $empty;
   $cnt = 0;
+  $starttime = time();
   while ($row = mysql_fetch_array($res)){
     // First time through loop.
     if ($cnt==0) {
@@ -177,6 +184,9 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
       }
     }
   }
+  $elapsed = time() - $starttime;
+  echo "Processing time: $elapsed sec";
+
   //Old note from downloads.php.  Still relevant?
   // //NOTE: there is a problem with the last line logic here. Must fix.
   //Save data from the last line.
@@ -184,7 +194,7 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
   file_put_contents($outfile, $last_line.$delimiter.$outarray."\n", FILE_APPEND);
  }
 
-echo "</div></div>";
+echo "</div></div></div>";
 $footer_div=1;
 include($config['root_dir'].'theme/footer.php'); 
 

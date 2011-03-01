@@ -50,7 +50,6 @@ fclose($setup);
 
 // Remove previous image.  Otherwise if R fails the user gets previous image.
 unlink($config['root_dir']."downloads/temp/linecluster.png");
-unlink($config['root_dir']."downloads/temp/clustInfo.txt".$time);
 
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
@@ -61,7 +60,8 @@ exec("cat downloads/temp/setupcluster.R$time R/VisualCluster.R | R --vanilla");
 $date = date("U");
 print "<img src=\"".$config['base_url']."downloads/temp/linecluster.png?d=$date\">";
 
-$clustInfo = file("downloads/temp/clustInfo.txt".$time);
+$clustInfo = file($config['root_dir']."downloads/temp/clustInfo.txt".$time);
+unlink($config['root_dir']."downloads/temp/clustInfo.txt".$time);
 $clustInfo = preg_replace("/\n/", "", $clustInfo);
 sort($clustInfo);
 
@@ -78,7 +78,7 @@ for ($i=1; $i<count($clustsize)+1; $i++) {
   $total = $total + $clustsize[$i];
   print "<tr style='color:".$color[$i-1]."';'>";
   print "<td>$i</td>";
-  print "<td>".trim($clustlist[$i],", ")."</td>";
+  print "<td>".trim($clustlist[$i],', ')."</td>";
   print "<td>$clustsize[$i]</td>";
   print "</tr>";
  }
@@ -98,6 +98,25 @@ print "<input type = 'hidden' name = 'time' value = $time>";
 print "<p><input type=submit value='Select'>";
 print "</form>";
 
+print "<p><hr><p>";
+print "<h3>Full cluster contents</h3>";
+$clustertable = file("downloads/temp/clustertable.txt".$time);
+$clustertable = preg_replace("/\n/", "", $clustertable);
+// Remove the first row, "x".
+array_shift($clustertable);
+for ($i=0; $i<count($clustertable); $i++) {
+  $row = explode("\t", $clustertable[$i]);
+  $contents[$row[1]] .= $row[0].", ";
+}
+print "<table width=500 style='background-image: none; font-weight: bold'>";
+print "<thead><tr><th>Cluster</th><th>Lines</th></tr></thead>";
+for ($i=1; $i<count($contents)+1; $i++) {
+  print "<tr style='color:".$color[$i-1]."';'>";
+  print "<td>$i</td>";
+  print "<td>".trim($contents[$i],', ')."</td>";
+  print "</tr>";
+ }
+print "</table>";
 
 print "</div></div></div>";
 $footer_div=1;
