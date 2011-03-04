@@ -692,7 +692,9 @@ function getBarleyPedigreeCatalogLink($id) {
 	}
 
 	while($row = mysql_fetch_assoc($sql_bpc)) {
-			$url_bpc[] = str_replace('XXXX',$row['value'],$row['link_out']);
+	  // GRIN PI numbers include a required Space character.
+	  $value = urlencode($row['value']);
+	  $url_bpc[] = str_replace('XXXX',$value,$row['link_out']);
 	}
 	return $url_bpc;
 }
