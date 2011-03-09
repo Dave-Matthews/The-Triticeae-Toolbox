@@ -3,6 +3,12 @@ require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'theme/admin_header.php');
 connect();
+
+$defaultclusters = 5;
+if (isset($_SESSION['selected_lines'])) {
+  $linecount = count($_SESSION['selected_lines']);
+  $defaultclusters = min($defaultclusters, $linecount - 1);
+ }
 ?>
 
 <div id="primaryContentContainer">
@@ -23,10 +29,9 @@ connect();
 
   <form action="cluster_show.php">
   <p>How many clusters should pam divide the lines into?  &nbsp;&nbsp;
-  <input type=text name="clusters" value="5" size="1">  (Maximum 8.)
+  <input type=text name="clusters" value=<?php echo $defaultclusters ?> size="1">  (Maximum 8.)
   <p>Lines to label in the legend:<br>
-  <textarea name="labels" rows="4">
-  </textarea>
+  <textarea name="labels" rows=4></textarea>
   E.g. MERIT, FEG148-16, ND24205, VA07B-54
 
 <?php 
