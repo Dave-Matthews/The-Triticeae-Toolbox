@@ -64,7 +64,6 @@ EOD;
   <div id="utilright">
   </div>
   <a href="./feedback.php">Feedback</a> | <a href="about.php">About THT</a>
-  </a>
   </div>
 
 <?php
@@ -110,7 +109,7 @@ EOD;
   </ul>
   <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analysis</a>
   <ul>
-  <li><a href="<?php echo $config['base_url']; ?>cluster_interlude.php" title="Find lines like my lines of interest">Cluster Lines by Genotype</a>
+  <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Find lines like my lines of interest">Cluster Lines by Genotype</a>
   <li><a href="<?php echo $config['base_url']; ?>advanced_search.php" title="Alleles for selected markers">View Haplotypes</a>
   <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
 <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
