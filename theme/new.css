@@ -305,3 +305,9 @@ div#form_error
     background-position: right top;
     background-repeat: no-repeat;
 }
+
+.inprogress2 {
+    background-image: url('./images/progress.gif');
+    background-position: left top;
+    background-repeat: no-repeat;
+}
