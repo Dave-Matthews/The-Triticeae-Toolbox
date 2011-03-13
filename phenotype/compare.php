@@ -64,13 +64,13 @@ include($config['root_dir'] . 'theme/admin_header.php');
         $x = trim($x, ",");
         $x .= ")";
         $date = date("Uu");
-        $out = "jpeg(\\\"/www/htdocs/tht/downloads/temp/bighistogram.jpg\\\", width=444, height=333)";
+        $out = "jpeg(\\\"".$config['root_dir']."downloads/temp/bighistogram.jpg\\\", width=444, height=333)";
         $title = "main='Histogram for " . $pname[0] . "'";
 	$xlab = "xlab='" . html_entity_decode($pname[1]) . "'";
 	//$xlab "xlab='" . $pname[1] . "'";
         $rcmd = "hist(x,$title,$xlab)";
         exec("echo \"$x;$out;$rcmd\" | R --vanilla");
-        echo "<img src=\"/tht/downloads/temp/bighistogram.jpg?d=$date\">\n";
+        echo "<img src=\"".$config['base_url']."downloads/temp/bighistogram.jpg?d=$date\">\n";
 	//
 
 	// Show mean, std. dev., and number of entries
