@@ -64,7 +64,6 @@ EOD;
   <div id="utilright">
   </div>
   <a href="./feedback.php">Feedback</a> | <a href="about.php">About T3</a>
-  </a>
   </div>
 
 <?php
@@ -110,6 +109,7 @@ EOD;
   </ul>
   <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analysis</a>
   <ul>
+  <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Find lines like my lines of interest">Cluster Lines by Genotype</a>
   <li><a href="<?php echo $config['base_url']; ?>advanced_search.php" title="Alleles for selected markers">View Haplotypes</a>
   <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
 <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
@@ -128,17 +128,17 @@ EOD;
   ?> 
    <li> <a title="Curate the Database">Curation</a>
       <ul>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Add/Edit Trait Definitions">
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
       Add/Edit Trait Definitions</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Add Line Names">
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
       Add Line Names</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Add/Edit Pedigree">
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
       Add/Edit Pedigree</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Add Annotations Data">
-      Add Annotations Data</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Add Experiments Data">
-      Add Experiments Data</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Add Map Data">
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
+      Add Experiment Annotations</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data">
+      Add Experiment Results</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
       Add Map Data</a></li>
       </ul>
       <?php endif ?>
