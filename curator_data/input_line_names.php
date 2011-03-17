@@ -83,11 +83,10 @@ private function typeLineName()
 		<form action="<?php echo $config['root_dir'] ?>curator_data/input_line_names_check.php" method="post" enctype="multipart/form-data">
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
-	<p><strong>File:</strong> <input id="file" type="file" name="file" size="80%" /><br>
-<a href="<?php echo $config['root_dir'] ?>curator_data/examples/T3/LineSubmissionForm_Wheat.xls">Example line input file</a></p>
+	<p><strong>File:</strong> <input id="file" type="file" name="file" size="80%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['root_dir'] ?>curator_data/examples/Genotype07Template_2008_08_28.xls">Example Line Input File</a></p>
 	<p><input type="submit" value="Upload Line File" /></p>
 	
-	<a href="<?php echo $config['root_dir'] ?>login/edit_line.php"> Edit existing lines.</a>
+	<a href="<?php echo $config['root_dir'] ?>login/edit_line.php"> Edit Lines </a>
 
 </form>
 	
