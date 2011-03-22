@@ -46,7 +46,9 @@ ob_end_flush();
 			print "<option value=\"$selval\">$selval</option>\n";
 		}
 		print "</select></p><p>";
-		print "<input type='submit' value='Select>";
+print "<input type = 'radio' name='count' value='all' checked>All ";
+print "<input type = 'radio' name='count' value='100'>First 100<br>";
+		print "<input type='submit' value='Select'>";
 		print "</form>";
 		?>
 	</div>
@@ -56,7 +58,6 @@ ob_end_flush();
 		<ui style="list-style-type : none">
 		</ui>
 	</div>
-<p><?php echo $row['name']; ?> you last accessed the system on <?php echo $row['lastaccess']; ?></p>
 
 </div>
 </div>
