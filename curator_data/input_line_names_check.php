@@ -12,31 +12,32 @@ require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
 connect();
 loginTest();
+$cnt = 0;  // Count of errors
 
 function die_nice($message = "") {
-  global $config;
-  echo $message;
-  echo "<p><input type='Button' value='Return' onclick='history.go(-1); return;'>";
-  $footer_div = 1;
-  include($config['root_dir'].'theme/footer.php');
-  exit;
+//Actually don't die at all yet, just show the error message.
+  global $cnt;
+  if ($cnt == 0) echo "<h3>Errors</h3>";
+  $cnt++;
+  echo "<b>$cnt:</b> $message<br>";
+  return;
 }
 
 /* Show more informative messages when we get invalid data. */
 function errmsg($sql, $err) {
   if (preg_match('/^Data truncated/', $err)) {
+    // Undefined value for an enum type
     $pieces = preg_split("/'/", $err);
     $column = $pieces[1];
-    echo "Unallowed value for field <b>$column</b>.";
+    $msg = "Unallowed value for field <b>$column</b>. ";
     // Only works for table line_records.  Could pass table name as parameter.
     $r = mysql_query("describe line_records $column");
     $columninfo = mysql_fetch_row($r);
-    echo "<p>Allowed values are: ".$columninfo[1];
-    echo "<p>MySQL error message: $err";
-    echo "<p>The command was:<br>".$sql;
-    die_nice();
+    $msg .= "Allowed values are: ".$columninfo[1];
+    $msg .= "<br>Command: ".$sql."<br>";
+    die_nice($msg);
   }
-  else die_nice("MySQL error: ".$err."<p>The command was:<br>".$sql);
+  else die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql);
 }
 
 
@@ -54,49 +55,39 @@ new LineNames_Check($_GET['function']);
 
 class LineNames_Check
 {
-    
     private $delimiter = "\t";
-    
-	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-			case 'typeDatabase':
-				$this->type_Database(); /* update database */
-				break;
-				
-			case 'typeLineData':
-				$this->type_Line_Data(); /* Handle Line Data */
-				break;
-			
-			default:
-				$this->typeLineNameCheck(); /* intial case*/
-				break;
-			
-		}	
-	}
-
-
-private function typeLineNameCheck()
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {	
+      switch($function)
 	{
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
+	case 'typeDatabase':
+	  $this->type_Database(); /* update database */
+	  break;
+	case 'typeLineData':
+	  $this->type_Line_Data(); /* Handle Line Data */
+	  break;
+	default:
+	  $this->typeLineNameCheck(); /* intial case*/
+	  break;
+	}	
+    }
 
-		echo "<h2>Line information: Validation</h2>"; 
+    private function typeLineNameCheck() {
+      global $config;
+      include($config['root_dir'] . 'theme/admin_header.php');
+
+      echo "<h2>Line information: Validation</h2>"; 
 			
-		$this->type_Line_Name();
+      $this->type_Line_Name();
 
-		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-	}
+      $footer_div = 1;
+      include($config['root_dir'].'theme/footer.php');
+    }
 	
-	
-	private function type_Line_Name()
-	{
-	?>
-
+    private function type_Line_Name() {
+      global $cnt;
+      ?>
 	<script type="text/javascript">
 	function update_database(filepath, filename, username) {
 	  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
@@ -151,18 +142,14 @@ private function typeLineNameCheck()
 	    {
 	      /* start reading the excel */
 	      $datafile = $target_path.$uploadfile;
-	//	echo "file name is ". $uploadfile; 
 	      $reader = & new Spreadsheet_Excel_Reader();
-	$reader->setOutputEncoding('CP1251');
-	$reader->read($datafile);
-	$linedata = $reader->sheets[0];
-	$cols = $reader->sheets[0]['numCols'];
-	$rows = $reader->sheets[0]['numRows'];
-//	if (DEBUG) {
-	//	echo "nrows ".$rows." ncols ".$cols."\n";
-	//}
-
-	//if (DEBUG) echo "Input File Name: ".$datafile."\n";
+	      $reader->setOutputEncoding('CP1251');
+	      $reader->read($datafile);
+	      $linedata = $reader->sheets[0];
+	      $cols = $reader->sheets[0]['numCols'];
+	      $rows = $reader->sheets[0]['numRows'];
+	      //echo "nrows ".$rows." ncols ".$cols."<br>";
+	      //if (DEBUG) echo "Input File Name: ".$datafile."\n";
 
 	      // Read the Breeding Program from row 3.
 	      if ($linedata['cells'][3][1] != "*Breeding Program Code") {
@@ -191,7 +178,7 @@ private function typeLineNameCheck()
 		for ($irow = 4; $irow <=$rows; $irow++) {
 			$teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
 			if (empty($teststr)){
-			   break; 
+			  break; 
 			} 
 			elseif (strtolower($teststr) == "line name") {
 			  $firstline = $irow;
@@ -285,7 +272,6 @@ private function typeLineNameCheck()
 	      /* my insert update script goes here */
 				
 	      $icnt= 0;
-	      $cnt = 0;
 	      $line_inserts_str = "";
 	      $line_info_str = "";
 	      $line_uid = "";
@@ -298,18 +284,22 @@ private function typeLineNameCheck()
 				
 	      //Ignore the next row after the header.  Or error.
  	      if ($linedata['cells'][$firstline+1][2] != "comma separated values") {
- 		die("Row 2 must be the descriptions of the columns.  Please don't delete it.<br><br>"); 
+ 		die("Row 5 must be the descriptions of the columns.  Please don't delete it.<br><br>"); 
  	      }
 	      for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
 		//Extract data
 		//if ($cnt>4) exit;
 		$line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
+		if (empty($line)) die_nice("Row $irow: Line name is required."); 
+		elseif (strlen($line) < 3)  echo "Warning: '$line' is a short name and may not be unique.<br>"; 		
 		$hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
 		$color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
 		$growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
+		if (empty($growth)) die_nice("Row $irow: S, W or F is required.");
 		$species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
 		$species = preg_replace("/^a$/", "aestivum", $species);
 		$species = preg_replace("/^d$/", "durum", $species);
+		if (empty($species)) die_nice("Row $irow: Species is required.");
 		$awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
 		$pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
 		$comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
@@ -377,16 +367,15 @@ private function typeLineNameCheck()
 			  error(0, "$CAPcode is linked to a diffent line ($line_name), in line record table, please fix");
 			}
 		    }
-		    elseif (count($linesyn_uid)>1) 
-		      {
-			$linesyn_uids_multiple .= implode(",",$linesyn_uid);
-			//echo $CAPcode."is linked multiple lines".$linesyn_uids_multiple."in line record table, please fix";
-			$cnt++;/* if this counter is not 0 then no accept option is displayed*/
-			error(0, "$CAPcode is linked to multiple lines ($linesyn_uids_multiple), in line record table, please fix");
-		      }
+		    elseif (count($linesyn_uid)>1) {
+		      $linesyn_uids_multiple .= implode(",",$linesyn_uid);
+		      //echo $CAPcode."is linked multiple lines".$linesyn_uids_multiple."in line record table, please fix";
+		      $cnt++;/* if this counter is not 0 then no accept option is displayed*/
+		      error(0, "$CAPcode is linked to multiple lines ($linesyn_uids_multiple), in line record table, please fix");
+		    }
 		  } /* end of if (!empty($CAPcode)) */
 		} /* end of if (!empty($line)) */
-	      }
+	      } /* end of for ($irow) */
 	      if (($line_uids) != "") {
 		$line_updates =implode(",",$line_uids);
 		// Get line names.
@@ -402,9 +391,8 @@ private function typeLineNameCheck()
 	      $line_insert_data = explode(",",$line_inserts_str);
 	      // If any errors, show what we read and stop.
 	      if ($cnt != 0) {
-		  ?>
-			
-		  <h3>We were reading the following data from the uploaded file.</h3>
+		?>
+		<h3>We were reading the following data from the uploaded file.</h3>
 		  Breeding Program: <?php echo $bp ?><p>
 		<table >
 	<tr>
@@ -488,57 +476,10 @@ private function typeLineNameCheck()
 		  </table>
 		  </div>
 		
-		      <h3>The following lines will be added or updated.</h3>
-		      Please verify that the lines to be added are new and 
-		      the lines to be updated are the same as you intend to change.
-		      <p>
-        <table >
-	<tr>
-	<th style="width: 140px;" class="marker">Lines Added</th>
-	<th style="width: 150px;" class="marker" >Lines Updated </th>
-	</tr>
-	</table>
 			
-			<div id="test" style="padding: 0; height: 200px; width: 290px;  overflow: scroll;border: 1px solid #5b53a6;">
-			<table>
-			<?php
-			if($line_update_data !="") {
-			  for ($i = 0; $i < max(count($line_insert_data),count($line_update_data)); $i++) {				
-			?>
-			
-			<tr>
-			<td style="width: 130px;">
-			<?php echo $line_insert_data[$i] ?>
-			</td> 
-			<td style="width: 160px;">
-			<?php echo $line_update_data[$i] ?>
-			</td>
-			<?php
-			  }  /* end of for loop */
-			}
-			else {
-				for ($i = 0; $i < count($line_insert_data); $i++) {
-			?>
-			
-			<tr>
-			<td style="width: 130px;">
-			<?php echo $line_insert_data[$i] ?>
-			</td> 
-			<td style="width: 160px;">
-			<?php echo "No Updates" ?>
-			</td>
-			<?php
-				}/* end of for loop */
-				}
-				
-			?>
-			
-			</table>
-			</div>
-			
-			<?php
-				echo " <b>Please fix these errors before you insert into/update the database </b><br/><br/>";
-				exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+		      <?php
+		      echo " <p>Please fix these errors and try again.<br/><br/>";
+		exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 			}
 			elseif ($cnt == 0) {
 			  // No errors so far.
@@ -693,6 +634,7 @@ private function typeLineNameCheck()
 	global $config;
 	include($config['root_dir'] . 'theme/admin_header.php');
 	
+	global $cnt;
 	$datafile = $_GET['linedata'];
 	$filename_old = $_GET['file_name'];
 	$filename = $filename_old.rand();
@@ -916,9 +858,9 @@ private function typeLineNameCheck()
 	    //update the line record
 	    $line_uids = implode(",",$line_uid);
 				
-	    $sql_beg = "UPDATE LOW_PRIORITY line_records SET ";
+	    $sql_beg = "update line_records set ";
 	    $sql_mid = "";
-	    $sql_end = "updated_on=NOW() WHERE line_record_uid = '$line_uids'";
+	    $sql_end = "updated_on=NOW() where line_record_uid = '$line_uids'";
 	    if (!empty($pedstring)) {
 	      $pedstring = mysql_real_escape_string($pedstring);
 	      $sql_mid .= "pedigree_string = '$pedstring', ";
@@ -1023,11 +965,17 @@ private function typeLineNameCheck()
 	  } /* end of if (!empty($line)) */
 	}
 		 
-	echo "<b>The data was inserted/updated successfully.</b>";
-
+	if ($cnt > 0) {
+	  // if MySQL errors
+	  $url = $config['base_url']."curator_data/input_line_names.php";
+	  print "<p><input type='Button' value='Return' onClick='window.location=\"$url\"'>";
+	}
+	else {
+	  echo "<h3>Loaded</h3>";
+	echo "The data was inserted/updated successfully.";
 	$sql = "INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')";
 	$lin_table=mysql_query($sql) or die(mysql_error());
-
+	}
 
 	$footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
