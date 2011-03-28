@@ -1,36 +1,82 @@
 <?php
+//***********************************************************
+//
+// 3/28/2011 Jlee Fix to prevent crashing browser on large tables   
+// 3/25/2011 JLee Fix to work in system 
+//***********************************************************
+require 'config.php';
+/*
+ * Logged in page initialization
+ */
+include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 
-	$linkID = mysql_connect("lab.bcb.iastate.edu", "yhames04", "gdcb07") or die(mysql_error());
-	mysql_select_db("sandbox_yhames04", $linkID) or die(mysql_error());
+connect();
+loginTest();
 
-	$table = mysql_real_escape_string($_GET['table']);
+/* ************************************/
 
-	$query = mysql_query("SELECT * FROM $table");
+////////////////////////////////////////////////////////////////////////////////
+ob_start();
 
-	$fc = 1;
+authenticate_redirect(array(USER_TYPE_ADMINISTRATOR));
+ob_end_flush();
 
-	echo "<strong>$table</strong>:<br />";
-	echo "<table border=\"1\">\n<tr>\n\t";
+$table = mysql_real_escape_string($_GET['table']);
+$start = $_GET['start'];
+if ($start < 0) $start = 0;
 
-	while($row = mysql_fetch_assoc($query)) {
+$sql =  "SELECT count(*) as num FROM $table";
+$query = mysql_query($sql);
+$rdata = mysql_fetch_assoc($query);
+$max = $rdata['num'];
 
-		if($fc == 1) {
+$sql = "SELECT * FROM $table limit ". $start . ', 500';
+$query = mysql_query($sql);
 
-			foreach($row as $k=>$v) {
-				echo "\n\t\t<td><strong>$k</strong></td>";
-			}
-		}
+$fc = 1;
 
-		echo "\n</tr>\n<tr>\n\t";
+echo "<strong>$table</strong>:<br />";
+echo "<table border=\"1\">\n<tr>\n\t";
 
+while($row = mysql_fetch_assoc($query)) {
+
+	if($fc == 1) {
 		foreach($row as $k=>$v) {
-			
-			echo "\n\t\t<td>$v</td>";
-
+			echo "\n\t\t<td><strong>$k</strong></td>";
 		}
-		$fc++;
 	}
+	echo "\n</tr>\n<tr>\n\t";
 
-	echo "\n</tr>\n</table>";
-	
+	foreach($row as $k=>$v) {
+		echo "\n\t\t<td>$v</td>";
+	}
+	$fc++;
+}
+echo "\n</tr>\n</table>";
+
+echo "<br>";
+echo "<br>";
+$pStart = $start - 500;
+$nStart = $start + 500;	
+$lStart = $max - 500;
+
+if ($fc >= 500)	 {
+	echo "<div align='left' >";
+	if ($pStart >= 0) {
+		echo "<a href=\"viewtable.php?table=$table&start=0 \"> [First 500] </a> ";
+		echo "<td><td>";
+		echo "<a href=\"viewtable.php?table=$table&start=$pStart \"> [Previous 500] </a> ";
+		echo "<td><td>";
+	}
+	if ( $lStart != $start) { 
+		echo "<a href=\"viewtable.php?table=$table&start=$nStart \"> [Next 500] </a> ";
+		echo "<td><td>";	
+		echo "<a href=\"viewtable.php?table=$table&start=$lStart \"> [Last 500] </a> ";
+	}
+} elseif ($fc <= 500 && $start > 0) {
+	echo "<a href=\"viewtable.php?table=$table&start=0 \"> [First 500] </a> ";
+	echo "<td><td>";	
+	echo "<a href=\"viewtable.php?table=$table&start=$pStart \"> [Previous 500] </a> ";
+}  
+echo "</div>";
 ?>
