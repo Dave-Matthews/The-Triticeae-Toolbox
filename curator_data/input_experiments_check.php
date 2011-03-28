@@ -1,6 +1,7 @@
 <?php
 //uploading it to main server
 
+// 3/28/2011 JLee	Insert NULL instead 'NULL' into DB
 // 6/25/2010 J.Lee  Make the back page url relative and not hardwired to server
 // 9/29/2010 DEM    Use only single values of experiments.raw_data_file_name.
 // 12/14/2010 JLee  Change to use curator bootstrap
@@ -516,7 +517,7 @@ function ForceValue(& $arg1, $msg)
                      SET line_record_uid = '$line_record_uid',
                      experiment_uid = '$experiment_uid',";
                if ($check ==1){
-                  $sql .= "check_line='yes', datasets_experiments_uid=NULL,
+                  $sql .= "check_line='yes', datasets_experiments_uid = NULL,
                      trial_code_number = NULL,";
                } else {
                   $sql .= "datasets_experiments_uid='$de_uid',
@@ -530,7 +531,7 @@ function ForceValue(& $arg1, $msg)
                      SET line_record_uid = '$line_record_uid',
                      experiment_uid = '$experiment_uid',";
                if ($check ==1){
-                  $sql .= "check_line='yes', datasets_experiments_uid='NULL',
+                  $sql .= "check_line='yes', datasets_experiments_uid = NULL,
                      trial_code_number = NULL,";
                } else {
                   $sql .= "datasets_experiments_uid='$de_uid',
@@ -1141,7 +1142,7 @@ function ForceValue(& $arg1, $msg)
                      SET line_record_uid = '$line_record_uid',
                      experiment_uid = '$experiment_uid',";
                if ($check ==1){
-                  $sql .= "check_line='yes', datasets_experiments_uid='NULL',
+                  $sql .= "check_line='yes', datasets_experiments_uid = NULL,
                      trial_code_number = NULL,";
                } else {
                   $sql .= "datasets_experiments_uid='$de_uid',

@@ -1,6 +1,7 @@
 <?
 //uploading it to main server
 
+// 3/28/2011 JLee	Insert NULL instead 'NULL' into DB
 // 02/01/2011 JLee  Fix indentations and fatal error not presenting data
 // 02/01/2011 JLee  Fix problem with line with the value of 0
 // 12/14/2010 JLee  Change to use curator bootstrap
@@ -430,7 +431,7 @@ class LineNames_Check
                                     SET line_record_uid = '$line_record_uid',
                                     experiment_uid = '$experiment_uid',";
                                 if ($check == 1){
-                                    $sql .= "check_line='yes', datasets_experiments_uid='NULL',
+                                    $sql .= "check_line='yes', datasets_experiments_uid=NULL,
                                     trial_code_number = NULL,";
                                 } else {
                                     $sql .= "datasets_experiments_uid='$de_uid',
@@ -937,7 +938,7 @@ class LineNames_Check
                     SET line_record_uid = '$line_record_uid',
                     experiment_uid = '$experiment_uid',";
                 if ($check == 1){
-                    $sql .= "check_line='yes', datasets_experiments_uid='NULL',
+                    $sql .= "check_line='yes', datasets_experiments_uid=NULL,
                         trial_code_number = NULL,";
                 } else {
                     $sql .= "datasets_experiments_uid='$de_uid',
