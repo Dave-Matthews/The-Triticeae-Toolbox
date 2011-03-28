@@ -532,7 +532,10 @@ class LineNames_Check
                                             AND experiment_uid = '$experiment_uid'";
                                         $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                                         if ( mysql_num_rows($res)>0) {
-                                            $sql = "UPDATE phenotype_mean_data SET $fieldname = '$phenotype_data', updated_on=NOW()
+					  if ($phenotype_data != "NULL") {
+					    $phenotype_data = "'".$phenotype_data."'";
+					  }
+					  $sql = "UPDATE phenotype_mean_data SET $fieldname = $phenotype_data, updated_on=NOW()
                                                 WHERE experiment_uid = '$experiment_uid' AND phenotype_uid = '$phenoids[$j]'";
                                         } else {
                                             $sql = "INSERT INTO phenotype_mean_data SET $fieldname = '$phenotype_data',
@@ -1037,7 +1040,10 @@ class LineNames_Check
                                 AND experiment_uid = '$experiment_uid'";
                             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                             if ( mysql_num_rows($res)>0) {
-                                $sql = "UPDATE phenotype_mean_data SET $fieldname = '$phenotype_data', updated_on=NOW()
+			      if ($phenotype_data != "NULL") {
+				$phenotype_data = "'".$phenotype_data."'";
+			      }
+                                $sql = "UPDATE phenotype_mean_data SET $fieldname = $phenotype_data, updated_on=NOW()
                                     WHERE experiment_uid = '$experiment_uid' AND phenotype_uid = '$phenoids[$j]'";
                             } else {
                                 $sql = "INSERT INTO phenotype_mean_data SET $fieldname = '$phenotype_data',

@@ -1,7 +1,8 @@
 <?php
-
-	$linkID = mysql_connect("lab.bcb.iastate.edu", "yhames04", "gdcb07") or die(mysql_error());
-	mysql_select_db("sandbox_yhames04", $linkID) or die(mysql_error());
+require 'config.php';
+include($config['root_dir'].'includes/bootstrap.inc');
+include($config['root_dir'].'theme/normal_header.php');
+connect();
 
 	$table = mysql_real_escape_string($_GET['table']);
 
