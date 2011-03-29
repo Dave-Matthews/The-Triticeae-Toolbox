@@ -1,5 +1,4 @@
 <?php
-<<<<<<< HEAD
 //***********************************************************
 //
 // 3/28/2011 Jlee Fix to prevent crashing browser on large tables   
