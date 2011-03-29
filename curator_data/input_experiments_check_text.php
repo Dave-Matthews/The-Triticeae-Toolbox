@@ -430,7 +430,7 @@ class LineNames_Check
                                     SET line_record_uid = '$line_record_uid',
                                     experiment_uid = '$experiment_uid',";
                                 if ($check == 1){
-                                    $sql .= "check_line='yes', datasets_experiments_uid='NULL',
+                                    $sql .= "check_line='yes', datasets_experiments_uid=NULL,
                                     trial_code_number = NULL,";
                                 } else {
                                     $sql .= "datasets_experiments_uid='$de_uid',
@@ -940,7 +940,7 @@ class LineNames_Check
                     SET line_record_uid = '$line_record_uid',
                     experiment_uid = '$experiment_uid',";
                 if ($check == 1){
-                    $sql .= "check_line='yes', datasets_experiments_uid='NULL',
+                    $sql .= "check_line='yes', datasets_experiments_uid=NULL,
                         trial_code_number = NULL,";
                 } else {
                     $sql .= "datasets_experiments_uid='$de_uid',
