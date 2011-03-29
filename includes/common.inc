@@ -297,7 +297,12 @@ function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $id
 			$valstr.=$vals[$ks[$i]];
 		}
 		else {
-			$valstr.="\"".addslashes($vals[$ks[$i]])."\"";
+		  if ($vals[$ks[$i]] == "NOW()") {
+		    $valstr.= "NOW()";
+		  }
+		  else {
+		    $valstr.="\"".addslashes($vals[$ks[$i]])."\"";
+		  }
 		}
 		if ($i<$vsize-1) {
 			$keystr.=",";
@@ -305,8 +310,8 @@ function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $id
 		}
 
 	}
-
-	mysql_query("insert into $tablename ($keystr) values ($valstr)");// || die(mysql_errno() . ":" . mysql_error());
+	$query = "insert into $tablename ($keystr) values ($valstr)";
+	mysql_query($query) || die(mysql_errno() . ":" . mysql_error().". Query was:<br>$query");
 
 	$id=mysql_insert_id();
 	return array(1,$id);

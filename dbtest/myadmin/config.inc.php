@@ -29,7 +29,8 @@ $i++;
 /* Authentication type */
 $cfg['Servers'][$i]['auth_type'] = 'cookie';
 /* Server parameters */
-$cfg['Servers'][$i]['host'] = 'lab.bcb.iastate.edu';
+//$cfg['Servers'][$i]['host'] = 'lab.bcb.iastate.edu';
+$cfg['Servers'][$i]['host'] = 'localhost';
 $cfg['Servers'][$i]['connect_type'] = 'tcp';
 $cfg['Servers'][$i]['compress'] = false;
 /* Select mysqli if your server has it */
