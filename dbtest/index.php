@@ -9,7 +9,7 @@ require 'config.php';
  * Logged in page initialization
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-
+include($config['root_dir'].'theme/normal_header.php');
 connect();
 loginTest();
 
@@ -44,7 +44,7 @@ ob_end_flush();
 		$query = mysql_query("DESCRIBE $tables[$i]");
 		$fc = 1;
 
-		echo "<strong>$tables[$i]</strong>: <a href=\"viewtable.php?table=$tables[$i]&start=0 \">View Contents</a> <br />";// ---- <a href=\"deleteTable.php?table=$tables[$i]\">Delete Contents</a> <br />";
+		echo "<strong>$tables[$i]</strong>: <a href=\"dbtest/viewtable.php?table=$tables[$i]&start=0 \">View Contents</a> <br />";// ---- <a href=\"deleteTable.php?table=$tables[$i]\">Delete Contents</a> <br />";
 		echo "<table border=\"1\">\n<tr>\n\t";
 
 		while($row = mysql_fetch_assoc($query)) {
