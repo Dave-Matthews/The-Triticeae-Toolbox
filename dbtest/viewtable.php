@@ -29,13 +29,27 @@ $sql =  "SELECT count(*) as num FROM $table";
 $query = mysql_query($sql);
 $rdata = mysql_fetch_assoc($query);
 $max = $rdata['num'];
+$lStart = $max - 500;
+$pStart = $start - 500;
+$nStart = $start + 500;	
 
 $sql = "SELECT * FROM $table limit ". $start . ', 500';
 $query = mysql_query($sql);
 
 $fc = 1;
 
-echo "<strong>$table</strong>:<br />";
+echo "<strong>$table</strong>:<br /><br />";
+
+echo "<div align='left' >";
+if ($start != 0) {
+	echo "<a href=\"dbtest/viewtable.php?table=$table&start=0 \"> [First 500] </a> ";
+} 
+if ($start+500 < $max) {
+	echo "<a href=\"dbtest/viewtable.php?table=$table&start=$lStart \"> [Last 500] </a> ";
+}
+echo "</div>";
+
+
 echo "<table border=\"1\">\n<tr>\n\t";
 
 while($row = mysql_fetch_assoc($query)) {
@@ -56,9 +70,6 @@ echo "\n</tr>\n</table>";
 
 echo "<br>";
 echo "<br>";
-$pStart = $start - 500;
-$nStart = $start + 500;	
-$lStart = $max - 500;
 
 if ($fc >= 500)	 {
 	echo "<div align='left' >";
