@@ -15,12 +15,6 @@ connect();
 loginTest();
 
 /* ************************************/
-=======
-require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
-connect();
->>>>>>> a62a7076d985bf8960f25443d0ad92ecf4443ef5
 
 ////////////////////////////////////////////////////////////////////////////////
 ob_start();
