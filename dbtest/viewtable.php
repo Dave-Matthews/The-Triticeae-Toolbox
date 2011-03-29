@@ -22,6 +22,7 @@ authenticate_redirect(array(USER_TYPE_ADMINISTRATOR));
 ob_end_flush();
 
 $table = mysql_real_escape_string($_GET['table']);
+$capTable = strtoupper($table);
 $start = $_GET['start'];
 if ($start < 0) $start = 0;
 
@@ -38,7 +39,7 @@ $query = mysql_query($sql);
 
 $fc = 1;
 
-echo "<strong>$table</strong>:<br /><br />";
+echo "<p><H3><strong>$capTable</strong>:</H3></p>";
 
 echo "<div align='left' >";
 if ($start != 0) {
@@ -48,8 +49,6 @@ if ($start+500 < $max) {
 	echo "<a href=\"dbtest/viewtable.php?table=$table&start=$lStart \"> [Last 500] </a> ";
 }
 echo "</div>";
-
-
 echo "<table border=\"1\">\n<tr>\n\t";
 
 while($row = mysql_fetch_assoc($query)) {
