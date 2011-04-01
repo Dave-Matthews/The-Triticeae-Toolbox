@@ -34,8 +34,8 @@ $cfg['Servers'][$i]['host'] = 'localhost';
 $cfg['Servers'][$i]['connect_type'] = 'tcp';
 $cfg['Servers'][$i]['compress'] = false;
 /* Select mysqli if your server has it */
-$cfg['Servers'][$i]['extension'] = 'mysql';
-$cfg['Servers'][$i]['only_db'] = '';//'sandbox_yhames04';
+//$cfg['Servers'][$i]['extension'] = 'mysql';
+//$cfg['Servers'][$i]['only_db'] = '';//'sandbox_yhames04';
 /* User for advanced features */
 // $cfg['Servers'][$i]['controluser'] = 'pma';
 // $cfg['Servers'][$i]['controlpass'] = 'pmapass';
