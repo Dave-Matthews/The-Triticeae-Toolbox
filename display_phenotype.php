@@ -7,6 +7,7 @@
 
 //Author: Kartic Ramesh; drastically rewritten by Julie Dickerson, 2009 to make usable and use sessions
 
+// 03/25/2011 DEM   Oops, the Collaborator should be the one in table phenotype_experiment_info.
 // 02/07/2011 DEM   Add CAPdata_program and Collaborator to the first table.
 // 01/12/2011 JLee  Add so experiment download data displays on separate page
 // 01/12/2011 JLee  Mod so mean and std.err values in experiment datafile do have signif digit applied to them   
@@ -69,7 +70,6 @@ connect();
 	$result_cdp=mysql_query($query) or die(mysql_error());
 	$row_cdp=mysql_fetch_array($result_cdp);
 	$dataprogram = $row_cdp['data_program_name'];
-	$collaborator = $row_cdp['collaborator_name'];
 
         echo "<table>";
 	if ($exptname) {echo "<tr> <td>Experiment</td><td>".$exptname."</td></tr>";}
@@ -85,7 +85,7 @@ connect();
 		echo "<tr> <td>Number of Entries</td><td>".$row_pei['number_entries']."</td></tr>";
         echo "<tr> <td>Comments</td><td>".$row_pei['other_remarks']."</td></tr>";
 	echo "<tr> <td>Data Program</td><td>".$dataprogram."</td></tr>";
-	echo "<tr> <td>Collaborator</td><td>".$collaborator."</td></tr>";
+	echo "<tr> <td>Collaborator</td><td>".$row_pei['collaborator']."</td></tr>";
         echo "</table><p>";
 
         // get all line data for this experiment

@@ -492,7 +492,7 @@ else {
                         SET line_record_uid = '$line_record_uid',
                         experiment_uid = '$experiment_uid',";
                     if ($check ==1) {
-                        $sql .= "check_line='yes', datasets_experiments_uid='NULL',
+                        $sql .= "check_line='yes', datasets_experiments_uid=NULL,
                         trial_code_number = NULL,";
                     } else {
                         $sql .= "datasets_experiments_uid='$de_uid',
@@ -594,7 +594,10 @@ else {
                             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
  
                             if ( mysql_num_rows($res)>0) {
-                                $sql = "UPDATE phenotype_mean_data SET $fieldname = '$phenotype_data', updated_on=NOW()
+			      if ($phenotype_data != "NULL") {
+				$phenotype_data = "'".$phenotype_data."'";
+			      }
+                                $sql = "UPDATE phenotype_mean_data SET $fieldname = $phenotype_data, updated_on=NOW()
                                     WHERE experiment_uid = '$experiment_uid' AND phenotype_uid = '$phenoids[$j]'";
                             } else {
                                 $sql = "INSERT INTO phenotype_mean_data SET $fieldname = '$phenotype_data',
@@ -1027,7 +1030,7 @@ private function type_Database() {
                         SET line_record_uid = '$line_record_uid',
                         experiment_uid = '$experiment_uid',";
                     if ($check ==1) {
-                        $sql .= "check_line='yes', datasets_experiments_uid='NULL',
+                        $sql .= "check_line='yes', datasets_experiments_uid=NULL,
                             trial_code_number = NULL,";
                     } else {
                         $sql .= "datasets_experiments_uid='$de_uid',
@@ -1073,8 +1076,11 @@ private function type_Database() {
 										AND tht_base_uid = '$tht_base_uid'";
                                     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                                     if ( mysql_num_rows($res)>0) {
-                                        $sql = "UPDATE phenotype_data SET value = '$phenotype_data', updated_on=NOW()
-											WHERE tht_base_uid = '$tht_base_uid' AND phenotype_uid = '$phenoids[$j]'";
+			      if ($phenotype_data != "NULL") {
+				$phenotype_data = "'".$phenotype_data."'";
+			      }
+                                $sql = "UPDATE phenotype_data SET value = $phenotype_data, updated_on=NOW()
+				       WHERE tht_base_uid = '$tht_base_uid' AND phenotype_uid = '$phenoids[$j]'";
                                     } else {
                                         $sql = "INSERT INTO phenotype_data SET phenotype_uid = '$phenoids[$j]',
                                             tht_base_uid = '$tht_base_uid', value = '$phenotype_data',
@@ -1126,7 +1132,10 @@ private function type_Database() {
                                     AND experiment_uid = '$experiment_uid'";
                                 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                                 if ( mysql_num_rows($res)>0) {
-                                    $sql = "UPDATE phenotype_mean_data SET $fieldname = '$phenotype_data', updated_on=NOW()
+				  if ($phenotype_data != "NULL") {
+				    $phenotype_data = "'".$phenotype_data."'";
+				  }
+				  $sql = "UPDATE phenotype_mean_data SET $fieldname = $phenotype_data, updated_on=NOW()
                                         WHERE experiment_uid = '$experiment_uid' AND phenotype_uid = '$phenoids[$j]'";
                                 } else {
                                     $sql = "INSERT INTO phenotype_mean_data SET $fieldname = '$phenotype_data',
@@ -1266,7 +1275,6 @@ private function type_Database() {
 	}/* end of type_database function */
 } /* end of class */
 ?>
-
 
 
 

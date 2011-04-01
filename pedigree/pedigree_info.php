@@ -57,22 +57,13 @@ var line = new Array();
 ?>"
 var sellineids = new Array();
 var lineuids = line.length;
-//lineuids = ($('_SESSION["selected_lines"]').length);
-		
-//lineuids =  $('test').getValue().split(",");;
-		
-function load_excel() {
-    //alert ('hi');
-    //alert (lineuids);
-    //excel_str1 = implode(",",sellineids);
-    excel_str1 = sellineids;
-    arry_length = (sellineids.length);
-    // alert(arry_length);
-    var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + arry_length;
-    // Opens the url in the same window
-     window.open(url, "_self");
-}
 
+function load_excel() {
+  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel';
+  // Opens the url in the same window
+  window.open(url, "_self");
+}
+		
 // select/deselect
 function sm(exbx, id) {
     if (exbx.checked == true)
@@ -117,7 +108,7 @@ function exclude_none() {
 <table >
 	<tr> 
 		<th style="width: 80px;" class="marker"> Check <br/><input type="radio" name="btn1" value="" onclick="javascript:exclude_all();"/>
-																		All
+																		All<br>
 																		<input type="radio" name="btn1" value="" onclick="javascript:exclude_none();"/>None</th>
                     
 		<th style="width: 130px;" class="marker"> Line Name </th>
@@ -151,7 +142,7 @@ function exclude_none() {
 ?>
     <tr>
         <td style="width: 80px;" class="marker">
-        <input type="checkbox" name="btn1" value="<?php echo $lineuid ?>" id="exbx_<?php echo $lineuid ?>" onchange="sm(this, <?php echo $lineuid ?>);" class="exbx"/>
+        <input type="checkbox" checked name="btn1" value="<?php echo $lineuid ?>" id="exbx_<?php echo $lineuid ?>" onchange="sm(this, <?php echo $lineuid ?>);" class="exbx"/>
         <input type="hidden" id="muids" name="muids" value="<?php echo $lineuid ?>" />
         </td>
   
@@ -219,69 +210,63 @@ function exclude_none() {
 </table>
 </div>
 
-<br/><br/><input type="button" value="Download Line Data (XLS)" onclick="javascript:load_excel();"/>
+<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/>
 
 <?php
 } /* End of function type_LineInformation*/
   
 private function type_Line_Excel() {
 
-    $sample = $_GET['mxls1'];
+  $sample = implode(",", $_SESSION['selected_lines']);
+  $tok = strtok($sample, ",");
+ 
+  $workbook = new Spreadsheet_Excel_Writer();
+  $format_header =& $workbook->addFormat();
+  $format_header->setBold();
+  $format_header->setAlign('center');
+  $format_header->setColor('red');
+  $format_header->setBgColor('blue');
+
+  $format_header->setItalic();
+
+  $worksheet =& $workbook->addWorksheet();
+  $worksheet->write(0, 0, "Line Name", $format_header);
+  $worksheet->write(0, 1, "BP Code", $format_header);
+  $worksheet->write(0, 2, "Growth Habit", $format_header);
+  $worksheet->write(0, 3, "Row Type", $format_header);
+  $worksheet->write(0, 4, "Primary End Use", $format_header);
+  $worksheet->write(0, 5, "Hull", $format_header);
+  $worksheet->write(0, 6, "Pedigree String", $format_header);
+  $worksheet->write(0, 7, "Experiment Data Available", $format_header);
+
+  $i = 1;
+# start by opening a query string
+
+  while ($tok !== false) {
+    $lineuid = (int)$tok;
+    $result=mysql_query("select line_record_name, breeding_program_code, growth_habit, row_type, hull, primary_end_use, pedigree_string from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
+    $tok = strtok(",");
 	
-    /* Length variable not used anywhere*/
-    //$length = $_GET['mxls2'];
-    $tok = strtok($sample, ",");
+    while ($row = mysql_fetch_assoc($result)) {
+      $format_row =& $workbook->addFormat();
+      $format_row->setAlign('center');
  
-    //echo var_dump($tok)."<br/>";
-    //	echo var_dump($sample);
- 
-    $workbook = new Spreadsheet_Excel_Writer();
-    $format_header =& $workbook->addFormat();
-    $format_header->setBold();
-    $format_header->setAlign('center');
-    $format_header->setColor('red');
-    $format_header->setBgColor('blue');
-
-    $format_header->setItalic();
-
-    $worksheet =& $workbook->addWorksheet();
-    $worksheet->write(0, 0, "Line Name", $format_header);
-    $worksheet->write(0, 1, "BP Code", $format_header);
-    $worksheet->write(0, 2, "Growth Habit", $format_header);
-    $worksheet->write(0, 3, "Row Type", $format_header);
-    $worksheet->write(0, 4, "Primary End Use", $format_header);
-    $worksheet->write(0, 5, "Hull", $format_header);
-    $worksheet->write(0, 6, "Pedigree String", $format_header);
-    $worksheet->write(0, 7, "Experiment Data Available", $format_header);
-
-    $i = 1;
-    # start by opening a query string
-
-    while ($tok !== false) {
-        $lineuid = (int)$tok;
-        $result=mysql_query("select line_record_name, breeding_program_code, growth_habit, row_type, hull, primary_end_use, pedigree_string from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
-        $tok = strtok(",");
-	
-	while ($row = mysql_fetch_assoc($result)) {
-            $format_row =& $workbook->addFormat();
-            $format_row->setAlign('center');
- 
-            $format_pedigree_row =& $workbook->addFormat();
-            $format_pedigree_row->setAlign('left');
+      $format_pedigree_row =& $workbook->addFormat();
+      $format_pedigree_row->setAlign('left');
  		
-            $worksheet->write($i, 0, "$row[line_record_name]",$format_row);
-            $worksheet->write($i, 1, "$row[breeding_program_code]",$format_row);
-            $worksheet->write($i, 2, "$row[growth_habit]",$format_row);
-            $worksheet->write($i, 3, "$row[row_type]",$format_row);
-            $worksheet->write($i, 4, "$row[primary_end_use]",$format_row);
-            $worksheet->write($i, 5, "$row[hull]",$format_row);
-            $worksheet->write($i, 6, "$row[pedigree_string]",$format_pedigree_row);
-            $worksheet->write($i, 7, "NA",$format_row);
-        }
-        $i++;
+      $worksheet->write($i, 0, "$row[line_record_name]",$format_row);
+      $worksheet->write($i, 1, "$row[breeding_program_code]",$format_row);
+      $worksheet->write($i, 2, "$row[growth_habit]",$format_row);
+      $worksheet->write($i, 3, "$row[row_type]",$format_row);
+      $worksheet->write($i, 4, "$row[primary_end_use]",$format_row);
+      $worksheet->write($i, 5, "$row[hull]",$format_row);
+      $worksheet->write($i, 6, "$row[pedigree_string]",$format_pedigree_row);
+      $worksheet->write($i, 7, "NA",$format_row);
     }
-    $workbook->send('Line_Details.xls');
-    $workbook->close();
-    }
-} /* End of class*/
-?>
+    $i++;
+  }
+  $workbook->send('Line_Details.xls');
+  $workbook->close();
+}
+      } /* End of class*/
+	?>

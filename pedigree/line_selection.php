@@ -1,5 +1,6 @@
 <?php session_start();
 
+// 2/14/2011 JLee  Fix to handle hector case
 // 2/2/2011  JLee  Add ability to parse tab-delimited and comma separate line inputs
 // 1/28/2011  JLee  Add ability to add muliple lines and synonym translation
 
@@ -219,7 +220,7 @@ $sql = "select distinct experiment_year from experiments";
 		}
 	   	
         $items = implode("','", $lineList);
-        $mStatment = "SELECT distinct (lr.line_record_name) FROM line_synonyms ls, line_records lr where ls.line_record_uid = lr.line_record_uid and (ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "'));";
+        $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
  
         $res = mysql_query($mStatment) or die(mysql_error());
 
