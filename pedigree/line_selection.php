@@ -90,10 +90,9 @@ function exclude_none()
   <table width="650px">
   <form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
   
-	<tr> <td>
-  <b>Name</b> <br/><br/>
-  <!-- <input type="text" name="LineSearchInput" value="<?php echo $name?>"/> --> 
-  <textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"></textarea>
+      <tr> <td>
+      <b>Name</b> <br/><br/>
+      <textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
   <br/> Eg: M25, FEG148-16, Doyce<br/>
   Synonyms will be translated.
   <br></td>
@@ -190,7 +189,11 @@ $sql = "select distinct experiment_year from experiments";
 	</tr>
   </table>
 
-  <p ><input type="submit" style="height:2em; width:6em;" value="Search"/></p>
+  <p ><input type="submit" style="height:2em; width:6em;" value="Search"/>
+      <?php
+      $url = $config['base_url']."pedigree/line_selection.php";
+      echo "<input type=button value='Clear' onclick='location.href=\"$url\"'>";
+      ?>
 </form>
 </div>
 
@@ -219,7 +222,7 @@ $sql = "select distinct experiment_year from experiments";
 		}
 	   	
         $items = implode("','", $lineList);
-        $mStatment = "SELECT distinct (lr.line_record_name) FROM line_synonyms ls, line_records lr where ls.line_record_uid = lr.line_record_uid and (ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "'));";
+      $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
  
         $res = mysql_query($mStatment) or die(mysql_error());
 
@@ -433,12 +436,11 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 
     echo "<div class='boxContent'>";
     if (count($nonHits) != 0 ){
+      echo "<p>";
         foreach ($nonHits as &$i) {
-            echo "<font color=red>\"$i\" not found.</font><br>";
+            echo "<font color=red><b>\"$i\" not found.</font></b><br>";
         }
-        echo "<br>";        
     }   
-    
 	?>
     <h3>Lines found: <?php echo "$linesfound"; ?></h3>
     <div style="width: 420px; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">
