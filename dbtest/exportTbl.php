@@ -13,7 +13,7 @@
 		$tblname=$_POST['table_sel'];
 		$count=$_POST['count'];
 		$limit = "";
-		if ($count=100) $limit = "limit $count";
+		if ($count == "100") $limit = "limit $count";
 		//$backup = "Table name ".$_POST['table_sel']."\n";
 		$result=mysql_query("select * from $tblname $limit");
 		$count=0;
