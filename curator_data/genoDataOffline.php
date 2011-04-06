@@ -30,7 +30,7 @@ echo "Email - ". $emailAddr. "\n";
 $linkID = connect(); 
 
 $target_Path = substr($lineTransFile, 0, strrpos($lineTransFile, '/')+1);
-$tPath = str_replace('.','',$target_Path);
+$tPath = str_replace('./','',$target_Path);
 
 $errorFile = $target_Path."importError.txt";
 echo $errorFile."\n";
@@ -76,6 +76,8 @@ if (($line = fgets($reader)) == FALSE) {
     exitFatal ($errFile, "Unable to locate header names on first line of file.");
 }     
 
+echo "Processing line translation file...\n";
+
 $header = str_getcsv($line,"\t");
  // Set up header column; all columns are required
 $lineNameIdx = implode(find("Line Name", $header),"");
@@ -120,7 +122,9 @@ while(($line = fgets($reader)) !== FALSE) {
     $lineDsHash[$lineStr] = $de_uid;
 }    
 fclose($reader);   
+echo "Line translation file processing done.\n";
 
+echo "Start genotyping record creation process...\n";
 //Process Genotype data
 /* start reading the input */
 //echo "genotype file - " . $gDataFile . "<br>";
@@ -204,7 +208,7 @@ while (!feof($reader))  {
     $rowNum++;		// number of lines
     $markerflag = 0;        //flag for checking marker existence
     $marker = $data[$markerIdx];
-    // echo $marker,"\n";
+    echo "+ working on ". $marker ." ". $data[$lineNameIdx]."\n";
             
     /* check if marker is EST synonym, if not found, then check name */
     $sql ="SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE ms.value='$marker'";
@@ -323,12 +327,16 @@ while (!feof($reader))  {
 	} // end marker flag loop
 } // End of while data 
 fclose($reader);
-echo "Genotyping record creation completed\n";
+echo "Genotyping record creation completed.\n";
+echo "Start allele frequency calculation processing...\n";
 
 // Do allele frequency calculations
 $uniqExpID = array_unique($lineExpHash);
     
 foreach ($uniqExpID AS $key=>$expID)  {
+	
+	if (empty($expID)) continue; 
+
     // Step 1: get tht_base IDs for the experiment
     echo "Working on experiment id - " . $expID . "\n";
     $sql ="SELECT tht_base.tht_base_uid FROM tht_base WHERE tht_base.experiment_uid = $expID";
@@ -346,7 +354,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
     echo "\t tht_base_uids list - " . $tht_base_uids  . "\n";    
     // Step 2: get distinct marker_uid's for these tht_base IDs
     $sql ="SELECT DISTINCT g.marker_uid FROM genotyping_data AS g WHERE g.tht_base_uid IN ($tht_base_uids)";
-    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error:  genotyping_data lookup with experiment uid - ". $expID .
+    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: genotyping_data lookup with experiment uid - ". $expID .
     " ". mysql_error(). ".\n\n$sql");
     while ($row = mysql_fetch_array($res)) {
         $mk_uid[] = $row['marker_uid'];
@@ -367,7 +375,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
         //get marker name
         $sql ="SELECT markers.marker_name FROM markers
                    WHERE marker_uid = $value";
-        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error:  marker name retrieval - ". mysql_error() . ".\n\n$sql");
+        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: marker name retrieval - ". mysql_error() . ".\n\n$sql");
         $rdata = mysql_fetch_assoc($res);
         $mname = $rdata['marker_name'];
         echo "-+- marker name ".$mname." for marker ".$value."\n";
@@ -375,7 +383,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
         // get genotype IDs for a marker
         $sql ="SELECT g.genotyping_data_uid AS gid FROM genotyping_data AS g
                     WHERE g.tht_base_uid IN ($tht_base_uids) AND g.marker_uid = $value";
-        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error:  genotyping_data retrieval - ". mysql_error() . ".\n\n$sql");
+        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: genotyping_data retrieval - ". mysql_error() . ".\n\n$sql");
         while ($row = mysql_fetch_array($res)) {
             $geno_uid[] = $row['gid'];
         }
@@ -387,7 +395,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
         // get alleles and gentrain score
         $sql ="SELECT a.allele_1,a.allele_2, a.GT_score FROM alleles AS a
                     WHERE a.genotyping_data_uid IN ($geno_uids)";
-        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error:  genotyping_data retrieval - ". mysql_error() . ".\n\n$sql");
+        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: genotyping_data retrieval - ". mysql_error() . ".\n\n$sql");
 
         while ($row = mysql_fetch_array($res)) {
             $a1[]=$row['allele_1'];
@@ -452,7 +460,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
                         description = '$mname', updated_on = NOW() 
 						WHERE experiment_uid = $expID and marker_uid = $value";
 		}
-        mysql_query($sql) or exitFatal ($errFile, "Database Error:  during update or insertion into  allele_frequencies table - ".          mysql_error() . "\n\n$sql");
+        mysql_query($sql) or exitFatal ($errFile, "Database Error: during update or insertion into  allele_frequencies table - ". mysql_error() . "\n\n$sql");
         //reset key variables
         unset($geno_uid);
         unset($a1);
@@ -465,7 +473,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
 }
 fclose($errFile);
 
-echo "Allele frequency calculations completed\n";
+echo "Allele frequency calculations completed.\n";
 
 // Send out status email
 if (filesize($errorFile)  > 0) {
@@ -474,8 +482,9 @@ if (filesize($errorFile)  > 0) {
     echo "Genotype Data Import processing encountered some errors, check error file ". $errorFile , " for more information\n";
     
 } else {
-    $body = "The offline genotype data import completed successfully.\n\n".
-            "Additional information can be found at [APACHE_ROOT]/tht/curator_data" .$tPath. "genoProc.out\n"";
+    $body = "The offline genotype data import completed successfully.\n".
+			"Genotyping data import completed at - ". date("m/d/y : H:i:s", time()). "\n\n".
+            "Additional information can be found at ".$progPath.$tPath."genoProc.out\n";
     echo "Genotype Data Import Processing Successfully Completed\n";
 }
 mail($emailAddr, $subject, $body, $mailheader);
@@ -499,7 +508,7 @@ function exitFatal ($handle, $msg) {
     // Send email
     $subject = 'Fatal Import Error';
     $body = "There was a fatal problem during the offline importing process.\n". $msg. "\n\n" .
-        "Additional information can be found at [APACHE_ROOT]/tht/curator_data" .$tPath. "\n";      
+        "Additional information can be found at ".$progPath .$tPath. "\n";      
     mail($emailAddr, $subject, $body, $mailheader);
     exit(1);
 }
