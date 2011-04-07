@@ -30,6 +30,7 @@ new gLineNames_Check($_GET['function']);
 class gLineNames_Check
 {
     private $delimiter = "\t";
+
     // Using the class's constructor to decide which action to perform
 	public function __construct($function = null)
 	{	
@@ -56,11 +57,14 @@ class gLineNames_Check
 	
 	private function type_Experiment_Rec() 	{
 
+		global $root;
         $row = loadUser($_SESSION['username']);
         ini_set('memory_limit','1024M');
 		$username=$row['name'];
+
         $username = str_replace(" ", "", $username);
 		$tmp_dir="./uploads/tmpdir_".$username."_".rand();
+		$url = $root;
         //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
         //	copy($_FILES['file']['tmp_name'][1], $raw_path);
         umask(0);
@@ -112,7 +116,7 @@ class gLineNames_Check
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");           
        }
         
-        $cmd = "php genoDataOffline.php " . $translateFile . " " . $genoDataFile . " " . $userEmail . " > " . $processOut . " &";
+        $cmd = "php genoDataOffline.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." > " . $processOut . " &";
         //echo "Cmd - " . $cmd . "<br>";
         exec($cmd);
    

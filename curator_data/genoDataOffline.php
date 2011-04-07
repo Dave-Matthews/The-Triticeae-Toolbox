@@ -16,6 +16,7 @@ $fnames = $_SERVER["argv"];
 $lineTransFile = $fnames[1];
 $gDataFile = $fnames[2];
 $emailAddr = $fnames[3];
+$urlPath = $fnames[4];
 
 $error_flag = 0;
 $lineExpHash = array ();
@@ -25,7 +26,8 @@ $curTrialCode = '';
 echo "Start time - ". date("m/d/y : H:i:s", time()) ."\n"; 
 echo "Translate File - ". $lineTransFile. "\n";
 echo "Genotype Data File - ". $gDataFile. "\n";
-echo "Email - ". $emailAddr. "\n";
+echo "URL - " . $urlPath . "\n";
+echo "Email - ". $emailAddr."\n";
 
 $linkID = connect(); 
 
@@ -478,13 +480,13 @@ echo "Allele frequency calculations completed.\n";
 // Send out status email
 if (filesize($errorFile)  > 0) {
     $body = "There was a problem during the offline importing process.\n".
-        "Please have the curator review the error file at " .  $errorFile . "\n";
+        "Please have the curator review the error file at " . $urlPath.'curator_data/'.$tPath . "\n";
     echo "Genotype Data Import processing encountered some errors, check error file ". $errorFile , " for more information\n";
     
 } else {
     $body = "The offline genotype data import completed successfully.\n".
 			"Genotyping data import completed at - ". date("m/d/y : H:i:s", time()). "\n\n".
-            "Additional information can be found at ".$progPath.$tPath."genoProc.out\n";
+            "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
     echo "Genotype Data Import Processing Successfully Completed\n";
 }
 mail($emailAddr, $subject, $body, $mailheader);
@@ -499,6 +501,7 @@ function exitFatal ($handle, $msg) {
     global $emailAddr;
     global $mailheader;
     global $tPath; 
+	global $urlPath; 
     
     // Send to stdout
     echo $msg;
@@ -508,7 +511,7 @@ function exitFatal ($handle, $msg) {
     // Send email
     $subject = 'Fatal Import Error';
     $body = "There was a fatal problem during the offline importing process.\n". $msg. "\n\n" .
-        "Additional information can be found at ".$progPath .$tPath. "\n";      
+        "Additional information can be found at ".$urlPath.'curator_data/'.$tPath. "\n";      
     mail($emailAddr, $subject, $body, $mailheader);
     exit(1);
 }
