@@ -37,7 +37,7 @@ function errmsg($sql, $err) {
     $msg .= "<br>Command: ".$sql."<br>";
     die_nice($msg);
   }
-  else die_nice("MySQL error: ".$err."<br>The command was:<br><br>".$sql);
+  else die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql);
 }
 
 
@@ -305,7 +305,7 @@ class LineNames_Check
 		  if (preg_match("/^CItr[0-9]/", $grin)) 
 		      $grin = str_replace("CItr", "CItr ", $grin);
 		  if ( !preg_match("/^PI [0-9]*$/", $grin) 
-		       AND !preg_match("/^CItr[0-9]*$/", $grin) 
+		       AND !preg_match("/^CItr [0-9]*$/", $grin) 
 		       AND !preg_match("/^GSTR[0-9]*$/", $grin) )
 		    die_nice("$line: Invalid GRIN Accession $grin");
 		}
