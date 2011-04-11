@@ -364,7 +364,6 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
         }
     }   
     ?>
-
     <h3>Lines found: <?php echo "$linesfound"; ?></h3>
     <div style="width: 420px; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">
     <table width='400px' id='linesTab' class='tableclass1'>
