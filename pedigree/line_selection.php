@@ -1,5 +1,6 @@
 <?php session_start();
 
+// 2/14/2011 JLee  Fix to handle hector case
 // 2/2/2011  JLee  Add ability to parse tab-delimited and comma separate line inputs
 // 1/28/2011  JLee  Add ability to add multiple lines and synonym translation
 
@@ -193,20 +194,23 @@ $sql = "select distinct experiment_year from experiments";
     $lineArr = array();
 
     // Translate synonym
-    if (strlen($linenames) != 0) {
-      if (strpos($linenames, ',') > 0 ) {
-	$linenames = str_replace(", ",",", $linenames);	
-	$lineList = explode(',',$linenames);
-      } elseif (preg_match("/\t/", $linenames)) {
-	$lineList = explode("\t",$linenames);
-      } else {
-	$lineList = explode('\r\n',$linenames);
-      }
-      $items = implode("','", $lineList);
-      $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
-      $res = mysql_query($mStatment) or die(mysql_error());
+    if (strlen($linenames) != 0)
+    {
+     	if (strpos($linenames, ',') > 0 ) {
+			$linenames = str_replace(", ",",", $linenames);	
+			$lineList = explode(',',$linenames);
+		} elseif (preg_match("/\t/", $linenames)) {
+			$lineList = explode("\t",$linenames);
+		} else {
+			$lineList = explode('\r\n',$linenames);
+		}
+	   	
+        $items = implode("','", $lineList);
+        $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
+ 
+        $res = mysql_query($mStatment) or die(mysql_error());
 
-      if (mysql_num_rows($res) != 0) {         
+	if (mysql_num_rows($res) != 0) {         
 	while($myRow = mysql_fetch_assoc($res)) {
 	  array_push ($lineArr,$myRow['line_record_name']);
 	}  
@@ -360,7 +364,6 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
         }
     }   
     ?>
-
     <h3>Lines found: <?php echo "$linesfound"; ?></h3>
     <div style="width: 420px; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">
     <table width='400px' id='linesTab' class='tableclass1'>
