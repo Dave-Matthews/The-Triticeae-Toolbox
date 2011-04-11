@@ -37,7 +37,7 @@ function errmsg($sql, $err) {
     $msg .= "<br>Command: ".$sql."<br>";
     die_nice($msg);
   }
-  else die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql);
+  else die_nice("MySQL error: ".$err."<br>The command was:<br><br>".$sql);
 }
 
 
@@ -177,7 +177,7 @@ class LineNames_Check
 		$header = array();
 		for ($irow = 4; $irow <=$rows; $irow++) {
 			$teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
-			if (empty($teststr)){
+			if (is_null($teststr)){
 			  break; 
 			} 
 			elseif (strtolower($teststr) == "*line name") {
@@ -291,25 +291,35 @@ class LineNames_Check
  		die("Row 5 must be the descriptions of the columns.  Please don't delete it.<br><br>"); 
  	      }
 	      for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
-		//Extract data
-		//if ($cnt>4) exit;
+		//Extract and validate data.
 		$line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
-		if (empty($line)) die_nice("Row $irow: Line name is required."); 
+		if (is_null($line)) die_nice("Row $irow: Line name is required."); 
 		elseif (strpos($line, ' ')) die_nice("Row $irow: Line name contains a blank. Replace with _ or remove.") ;
 		elseif (strlen($line) < 3)  echo "Warning: '$line' is a short name and may not be unique.<br>";
 		$synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
 		$synonyms = explode(',', str_replace(', ', ',', $synonyms));
 		$grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
+		if (!empty($grin)) {
+		  if (preg_match("/^PI[0-9]/", $grin))
+		    $grin = str_replace("PI", "PI ", $grin);
+		  if (preg_match("/^CItr[0-9]/", $grin)) 
+		      $grin = str_replace("CItr", "CItr ", $grin);
+		  if ( !preg_match("/^PI [0-9]*$/", $grin) 
+		       AND !preg_match("/^CItr[0-9]*$/", $grin) 
+		       AND !preg_match("/^GSTR[0-9]*$/", $grin) )
+		    die_nice("$line: Invalid GRIN Accession $grin");
+		}
 		$generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
-		if (empty($generation)) die_nice("Row $irow: Filial Generation (0-9) is required.");
+		if ( (is_null($generation)) OR ($generation != (int)$generation) OR ($generation < 1) OR ($generation > 9) )
+		  die_nice("$line: Filial Generation (1-9) is required.");
 		$hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
 		$color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
 		$growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
-		//if (empty($growth)) die_nice("Row $irow: S, W or F is required.");
+		//if (is_null($growth)) die_nice("Row $irow: S, W or F is required.");
 		$species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
 		$species = preg_replace("/^a$/", "aestivum", $species);
 		$species = preg_replace("/^d$/", "durum", $species);
-		if (empty($species)) die_nice("Row $irow: Species is required.");
+		if (is_null($species)) die_nice("Row $irow: Species is required.");
 		$awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
 		$chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
 		$height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
@@ -353,8 +363,8 @@ class LineNames_Check
 		    $cnt++; /* if this counter is not 0 then no accept option is displayed*/
 		    error(0, "$line is found in multiple records ($line_uids_multiple), in line record table, please fix");
 		  }
-		  if (!empty($synonyms)){
-		    foreach ($synonyms as $syn) {
+		  foreach ($synonyms as $syn) {
+		    if (!empty($syn)) {
 		      // Does the name already exist as either a synonym or a line name?
 		      $linesyn_uid = get_lineuid($syn);
 		      if ($linesyn_uid === FALSE) {
@@ -378,10 +388,10 @@ class LineNames_Check
 			}
 			else 
 			  // It's a line name.
-			  die_nice("Alias '$syn' is an existing Line Name.  Please use this name instead of $line.");
+			  die_nice("$line alias '$syn' is an existing Line Name.  Please use this name instead of $line.");
 		      }
 		      elseif (count($linesyn_uid) > 1) {
-			die_nice("$syn is already an alias for multiple lines, please fix.");
+			die_nice("$line alias '$syn' is already an alias for multiple lines, please fix.");
 		      }
 		    }
 		  } /* end of if (!empty($synonyms)) */
@@ -719,7 +729,7 @@ class LineNames_Check
 	$header = array();
 	for ($irow = 4; $irow <=$rows; $irow++) {
 	  $teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
-	  if (empty($teststr)){
+	  if (is_null($teststr)){
 	    break; 
 	  } elseif (strtolower($teststr) =="*line name") {
 	    $firstline = $irow;
@@ -844,7 +854,7 @@ class LineNames_Check
 	  if ($line_uid===FALSE) {
 	    // Insert new line into database
 	    // Required fields: species
-	    if (empty($species)) {
+	    if (is_null($species)) {
 	      die_nice("Field <b>species</b> is required, values a or d.");
 	    }
 	    //convert line name to upper case and replace spaces with an underscore
@@ -997,10 +1007,12 @@ class LineNames_Check
 	      $sql = "delete from line_synonyms where line_record_uid = $line_uids";
 	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
 	      foreach ($synonyms as $syn) {
-		$sql = "insert into line_synonyms 
+		if (!empty($syn)) {
+		  $sql = "insert into line_synonyms 
 		  (line_record_uid, line_synonym_name, updated_on, created_on) values 
 		  ('$line_uids', '$syn', NOW(),NOW())";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error());
+		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		}
 	      }
 	    }
 
