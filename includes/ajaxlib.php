@@ -1,4 +1,7 @@
 <?php
+// 3/20/2011 JLee	Enable write privilege to DB 
+
+
 if (!((isset($config['base_url']))&(isset($config['root_dir'])))) {
 	require 'config.php';
 }
@@ -21,7 +24,7 @@ else {
 
 	//global includes to load all functions in all other libraries
 	//note this also runs all of the input validation on the $_GET array, so they should not be hostile.
-	include("bootstrap.inc");
+	include("bootstrap_curator.inc");
 
 	//give function database access
 	$link = connect();

@@ -11,8 +11,11 @@
 	/* process export table*/
 	if (isset($_POST['table_sel'])) {
 		$tblname=$_POST['table_sel'];
-		$backup = "Table name ".$_POST['table_sel']."\n";
-		$result=mysql_query("select * from $tblname");
+		$count=$_POST['count'];
+		$limit = "";
+		if ($count == "100") $limit = "limit $count";
+		//$backup = "Table name ".$_POST['table_sel']."\n";
+		$result=mysql_query("select * from $tblname $limit");
 		$count=0;
 		ob_start();
 		while($row=mysql_fetch_assoc($result)) {
@@ -21,20 +24,21 @@
 				$count++;
 				for($i=0; $i<count($rkeys); $i++) {
 					print mysql_escape_string($rkeys[$i]);
-					if ($i!=count($rkeys)-1) print ", "; 
+					if ($i!=count($rkeys)-1) print "\t"; 
 				}
 				print "\n";
 			}
 			for($i=0; $i<count($rkeys); $i++) {
 				print mysql_escape_string($row[$rkeys[$i]]);
-				if ($i!=count($rkeys)-1) print ", "; 
+				if ($i!=count($rkeys)-1) print "\t"; 
 			}
 			print "\n";
 		}
 		$backup.=ob_get_contents();
 		ob_end_clean();
-		$date = date("m-d-Y-H:i:s");
-		$name = "THT-$tblname-$date.txt";
+		$date = date("m-d-Y-H:i");
+// 		$name = "$tblname-$date.txt";
+		$name = "$tblname.txt";
 		header("Content-type: application/octet-stream");
 		header("Content-Disposition: attachment; filename=$name");
 		header("Pragma: no-cache");

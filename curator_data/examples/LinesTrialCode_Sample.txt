@@ -1,0 +1,26 @@
+Line Name	Trial Code
+09AB-01	2009BOPA1_AB_Plate5
+09AB-02	2009BOPA1_AB_Plate5
+09AB-03	2009BOPA1_AB_Plate5
+09AB-04	2009BOPA1_AB_Plate5
+09AB-05	2009BOPA1_AB_Plate5
+09AB-06	2009BOPA1_AB_Plate5
+09MN-01	2009BOPA1_MN_Plate3
+09MN-02	2009BOPA1_MN_Plate3
+09MN-03	2009BOPA1_MN_Plate3
+09MN-04	2009BOPA1_MN_Plate3
+09MN-05	2009BOPA1_MN_Plate3
+09MN-06	2009BOPA1_MN_Plate3
+09MT-01	2009BOPA1_MT_Plate10
+09MT-02	2009BOPA1_MT_Plate10
+09MT-03	2009BOPA1_MT_Plate10
+09MT-04	2009BOPA1_MT_Plate10
+09MT-05	2009BOPA1_MT_Plate10
+------------------------------- cut ------------------------------------------	
+	
+ADDITION INFORMATION	
+
+File contain two tab-delimited column consisting of the following: 
+	
+Line name = Sample id names use for experiment(Sample IDs can be found from Samplesheet files) 
+Trial Code = Unique code defined in Genotype annotation file for each site's data  	
