@@ -1,6 +1,8 @@
 <?php
 // Genotype data importer
 
+// 04/11/2011 Jlee  Add zip file handling
+//
 // Written By: John Lee
 //*********************************************
 
@@ -96,8 +98,8 @@ class gLineNames_Check
         }
         
         $uftype=$_FILES['file']['type'][1];
-        if (strpos($uploadFile2, ".txt") === FALSE) {
-            error(1, "Expecting an tab-delimited text file. <br> The genotype data file is type - ".$uftype);
+        if ((strpos($uploadFile2, ".txt") === FALSE) && (strpos($uploadFile2, ".zip") === FALSE)) {
+            error(1, "Expecting an tab-delimited text file or a zipped tab-delimited text file. <br> The genotype data file is type - ".$uftype);
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
         }
 
