@@ -37,7 +37,10 @@ function errmsg($sql, $err) {
     $msg .= "<br>Command: ".$sql."<br>";
     die_nice($msg);
   }
-  else die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql);
+  elseif (preg_match('/^Duplicate entry/', $err)) {
+  die_nice($err.". Aliases and GRIN Accessions must be unique.");
+  }
+  else die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql."<br>");
 }
 
 
