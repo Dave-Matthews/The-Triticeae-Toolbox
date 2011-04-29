@@ -85,6 +85,7 @@ class Maps
 	private function type_MapSet_Display()
 	{
 		?>
+	  <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
 		<script type="text/javascript">
 
 		var all_mapSets = <?php echo json_encode($mapsetStr); ?>;
@@ -135,7 +136,7 @@ class Maps
 			
 			comment_str = comvalue;
 			
-			my_window= window.open ("",  "mywindow1","status=1,width=450,height=150");
+			my_window= window.open ("",  "mywindow1","status=1,width=800,height=300");
 			my_window.document.write(comment_str);
 			if (window.focus) {my_window.focus()}
 
