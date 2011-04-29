@@ -1012,9 +1012,9 @@ function DispPhenotypeSel($arr) {
 
 	// display in selection box please
 	if(mysql_num_rows($query) > 0) {
-		echo "<select name='trial[]' id='trialoptions' multiple size=10 onfocus=\"DispPhenoSel(this.value, 'Trial', $id)\" onchange=\"DispPhenoSel(this.value, 'Trial', $id)\">";
+		echo "<select name='trial[]' id='trialoptions' multiple size=10 onfocus=\"DispPhenoSel(this.value, 'Trial', $id)\" onchange=\"DispPhenoSel(this.value, 'Trial', $id)\" onmouseover=\"DispPhenoSel(this.value, 'Trial', $id)\">";
 		while($row = mysql_fetch_row($query)) {
-			echo "\n\t<option value=$row[0]>$row[1]</option>";
+			echo "\n\t<option value=$row[0] selected>$row[1]</option>";
 		}  
 		echo "</select>";
 	}
@@ -1037,7 +1037,6 @@ function DispTrialSel($arr) {
 	//$phenotypeid = current phenotype_uid
 	//$trialsSelected is a comma-separated list of all experiment_uid's currently selected.
 	extract($arr);
-	
 	// Remove the trailing ",".
 	$trialsSelected = trim($trialsSelected, ",");
 	// Store it in a cookie.
@@ -1066,13 +1065,14 @@ and experiments.experiment_uid IN ($trialsSelected)
 	  $min = number_format($row['min'],1);
 	  $max = number_format($row['max'],1);
 
-	  echo "<p><b>Values</b></p>";
-	  echo "<p>Mean: $avg &plusmn; $std, n = $num<br>";
-	  echo "Range: " . $min . " - " . $max . "</p>";
+	  echo "<p><b>Values</b><br>";
+	  echo "Mean: $avg &plusmn; $std, n = $num<br>";
+	  echo "Range: " . $min . " - " . $max;
 	  // number_format adds commas for thousands, and rounds. Better be inclusive by default.
 	  $min = floor(str_replace(",","",$min));
 	  $max = ceil(str_replace(",","",$max));
-	  echo "<p>Search between:<br /> <input type=\"text\" name=\"first_value\" value=$min /> <br /> and <br /> <input type=\"text\" name=\"last_value\" value=$max /></p>";
+	  echo "<p>Search between:<br> <input type='text' name='first_value' value=$min><br>and<br><input type='text' name='last_value' value=$max>";
+	  echo "<br><input type='submit' value='Search'></form>";
 
 	  // DLH R plotting for histogram      
         $phen_name = mysql_query("select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotypeid

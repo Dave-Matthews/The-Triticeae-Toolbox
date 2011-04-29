@@ -189,7 +189,7 @@ $sql = "select distinct experiment_year from experiments";
 	</tr>
   </table>
 
-  <p ><input type="submit" style="height:2em; width:6em;" value="Search"/>
+  <p ><input type="submit" value="Search"/>
       <?php
       $url = $config['base_url']."pedigree/line_selection.php";
       echo "<input type=button value='Clear' onclick='location.href=\"$url\"'>";
@@ -476,9 +476,9 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     else {
 ?>
     <p>Combine with <font color=blue>currently selected lines</font>:<br>
-    <input type="radio" name="selectWithin" value="Yes" checked/>Intersect (AND)<br>
+    <input type="radio" name="selectWithin" value="Replace" checked/>Replace<br>
     <input type="radio" name="selectWithin" value="Add"/>Add (OR)<br>
-    <input type="radio" name="selectWithin" value="Replace"/>Replace<br>
+    <input type="radio" name="selectWithin" value="Yes"/>Intersect (AND)<br>
     <input type="submit" value="Combine" style='color:blue'>
 <?php }
     echo "</form>";
@@ -535,7 +535,7 @@ foreach ($_SESSION['selected_lines'] as $lineuid) {
   $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
   while ($row=mysql_fetch_assoc($result)) {
     $selval=$row['line_record_name'];
-    print "<option value=\"$lineuid\">$selval</option>\n";
+    print "<option value=\"$lineuid\" selected>$selval</option>\n";
   }
 }
 print "</select>";
