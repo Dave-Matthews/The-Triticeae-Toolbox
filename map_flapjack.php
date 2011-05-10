@@ -1,4 +1,11 @@
 <?php 
+//*************************************************************************************
+// 4/26/2011 J.Lee	Redirect output file to Temp folder and 
+//					Address possible concurrency issue, hardwire map data
+//                  MSIE about box not adjustable, comments not updated when 
+//                  selecting mapset, etc.
+//
+//*************************************************************************************
 
 require_once('config.php');
 include($config['root_dir'].'includes/bootstrap.inc');
@@ -11,18 +18,19 @@ class Map_FlapJack
 {
     
     private $delimiter = "\t";
+	public $mapsetHash = array();
     
-	
+     	
 	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
+	public function __construct($function = null) {	
+
 		switch($function)
 		{
 			
-			case 'typeFlapJack':
-				$this->type_Flap_Jack(); /* Handle Flap Jack Compatible download */
+            case 'typeMapOut':
+                $this->type_output();
 				break;
-			
+                
 			default:
 				$this->typeMapSet(); /* intial case*/
 				break;
@@ -30,15 +38,76 @@ class Map_FlapJack
 		}	
 	}
 
+   private function type_output() {
+//        global $config;
+//		include($config['root_dir'] . 'theme/admin_header.php');
 
-private function typeMapSet()
-	{
+    	$mapsetID = $_GET["msid"];
+    	
+    	if (empty ($mapsetID)) {
+    	    die("Please select a map first!"); 
+    	}
+
+        if (is_dir("/tmp/tht") == false) {
+            mkdir ("/tmp/tht",0777,true);
+            chmod('/tmp/tht', 0777);
+        }
+
+        //$myFile = '/tmp/tht/tht_FlapJack_Map'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.txt';
+        //$fh = fopen($myFile, 'w') or die("can't open file");
+        //fwrite($fh, $mapsetID);
+        //fwrite($fh, "\n");
+        $tab = "\t";
+        $sql_map = "SELECT map_name FROM map where mapset_uid = " . $mapsetID;
+        $res_map = mysql_query($sql_map) or die("Error: Can't locate map name - " . mysql_error());
+	
+        while ($row_map = mysql_fetch_assoc($res_map)) {
+	
+ 	       	$sql = "SELECT mkr.marker_name, mk.start_position,  mk.chromosome  
+                    FROM map m, markers_in_maps mk, markers mkr 
+                    where  map_name='".$row_map['map_name']."' and m.map_uid = mk.map_uid 
+                    AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position";
+			$res = mysql_query($sql) or die("Error: map data retrieval - " . mysql_error());
+		    echo "<pre>";
+            while ($row = mysql_fetch_assoc($res)) {
+                if (empty($row['marker_name'])) continue;
+            	$stringData = $row['marker_name'].$tab.$row['chromosome'].$tab.$row['start_position'].PHP_EOL;
+                //fwrite($fh, $stringData);
+                echo $stringData;
+            } /* end of marker details while loop */
+            echo "</pre>";
+        } /* end of map name while loop */
+  	
+        //fclose($fh);
+		// JLee force url context change
+        //header('Cache-Control:');
+		//header('Pragma: public');
+        //header("Content-Transfer-Encoding: binary"); 
+        //header("Content-length: ".filesize($myFile)); 
+		//header('Content-type: text/plain');
+        //header('Content-Disposition: attachment; filename="' . basename($myFile) . '"');		
+        //header('Pragma: no-cache');
+		//header('Expires: 0');
+        //ob_clean();
+        //flush();
+        //readfile($myFile);
+    }
+
+    private function typeMapSet() {
 		global $config;
-		include($config['root_dir'].'theme/normal_header.php');
+        global $mapsetHash;
+        
+        include($config['root_dir'].'theme/normal_header.php');
+        $sql = "SELECT comments, mapset_uid FROM mapset";
+
+        $res = mysql_query($sql) or die("Error: Unable to create comment hash table - ". mysql_error());
+        while ($row = mysql_fetch_assoc($res)) {
+           // echo $row['mapset_uid'] ."<br>";
+            if (empty($row)) continue;
+			$mapsetHash[$row['mapset_uid']] = $row['comments'];
+        }
 
 		echo "<h2>Map Sets Details</h2>"; 
-		
-			
 		$this->type_MapSet_Display();
 
 		$footer_div = 1;
@@ -46,115 +115,85 @@ private function typeMapSet()
 	}
 	
 	
-	private function type_MapSet_Display()
-	{
+	private function type_MapSet_Display() 	{
+        global $mapsetHash;
+        
 ?>
 <script type="text/javascript">
 	
-	function load_flapjack()
-			{
+        function load_flapjack() {
 			
-			var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeFlapJack';
-	
+			var url="<?php echo $_SERVER[PHP_SELF];?>?function=typeFlapJack";
+            url = url.replace(/\/\/\/+/g, '/');
 			// Opens the url in the same window
-	   	window.open(url, "_self");
-	  }
+            window.open(url, "_self");
+        }
 	  
-	  function display_comments(comvalue)
-		{
+        function display_comments (comvalue) {
 			
-			comment_str = comvalue;
-			
-			my_window= window.open ("",  "mywindow1","status=1,width=450,height=150");
+            var commentLookup = <?php echo json_encode($mapsetHash); ?>;
+			var comment_str = commentLookup[comvalue];
+ 
+			my_window= window.open ("",  "mywindow1","status=1,width=450,height=150,resizable=yes",true);
+            //my_window.document.write(comvalue) ;
+            //my_window.document.write('<br>');
 			my_window.document.write(comment_str);
-			if (window.focus) {my_window.focus()}
-
+            my_window.document.close();
+            if (window.focus) {my_window.focus();}
+        
 		}
-	
-	
+        
+        function create_output (mapsetID) {
+		
+           //alert (" I was here");
+            var url="<?php echo $_SERVER[PHP_SELF];?>?function=typeMapOut" + "&msid=" + mapsetID;
+            url = url.replace(/\/\/\/+/g, '/');
+			// Opens the url in the same window
+            window.open(url, "_self");
+        }
+        
 </script>
-	<style type="text/css">
+<style type="text/css">
 			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
 			table {background: none; border-collapse: collapse}
 			td {border: 0px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
+</style>
 		
-		<div style=" float: left; margin-bottom: 1.5em;">
-		<table>
-				<tr>
-				
-					<th>MapSet Name</th>
-										
-				</tr>
-				
-				<tr>
-				
-					<td>
-						<select name="mapsetnames" size="5" style="height: 12em;" onchange="javascript: display_comments(this.value)">
-				<?php
-		
-		
-		// Select Mapset Name for the drop down menu
-		$sql = "SELECT mapset_name, comments FROM mapset ORDER BY mapset_name DESC";
-
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
-		{
-			?>
-				<option value="<?php echo $row['comments'] ?>"><?php echo $row['mapset_name'] ?></option>
-			<?php
-		}
-		?>
-						</select>
-					</td>
-					</tr>
-					
-			
-	
-	<?php 
-	
-	
-	
-	$myFile = "tht_FlapJack_Map.txt";
-	$fh = fopen($myFile, 'w') or die("can't open file");
-	$delimiter ="\t";
-	$sql_map = "SELECT map_name FROM map  where mapset_uid IN (1,9)";
-	$res_map = mysql_query($sql_map) or die(mysql_error());
-	
-	while ($row_map = mysql_fetch_assoc($res_map)) {
-	
-		$sql = "SELECT mkr.marker_name, mk.start_position,  mk.chromosome  FROM map m, markers_in_maps mk, markers mkr where map_name='".$row_map['map_name']."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position";
-		$res = mysql_query($sql) or die(mysql_error());
-		
-		while ($row = mysql_fetch_assoc($res)) {
-			
-					$stringData = $row['marker_name'].$delimiter.$row['chromosome'].$delimiter.$row['start_position']."\n";
-					fwrite($fh, $stringData);
-		} /* end of marker details while loop */
-	
-			
-	} /* end of map name while loop */
-	
-	?>
+<div style=" float: left; margin-bottom: 1.5em;">
+<table>
 	<tr>
-			<td>	
-				
-		
-		<form action='tht_FlapJack_Map.txt'>
-<input type='submit' value='Download'/>
-</form>
-		
-		</td>
-		</tr>
-		</table>
-					</div>
+	<th>MapSet Name</th>
+	</tr>
 
+    <tr>
+	<td>
+		<select name="msid" id="msid" size="5" style="height: 12em;" onclick="javascript:display_comments(this.value)">
+	<?php
+		
+        // Select Mapset Name for the drop down menu
+        $sql = "SELECT mapset_name, mapset_uid FROM mapset ORDER BY mapset_name DESC";
+
+        $res = mysql_query($sql) or die("Error: Unable to get mapset names and uids ". mysql_error());
+        while ($row = mysql_fetch_assoc($res)) {
+            if (empty($row['mapset_name'])) continue;
+	?>
+			<option value="<?php echo $row['mapset_uid']; ?>"><?php echo $row['mapset_name']; ?></option>
+	<?php
+		}
+        echo "</select>";
+        echo "</td>";
+        echo "</tr>";
+        echo "<tr>";
+        echo "<td>	";
+?>
+<input type="Button" value="Download" onclick="create_output(document.getElementById('msid').value)" />
 <?php 
-	fclose($fh);
-	
-	} /* end of type_MapSet_Display function */
+        echo "</td>";
+        echo "</tr>";
+        echo "</table>";
+        echo "</div>";
+    }	
 
-} /* end of class */
-
+ } /* end of class */
 ?>

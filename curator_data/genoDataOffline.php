@@ -4,6 +4,7 @@
 // pieces of import code by Julie's team @ iowaStateU  
 
 //
+// 5/9/2011	 JLee	Fix formula	for calculating MAF value	
 // 4/11/2011 JLee  Add ability to handle zipped data files
 //
 // Written By: John Lee
@@ -451,7 +452,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
         $aafreq = round($aacnt / $total,3);
         $bbfreq = round($bbcnt / $total,3);
         $abfreq = round($abcnt / $total,3);
-        $maf = round(100 * min((2 * $aacnt + $abcnt) /$total, ($abcnt + 2 * $bbcnt) / $total),1);
+        $maf = round(100 * min((2 * $aacnt + $abcnt) /(2 * $total), ($abcnt + 2 * $bbcnt) / (2 * $total)),1);
         $gtscore =max($gt);
         if (($aacnt == $total) or ($abcnt == $total) or ($bbcnt == $total)) {
             $mono = $monomorphic[0];//is monomorphic
