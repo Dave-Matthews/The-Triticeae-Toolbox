@@ -1,12 +1,14 @@
 <?php 
 
+// J.Lee 5/9/2011	Fix problem with query while restricting mmaf and max missing values,
+//					prevent download operation when 0 markers match condition.
 // J.Lee 8/17/2010  Modify alelle download to work in Linux and Solaris 
+//****************************************************************************
 
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
 require_once 'Spreadsheet/Excel/Writer.php';
 connect();
-
 
 
 new ShowData($_GET['function']);
@@ -31,8 +33,6 @@ class ShowData
 				$this->typeData();
 				break;
 			}
-				
-				
 			
 	}
 	
@@ -45,10 +45,8 @@ class ShowData
 		include($config['root_dir'].'theme/normal_header.php');
 
 		$trial_code=$_GET['trial_code'];
-	echo " <h2>".$trial_code. "</h2>";
-	  
-
- 		
+		echo " <h2>".$trial_code. "</h2>";
+		
 		$this->type_DataInformation($trial_code);
 
 		$footer_div = 1;
@@ -62,7 +60,7 @@ private function type_DataInformation($trial_code)
 	/* Query for getting the experiment type uid to check the type of experiment */
 	
 	$sql = "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code = '".$trial_code."' ";
-		$res = mysql_query($sql) or die(mysql_error());
+		$res = mysql_query($sql) or die("Error: unable to retrieve experiment record with trial code.<br>".mysql_error());
 		$row = mysql_fetch_assoc($res);
 		
 		$experiment_uid = $row['experiment_uid'];
@@ -70,7 +68,7 @@ private function type_DataInformation($trial_code)
 		$experiment_short_name = $row['experiment_short_name'];
 		
 		$sql_data_code = "SELECT data_program_code, data_program_name FROM CAPdata_programs where CAPdata_programs_uid = '".$CAPdata_programs_uid."' ";
-		$res_data_code = mysql_query($sql_data_code) or die(mysql_error());
+		$res_data_code = mysql_query($sql_data_code) or die("Error: unable to retrieve CAP data info from data prog id.<br>".mysql_error());
 		$row_data_code = mysql_fetch_assoc($res_data_code);
 		
 		$data_program_code = $row_data_code['data_program_code'];
@@ -80,7 +78,7 @@ private function type_DataInformation($trial_code)
 		
 		/* Currently not implemented */
 		
-		if ($row['experiment_type_uid']==1)
+		if ($row['experiment_type_uid'] == 1)
 		{
 			$this->type_PhenoInformation($trial_code,$experiment_uid);
 		}
@@ -92,20 +90,13 @@ private function type_DataInformation($trial_code)
 		
 	/* Displaying the Data For Genptype Experiment */
 
-	
-		$sql_Gen_Info = "SELECT manifest_file_name, cluster_file_name, OPA_name, sample_sheet_filename, raw_datafile_archive FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
-		$res_Gen_Info = mysql_query($sql_Gen_Info) or die(mysql_error());
-		$row_Gen_Info = mysql_fetch_assoc($res_Gen_Info);	
-	
-
-	
 	$sql_CAP = "SELECT data_program_code FROM CAPdata_programs where CAPdata_programs_uid = '".$CAPdata_programs_uid."' ";
-		$res_CAP = mysql_query($sql_CAP) or die(mysql_error());
+		$res_CAP = mysql_query($sql_CAP) or die("Error: Unable to retrieve data program code. <br>".mysql_error());
 		$row_CAP = mysql_fetch_assoc($res_CAP);
 		$data_program_code = $row_CAP['data_program_code'];
 		
 	$sql_Gen_Info = "SELECT manifest_file_name, cluster_file_name, OPA_name, sample_sheet_filename, raw_datafile_archive, genotype_experiment_info_uid FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
-		$res_Gen_Info = mysql_query($sql_Gen_Info) or die(mysql_error());
+		$res_Gen_Info = mysql_query($sql_Gen_Info) or die("Error: Unable to retrieve data file names.<br> " .mysql_error());
 		$row_Gen_Info = mysql_fetch_assoc($res_Gen_Info);
 		
 		$manifest_file_name = $row_Gen_Info['manifest_file_name'];
@@ -114,8 +105,6 @@ private function type_DataInformation($trial_code)
 		$sample_sheet_filename = $row_Gen_Info['sample_sheet_filename'];
 		$raw_datafile_archive = $row_Gen_Info['raw_datafile_archive'];
 		$genotype_experiment_info_uid = $row_Gen_Info['genotype_experiment_info_uid'];
-		
-	
 ?>
 
 <script type="text/javascript">
@@ -125,8 +114,8 @@ private function type_DataInformation($trial_code)
 		//alert (experiment_uid);
 		var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeTabDelimiter'+ '&expuid=' + experiment_uid+ '&mm='+max_missing+'&mmaf='+min_maf;
 	
-									// Opens the url in the same window
-	  							 window.open(url, "_self");
+		// Opens the url in the same window
+	  	window.open(url, "_self");
 	}
 	
 	function mrefresh(trial_code) {
@@ -134,39 +123,36 @@ private function type_DataInformation($trial_code)
                 var mmaf = $('mmaf').getValue();
                 var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeData'+ '&mm='+mm+'&mmaf='+mmaf+ '&trial_code='+trial_code;
 	
-									// Opens the url in the same window
-	  							 window.open(url, "_self");
+				// Opens the url in the same window
+				 window.open(url, "_self");
                 
             }
-
-
 </script>
-
 	
 <?php
 
-	$max_missing = 100;//IN PERCENT
+	$max_missing = 99.9;//IN PERCENT
         if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
             $max_missing = $_GET['mm'];
-		if ($max_missing>100)
+		if ($max_missing > 100)
 			$max_missing = 100;
-		elseif ($max_missing<0)
+		elseif ($max_missing < 0)
 			$max_missing = 0;
-        $min_maf = 0;//IN PERCENT
-        if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+        $min_maf = 0.01;//IN PERCENT
+        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
-		if ($min_maf>100)
+		if ($min_maf > 100)
 			$min_maf = 100;
-		elseif ($min_maf<0)
+		elseif ($min_maf < 0)
 			$min_maf = 0;
 	
-	$sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+	$sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing) as summis, SUM(af.bb_cnt) as sumbb,
 					SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
 					FROM allele_frequencies AS af
 					WHERE af.experiment_uid = '".$experiment_uid."'
 					group by af.marker_uid"; 
 
-			$res = mysql_query($sql_mstat) or die(mysql_error());
+			$res = mysql_query($sql_mstat) or die("Error: Unable to sum allele frequency values.<br>".mysql_error());
 			$num_mark = mysql_num_rows($res);
 			$num_maf = $num_miss = 0;
 			
@@ -174,19 +160,13 @@ private function type_DataInformation($trial_code)
 				$marker_uid[] = $row["marker"];
 			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 			  $miss = round(100*$row["summis"]/$row["total"],1);
-			  if ($maf>$min_maf)
+			  if ($maf >= $min_maf)
 			    $num_maf++;
-			  if ($miss>=$max_missing)
+			  if ($miss > $max_missing)
 			    $num_miss++;
 			}
-	
-	
-	
+
 	/* Computing the summary and other details for the experiment */
-	
-	
-	
-	
 	// dem 14dec10, revised query.  Concatenating marker_synonyms.value to the
 	// marker name screws up the alignment of columns to header, e.g. for 2008BOPA2_BA_Plate7.
         // Also it seems like a bad idea since a marker can have several synonyms.
@@ -217,7 +197,7 @@ private function type_DataInformation($trial_code)
 				GROUP BY name
                 
                  ";
-$res_Gen_Stat = mysql_query($sql_Gen_Stat) or die(mysql_error());
+$res_Gen_Stat = mysql_query($sql_Gen_Stat) or die("Error: genotype record creation.<br>".mysql_error());
 	
 ?>
 <style type="text/css">
@@ -230,9 +210,7 @@ $res_Gen_Stat = mysql_query($sql_Gen_Stat) or die(mysql_error());
 <div style="width: 840px;"><b>Summary:</b><br><br>
 <table >
 
-
 	<tr> 
-		
 		<th style="width: 100px;" > Marker Name </th>
 		<th style="width: 100px;" > Map Name and Position  </th>
 		<th style="width: 60px;" >  Missing    </th>
@@ -242,16 +220,12 @@ $res_Gen_Stat = mysql_query($sql_Gen_Stat) or die(mysql_error());
 		<th style="width: 100px;" >  Total    </th>
 		<th style="width: 20px;" >  Monomorphic </th>
 		<th style="width: 100px;" >  MAF    </th>
-
 		
 	</tr>
  </table>
  </div>
- 	
- 	
+	
  	<div style="padding: 0; width: 840px; height: 400px; overflow: scroll; border: 1px solid #5b53a6; clear: both">
-
-
 
 <?php
   echo "<table>";
@@ -291,11 +265,6 @@ $res_Gen_Stat = mysql_query($sql_Gen_Stat) or die(mysql_error());
   <?php echo $row_Gen_Stat['maf']; ?>
   </td>
   </tr>
-  
-  	
-
-  
-  
   <?php
   }/* End of while loop*/
   
@@ -305,10 +274,10 @@ $res_Gen_Stat = mysql_query($sql_Gen_Stat) or die(mysql_error());
   <br/>
 <div style="padding-left: 20px;border: 1px">
 					<p style="font-style: italic">There are <?php echo ($num_mark) ?> distinct markers.</p>
-					<p style="font-style: italic"><?php echo ($num_maf) ?> markers have a minor allele frequency (MAF) larger than <?php echo ($min_maf) ?>%.</p>
-					<p style="font-style: italic"><?php echo ($num_miss) ?> markers are missing at least <?php echo ($max_missing) ?> % of measurements.</p>
-                    Maximum Missing Data (%): <input type="text" name="mm" id="mm" size="3" value="<?php echo ($max_missing) ?>" />&nbsp;&nbsp;&nbsp;&nbsp;
-                    Minimum MAF (%): <input type="text" name="mmaf" id="mmaf" size="3" value="<?php echo ($min_maf) ?>" />&nbsp;&nbsp;&nbsp;&nbsp;
+					<p style="font-style: italic"><?php echo ($num_maf) ?> markers have a minor allele frequency (MAF) larger or equal than <?php echo ($min_maf) ?>%.</p>
+					<p style="font-style: italic"><?php echo ($num_miss) ?> markers are missing more than <?php echo ($max_missing) ?>% of measurements.</p>
+                    Maximum Missing Data &le; <input type="text" name="mm" id="mm" size="3" value="<?php echo ($max_missing) ?> "/> %&nbsp;&nbsp;&nbsp;&nbsp;
+                    Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="3" value="<?php echo ($min_maf) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
                     <input type="button" value="Refresh" onclick="javascript:mrefresh('<?php echo $trial_code ?>');return false;" />
 <br/><br><input type="button" value="Download Allele Data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
     </div><br>
@@ -344,19 +313,19 @@ echo "<table>";
   {
     $experiment_uid = $_GET['expuid'];
     
-    $max_missing = 100;//IN PERCENT
+    $max_missing = 99.9;//IN PERCENT
         if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
             $max_missing = $_GET['mm'];
-		if ($max_missing>100)
+		if ($max_missing > 100)
 			$max_missing = 100;
-		elseif ($max_missing<0)
+		elseif ($max_missing < 0)
 			$max_missing = 0;
-        $min_maf = 0;//IN PERCENT
-        if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+        $min_maf = 0.01;//IN PERCENT
+        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
-		if ($min_maf>100)
+		if ($min_maf > 100)
 			$min_maf = 100;
-		elseif ($min_maf<0)
+		elseif ($min_maf < 0)
 			$min_maf = 0;
 	
 	//$firephp = FirePHP::getInstance(true);
@@ -375,21 +344,28 @@ echo "<table>";
 						AND af.experiment_uid ='".$experiment_uid."'
 					group by af.marker_uid"; 
 
-			$res = mysql_query($sql_mstat) or die(mysql_error());
+			$res = mysql_query($sql_mstat) or die("Error: user criteria select query.<br>".mysql_error());
 			$num_mark = mysql_num_rows($res);
 			$num_maf = $num_miss = 0;
 
 			while ($row = mysql_fetch_array($res)){
 			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 			  $miss = round(100*$row["summis"]/$row["total"],1);
-			  if (($maf > $min_maf)AND ($miss<=$max_missing)) {
+			  if (($maf >= $min_maf) AND ($miss <= $max_missing)) {
 			    $marker_names[] = $row["name"];
 			    $outputheader .= $delimiter.$row["name"];
 			    $marker_uid[] = $row["marker"];
 			  }
 			}
+			sort($marker_uid,SORT_NUMERIC);
 			$nelem = count($marker_uid);
 			$marker_uid = implode(",",$marker_uid);
+
+			if ($nelem == 0) {
+           		error(1, "There are no markers matching the current conditions, try again with different set of criteria.");
+           		exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+
+			}
 		
 		  $lookup = array(
 			  'AA' => 'AA',
@@ -425,15 +401,15 @@ echo "<table>";
 				AND tb.experiment_uid ='".$experiment_uid."'
 		  ORDER BY lr.line_record_name, m.marker_uid";
 
-
-		$last_line = "some really silly name that noone would call a plant";
-		$res = mysql_query($sql) or die(mysql_error());
+		//echo "allele output query " . $sql . "<br>";
+		$last_line = "some really silly name that no one would call a plant";
+		$res = mysql_query($sql) or die("Error:allele output dataset<br>". mysql_error());
 		
 		$outarray = $empty;
 		$cnt = $num_lines = 0;
 		while ($row = mysql_fetch_array($res)){
 				//first time through loop
-				if ($cnt==0) {
+				if ($cnt == 0) {
 					$last_line = $row['line_record_name'];
 				}
 				
@@ -475,7 +451,7 @@ echo "<table>";
 		header('Pragma: no-cache');
 		header('Expires: 0');
 	
-				echo $outputheader."\n".$output;
+		echo $outputheader."\n".$output;
 		
   }
   
