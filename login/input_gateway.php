@@ -1,9 +1,12 @@
 <?php
 require 'config.php';
 /*
- * Logged in page initialization
- */
-include($config['root_dir'] . 'includes/bootstrap.inc');
+* Logged in page initialization
+*
+*
+*  6/20/11 J.Lee  Suppress invalid import features
+*/
+include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 
 connect();
 loginTest();
@@ -39,6 +42,7 @@ ob_end_flush();
 	</ui>
 
 	<br><br>
+<!--
 	<h3 style="text-align:left">Predifined Excel-based Batch Input</h3>
 	<div class="boxContent">
 		<p>This is mostly used for input definitions of pedigrees, markers and traits.
@@ -57,12 +61,21 @@ ob_end_flush();
 	<tr>
 		<td><a href="login/traitAdd.php">Excel-based Traits (def) Input</a></td>
 		<td><a href="downloadlite/index.php?THT_trait_template.xls">Examplar Trait Input Files</a></td>
-		<td>&nbsp;<!-- Left blank on purpose -->&nbsp;</td>
+		<td>&nbsp;
+-->
+		<!-- Left blank on purpose -->
+<!--		&nbsp;</td>
+
 	</tr>
 	<tr>
 		<td><a href="login/markerAdd.php">Excel-based Markers (def) Input</a></td>
 		<td><a href="login/uploads/processed_files/marker_data_def.xls">Examplar Marker Input File</a></td>
-		<td>&nbsp;<!-- Left blank on purpose -->&nbsp;</td>
+		<td>&nbsp;
+-->
+		<!-- Left blank on purpose -->
+<!--		&nbsp;</td>
+
+
 	</tr>
 	</table>
 
@@ -87,26 +100,40 @@ ob_end_flush();
 		<td><a href="login/parser_add.php">Link</a></td>
 		<td><a href="login/uploads/processed_files/capcore_1h.xls">CAP Core Genotypeing Data (1H)</a></td>
 		<td><a href="login/uploads/processed_files/capcore_examplar.xls">Definition File</a></td>
-		<td>&nbsp;<!-- Left blank on purpose -->&nbsp;</td>
+		<td>&nbsp;
+-->	
+		<!-- Left blank on purpose -->
+<!--	&nbsp;</td>
+
+
 	</tr>
 	<tr>
 		<td><a href="login/parser_add.php">Link</a></td>
 		<td><a href="login/uploads/processed_files/VT06Warsaw_mn_fixed.xls">CAP Core Field Trials Data</a></td>
 		<td><a href="login/uploads/processed_files/CAP_Fieldtrials_Def.xls">Definition File</a></td>
-		<td>&nbsp;<!-- Left blank on purpose -->&nbsp;</td>
+		<td>&nbsp;-->
+		<!-- Left blank on purpose -->
+<!--		&nbsp;</td>
+
 	</tr>
 		<tr>
 		<td><a href="login/parser_add.php">Link</a></td>
 		<td><a href="login/uploads/THT_Traits_All_Table.xls">CAP Trait Names</a></td>
 		<td><a href="login/uploads/processed_files/phenotypes_definition.xls">Definition File</a></td>
-		<td>&nbsp;<!-- Left blank on purpose -->&nbsp;</td>
+		<td>&nbsp;-->
+		<!-- Left blank on purpose -->
+<!--	&nbsp;</td>
+
 	</tr>
 		<tr>
 		<td><a href="login/parser_add.php">Link</a></td>
 		<td><a href="login/uploads/processed_files/THT_harvest_map.xls">Barley Harvest Markers</a></td>
 		<td><a href="login/uploads/processed_files/marker_data_def.xls">Definition File</a></td>
-		<td>&nbsp;<!-- Left blank on purpose -->&nbsp;</td>
+		<td>&nbsp;-->
+		<!-- Left blank on purpose -->
+<!--		&nbsp;</td>
 	</tr>
+-->
 	</table>
 
 

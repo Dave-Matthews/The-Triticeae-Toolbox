@@ -1,3 +1,10 @@
+<?php
+/*
+*
+*
+*  6/20/11 J.Lee  Suppress the full DB admin option
+*/
+?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -134,6 +141,8 @@ EOD;
       Add/Edit Trait Definitions</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
       Add Line Names</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
+      Add/Edit Markers</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
       Add/Edit Pedigree</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
@@ -160,10 +169,10 @@ EOD;
 	    <a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">
 	    Table Status
 	    </a>
-	  	    <li>
+<!--	  	    <li>
 	    <a href="<?php echo $config['base_url']; ?>dbtest/myadmin/" title="Full Database Administration">
 	    Full Database Administration
-	    </a>
+	    </a> -->
 	  	    <?php endif; ?>
 <?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
     <li>
