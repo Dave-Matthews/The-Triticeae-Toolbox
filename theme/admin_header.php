@@ -144,7 +144,8 @@ EOD;
       Add Phenotype Experiment Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
       Add Maps</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>login/markerAdd.php" title="Synonyms, annotation, links to other databases">Add Markers</a>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
+      Add/Edit Markers</a></li>
       </ul>
       <?php endif ?>
 
@@ -169,10 +170,11 @@ EOD;
 	    <a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">
 	    Table Status
 	    </a>
-	  	    <li>
+<!--	  	    <li>
 	    <a href="<?php echo $config['base_url']; ?>dbtest/myadmin/" title="Full Database Administration">
 	    Full Database Administration
 	    </a>
+-->
 	  	    <?php endif; ?>
 <?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
     <li>

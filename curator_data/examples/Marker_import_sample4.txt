@@ -1,0 +1,83 @@
+Name	Marker_type	Synonym	Synonym_type	Annotation	Annotation_type
+1_0001	OPA SNP Name	1005-549	EST Name	POPA1_0001	GrainGenes
+1_0001				1005	HarvEST_U32
+1_0001				264	HarvEST_U35
+1_0001				Contig1489_at	U32_Probe_Set
+1_0001				HT06A08u_s_at	U32_Probe_Set
+1_0001				LOC_Os05g07700	U32_Rice_Locus
+1_0001				protein 60S ribosomal protein L10-3, putative, expressed	U32_Rice_Description
+1_0001				Contig1489_at	U35_Probe_Set
+1_0001				HT06A08u_s_at	U35_Probe_Set
+1_0001				LOC_Os05g07700	U35_Rice_Locus
+1_0001				protein 60S ribosomal protein L10-3, putative, expressed	U35_Rice_Description
+2_0065	OPA SNP Name	1119-1157	EST Name	POPA2_0065	GrainGenes
+2_0065				1119	HarvEST_U32
+2_0065				14582	HarvEST_U35
+2_0065				Contig1668_at	U32_Probe_Set
+2_0065				Contig1671_at	U32_Probe_Set
+2_0065				Contig1671_s_at	U32_Probe_Set
+2_0065				LOC_Os03g18570	U32_Rice_Locus
+2_0065				protein 40S ribosomal protein S7, putative, expressed	U32_Rice_Description
+2_0065				Contig1668_at	U35_Probe_Set
+2_0065				Contig1671_at	U35_Probe_Set
+2_0065				LOC_Os03g18570	U35_Rice_Locus
+2_0065				protein 40S ribosomal protein S7, putative, expressed	U35_Rice_Description
+3_0227	OPA SNP Name	ABC14399_1_70	EST Name	POPA3_0227	GrainGenes
+3_0227		3_0227	POPA Name	11546	HarvEST_U32
+3_0227				14392	HarvEST_U35
+3_0227				Contig14398_s_at	U32_Probe_Set
+3_0227				Contig14399_at	U32_Probe_Set
+3_0227				LOC_Os04g02050	U32_Rice_Locus
+3_0227				protein bifunctional 3-phosphoadenosine 5-phosphosulfate synthetase 2, putative, expressed	U32_Rice_Description
+3_0227				Contig1437_s_at	U35_Probe_Set
+3_0227				Contig14398_s_at	U35_Probe_Set
+3_0227				Contig14399_at	U35_Probe_Set
+3_0227				LOC_Os04g02050	U35_Rice_Locus
+3_0227				protein bifunctional 3-phosphoadenosine 5-phosphosulfate synthetase 2, putative, expressed	U35_Rice_Description
+11_10090	OPA SNP Name	1375-2534	EST Name	POPA1_0090	GrainGenes
+11_10090		11_10090	BOPA Combined Name	1375	HarvEST_U32
+11_10090		11-0133	BOPA Name	14849	HarvEST_U35
+11_10090		1_0090	POPA Name	Contig2034_s_at	U32_Probe_Set
+11_10090				EBro02_SQ006_H18_s_at	U32_Probe_Set
+11_10090				LOC_Os03g05730	U32_Rice_Locus
+11_10090				protein cell division control protein 48 homolog E, putative, expressed	U32_Rice_Description
+11_10090				Contig2034_s_at	U35_Probe_Set
+11_10090				EBro02_SQ006_H18_s_at	U35_Probe_Set
+11_10090				LOC_Os03g05730	U35_Rice_Locus
+11_10090				protein cell division control protein 48 homolog E, putative, expressed	U35_Rice_Description
+					
+					
+					
+--------------------- CUT --------------------------
+Fields and values are tab delimited.
+					
+LEGEND:					
+Line 1 contains field designations					
+Line 2 starts the marker data					
+					
+FIELD DEFINITIONS:					
+Name - Official marker name					
+Marker_type - A marker type name (should match one of the names in the THT marker_types table: OPA SNP Name, DArT Marker, Historical, QTL)					
+Synonym - Other known marker names					
+Synonym_type - type name of corresponding secondary name					
+Annotation - an annotation value
+Annotation_type - type/source of the annotation information
+
+Current Synonym_type values:					
+EST Name - Original Lab EST Name					
+POPA Name - Name from POPA array					
+BOPA Combined Name - New name showing tracking between POPAs and BOPAs					
+BOPA Name - Original BOPA name					
+DArT Name - DArT marker					
+Historical Name - Historical SNP Name from Grain Genes					
+					
+Current Annotation_type values:					
+GrainGenes - Reference name to annotation record from GrainGenes 					
+HarvEST_U32 - Unigene ID for HarvEST U32 assembly					
+HarvEST_U35 - Unigene ID for HarvEST U35 assembly					
+U32_Probe_Set - A reference to PLEXdb probe record 					
+U32_Rice_Locus - A reference to Gramene record					
+U32_Rice_Description - Annotation description   					
+U35_Probe_Set - A reference to PLEXdb probe record 					
+U35_Rice_Locus - A reference to Gramene record					
+U35_Rice_Description - Annotation description					

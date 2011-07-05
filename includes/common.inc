@@ -1,6 +1,8 @@
 <?php
 
-  /* DEM 7dec10: Revised updateTable() to handle enum and longtext columns. */
+// 7/1/2011   JLee  Change to use excel reader in ../lib/Excel
+
+/* DEM 7dec10: Revised updateTable() to handle enum and longtext columns. */
 
 /*
  * Generic / Common functions are stored here. 
@@ -93,7 +95,7 @@ function showTableOptions($table, $selected="null", $orderby="uid") {
 	  if (isset($orderby) && $orderby == "name") {
 	      $sortorder = $name;
 	    }
-	    $q = mysql_query("SELECT $uid, $name
+	$q = mysql_query("SELECT $uid, $name
 			  FROM $table 
 			  ORDER BY $sortorder
 			")
@@ -191,14 +193,14 @@ function getNumEntries($table) {
 
 function display_uploaded_file($filename) {
 
-	require_once("excel/reader.php");	//include excel reader
+	require_once("../lib/Excel/reader.php");	//include excel reader
 
 	/* Creating the object */
 	$data = new Spreadsheet_Excel_Reader();
 	$data->setOutputEncoding('CP1251');
 	$data->read($filename);
 
-	$data->trimSheet(0); 	//new function that I added to trim columns
+	//$data->trimSheet(0); 	//new function that I added to trim columns
 
 	/* Setting Error Reporting */
 	error_reporting(E_ALL ^ E_NOTICE);
@@ -243,21 +245,20 @@ function add_attribute ($key, $value, $tablename, $keyid) {
 	$result=mysql_query("SELECT * FROM $tablename WHERE $key=\"$value\"");
 	$num_rows=mysql_num_rows($result);
 
-	if ($num_rows<=0) {
-		mysql_query("insert into $tablename ($key, created_on) values (\"$value\", NOW())") ;// || die (mysql_error());
-		$id=mysql_insert_id();
-		$flag=1;
+	if ($num_rows <= 0) {
+		mysql_query("insert into $tablename ($key, created_on) values (\"$value\", NOW())") || die (mysql_error());
+		$id = mysql_insert_id();
+		$flag = 1;
 	}
 	else {
-		while( $row = mysql_fetch_assoc($result) ) {
+		while( $row = mysql_fetch_assoc($result)) {
 
-			$id=$row[$keyid];
-			$flag=0;
-
+			$id = $row[$keyid];
+			$flag = 0;
 		}
 	}	
-	if ($value=="N/A") {
-		$flag=-1;
+	if ($value == "N/A") {
+		$flag = -1;
 	}	
 	return array($flag, $id);
 }	
@@ -301,7 +302,7 @@ function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $id
 		    $valstr.= "NOW()";
 		  }
 		  else {
-		    $valstr.="\"".addslashes($vals[$ks[$i]])."\"";
+			$valstr.="\"".addslashes($vals[$ks[$i]])."\"";
 		  }
 		}
 		if ($i<$vsize-1) {
@@ -310,8 +311,8 @@ function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $id
 		}
 
 	}
-	$query = "insert into $tablename ($keystr) values ($valstr)";
-	mysql_query($query) || die(mysql_errno() . ":" . mysql_error().". Query was:<br>$query");
+	$cmd = "insert into $tablename ($keystr) values ($valstr)";
+	mysql_query($cmd)|| die("insert failed " .mysql_errno() . ":" . mysql_error(). "<br>". $cmd );
 
 	$id=mysql_insert_id();
 	return array(1,$id);
