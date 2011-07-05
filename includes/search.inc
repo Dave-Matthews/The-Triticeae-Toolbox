@@ -1,5 +1,9 @@
 <?php
-
+//*****************************************************************************
+//
+//
+// 07/05/2011  JLee   Update table names to reflect current schema
+//*****************************************************************************
 /* 
  * This file contains most of the functions used when searching
  */
@@ -231,12 +235,12 @@ echo "<p title=\"$type\"><strong><a href=\"view.php?table=" . urlencode($line[0]
  */
 function table_by_type ($tabletype) {
 	$tables=array();
-	$tables['all']=explode(" ","alleles barley_pedigree_catalog breeding_programs datasets datasets_breeders datasets_experiments experiment_types experiments genotyping_data genotyping_status gramene institutions line_records map mapset marker_stat marker_types markers markers_in_maps pedigree_relations phenotype_category phenotype_data phenotype_descstat phenotypes taxa tht_base unigene units user_types users");
-	$tables['pedigree']=array('barley_pedigree_catalog', 'line_records', 'pedigree_relations', 'taxa', 'tht_base' );
-	$tables['genotype']=array('genotyping_data', 'genotyping_status', 'alleles', 'map', 'mapset', 'marker_stat', 'marker_types', 'markers', 'markers_in_maps','unigene');
-	$tables['phenotype']=array('gramene', 'phenotype_category', 'phenotype_data', 'phenotype_descstat', 'phenotypes', 'units');
-	$tables['experiment']=array('datasets', 'experiment_types', 'experiments');
-	$tables['general']=array('breeding_programs', 'datasets_breeders', 'institutions', 'user_types', 'users');
+	$tables['all']=explode(" ","CAPdata_programs allele_frequencies alleles barley_pedigree_catalog barley_pedigree_catalog_ref data_providers datasets datasets_experiments experiment_types experiments file_process filter_sets filters genotype_experiment_info genotyping_data input_file_log institutions line_records line_synonyms map mapset marker_annotation_types marker_annotations marker_synonym_types marker_synonyms marker_types markers markers_in_maps pedigree_relations phenotype_category phenotype_data phenotype_descstat phenotype_experiment_info phenotype_mean_data phenotypes session_variables settings tht_base trait_ontology_term units user_types users");
+	$tables['pedigree']=array('barley_pedigree_catalog','barley_pedigree_catalog_ref','line_records','line_synonyms','pedigree_relations','tht_base','trait_ontology_term');
+	$tables['genotype']=array('genotyping_data','allele_frequencies','alleles','map','mapset','marker_annotation_types','marker_annotations','marker_synonym_types','marker_synonyms','marker_types','markers','markers_in_maps');
+	$tables['phenotype']=array('phenotype_category','phenotype_data','phenotype_descstat','phenotype_mean_data','phenotypes','units');
+	$tables['experiment']=array('datasets','datasets_experiments','experiment_types','experiments','genotype_experiment','phenotype_experiment_info','CAPdata_programs','data_providers','institutions');
+	$tables['general']=array('file_process','filter_sets','filters_info','input_file_log','session_variables','settings','user_types','users');
 	if (isset($tabletype) && isset($tables[$tabletype])) {
 		return $tables[$tabletype];
 	}
