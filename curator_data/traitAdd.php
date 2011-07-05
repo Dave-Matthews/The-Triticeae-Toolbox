@@ -33,14 +33,8 @@ if(isset($_POST['category'])) {		//add New Trait has been submitted
 
 	if($_POST['short_name'] == "")
 		$_POST['short_name'] = "ignore";
-		
 	
 	//	echo "datatype is:". $_POST['datatype'];
-	
-	
-	
-	
-
 
 	if(validateForm($_POST)) {	//form has valid input
 
@@ -117,11 +111,11 @@ if(isset($_POST['unit_name'])) {		//add new unit has been submitted
 			echo "<p>". $_POST['unit_name'] . " has been added</p>";
 
 		else
-			$error = "<font color=red>" . $_POST['unit_name'] . " already exists in the database.</font>";
+			$error = $_POST['unit_name'] . " already exists in the database.";
 
 	}
 	else {
-		$error = "<font color = red>Please fill in all of the fields.</font>";
+		$error = "Please fill in all of the fields";
 	}
 }
 
@@ -143,7 +137,7 @@ switch($_GET['add']) {
 
 <h2>Add a Single New Trait</h2>
 <div class="boxContent">
-<form action="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=single" method="post" enctype="multipart/form-data">
+<form action="<?php echo $config['base_url']; ?>./curator_data/traitAdd.php?add=single" method="post" enctype="multipart/form-data">
 
 <p>Category:<br />
 <select name="category">
@@ -152,7 +146,7 @@ switch($_GET['add']) {
 
 <p>Units:<br />
 <select name="units">
-     <?php echo showTableOptions("units", "", "name") ?>
+	<?php echo showTableOptions("units") ?>
 </select></p>
 
 <p>Name:<br />
@@ -182,7 +176,7 @@ switch($_GET['add']) {
 
 <h2>Add a Trait Category</h2>
 <div class="boxContent">
-<form action="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=category" method="post" enctype="multipart/form-data">
+<form action="<?php echo $config['base_url']; ?>./curator_data/traitAdd.php?add=category" method="post" enctype="multipart/form-data">
 
 <p>Category Name: <br />
 <input type="text" name="single_category" /></p>
@@ -197,7 +191,7 @@ switch($_GET['add']) {
 
 <h2>Add a New Unit</h2>
 <div class="boxContent">
-<form action="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=unit" method="post" enctype="multipart/form-data">
+<form action="<?php echo $config['base_url']; ?>./curator_data/traitAdd.php?add=unit" method="post" enctype="multipart/form-data">
 
 <p>Unit Name: <br />
 <input type="text" name="unit_name"  /></p>
@@ -205,7 +199,7 @@ switch($_GET['add']) {
 <input type="text" name="unit_abbreviation"  /></p>
 <p>Unit Description: <br />
 <input type="text" name="unit_description"  /></p>
-<p>Number of Decimal Points to display: <br />
+<p>Number of Digits to display: <br />
 <input type="numeric" name="sigdigits_display" value="0" /></p>
 
 <p><input type="submit" value="Add" /></p>
@@ -220,9 +214,9 @@ switch($_GET['add']) {
 <h2>Add Multiple New Traits</h2>
 <div class="boxContent">
 
-<p>Upload an <em>Excel</em> file with the format suggested by the <a href="<?php echo $config['base_url']; ?>curator_data/examples/THT_trait_template.xls"><em>THT Trait Template</em></a></p>
+<p>Upload an <em>Excel</em> file with the format suggested by the <a href="<?php echo $config['base_url']; ?>curator_data/examples/trait_template.xls"><em> Trait Import Template</em></a></p>
 
-<form action="<?php echo $config['base_url']; ?>login/uploader.php?type=traits" method="post" enctype="multipart/form-data">
+<form action="<?php echo $config['base_url']; ?>curator_data/uploader.php?type=traits" method="post" enctype="multipart/form-data">
 
 <p><input type="file" name="file" size="80%" /></p>
 <p><input type="submit" value="Upload Trait File" /></p>
@@ -234,17 +228,14 @@ switch($_GET['add']) {
 }
 ?>
 
-<p>
-<dt><b>"Add Trait Definitions" options</b></dt>
-<dd><a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php">Add Multiple New Traits</a><br /></dd>
-<dd><a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=single">Add a Single New Trait</a><br /></dd>
-<dd><a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=category">Add a Trait Category</a><br /></dd>
-<dd><a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=unit">Add a New Unit</a><br /></dd>
+<p><a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php">Add Multiple Traits</a><br />
+<a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=single">Add a Single Trait</a><br />
+<a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=category">Add a New Category</a><br />
+<a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=unit">Add a New Unit</a><br />
 </p>
 		</div>
-<!--
-  <p><?php echo $row['name']; ?> you last accessed the system on <?php echo $row['lastaccess']; ?></p>
--->
+
+<p><?php echo $row['name']; ?> you last accessed the system on <?php echo $row['lastaccess']; ?></p>
 	</div>
 </div>
 </div>
