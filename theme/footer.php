@@ -1,7 +1,7 @@
 <?php if ( isset($footer_div) ): ?>
 	</div>
 <?php endif; ?>
-	<div id="footer" style="padding: 15px 0 0 0; height: 160px; background-color: #f8b737; top: 0;">
+	<div id="footer" style="padding: 15px 0 0 0; height: 160px; background-color: #f9cb73; top: 0;">
 		<table cellpadding="0" cellspacing="0" border="0" width="600" style="width: 600px; background: transparent; border: 0 !important; margin: 0 auto;">
 			<tr>
 				<td align="left" style="border: 0 !important">
