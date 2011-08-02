@@ -2,6 +2,9 @@
 //**********************************************  
 // Marker importer
 //
+//
+// 08/02/2011  JLee   Allow for empty synonyms and annotations
+//
 // Author: John Lee         6/15/2011
 //**********************************************  
 require 'config.php';
@@ -604,7 +607,11 @@ class Markers_Check {
             }  else {
                 $curMarker = $marker;
                 $doMarker = 1;
-                $doAnnotation = 1;
+                if (empty($annotation)) 
+                    $doAnnotation = 0;
+                else 
+                    $doAnnotation = 1;
+
                 if (empty($synonym) )
                     $doSynonym = 0;
                 else 
@@ -616,7 +623,7 @@ class Markers_Check {
                 $markerTypeID = $mTypeHash[$tmp];
                 
                 if (empty($markerTypeID)) {
-                    echo "ERROR DETECT:  ". $markerType ." has not been defined in the database.<br/> Please check your input file and resubmit it. <br><br><br>";
+                    echo "ERROR DETECT in marker type field:  ". $markerType ." has not been defined in the database.<br/> Please check your input file and resubmit it. <br><br><br>";
                     exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
                 }
                 
@@ -662,7 +669,7 @@ class Markers_Check {
                 $synonymTypeID = $mSynmTypeHash[$tmp];
                 //echo "Synonym type - ".$synonymType . " value = " . $synonymTypeID . "<br>";  
                 if (empty($synonymTypeID)) {
-                    echo "ERROR DETECT:  ". $synonymType . " has not been defined in the database.<br/> Please check your input file in " . $marker. " and resubmit it. <br><br><br>";
+                    echo "ERROR DETECT in synonym type field: ". $synonymType . " has not been defined in the database.<br/> Please check your input file in " . $marker. " and resubmit it. <br><br><br>";
                     exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
                 }
                 //Check to see if synonym name already exists
@@ -689,7 +696,7 @@ class Markers_Check {
                 $tmp = strtolower($annotationType);
                 $annotTypeID = $mAnnotTypeHash[$tmp];
                 if (empty($annotTypeID)) {
-                    echo "ERROR DETECT:  ". $annotationType . " has not been defined in the database.<br/> Please check your input file and resubmit it. <br><br><br>";
+                    echo "ERROR DETECT in annotation field: ". $annotationType . " has not been defined in the database.<br/> Please check your input file and resubmit it. <br><br><br>";
                     exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
                 }
                 
