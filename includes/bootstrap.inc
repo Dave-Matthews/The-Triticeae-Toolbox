@@ -1,5 +1,8 @@
 <?php
 
+# Function connect() below requires the connection information in
+# /data/tht_data/mysql_connections/T3wheat_readonly.inc
+
 if (!isset($dontconnect))
 $dontconnect = false;
 
