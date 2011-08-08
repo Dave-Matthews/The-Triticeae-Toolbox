@@ -199,7 +199,7 @@ function connect() {
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat_writeaccess.inc');
+  include('/data/tht_data/mysql_connections/T3wheat+_writeaccess.inc');
   $db_config = array_merge_recursive_unique($db_config,
 					    $ini_config);
   extract($db_config);
