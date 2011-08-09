@@ -165,7 +165,7 @@ class LineNames_Check
 		$bpcodes[] = $row[0];
 	      if ((in_array($bp, $bpcodes) === FALSE) OR (strlen($bp) == 0) ) {
 		//die("Breeding Program Code \'$bp\' is not in the database. <a href=\"$config['base_url']all_breed_css.php\">Show codes.</a>");
-		die("Breeding Program Code '$bp' is not in the database.<br><br>");
+		die_nice("Breeding Program Code '$bp' is not in the database.<br><br>");
 	      }
 
 /*
