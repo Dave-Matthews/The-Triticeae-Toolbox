@@ -46,6 +46,8 @@ a:hover
     top: 0;
     position:absolute;
     background: #fff url('images/headbg.jpg') repeat-x
+/*    background: #f9cb73 url('images/headbg.jpg') repeat-x*/
+/*    background: #f9cb73; */
 }
 
 /* dynamic image replacement */
@@ -233,7 +235,8 @@ table td
     border-left: 0;
     border-right: 0;
     padding: 7px;
-    text-align: center;
+/*    text-align: center; */
+    text-align: left;
 }
 
 
@@ -263,16 +266,15 @@ table td
 #nav li#active a,
 #nav li:hover a{background-image:url('images/abtnrt.png'); color:#FFF}
 
-#nav li li,
-#nav li#active li{text-align:left; height:auto; top:0; background:#9a292c; float:none; font-size: .7em}
+#nav li li,  #nav li#active li{text-align:left; height:auto; top:0; background:#9a292c; float:none; font-size: .7em}
 
 #nav li li a, #nav li#active li a, #nav li:hover li a, #nav li.over li a
 {
     display: block;
     width: 190px;
-    background: #f9cb73;
+    background: #9a292c; /* #f9cb73; */
     color: #fff;
-    border: 1px solid #9a292c;
+    border: 1px solid #fff;
     border-top: none;
     padding: 5px
 }
