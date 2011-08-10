@@ -9,6 +9,7 @@ $name = get_unique_name("datasets");
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
+  <h2>Home</h2>
   <div class="section">
   <h3>Welcome to The Triticeae Toolbox (T3)!</h3>
 
