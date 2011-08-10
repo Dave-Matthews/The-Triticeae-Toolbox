@@ -192,7 +192,7 @@ class Markers_Check {
                     
                     //Check for junk line
                     if (count($data) != 6) {
-                        echo "ERROR DETECT: Line does not contain 6 column.". "<br/>". $line . "<br/>" ;
+                        echo "ERROR DETECT: Line does not contain 6 columns.". "<br/>". $line . "<br/>" ;
                         exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
                     }    
                                             
@@ -318,10 +318,14 @@ class Markers_Check {
             if(move_uploaded_file($_FILES['file']['tmp_name'][1], $target_path.$uploadfile)) 	{
                 $infile = $target_path.$uploadfile;
                 // Convert it to generic format
-                $cmd = "perl AB_to_ATCG.pl " . $infile;
+                $cmd = "perl AB_to_ATCG.pl \"$infile\"";
                 //echo "Cmd - " . $cmd . "<br>";
                 exec($cmd);
                 $infile = $target_path.$uploadfile.".txt";
+		if (!file_exists($infile)) {
+		  error(1, "Conversion of .opa file failed.");
+		  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+		}
             }  else {
                     error(1, "Unable to upload file to tempory location.");
                     exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
@@ -394,7 +398,7 @@ class Markers_Check {
             
             //Check for junk line
             if (count($data) != 4) {
-                echo "ERROR DETECT: Line does not contain 4 column.". "<br/>". $line . "<br/>" ;
+                echo "ERROR DETECT: Line does not contain 4 columns.". "<br/>". $line . "<br/>" ;
                 exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
             }    
                                     
@@ -566,7 +570,8 @@ class Markers_Check {
             //Check for junk line
             if (count($data) != 6)  {
                 echo "ERROR DETECT: Invalid number of columns". $line ."<br/>";
-                print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+		echo "The offending row is this:<br>$line<br>";
+                print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><br>";
             }     
                                                 
             foreach ($data as $value)  {
@@ -623,8 +628,8 @@ class Markers_Check {
                 $markerTypeID = $mTypeHash[$tmp];
                 
                 if (empty($markerTypeID)) {
-                    echo "ERROR DETECT in marker type field:  ". $markerType ." has not been defined in the database.<br/> Please check your input file and resubmit it. <br><br><br>";
-                    exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+                    echo "ERROR DETECT in marker type field:'  ". $markerType ."' has not been defined in the database.<br/> Please check your input file and resubmit it. <br><br><br>";
+                    exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");
                 }
                 
                 //echo "Marker type - ".$markerType . " value = " . $markerTypeID . "<br>";  
