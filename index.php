@@ -9,10 +9,7 @@ $name = get_unique_name("datasets");
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h1>Under construction</h1>
-  <font color=red>Currently this site has no usable content.</font>  The data are actually barley
-  or just test datasets to learn the system.
-<p>
+  <h2>Home</h2>
   <div class="section">
   <h3>Welcome to The Triticeae Toolbox (T3)!</h3>
 
