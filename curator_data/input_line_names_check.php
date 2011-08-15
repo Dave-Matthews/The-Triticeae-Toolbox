@@ -160,12 +160,11 @@ class LineNames_Check
 		  }
 	      $bp = $linedata['cells'][3][2];
 	      // Test whether this program is already in the database.
-	      $sql = mysql_query("SELECT distinct breeding_program_code from line_records");
+	      $sql = mysql_query("SELECT distinct data_program_code from CAPdata_programs");
 	      while ($row = mysql_fetch_row($sql))
 		$bpcodes[] = $row[0];
 	      if ((in_array($bp, $bpcodes) === FALSE) OR (strlen($bp) == 0) ) {
-		//die("Breeding Program Code \'$bp\' is not in the database. <a href=\"$config['base_url']all_breed_css.php\">Show codes.</a>");
-		die("Breeding Program Code '$bp' is not in the database.<br><br>");
+		die("Breeding Program Code '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br><br>");
 	      }
 
 /*
