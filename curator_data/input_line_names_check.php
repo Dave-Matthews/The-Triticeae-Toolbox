@@ -717,6 +717,9 @@ class LineNames_Check
 	  die("Row 3 must begin with '*Breeding Program Code'.");
 	}
 	$bp = $linedata['cells'][3][2];
+	if (strlen($bp) != 3) {
+	  die("Invalid or missing Breeding Program Code.");
+	}
 
 // 	$columnOffsets = array(
 // 			       'line_name' => -1,
@@ -933,7 +936,6 @@ class LineNames_Check
 	    // Insert synonyms.
 	    if (!empty($synonyms)) {
 	      foreach ($synonyms as $syn) {
-		//echo "Trying to insert line_uid $line_uid, synonym $syn.<br><br>";
 		$sql = "insert into line_synonyms 
 		  (line_record_uid, line_synonym_name, updated_on, created_on) values 
 		  ('$line_uid', '$syn', NOW(),NOW())";
