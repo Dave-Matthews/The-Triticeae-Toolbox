@@ -907,7 +907,7 @@ class LineNames_Check
 	      $sql_beg .= "chaff,";
 	      $sql_mid .= "'$chaff', ";
 	    }
-	    if (!empty($awned)) {
+	    if (!empty($height)) {
 	      $sql_beg .= "height,";
 	      $sql_mid .= "'$height', ";
 	    }
