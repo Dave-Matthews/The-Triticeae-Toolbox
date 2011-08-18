@@ -2,7 +2,7 @@
 require 'config.php';
 //*********************************************
 //
-// 
+// 8/18/11  DEM   Fixed bug in call to add_array_attributes().
 // 6/24/11  JLee  Fix to use the generic Excel parser
 //                & population of input records
 //				 
@@ -107,8 +107,9 @@ ob_end_flush();
 				$keyarr = array('phenotype_category_uid'=>$cat_id, 'unit_uid'=>$unit_id, 'phenotypes_name'=>$pname,'alternate_name' => addslashes($line[3]),'description'=>addslashes($line[6]),'min_pheno_value'=>$minVal,'max_pheno_value'=>$maxVal,'TO_number'=>strtoupper($line[9]), 'datatype' => $line[5]);
 				$isnum = array(1,1,0,0,0,1,1,0,0);
 			}
-
-			$pres = add_array_attributes($keyarr, $isnum, "phenotypes", "phenotypes_name", $pname, "phenotype_uid");
+			// Insert into MySQL database. Function defined in includes/common.inc.
+// 			$pres = add_array_attributes($keyarr, $isnum, "phenotypes", "phenotypes_name", $pname, "phenotype_uid");
+			$pres = add_array_attributes($keyarr, $isnum, "phenotypes", "phenotypes_name", $pname, "phenotypes_name");
 			if ($pres[0] < 0) {
 				$inum+=1;
 			}
