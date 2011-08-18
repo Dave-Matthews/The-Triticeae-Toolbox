@@ -1,4 +1,7 @@
 <?php
+
+// 6/29/2011  JLee  Fixed to current THT schema, support 
+//					app moved into curator_data
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';

@@ -114,7 +114,7 @@ function connect() {
 	global $dontconnect;
 	if ($dontconnect == true) return null;
 	// Get $db_config = array(db_name,db_user,db_pass,db_host).
-	include('/data/tht_data/mysql_connections/THT_database_writeaccess.inc');
+	include('/data/tht_data/mysql_connections/T3wheat_writeaccess.inc');
 	extract($db_config);
 	$linkID = mysql_connect($db_host, $db_user, $db_pass);
 	if(!$linkID) {

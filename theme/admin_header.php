@@ -14,7 +14,7 @@
   <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
   <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
   <meta name="revisit-After" content="1 days" >
-  <title>The Hordeum Toolbox</title>
+  <title>The Triticeae Toolbox</title>
 
   <base href="<?php echo $config['base_url']; ?>" >
   <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
@@ -65,12 +65,12 @@ EOD;
   <div id="barleyimg">
   </div>
   <h1 id="logo">
-  The Hordeum Toolbox
+  The Triticeae Toolbox
   </h1>
   <div id="util">
   <div id="utilright">
   </div>
-  <a href="./feedback.php">Feedback</a> | <a href="about.php">About THT</a>
+  <a href="./feedback.php">Feedback</a> | <a href="about.php">About T3</a>
   </div>
 
 <?php
@@ -87,7 +87,7 @@ EOD;
 ?>
  <div id="nav">
   <ul>
-  <li id="active">
+  <li>
   <a href="">
   Home
   </a>
@@ -128,21 +128,17 @@ EOD;
   <a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Show CAP Data Programs">
   CAP Data Programs</a>
   </ul>
-<!--  <li>
-  <a title="<?php echo $lang["desc_sc4"]; ?>">Expression</a>
-  <ul>
-  <li>
-  <a href="http://plexdb.org" title="PLEXdb">PLEXdb</a>
-  </ul> -->
-  <?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
+
+  <?php 
+  //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  ?> 
    <li> <a title="Curate the Database">Curation</a>
       <ul>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
       Add/Edit Trait Definitions</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
-      Add Line Names</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
-      Add/Edit Markers</a></li>
+      Add/Edit Lines</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
       Add/Edit Pedigree</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
@@ -150,14 +146,26 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
       Add Genotype Results </a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
-      Add Experiment Annotations</a></li>
+      Add Phenotype Experiment Annotations</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data">
-      Add Experiment Results</a></li>
+      Add Phenotype Experiment Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
-      Add Map Data</a></li>
+      Add Maps</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
+      Add/Edit Markers</a></li>
       </ul>
       <?php endif ?>
-			
+
+  <?php  			
+//   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+    ?>
+  <li> <a title="Manage access to my data">Share data</a>
+  <ul>
+  <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a>
+  </ul>
+  <?php endif ?>
+
       <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
       <li>
 	 <a title="<?php echo $lang["desc_sc5"]; ?>">
@@ -172,7 +180,8 @@ EOD;
 <!--	  	    <li>
 	    <a href="<?php echo $config['base_url']; ?>dbtest/myadmin/" title="Full Database Administration">
 	    Full Database Administration
-	    </a> -->
+	    </a>
+-->
 	  	    <?php endif; ?>
 <?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
     <li>

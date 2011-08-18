@@ -68,20 +68,20 @@ connect();
 </script>
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post"
       onsubmit="return validatePassword(document.getElementById('password').value);">
-  <h3>What is your name? (BarleyCAP participants MUST give a full name to be approved)</h3>
-  <label for="name">My name is:</label>&nbsp;
-  <input type="text" name="name" id="name" value="$name" />
-  <h3>What is your e-mail address?			</h3>
+  <h3>Name</h3>
+  &nbsp;&nbsp;<label for="name">My name is:</label>&nbsp;
+  <input type="text" name="name" id="name" value="$name" /> Triticeae CAP participants <b>must</b> give a full name to be approved.
+  <h3>Email address			</h3>
   <table border="0" cellspacing="0" cellpadding="0"
 	 style="border: none; background: none">
     <tr><td style="border: none; text-align: right;">
-	<label for="email">My e-mail address is:<label></td>
+	<label for="email">My email address is:<label></td>
       <td style="border:none;">
 	<input type="text" name="email" id="email" value="$email" onchange="document.getElementById('institution').value = guessInstitution(document.getElementById('email').value)" />
      </td></tr><tr><td style="border: none; text-align: right;">
 	<label for="cemail">Type it again:</label></td>
       <td style="border: none;"><input type="text" name="cemail" id="cemail" value="$cemail" /></td></tr></table>
-  <h3>What do you want your password to be?</h3>
+  <h3>Password</h3>
   <table border="0" cellspacing="0" cellpadding="0" style="border: none; background: none">
     <tr><td style="border: none; text-align: right;">
 	<label for="password">I want my password to be:</label></td>
@@ -91,14 +91,15 @@ connect();
 	<label for="cpassword">Type it again:</label></td>
       <td style="border:none;">
 	<input type="password" name="cpassword" id="cpassword" /></td></tr></table>
-  <h3>Your Institution (optional for non-BarleyCAP participants.)</h3>
+  <h3>Institution</h3>
 	<table border="0" cellspacing="0" cellpadding="0" style="border: none; background: none"><tr>
 	<td style="border: none; text-align: right;">
 	<label for="institution">My institution is:<label></td>
 	<td style="border:none;">
 	<input type="text" name="institution" id="institution"
-	       value="$institution" size="30" /></td></tr></table>
-  <h3>Are you a Barley CAP participant?</h3>
+	       value="$institution" size="30" /> Required for Triticeae CAP participants.
+        </td></tr></table>
+  <h3>Are you a Triticeae CAP participant?</h3>
   <input $c_no type="radio" value="no" name="answer" id="answer_no" />
   <label for="answer_no">No</label>
   <br />
@@ -144,8 +145,9 @@ function HTMLLoginForm($msg = "") {
   $retval .= <<<HTML
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
-  Registered members of the Barley CAP team have pre-release
-  access to all phenotype and genotype data from the project.
+  Registered members of the Triticeae CAP team have pre-release
+    access to all phenotype and genotype data from the project, 
+    and are allowed to add their own private data to the database.
 
     <p>For registered non-CAP users, selections made during
     their searches are saved from session to session.
@@ -326,7 +328,7 @@ function HTMLProcessForgot() {
   else {
     $key = setting('passresetkey');
     $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-    send_email($email, "Hordeum Toolbox : Reset Your Password",
+    send_email($email, "Triticeae Toolbox : Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
 {$root}resetpass.php?token=$urltoken");
@@ -459,10 +461,10 @@ $safe_institution)";
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-     send_email($email, "Hordeum Toolbox registration in progress",
+     send_email($email, "Triticeae Toolbox registration in progress",
 "Dear $name,
 
-Thank you for requesting an account on The Hordeum Toolbox.
+Thank you for requesting an account on The Triticeae Toolbox.
 
 To complete your registration, please confirm that you requested it 
 by visiting the following URL:
@@ -471,7 +473,7 @@ by visiting the following URL:
 Your registration will be complete when you have performed this step.
 
 Sincerely,
-The Hordeum Toolbox Team
+The Triticeae Toolbox Team
 ");
      if ($desired_usertype == USER_TYPE_PARTICIPANT) {
        $capkey = setting('capencryptionkey');

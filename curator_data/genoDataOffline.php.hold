@@ -3,10 +3,6 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
-//
-// 5/9/2011	 JLee	Fix formula	for calculating MAF value	
-// 4/11/2011 JLee  Add ability to handle zipped data files
-//
 // Written By: John Lee
 //*********************************************
 $progPath = realpath(dirname(__FILE__).'/../').'/';
@@ -26,8 +22,7 @@ $error_flag = 0;
 $lineExpHash = array ();
 $lineDsHash = array ();
 $curTrialCode = '';
-$gName = '';
- 
+
 echo "Start time - ". date("m/d/y : H:i:s", time()) ."\n"; 
 echo "Translate File - ". $lineTransFile. "\n";
 echo "Genotype Data File - ". $gDataFile. "\n";
@@ -73,22 +68,8 @@ if ($emailAddr == "") {
     exit (1);
 }  
 
-// Check for zip file
-if (strpos($gDataFile, ".zip") == TRUE) {
-	echo "Unzipping the genotype data file...\n";
-	$zip = new ZipArchive;
-	$zip->open($gDataFile) || exitFatal ($errFile, "Unable to open zip file, please check zip format.");
-	$gName = $zip->getNameIndex(0);
-	$zip->extractTo($target_Path) || exitFatal ($errFile, "Failed to extract file from the zip file.");
-    $zip->close()  || exitFatal ($errFile, "Failed to close zip file.");
-	$gDataFile = $target_Path . $gName;
-	echo "Genotype data unzipping done.\n";
-}
-// Testing for non-processing
-//exit (1);
-
-/* Read the file */
-if (($reader = fopen($lineTransFile, "r")) == FALSE) {
+ /* Read the file */
+ if (($reader = fopen($lineTransFile, "r")) == FALSE) {
     exitFatal ($errFile, "Unable to access translate file.");
 }
             
@@ -111,9 +92,9 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 // Store individual records
 while(($line = fgets($reader)) !== FALSE) { 
     //chop ($line, "\r");
-    if (strlen($line) < 2) continue;
+    if (strlen($line) < 2) break;
     if (feof($reader)) break;
-    if (empty($line)) continue;
+    if (empty($line)) break;
     //echo "$line <br>";  
                 
     $data = str_getcsv($line,"\t");
@@ -158,7 +139,7 @@ if (($reader = fopen($gDataFile, "r")) == FALSE) {
 //Advance to data header area
 while(!feof($reader))  {
     $line = fgets($reader);
-    if (stripos($line, 'SNP Name') !== false) break;    
+    if (stripos($line, 'SNP Name') !== false)  break;    
 }
         
 if (feof($reader)) {
@@ -212,9 +193,9 @@ while (!feof($reader))  {
        exitFatal ($errFile, "ERROR: Too many import lines have problem."); 
     }    
     $line = fgets($reader);
-    if (strlen($line) < 3) continue;
-    if (empty($line)) continue;
-    if (feof($reader)) continue;
+    if (strlen($line) < 2) next;
+    if (empty($line)) next;
+    if (feof($reader)) break;
     //echo "$line <br>";
     $data = str_getcsv($line,"\t");
     $num = count($data);		// number of fields
@@ -223,7 +204,7 @@ while (!feof($reader))  {
         $msg = "ERROR: Wrong number of entries  for line - " . $line;
         fwrite($errFile, $msg);
         $errLines++;
-        continue;
+        next;
     }    
     
     $rowNum++;		// number of lines
@@ -244,7 +225,7 @@ while (!feof($reader))  {
             $msg = 'ERROR:  marker not found '.$marker.'\t'. $line;
             fwrite($errFile, $msg);
             $errLines++;
-            continue;
+            next;
         } else {
 		    $rdata = mysql_fetch_assoc($res);
 		    $marker_uid=$rdata['marker_uid'];
@@ -330,15 +311,13 @@ while (!feof($reader))  {
         $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid");
 		$rgen=mysql_num_rows($result);
 		if ($rgen < 1) {
-			//$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
-			//			theta, R,X,Y,X_raw,Y_raw,GC_score, GT_score, updated_on, created_on)
-			//			VALUES ($gen_uid,'$allele1','$allele2',$theta,$r,$x,$y,$xraw,$yraw,$gcscore, $gtscore, NOW(), NOW()) ";
-			$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2, updated_on, created_on)
-						VALUES ($gen_uid,'$allele1','$allele2',NOW(), NOW()) ";
- 
-       } else {
+			$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
+						theta, R,X,Y,X_raw,Y_raw,GC_score, GT_score, updated_on, created_on)
+						VALUES ($gen_uid,'$allele1','$allele2',$theta,$r,$x,$y,$xraw,$yraw,$gcscore, $gtscore, NOW(), NOW()) ";
+        } else {
 		$sql = "UPDATE alleles
-			SET allele_1='$allele1',allele_2='$allele2', updated_on=NOW() 
+			SET allele_1='$allele1',allele_2='$allele2',theta=$theta, R=$r,X=$x,Y=$y,
+			X_raw=$xraw,Y_raw=$yraw,GC_score=$gcscore, GT_score=$gtscore, updated_on=NOW() 
 			WHERE genotyping_data_uid = $gen_uid";
 		}
 		$res = mysql_query($sql) or exitFatal ($errFile, "Database Error: alleles processing - ". mysql_error() . ".\n\n$sql");
@@ -454,17 +433,9 @@ foreach ($uniqExpID AS $key=>$expID)  {
         $aafreq = round($aacnt / $total,3);
         $bbfreq = round($bbcnt / $total,3);
         $abfreq = round($abcnt / $total,3);
-<<<<<<< HEAD
-        $maf = round(100 * min((2 * $aacnt + $abcnt) /(2 * $total), ($abcnt + 2 * $bbcnt) / (2 * $total)),1);
+        $maf = round(100 * min((2 * $aacnt + $abcnt) /$total, ($abcnt + 2 * $bbcnt) / $total),1);
         $gtscore =max($gt);
         if (($aacnt == $total) or ($abcnt == $total) or ($bbcnt == $total)) {
-=======
-        $maf = round(100 * min((2 * $aacnt + $abcnt) /$total, ($abcnt + 2 * $bbcnt) / $total),1);
-// Forcing this to 0
-//      $gtscore =max($gt);
-  		$gtscore = 0;
-       if (($aacnt == $total) or ($abcnt == $total) or ($bbcnt == $total)) {
->>>>>>> 2e3540485a90d62ab765d330358d3f5d371280da
             $mono = $monomorphic[0];//is monomorphic
         } else {
             $mono = $monomorphic[1];
