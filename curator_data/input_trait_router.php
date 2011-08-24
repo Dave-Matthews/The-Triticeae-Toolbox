@@ -75,12 +75,12 @@ private function typeTraits()
 		<table>
 		<tr>
 		<td>
-	<a href="<?php echo $config['base_url']; ?>login/edit_traits.php"><p><strong><li>Edit Traits</li> </strong></p> </a>  
+	<a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php"><p><strong><li>Add Traits</li></strong></p></a>
 	</td>
 	<td colspan="2">
 	</td>
 	<td>
-	<a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php"><p><strong><li>Add Traits</li></strong></p></a>
+	<a href="<?php echo $config['base_url']; ?>login/edit_traits.php"><p><strong><li>Edit Traits</li> </strong></p> </a>  
 	</td>
 	</tr>
 	</table>
