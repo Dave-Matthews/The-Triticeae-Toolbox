@@ -115,8 +115,11 @@ class gLineNames_Check
             error(1, "Unable to move the genotype data file to the upload directory.");
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");           
        }
-        
-        $cmd = "php genoDataOffline.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." > " . $processOut . " &";
+        if ($_POST['data_format'] == '1D') { 
+          $cmd = "php genoDataOffline.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." > " . $processOut . " &";
+	} else {
+          $cmd = "php genoDataOffline2D.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." > " . $processOut . " &";
+        }
         //echo "Cmd - " . $cmd . "<br>";
         exec($cmd);
    
