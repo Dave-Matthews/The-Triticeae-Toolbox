@@ -17,7 +17,7 @@ connect();
 	function combinations($num_markers, $marker_idx, $marker_list, $cross, $sub) {
 	// num_markers - number of markers
 	// marker_idx - index of marker/allele combinations
-	// marker_list - list of selected markers
+	// marker_list -list of selected markers
 	// cross - 2D array of all allele combinations
 	// sub - which column if marker_idx to increment 
 	  $i = 0;

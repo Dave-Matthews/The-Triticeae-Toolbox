@@ -68,7 +68,6 @@ class GenotypeData {
 	<p><strong>Line Translation File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp; <a href="curator_data/examples/LinesTrialCode_Sample.txt">Example Line Translation File</a></p>
  	<p><strong>Genotype Data File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp; <a href="curator_data/examples/genotypeData_THT.txt">Example Genotype Data File</a></p>
     <p><input type="submit" value="Upload Genotype Data Files" /></p>
- 
     <p><br> <br></p>
     <p><h4>Note: Both files are required.<br> This process may take several hours to complete depending on size of the data file.  Please leave your email adress for us to contact you with the results.</h4></p>
 	<p> <strong> Your Email Address: </strong> <input type="text" name="emailAddr" value="<?php echo $_SESSION['username'] ?>"  size="50%"/>
