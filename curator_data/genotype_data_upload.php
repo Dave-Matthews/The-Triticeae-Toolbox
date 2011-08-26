@@ -65,12 +65,17 @@ class GenotypeData {
 	<form action="curator_data/genotype_data_check.php" method="post" enctype="multipart/form-data">
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
-	<p><strong>Line Translation File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp; <a href="curator_data/examples/LinesTrialCode_Sample.txt">Example Line Translation File</a></p>
- 	<p><strong>Genotype Data File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp; <a href="curator_data/examples/genotypeData_THT.txt">Example Genotype Data File</a></p>
-    <p><input type="submit" value="Upload Genotype Data Files" /></p>
+     	<p><table>
+	<tr><td><strong>Line Translation File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
+	<tr><td><td><a href="curator_data/examples/LinesTrialCode_Sample.txt">Example Line Translation File</a></p>
+ 	<tr><td><strong>Genotype Data File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
+        <tr><td><strong>Data File Format:</strong><td><input type="radio" name="data_format" value="1D"> 1D <a href="curator_data/examples/genotypeData_THT.txt">Example Genotype Data File</a>
+                          <tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D <a href="curator_data/examples/TCAPbarley9K-sample.txt">Example Geneotype Data File</a></p>
+	</table>
+    <p><input type="submit" value="Upload Line Translation and Genotype Data File" /></p>
  
     <p><br> <br></p>
-    <p><h4>Note: Both files are required.<br> This process may take several hours to complete depending on size of the data file.  Please leave your email adress for us to contact you with the results.</h4></p>
+    <p><h4>Note: This process may take several hours to complete depending on size of the data file.  Please leave your email adress for us to contact you with the results.</h4></p>
 	<p> <strong> Your Email Address: </strong> <input type="text" name="emailAddr" value="<?php echo $_SESSION['username'] ?>"  size="50%"/>
 	</form>
 
