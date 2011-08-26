@@ -957,10 +957,12 @@ class LineNames_Check
 	    // Insert synonyms.
 	    if (!empty($synonyms)) {
 	      foreach ($synonyms as $syn) {
-		$sql = "insert into line_synonyms 
+		if (!empty($syn)) {
+		  $sql = "insert into line_synonyms 
 		  (line_record_uid, line_synonym_name, updated_on, created_on) values 
 		  ('$line_uid', '$syn', NOW(),NOW())";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 942");
+		  $res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 963");
+		}
 	      }
 	    }
 
@@ -981,19 +983,19 @@ class LineNames_Check
 	      // Is there already a GRIN accession for this line?  If so, replace.
 	      $sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
                 WHERE barley_pedigree_catalog_uid=2
-                AND line_record_uid = '$line_uids'";
+                AND line_record_uid = '$line_uid'";
 	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
 	      if (mysql_num_rows($res) > 0) {
 		$sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
                 updated_on=NOW() WHERE barley_pedigree_catalog_uid=2 
-                AND line_record_uid = '$line_uids'";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 969");
+                AND line_record_uid = '$line_uid'";
+		$res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 990");
 	      }
 	      else {
 		$sql = "insert into barley_pedigree_catalog_ref 
                 (barley_pedigree_catalog_uid, line_record_uid, barley_ref_number, 
-                updated_on, created_on) values ('2', '$line_uids', '$grin', NOW(),NOW())";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 963");
+                updated_on, created_on) values ('2', '$line_uid', '$grin', NOW(),NOW())";
+		$res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 996");
 	      }
 	    }
 						
@@ -1084,6 +1086,8 @@ class LineNames_Check
 		  die_nice("GRIN Accession $grin is already used for Line $row[0].");
 	      }
 	      // Is there already a GRIN accession for this line?  If so, replace.
+	      // Note, now $line_uids is a string and line_uid is an array, reverse of above.
+	      //echo "<pre>Line 1090: line_uids = $line_uids<br>line_uid = "; print_r($line_uid); echo "</pre>"; 
 	      $sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
                 WHERE barley_pedigree_catalog_uid=2
                 AND line_record_uid = '$line_uids'";
@@ -1098,7 +1102,7 @@ class LineNames_Check
 		$sql = "insert into barley_pedigree_catalog_ref 
                 (barley_pedigree_catalog_uid, line_record_uid, barley_ref_number, 
                 updated_on, created_on) values ('2', '$line_uids', '$grin', NOW(),NOW())";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error().' at script line 1056');
+		$res = mysql_query($sql) or errmsg($sql, mysql_error().' at script line 1101');
 	      }
 	    }
 
