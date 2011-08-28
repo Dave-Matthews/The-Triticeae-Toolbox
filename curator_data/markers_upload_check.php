@@ -559,25 +559,31 @@ class Markers_Check {
         $i = 1;
         while(($line = fgets($reader)) !== FALSE) { 
             if (feof($reader)) {
-                break;
+//                  break;
             }
             if (empty($line)) {
-                break;
+//                 break;
+	      echo "Error: Blank line encountered before end of file, line number $i.<br>";
+	      print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><br>";
+	      exit;
             }
             $j = 0;
             $data = str_getcsv($line,"\t");
                         
             //Check for junk line
             if (count($data) != 6)  {
-                echo "ERROR DETECT: Invalid number of columns". $line ."<br/>";
-		echo "The offending row is this:<br>$line<br>";
+                echo "ERROR DETECT: Invalid number of columns in line $i.<br/>";
+		echo "The offending row contains:<br>\"$line\"<br>";
                 print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><br>";
+		exit;
             }     
                                                 
             foreach ($data as $value)  {
                 //echo $value."<br>";
                 $storageArr[$i][$j++] = trim($value);   
             }
+	    $lastmarker = $data[0];
+	    $lastline = $i-1;
             $i ++;
         }  
         unset ($value);
@@ -736,6 +742,8 @@ class Markers_Check {
             }
         }
         echo " <b>The Data is inserted/updated successfully </b><br>";
+	echo "$lastline lines read, last marker = $lastmarker.<br>";
+	echo "Size of storageArr = ".count($storageArr);
         echo "<br/><br/>";
 ?>
         <a href="./curator_data/markers_upload.php"> Go Back To Main Page </a>
