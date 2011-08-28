@@ -8,7 +8,7 @@
 					<table cellpadding="0" cellspacing="0" border="0" style="background: transparent; border: 0 !important; text-align: left;">
 						<tr>
 							<td style="border: 0 !important">
-								<a style="border: 0" href="http://www.csrees.usda.gov/" title="USDA National Institute of Food and Agriculture"><img style="border: 0 !important;" src="/tht/images/sitelogo.gif" alt="NIFA Logo"></a>
+								<a style="border: 0" href="http://www.csrees.usda.gov/" title="USDA National Institute of Food and Agriculture"><img style="border: 0 !important;" src="<?php echo $config['base_url'] ?>images/sitelogo.gif" alt="NIFA Logo"></a>
 							</td>
 							<td style="border: 0 !important; text-align: left;">
 								<p>
