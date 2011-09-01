@@ -185,7 +185,7 @@ class LineNames_Check
 		$header = array();
 		for ($irow = 4; $irow <=$rows; $irow++) {
 			$teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
-			if (is_null($teststr)){
+			if (empty($teststr)){
 			  break; 
 			} 
 			elseif (strtolower($teststr) == "*line name") {
@@ -299,9 +299,11 @@ class LineNames_Check
  		die("Row 5 must be the descriptions of the columns.  Please don't delete it.<br><br>"); 
  	      }
 	      for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
+		//Ignore empty rows.
+		if (empty($linedata['cells'][$irow])) break;
 		//Extract and validate data.
 		$line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
-		if (is_null($line)) die_nice("Row $irow: Line name is required."); 
+		if (empty($line)) die_nice("Row $irow: Line name is required."); 
 		elseif (strpos($line, ' ')) die_nice("Row $irow: Line name contains a blank. Replace with _ or remove.") ;
 		elseif (strlen($line) < 3)  echo "Warning: '$line' is a short name and may not be unique.<br>";
 		$synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
@@ -331,16 +333,16 @@ class LineNames_Check
 		    die_nice("$line: Invalid GRIN Accession $grin");
 		}
 		$generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
-		if ( (is_null($generation)) OR ($generation != (int)$generation) OR ($generation < 1) OR ($generation > 9) )
+		if ( (empty($generation)) OR ($generation != (int)$generation) OR ($generation < 1) OR ($generation > 9) )
 		  die_nice("$line: Filial Generation (1-9) is required.");
 		$hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
 		$color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
 		$growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
-		//if (is_null($growth)) die_nice("Row $irow: S, W or F is required.");
+		//if (empty($growth)) die_nice("Row $irow: S, W or F is required.");
 		$species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
 		$species = preg_replace("/^a$/", "aestivum", $species);
 		$species = preg_replace("/^d$/", "durum", $species);
-		if (is_null($species)) die_nice("Row $irow: Species is required.");
+		if (empty($species)) die_nice("Row $irow: Species is required.");
 		$awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
 		$chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
 		$height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
@@ -463,6 +465,8 @@ class LineNames_Check
 			<table>
 		  <?php
 		  for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
+		    //Ignore empty rows.
+		    if (empty($linedata['cells'][$irow])) break;
 		    //Extract data
 		    $line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
 		    // Line Name is required.
@@ -563,9 +567,11 @@ class LineNames_Check
 			<table>
 			<?php 
 				for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
+				  //Ignore empty rows.
+				  if (empty($linedata['cells'][$irow])) break;
 				//Extract data.
-				$line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
-				// Line Name is required.
+				  $line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
+				  // Line Name is required.
 				if (!empty($line)) {
 				  $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
 				  $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
@@ -747,7 +753,7 @@ class LineNames_Check
 	$header = array();
 	for ($irow = 4; $irow <=$rows; $irow++) {
 	  $teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
-	  if (is_null($teststr)){
+	  if (empty($teststr)){
 	    break; 
 	  } elseif (strtolower($teststr) =="*line name") {
 	    $firstline = $irow;
@@ -842,6 +848,8 @@ class LineNames_Check
 	  die("The row below the column names must be the column descriptions.  Please don't change it.<br><br>"); 
 	}
 	for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
+	  //Ignore empty rows.
+	  if (empty($linedata['cells'][$irow])) break;
 	  //Extract data
 	  $line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
 	  // Line Name is required.
@@ -882,7 +890,7 @@ class LineNames_Check
 	  if ($line_uid===FALSE) {
 	    // Insert new line into database
 	    // Required fields: species
-	    if (is_null($species)) {
+	    if (empty($species)) {
 	      die_nice("Field <b>species</b> is required, values a or d.");
 	    }
 	    //convert line name to upper case and replace spaces with an underscore
