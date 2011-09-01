@@ -841,7 +841,7 @@ function ajaxSubmitForm ($arr) {
 		$tableinfo=get_table_info ($tablename);
 		$vals=array();
 		$isnum=array();
-		$ukeys=get_ukey($tablename);
+ 		$ukeys=get_ukey($tablename);
 		$uvals=array();
 		foreach ($ukeys as $ukey) {
 			if (! array_key_exists($ukey, $flds) || strlen($flds[$ukey])<1) {
@@ -871,8 +871,16 @@ function ajaxSubmitForm ($arr) {
 			}
 		}
 		if ($flag==0) {
-			add_array_data($vals, $isnum, $tablename, $ukeys, $uvals, $pkey, "");
-			$submit_message="Submitted successfully.";
+			$result = add_array_data($vals, $isnum, $tablename, $ukeys, $uvals, $pkey, "force_update");
+  			$outflag = $result[0]; $uid = $result[1];
+//    			$submit_message="Submitted successfully.";
+			//Debugging, in case "successfully" was a lie:
+//  			$submit_message="add_array_data result code: $outflag<br>uid affected: $uid<br>";
+//  			$submit_message .="conflict-flag: $result[2]<br>update-flag: $result[3]<br>";
+//  			$submit_message .="testStr: $result[4]<br>";
+			if ($outflag == 0) $submit_message = "Nothing was changed.";
+			elseif ($outflag == 0.5) $submit_message = "The existing record was modified.";
+			elseif ($outflag == 1) $submit_message = "The new record was added.";
 		}
 	}
 	$submit_message.="<p><button type='button' onClick=\"window.location='login/general_table_input.php'>Return</button></p>";

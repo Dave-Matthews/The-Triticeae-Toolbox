@@ -332,7 +332,6 @@ function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $id
  * 
  */
 function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, $action) {
-
 	$keystr="";
 	$valstr="";
 
@@ -350,12 +349,12 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
 	$row=array();
 	// The lengths of $testKey and $testVal are supposed to be identical, we stick to the length of the keys
 	if (count($testKey)>0) {
-		for ($i=0; $i<count($testKey); $i++) {
+		for ($i=0; $i < count($testKey); $i++) {
 			$eleTest=strlen($testVal[$i])>0 ? $testVal[$i] : "N/A";
 			$testStr.=$testKey[$i]."=\"".$eleTest."\"";
 			if ($i<count($testKey)-1) $testStr.=" AND ";
 		}
-		// print "SELECT * FROM $tablename WHERE $testStr\n";
+		// print "SELECT * FROM $tablename WHERE $testStr<br>";
 		$testResult = mysql_query("SELECT * FROM $tablename WHERE $testStr");
 		if(mysql_num_rows($testResult) > 0) {
 			$row = mysql_fetch_assoc($testResult);
@@ -363,33 +362,32 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
 			$dup_flag++;
 		}
 	}
-
 	if ($dup_flag>0) {
-
 		// check for conflict
 		foreach ($ks as $inkey) {
 			if (isset($row[$inkey]) && strlen($row[$inkey])>0 && (! preg_match('/created_on|updated_on|published_on/', $inkey)) && $row[$inkey]!=$vals[$inkey]) {
-				$cflt_flag++; 
+			  // Changing an existing value.
+			  $cflt_flag++; 
 			}
 			if ((! isset($row[$inkey]) || strlen($row[$inkey])<=0) && (! preg_match('/created_on|updated_on|published_on/', $inkey)) && (isset($vals[$inkey]) && strlen($vals[$inkey])>0)) {
-				$update_flag++; 
+			  // Adding a value where there was none.
+			  $update_flag++; 
 			}
 		}
-
 		if (($cflt_flag==0 && $update_flag>0) || $action=="force_update") {
 			// if no conflict is found, or $action is force_update, update the table
 			$update_str="update $tablename set ";
 			for ($i=0; $i<$vsize; $i++) {
 				$update_str.=$ks[$i]."=";
 				$elestr=strlen($vals[$ks[$i]])>0 ? $vals[$ks[$i]] : "NULL";
-				if ($isnum[$iks[$i]]==0 && strlen($vals[$ks[$i]])<=0) $elestr="N/A";
+				if ($isnum[$iks[$i]]==0 && strlen($vals[$ks[$i]])<=0) $elestr="";
 				$update_str.=$isnum[$iks[$i]]==1 ? $elestr : "\"".addslashes($elestr)."\"";
 				if ($i<$vsize-1) $update_str.=",";
 			}
 			$update_str.=" where $testStr";
-			print $updata_str."\n";
 			mysql_query($update_str) or die(mysql_errno() . ":" . mysql_error());
-			return array(0.5, $id);
+ 			if ($cflt_flag>0 || $update_flag>0) {return array(0.5, $id);}
+			else {return array(0, $id);}
 		}
 		else {
 			return array(0, $id);
@@ -397,7 +395,6 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
 	}
 	else {
 		// no duplication exists, just insert
-		
 		for ($i=0; $i<$vsize; $i++) {
 			$keystr.=$ks[$i];
 			$elestr=strlen($vals[$ks[$i]])>0 ? $vals[$ks[$i]] : "NULL";
@@ -415,9 +412,10 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
 		if ($action=="print") print "insert into $tablename ($keystr) values ($valstr)\n";
 		// print "insert into $tablename ($keystr) values ($valstr)\n";
 		$sql = "insert into $tablename ($keystr) values ($valstr)";
-		mysql_query($sql) or die($sql . ":" . mysql_error());
+ 		mysql_query($sql) or die($sql . "<br>" . mysql_error());
 		$id=mysql_insert_id();
-		return array(1,$id);
+ 		return array(1,$id);
+//  		return array(1,$id, $cflt_flag, $update_flag, $testStr);
 	}
 }
 
