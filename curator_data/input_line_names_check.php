@@ -691,7 +691,7 @@ class LineNames_Check
 	    $columnOffsets['growth_habit'] = $columnOffset+1;
 
 	  // Determine the column offset of "Row Type"...
-	  if (preg_match('/^\s*rowtype\s*$/is', trim($columnName)))
+	  if (preg_match('/^\s*\*rowtype\s*$/is', trim($columnName)))
 	    $columnOffsets['row_type'] = $columnOffset+1;
 		
 	  // Determine the column offset of "End Use"...
@@ -764,7 +764,7 @@ class LineNames_Check
 	    }
 	    if (!empty($rowtype)) {
 	      $sql_beg .= "row_type,";
-	      $sql_mid .= "$rowtype, ";
+	      $sql_mid .= "'$rowtype', ";
 	    }
 	    if (!empty($enduse)) {
 	      $sql_beg .= "primary_end_use,";
