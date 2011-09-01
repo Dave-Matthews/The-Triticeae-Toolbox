@@ -484,12 +484,12 @@ class LineNames_Check
 		<div id="test" style="padding: 0; height: 200px; width: 850px;  overflow: scroll;border: 1px solid #5b53a6;">
 			<table>
 			<?php 
-		for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
-		  //Ignore empty rows.
-		  if (empty($linedata['cells'][$irow])) break;
+				for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
+				  //Ignore empty rows.
+				  if (empty($linedata['cells'][$irow])) break;
 				//Extract data.
-				$line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
-				// Line Name is required.
+				  $line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
+				  // Line Name is required.
 				if (!empty($line)) {
 				  $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
 				  $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
