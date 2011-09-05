@@ -145,14 +145,14 @@ private function type_DataInformation($trial_code)
 	
 <?php
 
-	$max_missing = 100;//IN PERCENT
+	$max_missing = 99;//IN PERCENT
         if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
             $max_missing = $_GET['mm'];
 		if ($max_missing>100)
 			$max_missing = 100;
 		elseif ($max_missing<0)
 			$max_missing = 0;
-        $min_maf = 0;//IN PERCENT
+        $min_maf = 0.1;//IN PERCENT
         if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
 		if ($min_maf>100)
@@ -180,140 +180,18 @@ private function type_DataInformation($trial_code)
 			    $num_miss++;
 			}
 	
-	
-	
-	/* Computing the summary and other details for the experiment */
-	
-	
-	
-	
-	// dem 14dec10, revised query.  Concatenating marker_synonyms.value to the
-	// marker name screws up the alignment of columns to header, e.g. for 2008BOPA2_BA_Plate7.
-        // Also it seems like a bad idea since a marker can have several synonyms.
-	$sql_Gen_Stat = "
-                SELECT
-                    m.marker_uid,
-                    -- CONCAT(m.marker_name,' (',ms.value,')') AS name,
-                    m.marker_name AS name,
-                    CONCAT(map.map_name,' ',cast(mim.start_position as char),' cM') as position,
-                    a.missing,
-                    a.aa_freq,
-                    a.ab_freq,
-                    a.bb_freq,
-                    a.total,
-                    a.monomorphic,
-                    ROUND(a.maf, 2) AS maf
-                FROM
-                    markers m INNER JOIN (allele_frequencies a, marker_synonyms ms, markers_in_maps mim, map)
-                        ON m.marker_uid = a.marker_uid
-                        AND m.marker_uid = ms.marker_uid
-                        AND m.marker_uid = mim.marker_uid
-                        AND mim.map_uid = map.map_uid
-						AND a.experiment_uid = '".$experiment_uid."'
-               WHERE
-                    a.missing / a.total <= '".$max_missing."'
-						AND a.maf >= '".$min_maf."'
-						AND ms.marker_synonym_type_uid = '1'
-				GROUP BY name
-                
-                 ";
-$res_Gen_Stat = mysql_query($sql_Gen_Stat) or die(mysql_error());
-	
-?>
-<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-  
-<div style="width: 840px;"><b>Summary:</b><br><br>
-<table >
+	/* DEM 29aug11: Omit the Summary table of allele frequencies etc for all markers. */	
+?>	
 
+     There are <b><?php echo ($num_mark) ?></b> distinct markers.<br>
+     <b><?php echo ($num_miss) ?></b> markers are missing at least <b><?php echo ($max_missing) ?></b>% of measurements.<br>
+     <b><?php echo ($num_maf) ?></b> markers have a minor allele frequency (MAF) larger than <b><?php echo ($min_maf) ?></b>%.<br>
+     <p>Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php echo ($max_missing) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
+     Minimum MAF: <input type="text" name="mmaf" id="mmaf" size="1" value="<?php echo ($min_maf) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
+     <input type="button" value="Refresh" onclick="javascript:mrefresh('<?php echo $trial_code ?>');return false;" /><br>
+     <input type="button" value="Download Allele Data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
 
-	<tr> 
-		
-		<th style="width: 100px;" > Marker Name </th>
-		<th style="width: 100px;" > Map Name and Position  </th>
-		<th style="width: 60px;" >  Missing    </th>
-		<th style="width: 100px;" >  AA Freq    </th>
-		<th style="width: 100px;" >  AB Freq    </th>
-		<th style="width: 100px;">  BB Freq    </th>
-		<th style="width: 100px;" >  Total    </th>
-		<th style="width: 20px;" >  Monomorphic </th>
-		<th style="width: 100px;" >  MAF    </th>
-
-		
-	</tr>
- </table>
- </div>
- 	
- 	
- 	<div style="padding: 0; width: 840px; height: 400px; overflow: scroll; border: 1px solid #5b53a6; clear: both">
-
-
-
-<?php
-  echo "<table>";
-	while ($row_Gen_Stat = mysql_fetch_assoc($res_Gen_Stat)) 
-	{
-	
-	
-?>
-
-  <tr>
-  
- <td style="width: 100px;" >
-  <?php echo $row_Gen_Stat['name']; ?>
-  </td>
-  <td style="width: 100px;" >
-  <?php echo $row_Gen_Stat['position']; ?>
-  </td>
-  <td style="width: 80px;" >
-  <?php echo $row_Gen_Stat['missing']; ?>
-  </td>
-  <td style="width: 100px;" >
-  <?php echo $row_Gen_Stat['aa_freq']; ?>
-  </td>
-  <td style="width: 100px;"  >
-  <?php echo $row_Gen_Stat['ab_freq']; ?>
-  </td>
-  <td style="width: 100px;" >
-  <?php echo $row_Gen_Stat['bb_freq']; ?>
-  </td>
-  <td style="width: 100px;">
-  <?php echo $row_Gen_Stat['total']; ?>
-  </td>
-  <td style="width: 120px;">
-  <?php echo $row_Gen_Stat['monomorphic']; ?>
-  </td>
-  <td style="width: 70px;">
-  <?php echo $row_Gen_Stat['maf']; ?>
-  </td>
-  </tr>
-  
-  	
-
-  
-  
-  <?php
-  }/* End of while loop*/
-  
-  ?>
-  </table>
-  </div>
-  <br/>
-<div style="padding-left: 20px;border: 1px">
-					<p style="font-style: italic">There are <?php echo ($num_mark) ?> distinct markers.</p>
-					<p style="font-style: italic"><?php echo ($num_maf) ?> markers have a minor allele frequency (MAF) larger than <?php echo ($min_maf) ?>%.</p>
-					<p style="font-style: italic"><?php echo ($num_miss) ?> markers are missing at least <?php echo ($max_missing) ?> % of measurements.</p>
-                    Maximum Missing Data (%): <input type="text" name="mm" id="mm" size="3" value="<?php echo ($max_missing) ?>" />&nbsp;&nbsp;&nbsp;&nbsp;
-                    Minimum MAF (%): <input type="text" name="mmaf" id="mmaf" size="3" value="<?php echo ($min_maf) ?>" />&nbsp;&nbsp;&nbsp;&nbsp;
-                    <input type="button" value="Refresh" onclick="javascript:mrefresh('<?php echo $trial_code ?>');return false;" />
-<br/><br><input type="button" value="Download Allele Data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
-    </div><br>
-
-<br><br>
+<br><br><br>
 
 <?php
 echo "<b>Additional files available:</b><p>";
