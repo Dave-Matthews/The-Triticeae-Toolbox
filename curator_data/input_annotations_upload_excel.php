@@ -76,7 +76,7 @@ private function typeAnnotations()
 		<form action="curator_data/input_annotations_check_excel.php" method="post" enctype="multipart/form-data">
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
-	<p><strong>Annotation File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/TrailSubmissionForm2011.xls">Example Annotation File</a></p>
+	<p><strong>Annotation File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/TrialSubmissionForm2011.xls">Example Annotation File</a></p>
 	
 	
 	<p> <strong> Do You Want This Data To Be Public: </strong> <input type='radio' name='flag' value="1" checked/> Yes &nbsp;&nbsp; <input type='radio' name='flag' value="0"/> No
