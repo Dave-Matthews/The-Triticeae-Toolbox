@@ -1,7 +1,7 @@
 <?
 
+// 09/01/2011 CBirkett	changed to new template and schema
 // 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
-// 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
 //require_once("../includes/common_import.inc");
@@ -9,17 +9,9 @@ require 'config.php';
  * Logged in page initialization
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-//include($config['root_dir'] . 'includes/common_import.inc');
-
-//include($config['root_dir'] . 'SumanDirectory/bootstrap_dev.inc');
-
-//include($config['root_dir'] . 'curator_data/boot_test.php');
-//include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
 include($config['root_dir'] . 'curator_data/lineuid.php');
 
-
-
-require_once("../lib/Excel/reader.php"); // Microsoft Excel library
+require_once("../lib/Excel/excel_reader2.php"); // Microsoft Excel library
 
 connect();
 loginTest();
@@ -128,8 +120,6 @@ private function typeAnnotationCheck()
 	
 		      	$tmp_dir=$config['root_dir']."curator_data/uploads/tmpdir_".$username."_".rand();
 	
-//	$raw_path= "rawdata/".$_FILES['file']['name'][1];
-//	copy($_FILES['file']['tmp_name'][1], $raw_path);
 	umask(0);
 	
 	if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
@@ -152,7 +142,6 @@ private function typeAnnotationCheck()
 	else {
 		
 		$uploadfile=$_FILES['file']['name'][0];
-	//	$rawdatafile = $_FILES['file']['name'][1];
 				
 		$uftype=$_FILES['file']['type'][0];
 		if (strpos($uploadfile, ".xls") === FALSE) {
@@ -189,25 +178,25 @@ private function typeAnnotationCheck()
 	// find location for each row of data; find where data starts in file
 	for ($i = 1; $i <= $rows; $i++) {
 	  
-	//	echo "annots 0 cells i 1 is set to ".$annots['cells'][$i][1]."\n";
-	  if (stripos($annots['cells'][$i][1],'year')!==FALSE) {
-		  $CAPYEAR = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'breeding')!==FALSE){
-		$BREEDINGPROGRAM = $i;
+//		echo "annots 0 cells $i 1 is set to ".$annots['cells'][$i][1]."<br>\n";
+          if (stripos($annots['cells'][$i][1],'*crop')!==FALSE){
+                $CROP = $i;
+          } elseif (stripos($annots['cells'][$i][1],'*breeding')!==FALSE) {
+                $BREEDINGPROGRAM = $i;
+	  } elseif (stripos($annots['cells'][$i][1],'trial code')!==FALSE) {
+		$TRIALCODE = $i;
+	  } elseif (stripos($annots['cells'][$i][1],'experiment code')!==FALSE){
+		$EXPERIMENT_SHORTNAME = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'location')!==FALSE){
 		$LOCATION = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'long')!==FALSE){
-		$LAT_LONG = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'collaborator code')!==FALSE){
-		$COLLABORATORCODE = $i;
+	  } elseif (stripos($annots['cells'][$i][1],'latit')!==FALSE){
+		$LATIT = $i;
+          } elseif (stripos($annots['cells'][$i][1],'longi')!==FALSE){
+                $LONGI = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'collaborator')!==FALSE){
 		$COLLABORATOR = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'(short name)')!==FALSE){
-		$EXPERIMENT_SHORTNAME = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'descriptive name')!==FALSE){
+	  } elseif (stripos($annots['cells'][$i][1],'narrative descrip')!==FALSE){
 		$EXPERIMENT_NAME = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'trial code')!==FALSE){
-		$TRIALCODE = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'planting')!==FALSE){
 		$PLANTINGDATE = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'seeding')!==FALSE){
@@ -222,13 +211,20 @@ private function typeAnnotationCheck()
 		$PLOTSIZE = $i;
 	  }elseif (stripos($annots['cells'][$i][1],'harvested')!==FALSE){
 		$HARVESTEDAREA = $i;
+          } elseif (stripos($annots['cells'][$i][1],'begin weather')!==FALSE){
+                $BEGINWEATHER = $i;
+          } elseif (stripos($annots['cells'][$i][1],'greenhouse')!==FALSE){
+                $GREENHOUSE = $i;
 	  }elseif (stripos($annots['cells'][$i][1],'irrigation')!==FALSE){
 		$IRRIGATION = $i;
 	  }elseif (stripos($annots['cells'][$i][1],'harvest date')!==FALSE){
 		$HARVESTDATE = $i;
 	  }elseif (stripos($annots['cells'][$i][1],'other')!==FALSE){
 		$OTHERREMARKS = $i;
-	  }
+	  }else {
+//                echo "annots 0 cells $i 1 is set to ".$annots['cells'][$i][1]; 
+//                echo "not found<br>\n";
+          }
 	}
 
 		//echo "experiment".$EXPERIMENT_SHORTNAME."short name";
@@ -236,9 +232,9 @@ private function typeAnnotationCheck()
 		
 		
 		// Check if required rows are present
-// Required rows are: CAPYear, breeding program, location, collaborator, collaborator code,
+// Required rows are: breeding program, location, collaborator 
 // Experiment (short name), Trial code, number of replications; If any of these column is missing (empty), then
-// the annotation fil must be corrected
+// the annotation file must be corrected
 
 
 
@@ -252,15 +248,19 @@ private function typeAnnotationCheck()
 	{
 		$experiments[$i] = new experiment();
 	}
-	
-	$year_row =					$annots['cells'][$CAPYEAR];
-	$bp_row =						$annots['cells'][$BREEDINGPROGRAM];
+
+   	$year_row = 				$annots['cells'][$TRIALCODE];
+        $crop_row = 				$annots['cells'][$CROP];
+	$trial_row =				$annots['cells'][$TRIALCODE];
+	$bp_row =				$annots['cells'][$BREEDINGPROGRAM];
 	$location_row =				$annots['cells'][$LOCATION];
-	$latlong_row =				$annots['cells'][$LAT_LONG];
+	$latitude_row =				$annots['cells'][$LATIT];
+        $longitude_row = 			$annots['cells'][$LONGI];
 	$collaborator_row =			$annots['cells'][$COLLABORATOR];
 	$collabcode_row =			$annots['cells'][$COLLABORATORCODE];
 	$trialcode_row =			$annots['cells'][$TRIALCODE];
 	$plantingdate_row =			$annots['cells'][$PLANTINGDATE];
+	$beginweatherdate_row = 		$annots['cells'][$BEGINWEATHER];
 	$seedingrate_row =			$annots['cells'][$SEEDINGRATE];
 	$experimentshortname_row =	$annots['cells'][$EXPERIMENT_SHORTNAME];
 	$experimentname_row =	$annots['cells'][$EXPERIMENT_NAME];
@@ -273,7 +273,7 @@ private function typeAnnotationCheck()
 	$harvestdate_row =		$annots['cells'][$HARVESTDATE];
 	$otherremarks_row =			$annots['cells'][$OTHERREMARKS+$offset];
 	
-	//echo " we go tthe data from excel". $year_row.$trialcode_row.$seedingrate_row;
+		//echo " we got the data from excel". $year_row.$trialcode_row.$seedingrate_row;
 	
 		//connect_dev();	/* connecting to development database */
 		
@@ -288,13 +288,10 @@ private function typeAnnotationCheck()
 			//echo " testing the data".$experimentshortname_row[$i]."experiment name";
 		// sometimes Excel introduces extra columns in the data files
 		// stop reading at first column where year (required field) is zero.
-		if (empty($year_row[$i]))
+		if (empty($trial_row[$i]))
 		{
-		//	echo" i'm here";
-			
-			echo " Year is missing. Please enter the year and upload again"."<br/>";
+			echo " Trial Code is  missing for column $i. Please enter the value and upload again"."<br/>";
 				exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-			
 			break;
 		}
 		$n_trials++;
@@ -304,18 +301,12 @@ private function typeAnnotationCheck()
 // Check key data fields in the experiment to ensure valid values
 // Required fields are: year, CAP data program code (who performed experiment)
 // a unique trial_code, experiment short name
-
-		$experiments[$index]->year = intval(trim($year_row[$i]));
+		$tmp = substr($trial_row[$i],0,4);
+		$experiments[$index]->year = intval($tmp);
 		$today = getdate();
 		$curr_year = $today['year'];
-		if (DEBUG>1) {echo "curr_year ".$curr_year." exp year: ".$experiments[$index]->year."\n";}
-		if (($experiments[$index]->year<2006)OR ($year>$curr_year)) {
-			echo "Year value not in range [2006-current year]: ".$year."<br/>";
-			$error_flag = ($error_flag)&(1);
-			exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-		}
 		
-		$experiments[$index]->collabcode = trim($collabcode_row[$i]);
+		$experiments[$index]->collabcode = trim($bp_row[2]);
 		$CAPcode = $experiments[$index]->collabcode;
 		$sql = "SELECT CAPdata_programs_uid FROM CAPdata_programs
 					WHERE data_program_code= '$CAPcode'";
@@ -325,7 +316,7 @@ private function typeAnnotationCheck()
 			$row = mysql_fetch_assoc($res);
 			$capdata_uid = $row['CAPdata_programs_uid'];
 		}else{
-			echo "CAP data program ID ".$CAPcode." does not exist "."<br/>";
+			echo "CAP data program ID 2 ".$CAPcode." does not exist "."<br/>";
 			$error_flag = ($error_flag)&(2);
 			exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
@@ -370,36 +361,11 @@ private function typeAnnotationCheck()
 		}
 		
 		$experiments[$index]->bp = trim($bp_row[$i]);
-		if (DEBUG>1) {echo "experiments bp [".$i."] is set to".$experiments[$index]->bp."\n";}
 		$experiments[$index]->location = addslashes($location_row[$i]);
 		$experiments[$index]->latlong = mysql_real_escape_string($latlong_row[$i]);
 		$experiments[$index]->collaborator = mysql_real_escape_string($collaborator_row[$i]);
-		$experiments[$index]->collabcode = $collabcode_row[$i];
-
-		// Planting Date
-		$teststr= addcslashes(trim($plantingdate_row[$i]),"\0..\37!@\177..\377");
-		if (DEBUG>2) {echo $teststr."  ".$datetime."\n";}
-		if (!empty($teststr)){
-			//if (DEBUG>2) {echo $teststr."\n";}
-			
-		//	echo "date string in planting date is". $teststr;
-			//list($day,$month,$year) = split('[/.-]', $teststr);
-			//$teststr="$day-$month-$year";
-		//	echo "date string is". $teststr;
-			
-	//	$datetime = date_create($teststr);
-		//	$datetime = date_format($datetime, 'j F Y'); 
-			//if (DEBUG>2) {echo $teststr."  ".$datetime."\n";}
-			$experiments[$index]->plantingdate = $teststr;
-		} else {
-			$experiments[$index]->plantingdate = '';
-		}
-
-	
-	
+		$experiments[$index]->collabcode = $bp_row[2];
 		$experiments[$index]->seedingrate = $seedingrate_row[$i];
-		
-
 		$experiments[$index]->experimentname = mysql_real_escape_string(trim($experimentname_row[$i]));
 		$experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
 		
@@ -468,7 +434,7 @@ private function typeAnnotationCheck()
 		
 	}
 	
-	//echo "number of trials ".$n_trials."\n";
+	// echo "number of trials ".$n_trials."\n";
 	
 	if ($error_flag>0)  {
 		echo "FATAL ERROR: problems with one or more required fields: year, trialcode, experiment short name or collaborator code"."<br/>";
@@ -486,16 +452,16 @@ private function typeAnnotationCheck()
 		<table >
 		<thead>
 	<tr>
-	<th >CAP Year</th>
+	<th >Crop</th>
 	<th >Breeding Program(s) </th>
 	<th >Location </th>
-	<th  >Lat/Long of field </th>
+	<th  >Latitude of field </th>
+        <th >Longitude of field </th>
 	<th  >Collaborator </th>
-	<th >Collaborator Code </th>
 	<th  >Experiment </th>
-	<th  >Descriptive Name of Experiment</th>
 	<th  >Trial Code </th>
 	<th >Planting date </th>
+        <th >Harvest date </th>
 	<th  >Seeding rate (plants/m2) </th>
 	<th >Experimental design</th>
 	<th >Number of entries </th>
@@ -520,93 +486,59 @@ private function typeAnnotationCheck()
 			<tr>
 			<td >
 			<? 
-			$newtext = wordwrap($year_row[$i], 6, "\n", true);
-			echo $newtext ?>
-			</td> 
-			<td >
-			<?
-			$newtext1 = wordwrap($bp_row[$i], 6, "\n", true);
-			echo $newtext1 ?>
-			</td>
-			<td>
-			<? 
-			$newtext2 = wordwrap($location_row[$i], 6, "\n", true);
-			echo $newtext2 ?>
-			</td> 
-			<td >
-			<? 
-			$newtext = wordwrap($latlong_row[$i], 6, "\n", true);
-			echo $newtext ?>
-			</td> 
-			<td >
-			<? 
-			$newtext = wordwrap($collaborator_row[$i], 6, "\n", true);
-			echo $newtext ?>
-			</td> 
-			<td >
-			<? 
-			$newtext = wordwrap($collabcode_row[$i], 6, "\n", true);
-			echo $newtext ?>
-			</td> 
-			<td >
-			<? 
-			$newtext = wordwrap($experimentshortname_row[$i], 6, "\n", true);
-			echo $newtext ?>
-			</td> 
-			<td >
-			<? 
-			$newtext = wordwrap($experimentname_row[$i], 6, "\n", true);
+			$newtext = wordwrap($crop_row[2], 6, true);
+			print "$newtext</td><td>";
+			$newtext1 = wordwrap($bp_row[2], 6, true);
+			print "$newtext1</td><td>";
+			$newtext2 = wordwrap($location_row[$i], 6, true);
+			print "$newtext2</td><td>";
+			$newtext = wordwrap($latitude_row[$i], 6, true);
+			print "$newtext</td><td>";
+                        $newtext = wordwrap($longitude_row[$i], 6, true);
+                        print "$newtext</td><td>";
+			$newtext = wordwrap($collaborator_row[$i], 6, true);
+			print "$newtext</td><td>";
+			$newtext = wordwrap($experimentshortname_row[$i], 6, true);
+			print "$newtext<td>";
+			$newtext = wordwrap($trialcode_row[$i], 6, true);
+			print "$newtext<td>";
+			$newtext = wordwrap($plantingdate_row[$i], 6, true);
+			print "$newtext<td>";
+       			$newtext = wordwrap($harvestdate_row[$i], 6, true);
+                        print "$newtext<td>";
+			$newtext = wordwrap($seedingrate_row[$i], 6, true);
+			print "$newtext<td>";
+			$newtext = wordwrap($experimentaldesign_row[$i], 6, true);
 			echo $newtext ?>
 			</td>
 			<td >
 			<? 
-			$newtext = wordwrap($trialcode_row[$i], 6, "\n", true);
-			echo $newtext ?>
-			</td> 
-			<td >
-			<? 
-			$newtext = wordwrap($plantingdate_row[$i], 6, "\n", true);
-			echo $newtext ?>
-			</td> 
-			<td >
-			<? 
-			$newtext = wordwrap($seedingrate_row[$i], 6, "\n", true);
-			echo $newtext ?>
-			</td>
-				
-			<td >
-			<? 
-			$newtext = wordwrap($experimentaldesign_row[$i], 6, "\n", true);
+			$newtext = wordwrap($numberofentries_row[$i], 6, true);
 			echo $newtext ?>
 			</td>
 			<td >
 			<? 
-			$newtext = wordwrap($numberofentries_row[$i], 6, "\n", true);
+			$newtext = wordwrap($numberofreplications_row[$i], 6, true);
 			echo $newtext ?>
 			</td>
 			<td >
 			<? 
-			$newtext = wordwrap($numberofreplications_row[$i], 6, "\n", true);
+			$newtext = wordwrap($plotsize_row[$i], 6, true);
 			echo $newtext ?>
 			</td>
 			<td >
 			<? 
-			$newtext = wordwrap($plotsize_row[$i], 6, "\n", true);
+			$newtext = wordwrap($harvestedarea_row[$i], 6, true);
 			echo $newtext ?>
 			</td>
 			<td >
 			<? 
-			$newtext = wordwrap($harvestedarea_row[$i], 6, "\n", true);
+			$newtext = wordwrap($irrigation_row[$i], 6, true);
 			echo $newtext ?>
 			</td>
 			<td >
 			<? 
-			$newtext = wordwrap($irrigation_row[$i], 6, "\n", true);
-			echo $newtext ?>
-			</td>
-			<td >
-			<? 
-			$newtext = wordwrap($harvestdate_row[$i], 6, "\n", true);
+			$newtext = wordwrap($harvestdate_row[$i], 6, true);
 			echo $newtext ?>
 			</td>
 			<td >
@@ -675,7 +607,7 @@ private function typeAnnotationCheck()
 	$rows = $reader->sheets[0]['numRows'];
 	
 	
-	
+	//print "cols = $cols, rows = $rows<br>\n";	
 	
 	
 	// find location for each row of data; find where data starts in file
@@ -687,20 +619,24 @@ private function typeAnnotationCheck()
 		$BREEDINGPROGRAM = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'location')!==FALSE){
 		$LOCATION = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'long')!==FALSE){
-		$LAT_LONG = $i;
+	  } elseif (stripos($annots['cells'][$i][1],'latit')!==FALSE){
+		$LATIT = $i;
+          } elseif (stripos($annots['cells'][$i][1],'longi')!==FALSE){
+                $LONGI = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'collaborator code')!==FALSE){
 		$COLLABORATORCODE = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'collaborator')!==FALSE){
 		$COLLABORATOR = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'(short name)')!==FALSE){
+	  } elseif (stripos($annots['cells'][$i][1],'experiment code')!==FALSE){
 		$EXPERIMENT_SHORTNAME = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'descriptive name')!==FALSE){
+	  } elseif (stripos($annots['cells'][$i][1],'narrative desc')!==FALSE){
 		$EXPERIMENT_NAME = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'trial code')!==FALSE){
 		$TRIALCODE = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'planting')!==FALSE){
 		$PLANTINGDATE = $i;
+          } elseif (stripos($annots['cells'][$i][1],'begin weather')!==FALSE){
+                $BEGINWEATHER = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'seeding')!==FALSE){
 		$SEEDINGRATE = $i;
 	  } elseif (stripos($annots['cells'][$i][1],'experimental')!==FALSE){
@@ -738,15 +674,18 @@ private function typeAnnotationCheck()
 		$experiments[$i] = new experiment();
 	}
 	
-	$year_row =					$annots['cells'][$CAPYEAR];
-	$bp_row =						$annots['cells'][$BREEDINGPROGRAM];
+	$year_row =				$annots['cells'][$TRIALCODE];
+	$bp_row =				$annots['cells'][$BREEDINGPROGRAM];
 	$location_row =				$annots['cells'][$LOCATION];
 	$latlong_row =				$annots['cells'][$LAT_LONG];
+	$latitude_row = 			$annots['cells'][$LATIT];
+	$longitude_row = 			$annots['cells'][$LONGI];
 	$collaborator_row =			$annots['cells'][$COLLABORATOR];
 	$collabcode_row =			$annots['cells'][$COLLABORATORCODE];
 	$trialcode_row =			$annots['cells'][$TRIALCODE];
 	$plantingdate_row =			$annots['cells'][$PLANTINGDATE];
 	$seedingrate_row =			$annots['cells'][$SEEDINGRATE];
+	$beginweatherdate_row = 		$annots['cells'][$BEGINWEATHER];
 	$experimentshortname_row =	$annots['cells'][$EXPERIMENT_SHORTNAME];
 	$experimentname_row =	$annots['cells'][$EXPERIMENT_NAME];
 	$experimentaldesign_row =	$annots['cells'][$EXPERIMENTALDESIGN];
@@ -769,8 +708,9 @@ private function typeAnnotationCheck()
 			
 		// sometimes Excel introduces extra columns in the data files
 		// stop reading at first column where year (required field) is zero.
-		if (empty($year_row[$i]))
+		if (empty($trialcode_row[$i]))
 		{
+			print "i = $i empty trialcode<br>\n";
 			break;
 		}
 		$n_trials++;
@@ -781,16 +721,17 @@ private function typeAnnotationCheck()
 // Required fields are: year, CAP data program code (who performed experiment)
 // a unique trial_code, experiment short name
 
-		$experiments[$index]->year = intval(trim($year_row[$i]));
+		$tmp = preg_split("/_/",$trialcode_row[$i]);
+		$experiments[$index]->year = intval($tmp[1]);
 		$today = getdate();
 		$curr_year = $today['year'];
 		if (DEBUG>1) {echo "curr_year ".$curr_year." exp year: ".$experiments[$index]->year."\n";}
 		if (($experiments[$index]->year<2006)OR ($year>$curr_year)) {
-			echo "Year value not in range [2006-current year]: ".$year."\n";
+			echo "Year value not in range [2006-current year]: ".$tmp."\n";
 			$error_flag = ($error_flag)&(1);
 		}
 		
-		$experiments[$index]->collabcode = trim($collabcode_row[$i]);
+		$experiments[$index]->collabcode = trim($bp_row[2]);
 		$CAPcode = $experiments[$index]->collabcode;
 		$sql = "SELECT CAPdata_programs_uid FROM CAPdata_programs
 					WHERE data_program_code= '$CAPcode'";
@@ -800,7 +741,7 @@ private function typeAnnotationCheck()
 			$row = mysql_fetch_assoc($res);
 			$capdata_uid = $row['CAPdata_programs_uid'];
 		}else{
-			echo "CAP data program ID ".$CAPcode." does not exist \n";
+			echo "CAP data program ID 3 ".$CAPcode." does not exist \n";
 			$error_flag = ($error_flag)&(2);
 		}
 		if (DEBUG>1) {
@@ -841,8 +782,11 @@ private function typeAnnotationCheck()
 		if (DEBUG>1) {echo "experiments bp [".$i."] is set to".$experiments[$index]->bp."\n";}
 		$experiments[$index]->location = addslashes($location_row[$i]);
 		$experiments[$index]->latlong = mysql_real_escape_string($latlong_row[$i]);
+		$experiments[$index]->latitude = mysql_real_escape_string($latitude_row[$i]);
+		$experiments[$index]->longitude = mysql_real_escape_string($longitude_row[$i]);
+		$experiments[$index]->beginweatherdate = mysql_real_escape_string($beginweatherdate_row[$i]);
 		$experiments[$index]->collaborator = mysql_real_escape_string($collaborator_row[$i]);
-		$experiments[$index]->collabcode = $collabcode_row[$i];
+		$experiments[$index]->collabcode = $bp_row[2];
 
 		// Planting Date
 		$teststr= addcslashes(trim($plantingdate_row[$i]),"\0..\37!@\177..\377");
@@ -864,10 +808,7 @@ private function typeAnnotationCheck()
 		}
 
 	
-	
 		$experiments[$index]->seedingrate = $seedingrate_row[$i];
-		
-
 		$experiments[$index]->experimentname = mysql_real_escape_string(trim($experimentname_row[$i]));
 		$experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
 
@@ -882,6 +823,7 @@ private function typeAnnotationCheck()
         if ((is_numeric($numberofentries_row[$i])) || ($numberofentries_row[$i] == '' )) {
             $experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
         } else {
+		    print "i=$i<br>\n";
 		    echo "<b>ERROR: Value for 'Number of entries' must be an integer </b><br/><br/>";
 		    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
         }
@@ -960,7 +902,6 @@ private function typeAnnotationCheck()
 			// Get CAPdata collaborator code id
 			$CAPcode = $experiments[$myind]->collabcode;
 		
-		
 			$sql = "SELECT CAPdata_programs_uid FROM CAPdata_programs
 							WHERE data_program_code= '$CAPcode'";
 			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
@@ -977,7 +918,33 @@ private function typeAnnotationCheck()
 			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 			$row = mysql_fetch_assoc($res);
 			$exptype_id = $row['experiment_type_uid'];
-			
+
+		// get experiment_set_uid
+			if (preg_match("/[A-Za-z0-9]+/",$experiment->experimentshortname)) {
+			  $sql = "SELECT experiment_set_uid FROM experiment_set WHERE experiment_set_name = '{$experiment->experimentshortname}'";
+                          $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		 	  if (mysql_num_rows($res)==0) //no, experiment not found, so isert 
+                          {
+                                $sql = "insert into experiment_set set
+                                        experiment_set_name = '{$experiment->experimentshortname}'";
+                                echo "SQL ".$sql."<br>\n";
+                                mysql_query($sql) or die(mysql_error());
+                                $sql = "select experiment_set_uid from experiment_set where experiment_set_name = '{$experiment->experimentshortname}'";
+                                echo "SQL ".$sql."<br>\n";
+                                $res = mysql_query($sql) or die(mysql_error());
+                                $row = mysql_fetch_assoc($res);
+                                $experiment_set_uid = $row['experiment_set_uid'];
+				print "experiment found $experiment_set_uid<br>\n";
+                          } else {
+				$row = mysql_fetch_assoc($res);
+                                $experiment_set_uid = $row['experiment_set_uid'];
+				//print "experiment found $experiment->experimentshortname<br>$sql<br>\n";
+			  }  
+			} else {
+				$experiment_set_uid = "NULL";
+			}
+			//print "$sql<br>\n";
+	
 			// Insert or update experiment table data
 			// First check if this trial code is in the database, if yes, then update all fields;
 			// if no then insert into table
@@ -995,6 +962,7 @@ private function typeAnnotationCheck()
 								SET
 									experiment_type_uid = $exptype_id,
 									CAPdata_programs_uid = $capdata_uid,
+									experiment_set_uid = $experiment_set_uid,
 									experiment_short_name = '{$experiment->experimentshortname}',
 									experiment_desc_name = '{$experiment->experimentname}',
 									trial_code = '{$experiment->trialcode}',
@@ -1002,28 +970,32 @@ private function typeAnnotationCheck()
 									data_public_flag = '$data_public_flag',
 									created_on = NOW()
 								WHERE experiment_uid = $exp_id";
-					if (DEBUG>2) {echo "update exp SQL ".$sql."\n";}
+					echo "update experiments<br>\n";
+					// echo $sql."<br>\n";
 					
 					mysql_query($sql) or die(mysql_error() . "<br>$sql");
 					//update phenotype experiment information
 					$sql = " UPDATE phenotype_experiment_info
 								set
 									collaborator = '{$experiment->collaborator}',
-									planting_date = '{$experiment->plantingdate}',
+									planting_date = str_to_date('$experiment->plantingdate','%m/%d/%Y'),
 									seeding_rate = '{$experiment->seedingrate}',
 									experiment_design = '{$experiment->experimentaldesign}',
 									number_replications = '{$experiment->numberofreplications}',
 									number_entries = '{$experiment->numberofentries}',
 									plot_size = '{$experiment->plotsize}',
 									harvest_area = '{$experiment->harvestedarea}',
-									harvest_date = '{$experiment->harvestdate}',
+									harvest_date = str_to_date('$experiment->harvestdate','%m/%d/%Y'),
 									irrigation = '{$experiment->irrigation}',
 									other_remarks = '{$experiment->otherremarks}',
 									location = '{$experiment->location}',
-									latitude_longitude = '{$experiment->latlong}',
+									latitude = '{$experiment->latitude}',
+									longitude = '{$experiment->longitude}',
+									begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),
 									created_on = NOW()
 								WHERE experiment_uid = $exp_id";
-					if (DEBUG>2) {echo "update phenotypeexp SQL ".$sql."\n";}
+					echo "update phenotype_experiment_info<br>\n";
+					// echo "$sql<br>\n";
 					
 					mysql_query($sql) or die(mysql_error() . "<br>$sql");
 			} else {
@@ -1034,6 +1006,7 @@ private function typeAnnotationCheck()
 						set
 							experiment_type_uid = $exptype_id,
 							CAPdata_programs_uid = $capdata_uid,
+							experiment_set_uid = $experiment_set_uid,
 							experiment_short_name = '{$experiment->experimentshortname}',
 							experiment_desc_name = '{$experiment->experimentname}',
 							trial_code = '{$experiment->trialcode}',
@@ -1041,9 +1014,10 @@ private function typeAnnotationCheck()
 							data_public_flag = '$data_public_flag',
 							created_on = NOW()
 					";
-					//if (DEBUG>2) {echo "insert exp SQL ".$sql."\n";}
-					
-					mysql_query($sql) or die(mysql_error());
+				
+					echo "insert into experiments<br>\n";
+                                        //echo "$sql<br>\n";	
+					mysql_query($sql) or die(mysql_error() . "<br>$sql");
 					
 					//get experiment_uid set genotype experiments info table
 					$sql = "SELECT experiment_uid FROM experiments
@@ -1051,33 +1025,34 @@ private function typeAnnotationCheck()
 					$res = mysql_query($sql) or die(mysql_error());
 					$row = mysql_fetch_assoc($res);
 					$exp_id = $row['experiment_uid'];
-				//	if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
+					if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 					$sql = "
 						insert into
 							phenotype_experiment_info
 						set
 							experiment_uid = $exp_id,
 							collaborator = '{$experiment->collaborator}',
-							planting_date = '{$experiment->plantingdate}',
+							planting_date = str_to_date('$experiment->plantingdate','%m/%d/%Y'),
 							seeding_rate = '{$experiment->seedingrate}',
 							experiment_design = '{$experiment->experimentaldesign}',
 							number_replications = '{$experiment->numberofreplications}',
 							number_entries = '{$experiment->numberofentries}',
 							plot_size = '{$experiment->plotsize}',
 							harvest_area = '{$experiment->harvestedarea}',
-							harvest_date = '{$experiment->harvestdate}',
+							harvest_date = str_to_date('$experiment->harvestdate','%m/%d/%Y'),
 							irrigation = '{$experiment->irrigation}',
 							other_remarks = '{$experiment->otherremarks}',
 							location = '{$experiment->location}',
-							latitude_longitude = '{$experiment->latlong}',
+							latitude = '{$experiment->latitude}',
+							longitude = '{$experiment->longitude}',
+							begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),
 							created_on = NOW()
 					";
-				//	if (DEBUG>2) {echo "insert phenotype exp SQL ".$sql."\n";}
-					mysql_query($sql) or die(mysql_error());
+					echo "insert into phenotype_experiment_info<br>\n";
+					mysql_query($sql) or die(mysql_error() . "<br>$sql");
 				
-				
-			
 			} 
+
 		}// end foreach
 	}
 		
