@@ -76,7 +76,7 @@ private function typeAnnotations()
 		<table>
 		<tr>
 		<td>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><p><strong><li>Upload a Tab Delimited(.txt) File</li> </strong></p> </a>  
+	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><p><li>Upload a Tab Delimited(.txt) File</li></p></a>  
 	</td>
 	<td colspan="2">
 	</td>
