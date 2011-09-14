@@ -91,9 +91,9 @@ private function typeAnnotationCheck()
 	</script>
 	
 	<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6; white-space: nowrap }
 			table {background: none; border-collapse: collapse}
-			td {border: 0px solid #eee !important;}
+			td {border: 0px solid #eee !important; white-space: nowrap}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
 		
@@ -101,7 +101,7 @@ private function typeAnnotationCheck()
                    table.marker
                    {background: none; border-collapse: collapse}
                     th.marker
-                    { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
+                    { background: #5b53a6; color: #fff; padding: 5px 0; border: 0;}
                     
                     td.marker
                     { padding: 5px 0; border: 0 !important; }
@@ -452,6 +452,7 @@ private function typeAnnotationCheck()
 		<table >
 		<thead>
 	<tr>
+	<th >Status</th>
 	<th >Crop</th>
 	<th >Breeding Program(s) </th>
 	<th >Location </th>
@@ -484,8 +485,17 @@ private function typeAnnotationCheck()
 			?>
 			
 			<tr>
-			<td >
+			<td><font color=red>
 			<? 
+			$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialcode_row[$i]'";
+                        $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+			if (mysql_num_rows($res)!==0) { //yes, experiment found, so update
+			  print "Update Record</td><td>";
+                        } else {
+			  print "New Record</td><td>";
+ 			}
+			print "</font>";
+
 			$newtext = wordwrap($crop_row[2], 6, true);
 			print "$newtext</td><td>";
 			$newtext1 = wordwrap($bp_row[2], 6, true);
@@ -509,45 +519,21 @@ private function typeAnnotationCheck()
 			$newtext = wordwrap($seedingrate_row[$i], 6, true);
 			print "$newtext<td>";
 			$newtext = wordwrap($experimentaldesign_row[$i], 6, true);
-			echo $newtext ?>
-			</td>
-			<td >
-			<? 
+			print "$newtext<td>";
 			$newtext = wordwrap($numberofentries_row[$i], 6, true);
-			echo $newtext ?>
-			</td>
-			<td >
-			<? 
+			print "$newtext<td>";
 			$newtext = wordwrap($numberofreplications_row[$i], 6, true);
-			echo $newtext ?>
-			</td>
-			<td >
-			<? 
+			print "$newtext<td>";
 			$newtext = wordwrap($plotsize_row[$i], 6, true);
-			echo $newtext ?>
-			</td>
-			<td >
-			<? 
+			print "$newtext<td>";
 			$newtext = wordwrap($harvestedarea_row[$i], 6, true);
-			echo $newtext ?>
-			</td>
-			<td >
-			<? 
+			print "$newtext<td>";
 			$newtext = wordwrap($irrigation_row[$i], 6, true);
-			echo $newtext ?>
-			</td>
-			<td >
-			<? 
+			print "$newtext<td>";
 			$newtext = wordwrap($harvestdate_row[$i], 6, true);
-			echo $newtext ?>
-			</td>
-			<td >
-			<? 
+			print "$newtext<td>";
 			$newtext = wordwrap($otherremarks_row[$i], 6, "\n", true);
-			echo htmlentities($newtext) ?>
-			</td>
-			</tr>
-			<?
+			print htmlspecialchars($newtext);
 				}/* end of for loop */
 			?>
 			</tbody>
@@ -557,6 +543,7 @@ private function typeAnnotationCheck()
 		
 		<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $annotfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $data_public_flag?>' )"/>
     <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
+		Warning - Do not select the Accept button if the status field is not correct (Update Record indicates that Trial Code already exist) 
 	
 		<?
 		
