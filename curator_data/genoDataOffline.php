@@ -3,6 +3,8 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// Temporary patch code for 1D data
+
 // Written By: John Lee
 //*********************************************
 $progPath = realpath(dirname(__FILE__).'/../').'/';
@@ -311,13 +313,15 @@ while (!feof($reader))  {
         $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid");
 		$rgen=mysql_num_rows($result);
 		if ($rgen < 1) {
-			$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
-						theta, R,X,Y,X_raw,Y_raw,GC_score, GT_score, updated_on, created_on)
-						VALUES ($gen_uid,'$allele1','$allele2',$theta,$r,$x,$y,$xraw,$yraw,$gcscore, $gtscore, NOW(), NOW()) ";
-        } else {
+			//$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
+			//			theta, R,X,Y,X_raw,Y_raw,GC_score, GT_score, updated_on, created_on)
+			//			VALUES ($gen_uid,'$allele1','$allele2',$theta,$r,$x,$y,$xraw,$yraw,$gcscore, $gtscore, NOW(), NOW()) ";
+			$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2, updated_on, created_on)
+						VALUES ($gen_uid,'$allele1','$allele2',NOW(), NOW()) ";
+ 
+       } else {
 		$sql = "UPDATE alleles
-			SET allele_1='$allele1',allele_2='$allele2',theta=$theta, R=$r,X=$x,Y=$y,
-			X_raw=$xraw,Y_raw=$yraw,GC_score=$gcscore, GT_score=$gtscore, updated_on=NOW() 
+			SET allele_1='$allele1',allele_2='$allele2', updated_on=NOW() 
 			WHERE genotyping_data_uid = $gen_uid";
 		}
 		$res = mysql_query($sql) or exitFatal ($errFile, "Database Error: alleles processing - ". mysql_error() . ".\n\n$sql");
