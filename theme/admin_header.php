@@ -150,11 +150,13 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
       Add Genotype Results </a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
-      Add Experiment Annotations</a></li>
+      Add Phenotype Experiment Annotations</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data">
-      Add Experiment Results</a></li>
+      Add/Delete Phenotype Experiment Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
-      Add Map Data</a></li>
+      Add Maps</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
+      Add/Edit Markers</a></li>
       </ul>
       <?php endif ?>
 			

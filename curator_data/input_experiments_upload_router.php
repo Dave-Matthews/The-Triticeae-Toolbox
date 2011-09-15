@@ -48,7 +48,7 @@ private function typeAnnotations()
 		global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
-		echo "<h2>Add Phenotype Experiment Data </h2>"; 
+		echo "<h2>Add/Delete Phenotype Experiment Data </h2>"; 
 		
 			
 		$this->type_Annotation_Name();
@@ -61,10 +61,6 @@ private function typeAnnotations()
 	private function type_Annotation_Name()
 	{
 	?>
-	<script type="text/javascript">
-	
-	
-	</script>
 	
 	<style type="text/css">
 			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
@@ -72,25 +68,12 @@ private function typeAnnotations()
 			td {border: 0px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
-	
-		<table>
-		<tr>
-		<td>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_text.php"><p><strong><li>Upload a Tab Delimited(.txt) File</li> </strong></p> </a>  
-	</td>
-	<td colspan="2">
-	</td>
-	<td>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php"><p><strong><li>Upload an Excel (.xls) File</li></strong></p></a>
-	</td>
-	</tr>
-	</table>
-	
-	
 
-	
-		
-		
+	<ul>
+	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php"><strong><li>Upload an Excel (.xls) file</li></strong></a>
+	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_text.php"><p><strong><li>Upload a tab-delimited (.txt) file</li> </strong> </a>  
+	<a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php"><p><strong><li>Delete an existing experiment</li></strong></a>
+	</ul>
 <?
  
 	} /* end of type_Pedigree_Name function*/
