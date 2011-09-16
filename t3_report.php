@@ -7,17 +7,20 @@ require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 connect();
 
-if(isset($_GET['output'])) {
-  header('Content-type: application/vnd.ms-excel');
+$user_agent = $_SERVER['HTTP_USER_AGENT'];
+$accept = $_SERVER['HTTP_ACCEPT'];
+if (preg_match("/Mobile/i","$user_agent")) {
+}
+
+if (isset($_GET['output'])) {
+  header('Content-Type: application/vnd.ms-excel');
   header('Content-Disposition:attachment;filename=t3_report.xls');
 } else {
   include($config['root_dir'].'theme/normal_header.php');
+  print "<div id='primaryContentContainer'>";
+  print "<div id='primaryContent'>";
+  print "<div class='box'>";
 }
-?>
-  <div id="primaryContentContainer">
-  <div id="primaryContent">
-  <div class="box">
-<?php
   $date = date_create(date('Y-m-d'));
   $date = $date->format('Y-m-d');
   $sql = "select database()";
@@ -26,8 +29,7 @@ if(isset($_GET['output'])) {
     $db = $row[0];
     print "<h2>$db Data Submission Report $date</h2>";
   }
-  if(isset($_GET['output'])) {
-  } else {
+  if(!isset($_GET['output'])) {
     print "<a href=http:t3_report.php?output=excel>Export to MS Excel</a><br><br>\n";
   }
 
@@ -79,6 +81,14 @@ if(isset($_GET['output'])) {
     $count = $row[0];
     print "<tr><td>Lines with phenotype data<td>$count\n";
   }
+  print "<tr><td>Species<td>";
+  $sql = "select distinct(species) from line_records";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($row = mysql_fetch_row($res)) {
+    $count = $row[0];
+    print "$count\t";
+  }
+
   $sql = "select count(*) from line_records where created_on > '$this_week'";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
@@ -113,7 +123,6 @@ if(isset($_GET['output'])) {
   $row = mysql_fetch_row($res);
   $count = $row[0];
   $count = number_format($count, 0, 0, ',');
-  //printf("<tr><td>Total genotype data<td>%f\n",$count);
   print  "<tr><td>Total genotype data<td>$count\n";
 
   $sql = "select count(*) from markers where created_on > '$this_week'";
@@ -159,8 +168,8 @@ if(isset($_GET['output'])) {
   print "</table>\n";
 
 if(isset($_GET['output'])) {
+} elseif ($mobile) {
 } else {
   print "</div></div>";
-//  print "<br><a href=http:t3_report.php?output=excel>Export to MS Excel</a>\n";
   include("theme/footer.php");
 }
