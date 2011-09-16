@@ -270,7 +270,9 @@ class LineNames_Check
 	      $line_uid = "";
 	      $line_uids = "";
 	      $line_uids_multiple = "";
-				
+	      $lines_seen = array();
+	      $syns_seen = array();
+
 	      //Ignore the next row after the header.  Or error.
  	      if ($linedata['cells'][$firstline+1][2] != "comma separated values") {
  		die("Row 5 must be the descriptions of the columns.  Please don't delete it.<br><br>"); 
@@ -309,6 +311,10 @@ class LineNames_Check
 			
 		// Line Name is required.
 		if (!empty($line)) {
+		  // Have we already seen this this Line Name in this file?
+		  if (in_array($line, $lines_seen)) 
+		    die_nice ("Line Name '$line' is used more than once in this file.");
+		  else array_push($lines_seen, $line);
 		  // Check if line is in database, as either a line name or synonym.
 		  $line_uid = get_lineuid($line);
 		  if ($line_uid === FALSE) {
@@ -341,6 +347,10 @@ class LineNames_Check
 		  }
 		  foreach ($synonyms as $syn) {
 		    if (!empty($syn)) {
+		      // Have we already seen this this synonym in this file?
+		      if (in_array($syn, $syns_seen)) 
+			die_nice ("Alias '$syn' is used more than once in this file.");
+		      else array_push($syns_seen, $syn);
 		      // Does the name already exist as either a synonym or a line name?
 		      $linesyn_uid = get_lineuid($syn);
 		      if ($linesyn_uid === FALSE) {

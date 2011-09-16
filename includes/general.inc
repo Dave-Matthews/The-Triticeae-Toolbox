@@ -198,27 +198,30 @@ function show_markers($id) {
   echo "<td><a href=\"".$config['base_url']."genotyping/showlines.php?marker=$id\">Show alleles for all lines</a>";
   echo "</tr></table>";
 
-  echo "<h3>Selection List</h3>";
   // marker_selection.php wants the name of a map the marker is on.  Probably doesn't matter which.
   $sql = "select map_name from map, markers_in_maps mm where mm.marker_uid = $id and mm.map_uid = map.map_uid";
   $r = mysql_query($sql);
   $row = mysql_fetch_row($r);
   $mapname = $row[0];
-  echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
-  echo "<input type='hidden' name='selMkrs[]' value='$id'>";
-  echo "<input type='hidden' name='mapname' value='$mapname'>";
-  echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
-  echo "</form>";
-
-  echo "<h3>Map locations</h3>";
-  $sql = "select marker_name from markers where marker_uid = $id";
-  $r = mysql_query($sql);
-  $row = mysql_fetch_row($r);
-  $markername = $row[0];
-  echo "<form method='GET' action=http://".$_SERVER['HTTP_HOST']."/cgi-bin/gbrowse/tht>";
-  echo "<input type='hidden' name='name' value='$markername'>";
-  echo "<input type='submit' value='View in GBrowse'></p>";
-  echo "</form>";
+  // Don't do it if the marker isn't mapped.
+  if (!empty($mapname)) {
+    echo "<h3>Selection List</h3>";
+    echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
+    echo "<input type='hidden' name='selMkrs[]' value='$id'>";
+    echo "<input type='hidden' name='mapname' value='$mapname'>";
+    echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
+    echo "</form>";
+    
+    echo "<h3>Map locations</h3>";
+    $sql = "select marker_name from markers where marker_uid = $id";
+    $r = mysql_query($sql);
+    $row = mysql_fetch_row($r);
+    $markername = $row[0];
+    echo "<form method='GET' action=http://".$_SERVER['HTTP_HOST']."/cgi-bin/gbrowse/tht>";
+    echo "<input type='hidden' name='name' value='$markername'>";
+    echo "<input type='submit' value='View in GBrowse'></p>";
+    echo "</form>";
+  }
 }
 
 /**

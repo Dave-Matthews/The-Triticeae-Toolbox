@@ -22,7 +22,7 @@ include($config['root_dir'].'theme/admin_header.php');
   <?php
 
   function get_submitted_mapid() {
-  $us_mapname=$_POST['mapname'] or die('select markers where?');
+  $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
   $sql = "select map_uid from map
 where map_name='" . mysql_real_escape_string($us_mapname) . "'";
   $sqlr = mysql_fetch_assoc(mysql_query($sql));
