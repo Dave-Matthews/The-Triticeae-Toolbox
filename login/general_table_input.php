@@ -1,6 +1,8 @@
 <?php
+// 06/03/2011 JLee  Change to use curator bootstrap
+
 /* Logged in page initialization */
-include("../includes/bootstrap.inc");
+include("../includes/bootstrap_curator.inc");
 
 connect();
 loginTest();

@@ -457,7 +457,7 @@ foreach ($_SESSION['selected_lines'] as $lineuid) {
   $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
   while ($row=mysql_fetch_assoc($result)) {
     $selval=$row['line_record_name'];
-    print "<option value=\"$lineuid\">$selval</option>\n";
+    print "<option value=\"$lineuid\" selected>$selval</option>\n";
   }
 }
 print "</select>";

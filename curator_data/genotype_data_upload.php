@@ -1,6 +1,9 @@
 <?php 
 // Genotype data importer
 
+// 08/09/2011 JLee  Add note that both files are required
+// 04/11/2011 Jlee  Add zip file handling
+//
 // Written By: John Lee
 //*********************************************
 
@@ -75,7 +78,7 @@ class GenotypeData {
     <p><input type="submit" value="Upload Line Translation and Genotype Data File" /></p>
  
     <p><br> <br></p>
-    <p><h4>Note: This process may take several hours to complete depending on size of the data file.  Please leave your email adress for us to contact you with the results.</h4></p>
+    <p><h4>Note: Both files are required.<br> This process may take several hours to complete depending on size of the data file.  Please leave your email adress for us to contact you with the results.</h4></p>
 	<p> <strong> Your Email Address: </strong> <input type="text" name="emailAddr" value="<?php echo $_SESSION['username'] ?>"  size="50%"/>
 	</form>
 
