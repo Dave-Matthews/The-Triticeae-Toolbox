@@ -20,7 +20,7 @@ function die_nice($message = "") {
   if ($cnt == 0) echo "<h3>Errors</h3>";
   $cnt++;
   echo "<b>$cnt:</b> $message<br>";
-  return;
+  return FALSE;
 }
 
 /* Show more informative messages when we get invalid data. */
@@ -988,10 +988,7 @@ class LineNames_Check
 	    */
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
-	    $rlinsyn=mysql_query($sql) or {
-	      $linesuccess = FALSE;
-	      errmsg($sql, mysql_error());
-	    }
+	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
 	    $line_uid = mysql_insert_id();
 	    // $line_uid is no longer an (empty) array, cf. line 905, it's an int.
 	    // Insert synonyms.
@@ -1085,10 +1082,7 @@ class LineNames_Check
 	    */
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
-	    $rlinsyn=mysql_query($sql) or {
-	      $linesuccess = FALSE;
-	      errmsg($sql, mysql_error());
-	    }
+	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
 	    // Update synonyms.
 	    if ($linesuccess AND !empty($synonyms)) {
 	      // Is there already a value?  If so delete.
