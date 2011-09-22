@@ -3,6 +3,11 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 9/16/2011  JLee  Modify to support new 1D format 
+// 9/2/2011   JLee  Modify to remove allele freq stuff   
+
+// Temporary patch code for 1D data
+
 // Written By: John Lee
 //*********************************************
 $progPath = realpath(dirname(__FILE__).'/../').'/';
@@ -86,7 +91,7 @@ $lineNameIdx = implode(find("Line Name", $header),"");
 $trialCodeIdx = implode(find("Trial Code", $header),"");
             
 if (($lineNameIdx == "")||($trialCodeIdx == "")) {
-   exitFatal ($errFile,"ERROR: Missing one of the required columns. Please correct it and try upload again.");
+   exitFatal ($errFile,"ERROR: Missing one or more of the required columns in the line translation file. Please correct it and try upload again.");
 }
   
 // Store individual records
@@ -151,29 +156,21 @@ $header = str_getcsv($line,"\t");
 // Set up header column; all columns are required
 $markerIdx = implode(find("SNP Name", $header),"");
 $lineNameIdx = implode(find("Sample ID", $header),"");
-$gtScoreIdx = implode(find("GT Score", $header),"");
-$gcScoreIdx = implode(find("GC Score", $header),"");
-$thetaIdx = implode(find("Theta", $header),"");
-$rIdx = implode(find("R", $header),",");
-$xIdx = implode(find("X", $header),",");
-$yIdx = implode(find("Y", $header),",");
-$xRawIdx = implode(find("X Raw", $header),"");
-$yRawIdx = implode(find("Y Raw", $header),"");
+//$gtScoreIdx = implode(find("GT Score", $header),"");
+//$gcScoreIdx = implode(find("GC Score", $header),"");
+//$thetaIdx = implode(find("Theta", $header),"");
+//$rIdx = implode(find("R", $header),",");
+//$xIdx = implode(find("X", $header),",");
+//$yIdx = implode(find("Y", $header),",");
+//$xRawIdx = implode(find("X Raw", $header),"");
+//$yRawIdx = implode(find("Y Raw", $header),"");
 $allele1Idx = implode(find("Allele1 - AB", $header),"");
 $allele2Idx = implode(find("Allele2 - AB", $header),"");
 
-if (($lineNameIdx == "")||($lineNameIdx == "")||($gtScoreIdx == "")||
-    ($gcScoreIdx == "")||($thetaIdx == "")|| ($rIdx == "") || 
-    ($xIdx == "") || ($yIdx == "") || ($xRawIdx == "") ||
-    ($yRawIdx == "")  || ($allele1Idx == "") || ($allele2Idx == "")) {
+if (($lineNameIdx == "")||($lineNameIdx == "") || ($allele1Idx == "") || ($allele2Idx == "")) {
 
-    exitFatal ($errFile, "ERROR: Missing One of these required Columns. Please correct it and upload again: \n SNP Name - ".$markerIdx.
-        "\n"." Sample ID - ".$lineNameIdx."\n"." GT Score - ". $gtScoreIdx .
-        "\n"." GC Score - ".$gcScoreIdx."\n"." Theta - ".$thetaIdx.
-        "\n"." R - ". $rIdx ."\n" ." X - ". $xIdx.
-        "\n"." Y - ".  $yIdx . "\n" ." X Raw - ". $xRawIdx.
-        "\n"." Y Raw - ". $yRawIdx."\n" ." Allele1 - AB - ". $allele1Idx.
-        "\n"." Allele2 - AB - ". $allele2Idx);
+    exitFatal ($errFile, "ERROR: Missing One of these required columns. Please correct it and upload again: \n SNP Name - ".$markerIdx.
+        "\n"." Sample ID - ".$lineNameIdx."\n". " Allele1 - AB - ". $allele1Idx. "\n"." Allele2 - AB - ". $allele2Idx);
 }
 $tArray = explode (',',$rIdx);
 $rIdx = $tArray[0];
@@ -200,8 +197,8 @@ while (!feof($reader))  {
     $data = str_getcsv($line,"\t");
     $num = count($data);		// number of fields
     // Check line for missing column    
-    if ($num != 12) { 
-        $msg = "ERROR: Wrong number of entries  for line - " . $line;
+    if ($num != 4) { 
+        $msg = "ERROR: Wrong number of entries for line - " . $line;
         fwrite($errFile, $msg);
         $errLines++;
         next;
@@ -283,18 +280,20 @@ while (!feof($reader))  {
 	    }
 		// echo "gen_uid".$gen_uid."\n";
 		/* Read in the rest of the variables */
-        $gtscore = $data[$gtScoreIdx];
-        $gcscore = $data[$gcScoreIdx];
-        $theta = $data[$thetaIdx ];
-	    $r = $data[$rIdx];
-	    $x = $data[$xIdx];
-	    $y = $data[$yIdx];
-	    $xraw = $data[$xRawIdx ];
-	    $yraw = $data[$yRawIdx ];
+        //$gtscore = $data[$gtScoreIdx];
+        //$gcscore = $data[$gcScoreIdx];
+        //$theta = $data[$thetaIdx ];
+	    //$r = $data[$rIdx];
+	    //$x = $data[$xIdx];
+	    //$y = $data[$yIdx];
+	    //$xraw = $data[$xRawIdx ];
+	    //$yraw = $data[$yRawIdx ];
+
         $allele1 = $data[$allele1Idx];
 	    $allele2 = $data[$allele2Idx];
 		
         // Force NaN entries to default
+		/*
 		if ($r == 'NaN') {
 			$r=99999;
 		}
@@ -307,17 +306,19 @@ while (!feof($reader))  {
 		if ($gtscore == 'NaN') {
 			$gtscore = 99999;
 		}
-
+		*/
         $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid");
 		$rgen=mysql_num_rows($result);
 		if ($rgen < 1) {
-			$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
-						theta, R,X,Y,X_raw,Y_raw,GC_score, GT_score, updated_on, created_on)
-						VALUES ($gen_uid,'$allele1','$allele2',$theta,$r,$x,$y,$xraw,$yraw,$gcscore, $gtscore, NOW(), NOW()) ";
-        } else {
+			//$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
+			//			theta, R,X,Y,X_raw,Y_raw,GC_score, GT_score, updated_on, created_on)
+			//			VALUES ($gen_uid,'$allele1','$allele2',$theta,$r,$x,$y,$xraw,$yraw,$gcscore, $gtscore, NOW(), NOW()) ";
+			$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2, updated_on, created_on)
+						VALUES ($gen_uid,'$allele1','$allele2',NOW(), NOW()) ";
+ 
+       } else {
 		$sql = "UPDATE alleles
-			SET allele_1='$allele1',allele_2='$allele2',theta=$theta, R=$r,X=$x,Y=$y,
-			X_raw=$xraw,Y_raw=$yraw,GC_score=$gcscore, GT_score=$gtscore, updated_on=NOW() 
+			SET allele_1='$allele1',allele_2='$allele2', updated_on=NOW() 
 			WHERE genotyping_data_uid = $gen_uid";
 		}
 		$res = mysql_query($sql) or exitFatal ($errFile, "Database Error: alleles processing - ". mysql_error() . ".\n\n$sql");
@@ -330,6 +331,8 @@ while (!feof($reader))  {
 } // End of while data 
 fclose($reader);
 echo "Genotyping record creation completed.\n";
+
+/* No longer needed in T3 - JLee  9/16/2011 
 echo "Start allele frequency calculation processing...\n";
 
 // Do allele frequency calculations
@@ -408,8 +411,8 @@ foreach ($uniqExpID AS $key=>$expID)  {
                 $gt[] =$row['GT_score'];
             }
         }
-        /* for ($i = 0; $i < count($a1); $i++) {
-        echo $i." alleles ".$a1[$i].$a2[$i].$gt[$i]."\n";}*/
+        //for ($i = 0; $i < count($a1); $i++) {
+        //echo $i." alleles ".$a1[$i].$a2[$i].$gt[$i]."\n";}
                 
         // Loop through markers to get a count
         $aacnt = 0;
@@ -478,6 +481,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
 fclose($errFile);
 
 echo "Allele frequency calculations completed.\n";
+*/
 
 // Send out status email
 if (filesize($errorFile)  > 0) {

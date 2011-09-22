@@ -20,7 +20,7 @@ function die_nice($message = "") {
   if ($cnt == 0) echo "<h3>Errors</h3>";
   $cnt++;
   echo "<b>$cnt:</b> $message<br>";
-  return;
+  return FALSE;
 }
 
 /* Show more informative messages when we get invalid data. */
@@ -333,6 +333,18 @@ class LineNames_Check
 		       AND !preg_match("/^CItr [0-9]*$/", $grin) 
 		       AND !preg_match("/^GSTR[0-9]*$/", $grin) )
 		    die_nice("$line: Invalid GRIN Accession $grin");
+		  // Is this accession already used for a different line?
+		  $sql = "select line_record_name 
+                      from barley_pedigree_catalog_ref bpcr, line_records lr
+		      WHERE bpcr.line_record_uid = lr.line_record_uid
+		      AND barley_pedigree_catalog_uid=2
+		      AND barley_ref_number = '$grin'";
+		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		  if (mysql_num_rows($res) > 0) {
+		    $row = mysql_fetch_row($res);
+		    if ($row[0] != $line) 
+		      die_nice("GRIN Accession $grin is already used for Line $row[0].");
+		  }
 		}
 		$generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
 		if ( (empty($generation)) OR ($generation != (int)$generation) OR ($generation < 1) OR ($generation > 9) )
@@ -364,12 +376,14 @@ class LineNames_Check
 		  else array_push($lines_seen, $line);
 		  // Check if line is in database, as either a line name or synonym.
 		  $line_uid = get_lineuid($line);
+		  // $line_uid is an array.
 		  if ($line_uid === FALSE) {
 		    // Insert new line into database.
 		    //convert line name to upper case and replace spaces with an underscore
 		    $line = strtoupper(str_replace(" ","_",$line));
 		    $line_inserts[] = $line;
 		    $line_inserts_str = implode(",",$line_inserts);
+		    // $line_inserts_str == $line_inserts == $line.  All are a single line name.
 		  } 
 		  elseif (count($line_uid) == 1) { 
 		    // If it's listed as a synonym, don't make it a line name too.
@@ -384,6 +398,7 @@ class LineNames_Check
 		    else {
 		    //update the line record
 		    $line_uids[] = implode(",",$line_uid);
+		    // What??! $line_uids is a string, not an array.  And it contains exactly 1 uid.
 		    }
 		  }
 		  else {
@@ -431,6 +446,7 @@ class LineNames_Check
 		} /* end of if (!empty($line)) */
 	      } /* end of for ($irow) */
 	      if (($line_uids) != "") {
+		// $line_uids is a string containing 1 uid.  See line 388.
 		$line_updates =implode(",",$line_uids);
 		// Get line names.
 		$line_sql = mysql_query("SELECT line_record_name as name
@@ -443,6 +459,7 @@ class LineNames_Check
 	      }
 	      else $line_update_data = "";
 	      $line_insert_data = explode(",",$line_inserts_str);
+	      // $line_insert_data is a string containing a single line name.  See line 374.
 	      // If any errors, show what we read and stop.
 	      if ($cnt != 0) {
 		?>
@@ -900,7 +917,8 @@ class LineNames_Check
 				
 	  //check if line is in database
 	  $line_uid=get_lineuid($line);
-	  if ($line_uid===FALSE) {
+	  // $line_uid is an array.
+	  if ($line_uid === FALSE) {
 	    // Insert new line into database
 	    // Required fields: species
 	    if (empty($species)) {
@@ -972,11 +990,12 @@ class LineNames_Check
 	    }
 	    */
 	    $sql = $sql_beg.$sql_mid.$sql_end;
-	    $rlinsyn=mysql_query($sql) or errmsg($sql, mysql_error());
+	    $linesuccess = TRUE;
+	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
 	    $line_uid = mysql_insert_id();
-
+	    // $line_uid is no longer an (empty) array, cf. line 905, it's an int.
 	    // Insert synonyms.
-	    if (!empty($synonyms)) {
+	    if ($linesuccess AND !empty($synonyms)) {
 	      foreach ($synonyms as $syn) {
 		if (!empty($syn)) {
 		  $sql = "insert into line_synonyms 
@@ -988,42 +1007,33 @@ class LineNames_Check
 	    }
 
 	    // Insert GRIN accession.
-	    if (!empty($grin)) {
-	      // Is this accession already used for a different line?
-	      $sql = "select line_record_name 
-                      from barley_pedigree_catalog_ref bpcr, line_records lr
-                WHERE bpcr.line_record_uid = lr.line_record_uid
-                AND barley_pedigree_catalog_uid=2
-                AND barley_ref_number = '$grin'";
-	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
-	      if (mysql_num_rows($res) > 0) {
-		$row = mysql_fetch_row($res); 
-		if ($row[0] != $line) 
-		  die_nice("GRIN Accession $grin is already used for Line $row[0].");
-	      }
+	    if ($linesuccess AND !empty($grin)) {
 	      // Is there already a GRIN accession for this line?  If so, replace.
 	      $sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
                 WHERE barley_pedigree_catalog_uid=2
                 AND line_record_uid = '$line_uid'";
 	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
-	      if (mysql_num_rows($res) > 0) {
+	      if (mysql_num_rows($res) == 1) {
 		$sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
                 updated_on=NOW() WHERE barley_pedigree_catalog_uid=2 
                 AND line_record_uid = '$line_uid'";
 		$res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 990");
 	      }
-	      else {
+	      elseif (mysql_num_rows($res) == 0) {
 		$sql = "insert into barley_pedigree_catalog_ref 
                 (barley_pedigree_catalog_uid, line_record_uid, barley_ref_number, 
                 updated_on, created_on) values ('2', '$line_uid', '$grin', NOW(),NOW())";
 		$res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 996");
 	      }
+	      else echo "Unexpected: Line '$line' already has multiple GRIN accessions. Not adding.<br>";
 	    }
 						
-	  } elseif (count($line_uid)==1) { 
+	  } // end of if ($line_uid === FALSE) 
+
+	  elseif (count($line_uid)==1) { 
 	    //update the line record
 	    $line_uids = implode(",",$line_uid);
-				
+	    // $line_uids is a string containing a single uid.				
 	    $sql_beg = "update line_records set ";
 	    $sql_mid = "";
 	    $sql_end = "updated_on=NOW() where line_record_uid = '$line_uids'";
@@ -1074,11 +1084,10 @@ class LineNames_Check
 	    }
 	    */
 	    $sql = $sql_beg.$sql_mid.$sql_end;
-
-	    $rlinsyn=mysql_query($sql) or errmsg($sql, mysql_error());
-
+	    $linesuccess = TRUE;
+	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
 	    // Update synonyms.
-	    if (!empty($synonyms)) {
+	    if ($linesuccess AND !empty($synonyms)) {
 	      // Is there already a value?  If so delete.
 	      $sql = "delete from line_synonyms where line_record_uid = $line_uids";
 	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
@@ -1093,38 +1102,27 @@ class LineNames_Check
 	    }
 
 	    // Update GRIN accession.
-	    if (!empty($grin)) {
-	      // Is this accession already used for a different line?
-	      $sql = "select line_record_name 
-                      from barley_pedigree_catalog_ref bpcr, line_records lr
-                WHERE bpcr.line_record_uid = lr.line_record_uid
-                AND barley_pedigree_catalog_uid=2
-                AND barley_ref_number = '$grin'";
-	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
-	      if (mysql_num_rows($res) > 0) {
-		$row = mysql_fetch_row($res);
-		if ($row[0] != $line) 
-		  die_nice("GRIN Accession $grin is already used for Line $row[0].");
-	      }
+	    if ($linesuccess AND !empty($grin)) {
 	      // Is there already a GRIN accession for this line?  If so, replace.
-	      // Note, now $line_uids is a string and line_uid is an array, reverse of above.
+	      // $line_uids is a string and $line_uid is an array.  Both contain one uid.
 	      //echo "<pre>Line 1090: line_uids = $line_uids<br>line_uid = "; print_r($line_uid); echo "</pre>"; 
 	      $sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
                 WHERE barley_pedigree_catalog_uid=2
                 AND line_record_uid = '$line_uids'";
 	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
-	      if (mysql_num_rows($res) > 0) {
+	      if (mysql_num_rows($res) == 1) {
 		$sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
                 updated_on=NOW() WHERE barley_pedigree_catalog_uid=2 
                 AND line_record_uid = '$line_uids'";
 		$res = mysql_query($sql) or errmsg($sql, mysql_error());
 	      }
-	      else {
+	      elseif (mysql_num_rows($res) == 0) {
 		$sql = "insert into barley_pedigree_catalog_ref 
                 (barley_pedigree_catalog_uid, line_record_uid, barley_ref_number, 
                 updated_on, created_on) values ('2', '$line_uids', '$grin', NOW(),NOW())";
 		$res = mysql_query($sql) or errmsg($sql, mysql_error().' at script line 1101');
 	      }
+	      else {};  // More than one GRIN accession for this line already.
 	    }
 
 						

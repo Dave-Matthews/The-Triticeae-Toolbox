@@ -398,7 +398,7 @@ class Markers_Check {
             
             //Check for junk line
             if (count($data) != 4) {
-                echo "ERROR DETECT: Line does not contain 4 columns.". "<br/>". $line . "<br/>" ;
+                echo "ERROR DETECT: Line does not contain 4 column.". "<br/>". $line . "<br/>" ;
                 exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
             }    
                                     

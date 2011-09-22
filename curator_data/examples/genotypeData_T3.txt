@@ -1,0 +1,23 @@
+[Header]
+GSGT Version	1.9.4
+Processing Date	7/19/2011 3:59 PM
+Content		GS0010856-OPA.opa
+Num SNPs	1536
+Total SNPs	1536
+Num Samples	480
+Total Samples	576
+[Data]
+Sample Name	SNP Name	Allele1 - AB	Allele2 - AB
+Bronze	wsnp_BE489692B_Ta_2_1	B	B
+Bronze	wsnp_BE497469B_Ta_2_1	B	B
+Bronze	wsnp_BE590634A_Ta_2_1	-	-
+Bronze	wsnp_BQ169669B_Ta_2_2	B	B
+Bronze	wsnp_be406509A_Ta_1_1	B	B
+Bronze	wsnp_BE488220D_Ta_2_1	B	B
+Bronze	wsnp_BE426317D_Ta_1_1	B	B
+Bronze	wsnp_BE405667B_Td_2_1	-	-
+Bronze	wsnp_BM134512A_Ta_2_1	A	A
+Bronze	wsnp_BE605063A_Ta_2_3	B	B
+Bronze	wsnp_BE489901D_Ta_2_31	A	A
+Bronze	wsnp_BE636954A_Ta_2_3	A	A
+Bronze	wsnp_BE585760A_Ta_2_2	A	A

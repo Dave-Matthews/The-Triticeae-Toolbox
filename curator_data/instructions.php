@@ -7,7 +7,7 @@ connect();
 
 <style type="text/css">
 ul ul ul {list-style-type: circle}
-ul {margin-left:1.5em}
+ul {margin-left:0.5em}
 </style>
 
 <div id="primaryContentContainer">
@@ -27,12 +27,14 @@ ul {margin-left:1.5em}
 
       <li><b>Data templates</b>
 	<ul>
-	  <li><b>Germplasm lines</b><br>Name, properties, pedigree, GRIN accession...
+	  <li><b>Germplasm lines</b><br>Name, properties, pedigree, GRIN accession... [ <a href="curator_data/tutorial/T3_Lesson1_LineUpload.html">Tutorial</a> ]
 	    <ul>
 	      <li><a href="curator_data/examples/T3/LineSubmissionForm_Wheat.xls">Wheat</a>
 		<font size= -2>(<?php echo date("dMY", filemtime("examples/T3/LineSubmissionForm_Wheat.xls")) ?>)</font>
 	      <li><a href="curator_data/examples/T3/LineSubmissionForm_Barley.xls">Barley</a>
 		<font size= -2>(<?php echo date("dMY", filemtime("examples/T3/LineSubmissionForm_Barley.xls")) ?>)</font>
+	      <li><a href="curator_data/examples/T3/T3NameConversion.xlsm">Macros</a> for converting line names to T3 format
+		<font size= -2>(<?php echo date("dMY", filemtime("examples/T3/T3NameConversion.xlsm")) ?>)</font>
 	    </ul>
 	  <li><b>Phenotyping</b>
 	    <ul>

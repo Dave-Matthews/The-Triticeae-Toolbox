@@ -75,13 +75,13 @@ if (isset($_POST['deselLines'])) {
         $x = trim($x, ",");
         $x .= ")";
         $date = date("Uu");
-        $out = "jpeg(\\\"".$config['root_dir']."downloads/temp/bighistogram.jpg\\\", width=444, height=333)";
+        $out = "jpeg(\\\"/www/htdocs/tht/downloads/temp/bighistogram.jpg\\\", width=444, height=333)";
         $title = "main='Histogram for " . $pname[0] . "'";
 	$xlab = "xlab='" . html_entity_decode($pname[1]) . "'";
 	//$xlab "xlab='" . $pname[1] . "'";
         $rcmd = "hist(x,$title,$xlab)";
         exec("echo \"$x;$out;$rcmd\" | R --vanilla");
-        echo "<img src=\"".$config['base_url']."downloads/temp/bighistogram.jpg?d=$date\">\n";
+        echo "<img src=\"/tht/downloads/temp/bighistogram.jpg?d=$date\">\n";
 	//
 
 	// Show mean, std. dev., and number of entries
@@ -175,46 +175,48 @@ $in_these_trials
 	echo "<div class='box'><h2>Results</h2><div class='boxContent'>";
 
 	if(mysql_num_rows($search) > 0) {
-	  echo displayTableSigdig($search, TRUE, $sigdig);
-	  echo "<form action='".$config['base_url']."dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . base64_encode($query) ."' /></form>";
-	  //echo "<br /><form action='".$config['base_url']."pedigree/pedigree_markers.php'><input type='submit' value='View Common Marker Values' /></form>";
+		echo displayTableSigdig($search, TRUE, $sigdig);
+		echo "<form action='".$config['base_url']."dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . base64_encode($query) ."' /></form>";
+		//echo "<br /><form action='".$config['base_url']."pedigree/pedigree_markers.php'><input type='submit' value='View Common Marker Values' /></form>";
 	}
 	else
-	  echo "No records found";
+		echo "No records found";
 
 	echo "</div></div>";
-  }
+}
 ?>
 
-<div class="box">
-    <h2>Select Lines by Phenotype</h2>
+	<div class="box">
+	<h2>Select Lines by Phenotype</h2>
 
-    <div id="phenotypeSel" class="boxContent">
-    <h3> Select Phenotype and Trials</h3>
-    <form action="<?php echo $config['base_url']; ?>phenotype/compare.php" method="post">
+	<div id="phenotypeSel" class="boxContent">
+  <h3> Select Phenotype and Trials</h3>
+	<form action="<?php echo $config['base_url']; ?>phenotype/compare.php" method="post">
 
-    <table id="phenotypeSelTab" class="tableclass1">
-    <thead>
-    <tr>
-    <th>Category</th>
-    <th>Phenotype</th>
-    <th>Trial</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr class="nohover">
-    <td>
-    <select name='phenotypecategory' size=10 onfocus="DispPhenoSel(this.value, 'Category')" onchange="DispPhenoSel(this.value, 'Category')">
-    <?php showTableOptions("phenotype_category"); ?>
-</select>
-</td>
-<td><p>Select a phenotype category.</p>
-</td>
-<td>
-</td>
-</tr>
-
-<tr><td style="text-align: left;">
+	<table id="phenotypeSelTab" class="tableclass1">
+	<thead>
+	<tr>
+		<th>Category</th>
+		<th>Phenotype</th>
+                <th>Trial</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr class="nohover">
+		<td>
+			<select name='phenotypecategory' size=10 onfocus="DispPhenoSel(this.value, 'Category')" onchange="DispPhenoSel(this.value, 'Category')">
+			<?php showTableOptions("phenotype_category"); ?>
+			</select>
+		</td>
+		<td><p>Select a phenotype category.</p>
+		</td>
+		<td>
+		</td>
+	</tr>
+        <tr><td></td><td></td><td></td></tr>
+	</tbody>
+	</table>
+</div>
 <?php
 // Test for currently selected lines.
 $username=$_SESSION['username'];
@@ -230,14 +232,10 @@ if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0
     <input type="radio" name="selectWithin" value="Add"/>Add (OR)<br>
     <input type="radio" name="selectWithin" value="Yes"/>Intersect (AND)<br>
 <?php } ?>
-</td>
-
-<td></td><td></td></tr>
-</tbody>
-</table>
-</div>
-<br><br>
-</div>
+    <input type="submit" value="Search">
+  </form>
+  <br><br>
+  </div>
 <?php
 if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
   print "<div class='boxContent'>";
@@ -255,7 +253,7 @@ if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0
     }
   }
   print "</select>";
-  print "<p><input type='submit' value='Deselect highlighted lines'>";
+  print "<p><input type=\"submit\" value=\"Deselect highlighted lines\" /></p>";
   print "</form>";
   print "</div>";
 }
