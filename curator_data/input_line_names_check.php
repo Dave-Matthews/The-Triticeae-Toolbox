@@ -764,6 +764,9 @@ class LineNames_Check
 	  die("Row 3 must begin with '*Breeding Program Code'.");
 	}
 	$bp = $linedata['cells'][3][2];
+	if (strlen($bp) != 3) {
+	  die("Invalid or missing Breeding Program Code.");
+	}
 
 // 	$columnOffsets = array(
 // 			       'line_name' => -1,

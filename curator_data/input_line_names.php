@@ -87,7 +87,7 @@ private function typeLineName()
 <a href="<?php echo $config['root_dir'] ?>curator_data/examples/T3/LineSubmissionForm_Wheat.xls">Example line input file</a></p>
 	<p><input type="submit" value="Upload Line File" /></p>
 	
-	<a href="<?php echo $config['root_dir'] ?>login/edit_line.php"> Edit existing lines.</a>
+	<a href="<?php echo $config['root_dir'] ?>login/edit_line.php"> Edit Lines </a>
 
 </form>
 	
