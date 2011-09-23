@@ -6,8 +6,9 @@ connect();
 ?>
 
 <style type="text/css">
-ul {padding-left: 1.5em}
-ul ul ul {list-style-type: circle}
+// Must specify both margin and padding to work same in IE vs. others.
+ul {margin-left: 0; padding-left: 1.5em}
+ul ul ul {list-style-type: disc}
 </style>
 
 <div id="primaryContentContainer">
