@@ -6,7 +6,7 @@ connect();
 ?>
 
 <style type="text/css">
-// Must specify both margin and padding to work same in IE vs. others.
+/* Must specify both margin and padding to work same in IE vs. others. */
 ul {margin-left: 0; padding-left: 1.5em}
 ul ul ul {list-style-type: disc}
 </style>
