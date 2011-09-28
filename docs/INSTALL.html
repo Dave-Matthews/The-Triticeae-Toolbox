@@ -5,16 +5,17 @@
   - Unix.  Ubuntu and Solaris work.
   - Apache
   - MySQL
-  - PHP
+  - PHP, including PEAR
+  - Spreadsheet_Excel_Writer.  Can be installed with this command:
+    % sudo pear install Spreadsheet_Excel_Writer-0.9.2
 - For some functions
   - GBrowse
   - R
-  - PEAR (?)
   - pclzip.lib.php
   - libzzip
   - PHP-libgd (?)
 
-<h4>Setting up the MySQL database</h4>
+<h4>Setting up the MySQL databases</h4>
 Load the schema and some initializing data.  
 mysql> create database T3wheat;
 mysql> use T3wheat;
@@ -30,6 +31,13 @@ mysql> grant execute on T3wheat.* to publicuser@localhost;
 Grant write permission to another user such as "curator":
 
 mysql> grant all on T3wheat.* to curator@localhost identified by '&lt;password>';
+
+Similarly, create the GBrowse database "gtht" and grant permissions.
+
+mysql> create database gtht;
+mysql> grant all on gtht.* to curator@localhost identified by '&lt;password>';
+
+
 
 <h4>Database connection scripts</h4>
 For security, the password information to connect to the MySQL database
@@ -61,11 +69,19 @@ T3wheat_writeaccess.inc:
                      'db_host' => 'localhost');
 ?>
 
-<h4>Temporary files</h4>
-The plan is to store all temporary files in directory /tmp/tht/, where write-access
-for the scripts isn't a problem and they're all in one place to be purged daily or
-hourly with a cron() job.  In order for this to work there must be a symbolic link
-from the Apache webserver's DocumentRoot to /tmp/tht.  If your webserver top directory
+<h4>Directories for uploaded and output files</h4>
+Uploaded data files are stored in the curator_data/uploads directory,
+which must be writable by the Apache user, e.g. www-data. 
+
+% cd curator_data
+% mkdir uploads
+% sudo chown www-data uploads
+
+The plan is to store all output and temporary files in directory
+/tmp/tht/, where write-access for the scripts isn't a problem and
+they're all in one place to be purged daily or hourly with a cron() job.
+In order for this to work there must be a symbolic link from the Apache
+webserver's DocumentRoot to /tmp/tht.  If your webserver top directory
 is /www/htdocs, say
 
 % cd /www/htdocs; mdkir tmp; ln -s /tmp/tht tmp/tht
@@ -86,3 +102,24 @@ e.g. www-data
 # chown www-data /var/log/php-scripts.log
 
 Then restart the Apache server to read the new php.ini configuration.
+
+<h4>GBrowse</h4>
+Installing GBrowse should have created a gbrowse.conf/ directory in the
+Apache configuration directory, e.g. in /etc/apache2/.  Link from here
+to the tht.conf file in the repository's gbrowse-generated/ directory.
+
+% sudo ln -s /www/htdocs/t3/wheat/gbrowse-generated/tht.conf
+
+Add the following stanza to your Apache configuration file, e.g.
+/etc/apache2/sites-available/default, and restart Apache.
+
+Alias /perl/ "/cgi-bin/"
+<Location /perl/>
+     SetHandler perl-script
+     PerlResponseHandler ModPerl::Registry
+     PerlOptions +ParseHeaders
+     Options +ExecCGI
+     Order allow,deny
+     Allow from all
+</Location>
+
