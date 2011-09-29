@@ -31,8 +31,7 @@ $error_flag = 0;
 $lineExpHash = array ();
 $lineDsHash = array ();
 $curTrialCode = '';
-$gName = '';
- 
+
 echo "Start time - ". date("m/d/y : H:i:s", time()) ."\n"; 
 echo "Translate File - ". $lineTransFile. "\n";
 echo "Genotype Data File - ". $gDataFile. "\n";
@@ -78,22 +77,8 @@ if ($emailAddr == "") {
     exit (1);
 }  
 
-// Check for zip file
-if (strpos($gDataFile, ".zip") == TRUE) {
-	echo "Unzipping the genotype data file...\n";
-	$zip = new ZipArchive;
-	$zip->open($gDataFile) || exitFatal ($errFile, "Unable to open zip file, please check zip format.");
-	$gName = $zip->getNameIndex(0);
-	$zip->extractTo($target_Path) || exitFatal ($errFile, "Failed to extract file from the zip file.");
-    $zip->close()  || exitFatal ($errFile, "Failed to close zip file.");
-	$gDataFile = $target_Path . $gName;
-	echo "Genotype data unzipping done.\n";
-}
-// Testing for non-processing
-//exit (1);
-
-/* Read the file */
-if (($reader = fopen($lineTransFile, "r")) == FALSE) {
+ /* Read the file */
+ if (($reader = fopen($lineTransFile, "r")) == FALSE) {
     exitFatal ($errFile, "Unable to access translate file.");
 }
             
@@ -116,9 +101,9 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 // Store individual records
 while(($line = fgets($reader)) !== FALSE) { 
     //chop ($line, "\r");
-    if (strlen($line) < 2) continue;
+    if (strlen($line) < 2) break;
     if (feof($reader)) break;
-    if (empty($line)) continue;
+    if (empty($line)) break;
     //echo "$line <br>";  
                 
     $data = str_getcsv($line,"\t");
@@ -163,7 +148,7 @@ if (($reader = fopen($gDataFile, "r")) == FALSE) {
 //Advance to data header area
 while(!feof($reader))  {
     $line = fgets($reader);
-    if (stripos($line, 'SNP Name') !== false) break;    
+    if (stripos($line, 'SNP Name') !== false)  break;    
 }
         
 if (feof($reader)) {
@@ -209,9 +194,9 @@ while (!feof($reader))  {
        exitFatal ($errFile, "ERROR: Too many import lines have problem."); 
     }    
     $line = fgets($reader);
-    if (strlen($line) < 3) continue;
-    if (empty($line)) continue;
-    if (feof($reader)) continue;
+    if (strlen($line) < 2) next;
+    if (empty($line)) next;
+    if (feof($reader)) break;
     //echo "$line <br>";
     $data = str_getcsv($line,"\t");
     $num = count($data);		// number of fields
@@ -220,7 +205,7 @@ while (!feof($reader))  {
         $msg = "ERROR: Wrong number of entries for line - " . $line;
         fwrite($errFile, $msg);
         $errLines++;
-        continue;
+        next;
     }    
     
     $rowNum++;		// number of lines
@@ -241,7 +226,7 @@ while (!feof($reader))  {
             $msg = 'ERROR:  marker not found '.$marker.'\t'. $line;
             fwrite($errFile, $msg);
             $errLines++;
-            continue;
+            next;
         } else {
 		    $rdata = mysql_fetch_assoc($res);
 		    $marker_uid=$rdata['marker_uid'];

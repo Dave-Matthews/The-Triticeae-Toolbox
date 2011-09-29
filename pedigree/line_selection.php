@@ -477,9 +477,9 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     else {
 ?>
     <p>Combine with <font color=blue>currently selected lines</font>:<br>
-    <input type="radio" name="selectWithin" value="Replace" checked/>Replace<br>
-    <input type="radio" name="selectWithin" value="Add"/>Add (OR)<br>
-    <input type="radio" name="selectWithin" value="Yes"/>Intersect (AND)<br>
+    <input type="radio" name="selectWithin" value="Replace" checked>Replace<br>
+    <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
+    <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
     <input type="submit" value="Combine" style='color:blue'>
 <?php }
     echo "</form>";
