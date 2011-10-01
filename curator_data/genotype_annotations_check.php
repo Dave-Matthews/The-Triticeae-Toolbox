@@ -409,7 +409,7 @@ class Annotations_Check {
                     $ds_name = $storageArr[$i][$breedingProgIdx].$year_last2;
                     $sql = "INSERT INTO datasets (CAPdata_programs_uid, breeding_year, dataset_name, updated_on, created_on)
                        VALUES ($bp_uid, $year, '$ds_name', NOW(), NOW())";
-                    $res = mysql_query($sql) or die("Database Error: Dataset insertion failed - ". mysql_error() . "<br>Dataset sql code: ".$sql);
+                    $res = mysql_query($sql) or die("Database Error: Dataset insertion failed - ". mysql_error());
                     //echo "Dataset sql code: ".$sql . "<br>";
                     $sql = "SELECT MAX(datasets_uid) AS dataid FROM datasets";
                     $res = mysql_query($sql) or die("Database Error: Unable to lookup last dataset uid - ". mysql_error());

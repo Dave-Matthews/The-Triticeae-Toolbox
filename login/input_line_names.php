@@ -1,10 +1,11 @@
 <?
+// 06/03/2011 JLee  Change to use curator bootstrap
 
 require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
+include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 
 connect();
 loginTest();
