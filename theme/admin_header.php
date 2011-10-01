@@ -63,7 +63,7 @@ EOD;
   <div id="util">
   <div id="utilright">
   </div>
-  <a href="./feedback.php">Feedback</a> | <a href="about.php">About T3</a>
+  <a href="./feedback.php">Feedback</a>
   </div>
 
 <?php
@@ -71,7 +71,7 @@ EOD;
   //Tooltips:
   $lang = array(
 		"desc_sc1" => "Search by germplasm and phenotype information",
-		"desc_sc2" => "Credits",
+		"desc_sc2" => "Credits, data status ... ",
 		"desc_sc3" => "Search by genotyping information",
 		"desc_sc4" => "Search by Expression Related information.",
 		"desc_sc5" => "Database administration",
@@ -115,11 +115,10 @@ EOD;
 <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
   </ul>
   <li>
-  <a title="<?php echo $lang["desc_sc2"]; ?>">Data Sources</a>
+  <a title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
   <ul>
-  <li>
-  <a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Show CAP Data Programs">
-  CAP Data Programs</a>
+  <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">CAP Data Programs</a>
+  <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Data Status</a>
   </ul>
 
   <?php 
