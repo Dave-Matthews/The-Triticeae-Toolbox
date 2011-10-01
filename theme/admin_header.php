@@ -1,10 +1,3 @@
-<?php
-/*
-*
-*
-*  6/20/11 J.Lee  Suppress the full DB admin option
-*/
-?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -124,8 +117,9 @@ EOD;
   <li>
   <a title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
   <ul>
-  <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">CAP Data Programs</a>
-  <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Data Status</a>
+    <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
+    <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">CAP Data Programs</a>
+    <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Data Status</a>
   </ul>
 
   <?php 
@@ -147,7 +141,7 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
       Add Phenotype Experiment Annotations</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data">
-      Add/Delete Phenotype Experiment Results</a></li>
+      Add Phenotype Experiment Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
       Add Maps</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
@@ -179,7 +173,8 @@ EOD;
 <!--	  	    <li>
 	    <a href="<?php echo $config['base_url']; ?>dbtest/myadmin/" title="Full Database Administration">
 	    Full Database Administration
-	    </a> -->
+	    </a>
+-->
 	  	    <?php endif; ?>
 <?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
     <li>
