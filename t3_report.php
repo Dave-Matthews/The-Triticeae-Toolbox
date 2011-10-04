@@ -85,6 +85,7 @@ if ($query == 'geno') {
     header('Content-Disposition:attachment;filename=t3_report.xls');
   } elseif ($output == 'excel') {
     $workbook = new Spreadsheet_Excel_Writer();
+    $workbook->send('t3_report.xls');
     $format_header =& $workbook->addFormat();
     $format_header->setBold();
 //    $format_header->setAlign('center');
@@ -200,7 +201,7 @@ if ($query == 'geno') {
     $worksheet->write(7, 0, "Lines with genotypeing data");
     $worksheet->write(7, 1, $count);
   } else {
-    print "<tr><td><a href=t3_report.php?query=linegeno>Lines with genotyping data</a><td>$count\n";
+    print "<tr><td>Lines with genotyping data<td><a href=t3_report.php?query=linegeno>$count</a>\n";
   }
   $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, phenotype_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = phenotype_data.tht_base_uid)";
   $res = mysql_query($sql) or die(mysql_error());
@@ -212,7 +213,7 @@ if ($query == 'geno') {
     $worksheet->write(8, 1, $count);
     $worksheet->write(9, 0, "Species");
   } else {
-    print "<tr><td><a href=t3_report.php?query=linephen>Lines with phenotype data</a><td>$count\n";
+    print "<tr><td>Lines with phenotype data<td><a href=t3_report.php?query=linephen>$count</a>\n";
     print "<tr><td>Species<td>";
   }
   $count = "";
@@ -275,15 +276,27 @@ if ($query == 'geno') {
     $worksheet->write(14, 0, "Markers with genotyping data");
     $worksheet->write(14, 1, $count);
   } else {
-    print "<tr><td>Markers with genotyping data<td>$count<td><a href=t3_report.php?query=geno>missing</a>\n";
-  }  
+    print "<tr><td>Markers with genotyping data<td>$count\n";
+  } 
+  $count = 0; 
+  $sql = "select distinct * from markers where not exists (select * from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($row=mysql_fetch_row($res)) {
+    $count++;
+  }
+  if ($output == "excel") {
+    $worksheet->write(15, 0, "Markers without genotyping data");
+    $worksheet->write(15, 1, $count);
+  } else {
+    print "<tr><td>Markers without genotyping data<td><a href=t3_report.php?query=geno>$count</a>\n";
+  }
   $sql = "select count(*) from genotyping_data";
   $res = mysql_query($sql) or die(mysql_error());
   $row = mysql_fetch_row($res);
   $count = $row[0];
   if ($output == "excel") {
-    $worksheet->write(15, 0, "Total genotype data");
-    $worksheet->write(15, 1, "$count");
+    $worksheet->write(16, 0, "Total genotype data");
+    $worksheet->write(16, 1, "$count");
   } else {
     $count = number_format($count, 0, 0, ',');
     print  "<tr><td>Total genotype data<td>$count\n";
@@ -295,8 +308,8 @@ if ($query == 'geno') {
     $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(16, 0, "markers added since $this_week");
-    $worksheet->write(16, 1, $count);
+    $worksheet->write(17, 0, "markers added since $this_week");
+    $worksheet->write(17, 1, $count);
   } else {
     print "<tr><td>markers added since $this_week <td>$count\n";
   }
@@ -306,8 +319,8 @@ if ($query == 'geno') {
     $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(17, 0, "markers added since $this_month");
-    $worksheet->write(17, 1, $count);
+    $worksheet->write(18, 0, "markers added since $this_month");
+    $worksheet->write(18, 1, $count);
   } else {
     print "<tr><td>markers added since $this_month <td>$count\n";
     print "</table><br>\n";
@@ -319,9 +332,9 @@ if ($query == 'geno') {
     $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(18, 0, "Phenotype Data", $format_header);
-    $worksheet->write(19, 0, "Phenotypes");
-    $worksheet->write(19, 1, $count);
+    $worksheet->write(19, 0, "Phenotype Data", $format_header);
+    $worksheet->write(20, 0, "Phenotypes");
+    $worksheet->write(20, 1, $count);
   } else {
     print "<b>Phenotype Data</b>\n";
     print "<table>\n";
@@ -333,8 +346,8 @@ if ($query == 'geno') {
     $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(20, 0, "Total phenotype data");
-    $worksheet->write(20, 1, $count);
+    $worksheet->write(21, 0, "Total phenotype data");
+    $worksheet->write(21, 1, $count);
   } else {
     print "<tr><td>Total phenotype data<td>$count\n";
   }
@@ -344,8 +357,8 @@ if ($query == 'geno') {
     $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(21, 0, "data added since $this_week");
-    $worksheet->write(21, 1, $count);
+    $worksheet->write(22, 0, "data added since $this_week");
+    $worksheet->write(22, 1, $count);
   } else {
     print "<tr><td>data added since $this_week <td>$count\n";
   }
@@ -355,15 +368,14 @@ if ($query == 'geno') {
     $count = $row[0];
   } 
   if ($output == "excel") {
-    $worksheet->write(22, 0, "data added since $this_month");
-    $worksheet->write(22, 1, $count);
+    $worksheet->write(23, 0, "data added since $this_month");
+    $worksheet->write(23, 1, $count);
   } else {
     print "<tr><td>data added since $this_month <td>$count\n";
     print "</table>\n";
   }
 
 if ($output == "excel") {
-  $workbook->send('t3_report.xls');
   $workbook->close();
 } else {
   print "</div></div>";
