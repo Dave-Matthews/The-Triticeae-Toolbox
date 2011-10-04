@@ -88,15 +88,12 @@ if ($query == 'geno') {
     $workbook->send('t3_report.xls');
     $format_header =& $workbook->addFormat();
     $format_header->setBold();
-//    $format_header->setAlign('center');
     $format_title =& $workbook->addFormat();
     $format_title->setBold();
     $format_title->setAlign('merge');
     $worksheet =& $workbook->addWorksheet();
   } else {
     include($config['root_dir'].'theme/normal_header.php');
-//    print "<div id=primaryContentContainer>";
-//    print "<div id=primaryContent>";
     print "<div class=box>";
   }
   $date = date_create(date('Y-m-d'));
@@ -117,13 +114,9 @@ if ($query == 'geno') {
     print "<h2>$db Data Submission Report $date</h2>";
   }
   if($output == "") {
-//    print "<form action='t3_report.php' method='get'>";
-//    print "<input type=hidden name='output' value='html'>";
-//    print "<input type='submit' value='Download HTML to MS Excel'> you may get data format warning<br>";
-//    print "</form><br>";
     print "<form action=t3_report.php method='get'>";
     print "<input type=hidden name='output' value='excel'>";
-    print "<input type='submit' value='Download data to MS Excel'>";
+    print "<input type='submit' value='Download tables to MS Excel'>";
     print "</form><br>";
   }
 
