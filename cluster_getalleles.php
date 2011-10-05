@@ -56,7 +56,9 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
    $outputheader = trim($outputheader, ",")."\n";
    // Make the filename unique to deal with concurrency.
    $time = $_GET['time'];
-   $outfile = $config['root_dir']."downloads/temp/mrkData.csv".$time;
+   /* $outfile = $config['root_dir']."downloads/temp/mrkData.csv".$time; */
+   if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
+   $outfile = "/tmp/tht/mrkData.csv".$time;
    file_put_contents($outfile, $outputheader);
 
    $markers = implode(",",$marker_uid);

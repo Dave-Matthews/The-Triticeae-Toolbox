@@ -645,7 +645,8 @@ selected lines</a>.<br>
 		
 		
 		//set up download file name in temp directory
-		$dir = 'temp/';
+		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
+		$dir = '/tmp/tht/';
 		$filename = 'thtdownload_qtlminer'.chr(rand(65,90)).chr(rand(65,90)).chr(rand(65,90)).'.zip';
 		// $firephp->log($dir.$filename);
 		
@@ -720,7 +721,8 @@ selected lines</a>.<br>
 		//$firephp = FirePHP::getInstance(true);
 
 		//$firephp->error("Curent location: ". getcwd());
-		$dir = 'temp/';
+		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
+		$dir = '/tmp/tht/';
 		$filename = 'THTdownload_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 		
         // File_Archive doesn't do a good job of creating files, so we'll create it first
@@ -791,7 +793,8 @@ selected lines</a>.<br>
 		//$firephp = FirePHP::getInstance(true);
 
 		//$firephp->error("Curent location: ". getcwd());
-		$dir = 'temp/';
+		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
+		$dir = '/tmp/tht';
 		$filename = 'THTdownload_tasselV3_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 		
         // File_Archive doesn't do a good job of creating files, so we'll create it first

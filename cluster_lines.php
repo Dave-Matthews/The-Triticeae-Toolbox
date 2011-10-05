@@ -13,8 +13,8 @@ if (isset($_GET['time'])) $time = $_GET['time'];
 if (isset($_GET['mycluster'])) {
   $mycluster = $_GET['mycluster'];
   $where_in = "";
-  $clustertable = file($config['root_dir']."downloads/temp/clustertable.txt".$time);
-  unlink($config['root_dir']."downloads/temp/clustertable.txt".$time);
+  $clustertable = file("/tmp/tht/clustertable.txt".$time);
+  unlink("/tmp/tht/clustertable.txt".$time);
   $clustertable = preg_replace("/\n/", "", $clustertable);
   // Remove first line, "x".
   array_shift($clustertable);
