@@ -1,6 +1,6 @@
 <?php 
 
-// 01/24/2011 JLee  Redirect flapjack download file to ./downloads/temp, address possible concurrency issue 
+// 01/24/2011 JLee  Redirect flapjack download file to /tmp/tht, address possible concurrency issue 
 
 
 require_once('config.php');
@@ -339,8 +339,8 @@ private function type_Download()
     $trial_code = stripslashes($_GET['trialcode']);
     $trial_code = stripslashes($trial_code);
 		
-		$myFile = "./downloads/temp/tht_FlapJack_genotype_".chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).".txt";
-		
+		$myFile = "/tmp/tht/tht_FlapJack_genotype_".chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).".txt";
+		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
 		$fh = fopen($myFile, 'w') or die("can't open file"); 
 		
 		$sql = "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code IN ($trial_code) ";

@@ -135,7 +135,9 @@ connect();
         
         $myFile = "THT_Phenotypes_".chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).".txt";//auto generate a delimited file with the queried data
 		
-        $dir ='./downloads/temp/';				
+        /* $dir ='./downloads/temp/';				 */
+        $dir ='/tmp/tht/';	
+	if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
         // create a download file
         $downloadFile = $dir.$myFile;
 		$fh = fopen($downloadFile, "w");

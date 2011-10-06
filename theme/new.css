@@ -78,10 +78,11 @@ html>body #logo
 #util {
     position: absolute;
     right: 200px;
-    width: 138px;
+    width: 100px;
     height: 26px;
     background: url('images/utilbg.jpg') no-repeat;
     text-align: center;
+    line-height: 26px;
     margin: 0 auto;
     padding-left: 4px;
     font-size: 1.2em

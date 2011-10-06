@@ -7,8 +7,8 @@ require_once $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require_once $config['root_dir'] . 'includes/aes.inc';
 
 if (!isset($_GET['token'])) {
-  header('HTTP/1.0 404 Not Found');
-  die("This script is useless without a token");
+/*   header('HTTP/1.0 404 Not Found'); */
+  die("The token must be included in the URL.");
  }
 
 connect();
@@ -16,11 +16,12 @@ $token = $_GET['token'];
 $email = AESDecryptCtr($token, setting('capencryptionkey'), 128);
 $sql_email = mysql_real_escape_string($email);
 $user_type_participant = USER_TYPE_PARTICIPANT;
-$sql = "select users_uid, name, institution from users where users_name='$sql_email' and user_types_uid<>$user_type_participant";
+//$sql = "select users_uid, name, institution from users where users_name='$sql_email' and user_types_uid<>$user_type_participant";
+$sql = "select users_uid, name, institution from users where users_name='$sql_email'";
 $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
 if (!mysql_num_rows($r)) {
-  header('HTTP/1.0 404 Not Found');
-  die("Couldn't find this record in the database");
+/*   header('HTTP/1.0 404 Not Found'); */
+  die("Couldn't find a record for user $email in the database.");
  }
 $row = mysql_fetch_assoc($r);
 extract($row);
