@@ -84,7 +84,7 @@ private function typeLineName()
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
 	<p><strong>File:</strong> <input id="file" type="file" name="file" /><br>
-<a href="<?php echo $config['root_dir'] ?>curator_data/examples/T3/LineSubmissionForm_Wheat.xls">Example line input file</a></p>
+<a href="<?php echo $config['root_dir'] ?>curator_data/examples/T3/LineSubmissionForm_Barley.xls">Example line input file</a></p>
 	<p><input type="submit" value="Upload Line File" /></p>
 	
 	<a href="<?php echo $config['root_dir'] ?>login/edit_line.php"> Edit Lines </a>
