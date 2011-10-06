@@ -27,7 +27,7 @@ connect();
 	
 	if ($num_rows ==0){
 			?>	<div class="section">
-				<p> There are no available datasets for this CAP data provider in THT at this time.</p>
+				<p> There are no available datasets for this CAP data provider in T3 at this time.</p>
 			</div>
 			<?php
 	} else {
@@ -66,7 +66,7 @@ connect();
 		$num_rows = mysql_num_rows($res2);
 		if ($num_rows ==0){
 			?>	<div class="section">
-				<p> There are no publicly available datasets for this CAP data provider in THT at this time. Participants in the BarleyCAP project will need to login to see additional datasets.</p>
+				<p> There are no publicly available datasets for this CAP data provider in T3 at this time. Participants in the CAP project will need to login to see additional datasets.</p>
 			</div>
 			<?php
 		} else {
