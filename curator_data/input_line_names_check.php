@@ -346,7 +346,9 @@ class LineNames_Check
 		    if (mysql_num_rows($res) > 0) {
 		      $rn = mysql_fetch_row($res);
  		      $realname = $rn[0];
-		      die_nice("Line Name $line is a synonym for $realname. Please use $realname instead.");
+		      // It's okay for a synonym to be the same as the name except for UPPER/Mixed case.
+		      if ($realname != $line)
+			die_nice("Line Name $line is a synonym for $realname. Please use $realname instead.");
 		    }
 		    else {
 		    //update the line record
