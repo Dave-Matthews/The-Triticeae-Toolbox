@@ -200,7 +200,6 @@ function connect() {
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
   include('/data/tht_data/mysql_connections/T2barley_readonly.inc');
   //include('/data/tht_data/mysql_connections/THT_jlee_readonly.inc');
-
   $db_config = array_merge_recursive_unique($db_config,
 					    $ini_config);
   extract($db_config);
