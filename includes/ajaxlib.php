@@ -1103,7 +1103,7 @@ and experiments.experiment_uid IN ($trialsSelected)
         $x = trim($x, ",");
         $x .= ")";
 	//        $date = date("Uu");
-        $out = "jpeg(\\\"/www/htdocs/tht/downloads/temp/histogram.jpg\\\", width=150, height=200)";
+        $out = "jpeg(\\\"/tmp/tht/histogram.jpg\\\", width=150, height=200)";
         $title = "main='" . $pname[0] . "'";
 	$xlab = "xlab='" . html_entity_decode($pname[1]) . "'";
         $rcmd = "hist(x,$title,$xlab)";

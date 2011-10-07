@@ -507,7 +507,7 @@ function DispPhenoSel(value, middle, phenotype_uid) {
 		    // Works on both but hardcoded.
 		    //document.getElementById("phenotypeSelTab").rows[2].cells[2].innerHTML = "<img src=http://wheat.pw.usda.gov/t3/wheat/downloads/temp/histogram.jpg id=histogram>";
 		    // Use relative URL, sigh.
-		    document.getElementById("phenotypeSelTab").rows[2].cells[2].innerHTML = "<img src=downloads/temp/histogram.jpg id=histogram>";
+		    document.getElementById("phenotypeSelTab").rows[2].cells[2].innerHTML = "<img src=/tmp/tht/histogram.jpg id=histogram>";
 		    // <img src... won't reload without a page refresh, unless we change the
 		    // value.  Appending "?m=..." to it works, in Firefox and IE7.
 		    // Tip from www.sitepoint.com/forums/showthread.php?t=688372
