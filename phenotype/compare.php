@@ -16,6 +16,9 @@ include($config['root_dir'] . 'theme/admin_header.php');
 
 <?php
 
+  // Create temporary directory if necessary.
+  if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
+
 if (isset($_POST['deselLines'])) {
   $selected_lines = $_SESSION['selected_lines'];
   foreach ($_POST['deselLines'] as $line_uid) {
@@ -24,7 +27,7 @@ if (isset($_POST['deselLines'])) {
     }
   }
   $_SESSION['selected_lines']=$selected_lines;
- }
+}
 
 
   if(isset($_POST['phenotypecategory']) || isset($_GET['phenotype'])) {	//form has been submitted
@@ -75,13 +78,14 @@ if (isset($_POST['deselLines'])) {
         $x = trim($x, ",");
         $x .= ")";
         $date = date("Uu");
-        $out = "jpeg(\\\"".$config['root_dir']."downloads/temp/bighistogram.jpg\\\", width=444, height=333)";
+        /* $out = "jpeg(\\\"".$config['root_dir']."downloads/temp/bighistogram.jpg\\\", width=444, height=333)"; */
+        $out = "jpeg(\\\"/tmp/tht/bighistogram.jpg\\\", width=444, height=333)";
         $title = "main='Histogram for " . $pname[0] . "'";
 	$xlab = "xlab='" . html_entity_decode($pname[1]) . "'";
 	//$xlab "xlab='" . $pname[1] . "'";
         $rcmd = "hist(x,$title,$xlab)";
         exec("echo \"$x;$out;$rcmd\" | R --vanilla");
-        echo "<img src=\"".$config['base_url']."downloads/temp/bighistogram.jpg?d=$date\">\n";
+        echo "<img src=\"/tmp/tht/bighistogram.jpg?d=$date\">\n";
 	//
 
 	// Show mean, std. dev., and number of entries

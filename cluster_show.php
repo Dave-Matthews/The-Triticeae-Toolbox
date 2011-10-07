@@ -68,6 +68,7 @@ sort($clustInfo);
 ****/
 
 // Store the input parameters in file setupcluster.R.
+if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupcluster.R".$time, "w");
 $png = "png(\"/tmp/tht/linecluster.png\", width=600, height=500)\n";
 fwrite($setup, $png);
