@@ -18,8 +18,7 @@ include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
 
 
-
-require_once("../lib/Excel/reader.php"); // Microsoft Excel library
+require_once("../lib/Excel/excel_reader2.php"); // Microsoft Excel library
 
 connect();
 loginTest();
@@ -1009,22 +1008,21 @@ private function typeAnnotationCheck()
 					$sql = " UPDATE phenotype_experiment_info
 								set
 									collaborator = '{$experiment->collaborator}',
-									planting_date = '{$experiment->plantingdate}',
+									planting_date = str_to_date('$experiment->plantingdate','%m/%d/%Y'),
 									seeding_rate = '{$experiment->seedingrate}',
 									experiment_design = '{$experiment->experimentaldesign}',
 									number_replications = '{$experiment->numberofreplications}',
 									number_entries = '{$experiment->numberofentries}',
 									plot_size = '{$experiment->plotsize}',
 									harvest_area = '{$experiment->harvestedarea}',
-									harvest_date = '{$experiment->harvestdate}',
+									harvest_date = str_to_date('$experiment->harvestdate','%m/%d/%Y'),
 									irrigation = '{$experiment->irrigation}',
 									other_remarks = '{$experiment->otherremarks}',
 									location = '{$experiment->location}',
 									latitude_longitude = '{$experiment->latlong}',
 									created_on = NOW()
 								WHERE experiment_uid = $exp_id";
-					if (DEBUG>2) {echo "update phenotypeexp SQL ".$sql."\n";}
-					
+					echo "update phenotype_experiment_info<br>\n";
 					mysql_query($sql) or die(mysql_error() . "<br>$sql");
 			} else {
 		
@@ -1058,22 +1056,22 @@ private function typeAnnotationCheck()
 						set
 							experiment_uid = $exp_id,
 							collaborator = '{$experiment->collaborator}',
-							planting_date = '{$experiment->plantingdate}',
+							planting_date = str_to_date('$experiment->plantingdate','%m/%d/%Y'),
 							seeding_rate = '{$experiment->seedingrate}',
 							experiment_design = '{$experiment->experimentaldesign}',
 							number_replications = '{$experiment->numberofreplications}',
 							number_entries = '{$experiment->numberofentries}',
 							plot_size = '{$experiment->plotsize}',
 							harvest_area = '{$experiment->harvestedarea}',
-							harvest_date = '{$experiment->harvestdate}',
+							harvest_date = str_to_date('$experiment->harvestdate','%m/%d/%Y'),
 							irrigation = '{$experiment->irrigation}',
 							other_remarks = '{$experiment->otherremarks}',
 							location = '{$experiment->location}',
 							latitude_longitude = '{$experiment->latlong}',
 							created_on = NOW()
 					";
-				//	if (DEBUG>2) {echo "insert phenotype exp SQL ".$sql."\n";}
-					mysql_query($sql) or die(mysql_error());
+					echo "insert into phenotype_experiment_info<br>";
+					mysql_query($sql) or die(mysql_error() . "<br>$sql");
 				
 				
 			
@@ -1084,10 +1082,8 @@ private function typeAnnotationCheck()
 
 	
 	echo " <b>The Data is inserted/updated successfully </b>";
-	echo"<br/><br/>";
-	?>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"> Go Back To Main Page </a>
-	<?
+	echo "<br/><br/>";
+        echo "<a href=\"javascript:history.go(-2)\" title=\"Go Back To Main Page\">&laquo; Return to Main Page</a>";
 	
 	$sql = "INSERT INTO input_file_log (file_name,users_name)
 										VALUES('$filename', '$username')";
