@@ -142,7 +142,7 @@ if (($reader = fopen($gDataFile, "r")) == FALSE) {
 //Advance to data header area
 while(!feof($reader))  {
     $line = fgets($reader);
-    if (preg_match("/Index\tSNP/",$line)) {
+    if (preg_match("/SNP/",$line)) {
       echo "Header line found\n";
       break;
     } else {
@@ -153,9 +153,18 @@ while(!feof($reader))  {
 if (feof($reader)) {
     exitFatal ($errFile, "Unable to locate genotype header line.");
 }
-  
+
+//Get column location  
 $header = str_getcsv($line,"\t");
 $num = count($header);
+for ($x = 0; $x < $num; $x++) {
+  switch ($header[$x] ) {
+	case 'SNP':
+	 	$nameIdx = $x;
+		$dataIdx = $x + 1;
+		break;
+  }
+}
                      
 $rowNum = 0;
 $line_name = "qwerty";
@@ -172,7 +181,7 @@ while (!feof($reader))  {
     if (empty($line)) next;
     if (feof($reader)) break;
     $data = str_getcsv($line,"\t");
-    $marker = $data[1];
+    $marker = $data[$nameIdx];
     $num = count($data);		// number of fields
     // Check line for missing column    
     if ($num < 96) { 
@@ -187,7 +196,7 @@ while (!feof($reader))  {
     $rowNum++;		// number of lines
     $markerflag = 0;        //flag for checking marker existence
     $data_pt = 0;
-    for ($data_pt = 2; $data_pt < $num; $data_pt++) {
+    for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
       $line_name = $header[$data_pt];
 
     /* check if marker is EST synonym, if not found, then check name */
