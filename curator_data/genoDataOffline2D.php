@@ -93,12 +93,12 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 }
   
 // Store individual records
+$num = 0;
 while(($line = fgets($reader)) !== FALSE) { 
-    //chop ($line, "\r");
+    chop ($line, "\r");
     if (strlen($line) < 2) break;
     if (feof($reader)) break;
     if (empty($line)) break;
-    //echo "$line <br>";  
                 
     $data = str_getcsv($line,"\t");
                         
@@ -122,12 +122,13 @@ while(($line = fgets($reader)) !== FALSE) {
         $de_uid=implode(",",mysql_fetch_assoc($res));
 
         $curTrialCode = $trialCodeStr;
+        $num++;
     }
     $lineExpHash[$lineStr] = $exp_uid;
     $lineDsHash[$lineStr] = $de_uid;
 }    
 fclose($reader);   
-echo "Line translation file processing done.\n";
+echo "Line translation file processing done. $num\n";
 
 echo "Start genotyping record creation process...\n";
 //Process Genotype data
@@ -182,6 +183,7 @@ while (!feof($reader))  {
     if (feof($reader)) break;
     $data = str_getcsv($line,"\t");
     $marker = $data[$nameIdx];
+    echo "working on marker $marker\n";
     $num = count($data);		// number of fields
     // Check line for missing column    
     if ($num < 96) { 
@@ -190,15 +192,9 @@ while (!feof($reader))  {
         $errLines++;
         next;
     } else {
- 	echo "found $num of entries data $rowNum\n";
+ 	echo "found $num of entries data $num\n";
     }   
     
-    $rowNum++;		// number of lines
-    $markerflag = 0;        //flag for checking marker existence
-    $data_pt = 0;
-    for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
-      $line_name = $header[$data_pt];
-
     /* check if marker is EST synonym, if not found, then check name */
     $sql ="SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE ms.value='$marker'";
     $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: Marker synonym lookup - ". mysql_error()."\n\n$sql");
@@ -206,24 +202,30 @@ while (!feof($reader))  {
     $rdata = mysql_fetch_assoc($res);
     $marker_uid=$rdata['marker_uid'];
     if (empty($marker_uid)) {
-        $sql = "SELECT m.marker_uid FROM  markers AS m WHERE m.marker_name ='$marker'";
-        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: Marker lookup - ". mysql_error()."\n\n$sql");
-	// fwrite($errFile,$sql);
-	    if (mysql_num_rows($res) < 1) {
-            $markerflag = 1;
-            $msg = 'ERROR:  marker not found '.$marker.'\n';
-            fwrite($errFile, $msg);
-            $errLines++;
-            next;
-        } else {
-		    $rdata = mysql_fetch_assoc($res);
-		    $marker_uid=$rdata['marker_uid'];
-        }
+    	$sql = "SELECT m.marker_uid FROM  markers AS m WHERE m.marker_name ='$marker'";
+    	$res = mysql_query($sql) or exitFatal ($errFile, "Database Error: Marker lookup - ". mysql_error()."\n\n$sql");
+    	// fwrite($errFile,$sql);
+    	if (mysql_num_rows($res) < 1) {
+    		$markerflag = 1;
+    		$msg = 'ERROR:  marker not found '.$marker.'\n';
+    		fwrite($errFile, $msg);
+    		$errLines++;
+    		next;
+    	} else {
+    		$rdata = mysql_fetch_assoc($res);
+    		$marker_uid=$rdata['marker_uid'];
+    	}
     }
     
-    if ($markerflag == 0) {
-	/* get line record ID */ 
-	//echo $line_name,"\n";
+    $rowNum++;		// number of lines
+    $markerflag = 0;        //flag for checking marker existence
+    $data_pt = 0;
+    for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
+      $line_name = $header[$data_pt];
+
+      if ($markerflag == 0) {
+	  /* get line record ID */ 
+	  //echo $line_name,"\n";
             $msg = "line name = " . $line_name. "\n";
 	    // fwrite($errFile, $msg);
             $line_uid = get_lineuid ($line_name);
@@ -263,200 +265,48 @@ while (!feof($reader))  {
     	$gen_uid=$rqgen['genotyping_data_uid'];
 				
     	if (empty($gen_uid)) {
-    		$sql="INSERT INTO genotyping_data (tht_base_uid, marker_uid, updated_on, created_on)
+    	    $sql="INSERT INTO genotyping_data (tht_base_uid, marker_uid, updated_on, created_on)
 					VALUES ($tht_uid, $marker_uid, NOW(), NOW())" ;
             $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: genotype_data insert - ". mysql_error() . ".\n\n$sql");
             $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid = $marker_uid AND tht_base_uid=$tht_uid ";
             $rgen=mysql_query($sql) or exitFatal ($errFile, "Database Error: post genotype_data lookup - ". mysql_error(). ".\n\n$sql");
             $rqgen=mysql_fetch_assoc($rgen);
             $gen_uid=$rqgen['genotyping_data_uid'];
-	    $good_data = 1;
-	    }
+        }
 		// echo "gen_uid".$gen_uid."\n";
 		/* Read in the rest of the variables */
-            $allele1 = substr($data[$data_pt],0,1);
-	    $allele2 = substr($data[$data_pt],1,1);
-	    if (($allele1 == 'A') || ($allele1 == 'B') || ($allele1 == '-')) {
-	    } else { 
-	      echo "bad data at " .$data_pt . "\n";
-	      $good_data = 0;
-            }
-	    if (($allele2 == 'A') || ($allele2 == 'B') || ($allele2 == '-')) {
-            } else { 
-	      echo "bad data at " .$data_pt . "\n";
- 	      $good_data = 0;
-            }
-
-	    if ($good_data) {
+        $alleles = $data[$data_pt];
+        $allele1 = substr($data[$data_pt],0,1);
+	$allele2 = substr($data[$data_pt],1,1);
+	if (($alleles == 'AA') || ($alleles == 'BB') || ($alleles == '--') || ($alleles == 'AB') || ($alleles == 'BA')) {
             $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid");
 	    $rgen=mysql_num_rows($result);
 	    if ($rgen < 1) {
-		$sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
+		      $sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
 						updated_on, created_on)
 						VALUES ($gen_uid,'$allele1','$allele2', NOW(), NOW()) ";
             } else {
-		$sql = "UPDATE alleles
-			SET allele_1='$allele1',allele_2='$allele2',
-			updated_on=NOW() 
-			WHERE genotyping_data_uid = $gen_uid";
+		      $sql = "UPDATE alleles
+			  SET allele_1='$allele1',allele_2='$allele2',
+			  updated_on=NOW() 
+			  WHERE genotyping_data_uid = $gen_uid";
 	    }
 	    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: alleles processing - ". mysql_error() . ".\n\n$sql");
 	    if ($res != 1) { 
-              $msg = "ERROR:  Allele not loaded! row = " . $rowNum ."\t" . $line;
-              fwrite($errFile, $msg);
-              $errLines++;
+                  $msg = "ERROR:  Allele not loaded! row = " . $rowNum ."\t" . $line;
+                  fwrite($errFile, $msg);
+                  $errLines++;
             }
- 	    }
-	} // end marker flag loop
-        }
+ 	} else {
+ 	    	echo "bad data at " . $line_name . " $data[$data_pt]\n";
+ 	}
+      }
+    }
 } // End of while data 
 fclose($reader);
 echo "Genotyping record creation completed.\n";
-echo "Start allele frequency calculation processing...\n";
 
-// Do allele frequency calculations
-$uniqExpID = array_unique($lineExpHash);
-    
-foreach ($uniqExpID AS $key=>$expID)  {
-	
-	if (empty($expID)) continue; 
-
-    // Step 1: get tht_base IDs for the experiment
-    echo "Working on experiment id - " . $expID . "\n";
-    $sql ="SELECT tht_base.tht_base_uid FROM tht_base WHERE tht_base.experiment_uid = $expID";
-    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: tht_base lookup with experiment uid - ". $expID .
-        " ". mysql_error() . ".\n\n$sql");
-	
-    while ($row = mysql_fetch_array($res)) {
-        $tht_base_uid[] = $row['tht_base_uid'];
-    }
-    
-//    echo "Size of experiment look up in tht_base - ".  sizeof($tht_base_uid) ."\n";
-    if (sizeof($tht_base_uid) == 0) continue; 
-    
-    $tht_base_uids = implode(",",$tht_base_uid);
-    // echo "\t tht_base_uids list - " . $tht_base_uids  . "\n";    
-    // Step 2: get distinct marker_uid's for these tht_base IDs
-    $sql ="SELECT DISTINCT g.marker_uid FROM genotyping_data AS g WHERE g.tht_base_uid IN ($tht_base_uids)";
-    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: genotyping_data lookup with experiment uid - ". $expID .
-    " ". mysql_error(). ".\n\n$sql");
-    while ($row = mysql_fetch_array($res)) {
-        $mk_uid[] = $row['marker_uid'];
-    }
-    $mk_uids = array_unique($mk_uid);
-    
-    //$tstcnt = 0;
-    $res = mysql_query("SHOW COLUMNS FROM allele_frequencies");
-    while($row = mysql_fetch_object($res)){
-        if(ereg(('set|enum'), $row->Type)) {
-            eval(ereg_replace('set|enum', '$'.$row->Field.' = array', $row->Type).';');
-        }
-    }
-         
-    foreach ($mk_uids as $value) {
-         
-    	if (empty($value)) continue; 	
-        //get marker name
-        $sql ="SELECT markers.marker_name FROM markers
-                   WHERE marker_uid = $value";
-        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: marker name retrieval - ". mysql_error() . ".\n\n$sql");
-        $rdata = mysql_fetch_assoc($res);
-        $mname = $rdata['marker_name'];
-        echo "-+- marker name ".$mname." for marker ".$value."\n";
-                
-        // get genotype IDs for a marker
-        $sql ="SELECT g.genotyping_data_uid AS gid FROM genotyping_data AS g
-                    WHERE g.tht_base_uid IN ($tht_base_uids) AND g.marker_uid = $value";
-        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: genotyping_data retrieval - ". mysql_error() . ".\n\n$sql");
-        while ($row = mysql_fetch_array($res)) {
-            $geno_uid[] = $row['gid'];
-        }
-        echo "--- num genotype ids ".count($geno_uid)." for marker ".$value."\n";
-        $geno_uids = implode(",",$geno_uid);
-        //print_r($geno_uids);
-        if (strlen($geno_uids) == 0 ) echo "Oops, no Genotype_data_uid\n";
-        
-        // get alleles and gentrain score
-        $sql ="SELECT a.allele_1,a.allele_2, a.GT_score FROM alleles AS a
-                    WHERE a.genotyping_data_uid IN ($geno_uids)";
-        $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: genotyping_data retrieval - ". mysql_error() . ".\n\n$sql");
-
-        while ($row = mysql_fetch_array($res)) {
-            $a1[]=$row['allele_1'];
-            $a2[]=$row['allele_2'];
-            if ($row['GT_score'] == "" ) {
-                $gt[] = NULL;
-            } else {
-                $gt[] =$row['GT_score'];
-            }
-        }
-        /* for ($i = 0; $i < count($a1); $i++) {
-        echo $i." alleles ".$a1[$i].$a2[$i].$gt[$i]."\n";}*/
-                
-        // Loop through markers to get a count
-        $aacnt = 0;
-        $abcnt = 0;
-        $bbcnt = 0;
-        $misscnt =0;
-        for ($i = 0; $i < count($a1); $i++) {
-            if (($a1[$i] == 'A') and ($a2[$i] == 'A')) {
-                $aacnt++;
-            } elseif (($a1[$i] == 'B') and ($a2[$i] == 'B')) {
-                $bbcnt++; 
-            } elseif ((($a1[$i] == 'A') and ($a2[$i] == 'B')) or (($a1[$i] == 'B') and ($a2[$i] == 'A'))) {
-                $abcnt++;
-            } elseif (($a1[$i] == '-') and ($a2[$i] == '-')) {
-                $misscnt++;
-            } else {
-                exitFatal ($errFile, $i." marker ".$value . " " . $a1[$i] . "not matching anything.");
-            }
-        }  //end for
-        $total = $aacnt + $abcnt + $bbcnt + $misscnt;
-        $aafreq = round($aacnt / $total,3);
-        $bbfreq = round($bbcnt / $total,3);
-        $abfreq = round($abcnt / $total,3);
-        $maf = round(100 * min((2 * $aacnt + $abcnt) /$total, ($abcnt + 2 * $bbcnt) / $total),1);
-        if (($aacnt == $total) or ($abcnt == $total) or ($bbcnt == $total)) {
-            $mono = $monomorphic[0];//is monomorphic
-        } else {
-            $mono = $monomorphic[1];
-        }
-                   
-       //echo $mono." Miss: ".$misscnt." AA ".$aacnt." BB ".$bbcnt." AB ".$abcnt." MAF ".$maf." total ".$total."\n";
-       //$tstcnt++;
-        
-        //if ($tstcnt > 1600) {
-        //    exitFatal ($errFile, "Error: tstcnt > 1600");
-        //}
-        
-        $result =mysql_query("SELECT allele_frequency_uid FROM allele_frequencies where experiment_uid = $expID and marker_uid = $value");
-		$rgen=mysql_num_rows($result);
-		if ($rgen < 1) {
-			$sql = "INSERT INTO allele_frequencies (marker_uid, experiment_uid, missing, aa_cnt, aa_freq, ab_cnt, ab_freq,
-                bb_cnt, bb_freq, total, monomorphic, maf, gentrain_score, description,  updated_on, created_on)
-                VALUES ($value, $expID, $misscnt, $aacnt, $aafreq, $abcnt, $abfreq, $bbcnt, $bbfreq, $total, '$mono',
-                $maf, 0, '$mname', NOW(), NOW())";
-        } else {
-			$sql = "UPDATE allele_frequencies 
-						SET missing = '$misscnt', aa_cnt = '$aacnt', aa_freq = $aafreq, ab_cnt = $abcnt, ab_freq = $abfreq, bb_cnt = $bbcnt,
-						bb_freq = $bbfreq, total = $total, monomorphic = '$mono', maf= $maf,   
-                        description = '$mname', updated_on = NOW() 
-						WHERE experiment_uid = $expID and marker_uid = $value";
-		}
-        mysql_query($sql) or exitFatal ($errFile, "Database Error: during update or insertion into  allele_frequencies table - ". mysql_error() . "\n\n$sql");
-        //reset key variables
-        unset($geno_uid);
-        unset($a1);
-        unset($a2);
-        unset($gt);
-    }
-    unset ($mk_uid);
-    unset ($mk_uids);
-    unset ($tht_base_uid);
-}
 fclose($errFile);
-
-echo "Allele frequency calculations completed.\n";
 
 // Send out status email
 if (filesize($errorFile)  > 0) {
