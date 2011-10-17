@@ -3,6 +3,8 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 10/17/2011 JLee  Add username and resubmission entry to 
+//					input file log table
 // 10/17/2011  JLee Create of input file log entry
 // 9/16/2011  JLee  Modify to support new 1D format 
 // 9/2/2011   JLee  Modify to remove allele freq stuff   
@@ -27,6 +29,7 @@ $lineTransFile = $fnames[1];
 $gDataFile = $fnames[2];
 $emailAddr = $fnames[3];
 $urlPath = $fnames[4];
+$userName = $fnames[5];
 $filename = stristr ($gDataFile,basename ($gDataFile));
 
 $error_flag = 0;
@@ -517,8 +520,19 @@ mail($emailAddr, $subject, $body, $mailheader);
 echo "Genotype Data Import Done\n";
 echo "Finish time - ". date("m/d/y : H:i:s", time()). "\n"; 
 
-$sql = "INSERT INTO input_file_log (file_name,users_name)
-	VALUES('$filename', '$username')";
+$sql = "SELECT input_file_log_uid from input_file_log 
+	WHERE file_name = '$filename'";
+$res = mysql_query($sql) or die("Database Error: input_file lookup  - ". mysql_error() ."<br>".$sql);
+$rdata = mysql_fetch_assoc($res);
+$input_uid = $rdata['input_file_log_uid'];
+        
+if (empty($input_uid)) {
+	$sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
+		VALUES('$filename', '$username', NOW())";
+} else {
+	$sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
+		WHERE input_file_log_uid = '$input_uid'"; 
+}
 mysql_query($sql) or die("Database Error: Input file log entry creation failed - " . mysql_error() . "\n\n$sql");
 
 exit(0);
