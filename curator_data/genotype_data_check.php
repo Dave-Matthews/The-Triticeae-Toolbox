@@ -1,7 +1,8 @@
 <?php
 // Genotype data importer
 
-// 04/11/2011 Jlee  Add zip file handling
+// 10/17/2011 JLee  Pass username to offline app
+// 04/11/2011 JLee  Add zip file handling
 //
 // Written By: John Lee
 //*********************************************
@@ -116,11 +117,11 @@ class gLineNames_Check
         if(move_uploaded_file($_FILES['file']['tmp_name'][1], $genoDataFile) == FALSE) 	{
             error(1, "Unable to move the genotype data file to the upload directory.");
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");           
-       }
-        if ($_POST['data_format'] == '1D') { 
-          $cmd = "php genoDataOffline.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." > " . $processOut . " &";
-	} else {
-          $cmd = "php genoDataOffline2D.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." > " . $processOut . " &";
+       	}
+       	if ($_POST['data_format'] == '1D') { 
+       		$cmd = "php genoDataOffline.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." ". $username ." > " . $processOut . " &";
+		} else {
+        	$cmd = "php genoDataOffline2D.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." ". $username ." > " . $processOut . " &";
         }
         //echo "Cmd - " . $cmd . "<br>";
         exec($cmd);
