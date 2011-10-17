@@ -5,6 +5,7 @@
 
 // Written By: John Lee
 //*********************************************
+error_reporting(E_ALL ^ E_NOTICE);
 $progPath = realpath(dirname(__FILE__).'/../').'/';
 
 include($progPath. 'includes/bootstrap_curator.inc');
@@ -135,6 +136,24 @@ echo "Start genotyping record creation process...\n";
 /* start reading the input */
 //echo "genotype file - " . $gDataFile . "<br>";
 
+// Check for zip file
+if (strpos($gDataFile, ".zip") == TRUE) {
+    echo "Unzipping the genotype data file...\n";
+    $zip = new ZipArchive;
+    $zip->open($gDataFile) || exitFatal ($errFile, "Unable to open zip file, please check zip format.");
+    for($i =0; $i < $zip->numFiles; $i++) {
+      $gName = $zip->getNameIndex($i);
+      if (preg_match("/\/[A-Za-z]/",$gName)) {
+        echo "found $gName\n";
+        break;
+      }
+    }
+    $zip->extractTo($target_Path) || exitFatal ($errFile, "Failed to extract file from the zip file.");
+    $zip->close()  || exitFatal ($errFile, "Failed to close zip file.");
+    $gDataFile = $target_Path . $gName;
+    echo "Genotype data unzipping done.\n";
+}
+
 /* Read the file */
 if (($reader = fopen($gDataFile, "r")) == FALSE) {
     exitFatal ($errFile, "Unable to access genotype data file.");
@@ -147,7 +166,7 @@ while(!feof($reader))  {
       echo "Header line found\n";
       break;
     } else {
-      exitFatal ($errFile, "Could not find header $line.");    
+      exitFatal ($errFile, "Could not find header in $gDataFile $line.");    
     }
 }
         
