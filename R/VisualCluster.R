@@ -6,10 +6,11 @@
 # The marker data represents the full set of lines that a user has selected.
 
 # Delete the prepended command file.
-system("rm temp/setupcluster*")
+system("rm setupcluster*")
 
 mrkData <- read.csv(mrkDataFile)
-system2("rm", mrkDataFile)
+# DEM oct11: Now this line is breaking the script. Wonder why.
+#system2("rm", mrkDataFile)
 
 library(cluster)
 scaledMrk <- scale(mrkData, TRUE, FALSE)
