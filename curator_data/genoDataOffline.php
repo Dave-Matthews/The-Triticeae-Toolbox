@@ -3,6 +3,7 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 10/18/2011 JLee  Replace loop control "next" with "continue"
 // 10/17/2011 JLee  Add username and resubmission entry to 
 //					input file log table
 // 10/17/2011  JLee Create of input file log entry
@@ -212,8 +213,8 @@ while (!feof($reader))  {
        exitFatal ($errFile, "ERROR: Too many import lines have problem."); 
     }    
     $line = fgets($reader);
-    if (strlen($line) < 2) next;
-    if (empty($line)) next;
+    if (strlen($line) < 2) continue;
+    if (empty($line)) continue;
     if (feof($reader)) break;
     //echo "$line <br>";
     $data = str_getcsv($line,"\t");
@@ -223,7 +224,7 @@ while (!feof($reader))  {
         $msg = "ERROR: Wrong number of entries for line - " . $line;
         fwrite($errFile, $msg);
         $errLines++;
-        next;
+        continue;
     }    
     
     $rowNum++;		// number of lines
@@ -244,7 +245,7 @@ while (!feof($reader))  {
             $msg = 'ERROR:  marker not found '.$marker.'\t'. $line;
             fwrite($errFile, $msg);
             $errLines++;
-            next;
+            continue;
         } else {
 		    $rdata = mysql_fetch_assoc($res);
 		    $marker_uid=$rdata['marker_uid'];
