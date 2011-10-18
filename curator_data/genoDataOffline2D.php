@@ -3,10 +3,9 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
-// 10/17/2011 JLee  Add username and resubmission entry to 
-//					input file log table
-// 10/17/2011 JLee 	Create of input file log entry
-// 4/11/2011 JLee  Add ability to handle zipped data files
+// 10/17/2011 JLee  Add username and resubmission entry to input file log table
+// 10/17/2011 JLee  Create of input file log entry
+// 4/11/2011 JLee   Add ability to handle zipped data files
 
 // Written By: John Lee
 //*********************************************
@@ -86,7 +85,7 @@ if (strpos($gDataFile, ".zip") == TRUE) {
 	$zip->open($gDataFile) || exitFatal ($errFile, "Unable to open zip file, please check zip format.");
 	$gName = $zip->getNameIndex(0);
 	$zip->extractTo($target_Path) || exitFatal ($errFile, "Failed to extract file from the zip file.");
-    $zip->close()  || exitFatal ($errFile, "Failed to close zip file.");
+	$zip->close()  || exitFatal ($errFile, "Failed to close zip file.");
 	$gDataFile = $target_Path . $gName;
 	echo "Genotype data unzipping done.\n";
 }
@@ -155,24 +154,6 @@ echo "Start genotyping record creation process...\n";
 //Process Genotype data
 /* start reading the input */
 //echo "genotype file - " . $gDataFile . "<br>";
-
-// Check for zip file
-if (strpos($gDataFile, ".zip") == TRUE) {
-    echo "Unzipping the genotype data file...\n";
-    $zip = new ZipArchive;
-    $zip->open($gDataFile) || exitFatal ($errFile, "Unable to open zip file, please check zip format.");
-    for($i =0; $i < $zip->numFiles; $i++) {
-      $gName = $zip->getNameIndex($i);
-      if (preg_match("/\/[A-Za-z]/",$gName)) {
-        echo "found $gName\n";
-        break;
-      }
-    }
-    $zip->extractTo($target_Path) || exitFatal ($errFile, "Failed to extract file from the zip file.");
-    $zip->close()  || exitFatal ($errFile, "Failed to close zip file.");
-    $gDataFile = $target_Path . $gName;
-    echo "Genotype data unzipping done.\n";
-}
 
 /* Read the file */
 if (($reader = fopen($gDataFile, "r")) == FALSE) {
