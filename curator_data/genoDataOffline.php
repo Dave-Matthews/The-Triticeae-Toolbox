@@ -120,9 +120,9 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 // Store individual records
 while(($line = fgets($reader)) !== FALSE) { 
     //chop ($line, "\r");
-    if (strlen($line) < 2) break;
+    if (strlen($line) < 2) continue;
     if (feof($reader)) break;
-    if (empty($line)) break;
+    if (empty($line)) continue;
     //echo "$line <br>";  
                 
     $data = str_getcsv($line,"\t");
