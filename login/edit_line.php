@@ -26,10 +26,44 @@ ob_end_flush();
  * Has an update been submitted?
  */
 if( ($id = array_search("Update", $_POST)) != NULL) {
-	foreach($_POST as $k=>$v)
-		$_POST[$k] = addslashes($v);
+  foreach($_POST as $k=>$v)
+    $_POST[$k] = addslashes($v);
 
-	updateTable($_POST, "line_records", array("line_record_uid"=>$id));
+  // Some validations on the line name.
+  // Todo: If name is the same as another existing line or synonym, offer to merge them.
+  $line = $_POST[line_record_name];
+  if (empty($line))
+    $msg = "Line name cannot be blank.";
+  if (strpos($line, ' ')) 
+    $msg = "Line name $line contains a blank. Replace with _ or remove." ;
+  if ($line != strtoupper($line)) 
+    $msg = "Line name $line contains lowercase characters.";
+  $already = mysql_grab("select line_record_name from line_records where line_record_name like '$line'");
+  if ($already == $line AND !empty($line)) {
+    // Name already exists.  For this same record?
+    $alreadyid = mysql_grab("select line_record_uid from line_records where line_record_name like '$line'");
+    if ($alreadyid != $id)
+      $msg = "Line name \"$already\" already exists.";
+  }
+  // If it's listed as a synonym, don't make it a line name too.
+  $sql = "select line_record_name from line_synonyms ls, line_records lr
+     where line_synonym_name = '$line' and ls.line_record_uid = lr.line_record_uid";
+  $res = mysql_query($sql) or die(mysql_error());
+  if (mysql_num_rows($res) > 0) {
+    $rn = mysql_fetch_row($res);
+    $realname = $rn[0];
+    // It's okay for a synonym to be the same as the name except for UPPER/Mixed case.
+    if ($realname != $line)
+      $msg = "$line is already a synonym for $realname and cannot be used as a line name too.";
+  }
+  if (!empty($msg))
+    echo "<b><font color=red size=+1>Not changed. </font></b>". $msg . "<p>";
+  else {
+    if (strlen($line) < 4)  
+      echo "<b>Warning:</b> '$line' is a short name and may not be unique.<p>";
+    // No error, so do it.
+    updateTable($_POST, "line_records", array("line_record_uid"=>$id));
+  }
 }
 
 

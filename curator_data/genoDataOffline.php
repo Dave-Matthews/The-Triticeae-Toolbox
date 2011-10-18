@@ -3,6 +3,7 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 10/18/2011 JLee  Replace loop control "next" with "continue"
 // 10/17/2011 JLee  Add username and resubmission entry to 
 //					input file log table
 // 10/17/2011  JLee Create of input file log entry
@@ -12,6 +13,8 @@
 // 5/9/2011	 JLee	Fix formula	for calculating MAF value	
 // 4/11/2011 JLee  Add ability to handle zipped data files
 //
+
+// Temporary patch code for 1D data
 
 // Written By: John Lee
 //*********************************************
@@ -117,9 +120,9 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 // Store individual records
 while(($line = fgets($reader)) !== FALSE) { 
     //chop ($line, "\r");
-    if (strlen($line) < 2) break;
+    if (strlen($line) < 2) continue;
     if (feof($reader)) break;
-    if (empty($line)) break;
+    if (empty($line)) continue;
     //echo "$line <br>";  
                 
     $data = str_getcsv($line,"\t");
@@ -210,8 +213,8 @@ while (!feof($reader))  {
        exitFatal ($errFile, "ERROR: Too many import lines have problem."); 
     }    
     $line = fgets($reader);
-    if (strlen($line) < 2) next;
-    if (empty($line)) next;
+    if (strlen($line) < 2) continue;
+    if (empty($line)) continue;
     if (feof($reader)) break;
     //echo "$line <br>";
     $data = str_getcsv($line,"\t");
@@ -221,7 +224,7 @@ while (!feof($reader))  {
         $msg = "ERROR: Wrong number of entries for line - " . $line;
         fwrite($errFile, $msg);
         $errLines++;
-        next;
+        continue;
     }    
     
     $rowNum++;		// number of lines
@@ -242,7 +245,7 @@ while (!feof($reader))  {
             $msg = 'ERROR:  marker not found '.$marker.'\t'. $line;
             fwrite($errFile, $msg);
             $errLines++;
-            next;
+            continue;
         } else {
 		    $rdata = mysql_fetch_assoc($res);
 		    $marker_uid=$rdata['marker_uid'];

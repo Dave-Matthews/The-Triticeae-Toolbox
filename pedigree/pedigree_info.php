@@ -109,31 +109,30 @@ function exclude_none() {
 
 <style type="text/css">
     table.marker {background: none; border-collapse: collapse}
-    th.marker {background: #5b53a6; color: #fff; padding: 5px 0; border: 0;}
+    th.marker {background: #5b53a6; color: #fff; padding: 5px 0; border: 0; border-color: #fff}
     td.marker {padding: 5px 0; border: 0 !important;}
 </style>
 
 <div style="width: 840px;">
-<table >
-	<tr> 
-	       <th style="width: 80px;" class="marker"> Check <br/><input type="radio" name="btn1" value="" onclick="javascript:exclude_all();"/>
-	       &nbsp;&nbsp;&nbsp;&nbsp;All
-	       <input type="radio" name="btn1" value="" onclick="javascript:exclude_none();"/>None</th>
-                    
-	       <th style="width: 480px;" class="marker"> Line Name </th>
-	       <th style="width: 100px;" class="marker"> Breeding Program </th>
-	       <th style="width: 100px;" class="marker"> Hardness </th>
-	       <th style="width: 100px;" class="marker"> Color </th>
-	       <th style="width: 100px;" class="marker"> Growth Habit </th>
-	       <th style="width: 240px;" class="marker"> Synonyms </th>
-	       <th style="width: 310px;" class="marker"> Pedigree </th>
-	       <th style="width: 220px;" class="marker"> Data Available </th>
-	</tr>
- </table>
+  <table >
+    <tr> 
+      <th class="marker" style="width: 80px; text-align: left"> &nbsp;&nbsp;Check <br/>
+	<input type="radio" name="btn1" value="" onclick="javascript:exclude_all();"/>All<br>
+	<input type="radio" name="btn1" value="" onclick="javascript:exclude_none();"/>None</th>
+      <th style="width: 380px;" class="marker"> Line Name </th>
+      <th style="width: 100px;" class="marker"> Breeding Program </th>
+      <th style="width: 90px;" class="marker"> Hard-<br>ness </th>
+      <th style="width: 90px;" class="marker"> Color </th>
+      <th style="width: 90px;" class="marker"> Growth Habit </th>
+      <th style="width: 240px;" class="marker"> Synonyms </th>
+      <th style="width: 310px;" class="marker"> Pedigree </th>
+      <th style="width: 100px;" class="marker"> Data<br>Available </th>
+    </tr>
+  </table>
  </div>
- 	
+
 <div style="padding: 0; width: 838px; height: 400px; overflow: scroll; border: 1px solid #5b53a6; clear: both">
-<table>	
+<table style="table-layout:fixed; width: 830px">	
 <?php
     foreach ($_SESSION['selected_lines'] as $lineuid) {
       $result=mysql_query("select line_record_name, breeding_program_code, hardness, color, growth_habit, pedigree_string from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
@@ -148,59 +147,45 @@ function exclude_none() {
       while ($row=mysql_fetch_assoc($result)) {
 ?>
 	<tr>
-        <td style="width: 80px;" class="marker">
-        <input type="checkbox" name="btn1" value="<?php echo $lineuid ?>" id="exbx_<?php echo $lineuid ?>" onchange="sm(this, <?php echo $lineuid ?>);" class="exbx"/>
+        <td style="width: 57px;" class="marker">
+	  <input type="checkbox" checked name="btn1" value="<?php echo $lineuid ?>" id="exbx_<?php echo $lineuid ?>" onchange="sm(this, <?php echo $lineuid ?>);" class="exbx"/>&nbsp;&nbsp;&nbsp;
         <input type="hidden" id="muids" name="muids" value="<?php echo $lineuid ?>" />
         </td>
-  
-        <td style="width: 320px;" class="marker">
+        <td style="width: 172px; text-align: center" class="marker">
         <?php $line_name = $row['line_record_name'];
 	echo "<a href='pedigree/show_pedigree.php?line=$line_name'>$line_name</a>" ?>
         </td>
-
-        <td style="width: 50px;" class="marker">
+        <td style="width: 72px; text-align: center" class="marker">
         <?php echo $row['breeding_program_code'] ?>
         </td>
-
-        <td style="width: 100px;" class="marker">
+        <td style="width: 56px; text-align: center" class="marker">
         <?php echo $row['hardness'] ?>
         </td>
-
-        <td style="width: 100px;" class="marker">
+        <td style="width: 56px; text-align: center" class="marker">
         <?php echo $row['color'] ?>
         </td>
-
-        <td style="width: 100px;" class="marker">
+        <td style="width: 60px; text-align: center" class="marker">
         <?php echo $row['growth_habit'] ?>
         </td>
-
-        <td style="width: 250px;" class="marker">
+        <td style="width: 130px; text-align: center" class="marker">
         <?php echo $sn ?>
         </td>
-
-        <td style="width: 250px;" class="marker">
+        <td style="width: 155px; text-align: center; word-wrap: break-word" class="marker">
         <?php
         $line_name =  $row['line_record_name'];
-        $pedigree_string = $row['pedigree_string'];
+	//Don't need this crude approach, CSS "word-wrap: break-word" works to prevent IE8's ugliness.
+        //$pedigree_string = wordwrap($row['pedigree_string'], 20, "<br>", true);
+	$pedigree_string = $row['pedigree_string'];
         echo "<a href='pedigree/pedigree_tree.php?line_name= $line_name '>  $pedigree_string </a> " ?>
         </td>
-
-        <td style="width: 250px;" class="marker">
+        <td style="width: 65px; text-align: center" class="marker">
         <?php $phenotype = lineHasPhenotypeData($lineuid);
 	$genotype = lineHasGenotypeData($lineuid);
-	
-	if($phenotype AND $genotype) {
-            echo "Phenotype & Genotype";
-	}
-	if($phenotype AND !$genotype) {
-	echo "Phenotype";
-	}
-	if($genotype AND !$phenotype) {
-	echo "Genotype";
-	}
-	if(!$phenotype AND !$genotype) {
-	echo "NA";
-	} ?>
+	if($phenotype AND $genotype) echo "Phenotype<br>Genotype";
+	if($phenotype AND !$genotype) echo "Phenotype";
+	if($genotype AND !$phenotype) echo "Genotype";
+	if(!$phenotype AND !$genotype) echo "None";
+	 ?>
         </td>
   </tr>
 <?php
@@ -210,59 +195,96 @@ function exclude_none() {
 </table>
 </div>
 
-<br/><br/><input type="button" value="Download Line Data (XLS)" onclick="javascript:load_excel();"/>
+<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/>
 
 <?php
 } /* End of function type_LineInformation*/
   
 private function type_Line_Excel() {
 
+  if (!empty($_GET['mxls1'])) {
     $sample = $_GET['mxls1'];
-	
-    /* Length variable not used anywhere*/
-    //$length = $_GET['mxls2'];
+    //echo "<pre>_GET = "; print_r($_GET); echo "</pre>"; exit;
+  }
+  else
+    $sample = implode(",", $_SESSION['selected_lines']);
     $tok = strtok($sample, ",");
- 
-    //echo var_dump($tok)."<br/>";
-    //	echo var_dump($sample);
  
     $workbook = new Spreadsheet_Excel_Writer();
     $format_header =& $workbook->addFormat();
     $format_header->setBold();
-    $format_header->setAlign('center');
-    $format_header->setColor('red');
-    $format_header->setBgColor('blue');
-
-    $format_header->setItalic();
+    $format_header->setSize(9);
+    /* $format_header->setTextWrap(); */
+    /* $format_header->setAlign('center'); */
+    /* $format_header->setColor('red'); */
+    /* $format_header->setBgColor('blue'); */
+    /* $format_header->setItalic(); */
+    $format_row =& $workbook->addFormat();
+    $format_row->setSize(9);
+    /* $format_row->setAlign('center'); */
+    /* $format_pedigree_row =& $workbook->addFormat(); */
+    /* $format_pedigree_row->setAlign('left'); */
 
     $worksheet =& $workbook->addWorksheet();
-    $worksheet->write(0, 0, "Line Name", $format_header);
-    $worksheet->write(0, 1, "BP Code", $format_header);
-    $worksheet->write(0, 2, "Growth Habit", $format_header);
-    $worksheet->write(0, 6, "Pedigree String", $format_header);
-    $worksheet->write(0, 7, "Experiment Data Available", $format_header);
+    // Freeze row 1 and column 1 from scrolling.
+    $worksheet->freezePanes(array(1, 1));
+    // Set columns 0 to 3 wider.
+    $worksheet->setColumn(0,3,15);
+    $worksheet->write(0, 0, "Name", $format_header);
+    $worksheet->write(0, 1, "GRIN", $format_header);
+    $worksheet->write(0, 2, "Synonyms", $format_header);
+    $worksheet->write(0, 3, "Pedigree", $format_header);
+    $worksheet->setColumn(4,10,7);
+    $worksheet->write(0, 4, "Program", $format_header);
+    $worksheet->write(0, 5, "Hardness", $format_header);
+    $worksheet->write(0, 6, "Color", $format_header);
+    $worksheet->write(0, 7, "Growth Habit", $format_header);
+    $worksheet->write(0, 8, "Awned", $format_header);
+    $worksheet->write(0, 9, "Chaff", $format_header);
+    $worksheet->write(0, 10, "Height", $format_header);
+    $worksheet->setColumn(11,11,20);
+    $worksheet->write(0, 11, "Description", $format_header);
 
     $i = 1;
     # start by opening a query string
 
     while ($tok !== false) {
         $lineuid = (int)$tok;
-        $result=mysql_query("select line_record_name, breeding_program_code, growth_habit from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
+        $result=mysql_query("select line_record_name, breeding_program_code, 
+           hardness, color, growth_habit, awned, chaff, height, description, pedigree_string
+           from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
         $tok = strtok(",");
 	
 	while ($row = mysql_fetch_assoc($result)) {
-            $format_row =& $workbook->addFormat();
-            $format_row->setAlign('center');
- 
-            $format_pedigree_row =& $workbook->addFormat();
-            $format_pedigree_row->setAlign('left');
- 		
             $worksheet->write($i, 0, "$row[line_record_name]",$format_row);
-            $worksheet->write($i, 1, "$row[breeding_program_code]",$format_row);
-            $worksheet->write($i, 2, "$row[growth_habit]",$format_row);
-            $worksheet->write($i, 6, "$row[pedigree_string]",$format_pedigree_row);
-            $worksheet->write($i, 7, "NA",$format_row);
+            $worksheet->write($i, 3, "$row[pedigree_string]",$format_row);
+            $worksheet->write($i, 4, "$row[breeding_program_code]",$format_row);
+            $worksheet->write($i, 5, "$row[hardness]",$format_row);
+            $worksheet->write($i, 6, "$row[color]",$format_row);
+            $worksheet->write($i, 7, "$row[growth_habit]",$format_row);
+            $worksheet->write($i, 8, "$row[awned]",$format_row);
+            $worksheet->write($i, 9, "$row[chaff]",$format_row);
+            $worksheet->write($i, 10, "$row[height]",$format_row);
+            $worksheet->write($i, 11, "$row[description]",$format_row);
         }
+	$grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
+           where line_record_uid=$lineuid") or die(mysql_error());
+	$grin_names="";
+	while ($grin_row = mysql_fetch_assoc($grin_result)) 
+	  $grin_names[] = $grin_row['barley_ref_number'];
+	if (is_array($grin_names))
+	  $gr = implode(', ', $grin_names);
+	$worksheet->write($i, 1, "$gr",$format_row);
+
+	$syn_result=mysql_query("select line_synonym_name from line_synonyms 
+            where line_record_uid=$lineuid") or die(mysql_error());
+	$syn_names="";
+	while ($syn_row = mysql_fetch_assoc($syn_result)) 
+	  $syn_names[] = $syn_row['line_synonym_name'];
+	if (is_array($syn_names))
+	  $sn = implode(', ', $syn_names);
+	$worksheet->write($i, 2, "$sn",$format_row);
+
         $i++;
     }
     $workbook->send('Line_Details.xls');
