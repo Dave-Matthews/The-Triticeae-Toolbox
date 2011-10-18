@@ -1,12 +1,38 @@
 <?php
 
+// DEM 17oct11: Added functions mysql_grab() and print_h().
 // 7/1/2011   JLee  Change to use excel reader in ../lib/Excel
-
 /* DEM 7dec10: Revised updateTable() to handle enum and longtext columns. */
 
 /*
  * Generic / Common functions are stored here. 
  */
+
+/* Shorthand MySQL query for a single value. Returns the value.
+   Dies if there's more than one result or a MySQL error. 
+   No result is okay, returns empty string, ''.
+*/
+function mysql_grab($querystring) {
+  $result = mysql_query($querystring);
+  $mmessage = mysql_error();
+  if (mysql_num_rows($result) > 1)
+    $err = "row";
+  $vals = mysql_fetch_row($result);
+  if (count($vals) > 1)
+    $err = "column";
+  if (!empty($err))
+    $out = "<b>Programmer error</b>: Query result contains more than one $err. How embarrassing!<br>";
+  if (!empty($mmessage))
+    $out = "<b>MySQL error:</b> $mmessage.<br>";
+  if (!empty($err) OR (!empty($mmessage)))
+    die($out . "Query was:<br>\"$querystring\"<p>");
+  return $vals[0];
+}
+
+/* A nicer print_r() for output to the HTML page. */
+function print_h($variable) {
+  echo "<pre>"; print_r($variable); echo "</pre>";
+}
 
 /**
  * This function validates the input as best as generically possible.
@@ -694,7 +720,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 
 			echo "\t\t<thead>\n";
 			echo "\t\t<tr>\n";
-			echo "\t\t\t<th><strong>edit</strong></th>\n";
+			echo "\t\t\t<th><strong>Edit</strong></th>\n";
 
 			//Show Foreign Key Names
 			foreach($ftables as $key) {
@@ -708,7 +734,6 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 					echo "\t\t\t<th><strong>$k</th>\n";
 			}
 
-			echo "\t\t\t<th><strong>update</strong></th>\n";
 			echo "\t\t</tr>\n";
 			echo "\t\t</thead>\n";
 		}
@@ -734,7 +759,8 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 		 */
 		$line = "
 		<tr><form name=\"$table$count\" id=\"$table$count\" action=\"$return_page\" method=\"post\">
-			<td><input type=\"checkbox\" value=\"$count\" onclick=\"toggleRow('$table$count')\" />\n";
+			<td><input type=\"checkbox\" value=\"$count\" onclick=\"toggleRow('$table$count')\" />
+                        <input type=\"submit\" name=\"$row[$pkey]\" value=\"Update\" disabled>\n";
 
 		//Show Foreign Key Options
 		foreach($ftables as $key) {
@@ -749,8 +775,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 				$line .= "\t\t\t<td><textarea name=\"$k\" rows=\"1\" cols=\"12\" disabled>".stripslashes($v)."</textarea></td>\n";
 		}
 
-		$line .= "\t\t\t<td><input type=\"submit\" name=\"$row[$pkey]\" value=\"Update\" disabled></td>
-		</form></tr>";
+		$line .= "</form></tr>";
 
 		echo $line;
 		$count++;
