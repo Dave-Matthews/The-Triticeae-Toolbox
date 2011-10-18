@@ -37,7 +37,7 @@ ul ul ul {list-style-type: disc}
 	  <li><b>Phenotyping</b>
 	    <ul>
 	      <li><a href="curator_data/examples/T3/TrialSubmissionForm.xls">Experiment annotation</a>
-		- Location, planting date, experimental design...
+		- Location, planting date, experimental design...[ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html">Tutorial</a> ]
 	      <li><a href="curator_data/examples/T3/PhenotypeSubmissionForm.xls">Experiment results</a>
 		- Values for all traits for test lines and checks, summary statistics
 	      <li><a href="curator_data/examples/trait_template.xls">Traits</a>
