@@ -3,8 +3,15 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 10/17/2011 JLee  Add username and resubmission entry to 
+//					input file log table
+// 10/17/2011  JLee Create of input file log entry
 // 9/16/2011  JLee  Modify to support new 1D format 
 // 9/2/2011   JLee  Modify to remove allele freq stuff   
+
+// 5/9/2011	 JLee	Fix formula	for calculating MAF value	
+// 4/11/2011 JLee  Add ability to handle zipped data files
+//
 
 // Temporary patch code for 1D data
 
@@ -22,11 +29,14 @@ $lineTransFile = $fnames[1];
 $gDataFile = $fnames[2];
 $emailAddr = $fnames[3];
 $urlPath = $fnames[4];
+$userName = $fnames[5];
+$filename = stristr ($gDataFile,basename ($gDataFile));
 
 $error_flag = 0;
 $lineExpHash = array ();
 $lineDsHash = array ();
 $curTrialCode = '';
+$gName = '';
 
 echo "Start time - ". date("m/d/y : H:i:s", time()) ."\n"; 
 echo "Translate File - ". $lineTransFile. "\n";
@@ -72,6 +82,18 @@ if ($emailAddr == "") {
     echo "No email address. \n";
     exit (1);
 }  
+
+// Check for zip file
+if (strpos($gDataFile, ".zip") == TRUE) {
+	echo "Unzipping the genotype data file...\n";
+	$zip = new ZipArchive;
+	$zip->open($gDataFile) || exitFatal ($errFile, "Unable to open zip file, please check zip format.");
+	$gName = $zip->getNameIndex(0);
+	$zip->extractTo($target_Path) || exitFatal ($errFile, "Failed to extract file from the zip file.");
+    $zip->close()  || exitFatal ($errFile, "Failed to close zip file.");
+	$gDataFile = $target_Path . $gName;
+	echo "Genotype data unzipping done.\n";
+}
 
  /* Read the file */
  if (($reader = fopen($lineTransFile, "r")) == FALSE) {
@@ -436,11 +458,9 @@ foreach ($uniqExpID AS $key=>$expID)  {
         $aafreq = round($aacnt / $total,3);
         $bbfreq = round($bbcnt / $total,3);
         $abfreq = round($abcnt / $total,3);
-        $maf = round(100 * min((2 * $aacnt + $abcnt) /$total, ($abcnt + 2 * $bbcnt) / $total),1);
-// Forcing this to 0
-//      $gtscore =max($gt);
-  		$gtscore = 0;
-       if (($aacnt == $total) or ($abcnt == $total) or ($bbcnt == $total)) {
+        $maf = round(100 * min((2 * $aacnt + $abcnt) /(2 * $total), ($abcnt + 2 * $bbcnt) / (2 * $total)),1);
+        $gtscore =max($gt);
+        if (($aacnt == $total) or ($abcnt == $total) or ($bbcnt == $total)) {
             $mono = $monomorphic[0];//is monomorphic
         } else {
             $mono = $monomorphic[1];
@@ -499,6 +519,22 @@ mail($emailAddr, $subject, $body, $mailheader);
 
 echo "Genotype Data Import Done\n";
 echo "Finish time - ". date("m/d/y : H:i:s", time()). "\n"; 
+
+$sql = "SELECT input_file_log_uid from input_file_log 
+	WHERE file_name = '$filename'";
+$res = mysql_query($sql) or die("Database Error: input_file lookup  - ". mysql_error() ."<br>".$sql);
+$rdata = mysql_fetch_assoc($res);
+$input_uid = $rdata['input_file_log_uid'];
+        
+if (empty($input_uid)) {
+	$sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
+		VALUES('$filename', '$username', NOW())";
+} else {
+	$sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
+		WHERE input_file_log_uid = '$input_uid'"; 
+}
+mysql_query($sql) or die("Database Error: Input file log entry creation failed - " . mysql_error() . "\n\n$sql");
+
 exit(0);
 
 //********************************************************
