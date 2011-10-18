@@ -3,13 +3,13 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
-// 10/17/2011 JLee  Add username and resubmission entry to 
-//					input file log table
-// 10/17/2011 JLee 	Create of input file log entry
-// 4/11/2011 JLee  Add ability to handle zipped data files
+// 10/17/2011 JLee  Add username and resubmission entry to input file log table
+// 10/17/2011 JLee  Create of input file log entry
+// 4/11/2011 JLee   Add ability to handle zipped data files
 
 // Written By: John Lee
 //*********************************************
+error_reporting(E_ALL ^ E_NOTICE);
 $progPath = realpath(dirname(__FILE__).'/../').'/';
 
 include($progPath. 'includes/bootstrap_curator.inc');
@@ -85,7 +85,7 @@ if (strpos($gDataFile, ".zip") == TRUE) {
 	$zip->open($gDataFile) || exitFatal ($errFile, "Unable to open zip file, please check zip format.");
 	$gName = $zip->getNameIndex(0);
 	$zip->extractTo($target_Path) || exitFatal ($errFile, "Failed to extract file from the zip file.");
-    $zip->close()  || exitFatal ($errFile, "Failed to close zip file.");
+	$zip->close()  || exitFatal ($errFile, "Failed to close zip file.");
 	$gDataFile = $target_Path . $gName;
 	echo "Genotype data unzipping done.\n";
 }
@@ -167,7 +167,7 @@ while(!feof($reader))  {
       echo "Header line found\n";
       break;
     } else {
-      exitFatal ($errFile, "Could not find header $line.");    
+      exitFatal ($errFile, "Could not find header in $gDataFile $line.");    
     }
 }
         

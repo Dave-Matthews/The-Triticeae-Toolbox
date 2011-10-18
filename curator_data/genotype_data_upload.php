@@ -77,8 +77,11 @@ class GenotypeData {
 	</table>
     <p><input type="submit" value="Upload Line Translation and Genotype Data File" /></p>
  
-    <p><br></p>
-    <p><h4>Note: Both files (line translation and genotype data) are required. <br> Due to size of the Genotype data file, it can be compressed with a "zip" application before submitting it. <br><br>  This process may take several hours to complete depending on size of the data file.  Please leave your email adress for us to contact you with the results.</h4></p>
+    <p></p>
+    <p><h4>Note: Both files (line translation and genotype data) are required.
+    <br>Due to size of the Genotype Data File, it can be compressed with a "zip" application before submitting it.<br>
+    <p><h4>This upload process may take several hours to complete depending on size of the data file.  Please leave your email address for us to contact you with the results.</h4></p>
+
 	<p> <strong> Your Email Address: </strong> <input type="text" name="emailAddr" value="<?php echo $_SESSION['username'] ?>"  size="50%"/>
 	</form>
 
