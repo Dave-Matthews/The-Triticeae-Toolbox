@@ -114,7 +114,10 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
   
 // Store individual records
 $num = 0;
+$linenumber = 0;
 while(($line = fgets($reader)) !== FALSE) { 
+  $linenumber++;
+  $origline = $line;
     chop ($line, "\r");
     if (strlen($line) < 2) break;
     if (feof($reader)) break;
@@ -124,7 +127,9 @@ while(($line = fgets($reader)) !== FALSE) {
                         
     //Check for junk line
     if (count($data) != 2) {
-        exitFatal ($errFile, "ERROR: Invalid entry in Line Translation file - '$line' ");
+      //exitFatal ($errFile, "ERROR: Invalid entry in Line Translation file - '$line' ");
+      $parsed = print_r($data, TRUE);
+      exitFatal ($errFile, "ERROR: Invalid entry in line number $linenumber of Line Translation file.\n Text of line: '$origline'\nContents parsed as: $parsed");
     }
     $trialCodeStr = $data[$trialCodeIdx];
     $lineStr = $data[$lineNameIdx];
