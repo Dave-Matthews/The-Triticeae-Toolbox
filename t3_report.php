@@ -271,12 +271,10 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>Markers with genotyping data<td>$count\n";
   } 
-  $count = 0; 
-  $sql = "select distinct * from markers where not exists (select * from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
+  $sql = "select distinct count(*) from markers where not exists (select * from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
   $res = mysql_query($sql) or die(mysql_error());
-  while ($row=mysql_fetch_row($res)) {
-    $count++;
-  }
+  $row=mysql_fetch_row($res);
+  $count = $row[0];
   if ($output == "excel") {
     $worksheet->write(15, 0, "Markers without genotyping data");
     $worksheet->write(15, 1, $count);
