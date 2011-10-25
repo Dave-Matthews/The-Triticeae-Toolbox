@@ -45,39 +45,39 @@ Name	Marker_type	Synonym	Synonym_type	Annotation	Annotation_type
 11_10090				EBro02_SQ006_H18_s_at	U35_Probe_Set
 11_10090				LOC_Os03g05730	U35_Rice_Locus
 11_10090				protein cell division control protein 48 homolog E, putative, expressed	U35_Rice_Description
-					
-					
-					
+
+
+
 --------------------- CUT --------------------------
 Fields and values are tab delimited.
-					
-LEGEND:					
-Line 1 contains field designations					
-Line 2 starts the marker data					
-					
-FIELD DEFINITIONS:					
-Name - Official marker name					
-Marker_type - A marker type name (should match one of the names in the THT marker_types table: OPA SNP Name, DArT Marker, Historical, QTL)					
-Synonym - Other known marker names					
-Synonym_type - type name of corresponding secondary name					
+
+LEGEND:
+Line 1 contains field designations
+Line 2 starts the marker data
+
+FIELD DEFINITIONS:
+Name - Official marker name
+Marker_type - A marker type name (should match one of the names in the THT marker_types table: OPA SNP Name, DArT Marker, Historical, QTL)
+Synonym - Other known marker names
+Synonym_type - type name of corresponding secondary name
 Annotation - an annotation value
 Annotation_type - type/source of the annotation information
 
-Current Synonym_type values:					
-EST Name - Original Lab EST Name					
-POPA Name - Name from POPA array					
-BOPA Combined Name - New name showing tracking between POPAs and BOPAs					
-BOPA Name - Original BOPA name					
-DArT Name - DArT marker					
-Historical Name - Historical SNP Name from Grain Genes					
-					
-Current Annotation_type values:					
-GrainGenes - Reference name to annotation record from GrainGenes 					
-HarvEST_U32 - Unigene ID for HarvEST U32 assembly					
-HarvEST_U35 - Unigene ID for HarvEST U35 assembly					
-U32_Probe_Set - A reference to PLEXdb probe record 					
-U32_Rice_Locus - A reference to Gramene record					
-U32_Rice_Description - Annotation description   					
-U35_Probe_Set - A reference to PLEXdb probe record 					
-U35_Rice_Locus - A reference to Gramene record					
-U35_Rice_Description - Annotation description					
+Current Synonym_type values:
+EST Name - Original Lab EST Name
+POPA Name - Name from POPA array
+BOPA Combined Name - New name showing tracking between POPAs and BOPAs
+BOPA Name - Original BOPA name
+DArT Name - DArT marker
+Historical Name - Historical SNP Name from Grain Genes
+
+Current Annotation_type values:
+GrainGenes - Reference name to annotation record from GrainGenes
+HarvEST_U32 - Unigene ID for HarvEST U32 assembly
+HarvEST_U35 - Unigene ID for HarvEST U35 assembly
+U32_Probe_Set - A reference to PLEXdb probe record
+U32_Rice_Locus - A reference to Gramene record
+U32_Rice_Description - Annotation description
+U35_Probe_Set - A reference to PLEXdb probe record
+U35_Rice_Locus - A reference to Gramene record
+U35_Rice_Description - Annotation description

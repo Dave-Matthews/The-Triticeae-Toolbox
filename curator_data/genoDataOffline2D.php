@@ -3,6 +3,8 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 10/25/2011  JLee   Ignore "cut" portion of input file 
+
 // 10/17/2011 JLee  Add username and resubmission entry to input file log table
 // 10/17/2011 JLee  Create of input file log entry
 // 4/11/2011 JLee   Add ability to handle zipped data files
@@ -114,17 +116,23 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
   
 // Store individual records
 $num = 0;
+$linenumber = 0;
 while(($line = fgets($reader)) !== FALSE) { 
+    $linenumber++;
+    $origline = $line;
     chop ($line, "\r");
-    if (strlen($line) < 2) break;
+    if (strlen($line) < 2) continue;
     if (feof($reader)) break;
-    if (empty($line)) break;
+    if (empty($line)) continue;
+    if ((stripos($line, '- cut -') > 0 )) break;
                 
     $data = str_getcsv($line,"\t");
                         
     //Check for junk line
     if (count($data) != 2) {
-        exitFatal ($errFile, "ERROR: Invalid entry in Line Translation file - '$line' ");
+      //exitFatal ($errFile, "ERROR: Invalid entry in Line Translation file - '$line' ");
+      $parsed = print_r($data, TRUE);
+      exitFatal ($errFile, "ERROR: Invalid entry in line number $linenumber of Line Translation file.\n Text of line: '$origline'\nContents parsed as: $parsed");
     }
     $trialCodeStr = $data[$trialCodeIdx];
     $lineStr = $data[$lineNameIdx];
@@ -353,9 +361,9 @@ $input_uid = $rdata['input_file_log_uid'];
         
 if (empty($input_uid)) {
 	$sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
-		VALUES('$filename', '$username', NOW())";
+		VALUES('$filename', '$userName', NOW())";
 } else {
-	$sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
+	$sql = "UPDATE input_file_log SET users_name = '$userName', created_on = NOW()
 		WHERE input_file_log_uid = '$input_uid'"; 
 }
 mysql_query($sql) or die("Database Error: Input file log entry creation failed - " . mysql_error() . "\n\n$sql");

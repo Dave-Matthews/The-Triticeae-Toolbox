@@ -3,6 +3,8 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 10/25/2011  JLee   Ignore "cut" portion of input file 
+
 // 10/18/2011 JLee  Replace loop control "next" with "continue"
 // 10/17/2011 JLee  Add username and resubmission entry to 
 //					input file log table
@@ -123,6 +125,8 @@ while(($line = fgets($reader)) !== FALSE) {
     if (strlen($line) < 2) continue;
     if (feof($reader)) break;
     if (empty($line)) continue;
+    if ((stripos($line, '- cut -') > 0 )) break;
+
     //echo "$line <br>";  
                 
     $data = str_getcsv($line,"\t");
