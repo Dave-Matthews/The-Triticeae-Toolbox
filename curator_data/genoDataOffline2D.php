@@ -368,7 +368,7 @@ if (empty($input_uid)) {
 }
 mysql_query($sql) or die("Database Error: Input file log entry creation failed - " . mysql_error() . "\n\n$sql");
 
-$filename = stristr ($gDataFile,basename ($lineTransFile));
+$filename = stristr ($lineTransFile,basename ($lineTransFile));
 $sql = "SELECT input_file_log_uid from input_file_log 
         WHERE file_name = '$filename'";
 $res = mysql_query($sql) or die("Database Error: input_file lookup  - ". mysql_error() ."<br>".$sql);
