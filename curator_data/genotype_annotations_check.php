@@ -1,7 +1,13 @@
 <?php
+//**********************************************  
+// Genotype annotation importer
 
-// 03/01/2011  JLee  Genotype annotation importer
-  
+
+// 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
+//
+//
+//**********************************************  
+
 require 'config.php';
 //require_once("../includes/common_import.inc");
 /*
@@ -169,9 +175,15 @@ class Annotations_Check {
                         if (feof($reader)) {
                             break;
                         }
-                        if (empty($line)) {
-                            break;
+
+                        if (trim($line) == '') {
+                            continue;
                         }
+
+
+						if ((stripos($line, '- cut -') > 0 )) break;
+
+
                         $j = 0;
                         $data = str_getcsv($line,"\t");
                         
@@ -321,9 +333,14 @@ class Annotations_Check {
             if (feof($reader)) {
                 break;
             }
-            if (empty($line)) {
-                break;
+            
+			// Handle blank line 
+			if (trim($line) == '') {
+                continue;
             }
+
+			if ((stripos($line, '- cut -') > 0 )) break;
+
             $j = 0;
             $data = str_getcsv($line,"\t");
                         

@@ -3,6 +3,7 @@
 // Marker importer
 //
 //
+// 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
 // 08/02/2011  JLee   Allow for empty synonyms and annotations
 //
 // Author: John Lee         6/15/2011
@@ -79,8 +80,8 @@ class Markers_Check {
         function update_databaseAnnot(filepath, filename, username) 	{
             var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabaseAnnot&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
 	
-		// Opens the url in the same window
-	   	window.open(url, "_self");
+			// Opens the url in the same window
+	   		window.open(url, "_self");
         }
 	</script>
 	
@@ -181,9 +182,16 @@ class Markers_Check {
                     if (feof($reader)) {
                         break;
                     }
-                    if (empty($line)) {
+                    
+                    if ((stripos($line, '- cut -') > 0 )) {
+                        $error_flag = 0; 
                         break;
                     }
+                                        
+                    if (trim($line) == '') {
+                        continue;
+                    }
+		    
                     if ($i  > 50) {
                           break;
                     }
@@ -387,7 +395,7 @@ class Markers_Check {
             }
             if (strlen($line) < 2) continue;
             
-            if (empty($line)) {
+            if (empty(trim($line))) {
                 continue;
             }
             if ($i  > 50) {
@@ -561,30 +569,34 @@ class Markers_Check {
             if (feof($reader)) {
 //                  break;
             }
-            if (empty($line)) {
-//                 break;
-	      echo "Error: Blank line encountered before end of file, line number $i.<br>";
-	      print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><br>";
-	      exit;
+ 
+	   		if ( trim($line) == '') {
+            	continue;
             }
+            
+            if ((stripos($line, '- cut -') > 0 )) {
+                break;
+            }
+            
             $j = 0;
             $data = str_getcsv($line,"\t");
                         
             //Check for junk line
             if (count($data) != 6)  {
+
                 echo "ERROR DETECT: Invalid number of columns in line $i.<br/>";
-		echo "The offending row contains:<br>\"$line\"<br>";
+		        echo "The offending row contains:<br>\"$line\"<br>";
                 print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><br>";
-		exit;
+		        exit;
             }     
                                                 
             foreach ($data as $value)  {
                 //echo $value."<br>";
                 $storageArr[$i][$j++] = trim($value);   
             }
-	    $lastmarker = $data[0];
-	    $lastline = $i-1;
-            $i ++;
+	    	$lastmarker = $data[0];
+	    	$lastline = $i-1;
+	    	$i++;
         }  
         unset ($value);
         fclose($reader);   
@@ -601,6 +613,7 @@ class Markers_Check {
             $annotation = $storageArr[$i][$annotationIdx];
             $annotationType = $storageArr[$i][$annotationTypeIdx];
             
+	    if ($marker == "") continue;
             // handle repeating marker entries
             if (strcmp($marker, $curMarker) == 0)  {
                 
@@ -742,8 +755,8 @@ class Markers_Check {
             }
         }
         echo " <b>The Data is inserted/updated successfully </b><br>";
-	echo "$lastline lines read, last marker = $lastmarker.<br>";
-	echo "Size of storageArr = ".count($storageArr);
+    	echo "$lastline lines read, last marker = $lastmarker.<br>";
+    	echo "Size of storageArr = ".count($storageArr);
         echo "<br/><br/>";
 ?>
         <a href="./curator_data/markers_upload.php"> Go Back To Main Page </a>

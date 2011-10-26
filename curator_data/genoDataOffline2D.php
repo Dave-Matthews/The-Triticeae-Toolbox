@@ -3,6 +3,8 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 10/25/2011  JLee   Ignore "cut" portion of input file 
+
 // 10/17/2011 JLee  Add username and resubmission entry to input file log table
 // 10/17/2011 JLee  Create of input file log entry
 // 4/11/2011 JLee   Add ability to handle zipped data files
@@ -119,9 +121,10 @@ while(($line = fgets($reader)) !== FALSE) {
   $linenumber++;
   $origline = $line;
     chop ($line, "\r");
-    if (strlen($line) < 2) break;
+    if (strlen($line) < 2) continue;
     if (feof($reader)) break;
-    if (empty($line)) break;
+    if (empty($line)) continue;
+    if ((stripos($line, '- cut -') > 0 )) break;
                 
     $data = str_getcsv($line,"\t");
                         
@@ -365,7 +368,7 @@ if (empty($input_uid)) {
 }
 mysql_query($sql) or die("Database Error: Input file log entry creation failed - " . mysql_error() . "\n\n$sql");
 
-$filename = stristr ($gDataFile,basename ($lineTransFile));
+$filename = stristr ($lineTransFile,basename ($lineTransFile));
 $sql = "SELECT input_file_log_uid from input_file_log 
         WHERE file_name = '$filename'";
 $res = mysql_query($sql) or die("Database Error: input_file lookup  - ". mysql_error() ."<br>".$sql);
