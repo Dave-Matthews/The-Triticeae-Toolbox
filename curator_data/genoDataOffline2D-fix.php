@@ -14,7 +14,26 @@
 error_reporting(E_ALL ^ E_NOTICE);
 $progPath = realpath(dirname(__FILE__).'/../').'/';
 
-include($progPath. 'includes/bootstrap_curator.inc');
+function connect() {
+  $db_name = 'T3wheatplus';
+                   $db_user = 'tht';
+                   $db_pass = 'wheat_2008';
+                   $db_host = 'localhost';
+  global $dontconnect;
+  $ini_path = dirname(__FILE__) . '/tht.ini';
+  $ini_config = is_readable($ini_path) ?
+    parse_ini_file($ini_path, false):array();
+  if ($dontconnect == true) return null;
+  $linkID = mysql_connect($db_host, $db_user, $db_pass);
+  if(!$linkID)
+    die(mysql_error());
+  else {
+    mysql_select_db("T3wheat", $linkID);
+    mysql_query("set SESSION sql_mode='STRICT_ALL_TABLES'") or die(mysql_error());
+  }
+  return $linkID;
+}
+
 include($progPath . 'curator_data/lineuid.php');
 require_once $progPath . 'includes/email.inc';
 
@@ -43,8 +62,10 @@ echo "Email - ". $emailAddr."\n";
 $linkID = connect(); 
 
 $target_Path = "/www/htdocs/cbirkett/t3/wheatplus/curator_data/uploads/freq-test";
+$target_Path = "/home/cbirkett/frew-test";
 
 $errorFile = $target_Path."importError.txt";
+$errorFile = "2dimportError.txt";
 echo $errorFile."\n";
 if (($errFile = fopen($errorFile, "w")) === FALSE) {
    echo "Unable to open the error log file.";
@@ -57,10 +78,11 @@ $mailheader = "From: ". $Name . " <" . $myEmail . ">\r\n"; //optional headerfiel
 $subject = "Genotype import results";
 
    $trialCodeStr = "NSGCwheat9K_4X";
-   $trialCodeStr = "NSGCstriperust_2011_UCD";
+//   $trialCodeStr = "NSGCstriperust_2011_UCD";
 
     $res = mysql_query("SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'") 
         or exitFatal ($errFile, "Database Error: Experiment uid lookup - ".mysql_error());
+    print "$sql\n";
     $exp_uid = implode(",",mysql_fetch_assoc($res));
                     
     $res = mysql_query("SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'")
@@ -121,7 +143,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
         $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: marker name retrieval - ". mysql_error() . ".\n\n$sql");
         $rdata = mysql_fetch_assoc($res);
         $mname = $rdata['marker_name'];
-        echo "-+- marker name ".$mname." for marker ".$value."\n";
+        //echo "-+- marker name ".$mname." for marker ".$value."\n";
 
         // get genotype IDs for a marker
         $sql ="SELECT g.genotyping_data_uid AS gid FROM genotyping_data AS g
@@ -203,8 +225,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
                                                 WHERE experiment_uid = $expID and marker_uid = $value";
                 }
         mysql_query($sql) or exitFatal ($errFile, "Database Error: during update or insertion into  allele_frequencies table - ". mysql_error() . "\n\n$sql");
-        print "$sql";
-	exit;
+        //print "$sql\n";
         //reset key variables
 	unset($geno_uid);
         unset($a1);
