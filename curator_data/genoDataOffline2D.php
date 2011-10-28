@@ -150,7 +150,7 @@ while(($line = fgets($reader)) !== FALSE) {
         }
         
 	$sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
-	$res = mysql_qyery($sql)
+	$res = mysql_query($sql)
             or exitFatal ($errFile, "Database Error: Dataset experiment uid lookup - ".mysql_error());
         if ($row = mysql_fetch_assoc($res)) {
           $de_uid=implode(",",$row);
