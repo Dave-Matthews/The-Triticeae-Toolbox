@@ -140,14 +140,23 @@ while(($line = fgets($reader)) !== FALSE) {
     //echo  $lineStr . " - ". $trialCodeStr. "<br>"; 
     // Trial Code processing
     if (($curTrialCode != $trialCodeStr) && ($trialCodeStr != '')) {
-                     
-        $res = mysql_query("SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'") 
+        $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'";
+	$res = mysql_query($sql)
             or exitFatal ($errFile, "Database Error: Experiment uid lookup - ".mysql_error());
-        $exp_uid = implode(",",mysql_fetch_assoc($res));
-                    
-        $res = mysql_query("SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'")
+        if ($row = mysql_fetch_assoc($res)) {
+          $exp_uid = implode(",",$row);
+        } else {
+	  exitFatal ($errFile, "not found - $sql");
+        }
+        
+	$sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
+	$res = mysql_qyery($sql)
             or exitFatal ($errFile, "Database Error: Dataset experiment uid lookup - ".mysql_error());
-        $de_uid=implode(",",mysql_fetch_assoc($res));
+        if ($row = mysql_fetch_assoc($res)) {
+          $de_uid=implode(",",$row);
+	} else {
+          exitFatal ($errFile, "not found - $sql");
+        }
 
         $curTrialCode = $trialCodeStr;
         $num++;
