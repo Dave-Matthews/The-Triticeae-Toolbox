@@ -403,16 +403,20 @@ private function type_Download()
 	    
 	
 		// get a list of marker names which meet the criteria selected by the user
-          
+		  if (empty($marker_uid)) {
+		    echo "No marker allele data found.<p>";
+		  }
+		  else {
 					$sql_mstat = "SELECT marker_name as name
 					FROM markers
 					WHERE marker_uid IN ($marker_uid)"; 
 					
-			$res = mysql_query($sql_mstat) or die(mysql_error());
+			$res = mysql_query($sql_mstat) or die("At script line 414:".mysql_error());
 
 			while ($row = mysql_fetch_array($res)){
 						$marker_names[] = $row["name"];
 			}
+		  }
 			$nelem = count($marker_uid);
 
 			// make an empty line with the markers as array keys, set default value
