@@ -118,7 +118,8 @@ class LineNames_Check
 		
 <?php
 
-	ini_set("memory_limit","24M");
+		    //DEM 19oct11: This runs out of memory.
+	/* ini_set("memory_limit","24M"); */
         $row = loadUser($_SESSION['username']);
 	$username=$row['name'];
 	
