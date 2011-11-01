@@ -118,6 +118,7 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 $num = 0;
 $linenumber = 0;
 while(($line = fgets($reader)) !== FALSE) { 
+<<<<<<< HEAD
     $linenumber++;
     $origline = $line;
     chop ($line, "\r");
@@ -137,7 +138,7 @@ while(($line = fgets($reader)) !== FALSE) {
     $trialCodeStr = $data[$trialCodeIdx];
     $lineStr = $data[$lineNameIdx];
                 
-    //echo  $lineStr . " - ". $trialCodeStr. "<br>"; 
+    //echo  $lineStr . " - ". $trialCodeStr. "\n"; 
     // Trial Code processing
     if (($curTrialCode != $trialCodeStr) && ($trialCodeStr != '')) {
                      
@@ -365,6 +366,22 @@ if (empty($input_uid)) {
 } else {
 	$sql = "UPDATE input_file_log SET users_name = '$userName', created_on = NOW()
 		WHERE input_file_log_uid = '$input_uid'"; 
+}
+mysql_query($sql) or die("Database Error: Input file log entry creation failed - " . mysql_error() . "\n\n$sql");
+
+$filename = stristr ($gDataFile,basename ($lineTransFile));
+$sql = "SELECT input_file_log_uid from input_file_log 
+        WHERE file_name = '$filename'";
+$res = mysql_query($sql) or die("Database Error: input_file lookup  - ". mysql_error() ."<br>".$sql);
+$rdata = mysql_fetch_assoc($res);
+$input_uid = $rdata['input_file_log_uid'];
+
+if (empty($input_uid)) {
+        $sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
+                VALUES('$filename', '$userName', NOW())";
+} else {
+        $sql = "UPDATE input_file_log SET users_name = '$userName', created_on = NOW()
+                WHERE input_file_log_uid = '$input_uid'";
 }
 mysql_query($sql) or die("Database Error: Input file log entry creation failed - " . mysql_error() . "\n\n$sql");
 

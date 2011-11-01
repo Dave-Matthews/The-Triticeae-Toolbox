@@ -1,6 +1,0 @@
-[paths]
-default = ssh://jlee@purpurea.pw.usda.gov//home/www/htdocs/tht
-
-[trusted]
-users=jlee,dhane,matthews
-

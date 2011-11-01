@@ -100,7 +100,7 @@ function exclude_none() {
 
 <style type="text/css">
     table.marker {background: none; border-collapse: collapse}
-    th.marker {background: #5b53a6; color: #fff; padding: 5px 0; border: 0;}
+    th.marker {background: #5b53a6; color: #fff; padding: 5px 0; border: 0; border-color: #fff}
     td.marker {padding: 5px 0; border: 0 !important;}
 </style>
 
@@ -170,8 +170,7 @@ function exclude_none() {
         <td style="width: 150px;" class="marker">
         <?php echo $row['hull'] ?>
         </td>
-
-        <td style="width: 250px;" class="marker">
+        <td style="width: 155px; text-align: center; word-wrap: break-word" class="marker">
         <?php
         for ($i = 0; $i < count($syn_names); $i++) {
             echo $syn_names[$i].","."<br/>";
@@ -181,26 +180,20 @@ function exclude_none() {
         <td style="width: 150px;" class="marker">
         <?php
         $line_name =  $row['line_record_name'];
-        $pedigree_string = $row['pedigree_string'];
+	//Don't need this crude approach, CSS "word-wrap: break-word" works to prevent IE8's ugliness.
+        //$pedigree_string = wordwrap($row['pedigree_string'], 20, "<br>", true);
+	$pedigree_string = $row['pedigree_string'];
         echo "<a href='pedigree/pedigree_tree.php?line_name= $line_name '>  $pedigree_string </a> " ?>
         </td>
 
         <td style="width: 150px;" class="marker">
         <?php $phenotype = lineHasPhenotypeData($lineuid);
 	$genotype = lineHasGenotypeData($lineuid);
-	
-	if($phenotype AND $genotype) {
-            echo "Phenotype & Genotype";
-	}
-	if($phenotype AND !$genotype) {
-	echo "Phenotype";
-	}
-	if($genotype AND !$phenotype) {
-	echo "Genotype";
-	}
-	if(!$phenotype AND !$genotype) {
-	echo "NA";
-	} ?>
+	if($phenotype AND $genotype) echo "Phenotype<br>Genotype";
+	if($phenotype AND !$genotype) echo "Phenotype";
+	if($genotype AND !$phenotype) echo "Genotype";
+	if(!$phenotype AND !$genotype) echo "None";
+	 ?>
         </td>
   </tr>
 <?php
