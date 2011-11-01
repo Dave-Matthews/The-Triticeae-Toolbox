@@ -271,10 +271,18 @@ while (!feof($reader))  {
                 exitFatal ($errFile, $msg);
             }
             $line_uid = implode(",",$line_uid);
-            $exp_uid = $lineExpHash[$line_name];
-            //$msg = "exp_uid = " . $exp_uid . "\n";
-	    //fwrite($errFile, $msg);
-            $de_uid = $lineDsHash[$line_name];
+            if (isset($lineExpHash[$line_name])) {
+              $exp_uid = $lineExpHash[$line_name];
+	    } else {
+              $msg = "missing from experiments $line_name $line_uid" . "\n";
+	      fwrite($errFile, $msg);
+            }
+ 	    if (isset($lineDsHash[$line_name])) {
+              $de_uid = $lineDsHash[$line_name];
+            } else {
+	      $msg = "missing from dataset experiments $line_name $line_uid" . "\n";
+	      fwrite($errFile, $msg);
+            }
             //echo "de_uid = " . $exp_uid . "<br>";
 //        }
 				
