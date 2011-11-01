@@ -3,6 +3,7 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 11/01/2011  JLee   Reinstate Allele freq calculations 
 // 10/25/2011  JLee   Ignore "cut" portion of input file 
 
 // 10/18/2011 JLee  Replace loop control "next" with "continue"
@@ -359,7 +360,6 @@ while (!feof($reader))  {
 fclose($reader);
 echo "Genotyping record creation completed.\n";
 
-/* No longer needed in T3 - JLee  9/16/2011 
 echo "Start allele frequency calculation processing...\n";
 
 // Do allele frequency calculations
@@ -506,7 +506,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
 fclose($errFile);
 
 echo "Allele frequency calculations completed.\n";
-*/
+
 
 // Send out status email
 if (filesize($errorFile)  > 0) {
