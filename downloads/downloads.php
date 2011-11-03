@@ -794,7 +794,7 @@ selected lines</a>.<br>
 
 		//$firephp->error("Curent location: ". getcwd());
 		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
-		$dir = '/tmp/tht';
+		$dir = '/tmp/tht/';
 		$filename = 'THTdownload_tasselV3_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 		
         // File_Archive doesn't do a good job of creating files, so we'll create it first
