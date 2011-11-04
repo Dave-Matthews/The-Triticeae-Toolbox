@@ -118,7 +118,7 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 $num = 0;
 $linenumber = 0;
 while(($line = fgets($reader)) !== FALSE) { 
-<<<<<<< HEAD
+
     $linenumber++;
     $origline = $line;
     chop ($line, "\r");
