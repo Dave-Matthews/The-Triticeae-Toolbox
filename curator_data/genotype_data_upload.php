@@ -69,8 +69,12 @@ class GenotypeData {
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
      	<p><table>
-	<tr><td><strong>Line Translation File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
-	<tr><td><td><a href="curator_data/examples/LinesTrialCode_Sample.txt">Example Line Translation File</a></p>
+	<tr><td vertical-align:text-top><strong>Line Translation File:</strong></td>
+	<td><input id="file[]" type="file" name="file[]" size="80%" /><br>
+        <tr><td><td>Two columns, tab-delimited, containing:<br>
+Line Name: Sample ID names used for the experiment (can be found in the Sample Sheet files)<br>
+Trial Code: Unique code for each site's data, as defined in the Genotype Annotation file<br>
+<a href="curator_data/examples/LinesTrialCode_Sample.txt">Example Line Translation File</a></p>
  	<tr><td><strong>Genotype Data File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
         <tr><td><strong>Data File Format:</strong><td><input type="radio" name="data_format" value="1D"> 1D <a href="curator_data/examples/genotypeData_T3.txt">Example Genotype Data File</a>
                           <tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D <a href="curator_data/examples/TCAPbarley9K-sample.txt">Example Genotype Data File</a></p>
