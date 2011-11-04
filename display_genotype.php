@@ -95,8 +95,10 @@ private function type_DataInformation($trial_code)
 		$row_CAP = mysql_fetch_assoc($res_CAP);
 		$data_program_code = $row_CAP['data_program_code'];
 		
-	$sql_Gen_Info = "SELECT manifest_file_name, cluster_file_name, OPA_name, sample_sheet_filename, raw_datafile_archive, genotype_experiment_info_uid FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
-		$res_Gen_Info = mysql_query($sql_Gen_Info) or die("Error: Unable to retrieve data file names.<br> " .mysql_error());
+		//$sql_Gen_Info = "SELECT manifest_file_name, cluster_file_name, OPA_name, sample_sheet_filename, raw_datafile_archive, genotype_experiment_info_uid FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
+	$sql_Gen_Info = "SELECT * FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
+	//$res_Gen_Info = mysql_query($sql_Gen_Info) or die("Error: Unable to retrieve data file names.<br> " .mysql_error());
+		$res_Gen_Info = mysql_query($sql_Gen_Info) or die("Error: No experiment information for genotype experiment $trial_code..<br> " .mysql_error());
 		$row_Gen_Info = mysql_fetch_assoc($res_Gen_Info);
 		
 		$manifest_file_name = $row_Gen_Info['manifest_file_name'];
@@ -176,11 +178,21 @@ private function type_DataInformation($trial_code)
      Minimum MAF: <input type="text" name="mmaf" id="mmaf" size="1" value="<?php echo ($min_maf) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
      <input type="button" value="Refresh" onclick="javascript:mrefresh('<?php echo $trial_code ?>');return false;" /><br>
      <input type="button" value="Download Allele Data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
-
-<br><br><br>
+<p><br>
 
 <?php
-echo "<b>Additional files available:</b><p>";
+
+	echo "<b>Experiment description</b><p>";
+echo "<table>";
+     echo "<tr> <td>Experiment Short Name</td><td>".$experiment_short_name."</td></tr>";
+     echo "<tr> <td>Data Program</td><td>".$data_program_name." (".$data_program_code.")</td></tr>";
+     echo "<tr> <td>OPA Name</td><td>".$row_Gen_Info['OPA_name']."</td></tr>";
+     echo "<tr> <td>Processing Date</td><td>".$row_Gen_Info['processing_date']."</td></tr>";
+     echo "<tr> <td>Software</td><td>".$row_Gen_Info['analysis_software']."</td></tr>";
+     echo "<tr> <td>Software version</td><td>".$row_Gen_Info['BGST_version_number']."</td></tr>";
+echo "</table><p>";
+
+echo "<b>Additional files available</b><p>";
 echo "<table>";
 			
 			  echo "<tr> <td>Manifest File Name</td><td><a href='/tht/raw/genotype/".$row_Gen_Info['manifest_file_name']."'>". $row_Gen_Info['manifest_file_name']." </a></td></tr>";
@@ -189,11 +201,6 @@ echo "<table>";
 			
 			echo "<tr> <td>Sample Sheet File Name</td><td><a href='/tht/raw/genotype/".$row_Gen_Info['sample_sheet_filename']."'>".$row_Gen_Info['sample_sheet_filename']."</a></td></tr>";
 			echo "<tr> <td>Raw Data File Archive </td><td><a href='/tht/raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
-			echo "<tr> <td>OPA Name</td><td>".$row_Gen_Info['OPA_name']."</td></tr>";
-			echo "<tr> <td>Experiment Short Name</td><td>".$experiment_short_name."</td></tr>";
-			echo "<tr> <td>Data Program Code</td><td>".$data_program_code."</td></tr>";
-			echo "<tr> <td>Data Program Name</td><td>".$data_program_name."</td></tr>";
-			
 			echo "</table>";
 			  echo "<br>";
 ?>

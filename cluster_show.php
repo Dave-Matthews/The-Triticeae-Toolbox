@@ -36,37 +36,6 @@ if ($linenames != "") {
  }
  else $labellines = "lineNames <-c('')\n";
 
-/**** Changing the location of temporary files:
-// Store the input parameters in file setupcluster.R.
-$setup = fopen("downloads/temp/setupcluster.R".$time, "w");
-$png = "png(\"".$config['root_dir']."downloads/temp/linecluster.png\", width=600, height=500)\n";
-fwrite($setup, $png);
-fwrite($setup, $labellines);
-fwrite($setup, "nClust <- $nclusters\n");
-fwrite($setup, "setwd(\"".$config['root_dir']."downloads\")\n");
-fwrite($setup, "mrkDataFile <-c('temp/mrkData.csv".$time."')\n");
-fwrite($setup, "clustInfoFile<-c('temp/clustInfo.txt".$time."')\n");
-fwrite($setup, "clustertableFile <-c('temp/clustertable.txt".$time."')\n");
-fclose($setup);
-
-// Remove previous image.  Otherwise if R fails the user gets previous image.
-unlink($config['root_dir']."downloads/temp/linecluster.png");
-
-//   For debugging, use this to show the R output:
-//   (Regardless, R error messages will be in the Apache error.log.)
-//echo "<pre>"; system("cat downloads/temp/setupcluster.R$time R/VisualCluster.R | R --vanilla");
-exec("cat downloads/temp/setupcluster.R$time R/VisualCluster.R | R --vanilla");
-
-// IE will show the old cached image unless we make the name look different.
-$date = date("U");
-print "<img src=\"".$config['base_url']."downloads/temp/linecluster.png?d=$date\">";
-
-$clustInfo = file($config['root_dir']."downloads/temp/clustInfo.txt".$time);
-unlink($config['root_dir']."downloads/temp/clustInfo.txt".$time);
-$clustInfo = preg_replace("/\n/", "", $clustInfo);
-sort($clustInfo);
-****/
-
 // Store the input parameters in file setupcluster.R.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupcluster.R".$time, "w");
@@ -155,6 +124,10 @@ for ($i=1; $i<count($contents)+1; $i++) {
   print "</tr>";
  }
 print "</table>";
+
+// Clean up old files, older than 1 day.
+system("find /tmp/tht -mtime +1 -name 'clustertable.txt*' -delete");
+system("find /tmp/tht -mtime +1 -name 'mrkData.csv*' -delete");
 
 print "</div></div></div>";
 $footer_div=1;
