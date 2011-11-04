@@ -138,6 +138,10 @@ connect();
         /* $dir ='./downloads/temp/';				 */
         $dir ='/tmp/tht/';	
 	if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
+
+	// Clean up old files, older than 1 day.
+	system("find $dir -mtime +1 -name 'THT_Phenotypes_*.txt' -delete");
+
         // create a download file
         $downloadFile = $dir.$myFile;
 		$fh = fopen($downloadFile, "w");

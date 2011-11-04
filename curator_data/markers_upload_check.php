@@ -27,7 +27,6 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-
 new Markers_Check($_GET['function']);
 
 class Markers_Check {
@@ -37,7 +36,7 @@ class Markers_Check {
 	// Using the class's constructor to decide which action to perform
 //**************************************************************
  	public function __construct($function = null) {	
-		switch($function) 	{
+		switch($function) {
 			case 'typeDatabaseAnnot':
 				$this->type_DatabaseAnnot(); /* update Marker Info */
 				break;
@@ -54,7 +53,7 @@ class Markers_Check {
 	}
 
  //**************************************************************
-    private function typeMarkersCheck() 	{
+    private function typeMarkersCheck() {
 		global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
@@ -73,11 +72,11 @@ class Markers_Check {
 	}
 	
 //**************************************************************
- 	private function type_MarkersAnnot() 	{
+ 	private function type_MarkersAnnot() {
 	?>
 	<script type="text/javascript">
 	
-        function update_databaseAnnot(filepath, filename, username) 	{
+        function update_databaseAnnot(filepath, filename, username) {
             var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabaseAnnot&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
 	
 			// Opens the url in the same window
@@ -121,11 +120,11 @@ class Markers_Check {
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
         }
         else {
-		    if(move_uploaded_file($_FILES['file']['tmp_name'][0], $target_path.$uploadfile)) 	{
+		    if(move_uploaded_file($_FILES['file']['tmp_name'][0], $target_path.$uploadfile)) {
             /* start reading the input */
-                $annotfile = $target_path.$uploadfile;
-                 //echo "Annotate file - " . $annotfile . "<br>";
-                 /* Read the annotation file */
+            	$annotfile = $target_path.$uploadfile;
+                //echo "Annotate file - " . $annotfile . "<br>";
+                /* Read the annotation file */
                 if (($reader = fopen($annotfile, "r")) == FALSE) {
                     error(1, "Unable to access file.");
                     exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
@@ -138,7 +137,7 @@ class Markers_Check {
                 $header = str_getcsv($line,"\t");
                  
                 // Set up header column; all columns are required
-                for ($x = 0; $x < count($header); $x++)  {
+                for ($x = 0; $x < count($header); $x++) {
                     switch ($header[$x] ) {
                         case 'Name':
                             $nameIdx = $x;
@@ -216,10 +215,10 @@ class Markers_Check {
                 unset ($value);
                 fclose($reader);   
 
-                if ($error_flag > 0)  {
+                if ($error_flag > 0) {
                     echo "ERROR DETECT: The 'Name' field cannot be blank"."<br/>";
                     exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-                } 	else {
+                } else {
                     // display input data into table for validation 
                     echo "<h3>Here is a sample of the first 50 lines of data from the uploaded Annotation File</h3>";
                     echo "<table >";
@@ -258,7 +257,7 @@ class Markers_Check {
                         <td >
                         <?php $newtext = wordwrap($storageArr[$i][$annotationTypeIdx], 20, "<br>", true); echo $newtext ?>
                         </td> 
-                         </tr>
+                        </tr>
                     <?php
                     }/* end of for loop */
                     ?>
@@ -272,19 +271,17 @@ class Markers_Check {
                 }
             }    
 		}
-            
     } /* end of MarkersAnnot function*/
 
 //**************************************************************
-  	private function type_MarkersSNP() 	{
+  	private function type_MarkersSNP() {
 	?>
 	<script type="text/javascript">
 	
-        function update_databaseSNP(filepath, filename, username) 	{
+        function update_databaseSNP(filepath, filename, username)  {
             var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabaseSNP&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
-	
-		// Opens the url in the same window
-	   	window.open(url, "_self");
+			// Opens the url in the same window
+			window.open(url, "_self");
         }
 	</script>
 	
@@ -334,9 +331,9 @@ class Markers_Check {
 		  error(1, "Conversion of .opa file failed.");
 		  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
-            }  else {
-                    error(1, "Unable to upload file to tempory location.");
-                    exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            } else {
+                error(1, "Unable to upload file to tempory location.");
+                exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
             }
         }
         // Generic SNP format
@@ -395,7 +392,7 @@ class Markers_Check {
             }
             if (strlen($line) < 2) continue;
             
-            if (empty(trim($line))) {
+            if (empty($line)) {
                 continue;
             }
             if ($i  > 50) {
@@ -406,7 +403,7 @@ class Markers_Check {
             
             //Check for junk line
             if (count($data) != 4) {
-                echo "ERROR DETECT: Line does not contain 4 column.". "<br/>". $line . "<br/>" ;
+                echo "ERROR DETECT: Line does not contain 4 columns.". "<br/>". $line . "<br/>" ;
                 exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
             }    
                                     
@@ -515,8 +512,7 @@ class Markers_Check {
         }
         //print_r($mAnnotTypeHash);
         //echo "<br>";
-       
-        
+         
         $sql = "SELECT marker_synonym_type_uid, name 
             FROM marker_synonym_types";
         $res = mysql_query($sql) or die("Database Error: Marker synonym types lookup - ".mysql_error() ."<br>".$sql);
@@ -565,35 +561,34 @@ class Markers_Check {
         } 
         // Store individual records
         $i = 1;
-        while(($line = fgets($reader)) !== FALSE) { 
+        while (($line = fgets($reader)) !== FALSE) { 
             if (feof($reader)) {
-//                  break;
+                  break;
             }
- 
-	   		if ( trim($line) == '') {
+             
+	    	if ( trim($line) == '') {
             	continue;
             }
             
             if ((stripos($line, '- cut -') > 0 )) {
                 break;
             }
-            
             $j = 0;
             $data = str_getcsv($line,"\t");
                         
             //Check for junk line
             if (count($data) != 6)  {
-
                 echo "ERROR DETECT: Invalid number of columns in line $i.<br/>";
-		        echo "The offending row contains:<br>\"$line\"<br>";
+				echo "The offending row contains:<br>\"$line\"<br>";
                 print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><br>";
-		        exit;
+				exit;
             }     
                                                 
-            foreach ($data as $value)  {
+            foreach ($data as $value) {
                 //echo $value."<br>";
                 $storageArr[$i][$j++] = trim($value);   
             }
+        
 	    	$lastmarker = $data[0];
 	    	$lastline = $i-1;
 	    	$i++;
@@ -613,7 +608,7 @@ class Markers_Check {
             $annotation = $storageArr[$i][$annotationIdx];
             $annotationType = $storageArr[$i][$annotationTypeIdx];
             
-	    if ($marker == "") continue;
+	    	if ($marker == "") continue;
             // handle repeating marker entries
             if (strcmp($marker, $curMarker) == 0)  {
                 
@@ -628,7 +623,7 @@ class Markers_Check {
                 else 
                     $doAnnotation = 1;
 
-            }  else {
+            } else {
                 $curMarker = $marker;
                 $doMarker = 1;
                 if (empty($annotation)) 
@@ -636,7 +631,7 @@ class Markers_Check {
                 else 
                     $doAnnotation = 1;
 
-                if (empty($synonym) )
+                if (empty($synonym))
                     $doSynonym = 0;
                 else 
                     $doSynonym = 1;
@@ -772,7 +767,7 @@ class Markers_Check {
                 VALUES('$filename', '$username', NOW())";
 		} else {
             $sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
-                        WHERE input_file_log_uid = '$input_uid'"; 
+                 WHERE input_file_log_uid = '$input_uid'"; 
         }
         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
         $footer_div = 1;
@@ -801,7 +796,7 @@ class Markers_Check {
             exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
        }
         //Advance to data header area
-        while(!feof($reader))  {
+        while(!feof($reader)) {
             $line = fgets($reader);
             if (stripos($line, 'marker_name') !== false) break;    
         }

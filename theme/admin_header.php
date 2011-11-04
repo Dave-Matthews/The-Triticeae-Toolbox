@@ -64,7 +64,7 @@ EOD;
   <div id="util">
   <div id="utilright">
   </div>
-  <a href="./feedback.php">Feedback</a>
+  <a href="./feedback.php">Contact Us</a>
   </div>
 
 <?php

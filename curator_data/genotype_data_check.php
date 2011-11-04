@@ -77,7 +77,7 @@ class gLineNames_Check
         }
 
         $target_path=$tmp_dir."/";
- 	
+
         if ($_FILES['file']['name'][0] == "") {
             error(1, "No Line Translation File Uploaded");
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
@@ -88,6 +88,13 @@ class gLineNames_Check
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
         }  
         
+	// Test whether file upload succeeded.
+	if ($_FILES['file']['error'][0] != 0 or $_FILES['file']['error'][1] != 0) {
+	  error(1, "File upload failed.  If it fails again please contact the programmers.");
+	  // $_FILES['file']['error'][*] == 1 if php.ini upload_max_filesize was exceeded.
+	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+	}
+
         // Check filetype
         $uploadFile1 = $_FILES['file']['name'][0];
         $uploadFile2 = $_FILES['file']['name'][1];
