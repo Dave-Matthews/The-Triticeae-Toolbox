@@ -3,6 +3,7 @@
 // Marker importer
 //
 //
+// 11/09/2011  JLee   Fix problem with empty lines in SNP file
 // 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
 // 08/02/2011  JLee   Allow for empty synonyms and annotations
 //
@@ -356,7 +357,7 @@ class Markers_Check {
         //Advance to data header area
         while(!feof($reader))  {
             $line = fgets($reader);
-            if (stripos($line, 'marker_name') !== false) break;    
+            if (stripos($line, 'marker_name') !== false) break;
         }
         
         if (feof($reader)) {
@@ -819,9 +820,10 @@ class Markers_Check {
             if (feof($reader)) {
                 break;
             }
-            if (empty($line)) {
-                break;
+            if ( trim($line) == '') {
+                continue;
             }
+            
             $j = 0;
             $data = str_getcsv($line,",");
                         
@@ -903,7 +905,7 @@ class Markers_Check {
          if (empty($input_uid)) {
             $sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
                 VALUES('$filename', '$username', NOW())";
-		} else {
+        } else {
             $sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
                         WHERE input_file_log_uid = '$input_uid'"; 
         }
