@@ -132,7 +132,7 @@ if ($query == 'geno') {
     print "<b>Trials</b>\n";
     print "<table>\n";
   }
-  $sql = "select count(*) from experiments"; 
+  $sql = "select count(experiment_uid) from experiments"; 
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
@@ -160,7 +160,7 @@ if ($query == 'geno') {
     print "</table><br>";
   } 
 
-  $sql = "select count(*) from line_records";
+  $sql = "select count(line_record_uid) from line_records";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
@@ -221,7 +221,7 @@ if ($query == 'geno') {
     print "$count\t";
   }
 
-  $sql = "select count(*) from line_records where created_on > '$this_week'";
+  $sql = "select count(line_record_uid) from line_records where created_on > '$this_week'";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
@@ -232,7 +232,7 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>added since $this_week <td>$count\n";
   }
-  $sql = "select count(*) from line_records where created_on > '$this_month'";
+  $sql = "select count(line_record_uid) from line_records where created_on > '$this_month'";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
@@ -246,7 +246,7 @@ if ($query == 'geno') {
   }
 
   $count = 0;
-  $sql = "select count(*) from markers";
+  $sql = "select count(marker_uid) from markers";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row=mysql_fetch_row($res)) {
     $count = $row[0];
@@ -271,19 +271,17 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>Markers with genotyping data<td>$count\n";
   } 
-  $count = 0; 
-  $sql = "select distinct * from markers where not exists (select * from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
+  $sql = "select distinct count(marker_uid) from markers where not exists (select genotyping_data_uid from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
   $res = mysql_query($sql) or die(mysql_error());
-  while ($row=mysql_fetch_row($res)) {
-    $count++;
-  }
+  $row=mysql_fetch_row($res);
+  $count = $row[0];
   if ($output == "excel") {
     $worksheet->write(15, 0, "Markers without genotyping data");
     $worksheet->write(15, 1, $count);
   } else {
     print "<tr><td>Markers without genotyping data<td><a href=t3_report.php?query=geno>$count</a>\n";
   }
-  $sql = "select count(*) from genotyping_data";
+  $sql = "select count(genotyping_data_uid) from genotyping_data";
   $res = mysql_query($sql) or die(mysql_error());
   $row = mysql_fetch_row($res);
   $count = $row[0];
@@ -295,7 +293,7 @@ if ($query == 'geno') {
     print  "<tr><td>Total genotype data<td>$count\n";
   }
 
-  $sql = "select count(*) from markers where created_on > '$this_week'";
+  $sql = "select count(marker_uid) from markers where created_on > '$this_week'";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
@@ -306,7 +304,7 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>markers added since $this_week <td>$count\n";
   }
-  $sql = "select count(*) from markers where created_on > '$this_month'";
+  $sql = "select count(marker_uid) from markers where created_on > '$this_month'";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
@@ -319,7 +317,7 @@ if ($query == 'geno') {
     print "</table><br>\n";
   }
 
-  $sql = "select count(*) from phenotypes";
+  $sql = "select count(phenotype_uid) from phenotypes";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row=mysql_fetch_row($res)) {
     $count = $row[0];
@@ -333,7 +331,7 @@ if ($query == 'geno') {
     print "<table>\n";
     print "<tr><td>Phenotypes<td>$count\n";
   }
-  $sql = "select count(*) from phenotype_data";
+  $sql = "select count(phenotype_uid) from phenotype_data";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row=mysql_fetch_row($res)) {
     $count = $row[0];
@@ -344,7 +342,7 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>Total phenotype data<td>$count\n";
   }
-  $sql = "select count(*) from phenotype_data where created_on > '$this_week'";
+  $sql = "select count(phenotype_uid) from phenotype_data where created_on > '$this_week'";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
@@ -355,7 +353,7 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>data added since $this_week <td>$count\n";
   }
-  $sql = "select count(*) from phenotype_data where created_on > '$this_month'";
+  $sql = "select count(phenotype_uid) from phenotype_data where created_on > '$this_month'";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
