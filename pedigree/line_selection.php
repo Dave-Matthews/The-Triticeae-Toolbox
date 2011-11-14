@@ -430,7 +430,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     echo "<div class='boxContent'>";
     foreach ($nonHits as &$i) {
       if ($i != '')
-	echo "<font color=red><b>\"$i\" not found.</font></b><br>";
+	    echo "<font color=red><b>\"$i\" not in system.</font></b><br>";
     }
 
 	?>
