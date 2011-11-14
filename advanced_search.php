@@ -87,8 +87,6 @@ connect();
                                 $flag=0;
                                 foreach ($markers as $mkr=>$val) {
                                         if (strtolower($lmks[$mkr])==strtolower($val)) {
-				//	if (preg_match("/$lmks[$mkr]/i",$val)) {
-				//		print $lmks[$mkr]."***".$val."<br>";
 					} else {
                                                 //print strtolower($lmks[$mkr])."***".strtolower($val)."<br>";
                                                 $flag++;
@@ -114,31 +112,16 @@ connect();
 	/* identify lines with the same marker haplotypes */
     if(isset($_POST['haplotype'])) {
 		print "<h2>Results of Select Haplotypes</h2>";
-    		/* Get the Marker Uids */
-			$markers = array();
-			foreach($_POST as $k=>$v) {
-				if(strpos(strtolower($k), "marker") !== FALSE) {
-				// example "marker_1=>1255_BB_3577_AA""
-					$tm = explode("_", $v);
-					$i = 0;
-					while ($i < count($tm)) {
-					  if ($markers[$tm[$i]] == "") {
-				 	    $markers[$tm[$i]] = $tm[$i+1];
-   					  } else {
-					    $markers[$tm[$i]] = $markers[$tm[$i]] . "_" . $tm[$i+1];
- 					  }
-					  $i = $i + 2;
-					}
-				} else {
-				  continue;
-				}
-                        }
-			if(count($markers) < 1) {
-                                warning("No haplotype combinations selected");
-                                $marker_instr="";
-				break;
-			} else {
-			  $marker_instr=" and D.marker_uid in (".implode("," , array_keys($markers)).")";
+			  $marker_list = "";
+			  foreach($_SESSION['clicked_buttons'] as $marker) {
+			    if ($marker_list == "") {
+				$marker_list = $marker;
+			    } else {
+			      $marker_list = $marker_list . ",$marker";
+			    }
+			  }
+			  //$marker_instr=" and D.marker_uid in (".implode("," , array_keys($markers)).")";
+			  $marker_instr=" and D.marker_uid in (".$marker_list.")";
 			  $in_these_lines = str_replace("line_records.", "A.", $in_these_lines);
 			  $query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, E.allele_1, E.allele_2
 						from line_records as A, tht_base as B, genotyping_data as C, markers as D, alleles as E
@@ -148,11 +131,10 @@ connect();
 			  //print $query_str;
 			  $result=mysql_query($query_str) or die(mysql_error());
 			  //print "Number of rows = ". mysql_num_rows($result) . "\n";
-		        }
-			$lines = array();
-			$line_uids=array();
-			$line_names=array();
-			while ($row=mysql_fetch_assoc($result)) {
+			  $lines = array();
+			  $line_uids=array();
+			  $line_names=array();
+			  while ($row=mysql_fetch_assoc($result)) {
 				$linename=$row['line_record_name'];
 				$lineuid=$row['line_record_uid'];
 				$mkruid=$row['marker_uid'];
@@ -161,21 +143,32 @@ connect();
 				$line_names[$lineuid]=$linename;
 				if (! isset($lines[$linename])) $lines[$linename]=array();
 				if (! isset($lines[$linename][$mkruid])) $lines[$linename][$mkruid]=$alleleval;
-			}
-			$selLines=array();
-			foreach ($lines as $lnm=>$lmks) {
-				$flag=0;
-				foreach ($markers as $mkr=>$val) {
-					if (strtolower($lmks[$mkr])==strtolower($val)) {
-				//	if (preg_match("/$lmks[$mkr]/i",$val)) {
-					} else {
-						// print strtolower($lmks[$mkr])."***".strtolower($val)."<br>";
-						$flag++;
- 					}
-				}
-				if ($flag==0) {
-					// print $lnm."<br>";
-					array_push($selLines, $line_uids[$lnm]);
+			  }
+			  $selLines=array();
+		
+			  foreach($_POST as $k=>$v) {
+			  	if (strpos(strtolower($k), "marker") !== FALSE) {
+					$tm = explode("_", $v);
+					$i = 0;
+                                	while ($i < count($tm)) {
+                                          $markers[$tm[$i]] = $tm[$i+1];
+                                          $i = $i + 2;
+                                	}
+			  		foreach ($lines as $lnm=>$lmks) {
+						$flag=0;
+						foreach ($markers as $mkr=>$val) {
+							if (strtolower($lmks[$mkr])==strtolower($val)) {
+							} else {
+								$flag++;
+ 							}	
+						}
+						if ($flag==0) {
+							// print $lnm."<br>";
+							array_push($selLines, $line_uids[$lnm]);
+						}
+					}		
+				} else {
+					continue;
 				}
 			}
 			if (count($selLines) > 0) {
@@ -430,7 +423,7 @@ connect();
 				$i++;
 			}
 			$num_markers = $i;
-			// calculate the number of times to call function
+			// calculate the number of times to call combinations function
                         $i = 0;
 			$total = 1;
 			while ($i < ($num_markers - 2)) {
