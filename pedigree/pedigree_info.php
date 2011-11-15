@@ -57,22 +57,13 @@ var line = new Array();
 ?>"
 var sellineids = new Array();
 var lineuids = line.length;
-//lineuids = ($('_SESSION["selected_lines"]').length);
-		
-//lineuids =  $('test').getValue().split(",");;
-		
-function load_excel() {
-    //alert ('hi');
-    //alert (lineuids);
-    //excel_str1 = implode(",",sellineids);
-    excel_str1 = sellineids;
-    arry_length = (sellineids.length);
-    // alert(arry_length);
-    var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + arry_length;
-    // Opens the url in the same window
-     window.open(url, "_self");
-}
 
+function load_excel() {
+  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel';
+  // Opens the url in the same window
+  window.open(url, "_self");
+}
+		
 // select/deselect
 function sm(exbx, id) {
     if (exbx.checked == true)
@@ -114,63 +105,79 @@ function exclude_none() {
 </style>
 
 <div style="width: 840px;">
-  <table >
-    <tr> 
-      <th class="marker" style="width: 80px; text-align: left"> &nbsp;&nbsp;Check <br/>
-	<input type="radio" name="btn1" value="" onclick="javascript:exclude_all();"/>All<br>
-	<input type="radio" name="btn1" value="" onclick="javascript:exclude_none();"/>None</th>
-      <th style="width: 380px;" class="marker"> Line Name </th>
-      <th style="width: 100px;" class="marker"> Breeding Program </th>
-      <th style="width: 90px;" class="marker"> Hard-<br>ness </th>
-      <th style="width: 90px;" class="marker"> Color </th>
-      <th style="width: 90px;" class="marker"> Growth Habit </th>
-      <th style="width: 240px;" class="marker"> Synonyms </th>
-      <th style="width: 310px;" class="marker"> Pedigree </th>
-      <th style="width: 100px;" class="marker"> Data<br>Available </th>
-    </tr>
-  </table>
+<table >
+	<tr> 
+		<th style="width: 80px;" class="marker"> Check <br/><input type="radio" name="btn1" value="" onclick="javascript:exclude_all();"/>
+																		All<br>
+																		<input type="radio" name="btn1" value="" onclick="javascript:exclude_none();"/>None</th>
+                    
+		<th style="width: 130px;" class="marker"> Line Name </th>
+		<th style="width: 50px;" class="marker"> BP Code </th>
+		<th style="width: 100px;" class="marker"> Growth Habit </th>
+		<th style="width: 40px;" class="marker"> Row Type </th>
+		<th style="width: 80px;" class="marker"> Primary End Use </th>
+		<th style="width: 100px;" class="marker"> Hull </th>
+		<th style="width:140px;" class="marker"> Synonym Name </th>
+		<th style="width: 310px;" class="marker"> Pedigree String </th>
+		<th style="width: 220px;" class="marker"> Experiment Data Available </th>
+	</tr>
+ </table>
  </div>
-
-<div style="padding: 0; width: 838px; height: 400px; overflow: scroll; border: 1px solid #5b53a6; clear: both">
-<table style="table-layout:fixed; width: 830px">	
+ 	
+<div style="padding: 0; width: 840px; height: 400px; overflow: scroll; border: 1px solid #5b53a6; clear: both">
+<table>	
 <?php
-    foreach ($_SESSION['selected_lines'] as $lineuid) {
-      $result=mysql_query("select line_record_name, breeding_program_code, hardness, color, growth_habit, pedigree_string from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-
-      $syn_result=mysql_query("select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
-      $syn_names="";
-      while ($syn_row = mysql_fetch_assoc($syn_result)) 
-	$syn_names[] = $syn_row['line_synonym_name'];
-      if (is_array($syn_names))
-	$sn = implode(', ', $syn_names);
 	
-      while ($row=mysql_fetch_assoc($result)) {
+    foreach ($_SESSION['selected_lines'] as $lineuid) {
+        $result=mysql_query("select line_record_name, breeding_program_code, growth_habit, row_type, hull, primary_end_use, pedigree_string from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+        $syn_result=mysql_query("select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
+  
+        $syn_names="";
+        while ($syn_row = mysql_fetch_assoc($syn_result)) {
+            $syn_names[] = $syn_row['line_synonym_name'];
+	}
+	
+	while ($row=mysql_fetch_assoc($result)) {
+		
 ?>
-	<tr>
-        <td style="width: 57px;" class="marker">
-	  <input type="checkbox" checked name="btn1" value="<?php echo $lineuid ?>" id="exbx_<?php echo $lineuid ?>" onchange="sm(this, <?php echo $lineuid ?>);" class="exbx"/>&nbsp;&nbsp;&nbsp;
+    <tr>
+        <td style="width: 80px;" class="marker">
+        <input type="checkbox" checked name="btn1" value="<?php echo $lineuid ?>" id="exbx_<?php echo $lineuid ?>" onchange="sm(this, <?php echo $lineuid ?>);" class="exbx"/>
         <input type="hidden" id="muids" name="muids" value="<?php echo $lineuid ?>" />
         </td>
-        <td style="width: 172px; text-align: center" class="marker">
+  
+        <td style="width: 180px;" class="marker">
         <?php $line_name = $row['line_record_name'];
 	echo "<a href='pedigree/show_pedigree.php?line=$line_name'>$line_name</a>" ?>
         </td>
-        <td style="width: 72px; text-align: center" class="marker">
+
+        <td style="width: 120px;" class="marker">
         <?php echo $row['breeding_program_code'] ?>
         </td>
-        <td style="width: 56px; text-align: center" class="marker">
-        <?php echo $row['hardness'] ?>
-        </td>
-        <td style="width: 56px; text-align: center" class="marker">
-        <?php echo $row['color'] ?>
-        </td>
-        <td style="width: 60px; text-align: center" class="marker">
+
+        <td style="width: 200px;" class="marker">
         <?php echo $row['growth_habit'] ?>
         </td>
-        <td style="width: 130px; text-align: center" class="marker">
-        <?php echo $sn ?>
+
+        <td style="width: 100px;" class="marker">
+        <?php echo $row['row_type'] ?>
+        </td>
+
+        <td style="width: 120px;" class="marker">
+        <?php echo $row['primary_end_use'] ?>
+        </td>
+
+        <td style="width: 150px;" class="marker">
+        <?php echo $row['hull'] ?>
         </td>
         <td style="width: 155px; text-align: center; word-wrap: break-word" class="marker">
+        <?php
+        for ($i = 0; $i < count($syn_names); $i++) {
+            echo $syn_names[$i].","."<br/>";
+        } ?>
+        </td>
+
+        <td style="width: 150px;" class="marker">
         <?php
         $line_name =  $row['line_record_name'];
 	//Don't need this crude approach, CSS "word-wrap: break-word" works to prevent IE8's ugliness.
@@ -178,7 +185,8 @@ function exclude_none() {
 	$pedigree_string = $row['pedigree_string'];
         echo "<a href='pedigree/pedigree_tree.php?line_name= $line_name '>  $pedigree_string </a> " ?>
         </td>
-        <td style="width: 65px; text-align: center" class="marker">
+
+        <td style="width: 150px;" class="marker">
         <?php $phenotype = lineHasPhenotypeData($lineuid);
 	$genotype = lineHasGenotypeData($lineuid);
 	if($phenotype AND $genotype) echo "Phenotype<br>Genotype";
@@ -202,93 +210,56 @@ function exclude_none() {
   
 private function type_Line_Excel() {
 
-  if (!empty($_GET['mxls1'])) {
-    $sample = $_GET['mxls1'];
-    //echo "<pre>_GET = "; print_r($_GET); echo "</pre>"; exit;
-  }
-  else
-    $sample = implode(",", $_SESSION['selected_lines']);
-    $tok = strtok($sample, ",");
+  $sample = implode(",", $_SESSION['selected_lines']);
+  $tok = strtok($sample, ",");
  
-    $workbook = new Spreadsheet_Excel_Writer();
-    $format_header =& $workbook->addFormat();
-    $format_header->setBold();
-    $format_header->setSize(9);
-    /* $format_header->setTextWrap(); */
-    /* $format_header->setAlign('center'); */
-    /* $format_header->setColor('red'); */
-    /* $format_header->setBgColor('blue'); */
-    /* $format_header->setItalic(); */
-    $format_row =& $workbook->addFormat();
-    $format_row->setSize(9);
-    /* $format_row->setAlign('center'); */
-    /* $format_pedigree_row =& $workbook->addFormat(); */
-    /* $format_pedigree_row->setAlign('left'); */
+  $workbook = new Spreadsheet_Excel_Writer();
+  $format_header =& $workbook->addFormat();
+  $format_header->setBold();
+  $format_header->setAlign('center');
+  $format_header->setColor('red');
+  $format_header->setBgColor('blue');
 
-    $worksheet =& $workbook->addWorksheet();
-    // Freeze row 1 and column 1 from scrolling.
-    $worksheet->freezePanes(array(1, 1));
-    // Set columns 0 to 3 wider.
-    $worksheet->setColumn(0,3,15);
-    $worksheet->write(0, 0, "Name", $format_header);
-    $worksheet->write(0, 1, "GRIN", $format_header);
-    $worksheet->write(0, 2, "Synonyms", $format_header);
-    $worksheet->write(0, 3, "Pedigree", $format_header);
-    $worksheet->setColumn(4,10,7);
-    $worksheet->write(0, 4, "Program", $format_header);
-    $worksheet->write(0, 5, "Hardness", $format_header);
-    $worksheet->write(0, 6, "Color", $format_header);
-    $worksheet->write(0, 7, "Growth Habit", $format_header);
-    $worksheet->write(0, 8, "Awned", $format_header);
-    $worksheet->write(0, 9, "Chaff", $format_header);
-    $worksheet->write(0, 10, "Height", $format_header);
-    $worksheet->setColumn(11,11,20);
-    $worksheet->write(0, 11, "Description", $format_header);
+  $format_header->setItalic();
 
-    $i = 1;
-    # start by opening a query string
+  $worksheet =& $workbook->addWorksheet();
+  $worksheet->write(0, 0, "Line Name", $format_header);
+  $worksheet->write(0, 1, "BP Code", $format_header);
+  $worksheet->write(0, 2, "Growth Habit", $format_header);
+  $worksheet->write(0, 3, "Row Type", $format_header);
+  $worksheet->write(0, 4, "Primary End Use", $format_header);
+  $worksheet->write(0, 5, "Hull", $format_header);
+  $worksheet->write(0, 6, "Pedigree String", $format_header);
+  $worksheet->write(0, 7, "Experiment Data Available", $format_header);
 
-    while ($tok !== false) {
-        $lineuid = (int)$tok;
-        $result=mysql_query("select line_record_name, breeding_program_code, 
-           hardness, color, growth_habit, awned, chaff, height, description, pedigree_string
-           from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
-        $tok = strtok(",");
+  $i = 1;
+# start by opening a query string
+
+  while ($tok !== false) {
+    $lineuid = (int)$tok;
+    $result=mysql_query("select line_record_name, breeding_program_code, growth_habit, row_type, hull, primary_end_use, pedigree_string from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
+    $tok = strtok(",");
 	
-	while ($row = mysql_fetch_assoc($result)) {
-            $worksheet->write($i, 0, "$row[line_record_name]",$format_row);
-            $worksheet->write($i, 3, "$row[pedigree_string]",$format_row);
-            $worksheet->write($i, 4, "$row[breeding_program_code]",$format_row);
-            $worksheet->write($i, 5, "$row[hardness]",$format_row);
-            $worksheet->write($i, 6, "$row[color]",$format_row);
-            $worksheet->write($i, 7, "$row[growth_habit]",$format_row);
-            $worksheet->write($i, 8, "$row[awned]",$format_row);
-            $worksheet->write($i, 9, "$row[chaff]",$format_row);
-            $worksheet->write($i, 10, "$row[height]",$format_row);
-            $worksheet->write($i, 11, "$row[description]",$format_row);
-        }
-	$grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
-           where line_record_uid=$lineuid") or die(mysql_error());
-	$grin_names="";
-	while ($grin_row = mysql_fetch_assoc($grin_result)) 
-	  $grin_names[] = $grin_row['barley_ref_number'];
-	if (is_array($grin_names))
-	  $gr = implode(', ', $grin_names);
-	$worksheet->write($i, 1, "$gr",$format_row);
-
-	$syn_result=mysql_query("select line_synonym_name from line_synonyms 
-            where line_record_uid=$lineuid") or die(mysql_error());
-	$syn_names="";
-	while ($syn_row = mysql_fetch_assoc($syn_result)) 
-	  $syn_names[] = $syn_row['line_synonym_name'];
-	if (is_array($syn_names))
-	  $sn = implode(', ', $syn_names);
-	$worksheet->write($i, 2, "$sn",$format_row);
-
-        $i++;
+    while ($row = mysql_fetch_assoc($result)) {
+      $format_row =& $workbook->addFormat();
+      $format_row->setAlign('center');
+ 
+      $format_pedigree_row =& $workbook->addFormat();
+      $format_pedigree_row->setAlign('left');
+ 		
+      $worksheet->write($i, 0, "$row[line_record_name]",$format_row);
+      $worksheet->write($i, 1, "$row[breeding_program_code]",$format_row);
+      $worksheet->write($i, 2, "$row[growth_habit]",$format_row);
+      $worksheet->write($i, 3, "$row[row_type]",$format_row);
+      $worksheet->write($i, 4, "$row[primary_end_use]",$format_row);
+      $worksheet->write($i, 5, "$row[hull]",$format_row);
+      $worksheet->write($i, 6, "$row[pedigree_string]",$format_pedigree_row);
+      $worksheet->write($i, 7, "NA",$format_row);
     }
-    $workbook->send('Line_Details.xls');
-    $workbook->close();
-    }
-} /* End of class*/
-?>
+    $i++;
+  }
+  $workbook->send('Line_Details.xls');
+  $workbook->close();
+}
+      } /* End of class*/
+	?>

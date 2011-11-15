@@ -7,15 +7,19 @@
                // find line name list and group it into th proper experiment
                 // If the name does not work, also check versions with spaces removed
                 // and spaces replaced by underscores
+  //DEM 13sep11: Stop accepting the variant punctuations.
                 $line_nosp = str_replace(" ","",$line);
                 $line_us = str_replace("_","",$line);
                 $line_hyp = str_replace("-","",$line);
+//                 $line_sql = mysql_query("SELECT line_record_uid AS lruid
+//                     FROM line_records
+//                     WHERE line_record_name = '$line'
+//                         OR line_record_name = '$line_nosp'
+//                         OR line_record_name = '$line_us'
+//                         OR line_record_name = '$line_hyp'") ;
                 $line_sql = mysql_query("SELECT line_record_uid AS lruid
                     FROM line_records
-                    WHERE line_record_name = '$line'
-                        OR line_record_name = '$line_nosp'
-                        OR line_record_name = '$line_us'
-                        OR line_record_name = '$line_hyp'") ;
+                    WHERE line_record_name = '$line'") ;
 
                 if(mysql_num_rows($line_sql)==0 )
                 {
@@ -23,10 +27,7 @@
                    ////echo "Line ".$line." ".$line_us.$line_hyp.$line_nosp.$line_sql." \n";
                     $line_sql = mysql_query("SELECT line_record_uid AS lruid
                         FROM line_synonyms
-                        WHERE line_synonym_name = '$line'
-                            OR line_synonym_name = '$line_nosp'
-                            OR line_synonym_name = '$line_us'
-                            OR line_synonym_name = '$line_hyp'");
+                        WHERE line_synonym_name = '$line'");
                     
                     if (mysql_num_rows($line_sql)==0)  {
                        // echo "Line ".$line." is not in the line record or synonym table\n";
