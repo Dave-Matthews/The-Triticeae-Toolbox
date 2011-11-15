@@ -118,9 +118,8 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 $num = 0;
 $linenumber = 0;
 while(($line = fgets($reader)) !== FALSE) { 
-
-    $linenumber++;
-    $origline = $line;
+  $linenumber++;
+  $origline = $line;
     chop ($line, "\r");
     if (strlen($line) < 2) continue;
     if (feof($reader)) break;
@@ -138,7 +137,7 @@ while(($line = fgets($reader)) !== FALSE) {
     $trialCodeStr = $data[$trialCodeIdx];
     $lineStr = $data[$lineNameIdx];
                 
-    //echo  $lineStr . " - ". $trialCodeStr. "\n"; 
+    //echo  $lineStr . " - ". $trialCodeStr. "<br>"; 
     // Trial Code processing
     if (($curTrialCode != $trialCodeStr) && ($trialCodeStr != '')) {
         $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'";

@@ -5,7 +5,7 @@
    ******************************************************************************/
 body
 {
-    background: #85CACF;
+    background: #f9b738;
     font-family: arial, helvitca, sans-serif;
     font-size: 62.5%; /* 1 em = 10px */
 }
@@ -36,7 +36,7 @@ a:hover
 }
 #footer a:hover
 {
-    color: #5B53A6
+    color: #9a292c
 }
 
 /***** Layout *****************************************************************/
@@ -46,6 +46,8 @@ a:hover
     top: 0;
     position:absolute;
     background: #fff url('images/headbg.jpg') repeat-x
+/*    background: #f9cb73 url('images/headbg.jpg') repeat-x*/
+/*    background: #f9cb73; */
 }
 
 /* dynamic image replacement */
@@ -73,7 +75,7 @@ html>body #logo
     right: 0;
     width: 225px;
     height: 141px;
-    background: url('images/headrt.jpg') no-repeat
+    background: url('images/headrt.png') no-repeat
 }
 #util {
     position: absolute;
@@ -104,7 +106,7 @@ html>body #logo
     padding: 15px 25px;
     background: url('images/gradient.png') repeat-x;
     text-align: left;
-    border-top: 1px solid #5B53A6;
+    border-top: 1px solid #9a292c;
     z-index: 0
 }
 
@@ -114,8 +116,8 @@ html>body #logo
     padding: 15px 10px 3px;
     margin-left: -25px;
     margin-top: 25px;
-    background-color: #C2BDEA;
-    border-bottom: 1px solid #5B53A6;
+    background-color: #f9cb73;
+    border-bottom: 1px solid #9a292c;
     text-align:right
 }
 
@@ -129,7 +131,7 @@ html>body #logo
 }
 #quicklinks h2
 {
-    color: #4DAAB1;
+    color: #de5414;
     margin: 0 0 5px;
     padding: 0;
     font-size: 1.6em
@@ -157,7 +159,7 @@ html>body #logo
 #util a
 {
     vertical-align: middle;
-    border-bottom: 1px solid #4DABB1
+    border-bottom: 1px solid #9a292c
 }
 
 #searchbox, #searchbox a
@@ -175,16 +177,17 @@ html>body #logo
 
 #searchbox input
 {
-    border:1px solid #5B53A6;
+    border:1px solid #9a292c;
     background-color: #fff;
     padding:5px;
-    color:#5B53A6;
+    color:#9a292c;
     font-size: .9em
 }
 
 #main h1, #main h2
 {
-    color:#4DAAB1;
+/*    color:#4DAAB1;*/
+    color:#de5414;
     margin: 0;
     padding: 0;
     font-size: 1.5em;
@@ -198,7 +201,7 @@ html>body #logo
     font-size: 1.2em
 }
 
-.section, .boxContent {width: auto; padding:12px; border-top:1px solid #5B53A6;
+.section, .boxContent {width: auto; padding:12px; border-top:1px solid #9a292c;
     background:url('images/sectionhd.png') repeat-x;}
 .section p, .boxContent p{margin:1.5em 0; line-height:1.5em}
 
@@ -221,11 +224,11 @@ table tr
 }
 table th
 {
-    border-bottom: 1px solid #5B53A6;
-    border-top: 1px solid #5B53A6;
+    border-bottom: 1px solid #9a292c;
+    border-top: 1px solid #9a292c;
     background: url('images/tblhdg.png') repeat-x;
     padding: 7px;
-    color: #5B53A6;
+    color: #9a292c;
 }
 table td
 {
@@ -233,7 +236,8 @@ table td
     border-left: 0;
     border-right: 0;
     padding: 7px;
-    text-align: center;
+/*    text-align: center; */
+    text-align: left;
 }
 
 
@@ -251,8 +255,10 @@ table td
     display:block; margin:0; padding:0; margin-left:-1px; height:42px;
     background:url('images/btnbg.png') no-repeat left top; font-size: 1.7em}
 
+/*#nav li a {display:block;  background:url('images/btnrt.png') no-repeat right top;
+    padding:5px 15px; color:#D5D2EF; text-decoration:none; border-bottom:none} */
 #nav li a {display:block;  background:url('images/btnrt.png') no-repeat right top;
-    padding:5px 15px; color:#D5D2EF; text-decoration:none; border-bottom:none}
+    padding:5px 15px; color:#FFFFFF; text-decoration:none; border-bottom:none}
 
 #nav li a:hover {color:#FFF}
 
@@ -261,16 +267,15 @@ table td
 #nav li#active a,
 #nav li:hover a{background-image:url('images/abtnrt.png'); color:#FFF}
 
-#nav li li,
-#nav li#active li{text-align:left; height:auto; top:0; background:#5B53A6; float:none; font-size: .7em}
+#nav li li,  #nav li#active li{text-align:left; height:auto; top:0; background:#9a292c; float:none; font-size: .7em}
 
 #nav li li a, #nav li#active li a, #nav li:hover li a, #nav li.over li a
 {
     display: block;
     width: 190px;
-    background: #C2BDEA;
+    background: #9a292c; /* #f9cb73; */
     color: #fff;
-    border: 1px solid #5B53A6;
+    border: 1px solid #fff;
     border-top: none;
     padding: 5px
 }
@@ -278,7 +283,7 @@ table td
 #nav li li a:hover, #nav #active li a:hover
 {
     background: #fff;
-    color: #5B53A6
+    color: #9a292c
 }
 
 #nav li ul{display:none; position:absolute; top:42px; z-index:6000; width:200px}

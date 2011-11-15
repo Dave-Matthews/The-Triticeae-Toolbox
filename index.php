@@ -9,7 +9,7 @@ $name = get_unique_name("datasets");
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h2>Home: T3 Barley</h2>
+  <h2>Home: T3 Wheat</h2>
   <div class="section">
   <h3>Welcome to The Triticeae Toolbox (T3)!</h3>
 
@@ -19,13 +19,6 @@ $name = get_unique_name("datasets");
   Food and Agriculture (<a href="http://www.csrees.usda.gov/">NIFA</a>) of the United States Department of
   Agriculture (<a href="http://www.usda.gov">USDA</a>). T3 contains SNP, phenotypic, and pedigree data
   from wheat and barley germplasm in the Triticeae CAP. <a href="about.php">More...</a>
-
-  <p><b>T3 Barley</b> is an extension
-    of <a href="http://hordeumtoolbox.org">The Hordeum Toolbox</a>
-    (THT), which was created by the
-    preceding <a href="http://barleycap.org">Barley CAP</a>.
-    T3&nbsp;Barley incorporates all of the THT data.
-
 
   <p><b>Participants</b>: The templates for submitting your data about
   phenotype trials, phenotype results, and the lines tested are here.

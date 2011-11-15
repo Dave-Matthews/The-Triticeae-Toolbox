@@ -2,7 +2,7 @@
 
 // 2/14/2011 JLee  Fix to handle hector case
 // 2/2/2011  JLee  Add ability to parse tab-delimited and comma separate line inputs
-// 1/28/2011  JLee  Add ability to add muliple lines and synonym translation
+// 1/28/2011  JLee  Add ability to add multiple lines and synonym translation
 
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
@@ -14,41 +14,32 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
   // redisplay them as the page is redrawn.
   {
     $name = $_POST['LineSearchInput'];
-    $hullType = $_POST['Hull'];
-    $rowType = $_POST['RowType'];
-    $severity = $_POST['severity'];
-    $description = $_POST['description'];
-    $typeSelected[$rowType] = 'checked="checked"';
-    $hullSelected[$hullType] = 'checked="checked"';
-    if(is_array($_POST['breedingprogramcode']))
-      {
-	foreach ($_POST['breedingprogramcode'] as $key => $value)
-	  {
-	    // echo "Problem Type $key: $value<br/>";
+    $hardness = $_POST['hardness'];
+    $color = $_POST['color'];
+    $awned =  $_POST['awned'];
+    $hardSelected[$hardness] = 'checked="checked"';
+    $colorSelected[$color] = 'checked="checked"';
+    $awnSelected[$awned] = 'checked="checked"';
+    if(is_array($_POST['breedingprogramcode'])) {
+	foreach ($_POST['breedingprogramcode'] as $key => $value) {
 	    $breeding[$value] = 'selected="selected"';
-	  }
-      }  
-    if(is_array($_POST['primaryenduse']))
-      {
-	foreach ($_POST['primaryenduse'] as $key => $value)
-	  {
-	    $primary[$value] = 'selected="selected"';
-	  }
-      }  
-    if(is_array($_POST['growthhabit']))
-      {
-	foreach ($_POST['growthhabit'] as $key => $value)
-	  {
-	    $growth[$value] = 'selected="selected"';
-	  }
-      } 
-    if(is_array($_POST['year']))
-      {
-	foreach ($_POST['year'] as $key => $value)
-	  {
-	    $yr[$value] = 'selected="selected"';
-	  }
-      } 
+	}
+    }  
+    if(is_array($_POST['species'])) {
+	foreach ($_POST['species'] as $key => $value) {
+	    $species[$value] = 'selected="selected"';
+	}
+    }  
+    if(is_array($_POST['growthhabit'])) {
+	foreach ($_POST['growthhabit'] as $key => $value) {
+	  $growth[$value] = 'selected="selected"';
+	}
+    } 
+    if(is_array($_POST['year'])) {
+      foreach ($_POST['year'] as $key => $value) {
+	$yr[$value] = 'selected="selected"';
+      }
+    } 
   }
 ?>
 
@@ -94,29 +85,24 @@ function exclude_none()
       <tr> <td>
       <b>Name</b> <br/><br/>
       <textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
-  <br/> Eg: M25, FEG148-16, Doyce<br/>
-  Synonyms will be translated.
-  <br></td>
+      <br> Eg: Cayuga, Doyce<br>
+      Synonyms will be translated.
+      <br></td>
 
-  <td> 
-	<b> Data program </b> <br/><br/>
-		
-	
-	<select name="breedingprogramcode[]" multiple="multiple" size="6" style="width: 12em height: 12em;">
-				<?php 
-		
-		$sql = "SELECT DISTINCT(l.breeding_program_code), c.data_program_name FROM line_records l, CAPdata_programs c WHERE l.breeding_program_code = c.data_program_code ";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($resp = mysql_fetch_assoc($res))
-		{
-			?>
-				<option value="<?php echo $resp['breeding_program_code'] ?>" <?php echo $breeding[$resp['breeding_program_code']]?>><?php echo $resp['breeding_program_code'] ?><?php echo "--".$resp['data_program_name'] ?></option>
-			<?php
-		}
-		?>
-						</select><br/><br/>
-	</td>
-
+      <td> 
+      <b> Data program </b> <br/><br/>
+      <select name="breedingprogramcode[]" multiple="multiple" size="6" style="width: 12em height: 12em;">
+      <?php 
+      $sql = "SELECT DISTINCT(l.breeding_program_code), c.data_program_name FROM line_records l, CAPdata_programs c WHERE l.breeding_program_code = c.data_program_code ";
+      $res = mysql_query($sql) or die(mysql_error());
+      while ($resp = mysql_fetch_assoc($res)) {
+	?>
+	<option value="<?php echo $resp['breeding_program_code'] ?>" <?php echo $breeding[$resp['breeding_program_code']]?>><?php echo $resp['breeding_program_code'] ?><?php echo "--".$resp['data_program_name'] ?></option>
+	  <?php
+	  }
+      ?>
+      </select><br/><br/>
+      </td>
 
 <td><b>Year</b><br><br>
 <select name="year[]" multiple="multiple" size="6">
@@ -133,81 +119,78 @@ $sql = "select distinct experiment_year from experiments";
 </select>
 <br><br></td>
 
+      <td> <b>Species</b> <br/><br/>
+      <select name="species[]" multiple="multiple" size="6" style="width: 12em height: 12em;">
+      <?php
+      $sql = "SELECT DISTINCT(species) FROM line_records WHERE species NOT LIKE 'NULL' AND NOT species = ''";
+      $res = mysql_query($sql) or die(mysql_error());
+      while ($resp = mysql_fetch_row($res)) {
+	$s = $resp[0];
+ 	echo "<option value='$s' $species[$s]>$s</option>";
+      }
+      ?>
+      </select><br/><br/>
+      </td>
+      </tr>
 
-	<td> <b> Primary end use </b> <br/><br/>
-	
-	<select name="primaryenduse[]" multiple="multiple" size="6" style="width: 12em height: 12em;">
-				<?php
-		
-		
-		$sql = "SELECT DISTINCT(primary_end_use) FROM line_records WHERE primary_end_use NOT LIKE 'NULL' AND NOT primary_end_use = ''";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($resp = mysql_fetch_assoc($res))
-		{
-			
-			?>
-				<option value="<?php echo $resp['primary_end_use'] ?>" <?php echo $primary[$resp['primary_end_use']]?>><?php echo $resp['primary_end_use'] ?></option>
-			<?php
-		}
-		?>
-						</select><br/><br/>
-	</td>
-  </tr>
+      <tr>
+      <td>
+      <b>Hardness</b> <br/><br/>
+      <input type="radio" name="hardness" value="H" <?php echo $hardSelected['H'] ?>/>Hard<br>
+      <input type="radio" name="hardness" value="S" <?php echo $hardSelected['S'] ?>/>&nbsp;&nbsp;Soft<br><br>
+      </td>
+      <td>
+      <b>Color</b> <br/><br/>
+      <input type="radio" name="color" value="R" <?php echo $colorSelected['R']?>/>&nbsp;&nbsp;Red<br>
+      <input type="radio" name="color" value="W" <?php echo $colorSelected['W']?>/>White<br><br>
+      </td>
 
-  <tr>
-  <td>
-  <b>Growth habit </b> <br/> <br/>
-	
-	<select name="growthhabit[]" multiple="multiple" size="4" style="width: 10em;height: 3em;">
-				<?php
-		
-		$sql = "SELECT DISTINCT(growth_habit) FROM line_records WHERE growth_habit NOT LIKE 'NULL' AND NOT growth_habit = ''";
-		$res = mysql_query($sql) or die(mysql_error());
-		//$count = 1;
-		while ($resp = mysql_fetch_assoc($res))
-		{
-			
-			?>
-				<option value="<?php echo $resp['growth_habit'] ?>" <?php echo $growth[$resp['growth_habit']]?>><?php echo $resp['growth_habit'] ?></option>
-			<?php
-			//	$count++;
-		}
-		?>
-			    </select>
-<br><br>	
-	</td>
-  <td>
-  <b>Row type </b> <br/><br/>
-      <input type="radio" name="RowType" value="2" <?php echo $typeSelected['2'] ?>/> 2<br>
-      <input type="radio" name="RowType" value="6" <?php echo $typeSelected['6'] ?>/> 6<br><br>
-	</td>
-	<td>
-	<b> Hull type </b> <br/><br/>
-	  <input type="radio" name="Hull" value="hulled" <?php echo $hullSelected['hulled']?>/>&nbsp;&nbsp;Hulled<br>
-      <input type="radio" name="Hull" value="hulless" <?php echo $hullSelected['hulless']?>/>Hulless<br><br>
-	</td>
-<td></td>
-	</tr>
-  </table>
+      <td>
+      <b>Growth habit </b> <br/> <br/>
+      <select name="growthhabit[]" multiple="multiple" size="4" style="width: 3em;height: 5em;">
+      <?php
+      $sql = "SELECT DISTINCT(growth_habit) FROM line_records WHERE growth_habit NOT LIKE 'NULL' AND NOT growth_habit = ''";
+      $res = mysql_query($sql) or die(mysql_error());
+      //$count = 1;
+      while ($resp = mysql_fetch_assoc($res))
+	{
+	  ?>
+	  <option value="<?php echo $resp['growth_habit'] ?>" <?php echo $growth[$resp['growth_habit']]?>><?php echo $resp['growth_habit'] ?></option>
+	    <?php
+	    }
+      ?>
+      </select>
+      <br><br>	
+      </td>
 
-  <p ><input type="submit" value="Search"/>
+      <td>
+      <b>Awns</b> <br/><br/>
+      <input type="radio" name="awned" value="A" <?php echo $awnSelected['A']?>/>&nbsp;&nbsp;&nbsp;Awned<br>
+      <input type="radio" name="awned" value="N" <?php echo $awnSelected['N']?>/>Awnless<br><br>
+      </td>
+
+      </tr>
+      </table>
+
+      <p><input type="submit" value="Search"/>
       <?php
       $url = $config['base_url']."pedigree/line_selection.php";
       echo "<input type=button value='Clear' onclick='location.href=\"$url\"'>";
       ?>
-</form>
-</div>
+      </form>
+      </div>
 
-
-	<?php 
+      <?php 
+      /* The Search */
   if (isset($_POST['LineSearchInput'])) {
     $linenames = $_POST['LineSearchInput'];
     $breedingProgram = $_POST['breedingprogramcode'];
-    $growthHabit = $_POST['growthhabit'];
-    $rowType = $_POST['RowType'];
-    $hull = $_POST['Hull'];
-    $primaryEndUse = $_POST['primaryenduse'];
     $year = $_POST['year'];
+    $species = $_POST['species'];
+    $hardness = $_POST['hardness'];
+    $color = $_POST['color'];
+    $growthHabit = $_POST['growthhabit'];
+    $awned =  $_POST['awned'];
     $lineArr = array();
 
     // Translate synonym
@@ -222,218 +205,165 @@ $sql = "select distinct experiment_year from experiments";
 			$lineList = explode('\r\n',$linenames);
 		}
 	   	
-	$items = implode("','", $lineList);
+        $items = implode("','", $lineList);
         $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
  
         $res = mysql_query($mStatment) or die(mysql_error());
 
-        if (mysql_num_rows($res) != 0) {         
-            while($myRow = mysql_fetch_assoc($res)) {
-    	        array_push ($lineArr,$myRow['line_record_name']);
-            }  
-        
-            // Generate the translated line names
-            $linenames =  implode("','", $lineArr);         
-        } else {
-            $linenames = ''; 
-        }
+	if (mysql_num_rows($res) != 0) {         
+	while($myRow = mysql_fetch_assoc($res)) {
+	  array_push ($lineArr,$myRow['line_record_name']);
+	}  
+	// Generate the translated line names
+	$linenames =  implode("','", $lineArr);         
+      } else {
+	$linenames = ''; 
+      }
 
-        // Find any non-hit items, case-independently.
-	$nonHits = array();
-	foreach ($lineList as $name)
-	  array_push($nonHits, strtoupper($name));
+        // Find any none hit items 
         $mStatment = "SELECT distinct (ls.line_synonym_name) FROM line_synonyms ls where ls.line_synonym_name in ('" .$items. "');";
         $res = mysql_query($mStatment) or die(mysql_error());
         while($myRow = mysql_fetch_assoc($res)) {
-	  $i = array_search(strtoupper($myRow['line_synonym_name']), $nonHits);
-	  if ($i !== FALSE) $nonHits[$i] = '';
+            $items = str_ireplace($myRow['line_synonym_name'], '', $items);
+            $items = str_replace(",,",",", $items);
         }
-	$mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr where lr.line_record_name in ('" .$items. "');";
-	$res = mysql_query($mStatment) or die(mysql_error());
-	while($myRow = mysql_fetch_assoc($res)) {
-	  $i = array_search($myRow['line_record_name'], $nonHits);
-	  if ($i !== FALSE) $nonHits[$i] = '';
-	}
+
+        $items = trim($items,',');
+        if (strlen($items) != 0) {
+            $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr where lr.line_record_name in ('" .$items. "');";
+            $res = mysql_query($mStatment) or die(mysql_error());
+            while($myRow = mysql_fetch_assoc($res)) {
+                $items = str_ireplace($myRow['line_record_name'], '', $items);
+                $items = str_replace(",,",",", $items);
+            }
+        }
+        $items = str_replace("'","", $items);
+        $items = trim($items,',');
+        if (strlen($items) != 0) {
+            $nonHits = explode(',',$items);
+        } else {
+            $nonHits = array();
+        }
     }
     
-    if (count($breedingProgram) != 0)
-    {
-    $breedingCode = implode("','", $breedingProgram);
-    }
-    
-    if (count($growthHabit) != 0)
-    {
-    $growthStr = implode("','", $growthHabit);
-    }
-    
-    if (count($primaryEndUse) != 0)
-    {
-    $primaryUse = implode("','", $primaryEndUse);
-    }
-    if (count($year) != 0)
-      {
-	$yearStr = implode("','", $year);
-      }
+    if (count($breedingProgram) != 0) $breedingCode = implode("','", $breedingProgram);
+    if (count($growthHabit) != 0) $growthStr = implode("','", $growthHabit);
+    if (count($species) != 0) $speciesStr = implode("','", $species);
+    if (count($year) != 0) $yearStr = implode("','", $year);
+
+
+    /* Build the search string $where. */
     $count = 0;
-    
-    
-    if (count($breedingProgram) != 0)
-    {
-    	if ($count == 0)
-    	{
-			$where .= "breeding_program_code IN ('".$breedingCode."')";
-			}
-			else
-			{
-			$where .= " AND breeding_program_code IN ('".$breedingCode."')";
-			}
-			$count++;
-		}
-		
-		if (count($growthHabit) != 0)
-    {
-    if ($count == 0)
-    	{
-			$where .= "growth_habit IN ('".$growthStr."')";
-			}
-		else
-			{
-				$where .= " AND growth_habit IN ('".$growthStr."')";
-			}
-			$count++;
-		}
-		
-		if (count($primaryEndUse) != 0)
-    {
-    if ($count == 0)
-    	{
-    	$where .= "primary_end_use IN ('".$primaryUse."')";
-    	}
-    else
-    	{
-			$where .= " AND primary_end_use IN ('".$primaryUse."')";
-			}
-			
-			$count++;
-		}
-		
-		if (strlen($linenames) > 0)
-		{
-		if ($count == 0)
-    	{
+
+    if (strlen($linenames) > 0)		{
+      if ($count == 0)    	{
     	$where .= "line_record_name in ('".$linenames."')";
-    	}
-    else
-    	{
-			$where .= " AND line_record_name in ('".$linenames."')";
-			}
-			$count++;
-		}
-		
-		if (strlen($rowType) > 0)
-		{
-		if ($count == 0)
-    	{
-    	$where .= "row_type IN ('".$rowType."')";
-    	}
-    else
-    	{
-			$where .= " AND row_type IN ('".$rowType."')";
-			}
-			$count++;
-		}
-		
-		if (strlen($hull) > 0)
-		{
-		if ($count == 0)
-    	{
-    	$where .= "hull IN ('".$hull."')";
-    	}
-    else
-    	{
-			$where .= " AND hull IN ('".$hull."')";
-			}
-			$count++;
-		}
-
-    if (count($year) != 0)
-      {
-    	if ($count == 0)
-    	{
-	  $where .= "line_record_uid IN (select line_record_uid from tht_base, experiments
-where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
-	}
-	else
-	  {
-	    $where .= " AND line_record_uid IN (select line_record_uid from tht_base, experiments 
-where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
-	  }
       }
-		
-    
-    // $test = "'CC','SM'";
-    
-   // echo "WHere VAlue =".$where ;
-    
-    //$escaped = mysql_real_escape_string($where);
-    
-   // echo "excaped VAlue =".$escaped ;
-    
-   /* echo "<br/>";
-    var_dump($escaped);
-    var_dump($lineStr);
-    var_dump($test); */
-   // var_dump($breedingCode);
-    
-   // var_dump ($breedingProgram);
-    //var_dump ($breedingCode);
-    
-/* 
-    var_dump($breedingProgram);
-    var_dump($growthHabit);
-    var_dump($primaryEndUse); 
-    
-    if (strlen($linenames) < 1)
-      $linenames = ".";
-   
-    if (count($breedingProgram) < 1)
-      $breedingProgram = ".";
-      
-    if (count($growthHabit) < 1)
-      $growthHabit = ".";
-      
-    if (strlen($rowType) < 1)
-      $rowType = ".";  
-		
-		if (strlen($hull) < 1)
-      $hull = ".";     
-		
-		if (count($primaryEndUse) < 1)
-      $primaryEndUse = ".";   
+      else    	{
+	$where .= " AND line_record_name in ('".$linenames."')";
+      }
+      $count++;
+    }
 
-*/
-    if ( (strlen($linenames) < 1) AND (strlen($hull) < 1) AND (strlen($rowType) < 1) AND (count($breedingProgram) == 0) AND  (count($growthHabit) == 0) AND (count($primaryEndUse) == 0) AND (count($year) == 0)  ) {
-        $result = mysql_query("SELECT line_record_name FROM line_records where line_record_name = NULL");
-	} else  {
-    // echo "select line_record_uid, line_record_name from line_records where line_record_name regexp \"$linenames\"";
-// echo "I am here <br>";   
-   // $result=mysql_query("select line_record_uid, line_record_name from line_records where line_record_name regexp '".$linenames."' ");
-    
-    //$result=mysql_query("select line_record_uid, line_record_name from line_records where ('".$where."') ");
-		$result=mysql_query("select line_record_uid, line_record_name from line_records where $where ");
-  //  echo "<div style="padding: 0; width: 810px; height: 300px; overflow: scroll; border: 1px">";
-  	
-  	//	var_dump($result);
-  	}
+    if (count($breedingProgram) != 0)    {
+      if ($count == 0)    	{
+	$where .= "breeding_program_code IN ('".$breedingCode."')";
+      }
+      else	{
+	$where .= " AND breeding_program_code IN ('".$breedingCode."')";
+      }
+      $count++;
+    }
+		
+    if (count($year) != 0)      {
+      if ($count == 0)    	{
+	$where .= "line_record_uid IN (select line_record_uid from tht_base, experiments
+where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
+      }
+      else	  {
+	$where .= " AND line_record_uid IN (select line_record_uid from tht_base, experiments 
+where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
+      }
+      $count++;
+    }
+
+    if (count($species) != 0)    {
+      if ($count == 0)    	{
+    	$where .= "species IN ('".$speciesStr."')";
+      }
+      else    	{
+	$where .= " AND species IN ('".$speciesStr."')";
+      }
+      $count++;
+    }
+    if (strlen($hardness) != 0)    {
+      if ($count == 0)    	{
+	$where .= "hardness IN ('".$hardness."')";
+      }
+      else			{
+	$where .= " AND hardness IN ('".$hardness."')";
+      }
+      $count++;
+    }
+
+    if (strlen($color) != 0)    {
+      if ($count == 0)    	{
+	$where .= "color IN ('".$color."')";
+      }
+      else			{
+	$where .= " AND color IN ('".$color."')";
+      }
+      $count++;
+    }
+
+    if (count($growthHabit) != 0)    {
+      if ($count == 0)    	{
+	$where .= "growth_habit IN ('".$growthStr."')";
+      }
+      else			{
+	$where .= " AND growth_habit IN ('".$growthStr."')";
+      }
+      $count++;
+    }
+
+    if (strlen($awned) != 0)    {
+      if ($count == 0)    	{
+	$where .= "awned IN ('".$awned."')";
+      }
+      else			{
+	$where .= " AND awned IN ('".$awned."')";
+      }
+      $count++;
+    }
+
+		
+    /* Do The Search */
+    if ( (strlen($linenames) == 0)
+	 AND (count($breedingProgram) == 0)
+	 AND (count($year) == 0)
+	 AND (count($species) == 0)
+	 AND (strlen($hardness) == 0)
+	 AND (strlen($color) == 0)
+	 AND (count($growthHabit) == 0)
+	 AND (strlen($awned) == 0) )
+      $result = mysql_query("SELECT line_record_name FROM line_records where line_record_name = NULL");
+    else  {
+      $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
+      $result=mysql_query($TheQuery) or die(mysql_error()."<br>Query was:<br>".$TheQuery);
+      //echo $TheQuery;
+    }
     $linesfound = mysql_num_rows($result);
 
     echo "<div class='boxContent'>";
-    foreach ($nonHits as &$i) {
-      if ($i != '')
-	    echo "<font color=red><b>\"$i\" not in system.</font></b><br>";
-    }
 
-	?>
+    // Show failures from the Name box that don't match any line names.
+    if (count($nonHits) != 0 ){
+      echo "<p>";
+        foreach ($nonHits as &$i) {
+            echo "<font color=red><b>\"$i\" not found.</font></b><br>";
+        }
+    }   
+    ?>
     <h3>Lines found: <?php echo "$linesfound"; ?></h3>
     <div style="width: 420px; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">
     <table width='400px' id='linesTab' class='tableclass1'>

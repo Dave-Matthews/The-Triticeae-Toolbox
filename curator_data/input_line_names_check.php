@@ -38,7 +38,8 @@ function errmsg($sql, $err) {
     die_nice($msg);
   }
   elseif (preg_match('/^Duplicate entry/', $err)) {
-  die_nice($err.". Aliases and GRIN Accessions must be unique.");
+//   die_nice($err.". Aliases and GRIN Accessions must be unique.");
+  die_nice($err."<br>".$sql);
   }
   else die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql."<br>");
 }
@@ -175,8 +176,8 @@ class LineNames_Check
 // These are the required columns. -1 means that the column has not been found.
 	      $columnOffsets = array(
 			'line_name' => -1,
-			'generation' => -1,
-			'row_type' => -1
+			'species' => -1,
+			'growth_habit' => -1
 		);
 
 		/* Attempt to find each required column */
@@ -221,34 +222,56 @@ class LineNames_Check
 			if (preg_match('/^\s*aliases\s*$/is', trim($columnName)))
 				$columnOffsets['synonyms'] = $columnOffset+1;
 
-			// Determine the column offset of "GRIN PI Number"...
-			if (preg_match('/^\s*grinpinumber\s*$/is', trim($columnName)))
+			// Determine the column offset of "GRIN Accession"...
+			if (preg_match('/^\s*grinaccession\s*$/is', trim($columnName)))
 				$columnOffsets['grin'] = $columnOffset+1;
 		
 			// Determine the column offset of "Pedigree"...
 			if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
 				$columnOffsets['pedigree'] = $columnOffset+1;
 		
-			// Determine the column offset of "*Filial Gen. (e.g., 4 for F4)"...
-			//if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
-			if (preg_match('/^\s*\*filialgen/is', trim($columnName)))
+			// Determine the column offset of "*Filial Generation"...
+			if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
 				$columnOffsets['generation'] = $columnOffset+1;
+		
+			// Determine the column offset of "Hard / Soft"...
+			if (preg_match('/^\s*hard\/soft\s*$/is', trim($columnName)))
+				$columnOffsets['hardness'] = $columnOffset+1;
+		
+			// Determine the column offset of "Red / White"...
+			if (preg_match('/^\s*red\/white\s*$/is', trim($columnName)))
+				$columnOffsets['color'] = $columnOffset+1;
 		
 			// Determine the column offset of "Spring / Winter / Facultative"...
 			//if (preg_match('/^\s*growthhabit\s*$/is', trim($columnName)))
 			if (preg_match('/^\s*spring\/winter\/facultative\s*$/is', trim($columnName)))
 				$columnOffsets['growth_habit'] = $columnOffset+1;
 		
-			// Determine the column offset of "*Row Type"...
-			if (preg_match('/^\s*\*rowtype\s*$/is', trim($columnName)))
+			// Determine the column offset of "*aestivum / durum"...
+			if (preg_match('/^\s*\*aestivum\/durum\s*$/is', trim($columnName)))
+				$columnOffsets['species'] = $columnOffset+1;
+		
+			// Determine the column offset of "Awned / Awnless"...
+			if (preg_match('/^\s*awned\/awnless\s*$/is', trim($columnName)))
+				$columnOffsets['awned'] = $columnOffset+1;
+		
+			// Determine the column offset of "Chaff color"...
+			if (preg_match('/^\s*chaffcolor\s*$/is', trim($columnName)))
+				$columnOffsets['chaff'] = $columnOffset+1;
+		
+			// Determine the column offset of "Qualitative height"...
+			if (preg_match('/^\s*qualitativeheight\s*$/is', trim($columnName)))
+				$columnOffsets['height'] = $columnOffset+1;
+		
+			// Determine the column offset of "Row Type"...
+			if (preg_match('/^\s*rowtype\s*$/is', trim($columnName)))
 				$columnOffsets['row_type'] = $columnOffset+1;
 		
 			// Determine the column offset of "End Use"...
-			//if (strpos($columnName,'enduse'))
-			if (preg_match('/^\s*enduse\s*$/is', trim($columnName)))
+			if (strpos($columnName,'use'))
 				$columnOffsets['end_use'] = $columnOffset+1;
 				
-			// Determine the column offset of "Hull"...
+			// Determine the column offset of "hull"...
 			if (preg_match('/^\s*hull\s*$/is', trim($columnName)))
 				$columnOffsets['hull'] = $columnOffset+1;
 
@@ -287,15 +310,28 @@ class LineNames_Check
 		elseif (strpos($line, ' ')) die_nice("Row $irow: Line name contains a blank. Replace with _ or remove.") ;
 		elseif (strlen($line) < 3)  echo "Warning: '$line' is a short name and may not be unique.<br>";
 		$synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
+		// Strip out any single-quotes.
+		$synonyms = str_replace('\'', '', $synonyms);
 		$synonyms = explode(',', str_replace(', ', ',', $synonyms));
+		if (!empty ($synonyms)) {
+		  $tooshort = array();
+		  foreach ($synonyms as $s) {
+		    if (!empty($s))
+		      if ( (strlen($s) < 3) OR (strlen($s) < 4 AND is_numeric($s)) ) {
+			echo "Note: Alias '$s' is too short to be unique. Removed. (Line $line)<br>";
+			array_push($tooshort, $s);
+		      }
+		  }
+		  $synonyms = array_diff($synonyms, $tooshort);
+		}
 		$grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
 		if (!empty($grin)) {
 		  if (preg_match("/^PI[0-9]/", $grin))
 		    $grin = str_replace("PI", "PI ", $grin);
-		  if (preg_match("/^CIho[0-9]/", $grin)) 
-		      $grin = str_replace("CIho", "CIho ", $grin);
+		  if (preg_match("/^CItr[0-9]/", $grin)) 
+		      $grin = str_replace("CItr", "CItr ", $grin);
 		  if ( !preg_match("/^PI [0-9]*$/", $grin) 
-		       AND !preg_match("/^CIho [0-9]*$/", $grin) 
+		       AND !preg_match("/^CItr [0-9]*$/", $grin) 
 		       AND !preg_match("/^GSTR[0-9]*$/", $grin) )
 		    die_nice("$line: Invalid GRIN Accession $grin");
 		  // Is this accession already used for a different line?
@@ -314,13 +350,24 @@ class LineNames_Check
 		$generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
 		if ( (empty($generation)) OR ($generation != (int)$generation) OR ($generation < 1) OR ($generation > 9) )
 		  die_nice("$line: Filial Generation (1-9) is required.");
+		$hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
+		$color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
 		$growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
 		//if (empty($growth)) die_nice("Row $irow: S, W or F is required.");
+		$species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
+		$species = preg_replace("/^a$/", "aestivum", $species);
+		$species = preg_replace("/^d$/", "durum", $species);
+		if (empty($species)) die_nice("Row $irow: Species is required.");
+		$awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
+		$chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
+		$height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
 		$pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
 		$comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
+		/* For barley.
 		 $enduse = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['end_use']]),"\0..\37!@\177..\377");
 		 $rowtype = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['row_type']]),"\0..\37!@\177..\377");
 		 $hull = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hull']]),"\0..\37!@\177..\377");
+		*/
 			
 		// Line Name is required.
 		if (!empty($line)) {
@@ -392,7 +439,7 @@ class LineNames_Check
 			}
 			else 
 			  // It's a line name.
-			  die_nice("$line alias '$syn' is an existing Line Name.  Please use this name instead of $line.");
+			  die_nice("$line alias '$syn' is an existing Line Name.");
 		      }
 		      elseif (count($linesyn_uid) > 1) {
 			die_nice("$line alias '$syn' is already an alias for multiple lines, please fix.");
@@ -427,12 +474,20 @@ class LineNames_Check
 	<th style="width: 180px;" class="marker">Aliases</th>
 	<th style="width: 150px;" class="marker">GRIN</th>
 	<th style="width: 70px;" class="marker">Gener ation</th>
+	<th style="width: 50px;" class="marker">Hard ness</th>
+	<th style="width: 50px;" class="marker">Color</th>
 	<th style="width: 50px;" class="marker">Growth Habit</th>
+	<th style="width: 100px;" class="marker">Species</th>
+	<th style="width: 50px;" class="marker">Awned</th>
+	<th style="width: 100px;" class="marker">Chaff Color</th>
+	<th style="width: 100px;" class="marker">Height</th>
 	<th style="width: 180px;" class="marker">Pedigree</th>
 	<th style="width: 180px;" class="marker">Comments</th>
+        <!-- For barley.
 	<th style="width: 40px;" class="marker" >Row Type </th>
 	<th style="width: 50px;" class="marker" >End Use </th>
 	<th style="width: 70px;" class="marker" >Hull </th>
+        -->
 	</tr>
 	</table>
 		
@@ -449,12 +504,22 @@ class LineNames_Check
 		      $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
 		      $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
 		      $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
+		      $hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
+		      $color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
 		      $growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
+		      $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
+		      $species = preg_replace("/^a$/", "aestivum", $species);
+		      $species = preg_replace("/^d$/", "durum", $species);
+		      $awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
+		      $chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
+		      $height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
 		      $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
 		      $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
+		      /* For barley.
 		       $enduse = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['end_use']]),"\0..\37!@\177..\377");
 		       $rowtype = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['row_type']]),"\0..\37!@\177..\377");
 		       $hull = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hull']]),"\0..\37!@\177..\377");
+		      */
 		      ?>
 			<tr>
 			   <td style="width: 120px;">
@@ -466,17 +531,31 @@ class LineNames_Check
 			   <td style="width: 120px;">
 			   <?php echo $generation ?></td> 
 			   <td style="width: 120px;">
+			   <?php echo $hardness ?></td> 
+			   <td style="width: 120px;">
+			   <?php echo $color ?></td> 
+			   <td style="width: 120px;">
 			   <?php echo $growth ?></td> 
+			   <td style="width: 120px;">
+			   <?php echo $species ?></td> 
+			   <td style="width: 120px;">
+			   <?php echo $awned ?></td> 
+			   <td style="width: 150px;">
+			   <?php echo $chaff ?></td> 
+			   <td style="width: 150px;">
+			   <?php echo $height ?></td> 
 			   <td style="width: 180px;">
 			   <?php echo $pedstring ?></td> 
 			   <td style="width: 180px;">
 			   <?php echo $comments ?></td> 
+			   <!-- For barley.
 			   <td style="width: 50px;">
 			   <?php echo $enduse ?></td> 
 			   <td style="width: 30px;">
 			   <?php echo $rowtype ?></td> 
 			   <td style="width: 60px;">
 			   <?php echo $hull ?></td> 
+			   -->
 			   </tr>
 			   <?php
 			   } /* end of if (!empty($line)) */
@@ -502,12 +581,15 @@ class LineNames_Check
 	<th style="width: 150px;" class="marker">Aliases</th>
 	<th style="width: 150px;" class="marker">GRIN</th>
 	<th style="width: 70px;" class="marker">Gener ation</th>
+	<th style="width: 50px;" class="marker">Hard ness</th>
+	<th style="width: 50px;" class="marker">Color</th>
 	<th style="width: 50px;" class="marker">Growth Habit</th>
+	<th style="width: 100px;" class="marker">Species</th>
+	<th style="width: 50px;" class="marker">Awned</th>
+	<th style="width: 100px;" class="marker">Chaff Color</th>
+	<th style="width: 100px;" class="marker">Height</th>
 	<th style="width: 180px;" class="marker">Pedigree</th>
 	<th style="width: 180px;" class="marker">Comments</th>
-	<th style="width: 40px;" class="marker" >Row Type </th>
-	<th style="width: 50px;" class="marker" >End Use </th>
-	<th style="width: 70px;" class="marker" >Hull </th>
 	</tr>
 	</table>
 		
@@ -524,12 +606,22 @@ class LineNames_Check
 				  $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
 				  $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
 				  $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
+				  $hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
+				  $color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
 				  $growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
+				  $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
+				  $species = preg_replace("/^a$/", "aestivum", $species);
+				  $species = preg_replace("/^d$/", "durum", $species);
+				  $awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
+				  $chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
+				  $height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
 				  $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
 				  $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
+				  /* For barley.
 				   $enduse = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['end_use']]),"\0..\37!@\177..\377");
 				   $rowtype = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['row_type']]),"\0..\37!@\177..\377");
 				   $hull = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hull']]),"\0..\37!@\177..\377");
+				  */
 				  ?>
 			
 				    <tr>
@@ -542,17 +634,31 @@ class LineNames_Check
 				       <td style="width: 120px;">
 				       <?php echo $generation ?></td> 
 				       <td style="width: 120px;">
+				       <?php echo $hardness ?></td> 
+				       <td style="width: 120px;">
+				       <?php echo $color ?></td> 
+				       <td style="width: 120px;">
 				       <?php echo $growth ?></td> 
+				       <td style="width: 120px;">
+				       <?php echo $species ?></td> 
+				       <td style="width: 120px;">
+				       <?php echo $awned ?></td> 
+				       <td style="width: 150px;">
+				       <?php echo $chaff ?></td> 
+				       <td style="width: 150px;">
+				       <?php echo $height ?></td> 
 				       <td style="width: 180px;">
 				       <?php echo $pedstring ?></td> 
 				       <td style="width: 180px;">
 				       <?php echo $comments ?></td> 
+				       <!-- For barley.
 				       <td style="width: 50px;">
 				       <?php echo $enduse ?></td> 
 				       <td style="width: 30px;">
 				       <?php echo $rowtype ?></td> 
 				       <td style="width: 60px;">
 				       <?php echo $hull ?></td> 
+				       -->
 				       </tr>
 				       <?php
 				       } /* end of if (!empty($line))*/
@@ -632,8 +738,7 @@ class LineNames_Check
 		<?php	}
 	    }
 	  else {
-	    //Failure of (move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) 
-	    error(1,"There was an error uploading the file.  Check that curator_data/uploads/ exists and is writeable.");
+	    error(1,"There was an error uploading the file, please try again!");
 	  }
 	}
 	}
@@ -710,8 +815,8 @@ class LineNames_Check
 	  if (preg_match('/^\s*aliases\s*$/is', trim($columnName)))
 	    $columnOffsets['synonyms'] = $columnOffset+1;
 
-	  // Determine the column offset of "GRIN PI Number"...
-	  if (preg_match('/^\s*grinpinumber\s*$/is', trim($columnName)))
+	  // Determine the column offset of "GRIN Accession"...
+	  if (preg_match('/^\s*grinaccession\s*$/is', trim($columnName)))
 	    $columnOffsets['grin'] = $columnOffset+1;
 		
 	  // Determine the column offset of "Pedigree"...
@@ -722,13 +827,37 @@ class LineNames_Check
 	  if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
 	    $columnOffsets['generation'] = $columnOffset+1;
 		
+	  // Determine the column offset of "Hard / Soft"...
+	  if (preg_match('/^\s*hard\/soft\s*$/is', trim($columnName)))
+	    $columnOffsets['hardness'] = $columnOffset+1;
+		
+	  // Determine the column offset of "Red / White"...
+	  if (preg_match('/^\s*red\/white\s*$/is', trim($columnName)))
+	    $columnOffsets['color'] = $columnOffset+1;
+		
 	  // Determine the column offset of "Spring / Winter / Facultative"...
 	  //if (preg_match('/^\s*growthhabit\s*$/is', trim($columnName)))
 	  if (preg_match('/^\s*spring\/winter\/facultative\s*$/is', trim($columnName)))
 	    $columnOffsets['growth_habit'] = $columnOffset+1;
 
+	  // Determine the column offset of "*aestivum / durum"...
+	  if (preg_match('/^\s*\*aestivum\/durum\s*$/is', trim($columnName)))
+	    $columnOffsets['species'] = $columnOffset+1;
+		
+	  // Determine the column offset of "Awned / Awnless"...
+	  if (preg_match('/^\s*awned\/awnless\s*$/is', trim($columnName)))
+	    $columnOffsets['awned'] = $columnOffset+1;
+		
+	  // Determine the column offset of "Chaff color"...
+	  if (preg_match('/^\s*chaffcolor\s*$/is', trim($columnName)))
+	    $columnOffsets['chaff'] = $columnOffset+1;
+		
+	  // Determine the column offset of "Qualitative height"...
+	  if (preg_match('/^\s*qualitativeheight\s*$/is', trim($columnName)))
+	    $columnOffsets['height'] = $columnOffset+1;
+		
 	  // Determine the column offset of "Row Type"...
-	  if (preg_match('/^\s*\*rowtype\s*$/is', trim($columnName)))
+	  if (preg_match('/^\s*rowtype\s*$/is', trim($columnName)))
 	    $columnOffsets['row_type'] = $columnOffset+1;
 		
 	  // Determine the column offset of "End Use"...
@@ -756,24 +885,45 @@ class LineNames_Check
 	  // Line Name is required.
 	  if (!empty($line)) {
 	    $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
+	    // Strip out any single-quotes.
+	    $synonyms = str_replace('\'', '', $synonyms);
 	    $synonyms = explode(',', str_replace(', ', ',', $synonyms));
+	    if (!empty ($synonyms)) {
+	      $tooshort = array();
+	      foreach ($synonyms as $s) 
+		if (!empty($s))
+		  if ( (strlen($s) < 3) OR (strlen($s) < 4 AND is_numeric($s)) ) 
+		    array_push($tooshort, $s);
+	      $synonyms = array_diff($synonyms, $tooshort);
+	    }
 	    $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
 	    $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
+	    $hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
+	    $color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
 	    $growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
+	    $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
+	    $species = preg_replace("/^a$/", "aestivum", $species);
+	    $species = preg_replace("/^d$/", "durum", $species);
+	    $awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
+	    $chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
+	    $height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
 	    $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
 	    $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
+	    /* For barley.
 	     $enduse = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['end_use']]),"\0..\37!@\177..\377");
 	     $rowtype = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['row_type']]),"\0..\37!@\177..\377");
 	     $hull = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hull']]),"\0..\37!@\177..\377");
+	    */
 				
 	  //check if line is in database
 	  $line_uid=get_lineuid($line);
-	  if ($line_uid===FALSE) {
-// 	    // Insert new line into database
-// 	    // Required fields: species
-// 	    if (empty($species)) {
-// 	      die_nice("Field <b>species</b> is required, values a or d.");
-// 	    }
+	  // $line_uid is an array.
+	  if ($line_uid === FALSE) {
+	    // Insert new line into database
+	    // Required fields: species
+	    if (empty($species)) {
+	      die_nice("Field <b>species</b> is required, values a or d.");
+	    }
 	    //convert line name to upper case and replace spaces with an underscore
 	    $line = strtoupper(str_replace(" ","_",$line));
 	    $sql_beg = "INSERT INTO line_records (line_record_name,";
@@ -797,13 +947,38 @@ class LineNames_Check
 	      $sql_beg .= "generation,";
 	      $sql_mid .= "'$generation', ";
 	    }
+	    if (!empty($hardness)) {
+	      $sql_beg .= "hardness,";
+	      $sql_mid .= "'$hardness', ";
+	    }
+	    if (!empty($color)) {
+	      $sql_beg .= "color,";
+	      $sql_mid .= "'$color', ";
+	    }
+	    if (!empty($species)) {
+	      $sql_beg .= "species,";
+	      $sql_mid .= "'$species', ";
+	    }
+	    if (!empty($awned)) {
+	      $sql_beg .= "awned,";
+	      $sql_mid .= "'$awned', ";
+	    }
+	    if (!empty($chaff)) {
+	      $sql_beg .= "chaff,";
+	      $sql_mid .= "'$chaff', ";
+	    }
+	    if (!empty($height)) {
+	      $sql_beg .= "height,";
+	      $sql_mid .= "'$height', ";
+	    }
 	    if (!empty($comments)) {
 	      $sql_beg .= "description,";
 	      $sql_mid .= "'$comments', ";
 	    }
+	    /* For barley.
 	    if (!empty($rowtype)) {
 	      $sql_beg .= "row_type,";
-	      $sql_mid .= "'$rowtype', ";
+	      $sql_mid .= "$rowtype, ";
 	    }
 	    if (!empty($enduse)) {
 	      $sql_beg .= "primary_end_use,";
@@ -813,6 +988,7 @@ class LineNames_Check
 	      $sql_beg .= "hull,";
 	      $sql_mid .= "'$hull', ";
 	    }
+	    */
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
 	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
@@ -875,9 +1051,28 @@ class LineNames_Check
 	    if (isset($generation) AND $generation != "") {
 	      $sql_mid .= "generation = '$generation', ";
 	    }
+	    if (!empty($hardness)) {
+	      $sql_mid .= "hardness = '$hardness', ";
+	    }
+	    if (!empty($color)) {
+	      $sql_mid .= "color = '$color', ";
+	    }
+	    if (!empty($species)) {
+	      $sql_mid .= "species = '$species', ";
+	    }
+	    if (!empty($awned)) {
+	      $sql_mid .= "awned = '$awned', ";
+	    }
+	    if (!empty($chaff)) {
+	      $sql_mid .= "chaff = '$chaff', ";
+	    }
+	    if (!empty($height)) {
+	      $sql_mid .= "height = '$height', ";
+	    }
 	    if (!empty($comments)) {
 	      $sql_mid .= "description = '$comments', ";
 	    }
+	    /* For barley.
 	    if (!empty($rowtype)) {
 	      $sql_mid .= "row_type='$rowtype', ";
 	    }
@@ -887,6 +1082,7 @@ class LineNames_Check
 	    if (!empty($hull)) {
 	      $sql_mid .= "hull='$hull', ";
 	    }
+	    */
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
 	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
@@ -975,7 +1171,7 @@ class LineNames_Check
 	}
 	else {
 	  echo "<h3>Loaded</h3>";
-	echo "The data was loaded successfully. You can check it with <a href='http://feline.pw.usda.gov/t3/wheat/search.php'>Quick search...</a>";
+	echo "The data was loaded successfully. You can check it with <a href='".$config['base_url']."search.php'>Quick search...</a>";
 	$sql = "INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')";
 	$lin_table=mysql_query($sql) or die(mysql_error());
 	}

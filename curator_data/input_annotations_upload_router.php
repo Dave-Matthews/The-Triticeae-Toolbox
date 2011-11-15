@@ -73,11 +73,18 @@ private function typeAnnotations()
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
 	
-	<ul>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><li>Upload a Tab Delimited(.txt) File (THT)</li></a><br>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"><li><strong>Upload an Excel (.xls) File (T3)</strong></li></a><br>
-        <a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel_tht.php"><li>Upload an Excel (.xls) File (THT)</li></a> 
-	</ul>
+		<table>
+		<tr>
+		<td>
+	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><p><li>Upload a Tab Delimited(.txt) File</li></p></a>  
+	</td>
+	<td colspan="2">
+	</td>
+	<td>
+	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"><p><strong><li>Upload an Excel (.xls) File</li></strong></p></a>
+	</td>
+	</tr>
+	</table>
 	
 	
 
