@@ -220,32 +220,25 @@ $sql = "select distinct experiment_year from experiments";
 	$linenames = ''; 
       }
 
-        // Find any none hit items 
+         // Find any non-hit items, case-independently.
+ 	$nonHits = array();
+ 	foreach ($lineList as $name)
+ 	  array_push($nonHits, strtoupper($name));
         $mStatment = "SELECT distinct (ls.line_synonym_name) FROM line_synonyms ls where ls.line_synonym_name in ('" .$items. "');";
         $res = mysql_query($mStatment) or die(mysql_error());
         while($myRow = mysql_fetch_assoc($res)) {
-            $items = str_ireplace($myRow['line_synonym_name'], '', $items);
-            $items = str_replace(",,",",", $items);
+ 	  $i = array_search(strtoupper($myRow['line_synonym_name']), $nonHits);
+ 	  if ($i !== FALSE) $nonHits[$i] = '';
         }
 
-        $items = trim($items,',');
-        if (strlen($items) != 0) {
-            $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr where lr.line_record_name in ('" .$items. "');";
-            $res = mysql_query($mStatment) or die(mysql_error());
-            while($myRow = mysql_fetch_assoc($res)) {
-                $items = str_ireplace($myRow['line_record_name'], '', $items);
-                $items = str_replace(",,",",", $items);
-            }
-        }
-        $items = str_replace("'","", $items);
-        $items = trim($items,',');
-        if (strlen($items) != 0) {
-            $nonHits = explode(',',$items);
-        } else {
-            $nonHits = array();
-        }
+	$mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr where lr.line_record_name in ('" .$items. "');";
+	$res = mysql_query($mStatment) or die(mysql_error());
+	while($myRow = mysql_fetch_assoc($res)) {
+	  $i = array_search($myRow['line_record_name'], $nonHits);
+	  if ($i !== FALSE) $nonHits[$i] = '';
+	}
     }
-    
+
     if (count($breedingProgram) != 0) $breedingCode = implode("','", $breedingProgram);
     if (count($growthHabit) != 0) $growthStr = implode("','", $growthHabit);
     if (count($species) != 0) $speciesStr = implode("','", $species);
@@ -357,12 +350,10 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     echo "<div class='boxContent'>";
 
     // Show failures from the Name box that don't match any line names.
-    if (count($nonHits) != 0 ){
-      echo "<p>";
-        foreach ($nonHits as &$i) {
-            echo "<font color=red><b>\"$i\" not found.</font></b><br>";
+    foreach ($nonHits as &$i) {
+      if ($i != '')
+	echo "<font color=red><b>\"$i\" not in system.</font></b><br>";
         }
-    }   
     ?>
     <h3>Lines found: <?php echo "$linesfound"; ?></h3>
     <div style="width: 420px; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">
