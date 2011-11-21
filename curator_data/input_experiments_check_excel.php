@@ -291,25 +291,26 @@ else {
             //echo $trial_code." ".$trial_code_new."\n";
             $line_name = ForceValue($current[$COL_LINENAME], "Fatal Error: Missing line name at row " . $i);
             $CAPentrycode = $current[$COL_CAPENTRYCODE];
-         
-            /* checking for mmismatch data*/
+
+	    // DEM nov11: For T3 we don't require CAP-codes.
+            /* /\* checking for mmismatch data*\/ */
       
-            $sql = "select line_record_uid as id from line_synonyms where line_synonym_name  = '$CAPentrycode'";
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            $cap_line = mysql_fetch_assoc($res);
-            $cap_line_uid = $cap_line['id'];
+            /* $sql = "select line_record_uid as id from line_synonyms where line_synonym_name  = '$CAPentrycode'"; */
+            /* $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
+            /* $cap_line = mysql_fetch_assoc($res); */
+            /* $cap_line_uid = $cap_line['id']; */
             
-            $sql = "select line_record_uid as id from line_records where line_record_name  = '$line_name'";
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            $line = mysql_fetch_assoc($res);
-            $line_uid = $line['id'];
+            /* $sql = "select line_record_uid as id from line_records where line_record_name  = '$line_name'"; */
+            /* $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
+            /* $line = mysql_fetch_assoc($res); */
+            /* $line_uid = $line['id']; */
             
-            if (($cap_line_uid != $line_uid) && ($check == 0))  {
-                echo "Fatal Error: Data mismatch for line ". $line_name." at row " . $i ."<br/><br/>";
-				exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-            }
+            /* if (($cap_line_uid != $line_uid) && ($check == 0))  { */
+            /*     echo "Fatal Error: Data mismatch for line ". $line_name." at row " . $i ."<br/><br/>"; */
+	    /* 			exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">"); */
+            /* } */
          	 
-            /* end of checking for mismatch data */
+            /* /\* end of checking for mismatch data *\/ */
         
             if (($check > 0)||is_null($check)) {
                 $CAPyear = $current[$COL_CAPYEAR];
@@ -519,7 +520,8 @@ else {
                         //put in check for SAS value for NULL
 						// check datatype, if continuous or discrete it must be numeric
                         if ((!is_null($phenotype_data))&&($phenotype_data!=".")) {
-                            if ((($datatype[$j]=='continuous')||($datatype[$j]=='discrete'))&&(!is_numeric($phenotype_data))) {
+			  //if ((($datatype[$j]=='continuous')||($datatype[$j]=='discrete'))&&(!is_numeric($phenotype_data))) {
+			  if (($datatype[$j]=='numeric') && (!is_numeric($phenotype_data))) {
                                 echo "Error: Data not continuous: ".$line_name.":".$phenonames[$j].$phenotype_data."\n";
                             } 
                             //CHeck if phenotype data is within the specified range given in the database.
@@ -1057,7 +1059,8 @@ private function type_Database() {
                             //put in check for SAS value for NULL
                             // check datatype, if continuous or discrete it must be numeric
                             if ((!is_null($phenotype_data))&&($phenotype_data!=".")) {
-                                if ((($datatype[$j]=='continuous')||($datatype[$j]=='discrete'))&&(!is_numeric($phenotype_data))) {
+			  //if ((($datatype[$j]=='continuous')||($datatype[$j]=='discrete'))&&(!is_numeric($phenotype_data))) {
+			      if (($datatype[$j]=='numeric') && (!is_numeric($phenotype_data))) {
                                         echo "Error: Data not continuous: ".$line_name.":".$phenonames[$j].$phenotype_data."\n";
                                 } 
                             //CHeck if phenotype data is within the specified range given in the database.
@@ -1151,7 +1154,8 @@ private function type_Database() {
         } // end for loop through file
         // Update trait statistics
         $trait_stats = calcPhenoStats_mysql ($phenoids);
-        //print_r ($trait_stats);
+	if ($trait_stats === FALSE) die ("Calculating stats on non-numeric data.");
+	if (count($trait_stats) == 0) die ("Calculating stats on non-numeric data.");
    
         for ($i = 0;$i<count($phenoids);$i++){
             //check if record there
