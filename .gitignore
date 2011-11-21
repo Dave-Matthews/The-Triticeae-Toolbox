@@ -1,0 +1,5 @@
+# These files control which MySQL database is used, and should not
+# overwrite what's set in another repository.  But we do want them
+# included when creating a new repository.  Will this fail?
+includes/bootstrap.inc
+includes/bootstrap_curator.inc
