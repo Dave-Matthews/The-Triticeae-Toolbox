@@ -7,10 +7,15 @@ require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 require_once 'includes/excel/Writer.php';
 
+#query for count of genotyping_data table takes too long
+#cache the results of the query in a file
+#updating the cache is done by daily cron job which calls the page with output=cache argument
+
 connect();
 
 $user_agent = $_SERVER['HTTP_USER_AGENT'];
 $accept = $_SERVER['HTTP_ACCEPT'];
+
 if (preg_match("/Mobile/i","$user_agent")) {
 }
 
@@ -105,12 +110,13 @@ if ($query == 'geno') {
   } else {
     print "error $sql<br>\n";
   }
+  $cachefile = "/tmp/tht/cache_" . $db . "_" . basename($_SERVER['PHP_SELF']);
   if ($output == "excel") {
     $worksheet->write(0, 0, "$db Data Submission Report $date", $format_title);
     $worksheet->write(0, 1, "", $format_title);
     $worksheet->write(0, 2, "", $format_title);
     $worksheet->write(0, 3, "", $format_title);
-  } else {
+  } elseif ($output == "") {
     print "<h2>$db Data Submission Report $date</h2>";
   }
   if($output == "") {
@@ -142,7 +148,7 @@ if ($query == 'geno') {
   if ($output == "excel") {
     $worksheet->write(2, 0, "Trials submitted");
     $worksheet->write(2, 1, "$count");
-  } else {
+  } elseif ($output == "") {
     print "<tr><td>Trials submitted</td><td>$count</td></tr>\n";
   }
   $sql = "select count(distinct(capdata_programs_uid)) from experiments";
@@ -155,7 +161,7 @@ if ($query == 'geno') {
   if ($output == "excel") {
     $worksheet->write(3, 0, "CAP data programs");
     $worksheet->write(3, 1, "$count");
-  } else {
+  } elseif ($output == "") {
     print "<tr><td>CAP data programs</td><td>$count</td></tr>\n";
     print "</table><br>";
   } 
@@ -171,7 +177,7 @@ if ($query == 'geno') {
     $worksheet->write(4, 0, "Lines", $format_header);
     $worksheet->write(5, 0, "Line records");
     $worksheet->write(5, 1, $count);
-  } else {
+  } elseif ($output == "") {
     print "<b>Lines</b><table><tr><td>Line records<td>$count\n";
   }
   $sql = "select count(distinct(breeding_program_code)) from line_records";
@@ -182,7 +188,7 @@ if ($query == 'geno') {
   if ($output == "excel") {
     $worksheet->write(6, 0, "Breeding programs");
     $worksheet->write(6, 1, $count);
-  } else {
+  } elseif ($output == "") {
     print "<tr><td>Breeding programs</td><td>$count</td>\n";
   }
   $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
@@ -193,7 +199,7 @@ if ($query == 'geno') {
   if ($output == "excel") {
     $worksheet->write(7, 0, "Lines with genotypeing data");
     $worksheet->write(7, 1, $count);
-  } else {
+  } elseif ($output == "") {
     print "<tr><td>Lines with genotyping data<td><a href=t3_report.php?query=linegeno>$count</a>\n";
   }
   $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, phenotype_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = phenotype_data.tht_base_uid)";
@@ -205,7 +211,7 @@ if ($query == 'geno') {
     $worksheet->write(8, 0, "Lines with phenotype data");
     $worksheet->write(8, 1, $count);
     $worksheet->write(9, 0, "Species");
-  } else {
+  } elseif ($output == "") {
     print "<tr><td>Lines with phenotype data<td><a href=t3_report.php?query=linephen>$count</a>\n";
     print "<tr><td>Species<td>";
   }
@@ -217,7 +223,7 @@ if ($query == 'geno') {
   }
   if ($output == "excel") {
     $worksheet->write(9, 1, $count);
-  } else {
+  } elseif ($output == "") {
     print "$count\t";
   }
 
@@ -229,7 +235,7 @@ if ($query == 'geno') {
   if ($output == "excel") {
     $worksheet->write(10, 0, "added since $this_week");
     $worksheet->write(10, 1, $count);
-  } else {
+  } elseif ($output == "") {
     print "<tr><td>added since $this_week <td>$count\n";
   }
   $sql = "select count(line_record_uid) from line_records where created_on > '$this_month'";
@@ -240,7 +246,7 @@ if ($query == 'geno') {
   if ($output == "excel") {
     $worksheet->write(11, 0, "added since $this_month");
     $worksheet->write(11, 1, $count);
-  } else {
+  } elseif ($output == "") {
     print "<tr><td>added since $this_month <td>$count\n";
     print "</table><br>\n";
   }
@@ -281,16 +287,30 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>Markers without genotyping data<td><a href=t3_report.php?query=geno>$count</a>\n";
   }
-  $sql = "select count(genotyping_data_uid) from genotyping_data";
-  $res = mysql_query($sql) or die(mysql_error());
-  $row = mysql_fetch_row($res);
-  $count = $row[0];
   if ($output == "excel") {
-    $worksheet->write(16, 0, "Total genotype data");
-    $worksheet->write(16, 1, "$count");
-  } else {
-    $count = number_format($count, 0, 0, ',');
-    print  "<tr><td>Total genotype data<td>$count\n";
+	$fp = fopen($cachefile,"r");
+	$count = fread($fp,filesize($cachefile));
+	$worksheet->write(16, 0, "Total genotype data");
+        $worksheet->write(16, 1, "$count");
+	fclose($fp);
+  } elseif ($output == "") {
+	$fp = fopen($cachefile,"r");
+        $count = fread($fp,filesize($cachefile));
+	echo "<tr><td>Total genotype data<td>$count";
+	echo "<!-- Cached ".date('jS F Y H:i', filemtime($cachefile))." -->";
+	fclose($fp);
+  } elseif ($output == "cache") {
+	$sql = "select count(genotyping_data_uid) from genotyping_data";
+    	$res = mysql_query($sql) or die(mysql_error());
+    	$row = mysql_fetch_row($res);
+   	$count = $row[0];
+	$count = number_format($count, 0, 0, ',');
+	ob_start();
+	echo "$count";
+	$fp = fopen($cachefile, 'w');
+        fwrite($fp, ob_get_contents());
+        fclose($fp);
+        ob_end_flush(); 
   }
 
   $sql = "select count(marker_uid) from markers where created_on > '$this_week'";
