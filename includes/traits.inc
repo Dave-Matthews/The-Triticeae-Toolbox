@@ -228,7 +228,8 @@ function calcPhenoStats_mysql($phenoids)
 	$sql_c ="SELECT p.phenotype_uid, avg(cast(pd.value AS DECIMAL(9,1))) as mean_val, count(pd.value) as sample_size,
 					stddev_samp(cast(pd.value AS DECIMAL(9,1))) as std_val, max(cast(pd.value AS DECIMAL(9,3))) as max_val, min(cast(pd.value AS DECIMAL(9,3))) as min_val
 				FROM phenotypes as p, phenotype_data as pd
-				WHERE p.datatype IN ('continuous')
+--				WHERE p.datatype IN ('continuous')
+				WHERE p.datatype IN ('numeric')
 					AND pd.phenotype_uid = p.phenotype_uid
 				GROUP BY p.phenotype_uid";
 				
