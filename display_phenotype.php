@@ -372,7 +372,8 @@ function output_file(url) {
 				for ($j = 0; $j < count($single_row); $j++)
 				{
 			?>
-			<td><div style="width: 75px" >     
+			<!-- <td><div style="width: 75px; overflow-x: hidden;"> -->
+			<td><div style="width: 75px; word-wrap: break-word">
 			<?php echo $all_rows[$i][$j] ?>
 			</div></td> 
 			<?php
