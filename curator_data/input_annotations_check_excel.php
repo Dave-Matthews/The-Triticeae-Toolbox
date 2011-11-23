@@ -354,13 +354,6 @@ private function typeAnnotationCheck()
 		}
 		
 		
-		$experiments[$index]->experimentshortname = mysql_real_escape_string(trim($experimentshortname_row[$i]));
-		if (is_null($experiments[$index]->experimentshortname)) {
-			echo "Short Name  is empty "."<br/>";
-			$error_flag = ($error_flag)&(16);
-			exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-		}
-		
 		$experiments[$index]->bp = trim($bp_row[$i]);
 		$experiments[$index]->location = addslashes($location_row[$i]);
 		$experiments[$index]->latlong = mysql_real_escape_string($latlong_row[$i]);
@@ -438,7 +431,7 @@ private function typeAnnotationCheck()
 	// echo "number of trials ".$n_trials."\n";
 	
 	if ($error_flag>0)  {
-		echo "FATAL ERROR: problems with one or more required fields: year, trialcode, experiment short name or collaborator code"."<br/>";
+		echo "FATAL ERROR: problems with one or more required fields: year, trialcode, or collaborator code"."<br/>";
 		print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
 	}
 	
@@ -943,6 +936,11 @@ private function typeAnnotationCheck()
 			{
 					$row = mysql_fetch_assoc($res);
 					$exp_id = $row['experiment_uid'];
+					if(is_null($experiment->beginweatherdate)) {
+						$sql_optional = '';
+					} else {
+						$sql_optional = "begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),";
+					}
 					if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 		
 					//update experiment information
@@ -979,7 +977,7 @@ private function typeAnnotationCheck()
 									location = '{$experiment->location}',
 									latitude = '{$experiment->latitude}',
 									longitude = '{$experiment->longitude}',
-									begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),
+									$sql_optional
 									created_on = NOW()
 								WHERE experiment_uid = $exp_id";
 					echo "update phenotype_experiment_info<br>\n";
@@ -1033,7 +1031,7 @@ private function typeAnnotationCheck()
 							location = '{$experiment->location}',
 							latitude = '{$experiment->latitude}',
 							longitude = '{$experiment->longitude}',
-							begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),
+							$sql_optional
 							created_on = NOW()
 					";
 					echo "insert into phenotype_experiment_info<br>\n";
