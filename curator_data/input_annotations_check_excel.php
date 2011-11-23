@@ -178,7 +178,8 @@ private function typeAnnotationCheck()
 	// find location for each row of data; find where data starts in file
 	for ($i = 1; $i <= $rows; $i++) {
 	  
-//		echo "annots 0 cells $i 1 is set to ".$annots['cells'][$i][1]."<br>\n";
+//          echo "annots 0 cells $i 1 is set to ".$annots['cells'][$i][1]."<br>\n";
+//          echo "annots 0 cells $i 1 is set to ".$annots['cells'][$i][2]."<br>\n";
           if (stripos($annots['cells'][$i][1],'*crop')!==FALSE){
                 $CROP = $i;
           } elseif (stripos($annots['cells'][$i][1],'*breeding')!==FALSE) {
@@ -353,13 +354,6 @@ private function typeAnnotationCheck()
 		}
 		
 		
-		$experiments[$index]->experimentshortname = mysql_real_escape_string(trim($experimentshortname_row[$i]));
-		if (is_null($experiments[$index]->experimentshortname)) {
-			echo "Short Name  is empty "."<br/>";
-			$error_flag = ($error_flag)&(16);
-			exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-		}
-		
 		$experiments[$index]->bp = trim($bp_row[$i]);
 		$experiments[$index]->location = addslashes($location_row[$i]);
 		$experiments[$index]->latlong = mysql_real_escape_string($latlong_row[$i]);
@@ -437,7 +431,7 @@ private function typeAnnotationCheck()
 	// echo "number of trials ".$n_trials."\n";
 	
 	if ($error_flag>0)  {
-		echo "FATAL ERROR: problems with one or more required fields: year, trialcode, experiment short name or collaborator code"."<br/>";
+		echo "FATAL ERROR: problems with one or more required fields: year, trialcode, or collaborator code"."<br/>";
 		print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
 	}
 	
@@ -496,44 +490,44 @@ private function typeAnnotationCheck()
  			}
 			print "</font>";
 
-			$newtext = wordwrap($crop_row[2], 6, true);
+			$newtext = wordwrap($crop_row[2], 6, '<br>');
 			print "$newtext</td><td>";
-			$newtext1 = wordwrap($bp_row[2], 6, true);
+			$newtext1 = wordwrap($bp_row[2], 6, '<br>');
 			print "$newtext1</td><td>";
-			$newtext2 = wordwrap($location_row[$i], 6, true);
+			$newtext2 = wordwrap($location_row[$i], 6, '<br>');
 			print "$newtext2</td><td>";
-			$newtext = wordwrap($latitude_row[$i], 6, true);
+			$newtext = wordwrap($latitude_row[$i], 6, '<br>');
 			print "$newtext</td><td>";
-                        $newtext = wordwrap($longitude_row[$i], 6, true);
+                        $newtext = wordwrap($longitude_row[$i], 6, '<br>');
                         print "$newtext</td><td>";
-			$newtext = wordwrap($collaborator_row[$i], 6, true);
+			$newtext = wordwrap($collaborator_row[$i], 12, '<br>');
 			print "$newtext</td><td>";
-			$newtext = wordwrap($experimentshortname_row[$i], 6, true);
+			$newtext = wordwrap($experimentshortname_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($trialcode_row[$i], 6, true);
+			$newtext = wordwrap($trialcode_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($plantingdate_row[$i], 6, true);
+			$newtext = wordwrap($plantingdate_row[$i], 6, '<br>');
 			print "$newtext<td>";
-       			$newtext = wordwrap($harvestdate_row[$i], 6, true);
+       			$newtext = wordwrap($harvestdate_row[$i], 6, '<br>');
                         print "$newtext<td>";
-			$newtext = wordwrap($seedingrate_row[$i], 6, true);
+			$newtext = wordwrap($seedingrate_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($experimentaldesign_row[$i], 6, true);
+			$newtext = wordwrap($experimentaldesign_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($numberofentries_row[$i], 6, true);
+			$newtext = wordwrap($numberofentries_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($numberofreplications_row[$i], 6, true);
+			$newtext = wordwrap($numberofreplications_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($plotsize_row[$i], 6, true);
+			$newtext = wordwrap($plotsize_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($harvestedarea_row[$i], 6, true);
+			$newtext = wordwrap($harvestedarea_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($irrigation_row[$i], 6, true);
+			$newtext = wordwrap($irrigation_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($harvestdate_row[$i], 6, true);
+			$newtext = wordwrap($harvestdate_row[$i], 6, '<br>');
 			print "$newtext<td>";
-			$newtext = wordwrap($otherremarks_row[$i], 6, "\n", true);
-			print htmlspecialchars($newtext);
+			$newtext = wordwrap($otherremarks_row[$i], 12, "<br>" );
+			print "$newtext";
 				}/* end of for loop */
 			?>
 			</tbody>
@@ -942,6 +936,11 @@ private function typeAnnotationCheck()
 			{
 					$row = mysql_fetch_assoc($res);
 					$exp_id = $row['experiment_uid'];
+					if(is_null($experiment->beginweatherdate)) {
+						$sql_optional = '';
+					} else {
+						$sql_optional = "begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),";
+					}
 					if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 		
 					//update experiment information
@@ -978,7 +977,7 @@ private function typeAnnotationCheck()
 									location = '{$experiment->location}',
 									latitude = '{$experiment->latitude}',
 									longitude = '{$experiment->longitude}',
-									begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),
+									$sql_optional
 									created_on = NOW()
 								WHERE experiment_uid = $exp_id";
 					echo "update phenotype_experiment_info<br>\n";
@@ -1032,7 +1031,7 @@ private function typeAnnotationCheck()
 							location = '{$experiment->location}',
 							latitude = '{$experiment->latitude}',
 							longitude = '{$experiment->longitude}',
-							begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),
+							$sql_optional
 							created_on = NOW()
 					";
 					echo "insert into phenotype_experiment_info<br>\n";
