@@ -257,6 +257,14 @@ while (!feof($reader))  {
     $rowNum++;		// number of lines
     $markerflag = 0;        //flag for checking marker existence
     $data_pt = 0;
+    $sql = "SET AUTOCOMMIT=0";
+    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+    $sql = "SET foreign_key_checks=0";
+    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+    $sql = "SET unique_checks=0";
+    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+    $sql = "START TRANSACTION";
+    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
     for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
       $line_name = $header[$data_pt];
 
@@ -347,6 +355,8 @@ while (!feof($reader))  {
  	}
       }
     }
+    $sql = "SET AUTOCOMMIT=1";
+    $res = mysql_query($sql) or exitFatal ($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
 } // End of while data 
 fclose($reader);
 echo "Genotyping record creation completed.\n";
