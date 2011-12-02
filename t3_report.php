@@ -8,8 +8,8 @@ include($config['root_dir'].'includes/bootstrap.inc');
 require_once 'includes/excel/Writer.php';
 
 #query for count of genotyping_data table takes too long
-#cache the results of the query in a file
-#updating the cache is done by daily cron job which calls the page with output=cache argument
+#cache the results of the query in a settings table 
+#updating the cache is done by daily cron job
 
 connect();
 
@@ -101,6 +101,13 @@ if ($query == 'geno') {
     include($config['root_dir'].'theme/normal_header.php');
     print "<div class=box>";
   }
+  $sql = "select value from settings where name = 'allele_count'";
+  $res = mysql_query($sql) or die(mysql_error());
+  if ($row = mysql_fetch_row($res)) {
+    $allele_count = $row[0];
+  } else {
+    print "error $sql<br>\n";
+  }
   $date = date_create(date('Y-m-d'));
   $date = $date->format('Y-m-d');
   $sql = "select database()";
@@ -110,7 +117,6 @@ if ($query == 'geno') {
   } else {
     print "error $sql<br>\n";
   }
-  $cachefile = "/tmp/tht/cache_" . $db . "_" . basename($_SERVER['PHP_SELF']);
   if ($output == "excel") {
     $worksheet->write(0, 0, "$db Data Submission Report $date", $format_title);
     $worksheet->write(0, 1, "", $format_title);
@@ -288,29 +294,10 @@ if ($query == 'geno') {
     print "<tr><td>Markers without genotyping data<td><a href=t3_report.php?query=geno>$count</a>\n";
   }
   if ($output == "excel") {
-	$fp = fopen($cachefile,"r");
-	$count = fread($fp,filesize($cachefile));
 	$worksheet->write(16, 0, "Total genotype data");
-        $worksheet->write(16, 1, "$count");
-	fclose($fp);
-  } elseif ($output == "") {
-	$fp = fopen($cachefile,"r");
-        $count = fread($fp,filesize($cachefile));
-	echo "<tr><td>Total genotype data<td>$count";
-	echo "<!-- Cached ".date('jS F Y H:i', filemtime($cachefile))." -->";
-	fclose($fp);
-  } elseif ($output == "cache") {
-	$sql = "select count(genotyping_data_uid) from genotyping_data";
-    	$res = mysql_query($sql) or die(mysql_error());
-    	$row = mysql_fetch_row($res);
-   	$count = $row[0];
-	$count = number_format($count, 0, 0, ',');
-	ob_start();
-	echo "$count";
-	$fp = fopen($cachefile, 'w');
-        fwrite($fp, ob_get_contents());
-        fclose($fp);
-        ob_end_flush(); 
+        $worksheet->write(16, 1, "$allele_count");
+  } else {
+	echo "<tr><td>Total genotype data<td>$allele_count";
   }
 
   $sql = "select count(marker_uid) from markers where created_on > '$this_week'";
