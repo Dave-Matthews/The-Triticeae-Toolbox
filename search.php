@@ -184,8 +184,17 @@
 if (count($found) == 1) {
   $line = explode("@@", $found[0]);
   echo "Single result, redirecting.<br>";
-  echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."view.php?table=".urlencode($line[0])."&uid=$line[2]\">";
- }
+
+  // Intercept experiments and route to display_phenotype.php
+  // Unless it's a genotyping experiment.
+  if (($line[0] == "experiments") AND (mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]") == 1)) {
+    $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $line[2]");
+    echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_phenotype.php?trial_code=$trialcode\">";
+  }
+  else {
+    echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."view.php?table=".urlencode($line[0])."&uid=$line[2]\">";
+  }
+}
 		elseif(count($found) > 0) {
 			displayTermSearchResults($found);
 		}
