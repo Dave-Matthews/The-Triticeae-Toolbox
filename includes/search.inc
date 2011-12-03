@@ -214,15 +214,21 @@ function displayTermSearchResults(array $found) {
                     and markers.marker_name = marker_synonyms.value");
 		  if (mysql_num_rows($msquery) > 0) { $skip = "yes"; }
 		}
-		if (! $skip) {
-		  $query = mysql_query("SELECT $line[1] FROM $line[0] WHERE $key = '$line[2]'");
-		  while($row = mysql_fetch_assoc($query)) {
-echo "<p title=\"$type\"><strong><a href=\"view.php?table=" . urlencode($line[0]) . "&uid=" . urlencode($line[2]) ."\">" . $row[$line[1]] . "</a></strong> &mdash; " . $type . "</p>\n";
+		// Intercept experiments and route to display_phenotype.php
+		// Unless it's a genotyping experiment.
+		if (($line[0] == "experiments") AND (mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]") == 1)) {
+		  $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $line[2]");
+		  echo "<p title=\"$type\"><strong><a href=\"display_phenotype.php?trial_code=$trialcode\">$trialcode</a></strong> &mdash; " . $type . "</p>\n";
+		}
+		else {
+		  if (! $skip) {
+		    $query = mysql_query("SELECT $line[1] FROM $line[0] WHERE $key = '$line[2]'");
+		    while($row = mysql_fetch_assoc($query)) {
+		      echo "<p title=\"$type\"><strong><a href=\"view.php?table=" . urlencode($line[0]) . "&uid=" . urlencode($line[2]) ."\">" . $row[$line[1]] . "</a></strong> &mdash; " . $type . "</p>\n";
+		    }
 		  }
 		}
-		
 	}
-
 }
 
 /**
