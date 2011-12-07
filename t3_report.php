@@ -8,16 +8,13 @@ include($config['root_dir'].'includes/bootstrap.inc');
 require_once 'includes/excel/Writer.php';
 
 #query for count of genotyping_data table takes too long
-#cache the results of the query in a settings table 
-#updating the cache is done by daily cron job
+#cache the results of the queries 
+#updating the cache is done every 12 hours
 
 connect();
 
 $user_agent = $_SERVER['HTTP_USER_AGENT'];
 $accept = $_SERVER['HTTP_ACCEPT'];
-
-if (preg_match("/Mobile/i","$user_agent")) {
-}
 
 if (isset($_GET['output'])) {
   $output = $_GET['output'];
@@ -101,22 +98,57 @@ if ($query == 'geno') {
     include($config['root_dir'].'theme/normal_header.php');
     print "<div class=box>";
   }
-  $sql = "select value from settings where name = 'allele_count'";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_row($res)) {
-    $allele_count = $row[0];
-  } else {
-    print "error $sql<br>\n";
-  }
-  $date = date_create(date('Y-m-d'));
-  $date = $date->format('Y-m-d');
+  
   $sql = "select database()";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
-    $db = $row[0];
+   $db = $row[0];
   } else {
-    print "error $sql<br>\n";
+   print "error $sql<br>\n";
   }
+  /** read in from cache */
+  $cachefile = '/tmp/tht/cache_' . $db . '.txt';
+  $cachetime = 12 * 60 * 60; //12 hours
+  if (file_exists($cachefile) && (time() - $cachetime < filemtime($cachefile))) {
+     $fp = fopen($cachefile,'r');
+     $allele_count = fgets($fp);
+     $LinesWithGeno = fgets($fp);
+     $MarkersWithGeno = fgets($fp);
+     $MarkersNoGeno = fgets($fp);
+     fclose($fp);
+  } else {
+     $sql = "select count(genotyping_data_uid) from genotyping_data";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row = mysql_fetch_row($res)) {
+       $allele_count = $row[0];
+     } else {
+       print "error $sql<br>\n";
+     }
+     $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row = mysql_fetch_row($res)) {
+        $LinesWithGeno = $row[0];
+     }
+     $sql = "select count(distinct(markers.marker_uid)) from markers, genotyping_data where (markers.marker_uid = genotyping_data.marker_uid)";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row=mysql_fetch_row($res)) {
+      $MarkersWithGeno = $row[0];
+     }
+     $sql = "select distinct count(marker_uid) from markers where not exists (select genotyping_data_uid from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row=mysql_fetch_row($res)) {
+       $MarkersNoGeno = $row[0];
+     }
+
+     $fp = fopen($cachefile,'w');
+     fwrite($fp,"$allele_count\n");
+     fwrite($fp,"$LinesWithGeno\n");
+     fwrite($fp,"$MarkersWithGeno\n");
+     fwrite($fp,"$MarkersNoGeno\n");
+     fclose($fp);
+  }
+  $date = date_create(date('Y-m-d'));
+  $date = $date->format('Y-m-d');
   if ($output == "excel") {
     $worksheet->write(0, 0, "$db Data Submission Report $date", $format_title);
     $worksheet->write(0, 1, "", $format_title);
@@ -197,16 +229,11 @@ if ($query == 'geno') {
   } elseif ($output == "") {
     print "<tr><td>Breeding programs</td><td>$count</td>\n";
   }
-  $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_row($res)) {
-    $count = $row[0];
-  }
   if ($output == "excel") {
     $worksheet->write(7, 0, "Lines with genotypeing data");
-    $worksheet->write(7, 1, $count);
+    $worksheet->write(7, 1, $LinesWithGeno);
   } elseif ($output == "") {
-    print "<tr><td>Lines with genotyping data<td><a href=t3_report.php?query=linegeno>$count</a>\n";
+    print "<tr><td>Lines with genotyping data<td><a href=t3_report.php?query=linegeno>$LinesWithGeno</a>\n";
   }
   $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, phenotype_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = phenotype_data.tht_base_uid)";
   $res = mysql_query($sql) or die(mysql_error());
@@ -272,16 +299,11 @@ if ($query == 'geno') {
     print "<table>\n";
     print "<tr><td>Markers<td>$count\n";
   }
-  $sql = "select count(distinct(markers.marker_uid)) from markers, genotyping_data where (markers.marker_uid = genotyping_data.marker_uid)";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row=mysql_fetch_row($res)) {
-    $count = $row[0];
-  } 
   if ($output == "excel") {
     $worksheet->write(14, 0, "Markers with genotyping data");
-    $worksheet->write(14, 1, $count);
+    $worksheet->write(14, 1, $MarkersWithGeno);
   } else {
-    print "<tr><td>Markers with genotyping data<td>$count\n";
+    print "<tr><td>Markers with genotyping data<td>$MarkersWithGeno\n";
   } 
   $sql = "select distinct count(marker_uid) from markers where not exists (select genotyping_data_uid from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
   $res = mysql_query($sql) or die(mysql_error());
@@ -289,9 +311,9 @@ if ($query == 'geno') {
   $count = $row[0];
   if ($output == "excel") {
     $worksheet->write(15, 0, "Markers without genotyping data");
-    $worksheet->write(15, 1, $count);
+    $worksheet->write(15, 1, $MarkersNoGeno);
   } else {
-    print "<tr><td>Markers without genotyping data<td><a href=t3_report.php?query=geno>$count</a>\n";
+    print "<tr><td>Markers without genotyping data<td><a href=t3_report.php?query=geno>$MarkersNoGeno</a>\n";
   }
   if ($output == "excel") {
 	$worksheet->write(16, 0, "Total genotype data");
