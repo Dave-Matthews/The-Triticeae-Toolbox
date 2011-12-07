@@ -81,6 +81,40 @@ if ($query == 'geno') {
     print "<tr><td>$program_code<td>$count\n";
     }
   }
+} elseif ($query == 'Lines') {
+  include($config['root_dir'].'theme/normal_header.php');
+  print "Top 100 Line names ordered by creation date<br><br>\n";
+  print "<table border=0>"; print "<tr><td>Line name<td>created on\n";
+  $sql = "select line_record_name, date_format(created_on,'%m-%d-%y') from line_records order by created_on desc limit 100";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($row = mysql_fetch_row($res)) {
+    $name = $row[0];
+    $date = $row[1];
+    print "<tr><td>$name<td>$date\n";
+  }
+} elseif ($query == 'Markers') {
+  include($config['root_dir'].'theme/normal_header.php');
+  print "Top 100 Marker names ordered by creation date<br><br>\n";
+  print "<table border=0>"; print "<tr><td>Line name<td>created on\n";
+  $sql = "select marker_name, date_format(created_on,'%m-%d-%y') from markers order by created_on desc limit 100";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($row = mysql_fetch_row($res)) {
+    $name = $row[0];
+    $date = $row[1];
+    print "<tr><td>$name<td>$date\n";
+  }
+} elseif ($query == 'Trials') {
+  include($config['root_dir'].'theme/normal_header.php');
+  print "Trials ordered by creation date<br><br>\n";
+  print "<table border=0>"; print "<tr><td>Trial Code<td>Experiment Name<td>created on\n";
+  $sql = "select trial_code, experiment_short_name, date_format(created_on, '%m-%d-%y') from experiments order by created_on desc limit 100";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($row = mysql_fetch_row($res)) {
+    $trial_code = $row[0];
+    $short_name = $row[1];
+    $date = $row[2];
+    print "<tr><td>$trial_code<td>$short_name<td>$date\n";
+  }
 } else {
   if ($output == 'html') {
     header('Content-Type: application/vnd.ms-excel');
@@ -187,7 +221,7 @@ if ($query == 'geno') {
     $worksheet->write(2, 0, "Trials submitted");
     $worksheet->write(2, 1, "$count");
   } elseif ($output == "") {
-    print "<tr><td>Trials submitted</td><td>$count</td></tr>\n";
+    print "<tr><td>Trials submitted</td><td><a href=t3_report.php?query=Trials TITLE='List all trials'>$count</a></td></tr>\n";
   }
   $sql = "select count(distinct(capdata_programs_uid)) from experiments";
   $res = mysql_query($sql) or die(mysql_error());
@@ -216,7 +250,7 @@ if ($query == 'geno') {
     $worksheet->write(5, 0, "Line records");
     $worksheet->write(5, 1, $count);
   } elseif ($output == "") {
-    print "<b>Lines</b><table><tr><td>Line records<td>$count\n";
+    print "<b>Lines</b><table><tr><td>Line records<td><a href=t3_report.php?query=Lines TITLE='List top 100 line names ordered by creation date'>$count</a>\n";
   }
   $sql = "select count(distinct(breeding_program_code)) from line_records";
   $res = mysql_query($sql) or die(mysql_error());
@@ -297,7 +331,7 @@ if ($query == 'geno') {
   } else {
     print "<b>Genotype Data</b>\n";
     print "<table>\n";
-    print "<tr><td>Markers<td>$count\n";
+    print "<tr><td>Markers<td><a href=t3_report.php?query=Markers Title='List top 100 markers orderd by creation date'>$count</a>\n";
   }
   if ($output == "excel") {
     $worksheet->write(14, 0, "Markers with genotyping data");
@@ -305,10 +339,6 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>Markers with genotyping data<td>$MarkersWithGeno\n";
   } 
-  $sql = "select distinct count(marker_uid) from markers where not exists (select genotyping_data_uid from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
-  $res = mysql_query($sql) or die(mysql_error());
-  $row=mysql_fetch_row($res);
-  $count = $row[0];
   if ($output == "excel") {
     $worksheet->write(15, 0, "Markers without genotyping data");
     $worksheet->write(15, 1, $MarkersNoGeno);
