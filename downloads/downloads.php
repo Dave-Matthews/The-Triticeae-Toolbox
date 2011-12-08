@@ -1045,6 +1045,9 @@ selected lines</a>.<br>
 			  }
 			}
 			$nelem = count($marker_names);
+			if ($nelem == 0) {
+				die("error - no genotype or marker data for this experiment, experiment_uid=$experiments");
+			}
 			$marker_uid = implode(",",$marker_uid);
         
 		if ($dtype=='qtlminer') {
