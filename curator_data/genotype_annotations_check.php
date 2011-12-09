@@ -388,6 +388,10 @@ class Annotations_Check {
                 $res = mysql_query($sql) or die("Database Error: Breeding Program lookup - ".mysql_error());
                 $rdata = mysql_fetch_assoc($res);
                 $bp_uid=$rdata['CAPdata_programs_uid'];
+		if (empty($bp_uid)) {
+		  error(1, "Breeding program $bp_code is not in the database.");
+		  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+		  }
                 //echo "bp_uid ".$bp_uid."<br>";
         
                 $sql = "SELECT CAPdata_programs_uid
@@ -396,6 +400,10 @@ class Annotations_Check {
                 $res = mysql_query($sql) or die("Database Error: CAPdata Program lookup - ". mysql_error());
                 $rdata = mysql_fetch_assoc($res);
                 $cpData_uid=$rdata['CAPdata_programs_uid'];
+		if (empty($cpData_uid)) {
+		  error(1, "CAP data program $capDataProg is not in the database.");
+		  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+		  }
                 //echo "cpData_uid ".$cpData_uid."<br>";
                
                 $sql = "SELECT datasets_uid

@@ -91,6 +91,7 @@ class gLineNames_Check
 	// Test whether file upload succeeded.
 	if ($_FILES['file']['error'][0] != 0 or $_FILES['file']['error'][1] != 0) {
 	  error(1, "File upload failed.  If it fails again please contact the programmers.");
+	  error_log("Upload error: A file, possibly" . $_FILES['file']['name'][1] . ", failed to upload.");
 	  // $_FILES['file']['error'][*] == 1 if php.ini upload_max_filesize was exceeded.
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
@@ -133,8 +134,8 @@ class gLineNames_Check
         //echo "Cmd - " . $cmd . "<br>";
         exec($cmd);
    
-        echo "<h3>Files has been submitted to off-line processor.<br>";
-        echo "An upload status email will be send to you once the uploading process has been completed. </h3><br>";
+        echo "<h3>The files have been uploaded and submitted to the off-line processor.<br>";
+        echo "A report will be emailed to you once the data import to the database has been completed. </h3><br>";
         echo "<br>";
         exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
    }
