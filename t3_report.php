@@ -1,10 +1,10 @@
 <?php
 
-/*
+/**
  * Logged in page initialization
  */
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
+require($config['root_dir'].'includes/bootstrap.inc');
 require_once 'includes/excel/Writer.php';
 
 #query for count of genotyping_data table takes too long
@@ -73,7 +73,7 @@ if ($query == 'geno') {
   $res = mysql_query($sql) or die(mysql_error());
   while ($row = mysql_fetch_row($res)) {
     $program_code = $row[0];
-    if (preg_match("/[A-Z0-9]+/",$program_code)) {  
+    if (preg_match("/[A-Z0-9]+/", $program_code)) {  
     $sql2 = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, phenotype_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = phenotype_data.tht_base_uid) and (line_records.breeding_program_code = '$program_code')";
     $res2 = mysql_query($sql2) or die(mysql_error());
     $row2 = mysql_fetch_row($res2);
@@ -295,26 +295,16 @@ if ($query == 'geno') {
   }
 
   $sql = "select count(line_record_uid) from line_records where created_on > '$this_week'";
+  $sql = "select max(date_format(created_on,'%m-%d-%Y')) from line_records";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(10, 0, "added since $this_week");
+    $worksheet->write(10, 0, "latest addition");
     $worksheet->write(10, 1, $count);
   } elseif ($output == "") {
-    print "<tr><td>added since $this_week <td>$count\n";
-  }
-  $sql = "select count(line_record_uid) from line_records where created_on > '$this_month'";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_row($res)) {
-    $count = $row[0];
-  } 
-  if ($output == "excel") {
-    $worksheet->write(11, 0, "added since $this_month");
-    $worksheet->write(11, 1, $count);
-  } elseif ($output == "") {
-    print "<tr><td>added since $this_month <td>$count\n";
+    print "<tr><td>last addition<td>$count\n";
     print "</table><br>\n";
   }
 
@@ -353,26 +343,16 @@ if ($query == 'geno') {
   }
 
   $sql = "select count(marker_uid) from markers where created_on > '$this_week'";
+  $sql = "select max(date_format(created_on,'%m-%d-%Y')) from markers";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(17, 0, "markers added since $this_week");
+    $worksheet->write(17, 0, "last addition");
     $worksheet->write(17, 1, $count);
   } else {
-    print "<tr><td>markers added since $this_week <td>$count\n";
-  }
-  $sql = "select count(marker_uid) from markers where created_on > '$this_month'";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_row($res)) {
-    $count = $row[0];
-  }
-  if ($output == "excel") {
-    $worksheet->write(18, 0, "markers added since $this_month");
-    $worksheet->write(18, 1, $count);
-  } else {
-    print "<tr><td>markers added since $this_month <td>$count\n";
+    print "<tr><td>last addition<td>$count\n";
     print "</table><br>\n";
   }
 
@@ -395,40 +375,29 @@ if ($query == 'geno') {
   if ($row=mysql_fetch_row($res)) {
     $count = $row[0];
   }
-  if ($output == "excel") {
-    $worksheet->write(21, 0, "Total phenotype data");
-    $worksheet->write(21, 1, $count);
-  } else {
-    print "<tr><td>Total phenotype data<td>$count\n";
+    if ($output == "excel") {
+      $worksheet->write(21, 0, "Total phenotype data");
+      $worksheet->write(21, 1, $count);
+    } else {
+        print "<tr><td>Total phenotype data<td>$count\n";
   }
-  $sql = "select count(phenotype_uid) from phenotype_data where created_on > '$this_week'";
+  $sql = "select max(date_format(created_on,'%m-%d-%Y')) from phenotype_data";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
-    $count = $row[0];
+      $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(22, 0, "data added since $this_week");
-    $worksheet->write(22, 1, $count);
+      $worksheet->write(22, 0, "last addition");
+      $worksheet->write(22, 1, $count);
   } else {
-    print "<tr><td>data added since $this_week <td>$count\n";
-  }
-  $sql = "select count(phenotype_uid) from phenotype_data where created_on > '$this_month'";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_row($res)) {
-    $count = $row[0];
-  } 
-  if ($output == "excel") {
-    $worksheet->write(23, 0, "data added since $this_month");
-    $worksheet->write(23, 1, $count);
-  } else {
-    print "<tr><td>data added since $this_month <td>$count\n";
-    print "</table>\n";
+      print "<tr><td>last addition<td>$count\n";
+      print "</table><br>\n";
   }
 
 if ($output == "excel") {
-  $workbook->close();
+    $workbook->close();
 } else {
-  print "</div></div>";
-  include($config['root_dir'] . 'theme/footer.php');
+    print "</div></div>";
+    include($config['root_dir'] . 'theme/footer.php');
 }
 }
