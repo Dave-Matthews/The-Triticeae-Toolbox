@@ -259,7 +259,6 @@ class Downloads
 		if (isset($_SESSION['selected_lines'])) {
 			$selectedcount = count($_SESSION['selected_lines']);
 			$lines = implode(",", $_SESSION['selected_lines']);
-		    echo "using $selectedcount lines<br>";
 		} else {
 			$lines = "";
 		}
@@ -1360,7 +1359,6 @@ selected lines</a>.<br>
 	 $line_uid[] = $row['line_record_uid'];
 	}
 	$nlines = count($lines);
-	echo "nlines = $nlines<br>";
 	
 	 if ($nexp ===1){
 	 $nheaderlines = 1;
@@ -1591,7 +1589,7 @@ selected lines</a>.<br>
 		}
 		$nelem = count($marker_names);
 		if ($nelem == 0) {
-		   die("error - no genotype or marker data for this experiment, experiment_uid=$experiments");
+		   die("error - no genotype or marker data for this experiment, subset=$markers");
 		}
 		$marker_uid = implode(",",$marker_uid);
 		
