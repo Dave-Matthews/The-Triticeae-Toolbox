@@ -152,7 +152,7 @@ if ($query == 'geno') {
   }
   /** read in from cache */
   $cachefile = '/tmp/tht/cache_' . $db . '.txt';
-  $cachetime = 12 * 60 * 60; //12 hours
+  $cachetime = 24 * 60 * 60; //24 hours
   if (file_exists($cachefile) && (time() - $cachetime < filemtime($cachefile))) {
      $fp = fopen($cachefile,'r');
      $allele_count = fgets($fp);
