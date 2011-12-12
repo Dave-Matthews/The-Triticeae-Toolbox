@@ -1,9 +1,18 @@
 <?php
-// +----------------------------------------------------------------------+
-// | PHP version 5.0                                                      |
-// | Prototype version 1.5.0                                              |
-// +----------------------------------------------------------------------+
-// | "Download Gateway"                                                   |
+/**
+ * Download Gateway
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <cbirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ * 
+ */
 // |                                                                      |
 // | The purpose of this script is to provide the user with an interface  |
 // | for downloading certain kinds of files from THT.                     |
@@ -18,7 +27,7 @@
 // |                                                                      |
 // | 2/28/09: removed table summarizing all allelles to avoid timeout	  |
 // |          problems when getting SNP data across multiple programs
-// |May 2009: added in tassel support functionality and commented out
+// | 5/20/09: added in tassel support functionality and commented out
 // | 			routines for QTLMiner
 // | September 2009: added in the ability put check lines into the output |
 // |			file for traits; if there are multiple check lines of the |
@@ -29,10 +38,10 @@ set_time_limit(0);
 // this is the relative path to this file
 $cfg_file_rel_path = 'downloads/downloads.php';
 // For live website file
-require_once('config.php');
-include($config['root_dir'].'includes/bootstrap.inc');
+require_once 'config.php';
+include $config['root_dir'].'includes/bootstrap.inc';
 set_include_path(get_include_path . PATH_SEPARATOR . '../pear/');
-
+date_default_timezone_set('America/Los_Angeles');
 
 require_once($config['root_dir'].'includes/MIME/Type.php');
 require_once($config['root_dir'].'includes/File_Archive/Archive.php');
@@ -58,19 +67,43 @@ class Downloads
 	// Using the class's constructor to decide which action to perform
 	public function __construct($function = null)
 	{	
+		?>
+		<script type="text/javascript" src="/cbirkett/t3/wheatplus/downloads/downloads.js"></script>
+		<?php
 		switch($function)
 		{
 			case 'type1':
 				$this->type1();
 				break;
+			case 'type1preselect':
+				$this->type1_preselect();
+				break;
 			case 'type1experiments':
 				$this->type1_experiments();
+				break;
+			case 'step1dataprog';
+				$this->step1_dataprog();
+				break;
+			case 'enterlines';
+				$this->enter_lines();
+				break;
+			case 'step1lines';
+				$this->step1_lines();
+				break;
+			case 'step1breedprog';
+				$this->step1_breedprog();
+				break;
+			case 'step1phenotype';
+				$this->step1_phenotype1();
 				break;
 			case 'type1traits':
 				$this->type1_traits();
 				break;
 			case 'type1markers':
 				$this->type1_markers();
+				break;
+			case 'type1markersselect':
+				$this->type1_markers_select();
 				break;
 			case 'type1build_qtlminer':
 				$this->type1_build_qtlminer();
@@ -81,221 +114,207 @@ class Downloads
 			case 'type1build_tassel_v3':
 				echo $this->type1_build_tassel_v3();
 				break;
-
+			case 'step2lines':
+				echo $this->step2_lines();
+				break;
+			case 'searchLines':
+				echo $this->step1_search_lines();
+				break;
+			case 'download_session':
+				echo $this->type1_session();
+				break;
+			case 'download_session_v2';
+			    echo $this->type1_session(V2);
+			    break;
+			case 'download_session_v3';
+			    echo $this->type1_session(v3);
+			    break;
 			default:
-				$this->type1();
+				$this->type1_select();
 				break;
 				
 		}	
 	}
-	
-	//
+
+	// Select to use existing data or create a new selection
+	private function type1_select()
+	{
+		global $config;
+                include($config['root_dir'].'theme/normal_header.php');
+		$phenotype = "";
+                $lines = "";
+		$markers = "";
+		$saved_session = "";
+		$this->type1_checksession();
+		include($config['root_dir'].'theme/footer.php');
+	}	
+	private function type1_preselect()
+	{
+		global $config;
+                include($config['root_dir'].'theme/normal_header.php');
+		$this->type1_markers();
+		include($config['root_dir'].'theme/footer.php');
+	}
 	// The wrapper action for the type1 download. Handles outputting the header
 	// and footer and calls the first real action of the type1 download.
 	private function type1()
 	{
 		global $config;
-		include($config['root_dir'].'theme/normal_header.php');
+		#include($config['root_dir'].'theme/normal_header.php');
 
-		echo "<h2>Tassel Download</h2>";
-		echo "<p><em>Select multiple options by holding down the Ctrl key while clicking.
-		</em></p>";
+		#echo "<h2>Tassel Download</h2>";
+		#echo "<p><em>Select multiple options by holding down the Ctrl key while clicking.
+		#</em></p>";
 	
 		$this->type1_breeding_programs_year();
-
 		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+        #	include($config['root_dir'].'theme/footer.php');
 	}
 	
 	//
 	// The first real action of the type1 download. Handles outputting the
 	// Breeding Program and Year selection boxes as well as outputting the
 	// javascript code required by itself and the other type1 actions.
-	private function type1_breeding_programs_year()
+	
+	private function type1_checksession()
+    {
+                $phenotype = "";
+                $lines = "";
+                $markers = "";
+                $saved_session = "";
+		        $message1 = $message2 = "";
+
+                if (isset($_SESSION['phenotype'])) {
+                        $tmp = count($_SESSION['phenotype']);
+                        if ($tmp==1) {
+                          $saved_session = "$tmp phenotype ";
+                        } else {
+                          $saved_session = "$tmp phenotypes ";
+                        }
+                        $message2 = "download phenotype and genotype data";
+                        $phenotype = $_SESSION['phenotype'];
+                } else {
+			$message1 = "0 phenotypes";
+			$message2 = " download genotype data";
+		}
+                if (isset($_SESSION['selected_lines'])) {
+                        $countLines = count($_SESSION['selected_lines']);
+                        if ($saved_session == "") {
+                          $saved_session = "$countLines lines";
+                        } else {
+                          $saved_session = $saved_session . ", $countLines lines";
+                        }
+                        $lines = $_SESSION['selected_lines'];
+                }
+                if (isset($_SESSION['clicked_buttons'])) {
+                        $tmp = count($_SESSION['clicked_buttons']);
+                        $saved_session = $saved_session . ", $tmp markers";
+                        $markers = $_SESSION['clicked_buttons'];
+                } else {
+			if ($message2 == "") {
+			  $message1 = "0 markers ";
+			  $message2 = "for all markers.";
+			} else {
+			  $message1 = $message1 . ", 0 markers ";
+			  $message2 = $message2 . " for all markers";
+			}
+		}
+                echo "<h2>Tassel Download</h2>";
+                ?>
+                <div id="step1">
+              
+                <?php 
+                if ($saved_session != "") {
+                  echo "current data selection = $saved_session<br>";
+                  if ($countLines == 0) {
+                    echo "Choose one or more lines before using a saved selection. ";
+                    echo "<a href=";
+                    echo $config['base_url'];
+                    echo "pedigree/line_selection.php> Select lines</a><br>";
+                  } elseif ( $phenotype != "" ) {
+                    echo "<br>Use existing selection to $message2<br>";
+                    echo "<input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'</input>"; 
+                    echo "<input type='button' value='Download for Tassel V3' onclick='javascript:use_session_v3();'</input>";
+                  } else {
+                   echo "<br>Use existing selection to $message2<br>";
+                   echo "<input type='button' value='Download for Tassel' onclick='javascript:use_session();'</input>";
+                  }
+                ?>
+                <br><br>
+                <input type="button" value="Create a new selection" onclick="javascript:use_normal();" />
+                <?php
+                } else {
+                        echo "<p><em>Select multiple options by holding down the Ctrl key while clicking.
+                        </em></p>";
+                        $this->type1_breeding_programs_year();
+                }
+                ?>
+                </div>
+                </div>
+                <?php
+        }
+
+ private function type1_session($version)
+	{
+		if (isset($_SESSION['selected_lines'])) {
+			$selectedcount = count($_SESSION['selected_lines']);
+			$lines = implode(",", $_SESSION['selected_lines']);
+		} else {
+			$lines = "";
+		}
+		if (isset($_SESSION['clicked_buttons'])) {
+		    $selectcount = $_SESSION['clicked_buttons'];
+		    $markers = implode(",", $_SESSION['clicked_buttons']);
+		} else {
+		    $markers = "";
+		}
+		if (isset($_SESSION['phenotype'])) {
+		    $phenotype = $_SESSION['phenotype'];
+		} else {
+		    $phenotype = "";
+		}
+		$dir = '/tmp/tht/';
+                $filename = 'THTdownload_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
+
+	        // File_Archive doesn't do a good job of creating files, so we'll create it first
+                if(!file_exists($dir.$filename)){
+                        $h = fopen($dir.$filename, "w+");
+                        fclose($h);
+                }
+        $zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
+        $subset = "yes";
+        if ($version == "V2") {
+		  $zip->newFile("traits.txt");
+		  $zip->writeData($this->type2_build_tassel_traits_download($phenotype,$subset));
+        } elseif ($version == "V3") {
+         $zip->newFile("traits.txt");
+         $zip->writeData($this->type2_build_tassel_traits_download($phenotyp,$subset));
+        }
+		$zip->newFile("snpfile.txt");
+        $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
+        $zip->close();
+        header("Location: ".$dir.$filename);
+	}
+	
+ private function type1_breeding_programs_year()
 	{
 		?>
-		<script type="text/javascript">
-			
-			var breeding_programs_str = "";
-			var years_str = "";
-			var experiments_str = "";
-			var experiments_loaded = false;
-			var traits_loaded = false;
-			var markers_loaded = false;
-            
-            var markerids = null;
-            var selmarkerids = new Array();
-            
-            var markers_loading = false;
-            var traits_loading = false;
-            
-            var title = document.title;
-			
-			function update_breeding_programs(options) {
-				breeding_programs_str = "";
-				experiments_str = "";
-				$A(options).each(function(breeding_program) {
-					if (breeding_program.selected) {
-						breeding_programs_str += (breeding_programs_str == "" ? "" : ",") + breeding_program.value;
-					}
-				});
-				if (breeding_programs_str != "" && years_str != "")
-					load_experiments();
-			}
-			
-			function update_years(options) {
-				years_str = "";
-				experiments_str = "";
-				$A(options).each(function(year) {
-					if (year.selected) {
-						years_str += (years_str == "" ? "" : ",") + year.value;
-					}
-				});
-				if (breeding_programs_str != "" && years_str != "")
-					load_experiments();
-			}
-			
-			function update_experiments(options) {
-				experiments_str = ""; // clears experiment setting to avoid trait perserverance
-				$A(options).each(function(experiment) {
-					if (experiment.selected) {
-						experiments_str += (experiments_str == "" ? "" : ",") + experiment.value;
-					}
-				});
-				load_traits();
-				load_markers('', '', 100, 0);
-			}
-
-			function load_experiments()
-			{
-                $('experiments_loader').hide();
-                document.title='Loading Trials...';
-				new Ajax.Updater(
-                    $('experiments_loader'),
-                    '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1experiments&bp=' + breeding_programs_str + '&yrs=' + years_str,
-					{ 
-                        onComplete: function() {
-                            $('experiments_loader').show();
-                            document.title=title;
-                        }
-                    }
-				);
-				experiments_loaded = true;
-				if (traits_loaded == true)
-					load_traits();
-				if (markers_loaded == true)
-					load_markers(100, 0);
-			}
-			
-			function load_traits()
-			{		
-                traits_loading = true;		
-                $('traits_loader').hide();
-                document.title='Loading Traits...';
-				new Ajax.Updater(
-				    $('traits_loader'),
-				    '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1traits&exps='+experiments_str,
-					{onComplete: function() {
-                        $('traits_loader').show();  
-                        if (markers_loading == false) {
-                            document.title = title;
-                        }
-                        traits_loading = false;
-                        traits_loaded = true;
-                    }}
-				);
-			}
-            
-
-			function load_markers( mm, mmaf) {
-                markers_loading = true;
-				$('markers_loader').hide();
-                document.title='Loading Markers...';
-				//changes are right here
-                new Ajax.Updater($('markers_loader'), '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1markers&bp='+ breeding_programs_str+'&yrs='+ years_str+'&exps='+experiments_str+'&mm='+mm+'&mmaf='+mmaf,
-				//new Ajax.Updater($('markers_loader'), '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1markers&exps='+experiments_str+'&o='+o+'&d='+d+'&m='+selmarkerids.join(',')+'&mm='+mm+'&mmaf='+mmaf,
-					{onComplete: function() {
-                         $('markers_loader').show();
-                        if (traits_loading == false) {
-                            document.title = title;
-                        }
-                        markers_loading = false;
-                        markers_loaded = true;
-                    }}
-				);
-			}
-			
-			function selectedTraits() {
-				var ret = '';
-				$A($('traitsbx').options).each(function(trait){
-				 	if (trait.selected)
-					{
-						ret += (ret == '' ? '' : ',') + trait.value;
-					}			 
-				});
-				return ret;
-			}
-			
-
-			function getdownload_qtlminer()
-			{
-				if (selectedTraits() == '') {
-					alert('Please select at least one trait!');
-					return false;
-				}
-			    var mm = $('mm').getValue();
-                var mmaf = $('mmaf').getValue();
-				
-					document.location = '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1build_qtlminer&bp='+ breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
-				
-			}
-
-			function getdownload_tassel()
-			{
-				if (selectedTraits() == '') {
-					alert('Please select at least one trait!');
-					return false;
-				}
-			    var mm = $('mm').getValue();
-                var mmaf = $('mmaf').getValue();
-
-			    var subset = $('subset').getValue();
-
-				document.location = '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1build_tassel&bp='+ breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf+'&subset='+subset;
-
-			}
-
-			function getdownload_tassel_v3()
-			{
-				if (selectedTraits() == '') {
-					alert('Please select at least one trait!');
-					return false;
-				}
-			    var mm = $('mm').getValue();
-                var mmaf = $('mmaf').getValue();
-
-    			var subset = $('subset').getValue();
-
-				document.location = '<?php echo $_SERVER['PHP_SELF'] ?>?function=type1build_tassel_v3&bp='+ breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf+'&subset='+subset;
-
-			}
-
-            function mrefresh() {
-                var mm = $('mm').getValue();
-                var mmaf = $('mmaf').getValue();
-                load_markers( mm, mmaf);
-            }
-            
-
-		</script>
-		<style type="text/css">
+				<style type="text/css">
 			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
 			table {background: none; border-collapse: collapse}
 			td {border: 1px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
-		<div style="float: left; margin-bottom: 1.5em;">
-		<h3>1. Breeding Program & Year</h3>
+		<div id="step1" style="float: left; margin-bottom: 1.5em;">
+		<p>1. 
+		<select name="select1" onchange="javascript: update_select1(this.options)">
+		  <option value="BreedingProgram">Breeding Program and Year</option>
+		  <!--  <option value="Lines">Lines</option>
+		  <!-- <option value="Markers">Markers</option>
+		  <!-- <option value="Phenotypes">Phenotypes</option> -->
+		</select></p>
+		
+			<div id="step11">
 			<table>
 				<tr>
 					<th>Breeding Program</th>
@@ -305,8 +324,7 @@ class Downloads
 					<td>
 						<select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
 		<?php
-		// Original:
-		//$sql = "SELECT breeding_programs_uid AS id, breeding_programs_name AS name FROM breeding_programs";
+
 		// Select breeding programs for the drop down menu
 		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
 				FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
@@ -347,19 +365,290 @@ class Downloads
 					</td>
 				</tr>
 			</table>
-		</div>
+		</div></div>
 		<div id="experiments_loader" style="float: left; margin-bottom: 1.5em;"></div>
 		<div id="traits_loader" style="float: left; margin-bottom: 1.5em;"></div>
 		<div id="markers_loader" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+		</div>
+		
 <?php
 	}
 	
+	private function step1_phenotype()
+	{
+?>
+		<table id="phenotypeSelTab" class="tableclass1">
+		<tr>
+			<th>Category</th>
+			<th>Phenotype</th>
+		</tr>
+		<tr><td>
+			<select name="phenotype_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_programs(this.options)">
+                <?php
+		$sql = "SELECT phenotype_category_uid AS id, phenotype_category_name AS name from phenotype_category";
+		$res = mysql_query($sql) or die(mysql_error());
+                while ($row = mysql_fetch_assoc($res))
+                {
+                        ?>
+                                <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
+                        <?php
+                }
+		?>
+		</select>
+		</td>
+		<td>
+		<select name="phenotype" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
+                <?php
+
+		$sql = "SELECT phenotype_name from phenotypes, phenotype_category where phenotype_category_uid = phenotype_category.";
+		?>
+		</select>
+		</table>
+		<?php
+	}
+
+	private function step1_phenotype1()
+        {
+?>
+                <table id="phenotypeSelTab">
+                <tr>
+                        <th>Category</th>
+                        <th>Phenotype</th>
+			<th>Experiment</th>
+                </tr>
+                <tr><td>
+			<select name='phenotypecategory' multiple="multiple" size=10 onfocus="DispPhenoSel(this.value, 'Category')" onchange="DispPhenoSel(this.value, 'Category')">
+                        <?php showTableOptions("phenotype_category"); ?>
+                        </select>
+                </td>
+                <td><p>Select a phenotype category from the left most column</p>
+                </td>
+                <td></td>
+	        </tr>
+		<!-- <tr>
+		<!--	<td><td><td>
+		<!-- </tr> -->
+                </table>
+                <?php
+        }
+
+
+	private function step1_breedprog()
+	{
+		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
+                $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
+?>
+                <table>
+                <tr>
+                        <th>Breeding Program</th>
+                        <th>Year</th>
+                </tr>
+		<tr>
+                                        <td>
+                                                <select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
+                <?php
+
+                // Select breeding programs for the drop down menu
+                $sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
+                                FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
+
+                $res = mysql_query($sql) or die(mysql_error());
+                while ($row = mysql_fetch_assoc($res))
+                {
+                        ?>
+                                <option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
+                        <?php
+                }
+                ?>
+                                                </select>
+                                        </td>
+					<td>
+                                                <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
+                <?php
+
+                // set up drop down menu with data showing year
+                // should this be phenotype experiments only? No
+
+                $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
+                                WHERE e.experiment_type_uid = et.experiment_type_uid
+                                        AND et.experiment_type_name = 'phenotype'";
+                if (!authenticate(array(USER_TYPE_PARTICIPANT,
+                                        USER_TYPE_CURATOR,
+                                        USER_TYPE_ADMINISTRATOR)))
+                        $sql .= " and data_public_flag > 0";
+                $sql .= " GROUP BY e.experiment_year ASC";
+                $res = mysql_query($sql) or die(mysql_error());
+                while ($row = mysql_fetch_assoc($res)) {
+                        ?>
+                                <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
+                        <?php
+                }
+                ?>
+                                                </select>
+                                        </td>
+                                </tr>
+                        </table>
+<?php	
+	}
+	private function step1_dataprog()
+	{
+		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
+                $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
+?>		
+		<table>
+		<tr>
+			<th>Data Program</th>
+			<th>Year</th>
+		</tr>
+<tr><td><select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
+<?php
+		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
+                                FROM CAPdata_programs WHERE program_type='data' ORDER BY name";
+      		$res = mysql_query($sql) or die(mysql_error());
+		while ($row = mysql_fetch_assoc($res)) {
+			?>
+			<option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
+			<?php
+		}
+?>
+</select>
+	</td><td>
+<select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
+<?php
+		$sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
+                                WHERE e.experiment_type_uid = et.experiment_type_uid
+                                        AND et.experiment_type_name = 'phenotype'";
+                if (!authenticate(array(USER_TYPE_PARTICIPANT,
+                                        USER_TYPE_CURATOR,
+                                        USER_TYPE_ADMINISTRATOR)))
+                        $sql .= " and data_public_flag > 0";
+                $sql .= " GROUP BY e.experiment_year ASC";
+                $res = mysql_query($sql) or die(mysql_error());
+                while ($row = mysql_fetch_assoc($res)) {
+                        ?>
+                                <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
+                        <?php
+                }
+                ?>
+                                                </select>
+                                        </td>
+                                </tr>
+</table>
+<?php
+	}	
+	private function step1_lines()
+	{
+		global $config;
+                include($config['root_dir'].'theme/normal_header.php');
+                $linenames = $_GET['LineSearchInput'];
+		$lineArr = array();
+		if (strlen($linenames) != 0)
+    		{
+       			if (strpos($linenames, ',') > 0 ) {
+                        	$linenames = str_replace(", ",",", $linenames);
+                        	$lineList = explode(',',$linenames);
+               		} elseif (preg_match("/\t/", $linenames)) {
+                        	$lineList = explode("\t",$linenames);
+                	} else {
+                        	$lineList = explode('\r\n',$linenames);
+               	 	}
+        		$items = implode("','", $lineList);
+        		$mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
+        		$res = mysql_query($mStatment) or die(mysql_error());
+			if (mysql_num_rows($res) != 0) {
+		        while($myRow = mysql_fetch_assoc($res)) {
+          			array_push ($lineArr,$myRow['line_record_name']);
+       			}
+			$linenames =  implode("','", $lineArr);
+      			} else {
+        		$linenames = '';
+      			}
+			// Find any none hit items 
+        		$mStatment = "SELECT distinct (ls.line_synonym_name) FROM line_synonyms ls where ls.line_synonym_name in ('" .$items. "');";
+        		$res = mysql_query($mStatment) or die(mysql_error());
+        		while($myRow = mysql_fetch_assoc($res)) {
+            			$items = str_ireplace($myRow['line_synonym_name'], '', $items);
+           		#	$items = str_replace(",,",",", $items);
+       			}
+			#$items = trim($items,',');
+		}
+	 	?>
+		<table>
+		<tr> <td>
+                <b>Name</b> <br/><br/>
+		<select name=lines multiple=multiple>
+		<?php
+		$nm = explode('\r\n', $linenames);
+		foreach ($lineList as $n) {
+		  echo "<option value=$n>$n</option>";
+		}
+		?>
+		</select>
+                <!--- textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"><?php $nm = explode('\r\n', $linenames); foreach ($nm as $n) echo $n."\n"; ?></textarea -->
+		</table>
+		<?php	
+                include($config['root_dir'].'theme/footer.php');	
+	}
+
+	private function enter_lines()
+	{
+		if($_SERVER['REQUEST_METHOD'] == "GET")
+  // Store what the user's previous selections were so we can
+  // redisplay them as the page is redrawn.
+ 		{
+		    $name = $_GET['LineSearchInput'];
+		    echo "$names<br>";
+		}
+		?>
+		<form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="GET">
+                <input type="hidden" name="function" value="enterlines">
+
+      		<b>Name</b> <br/><br/>
+      		<textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
+      		<br> Eg: Cayuga, Doyce<br>
+      		Synonyms will be translated.
+		<input type="submit" value=Search>
+		</form>
+		<?php
+		if (isset($_GET['LineSearchInput'])) {
+			$linenames = $_POST['LineSearchInput'];
+			echo "made it here\n";
+			if (strlen($linenames) != 0)
+    
+        if (strpos($linenames, ',') > 0 ) {
+                        $linenames = str_replace(", ",",", $linenames);
+                        $lineList = explode(',',$linenames);
+                } elseif (preg_match("/\t/", $linenames)) {
+                        $lineList = explode("\t",$linenames);
+                } else {
+                        $lineList = explode('\r\n',$linenames);
+                }
+
+        $items = implode("','", $lineList);
+        $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
+
+        $res = mysql_query($mStatment) or die(mysql_error());
+
+        if (mysql_num_rows($res) != 0) {
+        while($myRow = mysql_fetch_assoc($res)) {
+          array_push ($lineArr,$myRow['line_record_name']);
+        }
+        // Generate the translated line names
+        $linenames =  implode("','", $lineArr);
+      } else {
+        $linenames = '';
+      }
+	}
+	}
 	private function type1_experiments()
 	{
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
 		$years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
 ?>
-<h3>2. Trials</h3>
+<p>2. 
+<select>
+  <option>Trials</option>
+</select></p>
 <div>
 
 <table>
@@ -417,7 +706,7 @@ class Downloads
 		if (empty($experiments))
 		{
 			echo "
-				<h3>3. Traits</h3>
+				3. <select><option>Traits</option></select>
 				<div>
 					<p><em>No Trials Selected</em></p>
 				</div>";
@@ -425,7 +714,8 @@ class Downloads
 		else
 		{
 ?>
-<h3>3. Traits</h3>
+<p>3. 
+<select><option>Traits</option></select></p>
 <div>
 <?php
 // List all traits associated with a list of experiments
@@ -470,7 +760,20 @@ class Downloads
 <?php
 		}
 	}
-	
+
+	private function type1_markers_select()
+	{
+		?>
+		<h3>Select markers by name</h3>
+  <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
+  <table><tr><td>
+  <textarea rows=6 cols=10 name=selMarkerstring></textarea>
+  <td>Synonyms will be translated.
+  <p><input type=submit value=Select style=color:blue>
+  </tr></table>
+  </form>
+	<?php		
+	}	
 	/**
 	 * Gets the key marker data for the selected breeding programs
 	 */
@@ -584,11 +887,11 @@ selected lines</a>.<br>
 				    <br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 				    </i>
 
-				    <br><input type="button" value="Refresh" onclick="javascript:mrefresh();return false;" /><br>
-					<table ALIGN="left" > <tr> <td COLSPAN="3">
-				    <br><input type="button" value="Download for Tassel V2" onclick="javascript:getdownload_tassel();return false;" />
+				    <br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
+					<table> <tr> <td COLSPAN="3">
+				    <br><input type="button" value="Download for Tassel V2" onclick="javascript:getdownload_tassel();" />
 					<h4> or </h4>
-				    <input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel_v3();return false;" /> <br>
+				    <input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel_v3();" /> <br>
 					</td> </tr> </table>	
 				    <?php
 				     } else {
@@ -599,7 +902,7 @@ selected lines</a>.<br>
 				      }else { //NO genotype experiments exist for these lines
 			  ?>
 			  <h3>There are no genotype experiments available for this Breeding Program/Year combination</h3>
-			  <div>
+
 			  <?php
 			}
 	}
@@ -823,8 +1126,6 @@ selected lines</a>.<br>
 		header("Location: ".$dir.$filename);
 	}
 
-
-	
 	private function type1_build_traits_download($experiments, $traits, $datasets)
 	{
 		
@@ -1001,6 +1302,121 @@ selected lines</a>.<br>
 		return $output;
 	}
 	
+	/* Build trait download file for Tassel program interface */
+	private function type2_build_tassel_traits_download($traits, $subset)
+	{
+	 // $firephp = FirePHP::getInstance(true);
+	 $delimiter = "\t";
+	 $output = '';
+	 $outputheader1 = '';
+	 $outputheader2 = '';
+	 $outputheader3 = "";
+	
+	 //count number of traits and number of experiments
+	 $ntraits=substr_count($traits, ',')+1;
+	 $nexp=substr_count($experiments, ',')+1;
+	
+	 //$traits = explode(',', $traits);
+	 //$experiments = explode(',', $experiments);
+	
+	 // figure out which traits are at which location
+	 $selectedlines = implode(",", $_SESSION['selected_lines']);
+	 $sql = "SELECT DISTINCT e.trial_code, tb.experiment_uid, p.phenotypes_name,p.phenotype_uid
+	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
+	 WHERE
+	 e.experiment_uid = tb.experiment_uid
+	 AND tb.line_record_uid IN ($selectedlines) 
+	 AND pd.tht_base_uid = tb.tht_base_uid
+	 AND p.phenotype_uid = pd.phenotype_uid
+	 AND pd.phenotype_uid IN ($traits)
+	 ORDER BY p.phenotype_uid,tb.experiment_uid";
+	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	 $ncols = mysql_num_rows($res);
+	 while($row = mysql_fetch_array($res)) {
+	 $outputheader2 .= str_replace(" ","_",$row['phenotypes_name']).$delimiter;
+	 $outputheader3 .= $row['trial_code'].$delimiter;
+	 $keys[] = $row['phenotype_uid'].$row['experiment_uid'];
+	}
+	$nexp=$ncols;
+	 //$firephp->log("trait_location information ".$outputheader2."  ".$outputheader3);
+	 // $firephp->table('keys label ', $keys);
+	
+	 // dem 5jan11: If $subset="yes", use $_SESSION['selected_lines'].
+	 $intheselines = "";
+	 if ($subset == "yes" && count($_SESSION['selected_lines']) > 0) {
+	 $selectedlines = implode(",", $_SESSION['selected_lines']);
+	 $intheselines = " line_records.line_record_uid IN ($selectedlines)";
+	}
+	 // get a list of all line names in the selected datasets and experiments,
+	 // INCLUDING the check lines // AND tht_base.check_line IN ('no')
+	 $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid
+	 FROM line_records 
+	 WHERE
+	   $intheselines";
+	   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	   while($row = mysql_fetch_array($res)) {
+	 $lines[] = $row['line_record_name'];
+	 $line_uid[] = $row['line_record_uid'];
+	}
+	$nlines = count($lines);
+	
+	 if ($nexp ===1){
+	 $nheaderlines = 1;
+	} else {
+	$nheaderlines = 2;
+	}
+	$outputheader1 = "$nlines".$delimiter."$ncols".$delimiter.$nheaderlines;
+	 //if (DEBUG>1) echo $outputheader1."\n".$outputheader2."\n".$outputheader3."\n";
+	 // $firephp->log("number traits and lines ".$outputheader1);
+	 if ($nexp ===1){
+	 $output = $outputheader1."\n".$outputheader2."\n";
+	 } else {
+	 $output = $outputheader1."\n".$outputheader2."\n".$outputheader3."\n";
+	}
+	
+	
+	// loop through all the lines in the file
+	for ($i=0;$i<$nlines;$i++) {
+	 $outline = $lines[$i].$delimiter;
+	 // get selected traits for this line in the selected experiments, change for multiple check lines
+	  /* $sql = "SELECT pd.phenotype_uid, pd.value, tb.experiment_uid
+	 FROM tht_base as tb, phenotype_data as pd
+	 WHERE
+	 tb.line_record_uid =  $line_uid[$i]
+	 AND pd.tht_base_uid = tb.tht_base_uid
+	 AND pd.phenotype_uid IN ($traits)
+	 ORDER BY pd.phenotype_uid,tb.experiment_uid";*/
+	 // dem 8oct10: Don't round the data.
+	 //			$sql = "SELECT avg(cast(pd.value AS DECIMAL(9,1))) as value,pd.phenotype_uid,tb.experiment_uid
+	 $sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid
+	 FROM tht_base as tb, phenotype_data as pd
+	 WHERE tb.line_record_uid  = $line_uid[$i]
+	 AND pd.tht_base_uid = tb.tht_base_uid
+	 AND pd.phenotype_uid IN ($traits)
+	 GROUP BY tb.tht_base_uid, pd.phenotype_uid";
+	
+	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	 //$firephp->log("sql ".$i." ".$sql);
+	 $outarray = array_fill(0,$ncols,-999);
+	 //// $firephp->table('outarray label values', $outarray);
+	 //$outarray = array_fill_keys( $keys  , -999);
+	 $outarray = array_combine($keys  , $outarray);
+	 //// $firephp->table('outarray label ', $outarray);
+	 while ($row = mysql_fetch_array($res)) {
+	 $keyval = $row['phenotype_uid'].$row['experiment_uid'];
+	 // $firephp->log("keyvals ".$keyval." ".$row['value']);
+	 $outarray[$keyval]= $row['value'];
+	 }
+	 $outline .= implode($delimiter,$outarray)."\n";
+	 //// $firephp->log("outputline ".$i." ".$outline);
+	$output .= $outline;
+	
+	}
+	
+	return $output;
+	}
+	
+	
 	private function type1_build_markers_download($experiments,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
@@ -1046,7 +1462,7 @@ selected lines</a>.<br>
 			}
 			$nelem = count($marker_names);
 			if ($nelem == 0) {
-				die("error - no genotype or marker data for this experiment, experiment_uid=$experiments");
+			    die("error - no genotype or marker data for this experiment, experiment_uid=$experiments");
 			}
 			$marker_uid = implode(",",$marker_uid);
         
@@ -1077,22 +1493,14 @@ selected lines</a>.<br>
 		  }
 			
 			
-         $sql = "SELECT lr.line_record_name, m.marker_name AS name,
-                    CONCAT(a.allele_1,a.allele_2) AS value
+         $sql = "SELECT line_record_name, marker_name AS name,
+                    alleles AS value
 			FROM
-            markers as m,
-            line_records as lr,
-            alleles as a,
-            tht_base as tb,
-            genotyping_data as gd
+            allele_cache as a
 			WHERE
-            a.genotyping_data_uid = gd.genotyping_data_uid
-				AND m.marker_uid = gd.marker_uid
-				AND gd.marker_uid IN ($marker_uid)
-				AND tb.line_record_uid = lr.line_record_uid
-				AND gd.tht_base_uid = tb.tht_base_uid
-				AND tb.experiment_uid IN ($experiments)
-		  ORDER BY lr.line_record_name, m.marker_uid";
+				a.marker_uid IN ($marker_uid)
+				AND a.experiment_uid IN ($experiments)
+		  ORDER BY a.line_record_name, a.marker_uid";
 
 
 		$last_line = "some really silly name that noone would call a plant";
@@ -1135,6 +1543,141 @@ selected lines</a>.<br>
 		} else {
 		  return $num_lines.$delimiter.$nelem.":2\n".$outputheader."\n".$output;
 	   }
+	}
+	
+	private function type2_build_markers_download($lines,$markers,$dtype)
+	{
+		// $firephp = FirePHP::getInstance(true);
+		$outputheader = '';
+		$output = '';
+		$doneheader = false;
+		$delimiter ="\t";
+		
+		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
+			$max_missing = $_GET['mm'];
+		if ($max_missing>100)
+			$max_missing = 100;
+		elseif ($max_missing<0)
+		$max_missing = 0;
+		// $firephp->log("in sort markers2");
+		$min_maf = 0.01;//IN PERCENT
+		if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+			$min_maf = $_GET['mmaf'];
+		if ($min_maf>100)
+			$min_maf = 100;
+		elseif ($min_maf<0)
+		$min_maf = 0;
+		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
+		
+		//get lines and filter to get a list of markers which meet the criteria selected by the user
+		$subset = "";
+		if ($markers != "") {
+		    $subset = "AND af.marker_uid IN ($markers)";
+		}
+		$sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+		SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+		FROM allele_frequencies AS af, markers as m
+		WHERE m.marker_uid = af.marker_uid " . $subset .
+		" group by af.marker_uid";
+		
+		$res = mysql_query($sql_mstat) or die(mysql_error());
+		$num_maf = $num_miss = 0;
+		while ($row = mysql_fetch_array($res)){
+				$marker_names[] = $row["name"];
+				$outputheader .= $row["name"].$delimiter;
+				$marker_uid[] = $row["marker"];
+		}
+		$nelem = count($marker_names);
+		if ($nelem == 0) {
+		   die("error - no genotype or marker data for this experiment, subset=$markers");
+		}
+		$marker_uid = implode(",",$marker_uid);
+		
+		if ($dtype=='qtlminer') {
+			$lookup = array(
+					'AA' => '1',
+					'BB' => '-1',
+					'--' => 'NA',
+					'AB' => '0'
+			);
+		} else {
+			$lookup = array(
+					'AA' => '1:1',
+					'BB' => '2:2',
+					'--' => '?',
+					'AB' => '1:2'
+			);
+		}
+		
+		// make an empty line with the markers as array keys, set default value
+		//  to the default missing value for either qtlminer or tassel
+		// places where the lines may have different values
+		
+		if ($dtype =='qtlminer')  {
+			$empty = array_combine($marker_names,array_fill(0,$nelem,'NA'));
+		} else {
+			$empty = array_combine($marker_names,array_fill(0,$nelem,'?'));
+		}
+		
+		$subset = "";
+		if ($markers != "") {
+		   $subset = "WHERE a.marker_uid IN ($markers)";
+		}
+		if ($lines != "") {
+		   if ($subset == "") {
+		       $subset = "WHERE a.line_records_uid in ($lines)";
+		   } else {
+		       $subset = $subset . " and a.line_records_uid in ($lines) ";
+		   }
+		}
+		   
+		$sql = "SELECT line_record_name, marker_name AS name,
+		alleles AS value
+		FROM
+		allele_cache as a " . $subset .
+		" ORDER BY a.line_record_name, a.marker_uid";
+		
+		
+		$last_line = "some really silly name that noone would call a plant";
+		$res = mysql_query($sql) or die(mysql_error());
+		
+		$outarray = $empty;
+		$cnt = $num_lines = 0;
+		while ($row = mysql_fetch_array($res)){
+			//first time through loop
+			if ($cnt==0) {
+				$last_line = $row['line_record_name'];
+			}
+		
+			if ($last_line != $row['line_record_name']){
+				// Close out the last line
+				$output .= "$last_line\t";
+				$outarray = implode($delimiter,$outarray);
+				$output .= $outarray."\n";
+				//reset output arrays for the next line
+				$outarray = $empty;
+				$mname = $row['name'];
+				$outarray[$mname] = $lookup[$row['value']];
+				$last_line = $row['line_record_name'];
+				$num_lines++;
+			} else {
+				$mname = $row['name'];
+				$outarray[$mname] = $lookup[$row['value']];
+			}
+			$cnt++;
+		}
+		//NOTE: there is a problem with the last line logic here. Must fix.
+		//save data from the last line
+		$output .= "$last_line\t";
+		$outarray = implode($delimiter,$outarray);
+		$output .= $outarray."\n";
+		$num_lines++;
+		
+		if ($dtype =='qtlminer')  {
+			return $outputheader."\n".$output;
+		} else {
+			return $num_lines.$delimiter.$nelem.":2\n".$outputheader."\n".$output;
+		}
 	}
 	
 	private function type1_build_annotated_align($experiments)
@@ -1430,7 +1973,6 @@ selected lines</a>.<br>
 	  return $outputheader.$output;
     }
 
-	
 	private function type1_build_pedigree_download($experiments)
 	{
 		$delimiter ="\t";
