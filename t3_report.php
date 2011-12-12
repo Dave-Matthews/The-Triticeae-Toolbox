@@ -1,15 +1,25 @@
-<?php
-
+<?php 
 /**
- * Logged in page initialization
+ * Content Status
+ *
+ * PHP version 5.3
+ *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <cbirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 12/12/2011
+ * @link     http://triticeaetoolbox.org/wheat/t3_report.php
+ *
  */
+
 require 'config.php';
-require($config['root_dir'].'includes/bootstrap.inc');
+require $config['root_dir'].'includes/bootstrap.inc';
 require_once 'includes/excel/Writer.php';
 
-#query for count of genotyping_data table takes too long
-#cache the results of the queries 
-#updating the cache is done every 12 hours
+//query for count of genotyping_data table takes too long
+//cache the results of the queries 
+//updating the cache is done every 12 hours
 
 connect();
 
@@ -28,7 +38,7 @@ if (isset($_GET['query'])) {
 }
 if ($query == 'geno') {
   $count = 0;
-  include($config['root_dir'].'theme/normal_header.php');
+  include $config['root_dir'].'theme/normal_header.php';
   print "markers with no genotype data<br>\n";
   print "<table border=0>";
   print "<tr><td>marker_uid<td>marker_name\n";
@@ -150,6 +160,7 @@ if ($query == 'geno') {
      $MarkersWithGeno = fgets($fp);
      $MarkersNoGeno = fgets($fp);
      fclose($fp);
+     $allele_count = number_format($allele_count);
   } else {
      $sql = "select count(genotyping_data_uid) from genotyping_data";
      $res = mysql_query($sql) or die(mysql_error());
