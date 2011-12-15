@@ -67,9 +67,6 @@ class Downloads
 	// Using the class's constructor to decide which action to perform
 	public function __construct($function = null)
 	{	
-		?>
-		<script type="text/javascript" src="/cbirkett/t3/wheatplus/downloads/downloads.js"></script>
-		<?php
 		switch($function)
 		{
 			case 'type1':
@@ -265,6 +262,7 @@ class Downloads
                 }
                 ?>
                 </div>
+                <script type="text/javascript" src="/cbirkett/t3/wheatplus/downloads/downloads.js"></script>
                 <?php
         }
 
