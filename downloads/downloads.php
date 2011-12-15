@@ -40,11 +40,11 @@ $cfg_file_rel_path = 'downloads/downloads.php';
 // For live website file
 require_once 'config.php';
 include $config['root_dir'].'includes/bootstrap.inc';
-set_include_path(get_include_path . PATH_SEPARATOR . '../pear/');
+set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
-require_once($config['root_dir'].'includes/MIME/Type.php');
-require_once($config['root_dir'].'includes/File_Archive/Archive.php');
+require_once $config['root_dir'].'includes/MIME/Type.php';
+require_once $config['root_dir'].'includes/File_Archive/Archive.php';
 
 // for debugging only, comment out in production version to avoid security holes
 //require_once('FirePHPCore/FirePHP.class.php');
@@ -81,21 +81,42 @@ class Downloads
 			case 'type1experiments':
 				$this->type1_experiments();
 				break;
-			case 'step1dataprog';
+			case 'step1dataprog':
 				$this->step1_dataprog();
 				break;
-			case 'enterlines';
+			case 'enterlines':
 				$this->enter_lines();
 				break;
-			case 'step1lines';
+			case 'step1lines':
 				$this->step1_lines();
 				break;
-			case 'step1breedprog';
+			case 'step2lines':
+				$this->step2_lines();
+				break;
+			case 'step1breedprog':
 				$this->step1_breedprog();
 				break;
-			case 'step1phenotype';
-				$this->step1_phenotype1();
+			case 'step1phenotype':
+				$this->step1_phenotype();
 				break;
+			case 'step2phenotype':
+				$this->step2_phenotype();
+				break;
+			case 'step3phenotype':
+				$this->step3_phenotype();
+				break;
+			case 'step4phenotype':
+				$this->step4_phenotype();
+				break;
+			case 'step5phenotype':
+			    $this->step5_phenotype();
+			    break;
+			case 'updatelines_tassel':
+			    $this->updatelines_tassel();
+			    break;
+			case 'step1yearprog':
+			    $this->step1_yearprog();
+			    break;
 			case 'type1traits':
 				$this->type1_traits();
 				break;
@@ -123,10 +144,10 @@ class Downloads
 			case 'download_session':
 				echo $this->type1_session();
 				break;
-			case 'download_session_v2';
+			case 'download_session_v2':
 			    echo $this->type1_session(V2);
 			    break;
-			case 'download_session_v3';
+			case 'download_session_v3':
 			    echo $this->type1_session(v3);
 			    break;
 			default:
@@ -146,6 +167,7 @@ class Downloads
 		$markers = "";
 		$saved_session = "";
 		$this->type1_checksession();
+		echo "</div>";
 		include($config['root_dir'].'theme/footer.php');
 	}	
 	private function type1_preselect()
@@ -165,7 +187,10 @@ class Downloads
 		#echo "<h2>Tassel Download</h2>";
 		#echo "<p><em>Select multiple options by holding down the Ctrl key while clicking.
 		#</em></p>";
-	
+		unset($_SESSION['selected_lines']);
+		unset($_SESSION['phenotype']);
+		unset($_SESSION['clicked_buttons']);
+		
 		$this->type1_breeding_programs_year();
 		$footer_div = 1;
         #	include($config['root_dir'].'theme/footer.php');
@@ -178,88 +203,77 @@ class Downloads
 	
 	private function type1_checksession()
     {
-                $phenotype = "";
-                $lines = "";
-                $markers = "";
-                $saved_session = "";
-		        $message1 = $message2 = "";
+            $phenotype = "";
+            $lines = "";
+            $markers = "";
+            $saved_session = "";
+		    $message1 = $message2 = "";
 
-                if (isset($_SESSION['phenotype'])) {
-                        $tmp = count($_SESSION['phenotype']);
-                        if ($tmp==1) {
-                          $saved_session = "$tmp phenotype ";
-                        } else {
-                          $saved_session = "$tmp phenotypes ";
-                        }
-                        $message2 = "download phenotype and genotype data";
-                        $phenotype = $_SESSION['phenotype'];
-                } else {
-			$message1 = "0 phenotypes";
-			$message2 = " download genotype data";
-		}
-                if (isset($_SESSION['selected_lines'])) {
-                        $countLines = count($_SESSION['selected_lines']);
-                        if ($saved_session == "") {
-                          $saved_session = "$countLines lines";
-                        } else {
-                          $saved_session = $saved_session . ", $countLines lines";
-                        }
-                        $lines = $_SESSION['selected_lines'];
-                }
-                if (isset($_SESSION['clicked_buttons'])) {
-                        $tmp = count($_SESSION['clicked_buttons']);
-                        $saved_session = $saved_session . ", $tmp markers";
-                        $markers = $_SESSION['clicked_buttons'];
-                } else {
-			if ($message2 == "") {
-			  $message1 = "0 markers ";
-			  $message2 = "for all markers.";
-			} else {
-			  $message1 = $message1 . ", 0 markers ";
-			  $message2 = $message2 . " for all markers";
+            if (isset($_SESSION['phenotype'])) {
+                    $tmp = count($_SESSION['phenotype']);
+                    if ($tmp==1) {
+                        $saved_session = "$tmp phenotype ";
+                    } else {
+                        $saved_session = "$tmp phenotypes ";
+                    }
+                    $message2 = "download phenotype and genotype data";
+                    $phenotype = $_SESSION['phenotype'];
+            } else {
+				$message1 = "0 phenotypes";
+				$message2 = " download genotype data";
 			}
-		}
-                echo "<h2>Tassel Download</h2>";
-                ?>
+            if (isset($_SESSION['selected_lines'])) {
+                    $countLines = count($_SESSION['selected_lines']);
+                    if ($saved_session == "") {
+                        $saved_session = "$countLines lines";
+                    } else {
+                        $saved_session = $saved_session . ", $countLines lines";
+                    }
+                    $lines = $_SESSION['selected_lines'];
+            }
+            if (isset($_SESSION['clicked_buttons'])) {
+                    $tmp = count($_SESSION['clicked_buttons']);
+                    $saved_session = $saved_session . ", $tmp markers";
+                    $markers = $_SESSION['clicked_buttons'];
+            } else {
+			    if ($message2 == "") {
+			      $message1 = "0 markers ";
+			      $message2 = "for all markers.";
+			    } else {
+			  	  $message1 = $message1 . ", 0 markers ";
+			  	  $message2 = $message2 . " for all markers";
+				}
+			}	
+            ?>
+                <h2>Tassel Download</h2>
                 <div id="step1">
-              
-                <?php 
+                <p>
+                <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
+            <?php 
                 if ($saved_session != "") {
-                  echo "current data selection = $saved_session<br>";
-                  if ($countLines == 0) {
-                    echo "Choose one or more lines before using a saved selection. ";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "pedigree/line_selection.php> Select lines</a><br>";
-                  } elseif ( $phenotype != "" ) {
-                    echo "<br>Use existing selection to $message2<br>";
-                    echo "<input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'</input>"; 
-                    echo "<input type='button' value='Download for Tassel V3' onclick='javascript:use_session_v3();'</input>";
-                  } else {
-                   echo "<br>Use existing selection to $message2<br>";
-                   echo "<input type='button' value='Download for Tassel' onclick='javascript:use_session();'</input>";
-                  }
-                ?>
-                <br><br>
-                <input type="button" value="Create a new selection" onclick="javascript:use_normal();" />
-                <?php
+            ?>
+                <button type="button" value="Clear current selection" onclick="javascript: use_normal()">Clear current selection</button>
+            <?php
+                }
+            ?>        
+                </p>
+                <?php 
+                if (isset($_SESSION['selected_lines'])) {
+                    $this->type1_lines_trial_trait();
                 } else {
-                        echo "<p><em>Select multiple options by holding down the Ctrl key while clicking.
-                        </em></p>";
-                        $this->type1_breeding_programs_year();
+                    $this->type1_breeding_programs_year();
                 }
                 ?>
-                </div>
                 </div>
                 <?php
         }
 
- private function type1_session($version)
+    private function type1_session($version)
 	{
+	    $experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
 		if (isset($_SESSION['selected_lines'])) {
 			$selectedcount = count($_SESSION['selected_lines']);
 			$lines = implode(",", $_SESSION['selected_lines']);
-		    echo "using $selectedcount lines<br>";
 		} else {
 			$lines = "";
 		}
@@ -284,12 +298,14 @@ class Downloads
                 }
         $zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
         $subset = "yes";
-        if ($version == "V2") {
+        
+        if (($version == "V2") || ($version == "V3")) {
 		  $zip->newFile("traits.txt");
-		  $zip->writeData($this->type2_build_tassel_traits_download($phenotype,$subset));
-        } elseif ($version == "V3") {
-         $zip->newFile("traits.txt");
-         $zip->writeData($this->type2_build_tassel_traits_download($phenotyp,$subset));
+		  if ($experiments_t == "") {
+		    $zip->writeData($this->type3_build_tassel_traits_download($phenotype,$subset));
+		  } else {
+		    $zip->writeData($this->type2_build_tassel_traits_download($experiments_t,$phenotype,$subset));
+		  }
         }
 		$zip->newFile("snpfile.txt");
         $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
@@ -297,10 +313,10 @@ class Downloads
         header("Location: ".$dir.$filename);
 	}
 	
- private function type1_breeding_programs_year()
+    private function type1_breeding_programs_year()
 	{
 		?>
-				<style type="text/css">
+		<style type="text/css">
 			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
 			table {background: none; border-collapse: collapse}
 			td {border: 1px solid #eee !important;}
@@ -310,9 +326,15 @@ class Downloads
 		<p>1. 
 		<select name="select1" onchange="javascript: update_select1(this.options)">
 		  <option value="BreedingProgram">Breeding Program and Year</option>
-		  <!--  <option value="Lines">Lines</option>
-		  <!-- <option value="Markers">Markers</option>
-		  <!-- <option value="Phenotypes">Phenotypes</option> -->
+		  <!--  <option value="Years">Year and Trial</option> -->
+		<?php 
+		  if (isset($_SESSION['selected_lines'])) {
+		  ?>
+		  <option value="Lines">Lines</option>
+		<?php 
+		  }
+		?>
+		  <option value="Phenotypes">Traits</option>
 		</select></p>
 		
 			<div id="step11">
@@ -367,73 +389,213 @@ class Downloads
 				</tr>
 			</table>
 		</div></div>
-		<div id="experiments_loader" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="traits_loader" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="markers_loader" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-		</div>
+		<div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
+		<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
+		<div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
 		
 <?php
 	}
 	
 	private function step1_phenotype()
 	{
-?>
-		<table id="phenotypeSelTab" class="tableclass1">
+		?>
+		<div id="step1" style="float: left; margin-bottom: 1.5em;">
+        <table id="phenotypeSelTab" class="tableclass1">
 		<tr>
 			<th>Category</th>
-			<th>Phenotype</th>
 		</tr>
 		<tr><td>
-			<select name="phenotype_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_programs(this.options)">
+			<select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
                 <?php
 		$sql = "SELECT phenotype_category_uid AS id, phenotype_category_name AS name from phenotype_category";
 		$res = mysql_query($sql) or die(mysql_error());
-                while ($row = mysql_fetch_assoc($res))
-                {
-                        ?>
-                                <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
-                        <?php
-                }
+		while ($row = mysql_fetch_assoc($res))
+		{
+		 ?>
+				<option value="<?php echo $row['id'] ?>">
+					<?php echo $row['name'] ?>
+				</option>
+				<?php
+		}
 		?>
 		</select>
 		</td>
-		<td>
-		<select name="phenotype" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-                <?php
-
-		$sql = "SELECT phenotype_name from phenotypes, phenotype_category where phenotype_category_uid = phenotype_category.";
-		?>
-		</select>
 		</table>
+		</div>
+		<div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
+		<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
+		<div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
+		<div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
 		<?php
 	}
 
-	private function step1_phenotype1()
-        {
-?>
-                <table id="phenotypeSelTab">
-                <tr>
-                        <th>Category</th>
-                        <th>Phenotype</th>
-			<th>Experiment</th>
-                </tr>
-                <tr><td>
-			<select name='phenotypecategory' multiple="multiple" size=10 onfocus="DispPhenoSel(this.value, 'Category')" onchange="DispPhenoSel(this.value, 'Category')">
-                        <?php showTableOptions("phenotype_category"); ?>
-                        </select>
-                </td>
-                <td><p>Select a phenotype category from the left most column</p>
-                </td>
-                <td></td>
-	        </tr>
-		<!-- <tr>
-		<!--	<td><td><td>
-		<!-- </tr> -->
-                </table>
+	private function step2_phenotype()
+    {  
+		$phen_cat = $_GET['pc'];
+		?>
+        
+        <table id="phenotypeSelTab" class="tableclass1">
+		<tr>
+			<th>Traits</th>
+		</tr>
+		<tr><td>
+		<select name="phenotype_items" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_items(this.options)">
                 <?php
-        }
 
+		$sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
+		 where phenotypes.phenotype_category_uid = phenotype_category.phenotype_category_uid and phenotype_category.phenotype_category_uid in ($phen_cat)";
+		$res = mysql_query($sql) or die(mysql_error());
+		while ($row = mysql_fetch_assoc($res))
+		{
+		 ?>
+		    <option value="<?php echo $row['id'] ?>">
+		     <?php echo $row['name'] ?>
+		    </option>
+		    <?php
+		}
+		?>
+		</select>
+		</table>
+		
+		<?php
+    }
+    
+	private function step3_phenotype()
+    {  
+		$phen_item = $_GET['pi'];
+		?>
+		
+        <table id="phenotypeSelTab" class="tableclass1">
+		<tr>
+			<th>Trials</th>
+		</tr>
+		<tr><td>
+		<select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_trial(this.options)">
+                <?php
 
+		$sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name 
+	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
+	 WHERE
+	 e.experiment_uid = tb.experiment_uid
+	 AND pd.tht_base_uid = tb.tht_base_uid
+	 AND p.phenotype_uid = pd.phenotype_uid
+	 AND pd.phenotype_uid IN ($phen_item)";
+		$res = mysql_query($sql) or die(mysql_error());
+		while ($row = mysql_fetch_assoc($res))
+		{
+		 ?>
+		    <option value="<?php echo $row['id'] ?>">
+		     <?php echo $row['name'] ?>
+		    </option>
+		    <?php
+		}
+		?>
+		</select>
+		</table>
+		
+		<?php
+    }
+    
+	private function step4_phenotype()
+    {  
+    	$phen_item = $_GET['pi'];
+		$experiments = $_GET['e'];
+		$selected_lines = array();
+		$_SESSION['phenotype'] = $phen_item; // Empty the session array.
+		?>
+		
+        <table id="phenotypeSelTab" class="tableclass1">
+		<tr>
+			<th>Lines</th>
+		</tr>
+		<tr><td>
+		<select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
+                <?php
+
+		$sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name 
+	 FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr 
+	 WHERE
+	 pd.tht_base_uid = tb.tht_base_uid
+	 AND p.phenotype_uid = pd.phenotype_uid
+	 AND lr.line_record_uid = tb.line_record_uid
+	 AND pd.phenotype_uid IN ($phen_item)
+	 AND tb.experiment_uid IN ($experiments)
+	 ORDER BY lr.line_record_name";
+		$_SESSION['selected_lines'] = array(); // Empty the session array.
+		$res = mysql_query($sql) or die(mysql_error());
+		while ($row = mysql_fetch_assoc($res))
+		{
+		 array_push($_SESSION['selected_lines'],$row['id']);
+		 ?>
+				<option selected value="<?php echo $row['id'] ?>">
+					<?php echo $row['name'] ?>
+				</option>
+				<?php
+		}
+		?>
+		</select>
+		</table>	
+		<?php
+    }
+    
+    private function step5_phenotype()
+    {
+     $phen_item = $_GET['pi'];
+     $experiments = $_GET['e'];
+     if (!empty($_GET['lines'])) {
+         $selectedlines = $_GET['lines'];
+         $selectedlines = explode(',', $selectedlines);
+         $_SESSION['selected_lines'] = $selectedlines;
+     }
+     $count = count($_SESSION['selected_lines']);
+     echo "selected lines = $count<br>";
+     ?>
+    
+    <input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'></input>
+    <br><b>or</b><br>
+    <input type='button' value='Download for Tassel V3' onclick='javascript:use_session_v3();'></input>
+    
+    <?php
+    }
+    
+    private function step1_yearprog()
+    {
+     ?>
+    <div id="step1" style="float: left; margin-bottom: 1.5em;">
+    <table id="phenotypeSelTab" class="tableclass1">
+    <tr>
+    <th>Year</th>
+    </tr>
+    <tr><td>
+    <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_yearprog(this.options)">
+    <?php
+    $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
+    WHERE e.experiment_type_uid = et.experiment_type_uid
+    AND et.experiment_type_name = 'phenotype'
+    GROUP BY e.experiment_year ASC";
+    $res = mysql_query($sql) or die(mysql_error());
+    while ($row = mysql_fetch_assoc($res))
+    {
+    ?>
+    <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
+    <?php
+    }
+    ?>
+    </select>
+    </td>
+    </table>
+    </div>
+    <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
+    <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
+    <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
+    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+    <?php
+    }
+
+    private function updatelines_tassel()
+    {
+    }
+    
 	private function step1_breedprog()
 	{
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
@@ -537,58 +699,277 @@ class Downloads
 </table>
 <?php
 	}	
+    private function type1_lines_trial_trait()
+    {
+	    ?>
+	    <style type="text/css">
+			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+			table {background: none; border-collapse: collapse}
+			td {border: 1px solid #eee !important;}
+			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+		</style>
+		<div id="step1" style="float: left; margin-bottom: 1.5em;">
+		<p>1. 
+		<select name="select1" onchange="javascript: update_select1(this.options)">
+		  <option value="BreedingProgram">Breeding Program and Year</option>
+		  <!--  <option value="Years">Year and Trial</option> -->
+		  <option selected value="Lines">Lines</option>
+		  <option value="Phenotypes">Traits</option>
+		</select></p>
+		<?php 
+		if (isset($_SESSION['selected_lines'])) {
+			$selectedlines= $_SESSION['selected_lines'];
+	        $count = count($_SESSION['selected_lines']);
+		?>
+		<div id="step11">
+	    <table id="phenotypeSelTab" class="tableclass1">
+	    <tr>
+	    <th>Lines</th>
+	    </tr>
+	    <tr><td>
+	    <select multiple="multiple" name="lines" style="height: 12em;">
+	    <?php
+	    foreach($selectedlines as $uid) {
+	      $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
+	      $res = mysql_query($sql) or die(mysql_error());
+	      $row = mysql_fetch_assoc($res);
+	      ?>
+	      <option selected value="
+	      <?php $uid ?>">
+	      <?php echo $row['line_record_name'] ?>
+	      </option>
+	      <?php     
+	    }
+	    ?>
+	    </select>
+	    </td>
+	    </table>
+	    </div></div>
+	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
+	    <p>2.
+	    <select name="select2">
+	      <option value="trials">Trials</option>
+	    </select></p>
+	    <table id="linessel" class="tableclass1">
+	    <tr>
+	    <th>Trials</th>
+	    </tr>
+	    <tr><td>
+	    <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_trial(this.options)">
+	    <?php
+	    $selectedlines = implode(',', $selectedlines);
+	    $experiment_str = "";
+	    $sql="SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name 
+	    FROM experiments as e, tht_base as tb, line_records as lr
+	    WHERE
+	    e.experiment_uid = tb.experiment_uid
+	    AND lr.line_record_uid = tb.line_record_uid
+	    AND lr.line_record_uid IN ($selectedlines)";
+		$res = mysql_query($sql) or die(mysql_error() . $sql);
+		while ($row = mysql_fetch_assoc($res))
+		{
+		 ?>
+		    <option value="<?php echo $row['id'] ?>">
+		     <?php echo $row['name'];
+		     if ($experiment_str == "") {
+		     	$experiment_str = $row['id'];
+		     } else {
+		     	$experiment_str = $experiment_str . "," . $row['id'];
+		     }
+		      ?>
+		    </option>
+		    <?php
+		} 
+	    ?>
+	    </select></table>
+	    </div>
+	    <div id="step3" style="float: left; margin-bottom: 1.5em;">
+	    <p>3.
+	    <select name="select3">
+	      <option value="phenotypes">Traits</option>
+	    </select></p>
+	    <table id="" class="tableclass1">
+	    <tr>
+	    <th>Traits</th>
+	    </tr>
+	    <tr><td>
+	    <select name="traits" multiple="multiple" style="height: 12em;">
+	    <?php
+	    $sql = "SELECT DISTINCT p.phenotype_uid AS id, phenotypes_name AS name from phenotypes as p, tht_base as tb, phenotype_data as pd
+	      where pd.tht_base_uid = tb.tht_base_uid
+         AND p.phenotype_uid = pd.phenotype_uid
+	     AND tb.experiment_uid in ($experiment_str)";
+		$res = mysql_query($sql) or die(mysql_error() . $sql);
+		while ($row = mysql_fetch_assoc($res))
+		{
+		 ?>
+		    <option value="<?php echo $row['id'] ?>">
+		     <?php echo $row['name'] ?>
+		    </option>
+		    <?php
+		}
+	    ?>
+	    </select></table>
+	    </div>
+	    <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+	    <?php
+	    
+	     $this->step4_lines();
+	     ?></div>
+	     <?php 	
+	    } else {
+	     echo "Please select lines before using this feature.<br>";
+	     echo "<a href=";
+	     echo $config['base_url'];
+	     echo "pedigree/line_selection.php>Select Lines by Properties</a>";
+	    }
+	}
 	private function step1_lines()
 	{
-		global $config;
-                include($config['root_dir'].'theme/normal_header.php');
-                $linenames = $_GET['LineSearchInput'];
-		$lineArr = array();
-		if (strlen($linenames) != 0)
-    		{
-       			if (strpos($linenames, ',') > 0 ) {
-                        	$linenames = str_replace(", ",",", $linenames);
-                        	$lineList = explode(',',$linenames);
-               		} elseif (preg_match("/\t/", $linenames)) {
-                        	$lineList = explode("\t",$linenames);
-                	} else {
-                        	$lineList = explode('\r\n',$linenames);
-               	 	}
-        		$items = implode("','", $lineList);
-        		$mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
-        		$res = mysql_query($mStatment) or die(mysql_error());
-			if (mysql_num_rows($res) != 0) {
-		        while($myRow = mysql_fetch_assoc($res)) {
-          			array_push ($lineArr,$myRow['line_record_name']);
-       			}
-			$linenames =  implode("','", $lineArr);
-      			} else {
-        		$linenames = '';
-      			}
-			// Find any none hit items 
-        		$mStatment = "SELECT distinct (ls.line_synonym_name) FROM line_synonyms ls where ls.line_synonym_name in ('" .$items. "');";
-        		$res = mysql_query($mStatment) or die(mysql_error());
-        		while($myRow = mysql_fetch_assoc($res)) {
-            			$items = str_ireplace($myRow['line_synonym_name'], '', $items);
-           		#	$items = str_replace(",,",",", $items);
-       			}
-			#$items = trim($items,',');
-		}
-	 	?>
-		<table>
-		<tr> <td>
-                <b>Name</b> <br/><br/>
-		<select name=lines multiple=multiple>
-		<?php
-		$nm = explode('\r\n', $linenames);
-		foreach ($lineList as $n) {
-		  echo "<option value=$n>$n</option>";
-		}
+		if (isset($_SESSION['selected_lines'])) {
+			$selectedlines= $_SESSION['selected_lines'];
+	        $count = count($_SESSION['selected_lines']);
 		?>
-		</select>
-                <!--- textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"><?php $nm = explode('\r\n', $linenames); foreach ($nm as $n) echo $n."\n"; ?></textarea -->
-		</table>
-		<?php	
-                include($config['root_dir'].'theme/footer.php');	
+	    <table id="phenotypeSelTab" class="tableclass1">
+	    <tr>
+	    <th>Lines</th>
+	    </tr>
+	    <tr><td>
+	    <select name="lines" multiple="multiple" style="height: 12em;">
+	    <?php
+	    foreach($selectedlines as $uid) {
+	      $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
+	      $res = mysql_query($sql) or die(mysql_error());
+	      $row = mysql_fetch_assoc($res)
+	      ?>
+	      <option selected value="
+	      <?php $uid ?>">
+	      <?php echo $row['line_record_name'] ?>
+	      </option>
+	      <?php
+	    }
+	    ?>
+	    </select>
+	    </td>
+	    </table>
+	    <?php 
+	    } else {
+	    	echo "Please select lines before using this feature.<br>";
+	        echo "<a href=";
+	        echo $config['base_url'];
+	        echo "pedigree/line_selection.php>Select Lines by Properties</a>";
+	    }
+	}
+	
+	private function step2_lines()
+	{
+		?>
+	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
+	    <p>2.
+	    <select name="select2">
+	      <option value="trials">Trials</option>
+	    </select></p>
+	    <table id="linessel" class="tableclass1">
+	    <tr>
+	    <th>Trials</th>
+	    </tr>
+	    <tr><td>
+	    <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_trial(this.options)">
+	    <?php
+	    $selectedlines= $_SESSION['selected_lines'];
+	    $selectedlines = implode(',', $selectedlines);
+	    $sql="SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name 
+	    FROM experiments as e, tht_base as tb, line_records as lr
+	    WHERE
+	    e.experiment_uid = tb.experiment_uid
+	    AND lr.line_record_uid = tb.line_record_uid
+	    AND lr.line_record_uid IN ($selectedlines)";
+		$res = mysql_query($sql) or die(mysql_error());
+		while ($row = mysql_fetch_assoc($res))
+		{
+		 ?>
+		    <option value="<?php echo $row['id'] ?>">
+		     <?php echo $row['name'] ?>
+		    </option>
+		    <?php
+		} 
+	    ?>
+	    </select></table>
+	    <?php 
+	}
+	
+	private function step3_lines()
+	{
+		?>
+	    </div>
+	    <div id="step3" style="float: left; margin-bottom: 1.5em;">
+	    <p>3.
+	    <select name="select3">
+	      <option value="phenotypes">Traits</option>
+	    </select></p>
+	    <table id="" class="tableclass1">
+	    <tr>
+	    <th>Traits</th>
+	    </tr>
+	    <tr><td>
+	    <select name="">
+	    <?php
+	    $sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, tht_base, phenotype_data
+	      where pd.tht_base_uid = tb.tht_base_uid
+         AND p.phenotype_uid = pd.phenotype_uid
+	     AND tb.experiment_uid in ($experiment_str)";
+		$res = mysql_query($sql) or die(mysql_error() . $sql);
+		while ($row = mysql_fetch_assoc($res))
+		{
+		 ?>
+		    <option value="<?php echo $row['id'] ?>">
+		     <?php echo $row['name'] ?>
+		    </option>
+		    <?php
+		}
+	    ?>
+	    </select></table>
+	    </div>
+	    <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+	    <?php
+	     $this->type1_markers();
+	     ?></div>
+	     <?php 		
+	}
+	
+	private function step4_lines() {
+	$saved_session = "";
+	 if (isset($_SESSION['selected_lines'])) {
+	     $countLines = count($_SESSION['selected_lines']);
+	     if ($saved_session == "") {
+	      $saved_session = "$countLines lines";
+	     } else {
+	      $saved_session = $saved_session . ", $countLines lines";
+	     }
+	 } else {
+	     $countLines = 0;
+	 }
+	 if (isset($_SESSION['phenotype'])) {
+	      $phenotype = $_SESSION['phenotype'];
+	 } else {
+	     $phenotype = "";
+	 }
+	 if ($saved_session != "") {
+	     echo "current data selection = $saved_session<br>";
+	     if ($countLines == 0) {
+	       echo "Choose one or more lines before using a saved selection. ";
+	       echo "<a href=";
+	       echo $config['base_url'];
+	       echo "pedigree/line_selection.php> Select lines</a><br>";
+	     } elseif ( $phenotype != "" ) {
+	       echo "<br>Use existing selection to $message2<br>";
+	       echo "<input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'</input>";
+	       echo "<input type='button' value='Download for Tassel V3' onclick='javascript:use_session_v3();'</input>";
+	     } else {
+	       "<br>Use existing selection to $message2<br>";
+	       echo "<input type='button' value='Download for Tassel' onclick='javascript:use_session();'</input>";
+	     }
+	  }
 	}
 
 	private function enter_lines()
@@ -1304,7 +1685,7 @@ selected lines</a>.<br>
 	}
 	
 	/* Build trait download file for Tassel program interface */
-	private function type2_build_tassel_traits_download($traits, $subset)
+	private function type2_build_tassel_traits_download($experiments,$traits, $subset)
 	{
 	 // $firephp = FirePHP::getInstance(true);
 	 $delimiter = "\t";
@@ -1326,6 +1707,7 @@ selected lines</a>.<br>
 	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
 	 WHERE
 	 e.experiment_uid = tb.experiment_uid
+	 AND tb.experiment_uid IN ($experiments)
 	 AND tb.line_record_uid IN ($selectedlines) 
 	 AND pd.tht_base_uid = tb.tht_base_uid
 	 AND p.phenotype_uid = pd.phenotype_uid
@@ -1346,21 +1728,21 @@ selected lines</a>.<br>
 	 $intheselines = "";
 	 if ($subset == "yes" && count($_SESSION['selected_lines']) > 0) {
 	 $selectedlines = implode(",", $_SESSION['selected_lines']);
-	 $intheselines = " line_records.line_record_uid IN ($selectedlines)";
+	 $intheselines = "AND line_records.line_record_uid IN ($selectedlines)";
 	}
 	 // get a list of all line names in the selected datasets and experiments,
 	 // INCLUDING the check lines // AND tht_base.check_line IN ('no')
 	 $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid
-	 FROM line_records 
-	 WHERE
-	   $intheselines";
-	   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	 FROM line_records, tht_base 
+	 WHERE tht_base.experiment_uid IN ($experiments)
+	   $intheselines
+	   AND line_records.line_record_uid=tht_base.line_record_uid";
+	   $res = mysql_query($sql) or die(mysql_error() . "<br>type2 $sql");
 	   while($row = mysql_fetch_array($res)) {
 	 $lines[] = $row['line_record_name'];
 	 $line_uid[] = $row['line_record_uid'];
 	}
 	$nlines = count($lines);
-	echo "nlines = $nlines<br>";
 	
 	 if ($nexp ===1){
 	 $nheaderlines = 1;
@@ -1392,7 +1774,8 @@ selected lines</a>.<br>
 	 //			$sql = "SELECT avg(cast(pd.value AS DECIMAL(9,1))) as value,pd.phenotype_uid,tb.experiment_uid
 	 $sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid
 	 FROM tht_base as tb, phenotype_data as pd
-	 WHERE tb.line_record_uid  = $line_uid[$i]
+	 WHERE tb.experiment_uid IN ($experiments)
+	 AND tb.line_record_uid  = $line_uid[$i]
 	 AND pd.tht_base_uid = tb.tht_base_uid
 	 AND pd.phenotype_uid IN ($traits)
 	 GROUP BY tb.tht_base_uid, pd.phenotype_uid";
@@ -1411,6 +1794,126 @@ selected lines</a>.<br>
 	 }
 	 $outline .= implode($delimiter,$outarray)."\n";
 	 //// $firephp->log("outputline ".$i." ".$outline);
+	$output .= $outline;
+	
+	}
+	
+	return $output;
+	}
+	
+	/* Build trait download file for Tassel program interface */
+	private function type3_build_tassel_traits_download($traits, $subset)
+	{
+	 // $firephp = FirePHP::getInstance(true);
+	 $delimiter = "\t";
+	 $output = '';
+	 $outputheader1 = '';
+	 $outputheader2 = '';
+	 $outputheader3 = "";
+	
+	 //count number of traits and number of experiments
+	 $ntraits=substr_count($traits, ',')+1;
+	 $nexp=substr_count($experiments, ',')+1;
+	
+	 //$traits = explode(',', $traits);
+	 //$experiments = explode(',', $experiments);
+	
+	 // figure out which traits are at which location
+	 $selectedlines = implode(",", $_SESSION['selected_lines']);
+	 $sql = "SELECT DISTINCT e.trial_code, tb.experiment_uid, p.phenotypes_name,p.phenotype_uid
+	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
+	 WHERE
+	 e.experiment_uid = tb.experiment_uid
+	 AND tb.line_record_uid IN ($selectedlines)
+	 AND pd.tht_base_uid = tb.tht_base_uid
+	 AND p.phenotype_uid = pd.phenotype_uid
+	 AND pd.phenotype_uid IN ($traits)
+	 ORDER BY p.phenotype_uid,tb.experiment_uid";
+	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	 $ncols = mysql_num_rows($res);
+	 while($row = mysql_fetch_array($res)) {
+	 $outputheader2 .= str_replace(" ","_",$row['phenotypes_name']).$delimiter;
+	 $outputheader3 .= $row['trial_code'].$delimiter;
+	 $keys[] = $row['phenotype_uid'].$row['experiment_uid'];
+	}
+	 $nexp=$ncols;
+	 //$firephp->log("trait_location information ".$outputheader2."  ".$outputheader3);
+	 // $firephp->table('keys label ', $keys);
+	
+	 // dem 5jan11: If $subset="yes", use $_SESSION['selected_lines'].
+	 $intheselines = "";
+	 if ($subset == "yes" && count($_SESSION['selected_lines']) > 0) {
+	 $selectedlines = implode(",", $_SESSION['selected_lines']);
+	 $intheselines = " line_records.line_record_uid IN ($selectedlines)";
+	} else {
+	  $count = count($_SESSION['selected_lines']);
+	  echo "count selected lines = $count";
+	  echo "subset $subset";
+	  die("error in selected lines");
+	}
+	 // get a list of all line names in the selected datasets and experiments,
+	 // INCLUDING the check lines // AND tht_base.check_line IN ('no')
+	 $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid
+	 FROM line_records, tht_base
+	 WHERE
+	   $intheselines
+	   AND line_records.line_record_uid=tht_base.line_record_uid";
+	   $res = mysql_query($sql) or die(mysql_error() . "<br>type3 $sql");
+	   while($row = mysql_fetch_array($res)) {
+	   $lines[] = $row['line_record_name'];
+	   $line_uid[] = $row['line_record_uid'];
+	}
+	   $nlines = count($lines);
+	
+	   if ($nexp ===1){
+	   $nheaderlines = 1;
+	} else {
+	$nheaderlines = 2;
+	}
+	$outputheader1 = "$nlines".$delimiter."$ncols".$delimiter.$nheaderlines;
+	   //if (DEBUG>1) echo $outputheader1."\n".$outputheader2."\n".$outputheader3."\n";
+	   // $firephp->log("number traits and lines ".$outputheader1);
+	   if ($nexp ===1){
+	   $output = $outputheader1."\n".$outputheader2."\n";
+	   } else {
+	   $output = $outputheader1."\n".$outputheader2."\n".$outputheader3."\n";
+	}
+	
+	
+	// loop through all the lines in the file
+	for ($i=0;$i<$nlines;$i++) {
+	$outline = $lines[$i].$delimiter;
+	// get selected traits for this line in the selected experiments, change for multiple check lines
+	 /* $sql = "SELECT pd.phenotype_uid, pd.value, tb.experiment_uid
+	FROM tht_base as tb, phenotype_data as pd
+	WHERE
+	tb.line_record_uid =  $line_uid[$i]
+	AND pd.tht_base_uid = tb.tht_base_uid
+	AND pd.phenotype_uid IN ($traits)
+	ORDER BY pd.phenotype_uid,tb.experiment_uid";*/
+	// dem 8oct10: Don't round the data.
+	//			$sql = "SELECT avg(cast(pd.value AS DECIMAL(9,1))) as value,pd.phenotype_uid,tb.experiment_uid
+	$sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid
+	FROM tht_base as tb, phenotype_data as pd
+	WHERE tb.line_record_uid  = $line_uid[$i]
+	AND pd.tht_base_uid = tb.tht_base_uid
+	AND pd.phenotype_uid IN ($traits)
+	GROUP BY tb.tht_base_uid, pd.phenotype_uid";
+	
+	$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	//$firephp->log("sql ".$i." ".$sql);
+	$outarray = array_fill(0,$ncols,-999);
+	//// $firephp->table('outarray label values', $outarray);
+	//$outarray = array_fill_keys( $keys  , -999);
+	$outarray = array_combine($keys  , $outarray);
+	//// $firephp->table('outarray label ', $outarray);
+	while ($row = mysql_fetch_array($res)) {
+	$keyval = $row['phenotype_uid'].$row['experiment_uid'];
+	// $firephp->log("keyvals ".$keyval." ".$row['value']);
+	$outarray[$keyval]= $row['value'];
+	   }
+	$outline .= implode($delimiter,$outarray)."\n";
+	//// $firephp->log("outputline ".$i." ".$outline);
 	$output .= $outline;
 	
 	}
@@ -1591,7 +2094,7 @@ selected lines</a>.<br>
 		}
 		$nelem = count($marker_names);
 		if ($nelem == 0) {
-		   die("error - no genotype or marker data for this experiment, experiment_uid=$experiments");
+		   die("error - no genotype or marker data for this selection");
 		}
 		$marker_uid = implode(",",$marker_uid);
 		
