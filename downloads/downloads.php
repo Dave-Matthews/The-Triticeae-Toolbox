@@ -950,9 +950,16 @@ class Downloads
 	     $countLines = 0;
 	 }
 	 if (isset($_SESSION['phenotype'])) {
-	      $phenotype = $_SESSION['phenotype'];
+	     $phenotype = $_SESSION['phenotype'];
 	 } else {
 	     $phenotype = "";
+	 }
+	 if (isset($_SESSION['clicked_buttons'])) {
+	    $tmp = count($_SESSION['clicked_buttons']);
+	    $saved_session = $saved_session . ", $tmp markers";
+	    $markers = $_SESSION['clicked_buttons'];   
+	 } else {
+	     $markers = "";
 	 }
 	 if ($saved_session != "") {
 	     echo "current data selection = $saved_session<br>";
