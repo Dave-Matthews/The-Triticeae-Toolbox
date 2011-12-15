@@ -939,6 +939,15 @@ class Downloads
 	
 	private function step4_lines() {
 	$saved_session = "";
+	$message2 = "";
+	
+	if (isset($_SESSION['phenotype'])) {
+	    $phenotype = $_SESSION['phenotype'];
+	    $message2 = "download phenotype and genotype data";
+	} else {
+	    $phenotype = "";
+	    $message2 = " download genotype data";
+	}
 	 if (isset($_SESSION['selected_lines'])) {
 	     $countLines = count($_SESSION['selected_lines']);
 	     if ($saved_session == "") {
@@ -948,11 +957,6 @@ class Downloads
 	     }
 	 } else {
 	     $countLines = 0;
-	 }
-	 if (isset($_SESSION['phenotype'])) {
-	     $phenotype = $_SESSION['phenotype'];
-	 } else {
-	     $phenotype = "";
 	 }
 	 if (isset($_SESSION['clicked_buttons'])) {
 	    $tmp = count($_SESSION['clicked_buttons']);
@@ -973,7 +977,7 @@ class Downloads
 	       echo "<input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'</input>";
 	       echo "<input type='button' value='Download for Tassel V3' onclick='javascript:use_session_v3();'</input>";
 	     } else {
-	       "<br>Use existing selection to $message2<br>";
+	       echo "<br>Use existing selection to $message2<br>";
 	       echo "<input type='button' value='Download for Tassel' onclick='javascript:use_session();'</input>";
 	     }
 	  }
