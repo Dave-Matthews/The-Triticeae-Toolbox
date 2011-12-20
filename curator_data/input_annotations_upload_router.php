@@ -81,7 +81,7 @@ private function typeAnnotations()
 	<td colspan="2">
 	</td>
 	<td>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"><p><strong><li>Upload an Excel (.xls) File</li></strong></p></a>
+	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"><p><li>Upload an Excel (.xls) File</li></p></a>
 	</td>
 	</tr>
 	</table>

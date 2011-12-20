@@ -3,6 +3,7 @@
 // 09/01/2011 CBirkett	changed to new template and schema
 // 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
 
+define("DEBUG",0);
 require 'config.php';
 //require_once("../includes/common_import.inc");
 /*
@@ -936,8 +937,7 @@ private function typeAnnotationCheck()
 			{
 					$row = mysql_fetch_assoc($res);
 					$exp_id = $row['experiment_uid'];
-					/* if(is_null($experiment->beginweatherdate)) { */
-					if(!empty($experiment->beginweatherdate)) {
+					if(empty($experiment->beginweatherdate)) {
 						$sql_optional = '';
 					} else {
 						$sql_optional = "begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),";
@@ -979,8 +979,9 @@ private function typeAnnotationCheck()
 									latitude = '{$experiment->latitude}',
 									longitude = '{$experiment->longitude}',
 									$sql_optional
-									created_on = NOW()
+									updated_on = NOW()
 								WHERE experiment_uid = $exp_id";
+					if (DEBUG>2) {echo "update phenotypeexp SQL ".$sql."\n";}
 					mysql_query($sql) or die("
 <p><font color=red>MySQL error while updating <b>phenotype_experiment_info</b> table.</font>
 <p><b>Message:</b>
@@ -1021,7 +1022,7 @@ private function typeAnnotationCheck()
 					$exp_id = $row['experiment_uid'];
 					if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 
-					if(!empty($experiment->beginweatherdate)) {
+					if(empty($experiment->beginweatherdate)) {
 						$sql_optional = '';
 					} else {
 						$sql_optional = "begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),";
