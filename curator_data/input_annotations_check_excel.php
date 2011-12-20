@@ -3,6 +3,7 @@
 // 09/01/2011 CBirkett	changed to new template and schema
 // 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
 
+define("DEBUG",0);
 require 'config.php';
 //require_once("../includes/common_import.inc");
 /*
@@ -936,7 +937,7 @@ private function typeAnnotationCheck()
 			{
 					$row = mysql_fetch_assoc($res);
 					$exp_id = $row['experiment_uid'];
-					if(is_null($experiment->beginweatherdate)) {
+					if(empty($experiment->beginweatherdate)) {
 						$sql_optional = '';
 					} else {
 						$sql_optional = "begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),";
@@ -956,7 +957,7 @@ private function typeAnnotationCheck()
 									data_public_flag = '$data_public_flag',
 									created_on = NOW()
 								WHERE experiment_uid = $exp_id";
-					echo "update experiments<br>\n";
+					echo "Table <b>experiments</b> updated.<br>\n";
 					// echo $sql."<br>\n";
 					
 					mysql_query($sql) or die(mysql_error() . "<br>$sql");
@@ -978,12 +979,20 @@ private function typeAnnotationCheck()
 									latitude = '{$experiment->latitude}',
 									longitude = '{$experiment->longitude}',
 									$sql_optional
-									created_on = NOW()
+									updated_on = NOW()
 								WHERE experiment_uid = $exp_id";
-					echo "update phenotype_experiment_info<br>\n";
-					// echo "$sql<br>\n";
+					if (DEBUG>2) {echo "update phenotypeexp SQL ".$sql."\n";}
+					mysql_query($sql) or die("
+<p><font color=red>MySQL error while updating <b>phenotype_experiment_info</b> table.</font>
+<p><b>Message:</b>
+<br>". mysql_error() . "
+<p><b>Command:</b>
+<br>$sql
+<p><input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">
+");
+
+					echo "Table <b>phenotype_experiment_info</b> updated.<br>\n";
 					
-					mysql_query($sql) or die(mysql_error() . "<br>$sql");
 			} else {
 		
 					$sql = "
@@ -1001,7 +1010,7 @@ private function typeAnnotationCheck()
 							created_on = NOW()
 					";
 				
-					echo "insert into experiments<br>\n";
+					echo "New entry inserted into <b>experiments</b> table.<br>\n";
                                         //echo "$sql<br>\n";	
 					mysql_query($sql) or die(mysql_error() . "<br>$sql");
 					
@@ -1012,6 +1021,12 @@ private function typeAnnotationCheck()
 					$row = mysql_fetch_assoc($res);
 					$exp_id = $row['experiment_uid'];
 					if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
+
+					if(empty($experiment->beginweatherdate)) {
+						$sql_optional = '';
+					} else {
+						$sql_optional = "begin_weather_date = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'),";
+					}
 					$sql = "
 						insert into
 							phenotype_experiment_info
@@ -1034,9 +1049,16 @@ private function typeAnnotationCheck()
 							$sql_optional
 							created_on = NOW()
 					";
-					echo "insert into phenotype_experiment_info<br>\n";
-					mysql_query($sql) or die(mysql_error() . "<br>$sql");
-				
+					mysql_query($sql) or die("
+<p><font color=red>MySQL error while inserting into <b>phenotype_experiment_info</b> table.</font>
+<p><b>Message:</b>
+<br>". mysql_error() . "
+<p><b>Command:</b>
+<br>$sql
+<p><input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">
+");
+
+					echo "New entry inserted into <b>phenotype_experiment_info</b> table.<br>\n";
 			} 
 
 		}// end foreach
@@ -1044,7 +1066,7 @@ private function typeAnnotationCheck()
 		
 
 	
-	echo " <b>The Data is inserted/updated successfully </b>";
+	echo " <b>The Data was inserted or updated successfully </b>";
 	echo"<br/><br/>";
 	?>
 	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"> Go Back To Main Page </a>

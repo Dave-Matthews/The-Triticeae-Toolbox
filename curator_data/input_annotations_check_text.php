@@ -3,6 +3,7 @@
 // 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
 // 12/14/2010 JLee  Change to use curator bootstrap
 
+define("DEBUG",0);
 require 'config.php';
 //require_once("../includes/common_import.inc");
 /*
@@ -17,7 +18,9 @@ include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 //include($config['root_dir'] . 'curator_data/boot_test.php');
 //include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
 include($config['root_dir'] . 'curator_data/lineuid.php');
-require_once("../lib/Excel/reader.php"); // Microsoft Excel library
+
+require_once("../lib/Excel/excel_reader2.php"); // Microsoft Excel library
+ini_set(auto_detect_line_endings,1);
 
 connect();
 loginTest();
@@ -172,17 +175,20 @@ private function typeAnnotationCheck()
 	 $header = fgetcsv($handle, 0, "\t");
 
         // Set up column indices; all columns are required
-        $capyear_idx = implode(find("CAP Year", $header),"");
-        $bp_idx =  implode(find("Breeding Program", $header),"");
+        $crop_idx = implode(find("Crop", $header),"");
+        $bp_idx =  implode(find("Breeding Program Code", $header),"");
         $location_idx = implode(find("Location", $header),"");
-        $latlong_idx = implode(find("Lat/Long of field", $header),"");
+        $lat_idx = implode(find("Latitude of field", $header),"");
+        $long_idx = implode(find("Longitude of field", $header),"");
         $collab_idx = implode(find("Collaborator", $header),"");
         $collabcode_idx = implode(find("Collaborator Code", $header),"");
         //$test_idx = implode(find("Testing", $header),"");
-        $experiment_idx = implode(find("Experiment", $header),"");
-        $descexperiment_idx = implode(find("Descriptive Name of Experiment", $header),"");
+        $experiment_idx = implode(find("Experiment Code", $header),"");
+        $descexperiment_idx = implode(find("Experiment Description", $header),"");
         $trialcode_idx = implode(find("Trial Code", $header),"");
 				$planting_date_idx = implode(find("Planting date", $header),"");
+				$harvest_date_idx = implode(find("Harvest date", $header),"");
+				$weather_date_idx = implode(find("Begin weather date", $header),"");
 				$seeding_rate_idx = implode(find("Seeding rate", $header),"");
 				$experimental_design_idx = implode(find("Experimental design", $header),"");
 				$num_of_entries_idx = implode(find("Number of entries", $header),"");
@@ -190,35 +196,34 @@ private function typeAnnotationCheck()
 				$plot_size_idx = implode(find("Plot size", $header),"");
 				$harvested_area_idx = implode(find("Harvested area", $header),"");
 				$irrigation_idx = implode(find("Irrigation", $header),"");
-				$harvest_date_idx = implode(find("Harvest date", $header),"");
 				$other_remarks_idx = implode(find("Other remarks", $header),"");
 				
 				$collab_idx = substr($collab_idx,0,1);
 				$experiment_idx = substr($experiment_idx,0,1);
-			//	echo "cap year". $capyear_idx;
-				
-		/*		echo " indexes". "plant date".$planting_date_idx."seed rate". $seeding_rate_idx . "exp design" . $experimental_design_idx
+				if (DEBUG>2) {
+				  echo " indexes". "plant date".$planting_date_idx. "harvest date". $harvest_date_idx . "seed rate". $seeding_rate_idx . "exp design" . $experimental_design_idx
 					. "num of entries" . $num_of_entries_idx . "num of repli" . $num_of_replications_idx . "plot" . $plot_size_idx .
-					"har area" . $harvested_area_idx . "irri" . $irrigation_idx . "harv date" . $harvest_date_idx . "other" . $other_remarks_idx;
-		*/
+					"har area" . $harvested_area_idx . "irri" . $irrigation_idx . "harv date" . $harvest_date_idx . "weath date" . $weather_date_idx . "other" . $other_remarks_idx;
+				}
 	
 		//  Step 2. Read in data, a line at a time  
         $run = 0;
         while (($data = fgetcsv($handle, 0, "\t")) !== FALSE) {
-            if ($capyear_idx!==FALSE) 
+            // echo "reading in new line<br>";
+            if ($harvest_date_idx!==FALSE) 
 						{
 						/* check if year is  missing */
-						$cap_year = trim($data[$capyear_idx]);
+						$cap_year = trim($data[$harvest_date_idx]);
 						
 						if(!empty($cap_year))
 						{
-						
-						$capyear[] = trim($data[$capyear_idx]);
+						  preg_match("/[0-9]+$/",$data[$harvest_date_idx],$matches);
+						$capyear[] = $matches[0];
 						}
 						
 						else
 						{
-							echo " Year is missing. Please enter the year and upload again"."<br/>";
+							echo " Year is missing from Harvest Date. Please enter the year and upload again"."<br/>";
 							exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 						}
 						
@@ -229,9 +234,11 @@ private function typeAnnotationCheck()
             $bp_data[] = $bp;
             $location = trim($data[$location_idx]);//location
             $location_data[] = $location;
-            $latlong = trim($data[$latlong_idx]);//latlong
-            $latlong_data[] = $latlong;
-            
+            $lat_data[] = trim($data[$lat_idx]);
+            $long_data[] = trim($data[$long_idx]);
+            $weather_date[] = trim($data[$weather_date_idx]);
+            $planting_date[] = trim($data[$planting_date_idx]);
+            $harvest_date[] = trim($data[$harvest_date_idx]);
             $collab[] = trim($data[$collab_idx]);//collabarator
             /* checking for a valid cap code */
             
@@ -313,7 +320,6 @@ private function typeAnnotationCheck()
 						
 						/* reading in all other remaing values */
 						            
-            $plantingDate[] = trim($data[$planting_date_idx]);//planting date
            	$seedingRate[] = trim($data[$seeding_rate_idx]);//seeding Rate
            	$expDesign[] = trim($data[$experimental_design_idx]);//Experimental Design
 
@@ -344,7 +350,6 @@ private function typeAnnotationCheck()
             $plotSize[] = trim($data[$plot_size_idx]);//Plot Size
             $harvestArea[] = trim($data[$harvested_area_idx]);//Harvested Area
             $irrigation[] = trim($data[$irrigation_idx]);//Irrigation
-            $harvestDate[] = trim($data[$harvest_date_idx]);//Harvest Date
             $otherRemarks[] = trim($data[$other_remarks_idx]);//Other Remarks
             
           } /* end of while*/  
@@ -359,10 +364,11 @@ private function typeAnnotationCheck()
 		<table >
 		<thead>
 	<tr>
-	<th >CAP Year</th>
-	<th >Breeding Program(s) </th>
+	<th> Year </th>
+	<th> Breeding Program(s) </th>
 	<th >Location </th>
-	<th  >Lat/Long of field </th>
+	<th  >Latitude of field </th>
+	<th> Longitude of field </th>
 	<th  >Collaborator </th>
 	<th >Collaborator Code </th>
 	<th  >Experiment </th>
@@ -409,7 +415,12 @@ private function typeAnnotationCheck()
 			</td> 
 			<td >
 			<? 
-			$newtext = wordwrap($latlong_data[$i], 6, "\n", true);
+			$newtext = wordwrap($lat_data[$i], 6, "\n", true);
+			echo $newtext ?>
+			</td> 
+			<td >
+			<? 
+			$newtext = wordwrap($long_data[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			<td >
@@ -440,7 +451,7 @@ private function typeAnnotationCheck()
 		
 			<td >
 			<? 
-			$newtext = wordwrap($plantingDate[$i], 6, "\n", true);
+			$newtext = wordwrap($planting_date[$i], 10, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
@@ -488,7 +499,7 @@ private function typeAnnotationCheck()
 			
 			<td >
 			<? 
-			$newtext = wordwrap($harvestDate[$i], 6, "\n", true);
+			$newtext = wordwrap($harvest_date[$i], 10, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
@@ -507,8 +518,9 @@ private function typeAnnotationCheck()
 			
 		
 		
-		<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $annotfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $data_public_flag?>' )"/>
-    <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
+		<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $annotfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $data_public_flag?>' )">
+        <input type="Button" value="Cancel" onclick="history.go(-1);">
+        
 	
 		<?php
 			
@@ -545,10 +557,11 @@ private function typeAnnotationCheck()
         $header = fgetcsv($handle, 0, "\t");
 
         // Set up column indices; all columns are required
-        $capyear_idx = implode(find("CAP Year", $header),"");
+        
         $bp_idx =  implode(find("Breeding_Program", $header),"");
         $location_idx = implode(find("Location", $header),"");
-        $latlong_idx = implode(find("Lat/Long of field", $header),"");
+        $lat_idx = implode(find("Latitude of field", $header),"");
+        $long_idx = implode(find("Longitude of field", $header),"");
         $collab_idx = implode(find("Collaborator", $header),"");
         $collabcode_idx = implode(find("Collaborator Code", $header),"");
         $test_idx = implode(find("Testing", $header),"");
@@ -556,6 +569,8 @@ private function typeAnnotationCheck()
         $descexperiment_idx = implode(find("Descriptive Name of Experiment", $header),"");
         $trialcode_idx = implode(find("Trial Code", $header),"");
 				$planting_date_idx = implode(find("Planting date", $header),"");
+				$harvest_date_idx = implode(find("Harvest date", $header),"");
+				$weather_date_idx = implode(find("Begin weather date", $header),"");
 				$seeding_rate_idx = implode(find("Seeding rate", $header),"");
 				$experimental_design_idx = implode(find("Experimental design", $header),"");
 				$num_of_entries_idx = implode(find("Number of entries", $header),"");
@@ -570,24 +585,24 @@ private function typeAnnotationCheck()
 				$experiment_idx = substr($experiment_idx,0,1);
 	                //	echo "exp short". $experiment_idx . "collab code" . $collabcode_idx;
 				
-/*	echo " indexes". "plant date".$planting_date_idx."seed rate". $seeding_rate_idx . "exp design" . $experimental_design_idx
+        /* echo " indexes". "plant date".$planting_date_idx."seed rate". $seeding_rate_idx . "exp design" . $experimental_design_idx
 					. "num of entries" . $num_of_entries_idx . "num of repli" . $num_of_replications_idx . "plot" . $plot_size_idx .
 					"har area" . $harvested_area_idx . "irri" . $irrigation_idx . "harv date" . $harvest_date_idx . "other" . $other_remarks_idx;
-	*/
+        */
 	
 		//  Step 2. Read in data, a line at a time  
         $run = 0;
         while (($data = fgetcsv($handle, 0, "\t")) !== FALSE) 
 				{
-            if ($capyear_idx!==FALSE) 
+            if ($harvest_date_idx!==FALSE) 
 						{
 						/* check if year is  missing */
-						$cap_year = trim($data[$capyear_idx]);
+						$cap_year = trim($data[$harvest_date_idx]);
 						
 						if(!empty($cap_year))
 						{
-						
-						$capyear[] = trim($data[$capyear_idx]);
+						 preg_match("/[0-9]+$/",$data[$harvest_date_idx],$matches);
+						 $capyear[] = $matches[0];
 						}
 						
 						else
@@ -596,6 +611,8 @@ private function typeAnnotationCheck()
 							exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 						}
 						
+						} else {
+						    echo "bad line<br>";
 						}
             
             
@@ -603,8 +620,11 @@ private function typeAnnotationCheck()
             $bp_data[] = $bp;
             $location = trim($data[$location_idx]);//location
             $location_data[] = $location;
-            $latlong = trim($data[$latlong_idx]);//latlong
-            $latlong_data[] = $latlong;
+            $lat_data[] = trim($data[$lat_idx]);
+            $long_data[] = trim($data[$long_idx]);
+            $weather_date[] = trim($data[$weather_date_idx]);
+            $planting_date[] = trim($data[$planting_date_idx]);
+            $harvest_date[] = trim($data[$harvest_date_idx]);
             
             $collab[] = trim($data[$collab_idx]);//collabarator
             /* checking for a valid cap code */
@@ -682,7 +702,6 @@ private function typeAnnotationCheck()
 						
 						/* reading in all other remaing values */
 						            
-            $plantingDate[] = trim($data[$planting_date_idx]);//planting date
            	$seedingRate[] = trim($data[$seeding_rate_idx]);//seeding Rate
            	$expDesign[] = trim($data[$experimental_design_idx]);//Experimental Design
            	
@@ -711,7 +730,6 @@ private function typeAnnotationCheck()
             $plotSize[] = trim($data[$plot_size_idx]);//Plot Size
             $harvestArea[] = trim($data[$harvested_area_idx]);//Harvested Area
             $irrigation[] = trim($data[$irrigation_idx]);//Irrigation
-            $harvestDate[] = trim($data[$harvest_date_idx]);//Harvest Date
             $otherRemarks[] = trim($data[$other_remarks_idx]);//Other Remarks
             
           } /* end of while*/ 
@@ -726,18 +744,16 @@ private function typeAnnotationCheck()
 						$trialcode = mysql_real_escape_string(trim($trialcode_data[$i]));
 						$exp_short = mysql_real_escape_string(trim($experiment[$i]));
 						$location = addslashes($location_data[$i]);
-						$latlong = mysql_real_escape_string($latlong_data[$i]);
+						$latitude = mysql_real_escape_string($lat_data[$i]);
+						$longitude = mysql_real_escape_string($long_data[$i]);
 						$collaborator = mysql_real_escape_string($collab[$i]);
 						
 					
-						$teststr= addcslashes(trim($plantingDate[$i]),"\0..\37!@\177..\377");
-							
+						$teststr= addcslashes(trim($planting_date[$i]),"\0..\37!@\177..\377");
 						if (!empty($teststr))
 						{
 							$plantingdate = $teststr;
-						} 
-						else
-						{
+						} else {
 							$plantingdate = '';
 						}
 						$descExpt = mysql_real_escape_string(trim($descExperiment[$i]));
@@ -748,20 +764,25 @@ private function typeAnnotationCheck()
 							// Harvest Date
 							// convert Microsoft Excel timestamp to Unix timestamp
 						
-						$teststr= addcslashes(trim($harvestDate[$i]),"\0..\37!@\177..\377");
-						
-							//$teststr= addcslashes($harvestDate[$i]);
-							
-							
-							if (!empty($teststr))
-							{
-								$harvestdate = $teststr;
-							} 
-							else
-							{
-								$harvestdate = '';
-							}
+						$teststr= addcslashes(trim($harvest_date[$i]),"\0..\37!@\177..\377");
+						if (!empty($teststr))
+						{
+							$harvestdate = $teststr;
+						} else {
+							$harvestdate = '';
+						}
+						$teststr= addcslashes(trim($weather_date[$i]),"\0..\37!@\177..\377");
+                                                if (!empty($teststr))
+                                                {       
+                                                        $beginweatherdate = $teststr;
+                                                } else {
+							                            $beginweatherdate = "";
+                                                }       
+
 					// Harvest Area
+					if (DEBUG>2) {
+					   echo "beginw weather $beginweatherdate array $weather_date[$i]<br>";
+					}
 					$harvestedarea = mysql_real_escape_string($harvestArea[$i]);
 					// irrigation
 					if (FALSE !== stripos($irrigation[$i], "yes"))
@@ -800,6 +821,32 @@ private function typeAnnotationCheck()
 						$row = mysql_fetch_assoc($res);
 						$exptype_id = $row['experiment_type_uid'];
 						
+					// get experiment_set_uid
+						if (preg_match("/[A-Za-z0-9]+/",$exp_short)) {
+						 $sql = "SELECT experiment_set_uid FROM experiment_set WHERE experiment_set_name = '$exp_short'";
+						 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+						 if (mysql_num_rows($res)==0) //no, experiment not found, so isert
+						 {
+						  $sql = "insert into experiment_set set
+						  experiment_set_name = '$exp_short'";
+						  echo "SQL ".$sql."<br>\n";
+						  mysql_query($sql) or die(mysql_error());
+						  $sql = "select experiment_set_uid from experiment_set where experiment_set_name = '$exp_short'";
+						  echo "SQL ".$sql."<br>\n";
+						  $res = mysql_query($sql) or die(mysql_error());
+						  $row = mysql_fetch_assoc($res);
+						  $experiment_set_uid = $row['experiment_set_uid'];
+						  print "experiment found $experiment_set_uid<br>\n";
+						  } else {
+						  $row = mysql_fetch_assoc($res);
+						  $experiment_set_uid = $row['experiment_set_uid'];
+						  print "experiment found $exp_short<br>$sql<br>\n";
+						  }
+						  } else {
+						  $experiment_set_uid = "NULL";
+						}
+						//print "$sql<br>\n";
+						
 						// Insert or update experiment table data
 						// First check if this trial code is in the database, if yes, then update all fields;
 						// if no then insert into table
@@ -810,6 +857,12 @@ private function typeAnnotationCheck()
 						{
 								$row = mysql_fetch_assoc($res);
 								$exp_id = $row['experiment_uid'];
+								if(empty($weather_date[$i])) {
+                                                			$sql_optional = '';
+                                        			} else {
+                                                			$sql_optional = "begin_weather_date = str_to_date('$weather_date[$i]','%m/%d/%Y'),";
+                                        			}
+
 								if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 					
 								//update experiment information
@@ -817,6 +870,7 @@ private function typeAnnotationCheck()
 											SET
 												experiment_type_uid = $exptype_id,
 												CAPdata_programs_uid = $capdata_uid,
+												experiment_set_uid = $experiment_set_uid,
 												experiment_short_name = '{$exp_short}',
 												experiment_desc_name = '{$descExpt}',
 												trial_code = '{$trialcode}',
@@ -824,26 +878,28 @@ private function typeAnnotationCheck()
 												data_public_flag = '$data_public_flag',
 												created_on = NOW()
 											WHERE experiment_uid = $exp_id";
-								if (DEBUG>2) {echo "update exp SQL ".$sql."\n";}
+								echo "Table <b>experiments</b> updated.<br>\n";
 								
 								mysql_query($sql) or die(mysql_error() . "<br>$sql");
 								//update phenotype experiment information
 								$sql = " UPDATE phenotype_experiment_info
 											set
 												collaborator = '{$collaborator}',
-												planting_date = '{$plantingdate}',
+												planting_date = str_to_date('{$plantingdate}','%m/%d/%Y'),
 												seeding_rate = '{$seedingRate[$i]}',
 												experiment_design = '{$exptDesign}',
 												number_replications = '{$numReplications}',
 												number_entries = '{$numEntries}',
 												plot_size = '{$plotSize}',
 												harvest_area = '{$harvestedarea}',
-												harvest_date = '{$harvestdate}',
+												harvest_date = str_to_date('{$harvestdate}','%m/%d/%Y'),
 												irrigation = '{$irrigation}',
 												other_remarks = '{$otherremarks}',
 												location = '{$location}',
-												latitude_longitude = '{$latlong}',
-												created_on = NOW()
+												latitude = '{$latitude}',
+									            longitude = '{$longitude}',
+												$sql_optional
+												updated_on = NOW()
 											WHERE experiment_uid = $exp_id";
 								if (DEBUG>2) {echo "update phenotypeexp SQL ".$sql."\n";}
 								
@@ -856,6 +912,7 @@ private function typeAnnotationCheck()
 									set
 												experiment_type_uid = $exptype_id,
 												CAPdata_programs_uid = $capdata_uid,
+												experiment_set_uid = $experiment_set_uid,
 												experiment_short_name = '{$exp_short}',
 												experiment_desc_name = '{$descExpt}',
 												trial_code = '{$trialcode}',
@@ -880,18 +937,20 @@ private function typeAnnotationCheck()
 									set
 										experiment_uid = $exp_id,
 										collaborator = '{$collaborator}',
-										planting_date = '{$plantingdate}',
+										planting_date = str_to_date('{$plantingdate}','%m/%d/%Y'),
 										seeding_rate = '{$seedingRate[$i]}',
 										experiment_design = '{$exptDesign}',
 										number_replications = '{$numReplications}',
 										number_entries = '{$numEntries}',
 										plot_size = '{$plotSize}',
 										harvest_area = '{$harvestedarea}',
-										harvest_date = '{$harvestdate}',
+										harvest_date = str_to_date('{$harvestdate}','%m/%d/%Y'),
 										irrigation = '{$irrigation}',
 										other_remarks = '{$otherremarks}',
 										location = '{$location}',
-										latitude_longitude = '{$latlong}',
+										latitude = '{$latitude}',
+									    longitude = '{$longitude}',
+										$sql_optional
 										created_on = NOW()
 								";
 							//	if (DEBUG>2) {echo "insert phenotype exp SQL ".$sql."\n";}
@@ -925,5 +984,4 @@ private function typeAnnotationCheck()
 
 
 } /* end of class */
-?>
 
