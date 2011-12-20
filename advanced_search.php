@@ -37,7 +37,7 @@ connect();
                                                 where A.line_record_uid=B.line_record_uid and B.tht_base_uid=C.tht_base_uid and
                                                 C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid
           $marker_instr $in_these_lines";
-          $result=mysql_query($query_str) or die(mysql_error());
+          $result=mysql_query($query_str) or die(mysql_error() . $query_str);
 	  //print $query_str;
 	  $lines = array();
           $line_uids=array();
@@ -114,10 +114,12 @@ connect();
 		print "<h2>Results of Select Haplotypes</h2>";
 			  $marker_list = "";
 			  foreach($_SESSION['clicked_buttons'] as $marker) {
+			    if (preg_match('/[A-Za-z0-9]+/',$marker)) {
 			    if ($marker_list == "") {
 				$marker_list = $marker;
 			    } else {
 			      $marker_list = $marker_list . ",$marker";
+			    }
 			    }
 			  }
 			  //$marker_instr=" and D.marker_uid in (".implode("," , array_keys($markers)).")";
@@ -129,7 +131,7 @@ connect();
 						C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid
                           $marker_instr $in_these_lines";
 			  //print $query_str;
-			  $result=mysql_query($query_str) or die(mysql_error());
+			  $result=mysql_query($query_str) or die(mysql_error() . $query_str);
 			  //print "Number of rows = ". mysql_num_rows($result) . "\n";
 			  $lines = array();
 			  $line_uids=array();
@@ -323,7 +325,7 @@ connect();
 				C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid and
 				A.line_record_uid in (".$lines_instr.")";
 
-		$result=mysql_query($query_str);
+		$result=mysql_query($query_str) or die($sql);
 		$lines = array();
 		$line_uids=array();
 		$line_names=array();
@@ -415,33 +417,37 @@ connect();
  				    $j++;
 				  }
                                   $num_alleles[$i] = $j;
+				  $i++;
 				}
 				else {
-					echo "No Data Available";
+					echo "No Data Available $row[marker_name]";
 				}
 				echo "</td>\n";
-				$i++;
 			}
 			$num_markers = $i;
-			// calculate the number of times to call combinations function
-                        $i = 0;
-			$total = 1;
-			while ($i < ($num_markers - 2)) {
-                          $total = $total * 4;
-			  $i++;
-			}
-                        echo "<th>Number Lines\n";
-			$i = 0;
-			$current = $num_markers - 1;
-			$current2 = $num_markers - 3;
-			while ($i < $total) {
-			  combinations($num_markers,$marker_idx,$marker_list,$cross,$current);
-			  $marker_idx[$current2]++;
-			  if ($marker_idx[$current2] == 4) {
-                            $marker_idx[$current2] = 0;
-			    $marker_idx[$current2-1]++;
-                          }
-			  $i++;
+			if ($num_markers > 0) {
+			  // calculate the number of times to call combinations function
+                          $i = 0;
+			  $total = 1;
+			  while ($i < ($num_markers - 2)) {
+                            $total = $total * 4;
+			    $i++;
+		       	  }
+                          echo "<th>Number Lines\n";
+			  $i = 0;
+			  $current = $num_markers - 1;
+			  $current2 = $num_markers - 3;
+			  while ($i < $total) {
+			    combinations($num_markers,$marker_idx,$marker_list,$cross,$current);
+			    $marker_idx[$current2]++;
+			    if ($marker_idx[$current2] == 4) {
+                              $marker_idx[$current2] = 0;
+			      $marker_idx[$current2-1]++;
+                            }
+			    $i++;
+			  }
+			} else {
+			  echo "<th>The current marker selection does not have genotyping data";
 			}
 		}
 		else {
@@ -466,7 +472,7 @@ connect();
 	<tbody>
 	<tr class="nohover">
 		<td>
-			<select name='phenotypecategory' size=10 onfocus="DispPhenoSel(this.value, 'Category')" onchange="DispPhenoSel(this.value, 'Category')">;
+			<select name='phenotypecategory' size=10 onfocus="DispPhenoSel(this.value, 'Category')" onchange="DispPhenoSel(this.value, 'Category')">
 			<?php showTableOptions("phenotype_category"); ?>
 			</select>
 		</td>
