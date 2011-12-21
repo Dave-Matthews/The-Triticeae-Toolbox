@@ -33,7 +33,8 @@
 
 			$func = "show_" . $_REQUEST['table'];
 
-			// Is there a custom function for that table, see examples above
+			// Is there a custom function for that table in includes/general.inc
+                        // or includes/pedigree.inc?  See examples above.
 			if(function_exists($func))
 				call_user_func($func, $row[$pkey]);
 	
