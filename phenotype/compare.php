@@ -29,7 +29,6 @@ if (isset($_POST['deselLines'])) {
   $_SESSION['selected_lines']=$selected_lines;
 }
 
-
   if(isset($_POST['phenotypecategory']) || isset($_GET['phenotype'])) {	//form has been submitted
 
     /* Deal with sorting */
@@ -184,9 +183,9 @@ $in_these_trials
 	  //echo "<br /><form action='".$config['base_url']."pedigree/pedigree_markers.php'><input type='submit' value='View Common Marker Values' /></form>";
 	}
 	else
-	  echo "No records found";
+	  echo "<b>No records found.</b><br>";
 
-	echo "</div></div>";
+	echo "<br></div></div>";
   }
 ?>
 
@@ -255,7 +254,7 @@ if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0
     $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
     while ($row=mysql_fetch_assoc($result)) {
       $selval=$row['line_record_name'];
-      print "<option value=\"$lineuid\" selected>$selval</option>\n";
+      print "<option value=\"$lineuid\">$selval</option>\n";
     }
   }
   print "</select>";
