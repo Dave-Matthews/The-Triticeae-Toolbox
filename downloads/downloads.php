@@ -262,7 +262,7 @@ class Downloads
                 }
                 ?>
                 </div>
-                <script type="text/javascript" src="/cbirkett/t3/wheatplus/downloads/downloads.js"></script>
+                <script type="text/javascript" src="downloads/downloads.js"></script>
                 <?php
         }
 
