@@ -8,7 +8,7 @@ connect();
 
 print "<div class='boxContent'>";
 $selectedcount = count($_SESSION['selected_lines']);
-echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
+echo "<h3><font color=blue>Currently Selected Lines</font>: $selectedcount</h3>";
 if ($selectedcount != 0) {
   print "<textarea rows = 9>";
   foreach ($_SESSION['selected_lines'] as $lineuid) {

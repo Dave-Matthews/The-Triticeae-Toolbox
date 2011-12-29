@@ -2,7 +2,8 @@
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8">
+<!-- "chrome=1"is required for X3DOM (WebGL) function in IE with Flash or Chrome Frame. -->
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8,chrome=1">
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
   <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
@@ -111,6 +112,7 @@ EOD;
   <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analysis</a>
   <ul>
   <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Find lines like my lines of interest">Cluster Lines by Genotype</a>
+  <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Find lines like my lines of interest">Cluster Lines by Genotype, 3D</a>
   <li><a href="<?php echo $config['base_url']; ?>advanced_search.php" title="Alleles for selected markers">Select Lines by Haplotypes</a>
   <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
 <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
@@ -163,54 +165,43 @@ EOD;
   <?php endif ?>
 
       <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
+  <li>
+    <a title="<?php echo $lang["desc_sc5"]; ?>">
+      Database
+    </a>
+    <ul>
       <li>
-	 <a title="<?php echo $lang["desc_sc5"]; ?>">
-	 Database
-	 </a>
-	 <ul>
-	 <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
-	 <li>
-	    <a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">
-	    Table Status
-	    </a>
-<!--	  	    <li>
-	    <a href="<?php echo $config['base_url']; ?>dbtest/myadmin/" title="Full Database Administration">
-	    Full Database Administration
-	    </a>
--->
-	  	    <?php endif; ?>
-<?php if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
-    <li>
-       <a href="<?php echo $config['base_url']; ?>dbtest/backupDB.php" title="Full Database Backup">
-       Full Database Backup
-       </a>
-            <li>
-       <a href="<?php echo $config['base_url']; ?>login/input_gateway.php" title="Data Input Gateway">Data Input Gateway</a></li>
-       <?php endif; ?>
-<?php if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
-    <li>
-       <a href="<?php echo $config['base_url']; ?>login/export_gateway.php" title="Data export Gateway">
-       Data export Gateway
-       </a>
-            <?php endif; ?>
-<?php if( authenticate( array(USER_TYPE_ADMINISTRATOR ) ) ): ?>
-    <li>
-       <a href="<?php echo $config['base_url']; ?>login/cleanup_temporary_dir.php" title="Clean up temporary files">
-       Clean up temporary files
-       </a>
-            <?php endif; ?>
-</ul>
-</li>
+	<a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">
+	  Table Status
+	</a>
+      <li>
+	<a href="<?php echo $config['base_url']; ?>dbtest/backupDB.php" title="Full Database Backup">
+	  Full Database Backup
+	</a>
+      <li>
+	<a href="<?php echo $config['base_url']; ?>login/input_gateway.php" title="Data Input Gateway">
+	  Data Input Gateway</a></li>
+      <li>
+	<a href="<?php echo $config['base_url']; ?>login/export_gateway.php" title="Data Export Gateway">
+	  Data Export Gateway
+	</a>
+      <li>
+	<a href="<?php echo $config['base_url']; ?>login/cleanup_temporary_dir.php" title="Clean up temporary files">
+	  Clean up temporary files
+	</a>
+	<a href="http://thehordeumtoolbox.org/webalizer/" title="Webalizer">
+	  Usage Statistics
+	</a>
+    </ul>
+  </li>
 <?php endif; ?>
 			
 			
 </ul>
 </div>
 <div id="quicklinks" style="top:141px">
-  <h2>
-  Quick Links
-  </h2>
-		<ul>
+  <h2>Quick Links </h2>
+  <ul>
   <!--  <li>
   <a href="">Home</a>
   -->
