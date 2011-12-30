@@ -187,7 +187,8 @@ print "<tr><td>Total:</td><td>$total</td></tr>";
 print "</table>";
 print "<p>Select the clusters you want to use. ";
 print "<input type = 'hidden' name = 'time' value = $time>";
-print "<input type=submit value='Re-cluster'>";
+print "<input type=submit value='Re-cluster'> in ";
+print "<input type=text name='clusters' value='5' size='1'> clusters";
 print "</form>";
 
 print "<p><hr><p>";

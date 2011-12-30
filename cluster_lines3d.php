@@ -40,6 +40,8 @@ if (isset($_POST['mycluster'])) {
 
 // If only a few lines are selected, reduce the suggested number of clusters.
 $clusters = 5;
+if (isset($_POST['clusters'])) 
+  $clusters = $_POST['clusters'];
 if (isset($_SESSION['selected_lines'])) {
   $linecount = count($_SESSION['selected_lines']);
   $clusters = min($clusters, $linecount - 1);
