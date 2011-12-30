@@ -172,9 +172,9 @@ for ($i=0; $i<count($clustInfo); $i++) {
 
 // Modify yellow a bit to show up better in text.
 $color = array('black','red','green','blue','cyan','magenta','orange','#cccc00');
+print "<form action='cluster_lines3d.php' method='POST'>";
 print "<table width=200 style='background-image: none; font-weight: bold;'>";
 print "<thead><tr><th>&nbsp;</th><th>Cluster</th><th>Lines</th></tr></thead>";
-print "<form action='cluster_lines3d.php' method='GET'>";
 for ($i=1; $i<count($clustsize)+1; $i++) {
   $total = $total + $clustsize[$i];
   print "<tr style='color:".$color[$i-1]."';'>";
@@ -185,11 +185,10 @@ for ($i=1; $i<count($clustsize)+1; $i++) {
  }
 print "<tr><td>Total:</td><td>$total</td></tr>";
 print "</table>";
-
-
 print "<p>Select the clusters you want to use. ";
 print "<input type = 'hidden' name = 'time' value = $time>";
-print "<input type=submit value='Re-cluster'>";
+print "<input type=submit value='Re-cluster'> in ";
+print "<input type=text name='clusters' value='5' size='1'> clusters";
 print "</form>";
 
 print "<p><hr><p>";
