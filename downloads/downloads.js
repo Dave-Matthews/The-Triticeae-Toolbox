@@ -1,4 +1,4 @@
-var php_self = "downloads/downloads.php";
+var php_self = document.location;
 var breeding_programs_str = "";
 var years_str = "";
 var lines_str = "";
@@ -6,9 +6,10 @@ var experiments_str = "";
 var experiments_loaded = false;
 var traits_loaded = false;
 var markers_loaded = false;
+var select1_str = "";
 
 var markerids = null;
-var selmarkerids = new Array();
+var selmarkerids = [];
 
 var markers_loading = false;
 var traits_loading = false;
@@ -26,46 +27,6 @@ function use_normal() {
         }
     });
 }
-            
-function update_select1(options) {
-    select1_str = "";
-    breeding_programs_str = "";
-    experiments_str = "";
-    $A(options).each(function(select1) {
-        if (select1.selected) {
-            select1_str = select1.value;
-        }
-    });
-    if (select1_str == "BreedingProgram")
-        load_breedprog();
-    if (select1_str == "Years")
-        load_yearprog();
-    if (select1_str == "Lines") {
-        load_lines();
-        load_lines2();
-    }
-    if (select1_str == "Markers")
-        load_markers_select();
-    if (select1_str == "Phenotypes")
-        load_phenotypes();
-}	
-
-function update_lines(options) {
-    load_lines();
-}
-
-function update_line_programs(options) {
-    line_programs_str = "";
-    experiments_str = "";
-    $A(options).each(
-            function(breeding_program) {
-                if (line_program.selected) {
-                    line_programs_str += (line_programs_str == "" ? "" : ",") + line_program.value;
-                }
-            });
-    if (line_programs_str != "")
-        load_lines();
-}
 
 function update_breeding_programs(options) {
     breeding_programs_str = "";
@@ -73,8 +34,7 @@ function update_breeding_programs(options) {
     $A(options).each(
             function(breeding_program) {
                 if (breeding_program.selected) {
-                    breeding_programs_str += (breeding_programs_str == "" ? ""
-                            : ",") + breeding_program.value;
+                    breeding_programs_str += (breeding_programs_str == "" ? "" : ",") + breeding_program.value;
                 }
             });
     if (breeding_programs_str != "" && years_str != "")
@@ -172,7 +132,7 @@ function update_phenotype_lines(options) {
 
 			function load_phenotypes() {
 				$('step11').hide();
-				url=php_self + "?function=step1phenotype&bp=" + breeding_programs_str + "&yrs=" + years_str;
+				var url=php_self + "?function=step1phenotype&bp=" + breeding_programs_str + "&yrs=" + years_str;
 				document.title='Loading Step1...';
 					new Ajax.Updater($('step11'),url,
 	                    { 
@@ -189,7 +149,7 @@ function update_phenotype_lines(options) {
 
 			function load_yearprog() {
 			    $('step11').hide();
-                url=php_self + "?function=step1yearprog&bp=" + breeding_programs_str + "&yrs=" + years_str;
+                var url=php_self + "?function=step1yearprog&bp=" + breeding_programs_str + "&yrs=" + years_str;
                 document.title='Loading Step1...';
                     new Ajax.Updater($('step11'),url,
                         { 
@@ -206,7 +166,7 @@ function update_phenotype_lines(options) {
 			
 			function load_phenotypes2() {
                                 $('step2').hide();
-                                url=php_self + "?function=step2phenotype&pc=" + phenotype_categories_str + "&yrs=" + years_str;
+                                var url=php_self + "?function=step2phenotype&pc=" + phenotype_categories_str + "&yrs=" + years_str;
                                 document.title='Loading Step1...';
                                         new Ajax.Updater($('step2'),url,
                             { 
@@ -220,7 +180,7 @@ function update_phenotype_lines(options) {
 			
 			function load_phenotypes3() {
                 $('step3').hide();
-                url=php_self + "?function=step3phenotype&pi=" + phenotype_items_str + "&yrs=" + years_str;
+                var url=php_self + "?function=step3phenotype&pi=" + phenotype_items_str + "&yrs=" + years_str;
                 document.title='Loading Step1...';
                         new Ajax.Updater($('step3'),url,
             { 
@@ -234,7 +194,7 @@ function update_phenotype_lines(options) {
 			
 			function load_phenotypes4() {
                 $('step4').hide();
-                url=php_self + "?function=step4phenotype&pi=" + phenotype_items_str + "&e=" + experiments_str + "&lines=" + lines_str;
+                var url=php_self + "?function=step4phenotype&pi=" + phenotype_items_str + "&e=" + experiments_str + "&lines=" + lines_str;
                 document.title='Loading Step1...';
                         new Ajax.Updater($('step4'),url,
             { 
@@ -248,7 +208,7 @@ function update_phenotype_lines(options) {
 			
 			function load_phenotypes5() {
                 $('step5').hide();
-                url=php_self + "?function=step5phenotype&pi=" + phenotype_items_str + "&e=" + experiments_str + "&lines=" + lines_str;
+                var url=php_self + "?function=step5phenotype&pi=" + phenotype_items_str + "&e=" + experiments_str + "&lines=" + lines_str;
                 document.title='Loading Step1...';
                         new Ajax.Updater($('step5'),url,
             { 
@@ -263,7 +223,7 @@ function update_phenotype_lines(options) {
 
 			function load_lines() {
                                 $('step11').hide();
-                                url=php_self + "?function=step1lines&bp=" + breeding_programs_str + '&yrs=' + years_str;
+                                var url=php_self + "?function=step1lines&bp=" + breeding_programs_str + '&yrs=' + years_str;
                                 document.title='Loading Step1...';
                                         new Ajax.Updater($('step11'),url,
                             {
@@ -276,7 +236,7 @@ function update_phenotype_lines(options) {
 			}
 			function load_lines2() {
                                 $('step2').hide();
-                                url=php_self + "?function=step2lines&bp=" + breeding_programs_str + '&yrs=' + years_str;
+                                var url=php_self + "?function=step2lines&bp=" + breeding_programs_str + '&yrs=' + years_str;
                                 document.title='Loading Step1...';
                                          new Ajax.Updater($('step2'),url,
                             {
@@ -288,29 +248,52 @@ function update_phenotype_lines(options) {
                                  );
 				document.getElementById('step3').innerHTML = "";
                                 }
+			
+			function update_select1(options) {
+			    select1_str = "";
+			    breeding_programs_str = "";
+			    experiments_str = "";
+			    $A(options).each(function(select1) {
+			        if (select1.selected) {
+			            select1_str = select1.value;
+			        }
+			    });
+			    if (select1_str == "BreedingProgram") {
+			        load_breedprog();
+			    } else if (select1_str == "Years") {
+			        load_yearprog();
+			    } else if (select1_str == "Lines") {
+			        load_lines();
+			        load_lines2();
+			    } else if (select1_str == "Markers") {
+			        load_markers_select();
+			    } else if (select1_str == "Phenotypes") {
+			        load_phenotypes();
+			    }
+			}   
 	
 			function use_session() {
 				var mm = 99.9;
                 var mmaf = 0.01
-			    url=php_self + "?function=download_session&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+			    var url=php_self + "?function=download_session&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
 			    document.location = url;
 			}
 			function use_session_v2() {
                 var mm = 99.9;
                 var mmaf = 0.01
-                url=php_self + "?function=download_session_v2&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                var url=php_self + "?function=download_session_v2&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
                 document.location = url;
             }
 			function use_session_v3() {
                 var mm = 99.9;
                 var mmaf = 0.01
-                url=php_self + "?function=download_session_v3&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                var url=php_self + "?function=download_session_v3&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
                 document.location = url;
             }
 
 			function load_breedprog() {
                                 $('step1').hide();
-                                url=php_self + "?function=step1breedprog&bp=" + + breeding_programs_str + '&yrs=' + years_str;
+                                var url=php_self + "?function=step1breedprog&bp=" + + breeding_programs_str + '&yrs=' + years_str;
                                 document.title='Loading Step1...';
                                         new Ajax.Updater($('step11'),url,
 
@@ -327,7 +310,7 @@ function update_phenotype_lines(options) {
 
 			function load_experiments() {
                 		$('step1').hide();
-                		url=php_self + "?function=type1experiments&bp=" + breeding_programs_str + '&yrs=' + years_str;
+                		var url=php_self + "?function=type1experiments&bp=" + breeding_programs_str + '&yrs=' + years_str;
                 		document.title='Loading Trials...';
 					new Ajax.Updater($('step2'),url,
 				{ 
@@ -348,7 +331,7 @@ function update_phenotype_lines(options) {
 			{		
                 traits_loading = true;		
                 $('step3').hide();
-                url=php_self + "?function=type1traits&exps=" + experiments_str;
+                var url=php_self + "?function=type1traits&exps=" + experiments_str;
                 document.title='Loading Traits...';
 				new Ajax.Updater(
 				    $('step3'),url,
@@ -364,7 +347,7 @@ function update_phenotype_lines(options) {
 			}
             
 			function load_markers_select() {
-				url=php_self + "?function=type1markersselect&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str;
+				var url=php_self + "?function=type1markersselect&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str;
 				document.title='Loading Markers...';
                                 //changes are right here
                 new Ajax.Updater($('step11'),url,
@@ -382,7 +365,7 @@ function update_phenotype_lines(options) {
 			function load_markers( mm, mmaf) {
                 markers_loading = true;
 				$('step4').hide();
-				url=php_self + "?function=type1markers&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
+				var url=php_self + "?function=type1markers&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
 				//changes are right here
                 new Ajax.Updater($('step4'),url,
@@ -416,7 +399,7 @@ function update_phenotype_lines(options) {
 				}
 			    var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
-                url=php_self + "?function=type1build_qtlminer&bp=" + breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                var url=php_self + "?function=type1build_qtlminer&bp=" + breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
 				
 					document.location = url;
 				
@@ -431,8 +414,8 @@ function update_phenotype_lines(options) {
 			    var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
 			    var subset = $('subset').getValue();
-			    url=php_self + "?function=type1build_tassel&bp=" + breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf+'&subset='+subset;
-			    document.location = url;
+			    var url=php_self + "?function=type1build_tassel&bp=" + breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf+'&subset='+subset;
+			   document.location = url;
 			}
 
 			function getdownload_tassel_v3()
