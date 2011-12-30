@@ -2139,9 +2139,9 @@ selected lines</a>.<br>
 		}
 		if ($lines != "") {
 		   if ($subset == "") {
-		       $subset = "WHERE a.line_records_uid in ($lines)";
+		       $subset = "WHERE a.line_record_uid in ($lines)";
 		   } else {
-		       $subset = $subset . " and a.line_records_uid in ($lines) ";
+		       $subset = $subset . " and a.line_record_uid in ($lines) ";
 		   }
 		}
 		   
