@@ -14,12 +14,13 @@ connect();
 	<div class="box">
 	<?php
 
-	function combinations($num_markers, $marker_idx, $marker_list, $cross, $sub) {
+	function combinations($num_markers, $marker_idx, $marker_list, $cross) {
 	// num_markers - number of markers
 	// marker_idx - index of marker/allele combinations
 	// marker_list -list of selected markers
 	// cross - 2D array of all allele combinations
-	// sub - which column if marker_idx to increment 
+	// sub - which column of marker_idx to increment 
+	  $sub = $num_markers - 1;
 	  $i = 0;
 	  while ($i < $num_markers) {
 	    $markers[$marker_list[$i]] = 1;
@@ -30,15 +31,12 @@ connect();
 		$check_list[$k] = 1;
             }
           }
- 	  $marker_instr=" and D.marker_uid in (".implode("," , array_keys($markers)).")";
-          $in_these_lines = str_replace("line_records.", "A.", $in_these_lines);
-          $query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, E.allele_1, E.allele_2
-                                                from line_records as A, tht_base as B, genotyping_data as C, markers as D, alleles as E
-                                                where A.line_record_uid=B.line_record_uid and B.tht_base_uid=C.tht_base_uid and
-                                                C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid
+ 	  $marker_instr=" E.marker_uid in (".implode("," , array_keys($markers)).")";
+          $in_these_lines = str_replace("line_records.", "E.", $in_these_lines);
+          $query_str="select E.line_record_name, E.line_record_uid, E.marker_uid, E.alleles from allele_cache as E where
           $marker_instr $in_these_lines";
+ 	  //print $query_str;
           $result=mysql_query($query_str) or die(mysql_error() . $query_str);
-	  //print $query_str;
 	  $lines = array();
           $line_uids=array();
           $line_names=array();
@@ -46,7 +44,7 @@ connect();
                                 $linename=$row['line_record_name'];
                                 $lineuid=$row['line_record_uid'];
                                 $mkruid=$row['marker_uid'];
-                                $alleleval=$row['allele_1'].$row['allele_2'];
+				$alleleval=$row['alleles'];
                                 $line_uids[$linename]=$lineuid;
                                 $line_names[$lineuid]=$linename;
                                 if (! isset($lines[$linename])) $lines[$linename]=array();
@@ -311,7 +309,7 @@ connect();
 			print "</div><div style='clear: left;'></div>";
 		}
 		else {
-			echo "<p>Sorry, no records found<p>";
+			echo "<p>Sorry, no records found in lines with selected phenotype value<p>";
 		}
 	}
 	/* identify markers that are identical to all the lines */
@@ -392,8 +390,6 @@ connect();
 			$i = 0;
 		  	$cross = array();
 			foreach($_SESSION['clicked_buttons'] as $marker) {
-				if($i % 6 == 0 && $i != 0)
-					echo "\t</tr>\n\t<tr>";
 
 				// Show Marker Name
 				$nme = mysql_query("SELECT marker_name FROM markers WHERE marker_uid = $marker") or die(mysql_error());
@@ -402,11 +398,11 @@ connect();
 
 				// Show Alleles corresponding to the marker.
 				$allele = mysql_query("SELECT DISTINCT allele_1, allele_2
-							FROM alleles, genotyping_data
-							WHERE genotyping_data.marker_uid = $marker
-								AND genotyping_data.genotyping_data_uid = alleles.genotyping_data_uid
-							ORDER BY allele_1 ASC
-						") or die(mysql_error());
+                                                        FROM alleles, genotyping_data
+                                                        WHERE genotyping_data.marker_uid = $marker
+                                                                AND genotyping_data.genotyping_data_uid = alleles.genotyping_data_uid
+                                                        ORDER BY allele_1 ASC
+                                                ") or die(mysql_error());
 				if(mysql_num_rows($allele) > 0) {
                                   $j = 0;
 				  while ($row = mysql_fetch_assoc($allele)) {
@@ -437,13 +433,18 @@ connect();
 			  $i = 0;
 			  $current = $num_markers - 1;
 			  $current2 = $num_markers - 3;
+			  echo "total $total";
 			  while ($i < $total) {
-			    combinations($num_markers,$marker_idx,$marker_list,$cross,$current);
+			    combinations($num_markers,$marker_idx,$marker_list,$cross);
 			    $marker_idx[$current2]++;
-			    if ($marker_idx[$current2] == 4) {
-                              $marker_idx[$current2] = 0;
-			      $marker_idx[$current2-1]++;
-                            }
+     			    $j = $current2;
+			    while ($j > 0) {
+			      if ($marker_idx[$j] == 4) {
+                                $marker_idx[$j] = 0;
+                                $marker_idx[$j-1]++;
+			      }
+			      $j--;
+			    }
 			    $i++;
 			  }
 			} else {
