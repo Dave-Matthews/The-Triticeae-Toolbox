@@ -1653,7 +1653,12 @@ selected lines</a>.<br>
 		$intheselines = "";
 		if ($subset == "yes" && count($_SESSION['selected_lines']) > 0) {
 		  $selectedlines = implode(",", $_SESSION['selected_lines']);
-		  $intheselines = "AND line_records.line_record_uid IN ($selectedlines)";
+		  $intheselines = " line_records.line_record_uid IN ($selectedlines)";
+		}
+		if (preg_match("/\d/",$experiments)) {
+		  $intheselines = "WHERE tht_base.experiment_uid IN ($experiments) AND" . $intheselines;
+		} else {
+                  $intheselines = "WHERE" . $intheselines;
 		}
       // get a list of all line names in the selected datasets and experiments,
 	  // INCLUDING the check lines // AND tht_base.check_line IN ('no')
@@ -1665,7 +1670,6 @@ selected lines</a>.<br>
 	  }
       $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid
                FROM line_records, tht_base
-               WHERE tht_base.experiment_uid IN ($experiments)
                  $intheselines
                  AND line_records.line_record_uid=tht_base.line_record_uid
                  $sql_option";
@@ -1705,10 +1709,15 @@ selected lines</a>.<br>
                      ORDER BY pd.phenotype_uid,tb.experiment_uid";*/
 // dem 8oct10: Don't round the data.
 //			$sql = "SELECT avg(cast(pd.value AS DECIMAL(9,1))) as value,pd.phenotype_uid,tb.experiment_uid 
+			if (preg_match("/\d/",$experiments)) {
+			  $sql_option = " WHERE tb.experiment_uid IN ($experiments) AND ";
+			} else {
+			  $sql_option = " WHERE ";
+			}
 			$sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid 
 					FROM tht_base as tb, phenotype_data as pd
-					WHERE tb.experiment_uid IN ($experiments)
-						AND tb.line_record_uid  = $line_uid[$i]
+					$sql_option
+						tb.line_record_uid  = $line_uid[$i]
 						AND pd.tht_base_uid = tb.tht_base_uid
 						AND pd.phenotype_uid IN ($traits) 
 					GROUP BY tb.tht_base_uid, pd.phenotype_uid";
