@@ -110,18 +110,18 @@ connect();
 	/* identify lines with the same marker haplotypes */
     if(isset($_POST['haplotype'])) {
 		print "<h2>Results of Select Haplotypes</h2>";
-			  $marker_list = "";
+			  $marker_query = "";
 			  foreach($_SESSION['clicked_buttons'] as $marker) {
 			    if (preg_match('/[A-Za-z0-9]+/',$marker)) {
-			    if ($marker_list == "") {
-				$marker_list = $marker;
+			    if ($marker_query == "") {
+				$marker_query = $marker;
 			    } else {
-			      $marker_list = $marker_list . ",$marker";
+			      $marker_query = $marker_query . ",$marker";
 			    }
 			    }
 			  }
 			  //$marker_instr=" and D.marker_uid in (".implode("," , array_keys($markers)).")";
-			  $marker_instr=" and D.marker_uid in (".$marker_list.")";
+			  $marker_instr=" and D.marker_uid in (".$marker_query.")";
 			  $in_these_lines = str_replace("line_records.", "A.", $in_these_lines);
 			  $query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, E.allele_1, E.allele_2
 						from line_records as A, tht_base as B, genotyping_data as C, markers as D, alleles as E
@@ -163,7 +163,7 @@ connect();
  							}	
 						}
 						if ($flag==0) {
-							// print $lnm."<br>";
+							//print $lnm."<br>";
 							array_push($selLines, $line_uids[$lnm]);
 						}
 					}		
