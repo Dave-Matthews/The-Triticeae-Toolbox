@@ -1,5 +1,7 @@
 var php_self = document.location;
 var breeding_programs_str = "";
+var phenotype_categories_str = "";
+var phenotype_items_str = "";
 var years_str = "";
 var lines_str = "";
 var experiments_str = "";
@@ -37,12 +39,13 @@ function update_breeding_programs(options) {
                     breeding_programs_str += (breeding_programs_str == "" ? "" : ",") + breeding_program.value;
                 }
             });
-    if (breeding_programs_str != "" && years_str != "")
+    if (breeding_programs_str != "" && years_str != "") {
         load_experiments();
+    }
 }
 function update_phenotype_categories(options) {
     phenotype_categories_str = "";
-    phenotype_item_str = "";
+    phenotype_items_str = "";
     experiments_str = "";
     lines_str = "";
     experiments_str = "";
@@ -248,7 +251,21 @@ function update_phenotype_lines(options) {
                                  );
 				document.getElementById('step3').innerHTML = "";
                                 }
-			
+
+			function load_locations() {
+	                $('step11').hide();
+        	        url=php_self + "?function=step1locations&bp=" + breeding_programs_str + '&yrs=' + years_str;
+                	document.title='Loading Step1...';
+                        new Ajax.Updater($('step11'),url,
+                                {
+                        onComplete: function() {
+                        $('step11').show();
+                        document.title=title;
+                        }
+                                }
+                	);
+                        }
+
 			function update_select1(options) {
 			    select1_str = "";
 			    breeding_programs_str = "";
@@ -258,6 +275,10 @@ function update_phenotype_lines(options) {
 			            select1_str = select1.value;
 			        }
 			    });
+			    document.getElementById('step2').innerHTML = "";
+                	    document.getElementById('step3').innerHTML = "";
+                	    document.getElementById('step4').innerHTML = "";
+                	    document.getElementById('step5').innerHTML = "";
 			    if (select1_str == "BreedingProgram") {
 			        load_breedprog();
 			    } else if (select1_str == "Years") {
@@ -265,6 +286,8 @@ function update_phenotype_lines(options) {
 			    } else if (select1_str == "Lines") {
 			        load_lines();
 			        load_lines2();
+			    } else if (select1_str == "Locations") {
+  				load_locations();
 			    } else if (select1_str == "Markers") {
 			        load_markers_select();
 			    } else if (select1_str == "Phenotypes") {
@@ -309,13 +332,13 @@ function update_phenotype_lines(options) {
                                 }
 
 			function load_experiments() {
-                		$('step1').hide();
+                		$('step3').hide();
                 		var url=php_self + "?function=type1experiments&bp=" + breeding_programs_str + '&yrs=' + years_str;
                 		document.title='Loading Trials...';
-					new Ajax.Updater($('step2'),url,
+					new Ajax.Updater($('step3'),url,
 				{ 
                         	onComplete: function() {
-                            	$('step1').show();
+                            	$('step3').show();
                             document.title=title;
                     	    }
                     	}
@@ -330,13 +353,13 @@ function update_phenotype_lines(options) {
 			function load_traits()
 			{		
                 traits_loading = true;		
-                $('step3').hide();
+                $('step4').hide();
                 var url=php_self + "?function=type1traits&exps=" + experiments_str;
                 document.title='Loading Traits...';
 				new Ajax.Updater(
-				    $('step3'),url,
+				    $('step4'),url,
 					{onComplete: function() {
-                        $('step3').show();  
+                        $('step4').show();  
                         if (markers_loading == false) {
                             document.title = title;
                         }
@@ -364,13 +387,13 @@ function update_phenotype_lines(options) {
 
 			function load_markers( mm, mmaf) {
                 markers_loading = true;
-				$('step4').hide();
+				$('step5').hide();
 				var url=php_self + "?function=type1markers&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
 				//changes are right here
-                new Ajax.Updater($('step4'),url,
+                new Ajax.Updater($('step5'),url,
 					{onComplete: function() {
-                         $('step4').show();
+                         $('step5').show();
                         if (traits_loading == false) {
                             document.title = title;
                         }
