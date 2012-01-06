@@ -1650,28 +1650,23 @@ selected lines</a>.<br>
 		// $firephp->table('keys label ', $keys); 
 
 		// dem 5jan11: If $subset="yes", use $_SESSION['selected_lines'].
-		$intheselines = "";
+		$sql_option = "";
 		if ($subset == "yes" && count($_SESSION['selected_lines']) > 0) {
 		  $selectedlines = implode(",", $_SESSION['selected_lines']);
-		  $intheselines = " line_records.line_record_uid IN ($selectedlines)";
+		  $sql_option = " AND line_records.line_record_uid IN ($selectedlines)";
 		}
 		if (preg_match("/\d/",$experiments)) {
-		  $intheselines = "WHERE tht_base.experiment_uid IN ($experiments) AND" . $intheselines;
-		} else {
-                  $intheselines = "WHERE" . $intheselines;
+		  $sql_option = "AND tht_base.experiment_uid IN ($experiments)";
 		}
-      // get a list of all line names in the selected datasets and experiments,
+		if (preg_match("/\d/",$datasets)) {
+		  $sql_option = "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
+		}
+			
+          // get a list of all line names in the selected datasets and experiments,
 	  // INCLUDING the check lines // AND tht_base.check_line IN ('no')
-	  if ($dataset == "") {
-	     $sql_option = "";
-	  } else {
-	     $sql_option = "AND ((tht_base.datasets_experiments_uid in ($datasets)AND tht_base.check_line='no') 
-                  	OR (tht_base.check_line='yes'))";
-	  }
       $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid
                FROM line_records, tht_base
-                 $intheselines
-                 AND line_records.line_record_uid=tht_base.line_record_uid
+	       WHERE line_records.line_record_uid=tht_base.line_record_uid
                  $sql_option";
       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
       while($row = mysql_fetch_array($res)) {
