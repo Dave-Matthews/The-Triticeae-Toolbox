@@ -305,8 +305,7 @@ if ($query == 'geno') {
     print "$count\t";
   }
 
-  $sql = "select count(line_record_uid) from line_records where created_on > '$this_week'";
-  $sql = "select max(date_format(created_on,'%m-%d-%Y')) from line_records";
+  $sql = "select date_format(max(created_on),'%m-%d-%Y') from line_records";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
@@ -353,8 +352,7 @@ if ($query == 'geno') {
 	echo "<tr><td>Total genotype data<td>$allele_count";
   }
 
-  $sql = "select count(marker_uid) from markers where created_on > '$this_week'";
-  $sql = "select max(date_format(created_on,'%m-%d-%Y')) from markers";
+  $sql = "select date_format(max(created_on),'%m-%d-%Y') from markers";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
     $count = $row[0];
@@ -392,7 +390,7 @@ if ($query == 'geno') {
     } else {
         print "<tr><td>Total phenotype data<td>$count\n";
   }
-  $sql = "select max(date_format(created_on,'%m-%d-%Y')) from phenotype_data";
+  $sql = "select date_format(max(created_on),'%m-%d-%Y') from phenotype_data";
   $res = mysql_query($sql) or die(mysql_error());
   if ($row = mysql_fetch_row($res)) {
       $count = $row[0];
