@@ -58,7 +58,7 @@ include($config['root_dir'].'theme/normal_header.php');
 <tr><td class="strong">Mike Bonman</td><td>USDA-ARS, Aberdeen, ID</td><td>GRIN collaboration</td></tr>
 <tr><td class="strong">Harold Bockelman</td><td>USDA-ARS, Aberdeen, ID</td><td>GRIN collaboration</td></tr>
 <tr><td class="strong">Tim Close</td><td>Botany and Plant Sciences<br/>University of California<br/>Riverside, CA</td><td>Assembly and SNP context information from <a href="http://harvest.ucr.edu/" title="">HarvEST: Barley</a></td></tr>
-<tr><td class="strong"><a href="http://triticeaecap.org/?q=node/9">T-CAP Participants</a></td><td>Throughout the U.S.A.</td><td>Data collection and contribution</td></tr>
+<tr><td class="strong"><a href="http://triticeaecap.org/about/t-cap-directory/">T-CAP Participants</a></td><td>Throughout the U.S.A.</td><td>Data collection and contribution</td></tr>
 
 
 </tbody>

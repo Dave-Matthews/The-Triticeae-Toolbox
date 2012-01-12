@@ -107,7 +107,8 @@ EOD;
   Select Markers</a>
   <li>
   <a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
-  <li><a href="<?php echo $config['base_url']; ?>snps.php" title="SNP alleles and sequences">SNP alleles and sequences</a>
+<!-- dem 12jan12 Removed temporarily pending data correctness check.
+  <li><a href="<?php echo $config['base_url']; ?>snps.php" title="SNP alleles and sequences">SNP alleles and sequences</a> -->
   </ul>
   <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analysis</a>
   <ul>
@@ -115,6 +116,7 @@ EOD;
   <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Find lines like my lines of interest">Cluster Lines by Genotype, 3D</a>
   <li><a href="<?php echo $config['base_url']; ?>advanced_search.php" title="Alleles for selected markers">Select Lines by Haplotypes</a>
   <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
+  <li><a href="<?php echo $config['base_url']; ?>genotyping/allele_conflicts.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
 <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
   </ul>
   <li>
