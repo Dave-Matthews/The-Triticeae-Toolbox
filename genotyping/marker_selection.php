@@ -120,6 +120,7 @@ if (isset($_SESSION['clicked_buttons']) && count($_SESSION['clicked_buttons']) >
   reset($mapids);
 
   $chrlist = array();
+  $markerlist = array();
   foreach ($_SESSION['clicked_buttons'] as $mkruid) {
     $mapid = current($mapids);
     next($mapids);
@@ -131,8 +132,12 @@ where marker_uid=$mkruid" . ($mapid ? " and mm.map_uid=$mapid":"");
       or die(mysql_error());
     while ($row=mysql_fetch_assoc($result)) {
       $selval=$row['marker_name'];
-      array_push($chrlist, $row['chromosome']);
-      print "<option value='$mkruid'>$selval</option>\n";
+      $selchr=$row['chromosome'];
+      if(! in_array($selval,$markerlist)) {
+        array_push($markerlist, $selval);
+        array_push($chrlist, $selchr);
+        print "<option value='$mkruid'>$selval</option>\n";
+      }
     }
   }
   $chrlist = array_unique($chrlist);
