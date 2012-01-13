@@ -37,7 +37,7 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
   // Get the marker uids.
   $selmkrs = array();
   foreach ($selmkrnames as $mkrnm) {
-    $sql = "select marker_uid from marker_synonyms where value = '$mkrnm'";
+    $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm'";
     $r = mysql_query($sql);
     if (mysql_num_rows($r) == 0)
       echo "<font color=red>\"$mkrnm\" not found.</font><br>";
@@ -60,7 +60,7 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
     if (!isset($mapids) || !is_array($mapids))
       $mapids = array();
   foreach ($selmkrs as $mkr) {
-    $sql = "select map_uid from markers_in_maps where marker_uid = $mkr";
+    $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
     $r = mysql_query($sql);
     $row = mysql_fetch_row($r);
     if (! in_array($row[0], $mapids))
