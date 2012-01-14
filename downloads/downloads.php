@@ -93,6 +93,12 @@ class Downloads
 			case 'step2lines':
 				$this->step2_lines();
 				break;
+			case 'step3lines':
+				$this->step3_lines();
+				break;
+		 	case 'step4lines':
+				$this->step4_lines();
+				break;
 			case 'step1breedprog':
 				$this->step1_breedprog();
 				break;
@@ -269,7 +275,7 @@ class Downloads
 		<p>1. 
 		<select name="select1" onchange="javascript: update_select1(this.options)">
 		  <option value="BreedingProgram">Program</option>
-		  <!--option value="Years">Year</option-->
+		  <!-- option value="Years">Year</option-->
 		  <option <?php 
 		  if (isset($_SESSION['selected_lines'])) {
 		       echo "selected='selected'";
@@ -448,7 +454,7 @@ class Downloads
 			<th>Traits</th>
 		</tr>
 		<tr><td>
-		<select name="phenotype_items" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_items(this.options)">
+		<select id="traitsbx" name="phenotype_items" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_items(this.options)">
                 <?php
 
 		$sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
@@ -558,13 +564,90 @@ class Downloads
     {
      $phen_item = $_GET['pi'];
      $experiments = $_GET['e'];
-     if (!empty($_GET['lines'])) {
+     if (empty($_GET['lines'])) {
+         $selectedlines = implode(",", $_SESSION['selected_lines']);
+     } else {
          $selectedlines = $_GET['lines'];
-         $selectedlines = explode(',', $selectedlines);
-         $_SESSION['selected_lines'] = $selectedlines;
+         $selected = explode(',', $selectedlines);
+         $_SESSION['selected_lines'] = $selected;
      }
+         
      $count = count($_SESSION['selected_lines']);
-     echo "selected lines = $count<br>";
+     echo "current data selection = $count lines<br>";
+     
+     // initialize markers and flags if not already set
+     $max_missing = 99.9;//IN PERCENT
+     if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
+      $max_missing = $_GET['mm'];
+     if ($max_missing>100)
+      $max_missing = 100;
+     elseif ($max_missing<0)
+     $max_missing = 0;
+     $min_maf = 0.01;//IN PERCENT
+     if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+      $min_maf = $_GET['mmaf'];
+     if ($min_maf>100)
+      $min_maf = 100;
+     elseif ($min_maf<0)
+     $min_maf = 0;
+
+     //get genotype experiments that correspond with the Datasets (BP and year) selected for the experiments
+     $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
+     FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
+     WHERE
+     e.experiment_type_uid = et.experiment_type_uid
+     AND lr.line_record_uid = tb.line_record_uid
+     AND e.experiment_uid = tb.experiment_uid
+     AND lr.line_record_uid in ($selectedlines)
+     AND et.experiment_type_name = 'genotype'";
+     $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+     if (mysql_num_rows($res)>0) {
+       while ($row = mysql_fetch_array($res)){
+         $exp[] = $row["exp_uid"];
+       }
+       $exp = implode(',',$exp);
+     }
+     
+     $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+     SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+     FROM allele_frequencies AS af
+     WHERE af.experiment_uid in ($exp)
+     group by af.marker_uid";
+     
+     $res = mysql_query($sql_mstat) or die(mysql_error());
+     $num_mark = mysql_num_rows($res);
+     $num_maf = $num_miss = $num_removed = 0;
+     
+     while ($row = mysql_fetch_array($res)){
+      $marker_uid[] = $row["marker"];
+      $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+      $miss = round(100*$row["summis"]/$row["total"],1);
+      if ($maf >= $min_maf)
+       $num_maf++;
+      if ($miss > $max_missing)
+       $num_miss++;
+      if (($miss > $max_missing) OR ($maf < $min_maf))
+       $num_removed++;
+     }
+     
+     if (mysql_num_rows($res) >= 1) {
+      ?>
+     <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+     &nbsp;&nbsp;&nbsp;&nbsp;
+     Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
+     <i>
+     <br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
+     <br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
+     <br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
+     </i>
+     
+     <br><input type="button" value="Refresh" onclick="javascript:mrefresh_pheno();" /><br><br>
+     
+     <?php
+     } else {
+     ?><p style="font-weight: bold">No Data</p><?php
+     }
+     
      ?>
     
     <input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'></input>
@@ -730,7 +813,7 @@ class Downloads
 	      $res = mysql_query($sql) or die(mysql_error());
 	      $row = mysql_fetch_assoc($res);
 	      ?>
-	      <option selected value="
+	      <option disabled="disabled" value="
 	      <?php $uid ?>">
 	      <?php echo $row['line_record_name'] ?>
 	      </option>
@@ -742,71 +825,11 @@ class Downloads
 	    </div></div>
 	    
 	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
-	    <p>2.
-	    <select name="select2">
-	      <option value="trials">Trials</option>
-	    </select></p>
-	    <table id="linessel" class="tableclass1">
-	    <tr>
-	    <th>Trials</th>
-	    </tr>
-	    <tr><td>
-	    <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_trial(this.options)">
 	    <?php
-	    $selectedlines = implode(',', $selectedlines);
-	    $experiment_str = "";
-	    $sql="SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name 
-	    FROM experiments as e, tht_base as tb, line_records as lr
-	    WHERE
-	    e.experiment_uid = tb.experiment_uid
-	    AND lr.line_record_uid = tb.line_record_uid
-	    AND lr.line_record_uid IN ($selectedlines)";
-		$res = mysql_query($sql) or die(mysql_error() . $sql);
-		while ($row = mysql_fetch_assoc($res))
-		{
-		 ?>
-		    <option value="<?php echo $row['id'] ?>">
-		     <?php echo $row['name'];
-		     if ($experiment_str == "") {
-		     	$experiment_str = $row['id'];
-		     } else {
-		     	$experiment_str = $experiment_str . "," . $row['id'];
-		     }
-		      ?>
-		    </option>
-		    <?php
-		} 
+ 	    $this->step2_lines();
 	    ?>
-	    </select></table>
 	    </div>
-	    <div id="step3" style="float: left; margin-bottom: 1.5em;">
-	    <p>3.
-	    <select name="select3">
-	      <option value="phenotypes">Traits</option>
-	    </select></p>
-	    <table id="" class="tableclass1">
-	    <tr>
-	    <th>Traits</th>
-	    </tr>
-	    <tr><td>
-	    <select name="traits" multiple="multiple" style="height: 12em;">
-	    <?php
-	    $sql = "SELECT DISTINCT p.phenotype_uid AS id, phenotypes_name AS name from phenotypes as p, tht_base as tb, phenotype_data as pd
-	      where pd.tht_base_uid = tb.tht_base_uid
-         AND p.phenotype_uid = pd.phenotype_uid
-	     AND tb.experiment_uid in ($experiment_str)";
-		$res = mysql_query($sql) or die(mysql_error() . $sql);
-		while ($row = mysql_fetch_assoc($res))
-		{
-		 ?>
-		    <option value="<?php echo $row['id'] ?>">
-		     <?php echo $row['name'] ?>
-		    </option>
-		    <?php
-		}
-	    ?>
-	    </select></table>
-	    </div>
+	    <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 	    <?php
@@ -864,7 +887,6 @@ class Downloads
 	        $selectedlines= $_SESSION['selected_lines'];
 	        $count = count($_SESSION['selected_lines']);
 		?>
-	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
 	    <p>2.
 	    <select name="select2">
 	      <option value="trials">Trials</option>
@@ -883,6 +905,7 @@ class Downloads
 	    WHERE
 	    e.experiment_uid = tb.experiment_uid
 	    AND lr.line_record_uid = tb.line_record_uid
+	    AND e.experiment_type_uid = 1
 	    AND lr.line_record_uid IN ($selectedlines)";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
@@ -901,9 +924,15 @@ class Downloads
 	
 	private function step3_lines()
 	{
+	    $experiments = $_GET['e'];
+	    if (isset($_GET['pi'])) {
+	      if (preg_match("/\d/",$phen_item)) {
+	         $_SESSION['phenotype'] = $phen_item;
+	       } else {
+	         unset($_SESSION['phenotype']);
+	       }
+	    }
 		?>
-	    </div>
-	    <div id="step3" style="float: left; margin-bottom: 1.5em;">
 	    <p>3.
 	    <select name="select3">
 	      <option value="phenotypes">Traits</option>
@@ -913,12 +942,12 @@ class Downloads
 	    <th>Traits</th>
 	    </tr>
 	    <tr><td>
-	    <select name="">
+            <select id="traitsbx" name="traits" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_pheno(this.options)">
 	    <?php
-	    $sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, tht_base, phenotype_data
-	      where pd.tht_base_uid = tb.tht_base_uid
-         AND p.phenotype_uid = pd.phenotype_uid
-	     AND tb.experiment_uid in ($experiment_str)";
+		$sql = "SELECT DISTINCT p.phenotype_uid AS id, phenotypes_name AS name from phenotypes as p, tht_base as tb, phenotype_data as pd
+	        where pd.tht_base_uid = tb.tht_base_uid
+                AND p.phenotype_uid = pd.phenotype_uid
+	        AND tb.experiment_uid in ($experiments)";
 		$res = mysql_query($sql) or die(mysql_error() . $sql);
 		while ($row = mysql_fetch_assoc($res))
 		{
@@ -930,18 +959,21 @@ class Downloads
 		}
 	    ?>
 	    </select></table>
-	    </div>
-	    <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
-	    <?php
-	     $this->type1_markers();
-	     ?></div>
 	     <?php 		
 	}
 	
 	private function step4_lines() {
 	$saved_session = "";
 	$message2 = "";
-	
+
+	if (isset($_GET['pi'])) {
+	  $phen_item = $_GET['pi'];
+	  if (count($phen_item) > 0) {
+	     $_SESSION['phenotype'] = $phen_item;
+	  } else {
+	     unset($_SESSION['phenotype']);
+	  }
+	}	
 	if (isset($_SESSION['phenotype'])) {
 	    $phenotype = $_SESSION['phenotype'];
 	    $message2 = "download phenotype and genotype data";
@@ -951,6 +983,7 @@ class Downloads
 	}
 	 if (isset($_SESSION['selected_lines'])) {
 	     $countLines = count($_SESSION['selected_lines']);
+	     $selectedlines = implode(",", $_SESSION['selected_lines']);
 	     if ($saved_session == "") {
 	      $saved_session = "$countLines lines";
 	     } else {
@@ -966,8 +999,82 @@ class Downloads
 	 } else {
 	     $markers = "";
 	 }
+	 
 	 if ($saved_session != "") {
-	     echo "current data selection = $saved_session<br>";
+	  echo "current data selection = $saved_session<br>";
+	 }
+	 
+	 // initialize markers and flags if not already set
+	 $max_missing = 99.9;//IN PERCENT
+	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
+	  $max_missing = $_GET['mm'];
+	 if ($max_missing>100)
+	  $max_missing = 100;
+	 elseif ($max_missing<0)
+	 $max_missing = 0;
+	 $min_maf = 0.01;//IN PERCENT
+	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+	  $min_maf = $_GET['mmaf'];
+	 if ($min_maf>100)
+	  $min_maf = 100;
+	 elseif ($min_maf<0)
+	 $min_maf = 0;
+	 
+	 //get genotype experiments that correspond with the Datasets (BP and year) selected for the experiments
+	 $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
+	 FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
+	 WHERE
+	 e.experiment_type_uid = et.experiment_type_uid
+	 AND lr.line_record_uid = tb.line_record_uid
+	 AND e.experiment_uid = tb.experiment_uid
+	 AND lr.line_record_uid in ($selectedlines)
+	 AND et.experiment_type_name = 'genotype'";
+	 $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+	 if (mysql_num_rows($res)>0) {
+	  while ($row = mysql_fetch_array($res)){
+	   $exp[] = $row["exp_uid"];
+	  }
+	  $exp = implode(',',$exp);
+	 }
+	 
+	 $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+	 SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+	 FROM allele_frequencies AS af
+	 WHERE af.experiment_uid in ($exp)
+	 group by af.marker_uid";
+	 
+	 $res = mysql_query($sql_mstat) or die(mysql_error());
+	 $num_mark = mysql_num_rows($res);
+	 $num_maf = $num_miss = $num_removed = 0;
+	 
+	 while ($row = mysql_fetch_array($res)){
+	  $marker_uid[] = $row["marker"];
+	  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+	  $miss = round(100*$row["summis"]/$row["total"],1);
+	  if ($maf >= $min_maf)
+	   $num_maf++;
+	  if ($miss > $max_missing)
+	   $num_miss++;
+	  if (($miss > $max_missing) OR ($maf < $min_maf))
+	   $num_removed++;
+	 }
+	 
+	 if (mysql_num_rows($res) >= 1) {
+	  ?>
+	 <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+	 &nbsp;&nbsp;&nbsp;&nbsp;
+	 Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
+	 <i>
+	 <br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
+	 <br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
+	 <br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
+	 </i>
+	 
+	 <br><input type="button" value="Refresh" onclick="javascript:mrefresh_lines();" /><br><br>
+	 <?php 
+	 }
+	 
+	 if ($saved_session != "") {
 	     if ($countLines == 0) {
 	       echo "Choose one or more lines before using a saved selection. ";
 	       echo "<a href=";
@@ -1904,11 +2011,17 @@ selected lines</a>.<br>
 		$res = mysql_query($sql_mstat) or die(mysql_error());
 		$num_maf = $num_miss = 0;
 		while ($row = mysql_fetch_array($res)){
+		 $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+		 $miss = round(100*$row["summis"]/$row["total"],1);
+		   if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
 				$marker_names[] = $row["name"];
 				$outputheader .= $row["name"].$delimiter;
 				$marker_uid[] = $row["marker"];
+		   }
+		   $marker_names2[] = $row["name"];
 		}
-		$nelem = count($marker_names);
+		
+		$nelem = count($marker_names2);
 		if ($nelem == 0) {
 		   die("error - no genotype or marker data for this selection");
 		}
