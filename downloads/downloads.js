@@ -92,12 +92,24 @@ function update_phenotype_trial(options) {
 
 function update_line_trial(options) {
     experiments_str = ""; 
+    phenotype_items_str = "";
     $A(options).each(function(experiment) {
         if (experiment.selected) {
             experiments_str += (experiments_str == "" ? "" : ",") + experiment.value;
         }
     });
-    
+    load_lines3();
+    load_lines4();
+}
+
+function update_line_pheno(options) {
+    phenotype_items_str = "";
+    $A(options).each(function(traits) {
+        if (traits.selected) {
+            phenotype_items_str += (phenotype_items_str == "" ? "" : ",") + traits.value;
+        }
+    });
+    load_lines4();
 }
 
 function update_phenotype_lines(options) {
@@ -252,6 +264,35 @@ function update_phenotype_lines(options) {
 				document.getElementById('step3').innerHTML = "";
                                 }
 
+			function load_lines3() {
+			    $('step3').hide();
+                	    var url=php_self + "?function=step3lines&e=" + experiments_str + '&pi=' + phenotype_items_str;
+                	    document.title='Loading Step1...';
+                            new Ajax.Updater($('step3'),url,
+                                 {
+                            onComplete: function() {
+                            $('step3').show();
+                            document.title=title;
+                            }
+                                 }
+                	    );
+                            document.getElementById('step4').innerHTML = "";
+               		 }
+
+			function load_lines4() {
+			    $('step4').hide();
+                	    var url=php_self + "?function=step4lines&e=" + experiments_str + '&pi=' + phenotype_items_str;
+                	    document.title='Loading Step1...';
+                            new Ajax.Updater($('step5'),url,
+                                 {
+                            onComplete: function() {
+                            $('step4').show();
+                            document.title=title;
+                            }
+                                 }
+                  	    );
+                	}
+
 			function load_locations() {
 	                $('step11').hide();
         	        url=php_self + "?function=step1locations&bp=" + breeding_programs_str + '&yrs=' + years_str;
@@ -293,7 +334,19 @@ function update_phenotype_lines(options) {
 			    } else if (select1_str == "Phenotypes") {
 			        load_phenotypes();
 			    }
-			}   
+			}  
+
+			function update_select2(options) {
+			    menuUsed[2] = ""; menuUsed[3] = ""; menuUsed[4] = "";
+			    $A(options).each(function(select2) {
+                    		if (select2.selected) {
+                        	menuUsed[2] = select2.value;
+                   		 }
+                		});
+			    if (menuUsed[2] == "Trials") {
+			        load_lines2();
+			    }
+			} 
 	
 			function use_session() {
 				var mm = 99.9;
@@ -403,6 +456,43 @@ function update_phenotype_lines(options) {
 				);
 			}
 			
+			function load_markers_pheno( mm, mmaf) {
+                markers_loading = true;
+                $('step5').hide();
+                var url=php_self + "?function=step5phenotype&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
+                document.title='Loading Markers...';
+                //changes are right here
+                new Ajax.Updater($('step5'),url,
+                    {onComplete: function() {
+                         $('step5').show();
+                        if (traits_loading == false) {
+                            document.title = title;
+                        }
+                        markers_loading = false;
+                        markers_loaded = true;
+                    }}
+                );
+            }
+
+			function load_markers_lines( mm, mmaf) {
+                markers_loading = true;
+                $('step5').hide();
+                var url=php_self + "?function=step4lines&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
+                document.title='Loading Markers...';
+                //changes are right here
+                new Ajax.Updater($('step5'),url,
+                    {onComplete: function() {
+                         $('step5').show();
+                        if (traits_loading == false) {
+                            document.title = title;
+                        }
+                        markers_loading = false;
+                        markers_loaded = true;
+                    }}
+                );
+            }
+
+			
 			function selectedTraits() {
 				var ret = '';
 				$A($('traitsbx').options).each(function(trait){
@@ -458,6 +548,16 @@ function update_phenotype_lines(options) {
                 var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
                 load_markers( mm, mmaf);
+            }
+            function mrefresh_pheno() {
+                var mm = $('mm').getValue();
+                var mmaf = $('mmaf').getValue();
+                load_markers_pheno( mm, mmaf);
+            }
+            function mrefresh_lines() {
+                var mm = $('mm').getValue();
+                var mmaf = $('mmaf').getValue();
+                load_markers_lines( mm, mmaf);
             }
             
 function DispPhenoSel(value, middle, phenotype_uid) {
