@@ -862,7 +862,7 @@ class Downloads
 	      $res = mysql_query($sql) or die(mysql_error());
 	      $row = mysql_fetch_assoc($res)
 	      ?>
-	      <option selected value="
+	      <option disabled="disabled" value="
 	      <?php $uid ?>">
 	      <?php echo $row['line_record_name'] ?>
 	      </option>
