@@ -147,7 +147,8 @@ function HTMLLoginForm($msg = "") {
   <h3>Why Register?</h3>
   Registered members of the Triticeae CAP team have pre-release
     access to all phenotype and genotype data from the project, 
-    and are allowed to add their own private data to the database.
+    and will be allowed to add their own private data to the database
+    (feature to be added).
 
     <p>For registered non-CAP users, selections made during
     their searches are saved from session to session.
