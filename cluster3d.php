@@ -12,34 +12,13 @@ connect();
 
 <?php
 $nclusters = $_GET['clusters'];
-//echo "<h3>Clusters: $nclusters</h3>";
-
 // Timestamp for names of temporary files.
 $time = $_GET['time'];
-
-// Line names to label in the legend
-$linenames = $_GET['labels'];
-if ($linenames != "") {
-  if (strpos($linenames, ',') > 0 ) {
-    $linenames = str_replace(", ",",", $linenames);	
-    $lineList = explode(',',$linenames);
-  } 
-  elseif (preg_match("/\t/", $linenames)) {$lineList = explode("\t",$linenames);}
-  else {$lineList = explode('\r\n',$linenames);}
-
-  $labellines = "lineNames <- c(";
-  for ($i=0; $i<count($lineList); $i++) {
-    $labellines .= "\"$lineList[$i]\", ";
-  }
-  $labellines = trim($labellines, ", ");
-  $labellines .= ")\n";
- }
- else $labellines = "lineNames <-c('')\n";
 
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
-fwrite($setup, $labellines);
+fwrite($setup, "lineNames <-c('')\n");
 fwrite($setup, "nClust <- $nclusters\n");
 fwrite($setup, "setwd(\"/tmp/tht/\")\n");
 fwrite($setup, "mrkDataFile <-c('mrkData.csv".$time."')\n");
@@ -128,12 +107,7 @@ for ($i=0; $i<count($coords); $i++) {
     </x3d>
 </div>
 
-  <div style="
-	      position: absolute;
-	      left: 765px;
-	      top: 520px;
-	      width: 180px;
-	      ">
+  <div style="position: absolute; left: 765px; top: 520px; width: 180px;">
     <b>r</b>: Reset.<br>
     <b>Doubleclick</b>: Re-center rotation.<br>
     <a href="http://x3dom.org/docs/dev/navigation.html" target="_blank">Other commands...</a>
@@ -141,7 +115,9 @@ for ($i=0; $i<count($coords); $i++) {
       <b>Browsers:</b><br>
       <b>Firefox</b> and <b>Chrome</b> work well.<br>
       <b>Internet Explorer</b> requires <a href="http://get.adobe.com/flashplayer/">Flash Player 11</a> (new version).<br>
-      <b>Mac Safari</b>: Set "Enable WebGL" in the Develop menu.<br>
+      <b>Mac Safari</b>: Set "Enable WebGL" in the 
+      <span onclick = "alert('To get Safari to show the Develop menu, go to Preferences.../Advanced. \n\'Show Develop menu\' is at the bottom of the dialog box.')" style = "text-decoration: underline">
+	Develop menu.</span><br>
     <p style="font-size: 8pt">
 	Graphics from <a href="http://www.x3dom.org">www.x3dom.org</a>
   </div>
@@ -155,12 +131,8 @@ for ($i=0; $i<count($coords); $i++) {
 </style>
 
 <?php
-/*
- * Show table of cluster members.
- */
-
+/* Show table of cluster members.  */
 $clustInfo = file("/tmp/tht/clustInfo.txt".$time);
-//unlink("/tmp/tht/clustInfo.txt".$time);
 $clustInfo = preg_replace("/\n/", "", $clustInfo);
 sort($clustInfo);
 
@@ -169,31 +141,6 @@ for ($i=0; $i<count($clustInfo); $i++) {
   $clustsize[$clustInfo[$i][0]] = $clustInfo[$i][2];
   $clustlist[$clustInfo[$i][0]] .= $clustInfo[$i][1].", ";
  }
-
-// Modify yellow a bit to show up better in text.
-$color = array('black','red','green','blue','cyan','magenta','orange','#cccc00');
-print "<form action='cluster_lines3d.php' method='POST'>";
-print "<table width=200 style='background-image: none; font-weight: bold;'>";
-print "<thead><tr><th>&nbsp;</th><th>Cluster</th><th>Lines</th></tr></thead>";
-for ($i=1; $i<count($clustsize)+1; $i++) {
-  $total = $total + $clustsize[$i];
-  print "<tr style='color:".$color[$i-1]."';'>";
-  print "<td><input type='checkbox' name='mycluster[]' value=$i></td>";
-  print "<td>$i</td>";
-  print "<td>$clustsize[$i]</td>";
-  print "</tr>";
- }
-print "<tr><td>Total:</td><td>$total</td></tr>";
-print "</table>";
-print "<p>Select the clusters you want to use. ";
-print "<input type = 'hidden' name = 'time' value = $time>";
-print "<input type=submit value='Re-cluster'> in ";
-print "<input type=text name='clusters' value='5' size='1'> clusters";
-print "</form>";
-
-print "<p><hr><p>";
-print "<h3>Cluster contents</h3>";
-/* $clustertable = file("downloads/temp/clustertable.txt".$time); */
 $clustertable = file("/tmp/tht/clustertable.txt".$time);
 $clustertable = preg_replace("/\n/", "", $clustertable);
 // Remove the first row, "x".
@@ -202,15 +149,28 @@ for ($i=0; $i<count($clustertable); $i++) {
   $row = explode("\t", $clustertable[$i]);
   $contents[$row[1]] .= $row[0].", ";
 }
-print "<table width=500 style='background-image: none; font-weight: bold'>";
-print "<thead><tr><th>Cluster</th><th>Lines</th></tr></thead>";
-for ($i=1; $i<count($contents)+1; $i++) {
+// Modify yellow a bit to show up better in text.
+$color = array('black','red','green','blue','cyan','magenta','orange','#cccc00');
+
+print "<form action='cluster_lines3d.php' method='POST'>";
+print "<table width=700 style='background-image: none; font-weight: bold;'>";
+print "<thead><tr><th>&nbsp;</th><th>Cluster</th><th>Count</th><th>Lines</th></tr></thead>";
+for ($i=1; $i<count($clustsize)+1; $i++) {
+  $total = $total + $clustsize[$i];
   print "<tr style='color:".$color[$i-1]."';'>";
+  print "<td><input type='checkbox' name='mycluster[]' value=$i></td>";
   print "<td>$i</td>";
+  print "<td>$clustsize[$i]</td>";
   print "<td style='text-align: left'>".trim($contents[$i],', ')."</td>";
   print "</tr>";
  }
+print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
 print "</table>";
+print "<p>Select the clusters you want to use. ";
+print "<input type = 'hidden' name = 'time' value = $time>";
+print "<input type=submit value='Re-cluster'> in ";
+print "<input type=text name='clusters' value='5' size='1'> clusters";
+print "</form>";
 
 // Clean up old files, older than 1 day.
 system("find /tmp/tht -mtime +1 -name 'clustertable.txt*' -delete");
