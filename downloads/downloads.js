@@ -349,23 +349,23 @@ function update_phenotype_lines(options) {
 			} 
 	
 			function use_session() {
-				var mm = 99.9;
-                var mmaf = 0.01
+			    var mm = $('mm').getValue();
+                	    var mmaf = $('mmaf').getValue();
 			    var url=php_self + "?function=download_session&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
 			    document.location = url;
 			}
 			function use_session_v2() {
-                var mm = 99.9;
-                var mmaf = 0.01
-                var url=php_self + "?function=download_session_v2&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
-                document.location = url;
-            }
+			    var mm = $('mm').getValue();
+                	    var mmaf = $('mmaf').getValue();
+                	    var url=php_self + "?function=download_session_v2&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                	document.location = url;
+            		}
 			function use_session_v3() {
-                var mm = 99.9;
-                var mmaf = 0.01
-                var url=php_self + "?function=download_session_v3&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
-                document.location = url;
-            }
+			    var mm = $('mm').getValue();
+                	    var mmaf = $('mmaf').getValue();
+                	    var url=php_self + "?function=download_session_v3&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                	    document.location = url;
+            		}
 
 			function load_breedprog() {
                                 $('step1').hide();
