@@ -19,7 +19,7 @@ require_once 'includes/excel/Writer.php';
 
 //query for count of genotyping_data table takes too long
 //cache the results of the queries 
-//updating the cache is done every 12 hours
+//updating the cache is done every 24 hours
 
 connect();
 
@@ -36,6 +36,14 @@ if (isset($_GET['query'])) {
 } else {
   $query = "";
 }
+$sql = "select database()";
+$res = mysql_query($sql) or die(mysql_error());
+if ($row = mysql_fetch_row($res)) {
+ $db = $row[0];
+} else {
+ print "error $sql<br>\n";
+}
+$cachefile = '/tmp/tht/cache_' . $db . '.txt';
 if ($query == 'geno') {
   $count = 0;
   include $config['root_dir'].'theme/normal_header.php';
@@ -125,6 +133,36 @@ if ($query == 'geno') {
     $date = $row[2];
     print "<tr><td>$trial_code<td>$short_name<td>$date\n";
   }
+} elseif ($query == 'cache') {
+     $sql = "select count(genotyping_data_uid) from genotyping_data";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row = mysql_fetch_row($res)) {
+       $allele_count = $row[0];
+     } else {
+       print "error $sql<br>\n";
+     }
+     $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row = mysql_fetch_row($res)) {
+        $LinesWithGeno = $row[0];
+     }
+     $sql = "select count(distinct(markers.marker_uid)) from markers, genotyping_data where (markers.marker_uid = genotyping_data.marker_uid)";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row=mysql_fetch_row($res)) {
+      $MarkersWithGeno = $row[0];
+     }
+     $sql = "select distinct count(marker_uid) from markers where not exists (select genotyping_data_uid from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row=mysql_fetch_row($res)) {
+       $MarkersNoGeno = $row[0];
+     }
+
+     $fp = fopen($cachefile,'w');
+     fwrite($fp,"$allele_count\n");
+     fwrite($fp,"$LinesWithGeno\n");
+     fwrite($fp,"$MarkersWithGeno\n");
+     fwrite($fp,"$MarkersNoGeno\n");
+     fclose($fp);
 } else {
   if ($output == 'html') {
     header('Content-Type: application/vnd.ms-excel');
@@ -377,7 +415,7 @@ if ($query == 'geno') {
   } else {
     print "<b>Phenotype Data</b>\n";
     print "<table>\n";
-    print "<tr><td>Phenotypes<td>$count\n";
+    print "<tr><td>Phenotypes<td><a href=phenotype_report.php Title='List phenotype data by year and experiment'>$count</a>\n";
   }
   $sql = "select count(phenotype_uid) from phenotype_data";
   $res = mysql_query($sql) or die(mysql_error());
