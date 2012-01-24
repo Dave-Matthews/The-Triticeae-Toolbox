@@ -1020,44 +1020,44 @@ class Downloads
 	 elseif ($min_maf<0)
 	 $min_maf = 0;
 	 
-	 //get genotype experiments that correspond with the Datasets (BP and year) selected for the experiments
-	 $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-	 FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
-	 WHERE
-	 e.experiment_type_uid = et.experiment_type_uid
-	 AND lr.line_record_uid = tb.line_record_uid
-	 AND e.experiment_uid = tb.experiment_uid
-	 AND lr.line_record_uid in ($selectedlines)
-	 AND et.experiment_type_name = 'genotype'";
-	 $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-	 if (mysql_num_rows($res)>0) {
-	  while ($row = mysql_fetch_array($res)){
-	   $exp[] = $row["exp_uid"];
-	  }
-	  $exp = implode(',',$exp);
+	 $marker_str = implode(',',$markers);
+	 if (!preg_match('/[0-9]/',$marker_str)) { 
+	    //get genotype markers that correspond with the selected lines
+	    $sql_exp = "SELECT DISTINCT marker_uid
+	    FROM allele_cache
+	    WHERE
+	    allele_cache.line_record_uid in ($selectedlines)";
+	    //die($sql_exp);
+	    $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+	    if (mysql_num_rows($res)>0) {
+	     while ($row = mysql_fetch_array($res)){
+	      $markers[] = $row["marker_uid"];
+	     }
+	    }
+	    $marker_str = implode(',',$markers);
 	 }
+	   $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+	   SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+	   FROM allele_frequencies AS af
+	   WHERE af.marker_uid in ($marker_str)
+	   group by af.marker_uid";
 	 
-	 $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
-	 SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
-	 FROM allele_frequencies AS af
-	 WHERE af.experiment_uid in ($exp)
-	 group by af.marker_uid";
+	   $res = mysql_query($sql_mstat) or die(mysql_error());
+	   $num_mark = mysql_num_rows($res);
+	   $num_maf = $num_miss = $num_removed = 0;
 	 
-	 $res = mysql_query($sql_mstat) or die(mysql_error());
-	 $num_mark = mysql_num_rows($res);
-	 $num_maf = $num_miss = $num_removed = 0;
-	 
-	 while ($row = mysql_fetch_array($res)){
-	  $marker_uid[] = $row["marker"];
-	  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
-	  $miss = round(100*$row["summis"]/$row["total"],1);
-	  if ($maf >= $min_maf)
-	   $num_maf++;
-	  if ($miss > $max_missing)
-	   $num_miss++;
-	  if (($miss > $max_missing) OR ($maf < $min_maf))
-	   $num_removed++;
-	 }
+	   while ($row = mysql_fetch_array($res)){
+	    $marker_uid[] = $row["marker"];
+	    $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+	    $miss = round(100*$row["summis"]/$row["total"],1);
+	    if ($maf >= $min_maf)
+	     $num_maf++;
+	    if ($miss > $max_missing)
+	     $num_miss++;
+	    if (($miss > $max_missing) OR ($maf < $min_maf))
+	     $num_removed++;
+	   }
+	
 	 
 	 if (mysql_num_rows($res) >= 1) {
 	  ?>
@@ -2018,10 +2018,9 @@ selected lines</a>.<br>
 				$outputheader .= $row["name"].$delimiter;
 				$marker_uid[] = $row["marker"];
 		   }
-		   $marker_names2[] = $row["name"];
 		}
 		
-		$nelem = count($marker_names2);
+		$nelem = count($marker_names);
 		if ($nelem == 0) {
 		   die("error - no genotype or marker data for this selection");
 		}
@@ -2056,7 +2055,9 @@ selected lines</a>.<br>
 		$subset = "";
 		if ($markers != "") {
 		   $subset = "WHERE a.marker_uid IN ($markers)";
-		}
+		} else {
+                   $subset = "WHERE a.marker_uid IN ($marker_uid)";
+                }
 		if ($lines != "") {
 		   if ($subset == "") {
 		       $subset = "WHERE a.line_record_uid in ($lines)";
@@ -2070,7 +2071,6 @@ selected lines</a>.<br>
 		FROM
 		allele_cache as a " . $subset .
 		" ORDER BY a.line_record_uid, a.marker_uid";
-		
 		
 		$last_line = "some really silly name that noone would call a plant";
 		$res = mysql_query($sql) or die(mysql_error());
