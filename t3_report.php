@@ -377,7 +377,7 @@ if ($query == 'geno') {
   } else {
     print "<b>Phenotype Data</b>\n";
     print "<table>\n";
-    print "<tr><td>Phenotypes<td>$count\n";
+    print "<tr><td>Phenotypes<td><a href=phenotype_report.php Title='List phenotype data by year and experiment'>$count</a>\n";
   }
   $sql = "select count(phenotype_uid) from phenotype_data";
   $res = mysql_query($sql) or die(mysql_error());
