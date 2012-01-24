@@ -444,33 +444,33 @@ private function typeAnnotationCheck()
 		
 		<h3>We are reading following data from the uploaded Input Data File</h3>
 		
-		<table >
+		<table style="width: 1700px;">
 		<thead>
 	<tr>
 	<th >Status</th>
 	<th >Crop</th>
-	<th >Breeding Program(s) </th>
+	<th >Breeding<br>Program </th>
 	<th >Location </th>
-	<th  >Latitude of field </th>
-        <th >Longitude of field </th>
+	<th  >Latitude</th>
+        <th >Longitude </th>
 	<th  >Collaborator </th>
 	<th  >Experiment </th>
 	<th  >Trial Code </th>
-	<th >Planting date </th>
-        <th >Harvest date </th>
-	<th  >Seeding rate (plants/m2) </th>
-	<th >Experimental design</th>
-	<th >Number of entries </th>
-	<th  >Number of replications </th>
-	<th  >Plot size (m2) </th>
-	<th >Harvested area (m2) </th>
-	<th  >Irrigation (yes or no) </th>
-	<th  >Harvest date </th>
+	<th >Planting<br>date </th>
+        <th >Harvest<br>date </th>
+	<th  >Seeding rate</th>
+	<th >Experimental<br>design</th>
+	<th >Entries</th>
+	<th  >Replications </th>
+	<th  >Plot size<br>(m2) </th>
+	<th >Harvested<br>area (m2) </th>
+	<th  >Irrigation</th>
+	<th  >Harvest<br>date</th>
 	<th  >Other remarks </th>
 	</tr>
 	<thead>
 	
-<tbody style="padding: 0; height: 200px; width: 1600px;  overflow: scroll;border: 1px solid #5b53a6;">	
+<tbody style="padding: 0; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">	
 
 			<?
 				for ($i = 2; $cols >= $i; $i++)
@@ -485,9 +485,9 @@ private function typeAnnotationCheck()
 			$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialcode_row[$i]'";
                         $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 			if (mysql_num_rows($res)!==0) { //yes, experiment found, so update
-			  print "Update Record</td><td>";
+			  print "Update<br>record</td><td>";
                         } else {
-			  print "New Record</td><td>";
+			  print "New<br>record</td><td>";
  			}
 			print "</font>";
 
@@ -526,8 +526,8 @@ private function typeAnnotationCheck()
 			$newtext = wordwrap($irrigation_row[$i], 6, '<br>');
 			print "$newtext<td>";
 			$newtext = wordwrap($harvestdate_row[$i], 6, '<br>');
-			print "$newtext<td>";
-			$newtext = wordwrap($otherremarks_row[$i], 12, "<br>" );
+			print "$newtext<td style='width: 500px;'>";
+			$newtext = wordwrap($otherremarks_row[$i], 40, "<br>" );
 			print "$newtext";
 				}/* end of for loop */
 			?>
