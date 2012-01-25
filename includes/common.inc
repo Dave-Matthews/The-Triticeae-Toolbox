@@ -980,6 +980,8 @@ function get_table_info ($tablename) {
  * If you want it to be plural (with an s) then set $plural to 1
  */
 function beautifulTableName($tname, $plural=0) {
+  // dem jan2012
+  if ($tname == 'phenotypes') $tname = 'traits';
 
 	$list = array("a", "o", "u", "s", "");
 
@@ -996,7 +998,6 @@ function beautifulTableName($tname, $plural=0) {
 	else {
 		$end = ($tname[strlen($tname)-1] == "s" && $tname[strlen($tname)-2] != "u") ? substr($tname, 0, -1) : $tname;
 	}
-
 	return ucwords(str_replace("_", " ", $end));
 
 }
