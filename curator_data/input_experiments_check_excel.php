@@ -1271,6 +1271,15 @@ private function type_Database() {
 		
         echo " <b>The Data is inserted/updated successfully </b>";
         echo"<br/><br/>";
+	// Timestamp, e.g. _28Jan12_23:01
+	$ts = date("_jMy_H:i");
+	$filename = $filename . $ts;
+	$devnull = mysql_query("INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysql_error());
+	if (!empty($rawdatafile)) {
+	  $rawdatafile = $rawdatafile . $ts;
+	  $devnull = mysql_query("INSERT INTO input_file_log (file_name,users_name) VALUES('$rawdatafile', '$username')") or die(mysql_error());
+	}
+
 	?>
 	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php"> Go Back To Main Page </a>
 	<?
