@@ -460,7 +460,7 @@ class LineNames_Check
 		}
 		$line_update_data = $line_update_names;
 	      }
-	      else $line_update_data = "";
+	      else $line_update_data = array();
 	      $line_insert_data = explode(",",$line_inserts_str);
 	      // $line_insert_data is a string containing a single line name.  See line 374.
 	      // If any errors, show what we read and stop.
@@ -671,11 +671,15 @@ class LineNames_Check
 			    Please verify that the lines to be added are new and 
                             the lines to be edited are ones you intend to change.
 <p>
+<?php
+$lid = count($line_insert_data);
+$lud = count($line_update_data);
+?>
 <table><tr><td>
  <table >
 	<tr>
-	<th style="width: 140px;" class="marker">Lines to Add</th>
-	<th style="width: 150px;" class="marker" >Lines to Edit </th>
+          <th style="width: 140px;" class="marker">Lines to Add: <?php echo "$lid" ?></th>
+          <th style="width: 150px;" class="marker" >Lines to Edit: <?php echo "$lud" ?></th>
 	</tr>
 	</table>
 			
@@ -751,8 +755,10 @@ class LineNames_Check
 	
 	global $cnt;
 	$datafile = $_GET['linedata'];
-	$filename_old = $_GET['file_name'];
-	$filename = $filename_old.rand();
+	//dem jan2012: This isn't useful.
+	//$filename_old = $_GET['file_name'];
+	//$filename = $filename_old.rand();
+	$filename = $_GET['file_name'];
 	$username = $_GET['user_name'];
 	
 	$reader = & new Spreadsheet_Excel_Reader();
@@ -1172,8 +1178,10 @@ class LineNames_Check
 	else {
 	  echo "<h3>Loaded</h3>";
 	echo "The data was loaded successfully. You can check it with <a href='".$config['base_url']."search.php'>Quick search...</a>";
-	$sql = "INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')";
-	$lin_table=mysql_query($sql) or die(mysql_error());
+	// Timestamp, e.g. _28Jan12_23:01
+	$ts = date("_jMy_H:i");
+	$filename = $filename . $ts;
+	$devnull = mysql_query("INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysql_error());
 	}
 
 	$footer_div = 1;
