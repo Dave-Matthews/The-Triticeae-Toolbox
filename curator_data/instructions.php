@@ -47,6 +47,8 @@ ul ul ul {list-style-type: disc}
 	    <ul>
 	      <li><a href="curator_data/examples/Geno_Annotation_Sample.txt">Experiment annotation</a>
 		- Description of the assay
+ 	      <li><a href="curator_data/examples/LinesTrialCode_Sample.txt">Line translation</a>
+		- Line Name and Trial Code
 	      <li><a href="curator_data/examples/genotypeData_T3.txt">Experiment results</a>
 		- 1D table of alleles for lines and markers
 	      <li><a href="curator_data/examples/TCAPbarley9K-sample.txt">Experiment results</a>
