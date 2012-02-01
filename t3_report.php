@@ -65,6 +65,21 @@ if ($query == 'geno') {
   }
   print "</table>\n";
   print "total $count markers missing genotype data<br>\n";
+} elseif ($query == 'geno2') {
+  $count = 0;
+  include $config['root_dir'].'theme/normal_header.php';
+  print "<h1>Genotyping data by experiment</h1>\n";
+  print "<table border=0>";
+  print "<tr><td>experiment name<td>genotyping data\n";
+  $sql = "select experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($row = mysql_fetch_row($res)) {
+    $count=$count+$row[1];
+    print "<tr><td>$row[0]<td>$row[1]\n";
+  }
+  $count = number_format($count);
+  print "<tr><td>total<td>$count\n";
+  print "</table>";
 } elseif ($query == 'linegeno') {
   include($config['root_dir'].'theme/normal_header.php');
   print "Lines with genotyping data\n";
@@ -369,7 +384,7 @@ if ($query == 'geno') {
   } else {
     print "<b>Genotype Data</b>\n";
     print "<table>\n";
-    print "<tr><td>Markers<td><a href=t3_report.php?query=Markers Title='List top 100 markers orderd by creation date'>$count</a>\n";
+    print "<tr><td>Markers<td><a href=t3_report.php?query=Markers Title='List top 100 markers ordered by creation date'>$count</a>\n";
   }
   if ($output == "excel") {
     $worksheet->write(14, 0, "Markers with genotyping data");
@@ -387,7 +402,7 @@ if ($query == 'geno') {
 	$worksheet->write(16, 0, "Total genotype data");
         $worksheet->write(16, 1, "$allele_count");
   } else {
-	echo "<tr><td>Total genotype data<td>$allele_count";
+	echo "<tr><td>Total genotype data<td><a href=t3_report.php?query=geno2 Title='List count of genotyping data by experiment'>$allele_count</a>";
   }
 
   $sql = "select date_format(max(created_on),'%m-%d-%Y') from markers";
@@ -410,12 +425,12 @@ if ($query == 'geno') {
   }
   if ($output == "excel") {
     $worksheet->write(19, 0, "Phenotype Data", $format_header);
-    $worksheet->write(20, 0, "Phenotypes");
+    $worksheet->write(20, 0, "Traits");
     $worksheet->write(20, 1, $count);
   } else {
     print "<b>Phenotype Data</b>\n";
     print "<table>\n";
-    print "<tr><td>Phenotypes<td><a href=phenotype_report.php Title='List phenotype data by year and experiment'>$count</a>\n";
+    print "<tr><td>Traits<td>$count\n";
   }
   $sql = "select count(phenotype_uid) from phenotype_data";
   $res = mysql_query($sql) or die(mysql_error());
@@ -426,7 +441,7 @@ if ($query == 'geno') {
       $worksheet->write(21, 0, "Total phenotype data");
       $worksheet->write(21, 1, $count);
     } else {
-        print "<tr><td>Total phenotype data<td>$count\n";
+        print "<tr><td>Total phenotype data<td><a href=phenotype_report.php Title='List phenotype data by year and experiment'>$count</a>\n";
   }
   $sql = "select date_format(max(created_on),'%m-%d-%Y') from phenotype_data";
   $res = mysql_query($sql) or die(mysql_error());
