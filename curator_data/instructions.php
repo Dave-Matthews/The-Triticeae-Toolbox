@@ -37,7 +37,7 @@ ul ul ul {list-style-type: disc}
 	  <li><b>Phenotyping</b>
 	    <ul>
 	      <li><a href="curator_data/examples/T3/TrialSubmissionForm.xls">Experiment annotation</a>
-		- Location, planting date, experimental design...
+		- Location, planting date, experimental design...[ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html">Tutorial</a> ]
 	      <li><a href="curator_data/examples/T3/PhenotypeSubmissionForm.xls">Experiment results</a>
 		- Values for all traits for test lines and checks, summary statistics
 	      <li><a href="curator_data/examples/trait_template.xls">Traits</a>
@@ -45,11 +45,12 @@ ul ul ul {list-style-type: disc}
 	    </ul>
 	  <li><b>Genotyping</b>
 	    <ul>
-	      <li><a href="curator_data/examples/T3/Genotyping_ID_Submission_Form.xls">Sample submission</a>
 	      <li><a href="curator_data/examples/Geno_Annotation_Sample.txt">Experiment annotation</a>
 		- Description of the assay
-	      <li><a href="curator_data/examples/genotypeData_THT.txt">Experiment results</a>
-		- Table of alleles for lines x markers
+	      <li><a href="curator_data/examples/genotypeData_T3.txt">Experiment results</a>
+		- 1D table of alleles for lines and markers
+	      <li><a href="curator_data/examples/TCAPbarley9K-sample.txt">Experiment results</a>
+		- 2D table of alleles for lines and markers
 	      <li>Markers
 		<br><a href="curator_data/examples/Generic_SNP.txt">Sequence</a>, 
 		<a href="curator_data/examples/mapupload_example.txt">map location</a>, 
