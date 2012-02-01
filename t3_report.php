@@ -65,6 +65,21 @@ if ($query == 'geno') {
   }
   print "</table>\n";
   print "total $count markers missing genotype data<br>\n";
+} elseif ($query == 'geno2') {
+  $count = 0;
+  include $config['root_dir'].'theme/normal_header.php';
+  print "<h1>Genotyping data by experiment</h1>\n";
+  print "<table border=0>";
+  print "<tr><td>experiment name<td>genotyping data\n";
+  $sql = "select experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($row = mysql_fetch_row($res)) {
+    $count=$count+$row[1];
+    print "<tr><td>$row[0]<td>$row[1]\n";
+  }
+  $count = number_format($count);
+  print "<tr><td>total<td>$count\n";
+  print "</table>";
 } elseif ($query == 'linegeno') {
   include($config['root_dir'].'theme/normal_header.php');
   print "Lines with genotyping data\n";
@@ -387,7 +402,7 @@ if ($query == 'geno') {
 	$worksheet->write(16, 0, "Total genotype data");
         $worksheet->write(16, 1, "$allele_count");
   } else {
-	echo "<tr><td>Total genotype data<td>$allele_count";
+	echo "<tr><td>Total genotype data<td><a href=t3_report.php?query=geno2 Title='List count of genotyping data by experiment'>$allele_count</a>";
   }
 
   $sql = "select date_format(max(created_on),'%m-%d-%Y') from markers";
