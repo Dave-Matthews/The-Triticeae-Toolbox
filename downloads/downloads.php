@@ -302,7 +302,8 @@ class Downloads
 	    $datasets_exp = "";
 		if (isset($_SESSION['selected_lines'])) {
 			$selectedcount = count($_SESSION['selected_lines']);
-			$lines = implode(",", $_SESSION['selected_lines']);
+			$lines = $_SESSION['selected_lines'];
+			//$lines = implode(",", $_SESSION['selected_lines']);
 		} else {
 			$lines = "";
 		}
@@ -335,7 +336,10 @@ class Downloads
         }
 		$zip->newFile("snpfile.txt");
         $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
+        $zip->newFile("allele_conflict.txt");
+        $zip->writeData($this->type2_build_conflicts_download($lines,$markers));
         $zip->close();
+        
         header("Location: ".$dir.$filename);
 	}
 	
@@ -984,7 +988,7 @@ class Downloads
 	}
 	 if (isset($_SESSION['selected_lines'])) {
 	     $countLines = count($_SESSION['selected_lines']);
-	     $line_array = $_SESSION['selected_lines'];
+	     $lines = $_SESSION['selected_lines'];
 	     $selectedlines = implode(",", $_SESSION['selected_lines']);
 	     if ($saved_session == "") {
 	      $saved_session = "$countLines lines";
@@ -1057,7 +1061,7 @@ class Downloads
 	        $marker_list[$i] = $row[0];
 	        $i++;
 	     }
-	     foreach ($line_array as $line_record_uid) {
+	     foreach ($lines as $line_record_uid) {
 	       $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
 	       $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	       $row = mysql_fetch_array($res);
@@ -1597,6 +1601,8 @@ selected lines</a>.<br>
 		// $firephp->log("before first marker file".$experiments_g);
 		$zip->writeData($this->type1_build_markers_download($experiments_g, $dtype));
 		// $firephp->log("after first marker file".$experiments_g);
+		$zip->newFile("allele_conflict.txt");
+		$zip->writeData($this->type1_build_conflicts_download($experiments_g, $dtype));
 		$zip->newFile("annotated_alignment.txt");
 		$zip->writeData($this->type1_build_annotated_align($experiments_g));
 		// $firephp->log("after alignment marker file".$experiments_g);
@@ -1669,6 +1675,8 @@ selected lines</a>.<br>
 		// $firephp->log("before first marker file".$experiments_g);
 		$zip->writeData($this->type1_build_markers_download($experiments_g, $dtype));
 		// $firephp->log("after first marker file".$experiments_g);
+		$zip->newFile("allele_conflict.txt");
+		$zip->writeData($this->type1_build_conflicts_download($experiments_g, $dtype));
 		$zip->newFile("geneticMap.txt");
 		$zip->writeData($this->type1_build_geneticMap($experiments_g));
 		// $firephp->log("after alignment marker file".$experiments_g);
@@ -2001,6 +2009,44 @@ selected lines</a>.<br>
 	   }
 	}
 	
+	private function type1_build_conflicts_download($experiments,$dtype) {
+	 
+	  //get lines and filter to get a list of markers which meet the criteria selected by the user
+	  $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+	  SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+	  FROM allele_frequencies AS af, markers as m
+	  WHERE m.marker_uid = af.marker_uid
+	  AND af.experiment_uid in ($experiments)
+	  group by af.marker_uid";
+	 
+	  $res = mysql_query($sql_mstat) or die(mysql_error());
+	  $num_maf = $num_miss = 0;
+	  while ($row = mysql_fetch_array($res)){
+	    $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+	    $miss = round(100*$row["summis"]/$row["total"],1);
+	    if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
+	      $marker_uid[] = $row["marker"];
+	    }
+	  }
+	  $marker_uid = implode(",",$marker_uid);
+	  $output = "line name\tmarker name\talleles\texperiment\n";
+	  $query = "select l.line_record_name, m.marker_name, a.alleles, e.trial_code
+	  from allele_conflicts a, line_records l, markers m, experiments e
+	  where a.line_record_uid = l.line_record_uid
+	  and a.marker_uid = m.marker_uid
+	  and a.experiment_uid = e.experiment_uid
+	  and a.alleles != '--'
+	  and a.marker_uid IN ($marker_uid)
+	  order by l.line_record_name, m.marker_name, e.trial_code";
+	  $res = mysql_query($query) or die(mysql_error() . "<br>" . $sql_exp);
+	  if (mysql_num_rows($res)>0) {
+	   while ($row = mysql_fetch_row($res)){
+	    $output.= "$row[0]\t$row[1]\t$row[2]\t$row[3]\n";
+	   }
+	  }
+	  return $output;
+	}
+	
 	private function type2_build_markers_download($lines,$markers,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
@@ -2023,13 +2069,17 @@ selected lines</a>.<br>
 			$min_maf = 100;
 		elseif ($min_maf<0)
 		$min_maf = 0;
-		$line_array = $_SESSION['selected_lines'];
 		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
 		
-		if (isset($_SESSION['clicked_buttons'])) {
-		  $markers_str = implode(",", $_SESSION['clicked_buttons']);
+		if (count($markers)>0) {
+		  $markers_str = implode(",", $markers);
 		} else {
 		  $markers_str = "";
+		}
+		if (count($lines)>0) {
+		  $lines_str = implode(",", $lines);
+		} else {
+		  $lines_str = "";
 		}
 		//get lines and filter to get a list of markers which meet the criteria selected by the user
 		if (preg_match('/[0-9]/',$markers_str)) {
@@ -2038,7 +2088,7 @@ selected lines</a>.<br>
 		  $sql_exp = "SELECT DISTINCT marker_uid
 		  FROM allele_cache
 		  WHERE
-		  allele_cache.line_record_uid in ($lines)";
+		  allele_cache.line_record_uid in ($lines_str)";
 		  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
 		  if (mysql_num_rows($res)>0) {
 		    while ($row = mysql_fetch_array($res)){
@@ -2063,7 +2113,7 @@ selected lines</a>.<br>
 		   $marker_list_name[$i] = $row[1];
 		   $i++;
 		}
-		foreach ($line_array as $line_record_uid) {
+		foreach ($lines as $line_record_uid) {
 		  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
 		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		  $row = mysql_fetch_array($res);
@@ -2122,7 +2172,7 @@ selected lines</a>.<br>
 		 );
 		}
 		
-		foreach ($line_array as $line_record_uid) {
+		foreach ($lines as $line_record_uid) {
 		  $sql = "select line_record_name, alleles from allele_byline where line_record_uid = $line_record_uid";
 		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		  $row = mysql_fetch_array($res);
@@ -2144,11 +2194,10 @@ selected lines</a>.<br>
 		  $output .= $outarray . "\n";
 		}
 		$nelem = count($marker_names);
-		$num_lines = count($line_array);
+		$num_lines = count($lines);
 		if ($nelem == 0) {
 		   die("error - no genotype or marker data for this selection");
 		}
-		$marker_uid = implode(",",$marker_uid);
 		
 		// make an empty line with the markers as array keys, set default value
 		//  to the default missing value for either qtlminer or tassel
@@ -2167,6 +2216,52 @@ selected lines</a>.<br>
 		}
 	}
 	
+	private function type2_build_conflicts_download($lines,$markers) {
+	 
+	  if (count($markers)>0) {
+	    $markers_str = implode(",",$markers);
+	  } else {
+	    $markers_str = "";
+	  }
+	  if (count($lines)>0) {
+	    $lines_str = implode(",",$lines);
+	  } else {
+	    $lines_str = "";
+	  }
+	  //get lines and filter to get a list of markers which meet the criteria selected by the user
+	  if (preg_match('/[0-9]/',$markers_str)) {
+	  } else {
+	  //get genotype markers that correspond with the selected lines
+	    $sql_exp = "SELECT DISTINCT marker_uid FROM allele_cache
+	    WHERE
+	    allele_cache.line_record_uid in ($lines_str)";
+	    $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+	    if (mysql_num_rows($res)>0) {
+	      while ($row = mysql_fetch_array($res)){
+	        $markers[] = $row["marker_uid"];
+	      }
+	    }
+	    $markers_str = implode(',',$markers);
+	  }
+	  $output = "line name\tmarker name\talleles\texperiment\n";
+	  $query = "select l.line_record_name, m.marker_name, a.alleles, e.trial_code
+	  from allele_conflicts a, line_records l, markers m, experiments e
+	  where a.line_record_uid = l.line_record_uid
+	  and a.marker_uid = m.marker_uid
+	  and a.experiment_uid = e.experiment_uid
+	  and a.alleles != '--'
+	  and a.line_record_uid IN ($lines_str)
+	  and a.marker_uid IN ($markers_str)
+	  order by l.line_record_name, m.marker_name, e.trial_code";
+	  $res = mysql_query($query) or die(mysql_error() . "<br>" . $sql_exp);
+	  if (mysql_num_rows($res)>0) {
+	    while ($row = mysql_fetch_row($res)){
+	      $output.= "$row[0]\t$row[1]\t$row[2]\t$row[3]\n";
+	    }
+	  }
+	  return $output;
+	}
+
 	private function type1_build_annotated_align($experiments)
 	{
 		$delimiter ="\t";
