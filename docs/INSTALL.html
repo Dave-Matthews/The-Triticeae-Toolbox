@@ -70,19 +70,23 @@ T3wheat_writeaccess.inc:
 ?>
 
 <h4>Directories for uploaded and output files</h4>
-Uploaded data files are stored in the curator_data/uploads directory,
-which must be writable by the Apache user, e.g. www-data. 
+Uploaded data files are stored in the curator_data/uploads/ directory,
+which must be writable by the Apache user, e.g. www-data.  
 
 % cd curator_data
 % mkdir uploads
 % sudo chown www-data uploads
 
-The plan is to store all output and temporary files in directory
-/tmp/tht/, where write-access for the scripts isn't a problem and
-they're all in one place to be purged daily or hourly with a cron() job.
-In order for this to work there must be a symbolic link from the Apache
-webserver's DocumentRoot to /tmp/tht.  If your webserver top directory
-is /www/htdocs, say
+Likewise, certain "raw" data files that are not parsed into the database
+are archived in the raw/ directory, so this must be writable by the 
+Apache user too.
+
+All output and temporary files are stored in directory /tmp/tht/, where
+write-access for the scripts isn't a problem and they're all in one
+place to be purged daily or hourly with a cron() job.  In order for this
+to work there must be a symbolic link from the Apache webserver's
+DocumentRoot to /tmp/tht.  If your webserver top directory is
+/www/htdocs, say
 
 % cd /www/htdocs; mdkir tmp; ln -s /tmp/tht tmp/tht
 
