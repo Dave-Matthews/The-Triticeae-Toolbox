@@ -77,7 +77,7 @@ private function typeExperiments()
 
 <form action="curator_data/input_experiments_check_excel.php" method="post" enctype="multipart/form-data">
   <input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
-  <p><strong>Means File:</strong> <input id="file[]" type="file" name="file[]" size="50%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/AB08Aberdeen_Agro_mn_2009_07_24.xls">Example Means File</a></p>
+  <p><strong>Means File:</strong> <input id="file[]" type="file" name="file[]" size="50%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PhenotypeSubmissionForm.xls">Example Means File</a></p>
   <p><strong>Raw Data File:</strong> <input id="file[]" type="file" name="file[]" size="50%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/NDQ06Dormancy_raw_2008_08_27.xls">Example Raw Data File</a></p>
   <p><input type="submit" value="Upload" /></p>
 </form>
