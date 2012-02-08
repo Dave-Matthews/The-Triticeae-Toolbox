@@ -3,8 +3,8 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 02/08/2011 cbirkett	Ignore space characters in line input file
 // 10/25/2011  JLee   Ignore "cut" portion of input file 
-
 // 10/17/2011 JLee  Add username and resubmission entry to input file log table
 // 10/17/2011 JLee  Create of input file log entry
 // 4/11/2011 JLee   Add ability to handle zipped data files
@@ -121,6 +121,10 @@ while(($line = fgets($reader)) !== false) {
   $linenumber++;
   $origline = $line;
     chop($line, "\r");
+    if (preg_match('/ /',$line)) {
+      echo "removing illegal blank character from $line";
+      $line = preg_replace('/ /','',$line);
+    }
     if (strlen($line) < 2) continue;
     if (feof($reader)) break;
     if (empty($line)) continue;
