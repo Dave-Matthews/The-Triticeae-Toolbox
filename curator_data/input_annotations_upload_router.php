@@ -15,86 +15,48 @@ $row = loadUser($_SESSION['username']);
 
 ////////////////////////////////////////////////////////////////////////////////
 ob_start();
-
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-
 new Annotations($_GET['function']);
 
-class Annotations
-{
-    
-    private $delimiter = "\t";
-    
-	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-							
-					
-			default:
-				$this->typeAnnotations(); /* intial case*/
-				break;
-			
-		}	
-	}
+class Annotations {
 
+  private $delimiter = "\t";
+  // Using the class's constructor to decide which action to perform
+  public function __construct($function = null) {	
+    switch($function) {
+    default:
+      $this->typeAnnotations(); /* intial case*/
+      break;
+    }	
+  }
 
-private function typeAnnotations()
-	{
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
+  private function typeAnnotations() {
+    global $config;
+    include($config['root_dir'] . 'theme/admin_header.php');
 
-		echo "<h2>Add Experiment Annotation Information </h2>"; 
+    echo "<h2>Add/Delete a Phenotype Experiment </h2>"; 
+    $this->type_Annotation_Name();
+    $footer_div = 1;
+    include($config['root_dir'].'theme/footer.php');
+  }
+
+  private function type_Annotation_Name() {
+
+    ?>
+
+<style type="text/css">
+  a {text-decoration: none;}
+</style>
+
+<ul>
+  <p><li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"><b>Upload an Excel (.xls) File</b></a></li>
+  <p><li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><b>Upload a Tab Delimited(.txt) File</b></a></li>
+  <p><li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php"><b>Delete an experiment</b></a></li>
+</ul>	
 		
-			
-		$this->type_Annotation_Name();
-
-		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-	}
-	
-	
-	private function type_Annotation_Name()
-	{
-	?>
-	<script type="text/javascript">
-	
-	
-	</script>
-	
-	<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 0px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-	
-		<table>
-		<tr>
-		<td>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><p><li>Upload a Tab Delimited(.txt) File</li></p></a>  
-	</td>
-	<td colspan="2">
-	</td>
-	<td>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"><p><li>Upload an Excel (.xls) File</li></p></a>
-	</td>
-	</tr>
-	</table>
-	
-	
-
-	
-		
-		
-<?
- 
-	} /* end of type_Pedigree_Name function*/
-	
+<?php
+    } /* end of type_Annotation_Name function*/
 } /* end of class */
-
 ?>
