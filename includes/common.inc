@@ -757,10 +757,13 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 		/*
 	 	 * Generate Edit Output
 		 */
+		// Enable the Delete option only for tables that have good foreign key constraints to prevent orphan data.
+		if ($table == 'CAPdata_programs')
+		  $deletebutton = "<button type='submit' name='Delete' value='$row[$pkey]' disabled>Delete</button>";
 		$line = "
 		<tr><form name=\"$table$count\" id=\"$table$count\" action=\"$return_page\" method=\"post\">
 			<td><input type=\"checkbox\" value=\"$count\" onclick=\"toggleRow('$table$count')\" />
-                        <input type=\"submit\" name=\"$row[$pkey]\" value=\"Update\" disabled>\n";
+                        <input type=\"submit\" name=\"$row[$pkey]\" value=\"Update\" disabled> $deletebutton";
 
 		//Show Foreign Key Options
 		foreach($ftables as $key) {
@@ -772,7 +775,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 		//Show column values, ensure that the column is not in the ignore array.
 		foreach($row as $k=>$v) {
 			if( !in_array($k, $ignore) && !in_array($k, $fpkeys) )
-				$line .= "\t\t\t<td><textarea name=\"$k\" rows=\"1\" cols=\"12\" disabled>".stripslashes($v)."</textarea></td>\n";
+				$line .= "\t\t\t<td><textarea name=\"$k\" rows=\"4\" cols=\"12\" disabled>".stripslashes($v)."</textarea></td>\n";
 		}
 
 		$line .= "</form></tr>";
@@ -925,13 +928,15 @@ function chk_tbl_dep ($nm1) {
 function get_ukey ($tblname) {
 	$ukeys=array();
 	$ukeyres = mysql_query("SHOW CREATE TABLE $tblname");
-
+	// Avoid PHP error if there are no Quick Search hits so $tblname is invalid.
+	if ($ukeyres !== FALSE ) {
 	while( $row = mysql_fetch_assoc($ukeyres) ) {
 		$cstr=$row['Create Table'];
 		preg_match_all('/UNIQUE\sKEY\s`(.*?)`\s*\(`(.*?)`\)/', $cstr, $mts);
 		for($i=0; $i<count($mts[1]); $i++) {
 			$ukeys = array_merge($ukeys, explode("`,`", $mts[2][$i]));
 		}
+	}
 	}
 	return $ukeys;
 }

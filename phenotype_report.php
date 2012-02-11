@@ -10,14 +10,15 @@ connect();
   <h1>Phenotype data by year</h1>
   <div class="section">
   <table>
-  <tr><th>Trait</th><th colspan=4>Experiments</th><th></th><th colspan=4>Data Points</th>
-  <tr><th></th>
 
 <?php
 // Years that have data
-$res = mysql_query("select distinct experiment_year from experiments order by experiment_year");
+$res = mysql_query("select distinct experiment_year from experiments where experiment_type_uid=1 order by experiment_year");
 while ($row = mysql_fetch_row($res)) 
   $years[] = $row[0];
+$numyrs = count($years);
+print "<tr><th>Trait</th><th colspan=$numyrs>Experiments</th><th></th><th colspan=$numyrs>Data Points</th>";
+print "<tr><th></th>";
 foreach ($years as $y) print "<th>$y</th>";
 print "<th></th>";
 foreach ($years as $y) print "<th>$y</th>";
