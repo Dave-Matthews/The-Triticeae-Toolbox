@@ -51,9 +51,9 @@ class Annotations {
 </style>
 
 <ul>
-  <p><li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"><b>Upload an Excel (.xls) File</b></a></li>
-  <p><li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><b>Upload a Tab Delimited(.txt) File</b></a></li>
-  <p><li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php"><b>Delete an experiment</b></a></li>
+<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"><li><b>Upload an Excel (.xls) File</b></li></a><br>
+<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><li><b>Upload a Tab Delimited(.txt) File</b></li></a><br>
+<a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php"><li><b>Delete an experiment</b></li></a>
 </ul>	
 		
 <?php
