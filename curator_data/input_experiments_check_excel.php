@@ -127,8 +127,18 @@ private function typeExperimentCheck()
 
 	       // First get the one-time values in the header.
 	       $crop = $means['cells'][2][2];
-	       $breeding_program_name = $means['cells'][3][2];
-	       $trial_code = $means['cells'][4][2];
+	       if ($means['cells'][3][1] == "*Breeding Program Code")
+		 $breeding_program_name = $means['cells'][3][2];
+	       else {
+		 echo "Fatal Error: Row 3 of the spreadsheet must be \"*Breeding Program Code\".<p>";
+		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+	       }
+	       if ($means['cells'][4][1] == "*Trial Code")
+		 $trial_code = $means['cells'][4][2];
+	       else {
+		 echo "Fatal Error: Row 4 of the spreadsheet must be \"*Trial Code\".<p>";
+		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+	       }
 	       /*
 		* Figure out which experiment to use
 		*/
