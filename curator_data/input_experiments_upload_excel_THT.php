@@ -76,7 +76,7 @@ private function typeExperiments()
 		</style>
 		
 		<p><strong>Note: </strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font size="2px">Please upload the relevant annotation file before uploading Means Data File. </font></p>
-		<form action="curator_data/input_experiments_check_excel.php" method="post" enctype="multipart/form-data">
+		<form action="curator_data/input_experiments_check_excel_THT.php" method="post" enctype="multipart/form-data">
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
 	<p><strong>Means Data File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/AB08Aberdeen_Agro_mn_2009_07_24.xls">Example Means Input File</a></p>
