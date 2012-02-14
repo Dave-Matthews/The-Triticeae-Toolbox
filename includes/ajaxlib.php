@@ -994,7 +994,7 @@ function DispCategorySel($arr) {
 		echo "</select>";
 	}
 	else {
-	  echo "<p style='color: red;'>There are no phenotypes available for this category.</p>";
+	  echo "<p style='color: red;'>There are no traits available for this category.</p>";
 	}
 }
 
@@ -1003,7 +1003,7 @@ function DispCategorySel($arr) {
  */
 function DispPhenotypeSel($arr) {
 	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
-		echo "Please Select A Phenotype";
+		echo "Please Select A Trait";
 		return;
 	}
 
@@ -1030,7 +1030,7 @@ function DispPhenotypeSel($arr) {
 		echo "</select>";
 	}
 	else {
-	  echo "<p style='color: red;'>There are no trials available for this phenotype.</p>";
+	  echo "<p style='color: red;'>There are no trials available for this trait.</p>";
 	}
 }
 
