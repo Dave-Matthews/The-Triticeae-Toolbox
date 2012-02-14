@@ -1,3 +1,4 @@
+/*global $,$$,$A,$H,Prototype,Ajax,Template*/
 var php_self = document.location;
 var breeding_programs_str = "";
 var phenotype_categories_str = "";
@@ -22,7 +23,7 @@ function use_normal() {
     breeding_programs_str = "";
     years_str = "";
     var url = php_self + "?function=type1&bp=" + breeding_programs_str + '&yrs=' + years_str;
-    new Ajax.Updater($('step1'), url, {
+    var tmp = new Ajax.Updater($('step1'), url, {
         onComplete : function() {
             $('step1').show();
             document.title = title;
@@ -36,12 +37,28 @@ function update_breeding_programs(options) {
     $A(options).each(
             function(breeding_program) {
                 if (breeding_program.selected) {
-                    breeding_programs_str += (breeding_programs_str == "" ? "" : ",") + breeding_program.value;
+                    breeding_programs_str += (breeding_programs_str === "" ? "" : ",") + breeding_program.value;
                 }
             });
     if (breeding_programs_str != "" && years_str != "") {
         load_experiments();
     }
+}
+function update_locations(options) {
+    locations_str = "";
+    experiments_str = "";
+    years_str = "";
+    $A(options).each(
+            function(locations){
+                if (locations.selected) {
+                    locations_str += (locations_str == "" ? "" : ",") + "'" + locations.value + "'";
+                }
+            }
+    );
+    load_locations2();
+    document.getElementById('step3').innerHTML = "";
+    document.getElementById('step4').innerHTML = "";
+    document.getElementById('step5').innerHTML = "";
 }
 function update_phenotype_categories(options) {
     phenotype_categories_str = "";
@@ -77,6 +94,19 @@ function update_phenotype_items(options) {
     load_phenotypes3();
     document.getElementById('step4').innerHTML = "";
     document.getElementById('step5').innerHTML = "";
+}
+function update_phenotype_items2(options) {
+    phenotype_items_str = "";
+    lines_str = "";
+    $A(options)
+            .each(
+                    function(phenotype_items) {
+                        if (phenotype_items.selected) {
+                            phenotype_items_str += (phenotype_items_str == "" ? ""
+                                    : ",") + phenotype_items.value;
+                        }
+                    });
+    load_markers('', '', 100, 0);
 }
 function update_phenotype_trial(options) {
 	experiments_str = ""; 
@@ -130,8 +160,11 @@ function update_phenotype_lines(options) {
 						years_str += (years_str == "" ? "" : ",") + year.value;
 					}
 				});
-				if (breeding_programs_str != "" && years_str != "")
-					load_experiments();
+				if (breeding_programs_str != "" && years_str != "") {
+                    load_experiments();
+                } else if (locations_str != "" && years_str != "") {
+                    load_locations3();
+                }
 			}
 			
 			function update_experiments(options) {
@@ -142,7 +175,6 @@ function update_phenotype_lines(options) {
 					}
 				});
 				load_traits();
-				load_markers('', '', 100, 0);
 			}
 
 			function load_phenotypes() {
@@ -294,18 +326,44 @@ function update_phenotype_lines(options) {
                 	}
 
 			function load_locations() {
-	                $('step11').hide();
-        	        url=php_self + "?function=step1locations&bp=" + breeding_programs_str + '&yrs=' + years_str;
-                	document.title='Loading Step1...';
-                        new Ajax.Updater($('step11'),url,
+	            $('step11').hide();
+        	    url=php_self + "?function=step1locations&bp=" + breeding_programs_str + '&yrs=' + years_str;
+                document.title='Loading Step1...';
+                    new Ajax.Updater($('step11'),url,
                                 {
-                        onComplete: function() {
-                        $('step11').show();
-                        document.title=title;
+                    onComplete: function() {
+                    $('step11').show();
+                    document.title=title;
+                    }
+                            }
+                );
                         }
-                                }
-                	);
-                        }
+			function load_locations2() {
+                $('step2').hide();
+                url=php_self + "?function=step2locations&loc=" + locations_str + '&yrs=' + years_str;
+                document.title='Loading Step1...';
+                    new Ajax.Updater($('step2'),url,
+                            {
+                    onComplete: function() {
+                    $('step2').show();
+                    document.title=title;
+                    }
+                            }
+                );
+                    }
+            function load_locations3() {
+                $('step3').hide();
+                url=php_self + "?function=step3locations&loc=" + locations_str + '&yrs=' + years_str;
+                document.title='Loading Step1...';
+                    new Ajax.Updater($('step3'),url,
+                            {
+                    onComplete: function() {
+                    $('step3').show();
+                    document.title=title;
+                    }
+                            }
+                );
+                    }
 
 			function update_select1(options) {
 			    select1_str = "";

@@ -39,7 +39,7 @@ set_time_limit(0);
 $cfg_file_rel_path = 'downloads/downloads.php';
 // For live website file
 require_once 'config.php';
-include $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'includes/bootstrap.inc';
 set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
@@ -56,8 +56,15 @@ connect();
 
 
 new Downloads($_GET['function']);
-//
-// Using a PHP class to implement the "Download Gateway" feature
+
+/** Using a PHP class to implement the "Download Gateway" feature
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ **/
 class Downloads
 {
     
@@ -89,6 +96,12 @@ class Downloads
 				break;
 			case 'step1locations':
 			    $this->step1_locations();
+			    break;
+			case 'step2locations':
+			    $this->step2_locations();
+			    break;
+			case 'step3locations':
+			    $this->step3_locations();
 			    break;
 			case 'step2lines':
 				$this->step2_lines();
@@ -154,7 +167,7 @@ class Downloads
 			    echo $this->type1_session(V2);
 			    break;
 			case 'download_session_v3':
-			    echo $this->type1_session(v3);
+			    echo $this->type1_session(V3);
 			    break;
 			default:
 				$this->type1_select();
@@ -365,7 +378,7 @@ class Downloads
 		while ($row = mysql_fetch_assoc($res))
 		{
 			?>
-				<option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
+				<option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
 			<?php
 		}
 		?>
@@ -719,7 +732,7 @@ class Downloads
                 while ($row = mysql_fetch_assoc($res))
                 {
                         ?>
-                                <option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
+                                <option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
                         <?php
                 }
                 ?>
@@ -1130,14 +1143,85 @@ class Downloads
 	 <th>Location</th>
 	 </tr>
 	 <tr><td>
-	 <select name="lines" multiple="multiple" style="height: 12em;">
+	 <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript:update_locations(this.options)">
 	 <?php
-	 $sql = "SELECT distinct location as name from phenotype_experiment_info order by location";
+	 $sql = "SELECT distinct location as name from phenotype_experiment_info where location is not NULL order by location";
 	 $res = mysql_query($sql) or die(mysql_error());
 	 while ($row = mysql_fetch_assoc($res)) {
 	   ?>
 	   <option value="<?php echo $row['name'] ?>"><?php echo $row['name'] ?></option>
 	   <?php 
+	 }
+	 ?>
+	 </select>
+	 </td>
+	 </table>
+	 <?php
+	}
+	
+	private function step2_locations() {
+	 $locations = $_GET['loc'];
+	 $locations = stripslashes($locations);
+	 ?>
+	 <p><select>
+	 <option>Year</option>
+	 </select>
+	 </p>
+	 <table id="phenotypeSelTab" class="tableclass1">
+	 <tr>
+	 <th>Year</th>
+	 </tr>
+	 <tr><td>
+	 <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript:update_years(this.options)">
+	 <?php
+	 $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et, phenotype_experiment_info AS p_e
+	 WHERE e.experiment_uid = p_e.experiment_uid
+	 AND e.experiment_type_uid = et.experiment_type_uid
+	 AND et.experiment_type_name = 'phenotype'
+	 AND p_e.location IN ($locations)
+	 GROUP BY e.experiment_year ASC";
+	 $res = mysql_query($sql) or die(mysql_error());
+	 while ($row = mysql_fetch_assoc($res)) {
+	   ?>
+	   <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
+	   <?php
+	 }
+	 ?>
+	 </select>
+	 </td>
+	 </table>
+	 <?php
+	}
+	
+	private function step3_locations() {
+	 $locations = $_GET['loc']; //"'" . implode("','", $_GET['loc']) . "'";
+	 $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
+	 $locations = stripslashes($locations);
+	 ?>
+	 <p>3.
+	 <select name="select1">
+	 <option value="BreedingProgram">Trials</option>
+	 </select></p>
+	 <table id="phenotypeSelTab" class="tableclass1">
+	 <tr>
+	 <th>Trials</th>
+	 </tr>
+	 <tr><td>
+	 <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_experiments(this.options)">
+	 <?php
+	 $sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year
+	 FROM experiments AS e, experiment_types AS e_t, phenotype_experiment_info AS p_e
+	 WHERE e.experiment_uid = p_e.experiment_uid
+	 AND p_e.location IN ($locations)
+	 AND e.experiment_year IN ($years)
+	 AND e.experiment_type_uid = e_t.experiment_type_uid
+	 AND e_t.experiment_type_name = 'phenotype'
+	 ORDER BY e.experiment_year DESC, e.trial_code";
+	 $res = mysql_query($sql) or die(mysql_error());
+	 while ($row = mysql_fetch_assoc($res)) {
+	   ?>
+	   <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
+	   <?php
 	 }
 	 ?>
 	 </select>
@@ -1291,7 +1375,7 @@ class Downloads
 <table>
 	<tr><th>Trait</th></tr>
 	<tr><td>
-		<select id="traitsbx" name="traits" multiple="multiple" style="height: 12em">
+		<select id="traitsbx" name="traits" multiple="multiple" style="height: 12em" onchange="javascript: update_phenotype_items2(this.options)">
 <?php
 				while ($row = mysql_fetch_assoc($res))
 				{
