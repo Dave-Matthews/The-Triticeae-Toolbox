@@ -192,6 +192,7 @@ $sql = "select distinct experiment_year from experiments";
     $growthHabit = $_POST['growthhabit'];
     $awned =  $_POST['awned'];
     $lineArr = array();
+    $nonHits = array();
 
     // Translate synonym
     if (strlen($linenames) != 0)
@@ -221,7 +222,6 @@ $sql = "select distinct experiment_year from experiments";
       }
 
          // Find any non-hit items, case-independently.
- 	$nonHits = array();
  	foreach ($lineList as $name)
  	  array_push($nonHits, strtoupper($name));
         $mStatment = "SELECT distinct (ls.line_synonym_name) FROM line_synonyms ls where ls.line_synonym_name in ('" .$items. "');";
@@ -350,7 +350,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     echo "<div class='boxContent'>";
 
     // Show failures from the Name box that don't match any line names.
-    foreach ($nonHits as &$i) {
+    foreach ($nonHits as $i) {
       if ($i != '')
 	echo "<font color=red><b>\"$i\" not in system.</font></b><br>";
         }

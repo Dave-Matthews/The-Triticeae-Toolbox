@@ -292,7 +292,6 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 		$row = mysql_fetch_assoc($result);
 		$trtval = $row['avg(value)'];
 		$cntval = $row['count(value)'];
-		if ($cntval == 0) { $trtval = ""; }
 // 		/* Get the number of significant digits for this unit. */
 // 		$getsigdig = "SELECT sigdigits_display FROM units, phenotypes
 // 			WHERE phenotypes.phenotype_uid = '$phenotype'
@@ -302,6 +301,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 // 		$sigdig = (int) $sigdig[0];
 // 		//$dispval = number_format($trtval,$sigdig); //Not used, too long.
 		$dispval = number_format($trtval,1);
+		if ($cntval == 0) { $trtval = ""; }
 		$dny=$y+7+$cht*($i);
 		array_push($blks, array('coords'=>array($xtrait,$dny+$cmg,$xtrait+$twd-1,$dny+$nht-$cmg),
 					'imgclr'=>'im_whitesmoke',
