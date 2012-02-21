@@ -35,8 +35,7 @@
 // | 			to verify that data is available for a user.			  |
 // +----------------------------------------------------------------------+
 set_time_limit(0);
-// this is the relative path to this file
-$cfg_file_rel_path = 'downloads/downloads.php';
+
 // For live website file
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
@@ -68,17 +67,16 @@ new Downloads($_GET['function']);
 class Downloads
 {
     
-    private $delimiter = "\t";
+    public $delimiter = "\t";
     
-	//
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-			case 'type1':
-				$this->type1();
-				break;
+    /** Using the class's constructor to decide which action to perform **/
+    public function __construct($function = null)
+    {	
+        switch($function)
+        {
+            case 'type1':
+                $this->type1();
+                break;
 			case 'type1preselect':
 				$this->type1_preselect();
 				break;
@@ -142,6 +140,9 @@ class Downloads
 			case 'type1markers':
 				$this->type1_markers();
 				break;
+			case 'type2markers':
+			    $this->type2_markers();
+			    break;
 			case 'type1markersselect':
 				$this->type1_markers_select();
 				break;
@@ -659,7 +660,7 @@ class Downloads
      <br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
      </i>
      
-     <br><input type="button" value="Refresh" onclick="javascript:mrefresh_pheno();" /><br><br>
+     <br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br><br>
      
      <?php
      } else {
@@ -1114,7 +1115,7 @@ class Downloads
 	 <br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 	 </i>
 	 
-	 <br><input type="button" value="Refresh" onclick="javascript:mrefresh_lines();" /><br><br>
+	 <br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br><br>
 	 
 	 <?php 
 	 }
@@ -1134,6 +1135,68 @@ class Downloads
 	       echo "<input type='button' value='Download for Tassel' onclick='javascript:use_session();'</input>";
 	     }
 	  }
+	}
+	
+	private function calculate_af(&$lines, &$markers, $min_maf, $max_missing) {
+	 //calculate allele frequencies using 2D table
+	
+	 //generate an array of selected markers that can be used with isset statement
+	 foreach ($markers as $temp) {
+	  $marker_lookup[$temp] = 1;
+	 }
+	
+	 //get location information for markers
+	 $sql = "select marker_uid from allele_byline_idx order by marker_uid";
+	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+	 $i=0;
+	 while ($row = mysql_fetch_array($res)) {
+	  $marker_list[$i] = $row[0];
+	  $i++;
+	 }
+	
+	 //calculate allele frequence and missing
+	 foreach ($lines as $line_record_uid) {
+	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
+	  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+	  $row = mysql_fetch_array($res);
+	  $alleles = $row[0];
+	  $outarray = explode(',',$alleles);
+	  $i=0;
+	  foreach ($outarray as $allele) {
+	   if ($allele=='AA') $marker_aacnt[$i]++;
+	   if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
+	   if ($allele=='BB') $marker_bbcnt[$i]++;
+	   if ($allele=='--') $marker_misscnt[$i]++;
+	   $i++;
+	  }
+	 }
+	 $i=0;
+	 $num_maf = $num_miss = $num_removed = 0;
+	 foreach ($outarray as $allele) {
+	  $marker_uid = $marker_list[$i];
+	  if (isset($marker_lookup[$marker_uid])) {
+	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
+	   $maf = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
+	   $miss = round(100*$marker_misscnt[$i]/$total,1);
+	   if ($maf >= $min_maf) $num_maf++;
+	   if ($miss > $max_missing) $num_miss++;
+	   if (($miss > $max_missing) OR ($maf < $min_maf)) $num_removed++;
+	  }
+	  $i++;
+	 }
+	 if (mysql_num_rows($res) >= 1) {
+	  ?>
+	<p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
+	<i>
+	<br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
+	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
+	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
+	</i>
+	
+	<?php
+	}
 	}
 	
 	private function step1_locations() {
@@ -1375,7 +1438,7 @@ class Downloads
 <table>
 	<tr><th>Trait</th></tr>
 	<tr><td>
-		<select id="traitsbx" name="traits" multiple="multiple" style="height: 12em" onchange="javascript: update_phenotype_items2(this.options)">
+		<select id="traitsbx" name="traits" multiple="multiple" style="height: 12em" onchange="javascript: update_phenotype_items(this.options)">
 <?php
 				while ($row = mysql_fetch_assoc($res))
 				{
@@ -1546,6 +1609,119 @@ selected lines</a>.<br>
 			  <?php
 			}
 	}
+	
+	private function type2_markers()
+	{
+	
+	 // parse url
+	 $experiments = $_GET['exps'];
+	 $phen_item = $_GET['pi'];
+	
+	 /**
+	  * Use currently selected lines?
+	  */
+	 if (count($_SESSION['selected_lines']) > 0) {
+	   $sub_ckd = "checked"; $all_ckd = "";
+	 }
+	 else {
+	   $sub_ckd = "disabled"; $all_ckd = "checked";
+	 }
+	 ?>
+	 <h3>5. Lines</h3>
+	 <select name="select1">
+	 <option value="BreedingProgram">Lines</option>
+	 </select>
+	
+	 <table id="phenotypeSelTab" class="tableclass1">
+	 <tr>
+	 <th>Lines</th>
+	 </tr>
+	 <tr><td>
+	 <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
+	 <?php
+	
+	 $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+	 FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+	 WHERE
+	 pd.tht_base_uid = tb.tht_base_uid
+	 AND p.phenotype_uid = pd.phenotype_uid
+	 AND lr.line_record_uid = tb.line_record_uid
+	 AND pd.phenotype_uid IN ($phen_item)
+	 AND tb.experiment_uid IN ($experiments)
+	 ORDER BY lr.line_record_name";
+	 $_SESSION['selected_lines'] = array(); // Empty the session array.
+	 $lines = array();
+	 $res = mysql_query($sql) or die(mysql_error());
+	 while ($row = mysql_fetch_assoc($res))
+	 {
+	   array_push($_SESSION['selected_lines'],$row['id']);
+	   array_push($lines,$row['id']);
+	   ?>
+	   <option selected value="<?php echo $row['id'] ?>">
+	   <?php echo $row['name'] ?>
+	   </option>
+	   <?php
+	 }
+	 ?>
+	 </select>
+	 </table>
+	
+	 <h3>6. Markers</h3>
+	 <div>
+	 <?php
+	
+	 // initialize markers and flags if not already set
+	 $max_missing = 99.9;//IN PERCENT
+	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
+	 $max_missing = $_GET['mm'];
+	 if ($max_missing>100)
+	   $max_missing = 100;
+	 elseif ($max_missing<0)
+	  $max_missing = 0;
+	 $min_maf = 0.01;//IN PERCENT
+	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+	   $min_maf = $_GET['mmaf'];
+	 if ($min_maf>100)
+	   $min_maf = 100;
+	 elseif ($min_maf<0)
+	   $min_maf = 0;
+	
+	$selectedlines = implode(',',$lines);
+	if (!preg_match('/[0-9]/',$marker_str)) {
+	  //get genotype markers that correspond with the selected lines
+	  $sql_exp = "SELECT DISTINCT marker_uid
+	  FROM allele_cache
+	  WHERE
+	  allele_cache.line_record_uid in ($selectedlines)";
+	  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+	  if (mysql_num_rows($res)>0) {
+	    while ($row = mysql_fetch_array($res)){
+	    $markers[] = $row["marker_uid"];
+	  }
+	}
+	$marker_str = implode(',',$markers);
+	$num_mark = mysql_num_rows($res);
+	echo "$num_mark markers in selected lines<br>\n";
+	} else {
+	$num_mark = count($markers);
+	}
+	
+	$this->calculate_af($lines, $markers, $min_maf, $max_missing);
+	
+	?>
+	<br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
+	<table> <tr> <td COLSPAN="3">
+	<input type="hidden" name="subset" id="subset" value="yes" />
+	<br><input type="button" value="Download for Tassel V2" onclick="javascript:getdownload_tassel();" />
+	<h4> or </h4>
+	<input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel_v3();" /> <br>
+	</td> </tr> </table>
+	<?php
+	
+	?></div><?php
+	
+	}
+	
 	
 	function type1_build_qtlminer()
 	{
@@ -2703,4 +2879,3 @@ selected lines</a>.<br>
 	}	
 	
 }// end class
-?>

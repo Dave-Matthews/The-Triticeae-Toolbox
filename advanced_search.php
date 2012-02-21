@@ -460,13 +460,13 @@ connect();
 	</table>
 	</div>
 
-	  <h3> Optionally, also select a phenotype </h3>
+	  <h3> Optionally, also select a trait </h3>
 	<div id="phenotypeSel">
 	<table id="phenotypeSelTab" class="tableclass1" cellspacing=0; cellpadding=0;>
 	<thead>
 	<tr>
 		<th>Category</th>
-		<th>Phenotype</th>
+		<th>Trait</th>
 		<th>Experiment</th>
 	</tr>
 	</thead>
@@ -477,7 +477,7 @@ connect();
 			<?php showTableOptions("phenotype_category"); ?>
 			</select>
 		</td>
-		<td><p>Select a phenotype category from the left most column</p>
+		<td><p>Select a trait category from the left most column</p>
 		</td>
 		<td></td>
 	</tr>
