@@ -90,8 +90,8 @@ else {
 	  alert("Browser not supporting Ajax");
 	}
 	resp.innerHTML = "<img src='./images/progress.gif' alt='Working...'><br>\
-Retrieving all marker alleles for <b><?php echo $linecount ?><\/b> lines.<br>\
-Retrieval rate is ca. one minute for 500 lines (1.5 million alleles).";
+Analyzing marker alleles for <b><?php echo $linecount ?><\/b> lines.<br>\
+Analysis time is ca. one minute for 1000 lines (3 million alleles).";
   	req.onreadystatechange = function(){
 	  if(req.readyState === 4){
 	    //var button = "<p><input type='submit' value='Analyze'><\/form>";

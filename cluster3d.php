@@ -14,6 +14,7 @@ connect();
 $nclusters = $_GET['clusters'];
 // Timestamp for names of temporary files.
 $time = $_GET['time'];
+$querytime = date("U") - $time;
 
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
@@ -27,10 +28,12 @@ fwrite($setup, "clustertableFile <-c('clustertable.txt".$time."')\n");
 fwrite($setup, "clust3dCoords<-c('clust3dCoords.csv".$time."')\n");
 fclose($setup);
 
+$starttime = time();
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla");
 exec("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla");
+$elapsed = time() - $starttime;
 
 /*
  * Show the graphic.
@@ -123,7 +126,9 @@ for ($i=0; $i<count($coords); $i++) {
   </div>
 
 <div style="clear:both">
-<br><br>
+<!-- For testing only: Show elapsed times. -->
+Query time = <?php echo $querytime ?> s<br>
+Analysis time = <?php echo $elapsed ?> s<br>
 
 <style type="text/css">
   table th {text-align: center;}
