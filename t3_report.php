@@ -71,7 +71,11 @@ if ($query == 'geno') {
   print "<h1>Genotyping data by experiment</h1>\n";
   print "<table border=0>";
   print "<tr><td>experiment name<td>genotyping data\n";
-  $sql = "select experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
+  if (preg_match('/THT/',$db)) {
+    $sql = "select experiment_short_name, count(marker_uid) from experiments as e, tht_base as tb, genotyping_data as gd where e.experiment_uid = tb.experiment_uid AND gd.tht_base_uid = tb.tht_base_uid group by e.experiment_uid";
+  } else {
+    $sql = "select experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
+  }
   $res = mysql_query($sql) or die(mysql_error());
   while ($row = mysql_fetch_row($res)) {
     $count=$count+$row[1];
@@ -156,6 +160,13 @@ if ($query == 'geno') {
      } else {
        print "error $sql<br>\n";
      }
+     $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row = mysql_fetch_row($res)) {
+       $allele_update = $row[0];
+     } else {
+       print "error $sql<br>\n";
+     }
      $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
      $res = mysql_query($sql) or die(mysql_error());
      if ($row = mysql_fetch_row($res)) {
@@ -174,6 +185,7 @@ if ($query == 'geno') {
 
      $fp = fopen($cachefile,'w');
      fwrite($fp,"$allele_count\n");
+     fwrite($fp,"$allele_update\n");
      fwrite($fp,"$LinesWithGeno\n");
      fwrite($fp,"$MarkersWithGeno\n");
      fwrite($fp,"$MarkersNoGeno\n");
@@ -209,6 +221,7 @@ if ($query == 'geno') {
   if (file_exists($cachefile) && (time() - $cachetime < filemtime($cachefile))) {
      $fp = fopen($cachefile,'r');
      $allele_count = fgets($fp);
+     $allele_update = fgets($fp);
      $LinesWithGeno = fgets($fp);
      $MarkersWithGeno = fgets($fp);
      $MarkersNoGeno = fgets($fp);
@@ -405,16 +418,11 @@ if ($query == 'geno') {
 	echo "<tr><td>Total genotype data<td><a href=t3_report.php?query=geno2 Title='List count of genotyping data by experiment'>$allele_count</a>";
   }
 
-  $sql = "select date_format(max(created_on),'%m-%d-%Y') from markers";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_row($res)) {
-    $count = $row[0];
-  }
   if ($output == "excel") {
     $worksheet->write(17, 0, "last addition");
-    $worksheet->write(17, 1, $count);
+    $worksheet->write(17, 1, $allele_update);
   } else {
-    print "<tr><td>last addition<td>$count\n";
+    print "<tr><td>last addition<td>$allele_update\n";
     print "</table><br>\n";
   }
 
