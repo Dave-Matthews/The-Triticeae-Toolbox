@@ -667,9 +667,12 @@ class LineNames_Check
 			</table>
 			</div>
 		
-			<h3>The following lines will be added or updated.</h3>
-			    Please verify that the lines to be added are new and 
-                            the lines to be edited are ones you intend to change.
+		<h3>The following lines will be added or edited.</h3>
+		Please verify that<br>
+		1. The lines to be added are new ones and aren't already in the 
+		database, e.g. under a variant spelling.<br>
+                2. The lines to be edited are ones you wish to change the existing data for.<br>
+		Please don't replace a detailed pedigree with a shallower one, unless it's wrong.
 <p>
 <?php
 $lid = count($line_insert_data);
@@ -724,13 +727,13 @@ $lud = count($line_update_data);
 			</table>
 			</div>
 		</td>
-		<td style="width: 250px; text-align: left">
-		<h4>Editing lines</h4>
+		<td style="width: 250px; text-align: left; vertical-align: top;">
+		<h3>Editing lines</h3>
 		To add or change information about a line, edit the file 
 		and reload, or load a new one.  Empty cells and unchanged 
-		cells will have no effect.  Cells with content will replace
-		the existing values.
-		<p>Alternatively you can use the 
+		cells will have no effect.  Cells with content will <b>replace</b>
+		the existing values. (exception: New Aliases will be <b>added</b>.)
+		<P>Alternatively you can use the 
 		<a href="<?php echo $config['base_url'] ?>login/edit_line.php">
 		Edit Lines</a> form.
 		</td>
