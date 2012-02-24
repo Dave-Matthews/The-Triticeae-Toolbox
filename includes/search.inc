@@ -214,11 +214,14 @@ function displayTermSearchResults(array $found) {
                     and markers.marker_name = marker_synonyms.value");
 		  if (mysql_num_rows($msquery) > 0) { $skip = "yes"; }
 		}
-		// Intercept experiments and route to display_phenotype.php
-		// Unless it's a genotyping experiment.
-		if (($line[0] == "experiments") AND (mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]") == 1)) {
+		// Intercept experiments and route to display_phenotype.php or display_genotype.php.
+		if ($line[0] == "experiments") {
 		  $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $line[2]");
-		  echo "<p title=\"$type\"><strong><a href=\"display_phenotype.php?trial_code=$trialcode\">$trialcode</a></strong> &mdash; " . $type . "</p>\n";
+		  $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
+		  if ($expttype == 1)
+		    echo "<p><strong><a href=\"display_phenotype.php?trial_code=$trialcode\">$trialcode</a></strong> &mdash; " . $type . "</p>\n";
+		  else
+		    echo "<p><strong><a href=\"display_genotype.php?trial_code=$trialcode\">$trialcode</a></strong> &mdash; " . $type . "</p>\n";
 		}
 		else {
 		  if (! $skip) {
