@@ -107,6 +107,7 @@ private function type_DataInformation($trial_code)
 		$sample_sheet_filename = $row_Gen_Info['sample_sheet_filename'];
 		$raw_datafile_archive = $row_Gen_Info['raw_datafile_archive'];
 		$genotype_experiment_info_uid = $row_Gen_Info['genotype_experiment_info_uid'];
+		$comments = $row_Gen_Info['comments'];
 ?>
 
 <script type="text/javascript">
@@ -190,6 +191,7 @@ echo "<table>";
      echo "<tr> <td>Processing Date</td><td>".$row_Gen_Info['processing_date']."</td></tr>";
      echo "<tr> <td>Software</td><td>".$row_Gen_Info['analysis_software']."</td></tr>";
      echo "<tr> <td>Software version</td><td>".$row_Gen_Info['BGST_version_number']."</td></tr>";
+     echo "<tr> <td>Comments</td><td>".$row_Gen_Info['comments']."</td></tr>";
 echo "</table><p>";
 
 echo "<b>Additional files available</b><p>";
