@@ -302,6 +302,7 @@ function update_locations(options) {
     load_locations2();
     document.getElementById('step3').innerHTML = "";
     document.getElementById('step4').innerHTML = "";
+    document.getElementById('step4b').innerHTML = "";
     document.getElementById('step5').innerHTML = "";
 }
 function update_phenotype_categories(options) {
@@ -342,6 +343,7 @@ function update_phenotype_items(options) {
         load_markers_loc('', '', 100, 0);
     } else {
         load_programs5();
+        load_title();
         load_markers('', '', 100, 0);
         document.getElementById('step5').innerHTML = "";
     }
@@ -357,6 +359,7 @@ function update_phenotype_trial(options) {
 		}
 	});
 	load_phenotypes4();
+	load_title();
 	load_phenotypes5();
 }
 
