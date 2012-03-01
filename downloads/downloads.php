@@ -168,7 +168,7 @@ class Downloads
 				echo $this->step1_search_lines();
 				break;
 			case 'download_session':
-				echo $this->type1_session();
+				echo $this->type1_session(null);
 				break;
 			case 'download_session_v2':
 			    echo $this->type1_session(V2);
@@ -641,8 +641,22 @@ class Downloads
     {  
     	$phen_item = $_GET['pi'];
 		$experiments = $_GET['e'];
+		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
 		$selected_lines = array();
 		$_SESSION['phenotype'] = $phen_item; // Empty the session array.
+		
+		if (count($_SESSION['selected_lines']) > 0) {
+		 $sub_ckd = ""; $all_ckd = "checked";
+		} else {
+		 $sub_ckd = "disabled"; $all_ckd = "checked";
+		}
+		if ($subset == "yes") {
+		 $sub_ckd = "checked"; $all_ckd = "";
+		} elseif ($subset == "no") {
+		 $sub_ckd = ""; $all_ckd = "checked";
+		} elseif ($subset == "comb") {
+		 $sub_ckd = ""; $cmb_ckd = "checked";
+		}
 		?>
 		<p>4.
 		<select name="select1">
@@ -656,7 +670,63 @@ class Downloads
 		<tr><td>
 		<select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
                 <?php
-
+        if ($sub_ckd == "checked") {
+          $lines_list = array();
+          $lines_new = "";
+          $selected_lines = $_SESSION['selected_lines'];
+          foreach ($selected_lines as $line) {
+            $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
+            $res = mysql_query($sql) or die(mysql_error());
+            $row = mysql_fetch_assoc($res);
+            ?>
+            <option selected value="<?php echo $row['id'] ?>">
+            <?php echo $row['name'] ?>
+            </option>
+            <?php
+          }
+        } elseif ($cmb_ckd == "checked") {
+          $selected_lines = $_SESSION['selected_lines'];
+          foreach ($selected_lines as $line) {
+            $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
+            $res = mysql_query($sql) or die(mysql_error());
+            $row = mysql_fetch_assoc($res);
+            ?>
+           <option selected value="<?php echo $row['id'] ?>">
+           <?php echo $row['name'] ?>
+           </option>
+           <?php
+         }
+         $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+         FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+         WHERE
+         pd.tht_base_uid = tb.tht_base_uid
+         AND p.phenotype_uid = pd.phenotype_uid
+         AND lr.line_record_uid = tb.line_record_uid
+         AND pd.phenotype_uid IN ($phen_item)
+         AND tb.experiment_uid IN ($experiments)
+         ORDER BY lr.line_record_name";
+         $res = mysql_query($sql) or die(mysql_error());
+         while ($row = mysql_fetch_assoc($res))
+         {
+           $temp1 = $row['name'];
+           $temp2 = $row['id'];
+           if (isset($lines_list[$temp2])) {
+           } else {
+             if ($lines_new == "") {
+               $lines_new = $temp1;
+               ?>
+               <option disabled="disabled">--added--
+               </option>
+               <?php
+             }
+             ?>
+             <option selected value="<?php echo $row['id'] ?>">
+             <?php echo $row['name'] ?>
+             </option>
+             <?php
+           }
+         }
+        } else {
 		$sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name 
 	 FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr 
 	 WHERE
@@ -666,36 +736,87 @@ class Downloads
 	 AND pd.phenotype_uid IN ($phen_item)
 	 AND tb.experiment_uid IN ($experiments)
 	 ORDER BY lr.line_record_name";
-		$_SESSION['selected_lines'] = array(); // Empty the session array.
+		//$_SESSION['selected_lines'] = array(); // Empty the session array.
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
 		{
-		 array_push($_SESSION['selected_lines'],$row['id']);
+		 //array_push($_SESSION['selected_lines'],$row['id']);
 		 ?>
 				<option selected value="<?php echo $row['id'] ?>">
 					<?php echo $row['name'] ?>
 				</option>
 				<?php
 		}
+        }
 		?>
 		</select>
 		</table>	
 		<?php
+		if (count($_SESSION['selected_lines']) > 0) {
+		  ?>
+		  <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently
+		  selected lines</a><br>
+		  <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trails</b> and <b>Traits</b><br>
+		  <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
+		  <?php
+		}
     }
     
     private function step5_phenotype()
     {
      $phen_item = $_GET['pi'];
      $experiments = $_GET['e'];
+     $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+     
      if (empty($_GET['lines'])) {
+       if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
+         $lines = $_SESSION['selected_lines'];
          $selectedlines = implode(",", $_SESSION['selected_lines']);
+         $count = count($lines);
+       } else {
+         $lines = array();
+         $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+         FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+         WHERE
+         pd.tht_base_uid = tb.tht_base_uid
+         AND p.phenotype_uid = pd.phenotype_uid
+         AND lr.line_record_uid = tb.line_record_uid
+         AND pd.phenotype_uid IN ($phen_item)
+         AND tb.experiment_uid IN ($experiments)
+         ORDER BY lr.line_record_name";
+         $res = mysql_query($sql) or die(mysql_error());
+         while ($row = mysql_fetch_assoc($res))
+         {
+           array_push($lines,$row['id']);
+         }
+         $selectedlines = implode(",", $lines);
+         $count = count($lines);
+       }
+       if ($subset == "comb") {
+         $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+         FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+         WHERE
+         pd.tht_base_uid = tb.tht_base_uid
+         AND p.phenotype_uid = pd.phenotype_uid
+         AND lr.line_record_uid = tb.line_record_uid
+         AND pd.phenotype_uid IN ($phen_item)
+         AND tb.experiment_uid IN ($experiments)
+         ORDER BY lr.line_record_name";
+         $res = mysql_query($sql) or die(mysql_error());
+         while ($row = mysql_fetch_assoc($res))
+         {
+           array_push($lines,$row['id']);
+         }
+         $selectedlines = implode(",", $lines);
+         $count = count($lines);
+       }
      } else {
          $selectedlines = $_GET['lines'];
          $selected = explode(',', $selectedlines);
-         $_SESSION['selected_lines'] = $selected;
+         $count = count($selected);
+         //$_SESSION['selected_lines'] = $selected;
      }
          
-     $count = count($_SESSION['selected_lines']);
      echo "current data selection = $count lines<br>";
      
      // initialize markers and flags if not already set
@@ -1415,9 +1536,8 @@ class Downloads
 	  * Use currently selected lines?
 	  */
 	 if (count($_SESSION['selected_lines']) > 0) {
-	   $sub_ckd = "checked"; $all_ckd = "";
-	 }
-	 else {
+	   $sub_ckd = ""; $all_ckd = "checked";
+	 } else {
 	   $sub_ckd = "disabled"; $all_ckd = "checked";
 	 }
 	 if ($subset == "yes") {
@@ -1544,7 +1664,7 @@ selected lines</a><br>
 	 
 	  /** Use currently selected lines? */
 	  if (count($_SESSION['selected_lines']) > 0) {
-	    $sub_ckd = "checked"; $all_ckd = "";
+	    $sub_ckd = ""; $all_ckd = "checked";
 	  } else {
 	    $sub_ckd = "disabled"; $all_ckd = "checked";
 	  }
@@ -1856,7 +1976,7 @@ selected lines</a><br>
 		$years = $_GET['yrs'];
 		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
 		
-		if (count($_SESSION['selected_lines'])>0) {
+		if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
 		  $lines = $_SESSION['selected_lines'];
 		  $lines_str = implode(",", $lines);
 		  $count = count($_SESSION['selected_lines']);
@@ -1963,7 +2083,7 @@ selected lines</a><br>
 	 $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
 	 
 	 if (empty($_GET['lines'])) {
-	   if (count($_SESSION['selected_lines'])>0) {
+	   if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
 	   	 $lines = $_SESSION['selected_lines'];
 	     $lines_str = implode(",", $lines);
 	     $count = count($_SESSION['selected_lines']);
@@ -2304,7 +2424,7 @@ selected lines</a><br>
 	 
 	  $dtype = "tassel";
 	  if (empty($_GET['lines'])) {
-	    if (count($_SESSION['selected_lines'])>0) {
+	    if ($subset == "yes" && count($_SESSION['selected_lines'])>0) {
 	      $lines = $_SESSION['selected_lines'];
 	      $lines_str = implode(",", $lines);
 	      $count = count($_SESSION['selected_lines']);
