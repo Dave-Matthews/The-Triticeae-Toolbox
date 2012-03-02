@@ -3053,8 +3053,8 @@ selected lines</a><br>
 		
 		$num_maf = $num_miss = 0;
 
-		$len = count($outarray);
-		for ($i=0; $i<$len; $i++) {
+		$i = 0;
+		foreach ($outarray as $allele) {
 		  $marker_id = $marker_list[$i];
 		  $marker_name = $marker_list_name[$i];
 		  if (isset($marker_lookup[$marker_id])) {
