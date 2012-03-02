@@ -409,6 +409,8 @@ private function typeAnnotationCheck()
 			$experiments[$index]->harvestdate = $teststr;
 		} else {
 			$experiments[$index]->harvestdate = '';
+			echo "<b>ERROR: Please use correct format for harvest date (4/14/2009) </b><br>";
+                        exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
 
 	
@@ -444,33 +446,33 @@ private function typeAnnotationCheck()
 		
 		<h3>We are reading following data from the uploaded Input Data File</h3>
 		
-		<table >
+		<table style="width: 1700px;">
 		<thead>
 	<tr>
 	<th >Status</th>
 	<th >Crop</th>
-	<th >Breeding Program(s) </th>
+	<th >Breeding<br>Program </th>
 	<th >Location </th>
-	<th  >Latitude of field </th>
-        <th >Longitude of field </th>
+	<th  >Latitude</th>
+        <th >Longitude </th>
 	<th  >Collaborator </th>
 	<th  >Experiment </th>
 	<th  >Trial Code </th>
-	<th >Planting date </th>
-        <th >Harvest date </th>
-	<th  >Seeding rate (plants/m2) </th>
-	<th >Experimental design</th>
-	<th >Number of entries </th>
-	<th  >Number of replications </th>
-	<th  >Plot size (m2) </th>
-	<th >Harvested area (m2) </th>
-	<th  >Irrigation (yes or no) </th>
-	<th  >Harvest date </th>
+	<th >Planting<br>date </th>
+        <th >Harvest<br>date </th>
+	<th  >Seeding rate</th>
+	<th >Experimental<br>design</th>
+	<th >Entries</th>
+	<th  >Replications </th>
+	<th  >Plot size<br>(m2) </th>
+	<th >Harvested<br>area (m2) </th>
+	<th  >Irrigation</th>
+	<th  >Harvest<br>date</th>
 	<th  >Other remarks </th>
 	</tr>
 	<thead>
 	
-<tbody style="padding: 0; height: 200px; width: 1600px;  overflow: scroll;border: 1px solid #5b53a6;">	
+<tbody style="padding: 0; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">	
 
 			<?
 				for ($i = 2; $cols >= $i; $i++)
@@ -485,9 +487,9 @@ private function typeAnnotationCheck()
 			$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialcode_row[$i]'";
                         $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 			if (mysql_num_rows($res)!==0) { //yes, experiment found, so update
-			  print "Update Record</td><td>";
+			  print "Update<br>record</td><td>";
                         } else {
-			  print "New Record</td><td>";
+			  print "New<br>record</td><td>";
  			}
 			print "</font>";
 
@@ -526,8 +528,8 @@ private function typeAnnotationCheck()
 			$newtext = wordwrap($irrigation_row[$i], 6, '<br>');
 			print "$newtext<td>";
 			$newtext = wordwrap($harvestdate_row[$i], 6, '<br>');
-			print "$newtext<td>";
-			$newtext = wordwrap($otherremarks_row[$i], 12, "<br>" );
+			print "$newtext<td style='width: 500px;'>";
+			$newtext = wordwrap($otherremarks_row[$i], 40, "<br>" );
 			print "$newtext";
 				}/* end of for loop */
 			?>
@@ -566,8 +568,10 @@ private function typeAnnotationCheck()
 	//connect_dev();
 	
 	$datafile = $_GET['linedata'];
-	$filename_old = $_GET['file_name'];
-	$filename = $filename_old.rand();
+	//dem jan2012: This isn't useful.
+	//$filename_old = $_GET['file_name'];
+	//$filename = $filename_old.rand();
+	$filename = $_GET['file_name'];
 	$username = $_GET['user_name'];
 	$data_public_flag = $_GET['public'];
 	
@@ -773,7 +777,7 @@ private function typeAnnotationCheck()
 		// Planting Date
 		$teststr= addcslashes(trim($plantingdate_row[$i]),"\0..\37!@\177..\377");
 		if (DEBUG>2) {echo $teststr."  ".$datetime."\n";}
-		if (!empty($teststr)){
+	 	if (preg_match("/\d+\/\d+\/\d+/",$teststr)) {
 			if (DEBUG>2) {echo $teststr."\n";}
 			
 			//echo "date string is". $teststr;
@@ -787,6 +791,8 @@ private function typeAnnotationCheck()
 			$experiments[$index]->plantingdate = $teststr;
 		} else {
 			$experiments[$index]->plantingdate = '';
+			echo "<b>ERROR: Please use correct format for planting date (4/14/2009) </b><br>";
+                        exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
 
 	
@@ -826,8 +832,8 @@ private function typeAnnotationCheck()
 		// convert Microsoft Excel timestamp to Unix timestamp
 		$teststr= addcslashes(trim($harvestdate_row[$i]),"\0..\37!@\177..\377");
 		if (DEBUG>2) {echo $teststr."\n";}
-		
-		if (!empty($teststr)){
+	
+		if (preg_match("/\d+\/\d+\/\d+/",$teststr)) {	
 			if (DEBUG>2) {echo $teststr."\n";}
 			
 			//echo "date string is". $teststr;
@@ -841,6 +847,8 @@ private function typeAnnotationCheck()
 			$experiments[$index]->harvestdate = $teststr;
 		} else {
 			$experiments[$index]->harvestdate = '';
+			echo "<b>ERROR: Please use correct format for harvest date (4/14/2009) </b><br>";
+                        exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
 		
 		
@@ -991,7 +999,7 @@ private function typeAnnotationCheck()
 <p><input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">
 ");
 
-					echo "Table <b>phenotype_experiment_info</b> updated.<br>\n";
+					echo "Table <b>phenotype_experiment_info</b> updated.<p>\n";
 					
 			} else {
 		
@@ -1066,22 +1074,17 @@ private function typeAnnotationCheck()
 		
 
 	
-	echo " <b>The Data was inserted or updated successfully </b>";
+	echo " <b>The Data was inserted or updated successfully. </b>";
 	echo"<br/><br/>";
 	?>
 	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"> Go Back To Main Page </a>
-	<?
-	
-	$sql = "INSERT INTO input_file_log (file_name,users_name)
-										VALUES('$filename', '$username')";
-					
-					
-	$lin_table=mysql_query($sql) or die(mysql_error());
+	<?php
+	// Timestamp, e.g. _28Jan12_23:01
+	$ts = date("_jMy_H:i");
+	$filename = $filename . $ts;
+	$devnull = mysql_query("INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysql_error());
 
-
-
-
-		$footer_div = 1;
+	$footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
 	
 	
