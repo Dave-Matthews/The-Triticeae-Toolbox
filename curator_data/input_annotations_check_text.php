@@ -750,11 +750,13 @@ private function typeAnnotationCheck()
 						
 					
 						$teststr= addcslashes(trim($planting_date[$i]),"\0..\37!@\177..\377");
-						if (!empty($teststr))
+						if (preg_match("/\d+\/\d+\/\d+/",$teststr)) 
 						{
 							$plantingdate = $teststr;
 						} else {
 							$plantingdate = '';
+							echo "<b>ERROR: Please use correct format for planting date (4/14/2009) </b><br>";
+                        				exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 						}
 						$descExpt = mysql_real_escape_string(trim($descExperiment[$i]));
 						$exptDesign = mysql_real_escape_string($expDesign[$i]);
@@ -765,11 +767,13 @@ private function typeAnnotationCheck()
 							// convert Microsoft Excel timestamp to Unix timestamp
 						
 						$teststr= addcslashes(trim($harvest_date[$i]),"\0..\37!@\177..\377");
-						if (!empty($teststr))
+						if (preg_match("/\d+\/\d+\/\d+/",$teststr)) 
 						{
 							$harvestdate = $teststr;
 						} else {
 							$harvestdate = '';
+							echo "<b>ERROR: Please use correct format for planting date (4/14/2009) </b><br>";
+                        				exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 						}
 						$teststr= addcslashes(trim($weather_date[$i]),"\0..\37!@\177..\377");
                                                 if (!empty($teststr))

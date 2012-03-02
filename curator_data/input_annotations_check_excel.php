@@ -409,6 +409,8 @@ private function typeAnnotationCheck()
 			$experiments[$index]->harvestdate = $teststr;
 		} else {
 			$experiments[$index]->harvestdate = '';
+			echo "<b>ERROR: Please use correct format for harvest date (4/14/2009) </b><br>";
+                        exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
 
 	
@@ -775,7 +777,7 @@ private function typeAnnotationCheck()
 		// Planting Date
 		$teststr= addcslashes(trim($plantingdate_row[$i]),"\0..\37!@\177..\377");
 		if (DEBUG>2) {echo $teststr."  ".$datetime."\n";}
-		if (!empty($teststr)){
+	 	if (preg_match("/\d+\/\d+\/\d+/",$teststr)) {
 			if (DEBUG>2) {echo $teststr."\n";}
 			
 			//echo "date string is". $teststr;
@@ -789,6 +791,8 @@ private function typeAnnotationCheck()
 			$experiments[$index]->plantingdate = $teststr;
 		} else {
 			$experiments[$index]->plantingdate = '';
+			echo "<b>ERROR: Please use correct format for planting date (4/14/2009) </b><br>";
+                        exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
 
 	
@@ -828,8 +832,8 @@ private function typeAnnotationCheck()
 		// convert Microsoft Excel timestamp to Unix timestamp
 		$teststr= addcslashes(trim($harvestdate_row[$i]),"\0..\37!@\177..\377");
 		if (DEBUG>2) {echo $teststr."\n";}
-		
-		if (!empty($teststr)){
+	
+		if (preg_match("/\d+\/\d+\/\d+/",$teststr)) {	
 			if (DEBUG>2) {echo $teststr."\n";}
 			
 			//echo "date string is". $teststr;
@@ -843,6 +847,8 @@ private function typeAnnotationCheck()
 			$experiments[$index]->harvestdate = $teststr;
 		} else {
 			$experiments[$index]->harvestdate = '';
+			echo "<b>ERROR: Please use correct format for harvest date (4/14/2009) </b><br>";
+                        exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
 		
 		
