@@ -42,6 +42,15 @@ include($config['root_dir'] . 'theme/admin_header.php');
   </div>
 </div>
 		
+<div class="box">
+  <div class="boxContent">
+    <h2>Line Panels</h2>
+    <ul>
+      <li><a href="<?php echo $config['base_url'] ?>login/line_panels.php">Add/delete line panels</a>
+    </ul>
+  </div>
+</div>
+		
 <?php
 $footer_div = 1;
 include($config['root_dir'].'theme/footer.php');
