@@ -1,4 +1,4 @@
-/*global $,$$,$A,$H,Prototype,Ajax,Template*/
+/*global $,$$,$A,$H,Prototype,Ajax,Template,Element*/
 var php_self = document.location;
 var breeding_programs_str = "";
 var phenotype_categories_str = "";
@@ -262,13 +262,15 @@ function load_markers( mm, mmaf) {
     var url=php_self + "?function=type1markers&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&subset=' + subset;
     document.title='Loading Markers...';
     var tmp = new Ajax.Updater($('step5'),url,
-        {onComplete: function() {
+        {onCreate: function() { Element.show('spinner'); },
+            onComplete: function() {
              $('step5').show();
             if (traits_loading === false) {
                 document.title = title;
             }
             markers_loading = false;
             markers_loaded = true;
+            load_title();
         }}
     );
 }
@@ -279,13 +281,15 @@ function load_markers_loc( mm, mmaf) {
     var url=php_self + "?function=type2markers&exps=" + experiments_str + '&pi=' + phenotype_items_str + '&lines=' + lines_str + '&mm=' + mm + '&mmaf=' + mmaf + '&subset=' + subset;
     document.title='Loading Markers...';
     var tmp = new Ajax.Updater($('step5'),url,
-        {onComplete: function() {
+        {onCreate: function() { Element.show('spinner'); },
+            onComplete: function() {
              $('step5').show();
             if (traits_loading === false) {
                 document.title = title;
             }
             markers_loading = false;
             markers_loaded = true;
+            load_title();
         }}
     );
 }
@@ -358,11 +362,11 @@ function update_phenotype_items(options) {
         document.getElementById('step4').innerHTML = "";
     } else if (select1_str == "Locations") {
         load_locations5();
-        load_title();
+        //load_title();
         load_markers_loc('', '', 100, 0);
     } else {
         load_programs5();
-        load_title();
+        //load_title();
         load_markers('', '', 100, 0);
         document.getElementById('step5').innerHTML = "";
     }
