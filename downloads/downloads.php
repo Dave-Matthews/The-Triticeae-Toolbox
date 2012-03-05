@@ -247,6 +247,7 @@ class Downloads
 			td {border: 1px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
+		<div id="title">
 		<?php
             $phenotype = "";
             $lines = "";
@@ -289,19 +290,9 @@ class Downloads
 			  	  $message2 = $message2 . " for all markers";
 				}
 			}	
-            ?>  
-                <div id="title">
-                <h2>Tassel Download</h2>
-                <p>
-                <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
-            <?php 
-                if ($saved_session != "") {
-            ?>
-                <button type="button" value="Clear current selection" onclick="javascript: use_normal()">Clear selection</button>
-            <?php
-                }
-            ?>        
-                </p></div>
+            $this->refresh_title();
+         ?>        
+        </div>
 		<div id="step1" style="float: left; margin-bottom: 1.5em;">
 		<p>1. 
 		<select name="select1" onchange="javascript: update_select1(this.options)">
@@ -333,6 +324,7 @@ class Downloads
       <h2>Tassel Download</h2>
       <p>
       <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
+      <img alt="spinner" id="spinner" src="ajax-loader.gif" style="display:none;" />
       <?php 
       $selection_ready = 0;
       if (isset($_SESSION['selected_lines'])) {
@@ -384,6 +376,9 @@ class Downloads
         <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
        <?php
       }
+      ?>
+      </p>
+      <?php 
     }
     
 
