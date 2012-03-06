@@ -751,7 +751,7 @@ class Downloads
 		  ?>
 		  <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently
 		  selected lines</a><br>
-		  <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trails</b> and <b>Traits</b><br>
+		  <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
 		  <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
 		  <?php
 		}
@@ -1599,7 +1599,7 @@ class Downloads
 	   ?>
 	   <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently 
 selected lines</a><br>
-	   <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trails</b> and <b>Traits</b><br>
+	   <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
 	   <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
 	   <?php
 	 } 
@@ -1724,7 +1724,7 @@ selected lines</a><br>
 	    ?>
 	    <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently
 	    selected lines</a><br>
-	    <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trails</b> and <b>Traits</b><br>
+	    <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
 	    <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
 	    <?php
 	  }
@@ -2373,7 +2373,7 @@ selected lines</a><br>
 	 
 	  $dtype = "tassel";
 	  if (empty($_GET['lines'])) {
-	    if ($subset == "yes" && count($_SESSION['selected_lines'])>0) {
+	    if ((($subset == "yes") || ($subset == "comb")) && count($_SESSION['selected_lines'])>0) {
 	      $lines = $_SESSION['selected_lines'];
 	      $lines_str = implode(",", $lines);
 	      $count = count($_SESSION['selected_lines']);
@@ -2416,10 +2416,26 @@ selected lines</a><br>
 	      $lines_str = implode(",", $lines);
 	      $count = count($lines);
 	    }
+	    if ($subset == "comb") {
+	      $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+	      FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+	      WHERE
+	      pd.tht_base_uid = tb.tht_base_uid
+	      AND p.phenotype_uid = pd.phenotype_uid
+	      AND lr.line_record_uid = tb.line_record_uid
+	      AND pd.phenotype_uid IN ($phen_item)
+	      AND tb.experiment_uid IN ($experiments)
+	      ORDER BY lr.line_record_name";
+	      $res = mysql_query($sql) or die(mysql_error() . $sql);
+	      while ($row = mysql_fetch_assoc($res))
+	      {
+	        array_push($lines,$row['id']);
+	      }
+	      $lines_str = implode(",", $lines);
+	    }
 	  } else {
 	    $lines_str = $_GET['lines'];
 	    $lines = explode(',', $lines_str);
-	    $count = count($lines);
 	  }
 	  
 	  if (!preg_match('/[0-9]/',$marker_str)) {
