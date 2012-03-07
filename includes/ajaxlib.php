@@ -1083,6 +1083,7 @@ and experiments.experiment_uid IN ($trialsSelected)
 	  $min = floor(str_replace(",","",$min));
 	  $max = ceil(str_replace(",","",$max));
 	  echo "<p>Search between:<br> <input type='text' name='first_value' value=$min><br>and<br><input type='text' name='last_value' value=$max>";
+          echo "<input type='hidden' name='phenoSearch'>";
 	  echo "<br><input type='submit' value='Search'></form>";
 
 	  // DLH R plotting for histogram      
