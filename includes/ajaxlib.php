@@ -994,7 +994,7 @@ function DispCategorySel($arr) {
 		echo "</select>";
 	}
 	else {
-	  echo "<p style='color: red;'>There are no phenotypes available for this category.</p>";
+	  echo "<p style='color: red;'>There are no traits available for this category.</p>";
 	}
 }
 
@@ -1003,7 +1003,7 @@ function DispCategorySel($arr) {
  */
 function DispPhenotypeSel($arr) {
 	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
-		echo "Please Select A Phenotype";
+		echo "Please Select A Trait";
 		return;
 	}
 
@@ -1030,7 +1030,7 @@ function DispPhenotypeSel($arr) {
 		echo "</select>";
 	}
 	else {
-	  echo "<p style='color: red;'>There are no trials available for this phenotype.</p>";
+	  echo "<p style='color: red;'>There are no trials available for this trait.</p>";
 	}
 }
 
@@ -1083,6 +1083,7 @@ and experiments.experiment_uid IN ($trialsSelected)
 	  $min = floor(str_replace(",","",$min));
 	  $max = ceil(str_replace(",","",$max));
 	  echo "<p>Search between:<br> <input type='text' name='first_value' value=$min><br>and<br><input type='text' name='last_value' value=$max>";
+          echo "<input type='hidden' name='phenoSearch'>";
 	  echo "<br><input type='submit' value='Search'></form>";
 
 	  // DLH R plotting for histogram      
