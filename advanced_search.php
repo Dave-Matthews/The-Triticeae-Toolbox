@@ -445,7 +445,7 @@ connect();
 			  $i = 0;
 			  $current = $num_markers - 1;
 			  $current2 = $num_markers - 3;
-			  echo "total $total";
+			  //echo "total $total";
 			  while ($i < $total) {
 			    combinations($num_markers,$marker_idx,$marker_list,$cross);
 			    $marker_idx[$current2]++;
