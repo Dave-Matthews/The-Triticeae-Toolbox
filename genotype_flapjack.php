@@ -50,8 +50,8 @@ private function typeGenoType()
 
 		echo "<h2>Search </h2>"; 
 		echo "<p><em><b>Select multiple files by holding down the Ctrl key while selecting </b>
-		</em></p>";
-		
+		</em>";
+		echo "<img alt='spinner' id='spinner' src='images/ajax-loader.gif' style='display:none;' /></p>";
 			
 		$this->type_GenoType_Display();
 
@@ -167,10 +167,10 @@ private function typeGenoType()
 				new Ajax.Updater(
                     $('download_loader'),
                     '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeDownload&trialcode=' + experiments_str,
-					{ 
+					{   onCreate: function() { Element.show('spinner'); },
                         onComplete: function() {
                             $('download_loader').show();
-                           
+                            Element.hide('spinner');
                         }
                     }
 				); 
