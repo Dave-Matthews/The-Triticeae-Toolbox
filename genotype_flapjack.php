@@ -50,8 +50,8 @@ private function typeGenoType()
 
 		echo "<h2>Search </h2>"; 
 		echo "<p><em><b>Select multiple files by holding down the Ctrl key while selecting </b>
-		</em></p>";
-		
+		</em>";
+		echo "<img alt='spinner' id='spinner' src='images/ajax-loader.gif' style='display:none;' /></p>";
 			
 		$this->type_GenoType_Display();
 
@@ -167,10 +167,10 @@ private function typeGenoType()
 				new Ajax.Updater(
                     $('download_loader'),
                     '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeDownload&trialcode=' + experiments_str,
-					{ 
+					{   onCreate: function() { Element.show('spinner'); },
                         onComplete: function() {
                             $('download_loader').show();
-                           
+                            Element.hide('spinner');
                         }
                     }
 				); 
@@ -403,16 +403,20 @@ private function type_Download()
 	    
 	
 		// get a list of marker names which meet the criteria selected by the user
-          
+		  if (empty($marker_uid)) {
+		    echo "No marker allele data found.<p>";
+		  }
+		  else {
 					$sql_mstat = "SELECT marker_name as name
 					FROM markers
 					WHERE marker_uid IN ($marker_uid)"; 
 					
-			$res = mysql_query($sql_mstat) or die(mysql_error());
+			$res = mysql_query($sql_mstat) or die("At script line 414:".mysql_error());
 
 			while ($row = mysql_fetch_array($res)){
 						$marker_names[] = $row["name"];
 			}
+		  }
 			$nelem = count($marker_uid);
 
 			// make an empty line with the markers as array keys, set default value
