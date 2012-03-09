@@ -1352,8 +1352,7 @@ class Downloads
 	 $i=0;
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
-	 foreach ($outarray as $allele) {
-	   $marker_uid = $marker_list[$i];
+	 foreach ($marker_list as $marker_uid) {
 	   if (isset($marker_lookup[$marker_uid])) {
 	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
 	   if ($total > 0) {
