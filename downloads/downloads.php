@@ -324,7 +324,7 @@ class Downloads
       <h2>Tassel Download</h2>
       <p>
       <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
-      <img alt="spinner" id="spinner" src="ajax-loader.gif" style="display:none;" />
+      <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
       <?php 
       $selection_ready = 0;
       if (isset($_SESSION['selected_lines'])) {
