@@ -1152,7 +1152,7 @@ class Downloads
 		while ($row = mysql_fetch_assoc($res))
 		{
 		 ?>
-		    <option value="<?php echo $row['id'] ?>">
+		    <option selected value="<?php echo $row['id'] ?>">
 		     <?php echo $row['name'] ?>
 		    </option>
 		    <?php
@@ -1204,6 +1204,8 @@ class Downloads
 	}
 	
 	private function step4_lines() {
+	 $experiments = $_GET['e'];
+	 
 	$saved_session = "";
 	$message2 = "";
 
@@ -1365,7 +1367,7 @@ class Downloads
 	   }
 	  $i++;
 	 }
-	 if (mysql_num_rows($res) >= 1) {
+	 
 	  ?>
 	<p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
 	&nbsp;&nbsp;&nbsp;&nbsp;
@@ -1375,9 +1377,7 @@ class Downloads
 	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
 	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 	</i>
-	
 	<?php
-	}
 	}
 	
 	private function step1_locations() {
