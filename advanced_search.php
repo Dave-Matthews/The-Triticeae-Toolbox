@@ -180,16 +180,20 @@ connect();
               		      }
               		      $_SESSION['selected_lines'] = $selected_lines;
             		    }
-			    print "Currently selected lines " . count($selLines) . "<br><hr>\n";
+			    print "Currently selected lines " . count($selLines) . "<br><br>\n";
+			    ?>
+			    <form action="pedigree/pedigree_markers.php" method="post">
+			    <input type="submit" value="Display Data for Selected Lines and Markers">
+			    </form>
+			    <?php
 			  } else {
                             print "<table><tr><td>Currently Selected Lines:<td>" . count($_SESSION['selected_lines']) . "\n";
 			    print "<tr><td>Lines found:<td>" . count($selLines) . "\n";
 			    print "</table><br>";
 			    echo "<form name='lines' id='selectLines' action='advanced_search.php' method='post'>";
-			    foreach($selLines as $line_uid) {
-				print "<input type='hidden' name = selLines[] value=" . $line_uid . ">";
-			    }
+			    $lines_str = implode(",",$selLines);
 			    ?>
+			    <input type="hidden" name="selLines" value="<?php echo $lines_str?>">
 			    <p>Combine with <font color=blue>currently selected lines</font>:<br>
 			    <input type="radio" name="selectWithin" value="Replace" checked>Replace<br>
 			    <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
@@ -202,8 +206,8 @@ connect();
 				echo "<p>Sorry, no records found<p>";
 				//print_r($_POST);
 			}
-		}
-                if (count($_SESSION['selected_lines']) > 0) {
+		} elseif (count($_SESSION['selected_lines']) > 0) {
+                  //print "Currently Selected Lines:" . count($_SESSION['selected_lines']) . "<br><br>\n";
 		?>
 		<form action="pedigree/pedigree_markers.php" method="post">
 		<input type="submit" value="Display Data for Selected Lines and Markers">
@@ -217,7 +221,9 @@ connect();
 
         if (isset($_POST['selLines'])) {
         //   print "<h2>Combine Lines</h2>\n";
-	   $selLines = $_POST['selLines'];
+        $lines_str = $_POST['selLines'];
+        $selLines = explode(",",$lines_str);
+	   //$selLines = $_POST['selLines'];
            if ($_POST['selectWithin'] == "Replace") {
              $selected_lines = array();
              foreach($selLines as $line_uid) {
@@ -236,7 +242,7 @@ connect();
                }
                $_SESSION['selected_lines'] = $selected_lines;
              }
-             print "<table><tr><td>Currently Selected Lines:<td>" . count($_SESSION['selected_lines']) . "</table>\n";
+             //print "<table><tr><td>Currently Selected Lines:<td>" . count($_SESSION['selected_lines']) . "</table>\n";
            }
 
 	/* identify lines with particular phenotype values */
@@ -244,6 +250,8 @@ connect();
 		// Find all lines associated with the given phenotype data.
 		print "<h2>Results of Search by Phenotype</h2>";
 		$phenotype = $_POST['phenotype'];
+		$selLines = $_POST['selLines'];
+		$in_these_lines = "AND line_records.line_record_uid IN ( $selLines ) ";
 		if (! isset($phenotype) || strlen($phenotype)<1) {
 			print "<p><a href=\"".$_SERVER['PHP_SELF']."\">Go Back</a></p>";
 			error(1,"Phenotype not set");
@@ -293,6 +301,7 @@ connect();
 				if (! in_array($sline, $_SESSION['selected_lines'])) array_push($_SESSION['selected_lines'], $sline);
 			}
 			$selLines=$_SESSION['selected_lines'];
+			print "Lines filtered by phenotype: " . count($selLines) . "<br><br>\n";
 			print "<table class='tableclass1' style=\"float: left;\"><thead><tr><th><b>Lines found</b></th></tr></thead><tbody>";
 			foreach ($selLines as $luid) {
 					print "<tr><td>";
@@ -300,13 +309,13 @@ connect();
 					print "</td></tr>";
 			}
 			print "</tbody></table>";
-			print "<div style='float: left; margin-left: 10px;'>";
-			print "<p><a href=\"pedigree/pedigree_markers.php\">Compare the alleles for all selected markers for these lines</a></p>";
-			print "<p><a href=\"phenotype/compare.php?phenotype=$phenotype&$compare\">Narrow your results by phenotype</a></p>";
-			print "<p><a href=\"advanced_search.php?searchtype=idMkrs\">Identify Markers that are identical for these lines</a></p>";
-                        print "<div id='ajaxMsg'></div>";
-		        print "<input type=\"button\" id=\"storeLineButton\" value=\"Store Line Names\" onclick=\"callAjaxFunc('ajaxSessionVariableFunc','&action=store&svkey=selected_lines',this.id)\" >";
-			print "</div><div style='clear: left;'></div>";
+			//print "<div style='float: left; margin-left: 10px;'>";
+			//print "<p><a href=\"pedigree/pedigree_markers.php\">Compare the alleles for all selected markers for these lines</a></p>";
+			//print "<p><a href=\"phenotype/compare.php?phenotype=$phenotype&$compare\">Narrow your results by phenotype</a></p>";
+			//print "<p><a href=\"advanced_search.php?searchtype=idMkrs\">Identify Markers that are identical for these lines</a></p>";
+            //            print "<div id='ajaxMsg'></div>";
+		    //    print "<input type=\"button\" id=\"storeLineButton\" value=\"Store Line Names\" onclick=\"callAjaxFunc('ajaxSessionVariableFunc','&action=store&svkey=selected_lines',this.id)\" >";
+			//print "</div><div style='clear: left;'></div>";
 		}
 		else {
 			echo "<p>Sorry, no records found in lines with selected phenotype value<p>";
@@ -371,11 +380,14 @@ connect();
 	?>
 	</div>
 	<div class="box">
-	<h2>View Haplotypes</h2>
 	  <!-- Cannot jump directly to pedigree_markers.php, the alleles are not updated.
 	<form action="pedigree/pedigree_markers.php" method="post">
 	  -->
 	<form action="advanced_search.php" method="post"> 
+	<?php   
+	if (count($selLines) == 0) {
+	?>
+	<h2>View Haplotypes</h2>
 
 	<h3>Select haplotype combination</h3>
 	<div class="boxContent">
@@ -433,7 +445,7 @@ connect();
 			  $i = 0;
 			  $current = $num_markers - 1;
 			  $current2 = $num_markers - 3;
-			  echo "total $total";
+			  //echo "total $total";
 			  while ($i < $total) {
 			    combinations($num_markers,$marker_idx,$marker_list,$cross);
 			    $marker_idx[$current2]++;
@@ -450,17 +462,21 @@ connect();
 			} else {
 			  echo "<th>The current marker selection does not have genotyping data";
 			}
+			?>
+			</tbody></table></div>
+			<p><input type="submit" name="haplotype" value="Submit"> Combine selected haplotype with currently selected lines</p>
+			<?php 
 		}
 		else {
 		  echo "<td>No markers selected";
 		  echo "</table></div><p><a href=genotyping/marker_selection.php>Select markers</a></p>";
 		}
-	?>
-	</tbody>
-	</table>
-	</div>
-
+	}
+	if ((isset($_POST['haplotype']) || isset($_POST['selLines'])) && !isset($_POST['phenoSearch'])) { 
+	  $lines_str = implode(",",$selLines);
+	  ?> 
 	  <h3> Optionally, also select a trait </h3>
+	  <input type="hidden" name=selLines value=" <?php echo $lines_str ?> ">
 	<div id="phenotypeSel">
 	<table id="phenotypeSelTab" class="tableclass1" cellspacing=0; cellpadding=0;>
 	<thead>
@@ -487,12 +503,13 @@ connect();
 	</tbody>
 	</table>
 	</div>
-
-	<p><input type="submit" name="haplotype" value="Submit"> Combine selected haplotype and phenotype with currently selected lines</p>
-
+    <?php 
+	} 
+	?>
 	</form>
 		</div>
 	</div>
+	
 </div>
 </div>
 

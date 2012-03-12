@@ -171,9 +171,13 @@ EOD;
       <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
   <li>
     <a title="<?php echo $lang["desc_sc5"]; ?>">
-      Database
+      Administration
     </a>
     <ul>
+      <li>
+	<a href="<?php echo $config['base_url']; ?>login/edit_users.php" title="No deletion yet">
+	  Edit Users
+	</a>
       <li>
 	<a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">
 	  Table Status

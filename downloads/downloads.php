@@ -324,7 +324,7 @@ class Downloads
       <h2>Tassel Download</h2>
       <p>
       <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
-      <img alt="spinner" id="spinner" src="ajax-loader.gif" style="display:none;" />
+      <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
       <?php 
       $selection_ready = 0;
       if (isset($_SESSION['selected_lines'])) {
@@ -1152,7 +1152,7 @@ class Downloads
 		while ($row = mysql_fetch_assoc($res))
 		{
 		 ?>
-		    <option value="<?php echo $row['id'] ?>">
+		    <option selected value="<?php echo $row['id'] ?>">
 		     <?php echo $row['name'] ?>
 		    </option>
 		    <?php
@@ -1204,6 +1204,8 @@ class Downloads
 	}
 	
 	private function step4_lines() {
+	 $experiments = $_GET['e'];
+	 
 	$saved_session = "";
 	$message2 = "";
 
@@ -1350,8 +1352,7 @@ class Downloads
 	 $i=0;
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
-	 foreach ($outarray as $allele) {
-	   $marker_uid = $marker_list[$i];
+	 foreach ($marker_list as $marker_uid) {
 	   if (isset($marker_lookup[$marker_uid])) {
 	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
 	   if ($total > 0) {
@@ -1365,7 +1366,7 @@ class Downloads
 	   }
 	  $i++;
 	 }
-	 if (mysql_num_rows($res) >= 1) {
+	 
 	  ?>
 	<p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
 	&nbsp;&nbsp;&nbsp;&nbsp;
@@ -1375,9 +1376,7 @@ class Downloads
 	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
 	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 	</i>
-	
 	<?php
-	}
 	}
 	
 	private function step1_locations() {
