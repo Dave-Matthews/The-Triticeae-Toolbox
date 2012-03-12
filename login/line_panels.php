@@ -31,9 +31,14 @@ include($config['root_dir'].'theme/admin_header.php');
       if (mysql_num_rows($r) > 0)
 	echo "<p><font color=red>Panel \"$panel\" already exists.</font>";
       else {
-	$lineids = implode(",", $_SESSION['selected_lines']);
-	$sql = "insert into linepanels (name, line_ids) values ('$panel', '$lineids')";
-	$r = mysql_query($sql) or die(mysql_error());
+	if (count($_SESSION['selected_lines']) < 2) {
+	  echo "<p><font color=red>Why would you want a panel that doesn't contain at least a few lines?</font>";
+	}
+	else {
+	  $lineids = implode(",", $_SESSION['selected_lines']);
+	  $sql = "insert into linepanels (name, line_ids) values ('$panel', '$lineids')";
+	  $r = mysql_query($sql) or die(mysql_error());
+	}
       }
     }  
   }
@@ -58,7 +63,7 @@ if (isset($_POST['deselPanel'])) {
  }
 // End of handling user input.
 
-print "<table><tr><td style='vertical-align:top'>";
+print "<table><tr><td style='vertical-align:top; text-align:left;'>";
 print "<form action = \"".$_SERVER['PHP_SELF']."\" method=\"post\">";
 print "Add <font color=blue>current selection</font> as a panel.<br>";
 print "<input type=text name=panel value='&lt;panel name&gt;'>";
@@ -74,7 +79,7 @@ if ($username && !isset($_SESSION['selected_lines'])) {
 $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
 
 $selectedcount = count($_SESSION['selected_lines']);
-print "</td><td>";
+print "</td><td style='vertical-align:top; text-align:left;'>";
 echo "<font color=blue><b>Currently selected lines</b></font>: $selectedcount";
 
 print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
@@ -83,7 +88,7 @@ foreach ($_SESSION['selected_lines'] as $lineuid) {
   $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
   while ($row=mysql_fetch_assoc($result)) {
     $selval=$row['line_record_name'];
-    print "<option value=\"$lineuid\" selected>$selval</option>\n";
+    print "<option value=\"$lineuid\">$selval</option>\n";
   }
 }
 print "</select>";
@@ -102,7 +107,10 @@ if (mysql_num_rows($r) > 0) {
   print "<form id=\"deselPanelForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\">";
   print "<select name=\"deselPanel[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
   while ($row = mysql_fetch_row($r)) {
-    $count = count(explode(',', $row[2]));
+    if (empty($row[2]))
+      $count = 0;
+    else 
+      $count = count(explode(',', $row[2]));
     print "<option value=\"$row[0]\">$row[1] ($count)</option>\n";
   }
   print "</select>";

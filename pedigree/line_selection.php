@@ -1,5 +1,6 @@
 <?php session_start();
 
+// 12mar12 dem: Add wildcard '*' for name search.
 // 2/14/2011 JLee  Fix to handle hector case
 // 2/2/2011  JLee  Add ability to parse tab-delimited and comma separate line inputs
 // 1/28/2011  JLee  Add ability to add multiple lines and synonym translation
@@ -85,7 +86,7 @@ function exclude_none()
       <tr> <td>
       <b>Name</b> <br/><br/>
       <textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
-      <br> Eg: Cayuga, Doyce<br>
+      <br> E.g. Cayuga, Doyce, step*oe<br>
       Synonyms will be translated.
       <br></td>
 
@@ -194,49 +195,39 @@ $sql = "select distinct experiment_year from experiments";
     $lineArr = array();
     $nonHits = array();
 
-    // Translate synonym
-    if (strlen($linenames) != 0)
-    {
-     	if (strpos($linenames, ',') > 0 ) {
-			$linenames = str_replace(", ",",", $linenames);	
-			$lineList = explode(',',$linenames);
-		} elseif (preg_match("/\t/", $linenames)) {
-			$lineList = explode("\t",$linenames);
-		} else {
-			$lineList = explode('\r\n',$linenames);
-		}
-	   	
-        $items = implode("','", $lineList);
-        $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
- 
-        $res = mysql_query($mStatment) or die(mysql_error());
-
-	if (mysql_num_rows($res) != 0) {         
-	while($myRow = mysql_fetch_assoc($res)) {
-	  array_push ($lineArr,$myRow['line_record_name']);
-	}  
-	// Generate the translated line names
-	$linenames =  implode("','", $lineArr);         
-      } else {
-	$linenames = ''; 
-      }
-
-         // Find any non-hit items, case-independently.
- 	foreach ($lineList as $name)
- 	  array_push($nonHits, strtoupper($name));
-        $mStatment = "SELECT distinct (ls.line_synonym_name) FROM line_synonyms ls where ls.line_synonym_name in ('" .$items. "');";
-        $res = mysql_query($mStatment) or die(mysql_error());
-        while($myRow = mysql_fetch_assoc($res)) {
- 	  $i = array_search(strtoupper($myRow['line_synonym_name']), $nonHits);
- 	  if ($i !== FALSE) $nonHits[$i] = '';
-        }
-
-	$mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr where lr.line_record_name in ('" .$items. "');";
-	$res = mysql_query($mStatment) or die(mysql_error());
-	while($myRow = mysql_fetch_assoc($res)) {
-	  $i = array_search($myRow['line_record_name'], $nonHits);
-	  if ($i !== FALSE) $nonHits[$i] = '';
+    // the Name box
+    if (strlen($linenames) != 0)  {
+      // Assume input is punctuated either with commas, tabs or linebreaks.
+      // Change to commas.
+      $linenames = str_replace(array('\t', '\r\n', ', '), ",", $linenames);
+      $lineList = explode(',', $linenames);
+      foreach ($lineList as $word) {
+	$found = FALSE;
+	$word = str_replace('*', '%', $word);  // Handle "*" wildcards.
+	// First check line_records.line_record_name.
+	$hits = mysql_query("select line_record_name from line_records 
+                where line_record_name like '$word'") or die(mysql_error());
+	if (mysql_num_rows($hits) > 0) {
+	  $found = TRUE;
+	  while ($hit = mysql_fetch_row($hits))	    
+	    $linesFound[] = $hit[0];
 	}
+	// Now check line_synonyms.line_synonym_name.
+	$hits = mysql_query("select line_record_name 
+		from line_synonyms ls, line_records lr
+		where line_synonym_name like '$word'
+		and ls.line_record_uid = lr.line_record_uid") or die(mysql_error());
+	if (mysql_num_rows($hits) > 0) {
+	  $found = TRUE;
+	  while($hit = mysql_fetch_row($hits))
+	    $linesFound[] = $hit[0];
+	}
+	if ($found === FALSE)
+	  $nonHits[] = $word;
+      }
+      // Generate the translated line names
+      if (count($linesFound) > 0)
+	$linenames = implode("','", $linesFound);
     }
 
     if (count($breedingProgram) != 0) $breedingCode = implode("','", $breedingProgram);
@@ -352,7 +343,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     // Show failures from the Name box that don't match any line names.
     foreach ($nonHits as $i) {
       if ($i != '')
-	echo "<font color=red><b>\"$i\" not in system.</font></b><br>";
+	echo "<font color=red><b>Line \"$i\" not found.</font></b><br>";
         }
     ?>
     <h3>Lines found: <?php echo "$linesfound"; ?></h3>
