@@ -330,9 +330,11 @@ class LineNames_Check
 		    $grin = str_replace("PI", "PI ", $grin);
 		  if (preg_match("/^CItr[0-9]/", $grin)) 
 		      $grin = str_replace("CItr", "CItr ", $grin);
+		  if (preg_match("/^GSTR[0-9]/", $grin)) 
+		      $grin = str_replace("GSTR", "GSTR ", $grin);
 		  if ( !preg_match("/^PI [0-9]*$/", $grin) 
 		       AND !preg_match("/^CItr [0-9]*$/", $grin) 
-		       AND !preg_match("/^GSTR[0-9]*$/", $grin) )
+		       AND !preg_match("/^GSTR [0-9]*$/", $grin) )
 		    die_nice("$line: Invalid GRIN Accession $grin");
 		  // Is this accession already used for a different line?
 		  $sql = "select line_record_name 
