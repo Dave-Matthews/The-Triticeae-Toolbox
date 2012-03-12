@@ -9,7 +9,7 @@
   <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
   <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
   <meta name="revisit-After" content="1 days" >
-  <title>The Triticeae Toolbox</title>
+  <title>Breeders Database</title>
 
   <base href="<?php echo $config['base_url']; ?>" >
   <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
@@ -60,7 +60,7 @@ EOD;
   <div id="barleyimg">
   </div>
   <h1 id="logo">
-  The Triticeae Toolbox
+  Breeders Database
   </h1>
   <div id="util">
   <div id="utilright">
