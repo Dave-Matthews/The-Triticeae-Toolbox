@@ -31,6 +31,12 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 	    $species[$value] = 'selected="selected"';
 	}
     }  
+    if(is_array($_POST['panel'])) {
+	foreach ($_POST['panel'] as $key => $value) {
+	    $panelselect[$value] = 'selected="selected"';
+	    $panel[] = $value;
+	}
+    }  
     if(is_array($_POST['growthhabit'])) {
 	foreach ($_POST['growthhabit'] as $key => $value) {
 	  $growth[$value] = 'selected="selected"';
@@ -84,14 +90,14 @@ function exclude_none()
   <form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
   
       <tr> <td>
-      <b>Name</b> <br/><br/>
+      <b>Name</b> <br/>
       <textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
-      <br> E.g. Cayuga, Doyce, step*oe<br>
+      <br> E.g. Cayuga, tur*ey, iwa860*<br>
       Synonyms will be translated.
       <br></td>
 
-      <td> 
-      <b> Data program </b> <br/><br/>
+      <td colspan=2> 
+      <b> Data program </b> <br/>
       <select name="breedingprogramcode[]" multiple="multiple" size="6" style="width: 12em height: 12em;">
       <?php 
       $sql = "SELECT DISTINCT(l.breeding_program_code), c.data_program_name FROM line_records l, CAPdata_programs c WHERE l.breeding_program_code = c.data_program_code ";
@@ -105,7 +111,7 @@ function exclude_none()
       </select><br/><br/>
       </td>
 
-<td><b>Year</b><br><br>
+<td><b>Year</b><br>
 <select name="year[]" multiple="multiple" size="6">
 <?php
 $sql = "select distinct experiment_year from experiments";
@@ -120,7 +126,7 @@ $sql = "select distinct experiment_year from experiments";
 </select>
 <br><br></td>
 
-      <td> <b>Species</b> <br/><br/>
+      <td> <b>Species</b> <br/>
       <select name="species[]" multiple="multiple" size="6" style="width: 12em height: 12em;">
       <?php
       $sql = "SELECT DISTINCT(species) FROM line_records WHERE species NOT LIKE 'NULL' AND NOT species = ''";
@@ -133,21 +139,34 @@ $sql = "select distinct experiment_year from experiments";
       </select><br/><br/>
       </td>
       </tr>
-
-      <tr>
+      <tr style="vertical-align:top">
       <td>
-      <b>Hardness</b> <br/><br/>
+      <b>Panel</b> <br/>
+      <select name="panel[]" multiple="multiple" size="6" style="width: 12em height: 12em;">
+      <?php
+      $sql = "SELECT linepanels_uid, name FROM linepanels";
+      $res = mysql_query($sql) or die(mysql_error());
+      while ($resp = mysql_fetch_row($res)) {
+	$lpid = $resp[0];
+	$s = $resp[1];
+ 	echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
+      }
+      ?>
+      </select>
+      </td>
+      <td>
+      <b>Hardness</b> <br/>
       <input type="radio" name="hardness" value="H" <?php echo $hardSelected['H'] ?>/>Hard<br>
       <input type="radio" name="hardness" value="S" <?php echo $hardSelected['S'] ?>/>&nbsp;&nbsp;Soft<br><br>
       </td>
       <td>
-      <b>Color</b> <br/><br/>
+      <b>Color</b> <br/>
       <input type="radio" name="color" value="R" <?php echo $colorSelected['R']?>/>&nbsp;&nbsp;Red<br>
       <input type="radio" name="color" value="W" <?php echo $colorSelected['W']?>/>White<br><br>
       </td>
 
       <td>
-      <b>Growth habit </b> <br/> <br/>
+      <b>Growth habit </b> <br/>
       <select name="growthhabit[]" multiple="multiple" size="4" style="width: 3em;height: 5em;">
       <?php
       $sql = "SELECT DISTINCT(growth_habit) FROM line_records WHERE growth_habit NOT LIKE 'NULL' AND NOT growth_habit = ''";
@@ -165,7 +184,7 @@ $sql = "select distinct experiment_year from experiments";
       </td>
 
       <td>
-      <b>Awns</b> <br/><br/>
+      <b>Awns</b> <br/>
       <input type="radio" name="awned" value="A" <?php echo $awnSelected['A']?>/>&nbsp;&nbsp;&nbsp;Awned<br>
       <input type="radio" name="awned" value="N" <?php echo $awnSelected['N']?>/>Awnless<br><br>
       </td>
@@ -280,6 +299,18 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
       }
       $count++;
     }
+    if (count($panel) != 0)    {
+      foreach($panel as $p) 
+	$idlist .= mysql_grab("select line_ids from linepanels where linepanels_uid = $p") . ",";
+      $idlist = trim($idlist, ',');
+      if ($count == 0)    	{
+    	$where .= "line_record_uid IN ($idlist)";
+      }
+      else    	{
+	$where .= " AND line_record_uid IN ($idlist)";
+      }
+      $count++;
+    }
     if (strlen($hardness) != 0)    {
       if ($count == 0)    	{
 	$where .= "hardness IN ('".$hardness."')";
@@ -329,7 +360,8 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 	 AND (strlen($hardness) == 0)
 	 AND (strlen($color) == 0)
 	 AND (count($growthHabit) == 0)
-	 AND (strlen($awned) == 0) )
+	 AND (strlen($awned) == 0) 
+         AND (count($panel) == 0))
       $result = mysql_query("SELECT line_record_name FROM line_records where line_record_name = NULL");
     else  {
       $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
