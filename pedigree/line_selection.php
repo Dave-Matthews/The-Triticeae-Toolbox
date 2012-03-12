@@ -149,7 +149,6 @@ $sql = "select distinct experiment_year from experiments";
       while ($resp = mysql_fetch_row($res)) {
 	$lpid = $resp[0];
 	$s = $resp[1];
- 	/* echo "<option value='$lpid' $panel[$s]>$s</option>"; */
  	echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
       }
       ?>
@@ -362,7 +361,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 	 AND (strlen($color) == 0)
 	 AND (count($growthHabit) == 0)
 	 AND (strlen($awned) == 0) 
-         AND (strlen($panel) == 0))
+         AND (count($panel) == 0))
       $result = mysql_query("SELECT line_record_name FROM line_records where line_record_name = NULL");
     else  {
       $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
