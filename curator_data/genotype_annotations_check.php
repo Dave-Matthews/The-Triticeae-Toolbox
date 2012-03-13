@@ -90,8 +90,6 @@ class Annotations_Check {
 		ini_set("memory_limit","24M");
 		$username=$row['name'];
 		$tmp_dir="./uploads/tmpdir_".$username."_".rand();
-        //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
-        //	copy($_FILES['file']['tmp_name'][1], $raw_path);
         umask(0);
 	
         if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
@@ -107,11 +105,49 @@ class Annotations_Check {
         if ($_FILES['file']['name'][0] == "") {
             error(1, "No File Uploaded");
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+        } else {
+			$uploadfile=$_FILES['file']['name'][0];
+        }
+        if ($_FILES['file']['name'][1] == "") {
+            error(1, "No Manifest File found");
+            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+        } else {
+			$uploadfile1=$_FILES['file']['name'][1];
+        }
+        if ($_FILES['file']['name'][2] == "") {
+            error(1, "No Cluster File found");
+            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+        } else {
+			$uploadfile2=$_FILES['file']['name'][2];
+        }
+        if ($_FILES['file']['name'][3] == "") {
+            error(1, "No Sample Sheet File found");
+            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
         }
         else {
-			$uploadfile=$_FILES['file']['name'][0];
+			$uploadfile3=$_FILES['file']['name'][3];
  				
+			$raw_path= "../raw/genotype";
+			foreach ($_FILES['file']['error'] as $key => $error) {
+			  if ($key == 0) { /* do not move the Annotation File */
+			  } elseif ($error == UPLOAD_ERR_OK) {
+  			    $tmp_name = $_FILES['file']['tmp_name'][$key];
+			    $name = $_FILES['file']['name'][$key];
+			    move_uploaded_file($tmp_name, "$raw_path/$name");
+			  } else {
+        		    $tmp = $_FILES['file']['name'][$key];
+		            echo "$tmp<br>\n";
+ 			    $tmp = $_FILES['file']['error'][$key];
+			    echo "$tmp<br>\n";
+			    echo "$raw_path<br>\n";
+			    die("error in file upload");
+			 }
+			}
+			
             $uftype=$_FILES['file']['type'][0];
+            $uftype1=$_Files['file']['type'][1];
+            $uftype2=$_FILES['file']['type'][2];
+            $uftype3=$_Files['file']['type'][3];
             if (strpos($uploadfile, ".txt") === FALSE) {
                 error(1, "Expecting an tab-delimited text file. <br> The type of the uploaded file is ".$uftype);
                 print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
@@ -281,7 +317,7 @@ class Annotations_Check {
                         <br>
                         <input type="Button" value="Accept" 
                         onclick="javascript: update_database('<?php echo $annotfile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $data_public_flag?>' )"/>
-                        <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
+                        <input type="Button" value="Cancel" onclick="history.go(-1);"/>
                         <?php
                     }
                 }    
@@ -388,6 +424,10 @@ class Annotations_Check {
                 $res = mysql_query($sql) or die("Database Error: Breeding Program lookup - ".mysql_error());
                 $rdata = mysql_fetch_assoc($res);
                 $bp_uid=$rdata['CAPdata_programs_uid'];
+		if (empty($bp_uid)) {
+		  error(1, "Breeding program $bp_code is not in the database.");
+		  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+		  }
                 //echo "bp_uid ".$bp_uid."<br>";
         
                 $sql = "SELECT CAPdata_programs_uid
@@ -396,6 +436,10 @@ class Annotations_Check {
                 $res = mysql_query($sql) or die("Database Error: CAPdata Program lookup - ". mysql_error());
                 $rdata = mysql_fetch_assoc($res);
                 $cpData_uid=$rdata['CAPdata_programs_uid'];
+		if (empty($cpData_uid)) {
+		  error(1, "CAP data program $capDataProg is not in the database.");
+		  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+		  }
                 //echo "cpData_uid ".$cpData_uid."<br>";
                
                 $sql = "SELECT datasets_uid
