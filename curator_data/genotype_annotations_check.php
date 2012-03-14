@@ -29,7 +29,7 @@ authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
 
-new Annotations_Check($_GET['function']);
+new Annotations_Check($_POST['function']);
 
 class Annotations_Check {
 
@@ -90,6 +90,8 @@ class Annotations_Check {
 		ini_set("memory_limit","24M");
 		$username=$row['name'];
 		$tmp_dir="./uploads/tmpdir_".$username."_".rand();
+        //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
+        //	copy($_FILES['file']['tmp_name'][1], $raw_path);
         umask(0);
 	
         if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
@@ -105,49 +107,11 @@ class Annotations_Check {
         if ($_FILES['file']['name'][0] == "") {
             error(1, "No File Uploaded");
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-        } else {
-			$uploadfile=$_FILES['file']['name'][0];
-        }
-        if ($_FILES['file']['name'][1] == "") {
-            error(1, "No Manifest File found");
-            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-        } else {
-			$uploadfile1=$_FILES['file']['name'][1];
-        }
-        if ($_FILES['file']['name'][2] == "") {
-            error(1, "No Cluster File found");
-            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-        } else {
-			$uploadfile2=$_FILES['file']['name'][2];
-        }
-        if ($_FILES['file']['name'][3] == "") {
-            error(1, "No Sample Sheet File found");
-            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
         }
         else {
-			$uploadfile3=$_FILES['file']['name'][3];
+			$uploadfile=$_FILES['file']['name'][0];
  				
-			$raw_path= "../raw/genotype";
-			foreach ($_FILES['file']['error'] as $key => $error) {
-			  if ($key == 0) { /* do not move the Annotation File */
-			  } elseif ($error == UPLOAD_ERR_OK) {
-  			    $tmp_name = $_FILES['file']['tmp_name'][$key];
-			    $name = $_FILES['file']['name'][$key];
-			    move_uploaded_file($tmp_name, "$raw_path/$name");
-			  } else {
-        		    $tmp = $_FILES['file']['name'][$key];
-		            echo "$tmp<br>\n";
- 			    $tmp = $_FILES['file']['error'][$key];
-			    echo "$tmp<br>\n";
-			    echo "$raw_path<br>\n";
-			    die("error in file upload");
-			 }
-			}
-			
             $uftype=$_FILES['file']['type'][0];
-            $uftype1=$_Files['file']['type'][1];
-            $uftype2=$_FILES['file']['type'][2];
-            $uftype3=$_Files['file']['type'][3];
             if (strpos($uploadfile, ".txt") === FALSE) {
                 error(1, "Expecting an tab-delimited text file. <br> The type of the uploaded file is ".$uftype);
                 print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
@@ -183,6 +147,7 @@ class Annotations_Check {
                     $analysisSWIdx = implode(find("Analysis Software", $header),"");
                     $swVersionIdx = implode(find("Software Version", $header),"");
                     $sampleSheetIdx = implode(find("Sample Sheet", $header),"");
+		    $commentIdx = implode(find("Comments", $header),"");
   
                     // Check if a required col is missing
                     if (($breedingProgIdx == "")||($capDataProgIdx == "")||($yearIdx == "")||
@@ -207,6 +172,7 @@ class Annotations_Check {
                     }
                     // Store individual records
                     $i = 1;
+		    $file_count = 1;
                     while(($line = fgets($reader)) !== FALSE) { 
                         if (feof($reader)) {
                             break;
@@ -291,10 +257,14 @@ class Annotations_Check {
                             <?php $newtext = wordwrap($storageArr[$i][$processingDateIdx], 10, "<br>", true); echo $newtext ?>
                             </td> 
                             <td >
-                            <?php $newtext = wordwrap($storageArr[$i][$manifestFileIdx], 10, "<br>", true); echo $newtext ?>
+                            <?php $newtext = wordwrap($storageArr[$i][$manifestFileIdx], 10, "<br>", true); echo $newtext;
+			    $filelist[$file_count] = $storageArr[$i][$manifestFileIdx];
+			    $file_count++; ?>
                             </td>
                             <td >
-                            <?php $newtext = wordwrap($storageArr[$i][$clusterFileIdx], 10, "<br>", true); echo $newtext ?>
+                            <?php $newtext = wordwrap($storageArr[$i][$clusterFileIdx], 10, "<br>", true); echo $newtext;
+			    $filelist[$file_count] = $storageArr[$i][$clusterFileIdx];
+			    $file_count++; ?>
                             </td> 
                             <td >
                             <?php $newtext = wordwrap($storageArr[$i][$opaNameIdx], 10, "<br>", true); echo $newtext ?>
@@ -306,19 +276,39 @@ class Annotations_Check {
                             <?php $newtext = wordwrap($storageArr[$i][$swVersionIdx], 10, "<br>", true); echo $newtext ?>
                             </td>
                             <td >
-                            <?php $newtext = wordwrap($storageArr[$i][$sampleSheetIdx], 10, "<br>", true); echo $newtext ?>
+                            <?php $newtext = wordwrap($storageArr[$i][$sampleSheetIdx], 10, "<br>", true); echo $newtext;
+			    $filelist[$file_count] = $storageArr[$i][$sampleSheetIdx];
+                            $file_count++; ?>
                             </td>
                             </tr>
                         <?php
                         }/* end of for loop */
-                        ?>
-                        </tbody>
-                        </table>
-                        <br>
-                        <input type="Button" value="Accept" 
-                        onclick="javascript: update_database('<?php echo $annotfile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $data_public_flag?>' )"/>
-                        <input type="Button" value="Cancel" onclick="history.go(-1);"/>
-                        <?php
+			?>
+			</tbody></table><br>
+			<b>Upload required files</b>
+			<form action="curator_data/genotype_annotations_check.php" method="POST" enctype="multipart/form-data">
+			<input type=hidden name=function value=typeDatabase><br>
+			<input type=hidden name=linedata value='<?php echo $annotfile?>'/>
+			<input type=hidden name=file_name value='<?php echo $uploadfile?>'/>
+			<input type=hidden name=user_name value='<?php echo $username?>'/>
+			<input type=hidden name=data_public_flag value=<?php echo $data_public_flag?>/>
+			<?php
+	                $i = 1;
+ 			foreach ($filelist as $file) {
+			  if (preg_match('/[A-Za-z]/',$file)) {
+                            echo "$i <input id='file[]' type='file' name='file[]' />$file<br>";
+			    $i++;
+			  }
+                        }
+			$filelist = implode(',',$filelist);
+			echo "<br>";
+			?>
+			<input type="submit">
+			</form>
+                        <!--input type="Button" value="Accept" --> 
+                        <!--onclick="javascript: update_database('<?php echo $annotfile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $data_public_flag?>','<?php echo $filelist?>' )"/-->
+			<!--input type="Button" value="Cancel" onclick="history.go(-1); return;"/><br-->
+			<?php
                     }
                 }    
 			}
@@ -328,17 +318,17 @@ class Annotations_Check {
     private function type_Database() {
         global $config;
         include($config['root_dir'] . 'theme/admin_header.php');
-        $datafile = $_GET['linedata'];
-        $filename_old = $_GET['file_name'];
+        $datafile = $_POST['linedata'];
+        $filename_old = $_POST['file_name'];
         $filename = $filename_old.rand();
-        $username = $_GET['user_name'];
-        $data_public_flag = $_GET['data_public_flag'];
+        $username = $_POST['user_name'];
+        $data_public_flag = $_POST['data_public_flag'];
 
         //echo "Datafile - ". $datafile . "<br>";
         //echo "Flag - " . $data_public_flag . "<br>";
 
         if (($reader = fopen($datafile, "r")) == FALSE) {
-            error(1, "Unable to access file.");
+            error(1, "Unable to access datafile file $datafile");
             exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
        }
         // Check first line for header information
@@ -362,6 +352,23 @@ class Annotations_Check {
         $analysisSWIdx = implode(find("Analysis Software", $header),"");
         $swVersionIdx = implode(find("Software Version", $header),"");
         $sampleSheetIdx = implode(find("Sample Sheet", $header),"");
+	$commentIdx = implode(find("Comments", $header),"");
+
+	//upload files
+        $i = 1;
+        $raw_path= "../raw/genotype";
+        foreach ($_FILES['file']['error'] as $key => $error) {
+           if ($error == UPLOAD_ERR_OK) {
+                            $tmp_name = $_FILES['file']['tmp_name'][$key];
+                            $name = $_FILES['file']['name'][$key];
+                            move_uploaded_file($tmp_name, "$raw_path/$name");
+                            echo "successfuly uploaded $name<br>\n";
+           } else {
+                            echo "error in file upload for entry $i<br>\n";
+                            //print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1);\"><br>";
+           }
+           $i++;
+        }
  
          // Store individual records
         $i = 1;
@@ -415,6 +422,22 @@ class Annotations_Check {
                 $analysisSW = $storageArr[$i][$analysisSWIdx];
                 $swVer = $storageArr[$i][$swVersionIdx];
                 $sampleSht =$storageArr[$i][$sampleSheetIdx];
+		$comment = $storageArr[$i][$commentIdx];
+
+		/* check if files are uploaded */
+		$raw_path = "../raw/genotype";
+		$tmp = "$raw_path/$manifestF";
+		if (!file_exists($tmp)) {
+		  echo "Error - the Manifest file has not been uploaded correctly, $manifestF<br>\n";
+		}
+		$tmp = "$raw_path/$clusterF";
+		if (!file_exists($tmp)) {
+                  echo "Error - the Cluster file has not been uploaded correctly, $clusterF<br>\n";
+                }
+		$tmp = "$raw_path/$sampleSht";
+		if (!file_exists($tmp)) {
+                  echo "Error - the Sample Sheet file has not been uploaded correctly, $sampleSht<br>\n";
+                }
                 
                 /* get dataset and BP uid*/
                 $sql = "SELECT CAPdata_programs_uid
@@ -461,9 +484,17 @@ class Annotations_Check {
                 $res = mysql_query($sql) or die("Database Error: Trial Code lookup failed - ". mysql_error());
                 $e_uid = mysql_fetch_assoc($res);
                 if ( !empty($e_uid) ) {
-                    error(1, "Trial code - ". $trialCode . " already exist. <br>Please fix and re-import starting at this location." );
-                    exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-                }
+		    $exp_uid = $e_uid['experiment_uid'];
+                    echo "update experiment $trialCode<br>\n";
+                    $sql = "UPDATE experiments set experiment_short_name = '$shortName', traits = '$traits', experiment_year = $year
+                        WHERE trial_code = '$trialCode'";
+		    $res = mysql_query($sql) or die("Database Error: Experiment record update failed - ". mysql_error());
+                    //echo "$sql<br>\n";
+                    $sql = "UPDATE genotype_experiment_info set processing_date = '$processDate', manifest_file_name = '$manifestF', cluster_file_name = '$clusterF', OPA_name = '$opaName', sample_sheet_filename = '$sampleSht'
+                        WHERE experiment_uid = '$exp_uid'";
+		    $res = mysql_query($sql) or die("Database Error: Genotype record update failed - ". mysql_error());
+                    //echo "$sql<br>\n";
+                } else {
                 
                 /* If dataset does not exist, then create it, and get ID */
                 if ($datasets_uid===NULL) {
@@ -512,10 +543,10 @@ class Annotations_Check {
                         '$opaName', '$analysisSW', '$swVer', '$sampleSht',NULL , NOW(), NOW())";
                 $res = mysql_query($sql) or die("Database Error: Genotype record insertion failed - ". mysql_error());
                 //echo "result code for exp info table:".$res."\n"; 
+		}
             }
         }
         echo " <b>The Data is inserted/updated successfully </b><br>";
-        echo "<br>Please email to <a href='mailto:tht_curator@graingenes.org' > tht_curator@graingenes.org</a> the indicated cluster and samplesheet files for inclusion into our system. <br> Thank you.";     
         echo "<br/><br/>";
 ?>
         <a href="./curator_data/genotype_annotations_upload.php"> Go Back To Main Page </a>
