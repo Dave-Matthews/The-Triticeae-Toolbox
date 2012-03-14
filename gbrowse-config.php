@@ -14,7 +14,7 @@ db_adaptor    = Bio::DB::SeqFeature::Store
 db_args       = -adaptor DBI::mysql
                 -dsn     gtht
 				-user 	tht
-				-password	wheat_2008 
+				-password <password>
 
 #units         = cM
 #unit_divider  = 1000

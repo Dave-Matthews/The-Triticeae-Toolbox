@@ -13,7 +13,6 @@ require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 //include($config['root_dir'] . 'includes/bootstrap_dev.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
-//include($config['root_dir'] . 'curator_data/boot_test.php');
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
 connect();

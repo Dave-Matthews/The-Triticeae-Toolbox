@@ -10,7 +10,6 @@ include($config['root_dir'] . 'includes/bootstrap.inc');
 
 //include($config['root_dir'] . 'SumanDirectory/bootstrap_dev.inc');
 
-include($config['root_dir'] . 'SumanDirectory/boot_test.php');
 //include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
 include($config['root_dir'] . 'SumanDirectory/lineuid.php');
 
