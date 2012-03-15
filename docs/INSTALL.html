@@ -1,6 +1,6 @@
 <body bgcolor=white>
 <pre>
-<h4>Requirements</h4>
+<b>Requirements</b>
 - For any functionality at all
   - Unix.  Ubuntu and Solaris work.
   - Apache
@@ -15,7 +15,7 @@
   - libzzip
   - PHP-libgd (?)
 
-<h4>Setting up the MySQL databases</h4>
+<b>Setting up the MySQL databases</b>
 Load the schema and some initializing data.  
 mysql> create database T3wheat;
 mysql> use T3wheat;
@@ -35,11 +35,9 @@ mysql> grant all on T3wheat.* to curator@localhost identified by '&lt;password>'
 Similarly, create the GBrowse database "gtht" and grant permissions.
 
 mysql> create database gtht;
-mysql> grant all on gtht.* to curator@localhost identified by '&lt;password>';
+mysql> grant select on gtht.* to publicuser@localhost identified by '&lt;password>';
 
-
-
-<h4>Database connection scripts</h4>
+<b>Database connection scripts</b>
 For security, the password information to connect to the MySQL database
 is not stored within the T3 source code repository or even within the
 Apache directory.  For example ours is in
@@ -69,7 +67,7 @@ T3wheat_writeaccess.inc:
                      'db_host' => 'localhost');
 ?>
 
-<h4>Directories for uploaded and output files</h4>
+<b>Directories for uploaded and output files</b>
 Uploaded data files are stored in the curator_data/uploads/ directory,
 which must be writable by the Apache user, e.g. www-data.  
 
@@ -90,7 +88,7 @@ DocumentRoot to /tmp/tht.  If your webserver top directory is
 
 % cd /www/htdocs; mdkir tmp; ln -s /tmp/tht tmp/tht
 
-<h4>PHP configuration</h4>
+<b>PHP configuration</b>
 Some helpful modifications for the php.ini file, such as 
 /etc/php5/apache2/php.ini:
 
@@ -107,23 +105,25 @@ e.g. www-data
 
 Then restart the Apache server to read the new php.ini configuration.
 
-<h4>GBrowse</h4>
-Installing GBrowse should have created a gbrowse.conf/ directory in the
-Apache configuration directory, e.g. in /etc/apache2/.  Link from here
-to the tht.conf file in the repository's gbrowse-generated/ directory.
+<b>GBrowse</b>
 
-% sudo ln -s /www/htdocs/t3/wheat/gbrowse-generated/tht.conf
+Installing GBrowse should have created a gbrowse.conf/ directory in the
+Apache configuration directory, e.g. in /etc/apache2/.  Edit the
+tht.conf file in the repository's gbrowse-generated/ directory to
+replace "&lt;password>" with the publicuser password you assigned for
+the gtht database above, and move tht.conf to the gbrowse.conf/
+directory.
 
 Add the following stanza to your Apache configuration file, e.g.
 /etc/apache2/sites-available/default, and restart Apache.
 
 Alias /perl/ "/cgi-bin/"
-<Location /perl/>
+&lt;Location /perl/>
      SetHandler perl-script
      PerlResponseHandler ModPerl::Registry
      PerlOptions +ParseHeaders
      Options +ExecCGI
      Order allow,deny
      Allow from all
-</Location>
+&lt;/Location>
 

@@ -9,7 +9,6 @@ require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
 //include($config['root_dir'] . 'includes/bootstrap_dev.inc');
 include($config['root_dir'] . 'SumanDirectory/lineuid.php');
-include($config['root_dir'] . 'SumanDirectory/boot_test.php');
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
 connect();

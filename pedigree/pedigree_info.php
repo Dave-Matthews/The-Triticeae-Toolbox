@@ -138,7 +138,7 @@ function exclude_none() {
       $result=mysql_query("select line_record_name, breeding_program_code, hardness, color, growth_habit, pedigree_string from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
 
       $syn_result=mysql_query("select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
-      $syn_names="";
+      $syn_names=""; $sn = "";
       while ($syn_row = mysql_fetch_assoc($syn_result)) 
 	$syn_names[] = $syn_row['line_synonym_name'];
       if (is_array($syn_names))
@@ -269,7 +269,7 @@ private function type_Line_Excel() {
         }
 	$grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
            where line_record_uid=$lineuid") or die(mysql_error());
-	$grin_names="";
+	$grin_names=""; $gr = "";
 	while ($grin_row = mysql_fetch_assoc($grin_result)) 
 	  $grin_names[] = $grin_row['barley_ref_number'];
 	if (is_array($grin_names))
@@ -278,7 +278,7 @@ private function type_Line_Excel() {
 
 	$syn_result=mysql_query("select line_synonym_name from line_synonyms 
             where line_record_uid=$lineuid") or die(mysql_error());
-	$syn_names="";
+	$syn_names=""; $sn="";
 	while ($syn_row = mysql_fetch_assoc($syn_result)) 
 	  $syn_names[] = $syn_row['line_synonym_name'];
 	if (is_array($syn_names))
