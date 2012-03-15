@@ -226,6 +226,7 @@ class Annotations_Check {
                         echo "<th >" . $storageArr[0][$analysisSWIdx] . "</th>";
                         echo "<th >" . $storageArr[0][$swVersionIdx] . "</th>";
                         echo "<th >" . $storageArr[0][$sampleSheetIdx] . "</th>";
+                        echo "<th >" . $storageArr[0][$commentIdx] . "</th>";
                         echo "</tr>"."<br/>";
                         echo "<thead>"."<br/>";
                         ?>                   
@@ -280,7 +281,11 @@ class Annotations_Check {
 			    $filelist[$file_count] = $storageArr[$i][$sampleSheetIdx];
                             $file_count++; ?>
                             </td>
+                            <td >
+                            <?php $newtext = wordwrap($storageArr[$i][$commentIdx], 10, "<br>", true); echo $newtext;
+                            ?>
                             </tr>
+                            
                         <?php
                         }/* end of for loop */
 			?>
@@ -291,7 +296,7 @@ class Annotations_Check {
 			<input type=hidden name=linedata value='<?php echo $annotfile?>'/>
 			<input type=hidden name=file_name value='<?php echo $uploadfile?>'/>
 			<input type=hidden name=user_name value='<?php echo $username?>'/>
-			<input type=hidden name=data_public_flag value=<?php echo $data_public_flag?>/>
+			<input type=hidden name=data_public_flag value='<?php echo $data_public_flag?>'/>
 			<?php
 	                $i = 1;
  			foreach ($filelist as $file) {
@@ -422,7 +427,7 @@ class Annotations_Check {
                 $analysisSW = $storageArr[$i][$analysisSWIdx];
                 $swVer = $storageArr[$i][$swVersionIdx];
                 $sampleSht =$storageArr[$i][$sampleSheetIdx];
-		$comment = $storageArr[$i][$commentIdx];
+		        $comment = $storageArr[$i][$commentIdx];
 
 		/* check if files are uploaded */
 		$raw_path = "../raw/genotype";
@@ -486,11 +491,12 @@ class Annotations_Check {
                 if ( !empty($e_uid) ) {
 		    $exp_uid = $e_uid['experiment_uid'];
                     echo "update experiment $trialCode<br>\n";
-                    $sql = "UPDATE experiments set experiment_short_name = '$shortName', traits = '$traits', experiment_year = $year
+                    $sql = "UPDATE experiments set experiment_short_name = '$shortName', traits = '$traits', experiment_year = $year, data_public_flag = $data_public_flag
                         WHERE trial_code = '$trialCode'";
-		    $res = mysql_query($sql) or die("Database Error: Experiment record update failed - ". mysql_error());
+		    $res = mysql_query($sql) or die("Database Error: Experiment record update failed - ". mysql_error() . $sql);
                     //echo "$sql<br>\n";
-                    $sql = "UPDATE genotype_experiment_info set processing_date = '$processDate', manifest_file_name = '$manifestF', cluster_file_name = '$clusterF', OPA_name = '$opaName', sample_sheet_filename = '$sampleSht'
+                    $sql = "UPDATE genotype_experiment_info set processing_date = '$processDate', manifest_file_name = '$manifestF', cluster_file_name = '$clusterF', OPA_name = '$opaName', 
+                        sample_sheet_filename = '$sampleSht', comments = '$comment'
                         WHERE experiment_uid = '$exp_uid'";
 		    $res = mysql_query($sql) or die("Database Error: Genotype record update failed - ". mysql_error());
                     //echo "$sql<br>\n";
@@ -538,9 +544,9 @@ class Annotations_Check {
                     
                 /*  Fill in genotype_experiments table */
                 $sql = "INSERT INTO genotype_experiment_info (experiment_uid, processing_date, manifest_file_name, cluster_file_name, OPA_name,
-                    analysis_software, BGST_version_number, sample_sheet_filename, raw_datafile_archive, updated_on, created_on)
+                    analysis_software, BGST_version_number, sample_sheet_filename, raw_datafile_archive, comments, updated_on, created_on)
                     VALUES ('$exp_uid', '$processDate', '$manifestF', '$clusterF',
-                        '$opaName', '$analysisSW', '$swVer', '$sampleSht',NULL , NOW(), NOW())";
+                        '$opaName', '$analysisSW', '$swVer', '$sampleSht',NULL , '$comment', NOW(), NOW())";
                 $res = mysql_query($sql) or die("Database Error: Genotype record insertion failed - ". mysql_error());
                 //echo "result code for exp info table:".$res."\n"; 
 		}
