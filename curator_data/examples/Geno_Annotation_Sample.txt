@@ -1,4 +1,4 @@
-Breeding Program	CAPdata Program	Year	Short Name	Trial Code	Traits	Processing Date	Manifest File	Cluster File	OPA Name	Analysis Software	Software Version	Sample Sheet
+Breeding Program	CAPdata Program	Year	Short Name	Trial Code	Traits	Processing Date	Manifest File	Cluster File	OPA Name	Analysis Software	Software Version	Sample Sheet	Comments
 AB	NDG	2010	AB_BOPA1	2009BOPA1_AB_Plate5	SNP calls, r, theta, x, y,xraw, yraw	04/28/2010	GS0007511-OPA.opa	BOPA1PooledSamples2009.EGT	BOPA1	Illumina Genome Studio	2010.3	Sample_Sheet_2009plate5AB.csv
 AB	NDG	2010	AB_BOPA2	2009BOPA2_AB_Plate5	SNP calls, r, theta, x, y,xraw, yraw	04/28/2010	GS0010598-OPA.opa	BOPA2PooledSamples2009.EGT	BOPA2	Illumina Genome Studio	2010.3	2009CAPplate5ABSampleSheetBOPA2rev.csv
 MN	NDG	2010	MN_BOPA1	2009BOPA1_MN_Plate3	SNP calls, r, theta, x, y,xraw, yraw	4/16/2010	GS0007511-OPA.opa	BOPA1PooledSamples2009.EGT	BOPA1	Illumina Genome Studio	2010.3	Sample_Sheet_2009plate3MN.csv

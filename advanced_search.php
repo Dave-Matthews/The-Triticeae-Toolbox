@@ -20,6 +20,7 @@ connect();
 	// marker_list -list of selected markers
 	// cross - 2D array of all allele combinations
 	// sub - which column of marker_idx to increment 
+	  global $dispMissing;
 	  $sub = $num_markers - 1;
 	  $i = 0;
 	  while ($i < $num_markers) {
@@ -30,6 +31,11 @@ connect();
             if(strpos(strtolower($k), "marker") !== FALSE) {
 		$check_list[$k] = 1;
             }
+          }
+	  if (isset($_POST['dispMissing'])) {
+            $dispMissing = 1;
+          } else {
+            $dispMissing = 0;
           }
  	  $marker_instr=" E.marker_uid in (".implode("," , array_keys($markers)).")";
           $in_these_lines = str_replace("line_records.", "E.", $in_these_lines);
@@ -97,7 +103,9 @@ connect();
                             }
                             $count_lines = count($selLines);
 			    if (count($selLines) > 0) {
-                              echo "<tr><td><input type='checkbox' name='marker_$tmp3' value = '$tmp1' $checked><td>$tmp2<td>" . count($selLines) . "\n";
+			      if ($dispMissing || (!preg_match('/--/',$tmp2))) {
+                                echo "<tr><td><input type='checkbox' name='marker_$tmp3' value = '$tmp1' $checked><td>$tmp2<td>" . count($selLines) . "\n";
+			      }
 			    }
                             $marker_idx[$sub] = $marker_idx[$sub] + 1;
                             $j++;
@@ -384,7 +392,14 @@ connect();
 	<form action="pedigree/pedigree_markers.php" method="post">
 	  -->
 	<form action="advanced_search.php" method="post"> 
-	<?php   
+	<?php  
+        $tmp = count($_SESSION['clicked_buttons']);
+        if ($tmp > 5) {
+           echo "$tmp markers selected<br>\n";
+           echo "Error - Please select no more than 5 markers<br>";
+           echo "<p><a href=genotyping/marker_selection.php>Select markers</a></p>";
+           break;
+        }
 	if (count($selLines) == 0) {
 	?>
 	<h2>View Haplotypes</h2>
@@ -464,6 +479,13 @@ connect();
 			}
 			?>
 			</tbody></table></div>
+			<?php
+			if ($dispMissing) {
+                            echo "<input type='submit' name='hideMissing' value='Hide missing'> Hide haplotypes with missing data";
+                        } else {
+                            echo "<input type='submit' name='dispMissing' value='Show missing'> Show haplotypes with missing data";
+                        }
+		        ?>
 			<p><input type="submit" name="haplotype" value="Submit"> Combine selected haplotype with currently selected lines</p>
 			<?php 
 		}
