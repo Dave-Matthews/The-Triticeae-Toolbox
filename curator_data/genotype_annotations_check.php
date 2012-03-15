@@ -178,13 +178,15 @@ class Annotations_Check {
                             break;
                         }
 
-                        if (trim($line) == '') {
+                        //remove extra blank columns
+                        $line = trim($line);
+                        
+                        if ($line == '') {
                             continue;
                         }
 
 
 						if ((stripos($line, '- cut -') > 0 )) break;
-
 
                         $j = 0;
                         $data = str_getcsv($line,"\t");
@@ -381,9 +383,11 @@ class Annotations_Check {
             if (feof($reader)) {
                 break;
             }
+            // remove extra blank columns
+            $line = trim($line);
             
 			// Handle blank line 
-			if (trim($line) == '') {
+			if ($line == '') {
                 continue;
             }
 
@@ -493,7 +497,7 @@ class Annotations_Check {
                     echo "update experiment $trialCode<br>\n";
                     $sql = "UPDATE experiments set experiment_short_name = '$shortName', traits = '$traits', experiment_year = $year, data_public_flag = $data_public_flag
                         WHERE trial_code = '$trialCode'";
-		    $res = mysql_query($sql) or die("Database Error: Experiment record update failed - ". mysql_error() . $sql);
+		    $res = mysql_query($sql) or die("Database Error: Experiment record update failed - ". mysql_error());
                     //echo "$sql<br>\n";
                     $sql = "UPDATE genotype_experiment_info set processing_date = '$processDate', manifest_file_name = '$manifestF', cluster_file_name = '$clusterF', OPA_name = '$opaName', 
                         sample_sheet_filename = '$sampleSht', comments = '$comment'
