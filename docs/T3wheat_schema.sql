@@ -37,7 +37,7 @@ CREATE TABLE `CAPdata_programs` (
   UNIQUE KEY `data_program_name` (`data_program_name`),
   KEY `institutions_uid` (`institutions_uid`),
   CONSTRAINT `fk_institutions` FOREIGN KEY (`institutions_uid`) REFERENCES `institutions` (`institutions_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=latin1 COMMENT='Contains a list of all CAP data creation programs in the Bar';
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1 COMMENT='Contains a list of all CAP data creation programs in the Bar';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -269,7 +269,7 @@ CREATE TABLE `barley_pedigree_catalog_ref` (
   UNIQUE KEY `refnumber` (`barley_ref_number`),
   KEY `fk_barley_pedigree_catalog_ref_barley_pedigree_catalog` (`barley_pedigree_catalog_uid`),
   CONSTRAINT `fk_barley_pedigree_catalog_ref_barley_pedigree_catalog` FOREIGN KEY (`barley_pedigree_catalog_uid`) REFERENCES `barley_pedigree_catalog` (`barley_pedigree_catalog_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4664 DEFAULT CHARSET=latin1 COMMENT='Links to GRIN and other pedigree data sources, ID number and';
+) ENGINE=InnoDB AUTO_INCREMENT=4667 DEFAULT CHARSET=latin1 COMMENT='Links to GRIN and other pedigree data sources, ID number and';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -531,7 +531,7 @@ CREATE TABLE `input_file_log` (
   PRIMARY KEY (`input_file_log_uid`),
   UNIQUE KEY `file_name` (`file_name`),
   FULLTEXT KEY `file_name_2` (`file_name`)
-) ENGINE=MyISAM AUTO_INCREMENT=279 DEFAULT CHARSET=latin1 COMMENT='table is a log of data files submitted to THT';
+) ENGINE=MyISAM AUTO_INCREMENT=296 DEFAULT CHARSET=latin1 COMMENT='table is a log of data files submitted to THT';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -553,7 +553,7 @@ CREATE TABLE `institutions` (
   `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`institutions_uid`),
   UNIQUE KEY `institutions_name` (`institutions_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=latin1 COMMENT='List of all institutions involved with THT project. ';
+) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=latin1 COMMENT='List of all institutions involved with THT project. ';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -599,7 +599,7 @@ CREATE TABLE `line_records` (
   `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`line_record_uid`),
   UNIQUE KEY `line_record_name` (`line_record_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5079 DEFAULT CHARSET=latin1 COMMENT='List of line records';
+) ENGINE=InnoDB AUTO_INCREMENT=5081 DEFAULT CHARSET=latin1 COMMENT='List of line records';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -619,7 +619,7 @@ CREATE TABLE `line_synonyms` (
   UNIQUE KEY `line_syn` (`line_synonyms_uid`,`line_synonym_name`),
   KEY `line_record_uid_index` (`line_record_uid`),
   CONSTRAINT `fk_line_record_uid12` FOREIGN KEY (`line_record_uid`) REFERENCES `line_records` (`line_record_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=13773 DEFAULT CHARSET=latin1 COMMENT='Central table linking the database together. What is the don';
+) ENGINE=InnoDB AUTO_INCREMENT=13842 DEFAULT CHARSET=latin1 COMMENT='Central table linking the database together. What is the don';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1237,4 +1237,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-03-08  6:22:08
+-- Dump completed on 2012-03-13 10:43:06

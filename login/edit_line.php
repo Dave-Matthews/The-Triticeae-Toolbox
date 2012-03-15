@@ -6,7 +6,6 @@ require 'config.php';
  * Logged in page initialization
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-//include($config['root_dir'] . 'curator_data/boot_test.php');
 
 connect();
 loginTest();

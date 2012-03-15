@@ -2,7 +2,6 @@
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-//include($config['root_dir'] . 'curator_data/boot_test.php');
 
 
 /*
