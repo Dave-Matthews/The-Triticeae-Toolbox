@@ -2,6 +2,8 @@
 /*
 * Logged in page initialization
 *
+* 16mar12 dem Allow selecting markers that are not in maps.
+*             Un-require all marker names to also be in marker_synonyms.value.
 * 9/2/2010   J.Lee modify to add new snippet Gbrowse tracks
 * 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse   
 */
@@ -37,7 +39,9 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
   // Get the marker uids.
   $selmkrs = array();
   foreach ($selmkrnames as $mkrnm) {
-    $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm'";
+    //$sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm'";
+    $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
+            select marker_uid from markers where marker_name = '$mkrnm'";
     $r = mysql_query($sql);
     if (mysql_num_rows($r) == 0)
       echo "<font color=red>\"$mkrnm\" not found.</font><br>";
@@ -60,7 +64,8 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
     if (!isset($mapids) || !is_array($mapids))
       $mapids = array();
   foreach ($selmkrs as $mkr) {
-    $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
+    //$sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
+    $sql = "select distinct map_uid from markers where marker_uid = $mkr";
     $r = mysql_query($sql);
     $row = mysql_fetch_row($r);
     if (! in_array($row[0], $mapids))
@@ -75,8 +80,10 @@ if (isset($_POST['selMkrs']) || isset($_POST['selbyname'])) {
       $selmkrs=$_POST['selMkrs'];
     else {
       $selbyname = $_POST['selbyname'];
-      $sql = "select m.marker_uid from markers as m inner join
-markers_in_maps as mm using(marker_uid) where mm.map_uid=$mapid and
+/*       $sql = "select m.marker_uid from markers as m inner join */
+/* markers_in_maps as mm using(marker_uid) where mm.map_uid=$mapid and */
+/* m.marker_name='" . mysql_real_escape_string($selbyname) . "'"; */
+      $sql = "select m.marker_uid from markers where
 m.marker_name='" . mysql_real_escape_string($selbyname) . "'";
       $sqlr = mysql_fetch_assoc(mysql_query($sql));
       $selmkrs = array($sqlr['marker_uid']);
@@ -124,9 +131,10 @@ if (isset($_SESSION['clicked_buttons']) && count($_SESSION['clicked_buttons']) >
   foreach ($_SESSION['clicked_buttons'] as $mkruid) {
     $mapid = current($mapids);
     next($mapids);
-    $sql = "select m.marker_name, mm.chromosome
-from markers as m inner join markers_in_maps as mm using(marker_uid)
-where marker_uid=$mkruid" . ($mapid ? " and mm.map_uid=$mapid":"");
+/*     $sql = "select m.marker_name, mm.chromosome */
+/* from markers as m inner join markers_in_maps as mm using(marker_uid) */
+/* where marker_uid=$mkruid" . ($mapid ? " and mm.map_uid=$mapid":""); */
+    $sql = "select marker_name from markers where marker_uid=$mkruid";
     $result=mysql_query($sql)
       //        or die("invalid marker uid\n");
       or die(mysql_error());
