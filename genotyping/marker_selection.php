@@ -244,7 +244,7 @@ EOD;
   </thead>
   <tbody>
   <tr><td>
-  <select name='mapname' size=10 onfocus="DispMapSel(this.value)" onchange="DispMapSel(this.value)">
+  <select name='mapname' size=10 onClick="DispMapSel(this.value)" onchange="DispMapSel(this.value)">
 <?php
 $result=mysql_query("select map_name from map") or die(mysql_error);
 while ($row=mysql_fetch_assoc($result)) {
