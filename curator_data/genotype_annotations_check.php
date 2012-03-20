@@ -292,7 +292,7 @@ class Annotations_Check {
                         }/* end of for loop */
 			?>
 			</tbody></table><br>
-			<b>Upload required files</b>
+			<b>Upload supporting files</b>
 			<form action="curator_data/genotype_annotations_check.php" method="POST" enctype="multipart/form-data">
 			<input type=hidden name=function value=typeDatabase><br>
 			<input type=hidden name=linedata value='<?php echo $annotfile?>'/>
@@ -371,7 +371,7 @@ class Annotations_Check {
                             move_uploaded_file($tmp_name, "$raw_path/$name");
                             echo "successfuly uploaded $name<br>\n";
            } else {
-                            echo "error in file upload for entry $i<br>\n";
+                            echo "no file upload for entry $i<br>\n";
                             //print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1);\"><br>";
            }
            $i++;
@@ -437,15 +437,18 @@ class Annotations_Check {
 		$raw_path = "../raw/genotype";
 		$tmp = "$raw_path/$manifestF";
 		if (!file_exists($tmp)) {
-		  echo "Error - the Manifest file has not been uploaded correctly, $manifestF<br>\n";
+		  echo "The Manifest file is missing, $manifestF<br>\n";
+		  $manifestF = NULL;
 		}
 		$tmp = "$raw_path/$clusterF";
 		if (!file_exists($tmp)) {
-                  echo "Error - the Cluster file has not been uploaded correctly, $clusterF<br>\n";
+                  echo "The Cluster file is missing, $clusterF<br>\n";
+                  $clusterF = NULL;
                 }
 		$tmp = "$raw_path/$sampleSht";
 		if (!file_exists($tmp)) {
-                  echo "Error - the Sample Sheet file has not been uploaded correctly, $sampleSht<br>\n";
+                  echo "The Sample Sheet file has is missing, $sampleSht<br>\n";
+                  $sampleSht = NULL;
                 }
                 
                 /* get dataset and BP uid*/

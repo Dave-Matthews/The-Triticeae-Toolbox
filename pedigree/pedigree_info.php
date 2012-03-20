@@ -242,8 +242,9 @@ private function type_Line_Excel() {
     $worksheet->write(0, 8, "Awned", $format_header);
     $worksheet->write(0, 9, "Chaff", $format_header);
     $worksheet->write(0, 10, "Height", $format_header);
-    $worksheet->setColumn(11,11,20);
+    $worksheet->setColumn(11,12,20);
     $worksheet->write(0, 11, "Description", $format_header);
+    $worksheet->write(0, 12, "Data Available", $format_header);
 
     $i = 1;
     # start by opening a query string
@@ -284,6 +285,14 @@ private function type_Line_Excel() {
 	if (is_array($syn_names))
 	  $sn = implode(', ', $syn_names);
 	$worksheet->write($i, 2, "$sn",$format_row);
+	// Data Available:
+	$phenotype = lineHasPhenotypeData($lineuid);
+	$genotype = lineHasGenotypeData($lineuid);
+	if($phenotype AND $genotype) $hasdata = "Phenotype, Genotype";
+	if($phenotype AND !$genotype) $hasdata = "Phenotype only";
+	if($genotype AND !$phenotype) $hasdata = "Genotype only";
+	if(!$phenotype AND !$genotype) $hasdata = "None";
+	$worksheet->write($i, 12, $hasdata,$format_row);
 
         $i++;
     }
