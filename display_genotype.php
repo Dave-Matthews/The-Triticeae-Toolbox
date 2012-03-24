@@ -1,10 +1,15 @@
 <?php 
-
+// dem 23mar12 Handle large dataset downloads. Output one row at a time
+//             instead of catenating the whole thing into $output first.
 // J.Lee 5/9/2011	Fix problem with query while restricting mmaf and max missing values,
 //					prevent download operation when 0 markers match condition.
 // J.Lee 8/17/2010  Modify alelle download to work in Linux and Solaris 
 //****************************************************************************
 
+// dem 23mar12: Default 30 sec is too short for experiment 2011_9K_NB_allplates.
+ini_set("max_execution_time","300");
+// dem 23mar12: Default 500M is too small for experiment 2011_9K_NB_allplates.
+ini_set('memory_limit','4096M');
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
 require_once 'Spreadsheet/Excel/Writer.php';
@@ -261,16 +266,27 @@ echo "<table>";
 			    $marker_uid[] = $row["marker"];
 			  }
 			}
+
+		// Begin output to file.
+		// Prepend HTML header to trigger browser's "Open or Save?" dialog. 
+		$date = date("m-d-Y-His");
+		$name = "THT-allele_query-$date.txt";
+		// JLee force url context change
+		header('Cache-Control:');
+		header('Pragma:');
+		header('Content-type: text/plain');
+		header("Content-Disposition: attachment; filename=$name");
+		header('Pragma: no-cache');
+		header('Expires: 0');
+		echo $outputheader."\n";
+
 			sort($marker_uid,SORT_NUMERIC);
 			$nelem = count($marker_uid);
 			$marker_uid = implode(",",$marker_uid);
-
 			if ($nelem == 0) {
            		error(1, "There are no markers matching the current conditions, try again with different set of criteria.");
            		exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-
 			}
-		
 		  $lookup = array(
 			  'AA' => 'AA',
 			  'BB' => 'BB',
@@ -278,88 +294,71 @@ echo "<table>";
 			  'AB' => 'AB'
 		  );
 	    
+		  // make an empty line with the markers as array keys, set default value
+		  //  to the default missing value for either qtlminer or tassel
+		  // places where the lines may have different values
+		  $empty = array_combine($marker_names,array_fill(0,$nelem,'NA'));
+			
+	// dem 23mar12: Use table allele_cache.  This query uses > 17G of /tmp 
+	// space for a .MYD temp file for experiment 2011_9K_NB_allplates:
+         /* $sql = "SELECT lr.line_record_name, m.marker_name AS name, */
+         /*            CONCAT(a.allele_1,a.allele_2) AS value */
+	 /* 		FROM */
+         /*    markers as m, */
+         /*    line_records as lr, */
+         /*    alleles as a, */
+         /*    tht_base as tb, */
+         /*    genotyping_data as gd */
+	 /* 		WHERE */
+         /*    a.genotyping_data_uid = gd.genotyping_data_uid */
+	 /* 			AND m.marker_uid = gd.marker_uid */
+	 /* 			AND gd.marker_uid IN ($marker_uid) */
+	 /* 			AND tb.line_record_uid = lr.line_record_uid */
+	 /* 			AND gd.tht_base_uid = tb.tht_base_uid */
+	 /* 			AND tb.experiment_uid ='".$experiment_uid."' */
+	 /* 	  ORDER BY lr.line_record_name, m.marker_uid"; */
+$sql = "SELECT line_record_name, marker_name AS name, alleles AS value
+        FROM allele_cache
+        WHERE marker_uid IN ($marker_uid)
+        AND experiment_uid =$experiment_uid
+        ORDER BY line_record_name, marker_uid";
 
-			// make an empty line with the markers as array keys, set default value
-			//  to the default missing value for either qtlminer or tassel
-			// places where the lines may have different values
-			
-		  
-				$empty = array_combine($marker_names,array_fill(0,$nelem,'NA'));
-		  
-			
-			
-         $sql = "SELECT lr.line_record_name, m.marker_name AS name,
-                    CONCAT(a.allele_1,a.allele_2) AS value
-			FROM
-            markers as m,
-            line_records as lr,
-            alleles as a,
-            tht_base as tb,
-            genotyping_data as gd
-			WHERE
-            a.genotyping_data_uid = gd.genotyping_data_uid
-				AND m.marker_uid = gd.marker_uid
-				AND gd.marker_uid IN ($marker_uid)
-				AND tb.line_record_uid = lr.line_record_uid
-				AND gd.tht_base_uid = tb.tht_base_uid
-				AND tb.experiment_uid ='".$experiment_uid."'
-		  ORDER BY lr.line_record_name, m.marker_uid";
-
-		//echo "allele output query " . $sql . "<br>";
 		$last_line = "some really silly name that no one would call a plant";
 		$res = mysql_query($sql) or die("Error:allele output dataset<br>". mysql_error());
-		
 		$outarray = $empty;
 		$cnt = $num_lines = 0;
 		while ($row = mysql_fetch_array($res)){
-				//first time through loop
-				if ($cnt == 0) {
-					$last_line = $row['line_record_name'];
-				}
-				
-			if ($last_line != $row['line_record_name']){  
-					// Close out the last line
-					$output .= "$last_line\t";
-					$outarray = implode($delimiter,$outarray);
-					$output .= $outarray."\n";
-					//reset output arrays for the next line
-					$outarray = $empty;
-					$mname = $row['name'];				
-					$outarray[$mname] = $lookup[$row['value']];
-					$last_line = $row['line_record_name'];
-					$num_lines++;
-			} else {
-					 $mname = $row['name'];				
-					 $outarray[$mname] = $lookup[$row['value']];
-			}
-			$cnt++;
+		  //first time through loop
+		  if ($cnt == 0) {
+		    $last_line = $row['line_record_name'];
+		  }
+		  if ($last_line != $row['line_record_name']){  
+		    // Close out the last line
+		    $output .= "$last_line\t";
+		    $outarray = implode($delimiter,$outarray);
+		    $output .= $outarray."\n";
+		    echo $output;
+		    $output = "";
+		    //reset output arrays for the next line
+		    $outarray = $empty;
+		    $mname = $row['name'];				
+		    $outarray[$mname] = $lookup[$row['value']];
+		    $last_line = $row['line_record_name'];
+		    $num_lines++;
+		  } else {
+		    $mname = $row['name'];				
+		    $outarray[$mname] = $lookup[$row['value']];
+		  }
+		  $cnt++;
 		}
-		
-		  //save data from the last line
-		  
-		  $output .= "$last_line$delimiter";
-		  $outarray = implode($delimiter,$outarray);
-		  $output .= $outarray."\n";
-		  $num_lines++;
-
-		// Prepend HTML header to trigger browser's "Open or Save?" dialog. 
-		$date = date("m-d-Y-His");
-
-		$name = "THT-allele_query-$date.txt";
-		// JLee force url context change
-		header('Cache-Control:');
-		header('Pragma:');
-
-		header('Content-type: text/plain');
-		header("Content-Disposition: attachment; filename=$name");
-		header('Pragma: no-cache');
-		header('Expires: 0');
-	
-		echo $outputheader."\n".$output;
-		
+		//save data from the last line
+		$output .= "$last_line$delimiter";
+		$outarray = implode($delimiter,$outarray);
+		$output .= $outarray."\n";
+		$num_lines++;
+		echo $output;
   }
-  
 
-  } /* End of class*/
+} /* End of class*/
 ?>
 
