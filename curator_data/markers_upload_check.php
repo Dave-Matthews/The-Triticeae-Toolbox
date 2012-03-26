@@ -19,6 +19,9 @@ include($config['root_dir'] . 'curator_data/lineuid.php');
 connect();
 loginTest();
 
+//needed for mac compatibility
+ini_set('auto_detect_line_endings',true);
+
 /* ******************************* */
 $row = loadUser($_SESSION['username']);
 
