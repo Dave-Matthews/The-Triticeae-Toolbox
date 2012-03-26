@@ -41,26 +41,6 @@ if($_SERVER['REQUEST_METHOD'] == "POST") {
 }
 ?>
 
-<script type="text/javascript">
-// Select All
-function exclude_all() {
-  count = document.lines.elements.length;
-  for (i=0; i < count; i++) {
-    if(document.lines.elements[i].checked == 0)
-      {document.lines.elements[i].checked = 1; }
-  }
-  document.lines.btn1.checked = "checked";                     
-}
-
-function exclude_none() {
-  count = document.lines.elements.length;
-  for (i=0; i < count; i++) {
-      if(document.lines.elements[i].checked == 1)
-    	{document.lines.elements[i].checked = 0; }
-  }
-}
-</script>
-
 <style type="text/css">
   table th {background: #5B53A6 !important; color: white !important; text-align: left; padding: 3px;}
   <!-- h3 {border-left: 4px solid #5B53A6; padding-left: .5em;} -->
@@ -160,12 +140,10 @@ $sql = "select distinct experiment_year from experiments";
 
       <p><input type="submit" value="Search"/>
 <?php
-      $url = $config['base_url']."pedigree/line_selection.php";
-      echo "<input type=button value='Clear' onclick='location.href=\"$url\"'>";
-?>
-      </form><p>
+  $url = $config['base_url']."pedigree/line_selection.php";
+  echo "<input type=button value='Clear' onclick='location.href=\"$url\"'>";
+  echo "</form><p>";
 
-<?php 
   /* The Search */
   if (isset($_POST)) {
     $linenames = $_POST['LineSearchInput'];
@@ -264,7 +242,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     if (strlen($hardness) != 0)    {
       if ($count == 0)    	
 	$where .= "hardness IN ('".$hardness."')";
-      else			{
+      else			
 	$where .= " AND hardness IN ('".$hardness."')";
       $count++;
     }
@@ -275,7 +253,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 	$where .= " AND color IN ('".$color."')";
       $count++;
     }
-    if (count($growthHabit) != 0)  
+    if (count($growthHabit) != 0)  {
       if ($count == 0)    	
 	$where .= "growth_habit IN ('".$growthStr."')";
       else			
@@ -306,7 +284,6 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     else  {
       $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
       $result=mysql_query($TheQuery) or die(mysql_error()."<br>Query was:<br>".$TheQuery);
-      //echo $TheQuery;
     }
     $linesfound = mysql_num_rows($result);
 
@@ -315,32 +292,20 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
       if ($i != '') echo "<font color=red><b>Line \"$i\" not found.</font></b><br>";
 
     // Results:
-    /* echo "<form name='lines' id='selectLines' action='pedigree/line_selection.php' method='post'>"; */
-    echo "<form name='lines' action='pedigree/line_selection.php' method='post'>";
+    echo "<form name='lines' action=".$_SERVER['PHP_SELF']." method='post'>";
     print "<b>Lines found: $linesfound </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
     if (!isset($_SESSION['selected_lines']) OR count($_SESSION['selected_lines']) == 0) 
-      echo " <input type='submit' value='Add to Selected' style='color:blue'>";
-?>
-    <div id="unknown" style="width: 217px; height: 230px; overflow: auto;border: 1px solid #5b53a6;">
-    <table width='200px' id='linesTab'>
-    <tr><th>&nbsp;&nbsp;Check <br/>
-    <input type="radio" name="btn1" value="ALL" onclick="javascript:exclude_all();"/>All<br>
-    <input type="radio" name="btn1" value="NONE" onclick="javascript:exclude_none();"/>None</th><th><b>Line name</b></th></tr>
-<?php
-    if (mysql_num_rows($result) > 0) {
+      echo " <input type='submit' value='Add to Selected' style='color:blue; font-size:9pt'>";
+    print "<br><select name='selLines[]' multiple='multiple' style='height: 18em; width: 13em'>";
+    if ($linesfound > 0) {
       while($row = mysql_fetch_assoc($result)) {
 	$line_record_name = $row['line_record_name'];
 	$line_record_uid = $row['line_record_uid'];
-?>
-	<tr><td><input type='checkbox' checked value="<?php echo $line_record_uid?>" name='selLines[]' id="exbx_<?php echo $line_record_uid ?>"/></td>
-	  <td><?php echo $line_record_name ?></td>
-	</tr>
-<?php
-	}
+	echo "<option value='$line_record_uid' selected>$line_record_name</option>";
       }
-      print "</table></div>";
+    }
+    print "</select>";
     }  // end if($_POST[search]=yes)
-
 
     if (isset($_SESSION['selected_lines']) AND count($_SESSION['selected_lines']) != 0) {   
       if ($_POST['search'] == "yes") {
@@ -357,7 +322,8 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
       print "</table>";
     print "</form>";
   } // end if(isset($_POST))
-		
+
+// Combine found lines with cookie, replace/&&/||.		
 $verify_selected_lines = $_POST['selLines'];
 $verify_session = $_SESSION['selected_lines'];
 if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
@@ -379,7 +345,7 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
       $_SESSION['selected_lines'] = $selected_lines;
     }
   }
-
+  // Deselect highlighted cookie lines.
   if (isset($_POST['deselLines'])) {
     $selected_lines = $_SESSION['selected_lines'];
     foreach ($_POST['deselLines'] as $line_uid) 
