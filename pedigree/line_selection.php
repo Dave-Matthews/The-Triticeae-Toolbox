@@ -144,7 +144,7 @@ $sql = "select distinct experiment_year from experiments";
   $url = $config['base_url']."pedigree/line_selection.php";
   echo "<input type=button value='Clear' onclick='location.href=\"$url\"'>";
   echo "</form><p>";
-//print_h($_POST);
+
   /* The Search */
   if (isset($_POST)) {
     $linenames = $_POST['LineSearchInput'];

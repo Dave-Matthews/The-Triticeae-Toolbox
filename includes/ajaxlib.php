@@ -1019,7 +1019,18 @@ function DispPhenotypeSel($arr) {
 	$pquery = mysql_query("SELECT phenotypes_name from phenotypes where phenotype_uid = $id") or die(mysql_error());
 	$pname = mysql_fetch_row($pquery);
 	$pn = $pname[0];
-	$query = mysql_query("SELECT DISTINCT experiment_uid, trial_code FROM experiments WHERE experiments.traits like '%$pn%' ORDER BY trial_code") or die(mysql_error());
+        if ((count($_SESSION['selected_lines']) > 0) && ($_SESSION['selectWithin'] == "Yes")) {
+          $sql = "SELECT DISTINCT experiments.experiment_uid, trial_code FROM experiments, line_records as lr, tht_base
+            WHERE experiments.experiment_uid = tht_base.experiment_uid
+            AND lr.line_record_uid = tht_base.line_record_uid
+            AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")" .
+            "AND experiments.traits like '%$pn%' ORDER By trial_code";
+            $errMsg = "There are no trials for this trait within selected lines.";
+          $query = mysql_query($sql) or die(mysql_error());
+        } else {
+	  $query = mysql_query("SELECT DISTINCT experiment_uid, trial_code FROM experiments WHERE experiments.traits like '%$pn%' ORDER BY trial_code") or die(mysql_error());
+          $errMsg = "There are no trials for this trait.";
+        }
 
 	// display in selection box please
 	if(mysql_num_rows($query) > 0) {
@@ -1030,7 +1041,7 @@ function DispPhenotypeSel($arr) {
 		echo "</select>";
 	}
 	else {
-	  echo "<p style='color: red;'>There are no trials available for this trait.</p>";
+	  echo "<p style='color: red;'>$errMsg</p>";
 	}
 }
 
