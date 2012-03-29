@@ -4,6 +4,7 @@ require 'config.php';
  * Logged in page initialization
  * 
  * 8/16/2010 J.Lee  Fix significant digits display 
+ * 3/29/2012 C.Birkett changed intersect option to use SESSION variable, then DispPhenotype will show trial only if it is in selected lines
  */
 include($config['root_dir'] . 'includes/bootstrap.inc');
 connect();
@@ -15,6 +16,38 @@ include($config['root_dir'] . 'theme/admin_header.php');
 	<div id="primaryContent">
 
 <?php
+
+function DispCombinOpt() {
+  $count = count($_SESSION['selected_lines']);
+  /*if POST varialble set then use this value, else if SESSION variable set then use this value, else default to replace*/
+  $select_rep = "";
+  $select_add = "";
+  $select_yes = "";
+  if ($_POST['selectWithin'] == "Replace") {
+    $select_rep = "checked";
+    $_SESSION['selectWithin'] = "Replace";
+  } elseif ($_POST['selectWithin'] == "Add") {
+    $select_add = "checked";
+    $_SESSION['selectWithin'] = "Add";
+  } elseif ($_POST['selectWithin'] == "Yes") {
+    $select_yes = "checked";
+    $_SESSION['selectWithin'] = "Yes";
+  } elseif ($_SESSION['selectWithin'] == "Replace") {
+    $select_rep = "checked";
+  } elseif ($_SESSION['selectWithin'] == "Add") {
+    $select_add = "checked";
+  } elseif ($_SESSION['selectWithin'] == "Yes") {
+    $select_yes = "checked";
+  } else {
+    $select_rep = "checked";
+  }
+  ?>
+  Combine with <?php echo $count; ?> <font color=blue>currently selected lines</font>:<br>
+  <input type="radio" name="selectWithin" value="Replace" <?php echo $select_rep; ?> onclick="this.form.submit();"/>Replace<br>
+  <input type="radio" name="selectWithin" value="Add" <?php echo $select_add; ?> onclick="this.form.submit();"/>Add (OR)<br>
+  <input type="radio" name="selectWithin" value="Yes" <?php echo $select_yes; ?> onclick="this.form.submit();"/>Intersect (AND)<br><br>
+  <?php
+}
 
   // Create temporary directory if necessary.
   if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
@@ -28,9 +61,9 @@ if (isset($_POST['deselLines'])) {
   }
   $_SESSION['selected_lines']=$selected_lines;
 }
-
-
-  if(isset($_POST['phenotypecategory']) || isset($_GET['phenotype'])) {	//form has been submitted
+  if (isset($_POST['selectWithin']) && ($_SESSION['selectWithin'] != $_POST['selectWithin'])) { //change in combine selection, no form submitted
+    $_SESSION['selectWithin'] = $_POST['selectWithin'];
+  } elseif(isset($_POST['phenotypecategory']) || isset($_GET['phenotype'])) {	//form has been submitted
 
     /* Deal with sorting */
 	if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
@@ -184,18 +217,25 @@ $in_these_trials
 	  //echo "<br /><form action='".$config['base_url']."pedigree/pedigree_markers.php'><input type='submit' value='View Common Marker Values' /></form>";
 	}
 	else
-	  echo "No records found";
+	  echo "<b>No records found.</b><br>";
 
-	echo "</div></div>";
+	echo "<br></div></div>";
   }
+  
 ?>
 
 <div class="box">
-    <h2>Select Lines by Phenotype</h2>
-
+    
+    <h2>Select Lines by Phenotype</h2>  
+    
     <div id="phenotypeSel" class="boxContent">
     <h3> Select Phenotype and Trials</h3>
     <form action="<?php echo $config['base_url']; ?>phenotype/compare.php" method="post">
+    <?php
+    if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
+      DispCombinOpt();
+    } 
+    ?>
 
     <table id="phenotypeSelTab" class="tableclass1">
     <thead>
@@ -227,13 +267,7 @@ if ($username && !isset($_SESSION['selected_lines'])) {
   if (-1 != $stored)
     $_SESSION['selected_lines'] = $stored;
  }
-if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
 ?>
-    Combine with <font color=blue>currently selected lines</font>:<br>
-    <input type="radio" name="selectWithin" value="Replace" checked/>Replace<br>
-    <input type="radio" name="selectWithin" value="Add"/>Add (OR)<br>
-    <input type="radio" name="selectWithin" value="Yes"/>Intersect (AND)<br>
-<?php } ?>
 </td>
 
 <td></td><td></td></tr>
@@ -255,7 +289,7 @@ if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0
     $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
     while ($row=mysql_fetch_assoc($result)) {
       $selval=$row['line_record_name'];
-      print "<option value=\"$lineuid\" selected>$selval</option>\n";
+      print "<option value=\"$lineuid\">$selval</option>\n";
     }
   }
   print "</select>";
