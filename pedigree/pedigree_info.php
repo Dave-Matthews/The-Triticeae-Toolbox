@@ -44,15 +44,14 @@ class Pedigree {
 
 <script type="text/javascript">
 
+// Read PHP array $linelist into Javascript array line[].
 var line = new Array();
-"<?php 
-    $i=0;
-    foreach ($linelist as $lineuid) {
-?>"
-	line["<?php echo $i ?>"] = "<?php echo $lineuid;
-	$i++;		
-    }
-?>"
+<?php
+      for ($i=0; $i<count($linelist); $i++) { ?>
+        line[<?php echo $i ?>] = <?php echo $linelist[$i] ?> 
+<?php 
+      } 
+?> 
 var sellineids = line;
 		
 function load_excel() {
