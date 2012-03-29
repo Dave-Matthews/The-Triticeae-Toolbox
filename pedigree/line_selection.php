@@ -1,5 +1,6 @@
 <?php session_start();
 
+// 29mar12 dem: Show Line Info for the newly found lines too.
 // 26mar12 dem: Improve layout of bottom box, Lines Found / Currently Selected.
 // 12mar12 dem: Add wildcard '*' for name search.
 // 2/14/2011 JLee  Fix to handle hector case
@@ -143,7 +144,7 @@ $sql = "select distinct experiment_year from experiments";
   $url = $config['base_url']."pedigree/line_selection.php";
   echo "<input type=button value='Clear' onclick='location.href=\"$url\"'>";
   echo "</form><p>";
-
+//print_h($_POST);
   /* The Search */
   if (isset($_POST)) {
     $linenames = $_POST['LineSearchInput'];
@@ -295,16 +296,19 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     echo "<form name='lines' action=".$_SERVER['PHP_SELF']." method='post'>";
     print "<b>Lines found: $linesfound </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
     if (!isset($_SESSION['selected_lines']) OR count($_SESSION['selected_lines']) == 0) 
-      echo " <input type='submit' value='Add to Selected' style='color:blue; font-size:9pt'>";
-    print "<br><select name='selLines[]' multiple='multiple' style='height: 18em; width: 13em'>";
+      echo " <input type='submit' name='WhichBtn' value='Add to Selected' style='color:blue; font-size:9pt'>";
+    print "<br><select name='selLines[]' multiple='multiple' style='height: 17em; width: 13em'>";
     if ($linesfound > 0) {
+      $_SESSION['linesfound'] = array();
       while($row = mysql_fetch_assoc($result)) {
 	$line_record_name = $row['line_record_name'];
 	$line_record_uid = $row['line_record_uid'];
 	echo "<option value='$line_record_uid' selected>$line_record_name</option>";
+	$_SESSION['linesfound'][] = $line_record_uid;
       }
     }
-    print "</select>";
+    print "</select><br>";
+    print "<button type='button' onclick=\"location.href='".$config['base_url']."pedigree/pedigree_info.php?lf=yes'\">Show line information</button>";
     }  // end if($_POST[search]=yes)
 
     if (isset($_SESSION['selected_lines']) AND count($_SESSION['selected_lines']) != 0) {   
@@ -314,7 +318,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
       <input type="radio" name="selectWithin" value="Replace" checked>Replace<br>
       <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
       <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
-      <input type="submit" value="Combine" style='color:blue'></td>
+      <input type="submit" name='WhichBtn' value="Combine" style='color:blue'></td>
 <?php 
       }
     } // end if(SESSION[selectedlines])
@@ -323,7 +327,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     print "</form>";
   } // end if(isset($_POST))
 
-// Combine found lines with cookie, replace/&&/||.		
+// Combine found lines with cookie, REPLACE/AND/OR.
 $verify_selected_lines = $_POST['selLines'];
 $verify_session = $_SESSION['selected_lines'];
 if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
@@ -376,12 +380,13 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
     }
   }
   print "</select>";
-  print "<br><input type=\"submit\" value=\"Deselect highlighted lines\" />";
+  print "<br><input type='submit' name='WhichBtn' value='Deselect highlighted lines' />";
   print "</form>";
 	
   $display1 = $_SESSION['selected_lines'] ? "":" style='display: none;'";	
-  print "<form id=\"showPedigreeInfo\" action=\"pedigree/pedigree_info.php\" method=\"post\" $display1>";
-  print "<input type=\"submit\" value=\"Show line information\" /></form>";
+  /* print "<form id='showPedigreeInfo' action='pedigree/pedigree_info.php' method='post' $display1>"; */
+  /* print "<input type='submit' name='WhichBtn' value='Show line information'></form>"; */
+  print "<button onclick=\"location.href='".$config['base_url']."pedigree/pedigree_info.php'\">Show line information</button>";
   echo "</div>";  // id=squeeze
   print "</td></tr></table>";
   // Store the selected lines in the database.
