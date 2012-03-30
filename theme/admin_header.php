@@ -120,13 +120,11 @@ EOD;
 <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
   </ul>
   <li>
-  <a title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
+  <a title="<?php echo $lang["desc_sc2"]; ?>">About TBD</a>
   <ul>
-    <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
-    <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">CAP Data Programs</a>
+    <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">About T3</a>
+    <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">Data Programs</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
-    <li><a href="<?php echo $config['base_url']; ?>acknowledge.php" title="Contributions from other projects">Acknowledgments</a>
-    <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of T3 data">Terms of Use</a>
   </ul>
 
   <?php 
