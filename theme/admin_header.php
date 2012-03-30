@@ -237,5 +237,9 @@ EOD;
   <br>
 <!--  <a href="<?php echo $config['base_url']; ?>advanced_search.php">Advanced Search</a> -->
   </div>
+<div id="quicklinks"  style="top:230px;left:0px; width: 170px; padding: 10px 15px;">
+<?php include($config['root_dir'].'whatsnew.html'); ?>
+</div>
+
   </div>
   <div id="main">

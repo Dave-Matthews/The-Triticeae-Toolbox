@@ -3,71 +3,60 @@ session_start();
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
 require_once 'Spreadsheet/Excel/Writer.php';
-
 connect();
 
 new Pedigree($_GET['function']);
 
-class Pedigree
-{
-    private $delimiter = "\t";
- 
-    //
-    // Using the class's constructor to decide which action to perform
-    public function __construct($function = null) {
-        switch($function) {
-	
-            case 'typeLineExcel':
-				$this->type_Line_Excel();  /* Exporting to excel*/
-				break;
-			
-            default:
-				$this->typeLine();
-				break;
-		}
+class Pedigree {
+  private $delimiter = "\t";
+  // Using the class's constructor to decide which action to perform
+  public function __construct($function = null) {
+    switch($function) {
+    case 'typeLineExcel':
+      $this->type_Line_Excel();  /* Export to excel */
+      break;
+    default:
+      $this->typeLine();  /* Display in browser */
+      break;
     }
+  }
 	
-    //
-    // The wrapper action for the type1 download. Handles outputting the header
-    // and footer and calls the first real action of the type1 download.
-    private function typeLine() {
-		global $config;
-		include($config['root_dir'].'theme/normal_header.php');
-		echo " <h2> Line Information</h2>";
-        echo "<h3> <a href='pedigree/line_selection.php'> New Line Search</a></h3>";
-		$this->type_LineInformation();
+  //
+  // The wrapper action for the type1 download. Handles outputting the header
+  // and footer and calls the first real action of the type1 download.
+  private function typeLine() {
+    global $config;
+    include($config['root_dir'].'theme/normal_header.php');
+    echo " <h2> Line Information</h2>";
+    $this->type_LineInformation();
+    echo "<h3> <a href='pedigree/line_selection.php'> New Line Search</a></h3>";
+    $footer_div = 1;
+    include($config['root_dir'].'theme/footer.php');
+  }
 
-		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-    }
-
-    private function type_LineInformation() {
+  private function type_LineInformation() {
+    // If we clicked on the button for Lines Found, retrieve that cookie instead.
+    if ($_GET['lf'] == "yes") 
+      $linelist = $_SESSION['linesfound'];
+    else 
+      $linelist = $_SESSION['selected_lines'];
 ?>
 
 <script type="text/javascript">
 
+// Read PHP array $linelist into Javascript array line[].
 var line = new Array();
-"<?php 
-    $i=0;
-    foreach ($_SESSION['selected_lines'] as $lineuid) {
-?>"
-	line["<?php echo $i ?>"] = "<?php echo $lineuid;
-	$i++;		
-    }
-?>"
-var sellineids = new Array();
-var lineuids = line.length;
-//lineuids = ($('_SESSION["selected_lines"]').length);
-		
-//lineuids =  $('test').getValue().split(",");;
+<?php
+      for ($i=0; $i<count($linelist); $i++) { ?>
+        line[<?php echo $i ?>] = <?php echo $linelist[$i] ?> 
+<?php 
+      } 
+?> 
+var sellineids = line;
 		
 function load_excel() {
-    //alert ('hi');
-    //alert (lineuids);
-    //excel_str1 = implode(",",sellineids);
     excel_str1 = sellineids;
     arry_length = (sellineids.length);
-    // alert(arry_length);
     var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + arry_length;
     // Opens the url in the same window
      window.open(url, "_self");
@@ -133,17 +122,16 @@ function exclude_none() {
 
 <div style="padding: 0; width: 838px; height: 400px; overflow: scroll; border: 1px solid #5b53a6; clear: both">
 <table style="table-layout:fixed; width: 830px">	
-<?php
-    foreach ($_SESSION['selected_lines'] as $lineuid) {
-      $result=mysql_query("select line_record_name, breeding_program_code, hardness, color, growth_habit, pedigree_string from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
 
+<?php
+    foreach ($linelist as $lineuid) {
+      $result=mysql_query("select line_record_name, breeding_program_code, hardness, color, growth_habit, pedigree_string from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
       $syn_result=mysql_query("select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
       $syn_names=""; $sn = "";
       while ($syn_row = mysql_fetch_assoc($syn_result)) 
 	$syn_names[] = $syn_row['line_synonym_name'];
       if (is_array($syn_names))
 	$sn = implode(', ', $syn_names);
-	
       while ($row=mysql_fetch_assoc($result)) {
 ?>
 	<tr>
@@ -153,7 +141,8 @@ function exclude_none() {
         </td>
         <td style="width: 172px; text-align: center" class="marker">
         <?php $line_name = $row['line_record_name'];
-	echo "<a href='pedigree/show_pedigree.php?line=$line_name'>$line_name</a>" ?>
+	echo "<a href='pedigree/show_pedigree.php?line=$line_name'>$line_name</a>" 
+	  ?>
         </td>
         <td style="width: 72px; text-align: center" class="marker">
         <?php echo $row['breeding_program_code'] ?>
@@ -204,11 +193,16 @@ private function type_Line_Excel() {
 
   if (!empty($_GET['mxls1'])) {
     $sample = $_GET['mxls1'];
-    //echo "<pre>_GET = "; print_r($_GET); echo "</pre>"; exit;
   }
-  else
-    $sample = implode(",", $_SESSION['selected_lines']);
-    $tok = strtok($sample, ",");
+  else {
+    // If we clicked on the button for Lines Found, retrieve that cookie instead.
+    if ($_GET['lf'] == "yes") 
+      $linelist = $_SESSION['linesfound'];
+    else 
+      $linelist = $_SESSION['selected_lines'];
+    $sample = implode(",", $linelist);
+  }
+  $tok = strtok($sample, ",");
  
     $workbook = new Spreadsheet_Excel_Writer();
     $format_header =& $workbook->addFormat();
@@ -299,5 +293,5 @@ private function type_Line_Excel() {
     $workbook->send('Line_Details.xls');
     $workbook->close();
     }
-} /* End of class*/
+} /* End of class Pedigree */
 ?>
