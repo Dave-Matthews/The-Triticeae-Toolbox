@@ -7,7 +7,7 @@ body
 {
 /*     background: #f9b738;
  */    background: #f9cb73;
-    font-family: arial, helvitca, sans-serif;
+    font-family: arial, helvetica, sans-serif;
     font-size: 62.5%; /* 1 em = 10px */
 }
 
@@ -128,7 +128,7 @@ html>body #logo
     padding-top: 25px;
     background: #85cacf url('images/foothdg.png') repeat-x;
     text-align: center;
-    clear: both
+    clear: both;
 }
 #quicklinks h2
 {
@@ -195,7 +195,9 @@ html>body #logo
     margin-bottom: 1em
 }
 
+/* dem mar12: Set a minimum height to allow room for What's New. */
 #main {
+    min-height: 450px;
     margin-right: 10px;
     margin-top: 160px;
     margin-left: 245px;
