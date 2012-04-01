@@ -1337,17 +1337,18 @@ class Downloads
 	 foreach ($lines as $line_record_uid) {
 	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
 	  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	  $row = mysql_fetch_array($res);
-	  $alleles = $row[0];
-	  $outarray = explode(',',$alleles);
-	  $i=0;
-	  foreach ($outarray as $allele) {
-	   if ($allele=='AA') $marker_aacnt[$i]++;
-	   if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
-	   if ($allele=='BB') $marker_bbcnt[$i]++;
-	   if ($allele=='--') $marker_misscnt[$i]++;
-	   $i++;
-	  }
+	  if ($row = mysql_fetch_array($res)) {
+	    $alleles = $row[0];
+	    $outarray = explode(',',$alleles);
+	    $i=0;
+	    foreach ($outarray as $allele) {
+	      if ($allele=='AA') $marker_aacnt[$i]++;
+	      if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
+	      if ($allele=='BB') $marker_bbcnt[$i]++;
+	      if ($allele=='--') $marker_misscnt[$i]++;
+	      $i++;
+	    }
+          }
 	 }
 	 $i=0;
 	 $num_mark = 0;
@@ -3047,25 +3048,24 @@ selected lines</a><br>
 		foreach ($lines as $line_record_uid) {
 		  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
 		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		  $row = mysql_fetch_array($res);
-		  $alleles = $row[0];
-		  $outarray = explode(',',$alleles);
-		  $i=0;
-		  foreach ($outarray as $allele) {
-		    if ($allele=='AA') $marker_aacnt[$i]++;
-		    if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
-		    if ($allele=='BB') $marker_bbcnt[$i]++;
-		    if ($allele=='--') $marker_misscnt[$i]++;
-		    $i++;
+		  if ($row = mysql_fetch_array($res)) {
+		    $alleles = $row[0];
+		    $outarray = explode(',',$alleles);
+		    $i=0;
+		    foreach ($outarray as $allele) {
+		      if ($allele=='AA') $marker_aacnt[$i]++;
+		      if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
+		      if ($allele=='BB') $marker_bbcnt[$i]++;
+		      if ($allele=='--') $marker_misscnt[$i]++;
+		      $i++;
+                    }
 		  }
 		  //echo "$line_record_uid<br>\n";
 		}
 		
 		$num_maf = $num_miss = 0;
 
-		$i = 0;
-		foreach ($outarray as $allele) {
-		  $marker_id = $marker_list[$i];
+                foreach ($marker_list as $i => $marker_id) {
 		  $marker_name = $marker_list_name[$i];
 		  if (isset($marker_lookup[$marker_id])) {
 		    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
@@ -3080,14 +3080,13 @@ selected lines</a><br>
 				$marker_names[] = $marker_name;
 				$outputheader .= $marker_name.$delimiter;
 				$marker_uid[] = $marker_id;
-				//echo "accept $marker_id $marker_name $maf $miss<br>\n";
+				//echo "accept $marker_id $marker_name $maf[$i] $miss[$i]<br>\n";
 		    } else {
 		      //echo "reject $marker_id $marker_name $maf $miss<br>\n";
 		    }
 		  } else {
 		    //echo "rejected marker $marker_id<br>\n";
 		  }
-		  $i++;
 		}
 		
 		if ($dtype=='qtlminer') {
@@ -3111,21 +3110,31 @@ selected lines</a><br>
 		foreach ($lines as $line_record_uid) {
 		  $sql = "select line_record_name, alleles from allele_byline where line_record_uid = $line_record_uid";
 		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		  $row = mysql_fetch_array($res);
-		  $alleles = $row[1];
-		  $outarray = explode(',',$alleles);
-		  $i=0;
-		  $outarray2 = array();
-		  $outarray2[]=$row[0];
-		  foreach ($outarray as $allele) {
+		  if ($row = mysql_fetch_array($res)) {
+		    $outarray2 = array();
+                    $outarray2[] = $row[0];
+                    $alleles = $row[1];
+		    $outarray = explode(',',$alleles);
+		    $i=0;
+		    foreach ($outarray as $allele) {
 		  	$marker_id = $marker_list[$i];
 		  	if (isset($marker_lookup[$marker_id])) {
 		  	  if (($maf[$i] >= $min_maf) AND ($miss[$i]<=$max_missing)) {
 		  	 	$outarray2[]=$lookup[$allele];
 		  	  }
 		  	}
-		    $i++;
-		  }
+		        $i++;
+		    }
+                  } else {
+                    $sql = "select line_record_name from line_records where line_record_uid = $line_record_uid";
+                    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+                    if ($row = mysql_fetch_array($res)) {
+                      $outarray2 = array();
+                      $outarray2[] = $row[0];
+                    } else {
+                      die("error - could not find uid\n");
+                    }
+                  }
 		  $outarray = implode($delimiter,$outarray2);
 		  $output .= $outarray . "\n";
 		}
