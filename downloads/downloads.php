@@ -306,6 +306,7 @@ class Downloads
 		  <option value="Locations">Locations</option>
 		  <option value="Phenotypes">Trait Category</option>
 		</select></p>
+		        <script type="text/javascript" src="downloads/downloads.js"></script>
                 <?php 
                 if (isset($_SESSION['selected_lines'])) {
                     $this->type1_lines_trial_trait();
@@ -314,7 +315,7 @@ class Downloads
                 }
                 ?>
                 </div>
-                <script type="text/javascript" src="downloads/downloads.js"></script>
+                
                 <?php
         }
         
@@ -1036,34 +1037,12 @@ class Downloads
 	}	
     private function type1_lines_trial_trait()
     {
-		if (isset($_SESSION['selected_lines'])) {
-			$selectedlines= $_SESSION['selected_lines'];
-	        $count = count($_SESSION['selected_lines']);
 		?>
 		<div id="step11">
-	    <table id="phenotypeSelTab" class="tableclass1">
-	    <tr>
-	    <th>Lines</th>
-	    </tr>
-	    <tr><td>
-	    <select multiple="multiple" name="lines" style="height: 12em;">
-	    <?php
-	    foreach($selectedlines as $uid) {
-	      $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      $row = mysql_fetch_assoc($res);
-	      ?>
-	      <option disabled="disabled" value="
-	      <?php $uid ?>">
-	      <?php echo $row['line_record_name'] ?>
-	      </option>
-	      <?php     
-	    }
-	    ?>
-	    </select>
-	    </table>
-	    </div></div>
-	    
+		<?php
+	    $this->step1_lines();
+		?>
+	    </div></div>    
 	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
 	    <?php
  	    $this->step2_lines();
@@ -1073,17 +1052,13 @@ class Downloads
 	    <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
-	    <?php
-	    
-	     $this->step4_lines();
-	     ?></div>
+	    <script type="text/javascript">
+	      var mm = 99.9;
+	      var mmaf = 0.01; 
+          window.onload = load_markers_lines( mm, mmaf);
+	    </script>
+	    </div>
 	     <?php 	
-	    } else {
-	     echo "Please select lines before using this feature.<br>";
-	     echo "<a href=";
-	     echo $config['base_url'];
-	     echo "pedigree/line_selection.php>Select Lines by Properties</a>";
-	    }
 	}
 	private function step1_lines()
 	{
@@ -1266,10 +1241,7 @@ class Downloads
 	 elseif ($min_maf<0)
 	  $min_maf = 0;
 	 
-	 $this->calculate_af($lines, $min_maf, $max_missing);
-	 ?>
-	 <br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br><br>	 
-	 <?php 
+	 $this->calculate_af($lines, $min_maf, $max_missing); 
 	 
 	 if ($saved_session != "") {
 	     if ($countLines == 0) {
@@ -1377,6 +1349,7 @@ class Downloads
 	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
 	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 	</i>
+	<br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
 	<?php
 	}
 	
@@ -2010,7 +1983,6 @@ selected lines</a><br>
 		$this->calculate_af($lines, $min_maf, $max_missing);
 		
 		?>
-		<br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
 		<table> <tr> <td COLSPAN="3">
 		<input type="hidden" name="subset" id="subset" value="yes" />
 		<br><input type="button" value="Download for Tassel V2" onclick="javascript:getdownload_tassel();" />
@@ -2126,7 +2098,6 @@ selected lines</a><br>
 	$this->calculate_af($lines, $min_maf, $max_missing);
 	
 	?>
-	<br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
 	<table> <tr> <td COLSPAN="3">
 	<input type="hidden" name="subset" id="subset" value="yes" />
 	<br><input type="button" value="Download for Tassel V2" onclick="javascript:get_download_loc_v2();" />
