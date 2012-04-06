@@ -9,7 +9,6 @@
   <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
   <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
   <meta name="revisit-After" content="1 days" >
-  <title>The Triticeae Toolbox</title>
 
   <base href="<?php echo $config['base_url']; ?>" >
   <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
@@ -17,7 +16,14 @@
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/new.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
-  <?php
+<?php
+   // Create <title> for browser to show.
+   connect();
+   $title = mysql_grab("select value from settings where name='title'");
+   if (empty($title))
+     $title = "The Triticeae Toolbox";
+   echo "<title>$title</title>";
+
   global $usegbrowse;
 if (isset($usegbrowse) && $usegbrowse)
   require_once $config['root_dir'] . 'includes/gbrowse-deps.inc';
@@ -107,8 +113,7 @@ EOD;
   Select Markers</a>
   <li>
   <a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
-<!-- dem 12jan12 Removed temporarily pending data correctness check.
-  <li><a href="<?php echo $config['base_url']; ?>snps.php" title="SNP alleles and sequences">SNP alleles and sequences</a> -->
+  <li><a href="<?php echo $config['base_url']; ?>snps.php" title="SNP alleles and sequences">SNP alleles and sequences</a> 
   </ul>
   <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analysis</a>
   <ul>
