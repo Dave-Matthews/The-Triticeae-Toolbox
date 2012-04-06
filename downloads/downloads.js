@@ -295,6 +295,21 @@ function load_markers_loc( mm, mmaf) {
     );
 }
 
+function load_breedprog() {
+    $('step1').hide();
+    var url = php_self + "?function=step1breedprog&bp=" + breeding_programs_str + '&yrs=' + years_str;
+    document.title = 'Loading Step1...';
+    var tmp = new Ajax.Updater($('step11'), url,
+    {
+        onComplete : function() {
+            $('step1').show();
+            document.title = title;
+        }
+    });
+    document.getElementById('step2').innerHTML = "";
+    document.getElementById('step3').innerHTML = "";
+}
+
 function update_breeding_programs(options) {
     breeding_programs_str = "";
     experiments_str = "";
@@ -521,18 +536,18 @@ function update_phenotype_linesb(options) {
                 document.getElementById('step4b').innerHTML = "";
                 document.getElementById('step5').innerHTML = "";
 			    if (select1_str == "BreedingProgram") {
-			        load_breedprog();
+			      load_breedprog();
 			    } else if (select1_str == "Years") {
-			        load_yearprog();
+			      load_yearprog();
 			    } else if (select1_str == "Lines") {
-			        load_lines();
-			        load_lines2();
+			      load_lines();
+			      load_lines2();
 			    } else if (select1_str == "Locations") {
-  				load_locations();
-			    } else if (select1_str == "Markers") {
-			        load_markers_select();
+                  load_locations();
+                } else if (select1_str == "Markers") {
+			      load_markers_select();
 			    } else if (select1_str == "Phenotypes") {
-			        load_phenotypes();
+			      load_phenotypes();
 			    }
 			    load_title();
 			}  
@@ -581,23 +596,6 @@ function update_phenotype_linesb(options) {
                 var url=php_self + "?function=type2_build_tassel_v3&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
                 document.location = url;
             }
-
-			function load_breedprog() {
-                                $('step1').hide();
-                                var url=php_self + "?function=step1breedprog&bp=" + breeding_programs_str + '&yrs=' + years_str;
-                                document.title='Loading Step1...';
-                                        new Ajax.Updater($('step11'),url,
-
-                        {
-                                onComplete: function() {
-                                $('step1').show();
-                                document.title=title;
-                                }
-                        }
-                                );
-                        document.getElementById('step2').innerHTML = "";
-                        document.getElementById('step3').innerHTML = "";
-                                }
 			
 			function load_markers_pheno( mm, mmaf) {
                 markers_loading = true;
@@ -618,24 +616,26 @@ function update_phenotype_linesb(options) {
             }
 
 			function load_markers_lines( mm, mmaf) {
+			    select1_str = "Lines";
                 markers_loading = true;
                 $('step5').hide();
                 var url=php_self + "?function=step4lines&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
                 //changes are right here
                 new Ajax.Updater($('step5'),url,
-                    {onComplete: function() {
+                    {onCreate: function() { Element.show('spinner'); },
+                    onComplete: function() {
                          $('step5').show();
                         if (traits_loading == false) {
                             document.title = title;
                         }
                         markers_loading = false;
                         markers_loaded = true;
+                        load_title();
                     }}
                 );
             }
-
-			
+		
 			function selectedTraits() {
 				var ret = '';
 				$A($('traitsbx').options).each(function(trait){
