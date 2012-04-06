@@ -1,6 +1,6 @@
 <?php
 /*
-*
+* 1apr12 dem: Small cleanups.  Needs work.
 * 10/19/2010   J.Lee use dynamic GBrowse tracks generation
 * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks 
 */
@@ -28,133 +28,108 @@ $mapsetStr = (substr($mapsetStr, 0, (strlen($mapsetStr)-1)));
 
 new Maps($_GET['function']);
 
-class Maps
-{
-    
-    private $delimiter = "\t";
-    
+class Maps {
+  private $delimiter = "\t";
+  // Using the class's constructor to decide which action to perform
+  public function __construct($function = null)  {	
+    switch($function) {
+    case 'typeMaps':
+      $this->type_Maps(); /* Handle Maps */
+      break;
+    case 'typeMarkers':
+      $this->type_Markers();  /* Handle Markers */
+      break;
+    case 'typeMarkerAnnotation':
+      $this->type_Marker_Annotation();  /* Handle Annotations */
+      break;
+    case 'typeMarkerExcel':
+      $this->type_Marker_Excel();  /* Exporting to excel*/
+      break;
+    case 'typeAnnotationComments':
+      $this->type_Annotation_Comments(); /* displaying annotation comments*/
+      break;
+    default:
+      $this->typeMapSet(); /* intial case*/
+      break;
+    }	
+  }
 	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-			
-			case 'typeMaps':
-				$this->type_Maps(); /* Handle Maps */
-				break;
-			case 'typeMarkers':
-				$this->type_Markers();  /* Handle Markers */
-				break;
-			case 'typeMarkerAnnotation':
-				$this->type_Marker_Annotation();  /* Handle Annotations */
-				break;
-			case 'typeMarkerExcel':
-				$this->type_Marker_Excel();  /* Exporting to excel*/
-				break;
-				case 'typeAnnotationComments':
-				$this->type_Annotation_Comments(); /* displaying annotation comments*/
-				break;
-			default:
-				$this->typeMapSet(); /* intial case*/
-				break;
-			
-		}	
-	}
-	
-	
-	// The wrapper action for the typeMapset . Handles outputting the header
-	// and footer and calls the first real action of the typeMapset .
-	private function typeMapSet()
-	{
-		global $config;
-		include($config['root_dir'].'theme/normal_header.php');
+  // The wrapper action for the typeMapset . Handles outputting the header
+  // and footer and calls the first real action of the typeMapset .
+  private function typeMapSet()
+  {
+    global $config;
+    include($config['root_dir'].'theme/normal_header.php');
 
-		echo "<h2>Map Sets</h2>"; 
-		
-			
-		$this->type_MapSet_Display();
+    echo "<h2>Map Sets</h2>"; 
+    $this->type_MapSet_Display();
+    $footer_div = 1;
+    include($config['root_dir'].'theme/footer.php');
+  }
+  //
+  // The first real action of the typeMapset. Handles outputting the
+  // Mapset names selection boxes as well as outputting the
+  // javascript code required by itself and the other typeMapset actions.
+  private function type_MapSet_Display()
+  {
+?>
 
-		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-	}
-//
-	// The first real action of the typeMapset. Handles outputting the
-	// Mapset names selection boxes as well as outputting the
-	// javascript code required by itself and the other typeMapset actions.
-	private function type_MapSet_Display()
-	{
-		?>
-	  <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
-		<script type="text/javascript">
+<a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
+<a href="/cgi-bin/gbrowse/tht">View in GBrowse.</a><br><br>
 
-		var all_mapSets = <?php echo json_encode($mapsetStr); ?>;
-		var link_url = "";
-		var mapset_str = "";
-		var comment_str = "";
-		var markers_annotation_str = "";
-		var excel_str1 = "";
-		var excel_str2 = "";
-		var maps_str = "";
-		var annotation_str = "";
-		var maps_loaded = false;
-		var markers_loaded = false;
-		
-		/* 
-			Function for invoking export to excel functionality
-		*/
-		
-		function load_excel()
-			{
-			excel_str1 =	markers_annotation_str;
-			excel_str2 =  maps_str;
-			var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeMarkerExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + excel_str2;
-	
-	// Opens the url in the same window
-	   window.open(url, "_self");
-	  }
-	  
-	  /* 
-			Function to open annotation link in a new window
-		*/
-		
-	  function link_for_value(link)
-	  {
-	  link_url = link;
-	  window.open(link_url,
- 'open_window',
- 'menubar, toolbar, location, directories, status, scrollbars, resizable, dependent, width=640, height=480, left=0, top=0');
-		//link_window= window.open ("www.yahoo.com",  "mywindow2","status=1,width=450,height=150");
-		}
-		
-		/*
-			Function for displaying extended comments in a pop up window
-		*/
-		
-	function display_comments(comvalue)
-		{
-			
-			comment_str = comvalue;
-			
-			my_window= window.open ("",  "mywindow1","status=1,width=800,height=300");
-			my_window.document.write(comment_str);
-			if (window.focus) {my_window.focus()}
+<script type="text/javascript">
 
-		}
-		
-		/*
-		Function for passing selected mapset name
-		*/
-			
-		function update_mapset(test)
-		{
-		
-		mapset_str = test;
-		
-		 load_maps();
-		 	
-		}
-		
+      var all_mapSets = <?php echo json_encode($mapsetStr); ?>;
+      var link_url = "";
+      var mapset_str = "";
+      var comment_str = "";
+      var markers_annotation_str = "";
+      var excel_str1 = "";
+      var excel_str2 = "";
+      var maps_str = "";
+      var annotation_str = "";
+      var maps_loaded = false;
+      var markers_loaded = false;
+      
+      /* Function for invoking export to excel functionality  */
+      function load_excel() {
+	  excel_str1 =	markers_annotation_str;
+	  excel_str2 =  maps_str;
+	  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeMarkerExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + excel_str2;
+	  // Opens the url in the same window
+	  window.open(url, "_self");
+      }
+      
+      /* Function to open annotation link in a new window */
+      function link_for_value(link) {
+	  myWin = window.open(link, '');
+	  // 		link_url = link;
+	  // 		window.open(link_url,
+	  // 'open_window',
+	  // 'menubar, toolbar, location, directories, status, scrollbars, resizable, dependent, width=640, height=480, left=0, top=0');
+	  // link_url = link;
+	  // Just open a new tab instead.  In Mac Safari, this changes focus to that tab.
+	  // In Firefox it does not unless we leave the name (second argument) empty.
+	  // myWin = window.open(link, 'open_window');
+	  //myWin.focus(); // Does nothing.
+      }
+	    
+      /* Function for displaying extended comments in a pop up window */
+      function display_comments(comvalue) {
+	  alert(comvalue);
+	  // This is ugly:
+	  // comment_str = comvalue;
+	  // my_window= window.open ("",  "mywindow1","status=1,width=800,height=300");
+	  // my_window.document.write(comment_str);
+	  // if (window.focus) {my_window.focus()}
+      }
+      
+      /* Function for passing selected mapset name */
+      function update_mapset(test) {
+	  mapset_str = test;
+	  load_maps();
+      }
+      
 		/*
 			Function for passing selected map name
 		*/
@@ -312,7 +287,7 @@ class Maps
 			}
 			
 
-		</script>		
+      </script>		
 		
 		<!--Style sheet for better user interface-->
 		
