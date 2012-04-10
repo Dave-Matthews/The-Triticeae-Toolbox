@@ -51,7 +51,7 @@ function feedbackForm($name='', $email='', $feedback='') {
       <a href="#" onclick="document.getElementById('captcha').src = './securimage/securimage_show.php?' + Math.random(); return false">
 	Reload image</a></td>
     <td><input type="text" name="captcha_code" size="10"
-	       maxlength="6" /> - CAPTCHA</td></tr></table>
+	       maxlength="6" /> - Please enter the four characters shown.</td></tr></table>
 <br />
 <input type="submit" value="Send feedback" />
 </form>
@@ -68,8 +68,10 @@ $securimage = new Securimage();
 $capcha_pass = $securimage->check($_POST['captcha_code']);
 if ($us_feedback && $capcha_pass) {
   send_email(setting('feedbackmail'), 'T3 Feedback',
-	     "User's reported name: $us_name
-User's reported email: $us_email\nfeedback:\n$us_feedback");
+"User's reported name: $us_name
+User's reported email: $us_email
+Feedback:
+$us_feedback");
 
   echo "<h3>Thank you for your feedback. It has been sent to the T3 curators.</h3>";
  }
