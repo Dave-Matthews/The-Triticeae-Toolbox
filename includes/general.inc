@@ -261,6 +261,47 @@ function show_CAPdata_programs($id) {
 
 	echo viewTable($datasets, "datasets");
 }
+
+/**
+ * Traits special case for view.php. This will show all the experiments associated with a trait ("phenotype").
+*/
+function show_phenotypes($id) {
+  show_general("phenotypes", $id);
+
+  // Get selected experiments and verify that the user is authorized to see the experiment.
+  $sql="select distinct e.trial_code, e.experiment_year, e.experiment_uid
+		FROM tht_base as tb, phenotype_data as pd, experiments as e
+		WHERE pd.phenotype_uid='$id'
+			AND tb.tht_base_uid = pd.tht_base_uid
+			AND e.experiment_uid = tb.experiment_uid";
+  if (!authenticate(array(USER_TYPE_PARTICIPANT,
+			  USER_TYPE_CURATOR,
+			  USER_TYPE_ADMINISTRATOR)))
+    $sql .= " and e.data_public_flag > 0";
+  $sql .= " order by e.experiment_year, e.trial_code asc";
+  $res=mysql_query($sql) or die(mysql_error());
+  if (mysql_num_rows($res) > 0) {
+    ?>
+<h3>Available Datasets for this Phenotype</h3>
+<p>
+  <table cellpadding="0" cellspacing="0">
+    <tr>
+      <th>Year</th>
+      <th>Trial Name</th>
+      <th>Traits</th>
+    </tr>
+<?php
+     while($row_expuid=mysql_fetch_array($res)) {
+       $trial_code=$row_expuid['trial_code'];
+       $year=$row_expuid['experiment_year'];
+       $expuid=$row_expuid['experiment_uid'];
+       $traits=experimentListPhenotypes($expuid);
+       echo( "<tr> <td>$year</td> <td><a href='display_phenotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
+     }
+    echo "</tbody></table>";
+  }
+}
+
 /**
  * This function is a general function that will display the contents of a particular row
  * in a particular table. It is used in correlation with view.php as the default action.
