@@ -830,67 +830,11 @@ class Downloads
       $min_maf = 100;
      elseif ($min_maf<0)
      $min_maf = 0;
-
-     //get genotype experiments that correspond with the Datasets (BP and year) selected for the experiments
-     $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-     FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
-     WHERE
-     e.experiment_type_uid = et.experiment_type_uid
-     AND lr.line_record_uid = tb.line_record_uid
-     AND e.experiment_uid = tb.experiment_uid
-     AND lr.line_record_uid in ($selectedlines)
-     AND et.experiment_type_name = 'genotype'";
-     $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-     if (mysql_num_rows($res)>0) {
-       while ($row = mysql_fetch_array($res)){
-         $exp[] = $row["exp_uid"];
-       }
-       $exp = implode(',',$exp);
-     }
      
-     $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
-     SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
-     FROM allele_frequencies AS af
-     WHERE af.experiment_uid in ($exp)
-     group by af.marker_uid";
-     
-     $res = mysql_query($sql_mstat) or die(mysql_error());
-     $num_mark = mysql_num_rows($res);
-     $num_maf = $num_miss = $num_removed = 0;
-     
-     while ($row = mysql_fetch_array($res)){
-      $marker_uid[] = $row["marker"];
-      $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
-      $miss = round(100*$row["summis"]/$row["total"],1);
-      if ($maf >= $min_maf)
-       $num_maf++;
-      if ($miss > $max_missing)
-       $num_miss++;
-      if (($miss > $max_missing) OR ($maf < $min_maf))
-       $num_removed++;
-     }
-     
-     if (mysql_num_rows($res) >= 1) {
-      ?>
-     <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
-     &nbsp;&nbsp;&nbsp;&nbsp;
-     Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
-     <i>
-     <br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
-     <br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
-     <br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
-     </i>
-     
-     <br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br><br>
-     
-     <?php
-     } else {
-     ?><p style="font-weight: bold">No Data</p><?php
-     }
+     $this->calculate_af($lines, $min_maf, $max_missing);
      
      ?>
-    
-    <input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'></input>
+    <br><input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'></input>
     <br><b>or</b><br>
     <input type='button' value='Download for Tassel V3' onclick='javascript:use_session_v3();'></input>
     
@@ -1895,9 +1839,9 @@ selected lines</a><br>
 		// parse url
         $experiments = $_GET['exps'];
 		$CAPdataprogram = $_GET['bp'];
-		$years = $_GET['yrs'];
 		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
 		
+		if (empty($_GET['lines'])) {
 		if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
 		  $lines = $_SESSION['selected_lines'];
 		  $lines_str = implode(",", $lines);
@@ -1957,6 +1901,11 @@ selected lines</a><br>
 		  }
 		  $lines_str = implode(",", $lines);
 		  $count = count($lines);
+		}
+		} else {
+	      $lines_str = $_GET['lines'];
+	      $lines = explode(',', $lines_str);
+	      $count = count($lines);
 		}
 		echo "current data selection = $count lines<br>";
 		?>
