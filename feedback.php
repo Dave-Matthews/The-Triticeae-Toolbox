@@ -33,7 +33,8 @@ function feedbackForm($name='', $email='', $feedback='') {
   }
   $html_name=htmlspecialchars($name, ENT_QUOTES);
   $html_email=htmlspecialchars($email, ENT_QUOTES);
-  $html_feedback=htmlspecialchars($feedback, ENT_QUOTES);
+  //$html_feedback=htmlspecialchars($feedback, ENT_NOQUOTES);
+  $html_feedback = $feedback;
 
   $rv = <<< HTML
 <form action="" method="post">
@@ -63,6 +64,9 @@ HTML;
 $us_name=isset($_POST['name']) ? $_POST['name']:'';
 $us_email=isset($_POST['email']) ? $_POST['email']:'';
 $us_feedback=isset($_POST['feedback']) ? $_POST['feedback']:'';
+// Note: Doublequotes (") required; singlequotes fail:
+$us_feedback = str_replace('\r\n', "\n", $us_feedback);
+
 $footer_div = 1;
 $securimage = new Securimage();
 $capcha_pass = $securimage->check($_POST['captcha_code']);
