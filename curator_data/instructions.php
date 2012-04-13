@@ -37,13 +37,13 @@ ul ul ul {list-style-type: disc}
 	  <li><b>Phenotyping</b>
 	    <ul>
 	      <li><a href="curator_data/examples/T3/TrialSubmissionForm.xls">Experiment annotation</a>
-		- Location, planting date, experimental design...[ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html">Tutorial</a> ]
+		- Location, planting date, experimental design... [ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html">Tutorial</a> ]
 	      <li><a href="curator_data/examples/T3/PhenotypeSubmissionForm.xls">Experiment results</a>
 		- Values for all traits for test lines and checks, summary statistics
 	      <li><a href="curator_data/examples/trait_template.xls">Traits</a>
 		- Within T-CAP the traits, protocols and units will be specified by the project.
 	    </ul>
-	  <li><b>Genotyping</b>
+	  <li><b>Genotyping</b> ... [ <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html">Tutorial</a> ]
 	    <ul>
 	      <li><a href="curator_data/examples/Geno_Annotation_Sample.txt">Experiment annotation</a>
 		- Description of the assay
