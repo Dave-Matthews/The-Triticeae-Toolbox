@@ -60,13 +60,14 @@ connect();
 	
 	if ($num_rows ==0){
 		?>	<div class="section">
-			<p> There are no publicly available datasets for this phenotype in THT at this time. Participants in the BarleyCAP project will need to login to see additional datasets.</p>
+<p> There are no publicly available datasets for this trait in T3 at this time. 
+ Registered users may see additional datasets after signing in.
 		</div>
 		<?php
 	} else {
 
 		?>
-		<h3>Available Datasets for this Phenotype</h3>
+		<h3>Available Datasets for this Trait</h3>
 		<p>
 			<table cellpadding="0" cellspacing="0">
 			<tr>
