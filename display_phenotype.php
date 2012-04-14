@@ -105,7 +105,7 @@ connect();
 	$titles[]="Line Synonym";//add CAP Code column to titles
         
         $thtbasestring = implode(",",$thtbase_uid);
-        
+	if (!empty($thtbasestring)) {
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
                 FROM phenotype_data as pd, phenotypes as p, units
                 WHERE p.phenotype_uid = pd.phenotype_uid
@@ -393,37 +393,30 @@ function output_file(url) {
     echo "</form><p>";
 	// header("Location: ".$dir.$myFile);
    
-    } else {
-        	?>	
+	} 
 
- <div class="section">
-<p> There are no publicly available datasets for this program and year in THT at this time. Participants in the BarleyCAP project will need to login to see additional datasets.</p>
- </div>
+$sourcesql="SELECT input_data_file_name FROM experiments WHERE trial_code='$trial_code'";
+$sourceres=mysql_query($sourcesql) or die(mysql_error());
+$sourcerow=mysql_fetch_array($sourceres);
+$sources=$sourcerow['input_data_file_name'];
+echo "<p><b>Source file loaded:</b> $sources";
 
-<p>
-            <?php
-    }
-        $rawsql="SELECT raw_data_file_name FROM experiments WHERE trial_code='$trial_code'";
-        $rawres=mysql_query($rawsql) or die(mysql_error());
-        $rawrow=mysql_fetch_array($rawres);
-        $rawfilename=$rawrow['raw_data_file_name'];
-		$rawfile="raw/phenotype/".$rawfilename;
+echo "<p><b>Raw data file:</b> ";
+$rawsql="SELECT raw_data_file_name FROM experiments WHERE trial_code='$trial_code'";
+$rawres=mysql_query($rawsql) or die(mysql_error());
+$rawrow=mysql_fetch_array($rawres);
+$rawfilename=$rawrow['raw_data_file_name'];
+$rawfile="raw/phenotype/".$rawfilename;
 		
-		if (empty($rawfilename)) {
-			echo "<h3><b>NOTE: Sorry raw data file not available.</b> </h3>"; 
-        } else {
-        	echo "<form action='$rawfile'>";
-        	echo "<input type='submit' value='Download Raw File'>";
-       		echo "</form>";
-		}
-
-			    $sourcesql="SELECT input_data_file_name FROM experiments WHERE trial_code='$trial_code'";
-			    $sourceres=mysql_query($sourcesql) or die(mysql_error());
-			    $sourcerow=mysql_fetch_array($sourceres);
-			    $sources=$sourcerow['input_data_file_name'];
-			    echo "<p>Source files loaded: $sources";
-			    //echo "<br>";
-			    //echo "<p>data files loaded: $downloadFile";
+if (empty($rawfilename))  echo "none"; 
+  /* echo "<h3><b>NOTE: Sorry raw data file not available.</b> </h3>";  */
+else {
+  echo "$rawfilename";
+  echo "<form action='$rawfile'>";
+  echo "<input type='submit' value='Download Raw File'>";
+  echo "</form>";
+}
+}
   
     //-----------------------------------------------------------------------------------
     $footer_div = 1;
