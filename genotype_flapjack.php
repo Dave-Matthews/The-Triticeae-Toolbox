@@ -314,7 +314,8 @@ private function typeGenoType()
 	else
 	{
 	?>	<div class="section">
-			<p> There are no publicly available genotype datasets for this program and year in THT at this time. Participants in the BarleyCAP project will need to login to see additional datasets.</p>
+<p>There are no publicly available genotype datasets for this program and year in T3 at this time. 
+ Registered users may see additional datasets after signing in.
             </div>
   <?php 
 	}/* end of else */
