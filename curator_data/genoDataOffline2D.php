@@ -3,6 +3,7 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 04/17/2011 cbirkett Replace loop control "next" with "continue", allow E_NOTICE errors
 // 02/08/2011 cbirkett	Ignore space characters in line input file
 // 10/25/2011  JLee   Ignore "cut" portion of input file 
 // 10/17/2011 JLee  Add username and resubmission entry to input file log table
@@ -11,7 +12,6 @@
 
 // Written By: John Lee
 //*********************************************
-error_reporting(E_ALL ^ E_NOTICE);
 $progPath = realpath(dirname(__FILE__).'/../').'/';
 
 include($progPath. 'includes/bootstrap_curator.inc');
@@ -121,6 +121,8 @@ while(($line = fgets($reader)) !== false) {
   $linenumber++;
   $origline = $line;
     chop($line, "\r");
+    if ((stripos($line, '- cut -') > 0 )) break;
+
     if (preg_match('/ /',$line)) {
       echo "removing illegal blank character from $line";
       $line = preg_replace('/ /','',$line);
@@ -128,7 +130,6 @@ while(($line = fgets($reader)) !== false) {
     if (strlen($line) < 2) continue;
     if (feof($reader)) break;
     if (empty($line)) continue;
-    if ((stripos($line, '- cut -') > 0 )) break;
                 
     $data = str_getcsv($line,"\t");
                         
@@ -219,8 +220,8 @@ while (!feof($reader))  {
        exitFatal($errFile, "ERROR: Too many import lines have problem."); 
     }    
     $line = fgets($reader);
-    if (strlen($line) < 2) next;
-    if (empty($line)) next;
+    if (strlen($line) < 2) continue;
+    if (empty($line)) continue;
     if (feof($reader)) break;
     $data = str_getcsv($line,"\t");
     $marker = $data[$nameIdx];
@@ -231,7 +232,7 @@ while (!feof($reader))  {
         $msg = "ERROR: Wrong number of entries  for marker - " . $marker;
         fwrite($errFile, $msg);
         $errLines++;
-        next;
+        continue;
     } else {
  	echo "found $num of entries data $num\n";
     }   
@@ -251,7 +252,7 @@ while (!feof($reader))  {
     		$msg = 'ERROR:  marker not found '.$marker.'\n';
     		fwrite($errFile, $msg);
     		$errLines++;
-    		next;
+    		continue;
     	} else {
     		$rdata = mysql_fetch_assoc($res);
     		$marker_uid=$rdata['marker_uid'];
