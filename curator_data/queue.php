@@ -72,15 +72,15 @@ if (empty($user))
   echo "Please sign in before sending data files to the curator
         for loading into the production database.<br>
         <button type=submit onClick=\"location.href='login.php'\">Sign in</button>";
-else 
-  echo "Please submit a data file for  the curator to load
+else {
+  echo "Please submit a data file for the curator to load
         into the production database.";
-?>
+  ?>
 
-<h3>Data Type</h3>
-<form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post" enctype="multipart/form-data">
-  <ul>
-    <li><input type=radio name=dtype value=lines> <b>Germplasm lines</b>
+  <h3>Data Type</h3>
+     <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post" enctype="multipart/form-data">
+     <ul>
+     <li><input type=radio name=dtype value=lines> <b>Germplasm lines</b>
     <li><b>Phenotyping</b>
       <ul>
   	<li><input type=radio name=dtype value=pannot> Experiment annotation
@@ -97,10 +97,11 @@ else
 </form>
 
 <?php
-// For uploading multiple files see genotype_annotations_check.php.
+     }
 }
-
 echo "</div></div></div>";
 $footer_div=1;
 include($config['root_dir'].'theme/footer.php'); 
+
+// Note: For uploading multiple files see genotype_annotations_check.php.
 ?>
