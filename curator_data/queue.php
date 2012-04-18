@@ -49,12 +49,15 @@ connect();
 		     gannot => "genotype experiment annotation",
 		     gresult => "genotype results",
 		     "" => unspecified);
+      $comments = str_replace('\r\n', "\n", $_POST['comments']);
       $host = $_SERVER['SERVER_NAME'];
       $mesg = "$username has submitted a data file.
 Data type: $dtype[$dt]
 Location: $host
 Directory: $dir
-Filename: $uploadfile";
+Filename: $uploadfile
+Comments: 
+$comments";
       send_email(setting('capmail'), 'Data submitted to T3', $mesg);
     }
     else {
@@ -77,10 +80,10 @@ else {
         into the production database.";
   ?>
 
-  <h3>Data Type</h3>
-     <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post" enctype="multipart/form-data">
-     <ul>
-     <li><input type=radio name=dtype value=lines> <b>Germplasm lines</b>
+<h3>Data Type</h3>
+<form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post" enctype="multipart/form-data">
+  <ul>
+    <li><input type=radio name=dtype value=lines> <b>Germplasm lines</b>
     <li><b>Phenotyping</b>
       <ul>
   	<li><input type=radio name=dtype value=pannot> Experiment annotation
@@ -92,6 +95,9 @@ else {
   	<li><input type=radio name=dtype value=gresult> Results
       </ul>
   </ul>
+  <b>Comments</b><br>
+  <textarea name="comments" cols="40" rows="5" ></textarea>
+
   <p><strong>File:</strong> <input type=file name="file"> 
   <p><input type="submit" value="Upload">
 </form>
