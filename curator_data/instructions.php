@@ -16,7 +16,7 @@ ul ul ul {list-style-type: disc}
   <h1>Data Submission</h1>
   <div class="section">
 
-    <p>The data templates are Excel worksheets with column headers for
+    <br>The data templates are Excel worksheets with column headers for
     the data T3 can accept or requires, some example values to be
     replaced with yours, and notes about the restrictions for valid
     data.
@@ -65,9 +65,14 @@ ul ul ul {list-style-type: disc}
       directly into the T3 software. Some values are checked for
       validity, most are not.  Some seemingly optional rows at the top
       aren't.  Errors in data you've already loaded in T3 can usually be
-      corrected by editing your file and loading it again.  In cases
-      where this doesn't work please <a href="feedback.php">contact
-      us</a> to make the corrections.
+      corrected by editing your file and loading it again.  
+      
+    <p>The Sandbox databases, <a href="http://malt.pw.usda.gov/t3/sandbox/wheat">wheat</a> 
+      and <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a>, 
+      are available for test-loading your data files.  Once they're ready,
+      click below to submit them officially.<br>    
+    <input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
+
 
   </div></div></div>
   <?php 
