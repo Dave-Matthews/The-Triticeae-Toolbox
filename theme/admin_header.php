@@ -95,6 +95,11 @@ EOD;
   <li>
   <a title="<?php echo $lang["desc_sc1"]; ?>">Lines</a>
   <ul>
+  <?php  			
+    if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+    ?>
+    <li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=#b0cb73>My Line Panels</font></a>
+  <?php endif ?>
   <li>
   <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select Lines">
   Select Lines by Properties</a>
