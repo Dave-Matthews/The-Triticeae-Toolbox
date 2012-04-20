@@ -231,7 +231,7 @@ EOD;
 <a href="<?php echo $config['base_url']; ?>downloads/downloads.php">Download Genotype/Phenotype Data (Tassel format)</a>
 			
   <li>
-  <a href="<?php echo $config['base_url']; ?>/flapjack_download.php">Download Genotype Data (Flapjack format)</a>
+  <a href="<?php echo $config['base_url']; ?>flapjack_download.php">Download Genotype Data (Flapjack format)</a>
 			
 			
   </ul>
