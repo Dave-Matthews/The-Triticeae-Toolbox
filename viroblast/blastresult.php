@@ -12,6 +12,9 @@ require_once 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'theme/admin_header.php');
 
+//connect to database
+connect();
+
 ?>
 
 <script type="text/javascript" src='viroblast/javascripts/sorttable.js'></script>
@@ -421,10 +424,18 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 						$page = $element[0];
 						$queryName = $element[1];
 						$target_name = $element[7];
-						if (preg_match("/(\d+)\|([A-Z0-9\_\-]+)$/",$target_name,$match)) {
-                                                  $target_link = "<a href=./view.php?table=markers&uid=$match[1]>$match[2]</a>";
+						if (preg_match("/(\d+)\|([A-Za-z0-9\_\-]+)$/",$target_name,$match)) {
+                                                  $marker_name = $match[2];
                                                 } else {
-                                                  $target_link = $target_name;
+                                                  $marker_name = $target_name;
+                                                }
+                                                $sql = "SELECT marker_uid from markers where marker_name = '$marker_name'";
+                                                $res = mysql_query($sql);
+                                                if ($row = mysql_fetch_assoc($res)) {
+                                                  $marker_uid = $row['marker_uid'];
+                                                  $target_link = "<a href=./view.php?table=markers&uid=$marker_uid>$marker_name</a>";
+                                                } else {
+                                                  $target_link = $marker_name;
                                                 }
 						$var_target = $page."\t".$element[1]."\t".$element[2];
 						if(count($element) != 1) {
