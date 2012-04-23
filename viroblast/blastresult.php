@@ -12,9 +12,6 @@ require_once 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'theme/admin_header.php');
 
-//connect to database
-connect();
-
 ?>
 
 <script type="text/javascript" src='viroblast/javascripts/sorttable.js'></script>
@@ -429,14 +426,7 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
                                                 } else {
                                                   $marker_name = $target_name;
                                                 }
-                                                $sql = "SELECT marker_uid from markers where marker_name = '$marker_name'";
-                                                $res = mysql_query($sql);
-                                                if ($row = mysql_fetch_assoc($res)) {
-                                                  $marker_uid = $row['marker_uid'];
-                                                  $target_link = "<a href=./view.php?table=markers&uid=$marker_uid>$marker_name</a>";
-                                                } else {
-                                                  $target_link = $marker_name;
-                                                }
+                                                $target_link = "<a href=./view.php?table=markers&name=$marker_name>$marker_name</a>";
 						$var_target = $page."\t".$element[1]."\t".$element[2];
 						if(count($element) != 1) {
 							if($queryName == $preQueryName) {
