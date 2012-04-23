@@ -114,10 +114,9 @@ EOD;
   <a title="<?php echo $lang["desc_sc3"]; ?>">Markers</a>
   <ul>
   <li>
-  <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select Markers">
-  Select Markers</a>
-  <li>
-  <a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
+  <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select Markers">Select Markers</a>
+  <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
+  <li><a href="<?php echo $config['base_url']; ?>viroblast">BLAST Search</a>
   <li><a href="<?php echo $config['base_url']; ?>snps.php" title="SNP alleles and sequences">SNP alleles and sequences</a> 
   </ul>
   <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analysis</a>
