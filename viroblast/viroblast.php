@@ -116,7 +116,7 @@ fclose($fp);
 </div>
 	<div id="footer" style="padding: 15px 0 0 0; height: 160px; background-color: #f9cb73; align="center">
 		<p>&copy; 2005-2010 University of Washington. All rights reserved.
-		&nbsp;<a href=docs/termsofservice.html>Terms of Service</a>
+		&nbsp;<a href=viroblast/docs/termsofservice.html>Terms of Service</a>
 		</p>
 	</div>
 </body>

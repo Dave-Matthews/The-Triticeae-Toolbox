@@ -16,7 +16,10 @@ my ($jobid, $searchType, $blastagainst, $program, $blastPath) = split /\t/, $bas
 if ($blastPath =~ /\/\s*$/) {
 	$blastPath =~ s/\/\s*$//;
 }
-my $dataPath = "./data";
+my $dataPath = "/tmp/tht/blast";
+unless (-d $dataPath) {
+  mkdir $dataPath or die;
+}
 open LOG, ">$dataPath/$jobid.log";
 
 my $format = 0;
