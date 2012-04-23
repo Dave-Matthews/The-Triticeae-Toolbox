@@ -394,8 +394,8 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 				echo "<td><input type='submit' name='blast_flag' value='Parse again'>";				
 				echo "</td></tr></table></p>";
 				echo "</form>";		
-				echo "<form action='sequence.php?jobid=$jobid' method='post' target='_blank' onsubmit=\"return checkform(this);\">";
-				echo "<p>Retrieve and download subject sequences in FASTA format:</p>";		
+				echo "<form action='viroblast/sequence.php?jobid=$jobid' method='post' target='_blank' onsubmit=\"return checkform(this);\">";
+				echo "<p>Select the marker name link under the Subject heading to view detailed information</p>";		
 				echo "<p><input type='checkbox' name='dldseq' value='all'>  Check here to download All sequences... ";
 				echo "OR select particular sequences of interest below</p>";	
 				echo "<p><input type='submit' value='Submit'> your selection of sequences to download</p>";	
