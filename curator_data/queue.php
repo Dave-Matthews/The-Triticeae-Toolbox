@@ -19,7 +19,7 @@ connect();
   <p>
 
 <?php 
-  if (!empty($_POST) OR !empty($_FILES)) {
+  if (!empty($_POST['dtype']) OR !empty($_FILES)) {
   // The Upload button was clicked. Handle user's submission.
   $row = loadUser($_SESSION['username']);
   $username = $row['name'];
@@ -50,6 +50,8 @@ connect();
 		     gresult => "genotype results",
 		     "" => unspecified);
       $comments = str_replace('\r\n', "\n", $_POST['comments']);
+      $tst = $_POST['tested'];
+      $tested = array('DOES', 'does NOT');
       $host = $_SERVER['SERVER_NAME'];
       $mesg = "$username has submitted a data file.
 Data type: $dtype[$dt]
@@ -57,7 +59,9 @@ Location: $host
 Directory: $dir
 Filename: $uploadfile
 Comments: 
-$comments";
+$comments
+This file $tested[$tst] load successfully in the Sandbox.";
+      //print_h($mesg);
       send_email(setting('capmail'), 'Data submitted to T3', $mesg);
     }
     else {
@@ -75,6 +79,9 @@ if (empty($user))
   echo "Please sign in before sending data files to the curator
         for loading into the production database.<br>
         <button type=submit onClick=\"location.href='login.php'\">Sign in</button>";
+else if ($user == "t3user@graingenes.org") 
+  echo "Please sign out and login as yourself instead of the public 't3user'.<br>
+        <button type=submit onClick=\"location.href='logout.php'\">Sign out</button>";
 else {
   echo "Please submit a data file for the curator to load
         into the production database.";
@@ -96,7 +103,11 @@ else {
       </ul>
   </ul>
   <b>Comments</b><br>
-  <textarea name="comments" cols="40" rows="5" ></textarea>
+  <textarea name="comments" cols="40" rows="5" ></textarea><br>
+  This file loads successfully in the Sandbox. 
+  <input type=radio name=tested value='0'> Yes 
+  <input type=radio name=tested value='1' checked> No
+
 
   <p><strong>File:</strong> <input type=file name="file"> 
   <p><input type="submit" value="Upload">
