@@ -3,3 +3,8 @@
 # included when creating a new repository.  Will this fail?
 includes/bootstrap.inc
 includes/bootstrap_curator.inc
+#
+# ViroBLAST temp files.  To be moved outside the repository.
+viroblast/data
+# Other:
+downloads/old
