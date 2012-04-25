@@ -182,9 +182,11 @@ function load_phenotypes5() {
     var url = php_self + "?function=step5phenotype&pi=" + phenotype_items_str + "&e=" + experiments_str + "&lines=" + lines_str + '&subset=' + subset;
     document.title = 'Loading Step1...';
     var tmp = new Ajax.Updater($('step5'), url, {
+        onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
             $('step5').show();
             document.title = title;
+            load_title();
         }
     });
 }
@@ -559,10 +561,10 @@ function update_phenotype_linesb(options) {
 			    select2_str = "";
 			    $A(options).each(function(select2) {
                     		if (select2.selected) {
-                        	select2_str = select2.value;
-                   		 }
-                		});
-			    document.getElementById('step3').innerHTML = "";
+                                  select2_str = select2.value;
+                                }
+                            });
+	        document.getElementById('step3').innerHTML = "";
                 document.getElementById('step4').innerHTML = "";
                 document.getElementById('step4b').innerHTML = "";
                 document.getElementById('step5').innerHTML = "";
@@ -571,21 +573,21 @@ function update_phenotype_linesb(options) {
 			function use_session() {
 			    var mm = $('mm').getValue();
                 	    var mmaf = $('mmaf').getValue();
-			    var url=php_self + "?function=download_session&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                            var url=php_self + "?function=download_session&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
 			    document.location = url;
 			}
 			function use_session_v2() {
 			    var mm = $('mm').getValue();
                 	    var mmaf = $('mmaf').getValue();
-                	    var url=php_self + "?function=download_session_v2&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                            var url=php_self + "?function=download_session_v2&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
                 	document.location = url;
             		}
-			function use_session_v3() {
+                        function use_session_v3() {
 			    var mm = $('mm').getValue();
                 	    var mmaf = $('mmaf').getValue();
-                	    var url=php_self + "?function=download_session_v3&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                            var url=php_self + "?function=download_session_v3&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
                 	    document.location = url;
-            		}
+                        }
 			function get_download_loc_v2(version) {
 			    var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
@@ -607,13 +609,15 @@ function update_phenotype_linesb(options) {
                 document.title='Loading Markers...';
                 //changes are right here
                 var tmp = new Ajax.Updater($('step5'),url,
-                    {onComplete: function() {
-                         $('step5').show();
+                    {onCreate: function() { Element.show('spinner'); },
+                        onComplete: function() {
+                        $('step5').show();
                         if (traits_loading == false) {
                             document.title = title;
                         }
                         markers_loading = false;
                         markers_loaded = true;
+                        load_title();
                     }}
                 );
             }
@@ -643,7 +647,7 @@ function update_phenotype_linesb(options) {
 				var ret = '';
 				$A($('traitsbx').options).each(function(trait){
 				 	if (trait.selected)
-					{
+                                        {
 						ret += (ret == '' ? '' : ',') + trait.value;
 					}			 
 				});

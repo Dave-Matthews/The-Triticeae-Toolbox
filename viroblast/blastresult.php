@@ -153,6 +153,7 @@ if($blast_flag == 1) {
 		
 		fwrite($fp1, $querySeq);
 		fclose($fp1);
+                system("find ".$config['rood_dir']."viroblast/data/* -mmin +60 -delete");
 	}else {
 		echo "<p style='color: red'>Error: please enter your query sequence or upload your fasta sequence file.</p><br>";
 		exit;
@@ -372,8 +373,8 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 			if($cutoff_count == 0) {
 				echo "<p>No comparison meets cutoff criterion. Please change expect value to blast again.</p>";
 			}else {
-				echo "<img id=\"resultgraph\" src=\"viroblast/data/$jobid.png\" usemap=\"#$jobid\">";
-                                include ('data/'.$jobid.'.imap');
+				echo "<img id=\"resultgraph\" src=\"/tmp/tht/blast/$jobid.png\" usemap=\"#$jobid\">";
+                                include ('/tmp/tht/blast/'.$jobid.'.imap');
                                 echo "</img>";
 
 				echo "<p><a href=viroblast/data/$jobid.blast1.html target='_blank'>Inspect BLAST output</a><br>";			
