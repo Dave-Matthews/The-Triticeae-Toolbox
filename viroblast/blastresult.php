@@ -153,7 +153,7 @@ if($blast_flag == 1) {
 		
 		fwrite($fp1, $querySeq);
 		fclose($fp1);
-                system("find ".$config['rood_dir']."viroblast/data/* -mmin +60 -delete");
+                system("find ".$config['root_dir']."viroblast/data/* -mmin +60 -delete");
 	}else {
 		echo "<p style='color: red'>Error: please enter your query sequence or upload your fasta sequence file.</p><br>";
 		exit;
