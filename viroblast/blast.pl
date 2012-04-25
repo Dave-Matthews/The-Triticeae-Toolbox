@@ -16,7 +16,7 @@ my ($jobid, $searchType, $blastagainst, $program, $blastPath) = split /\t/, $bas
 if ($blastPath =~ /\/\s*$/) {
 	$blastPath =~ s/\/\s*$//;
 }
-my $dataPath = "/tmp/tht/blast";
+my $dataPath = "./data";
 unless (-d $dataPath) {
   mkdir $dataPath or die;
 }
