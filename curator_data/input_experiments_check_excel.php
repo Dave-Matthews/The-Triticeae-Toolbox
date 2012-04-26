@@ -181,7 +181,6 @@ private function typeExperimentCheck()
    
 	       for ($i = $offset; $i <= $cols; $i++) {
 		 $teststr= addcslashes(trim($means['cells'][5][$i]),"\0..\37!@\177..\377");
-		 //echo "the test string: ". $teststr."<br/>";      
 		 if (empty($teststr)) break; 
 		 else {
 		   //break column title into pieces
@@ -190,29 +189,28 @@ private function typeExperimentCheck()
 		   $piece = count($pheno);
 		   $pheno_cur ='';
 		   for ($j=0;$j<$piece;$j++) {
-		     $eflg = 0;
 		     $pheno_cur .= " ".$pheno[$j];
 		     $pheno_cur =trim($pheno_cur);
-		     $sql = "SELECT phenotype_uid as id,phenotypes_name as name, 
+		   }
+		   $sql = "SELECT phenotype_uid as id,phenotypes_name as name, 
                                max_pheno_value as maxphen, min_pheno_value as minphen, datatype
 		             FROM phenotypes
 			     WHERE phenotypes_name = '$pheno_cur'";
-		     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		     if (1 == mysql_num_rows($res)) {
-		       $row = mysql_fetch_assoc($res);
-		       $datatypes[] = $row['datatype'];
-		       $phenonames[] =  $row['name'];
-		       $phenoids[] = $row['id'];//$phenotype_uid;
-		       $pheno_max[] = $row['maxphen'];
-		       $pheno_min[] = $row['minphen'];
-		       $eflg = 1;
-		       break;
-		     }
+		   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		   if (1 == mysql_num_rows($res)) {
+		     $row = mysql_fetch_assoc($res);
+		     $datatypes[] = $row['datatype'];
+		     $phenonames[] =  $row['name'];
+		     $phenoids[] = $row['id'];//$phenotype_uid;
+		     $pheno_max[] = $row['maxphen'];
+		     $pheno_min[] = $row['minphen'];
 		   }
+		   else $eflgs[] = $pheno_cur;
 		 }
 	       }
-	       if ($eflg==0) {
-		 echo "Trait \"".$pheno_cur."\" does not exist in the database.<p> ";
+	       if (count($eflgs) > 0) {
+		 foreach ($eflgs as $bad)
+		   echo "Trait <font color = red>$bad</font> does not exist in the database.<br> ";
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\"><br>");
 	       }
 	       $pheno_num = count($phenoids);
