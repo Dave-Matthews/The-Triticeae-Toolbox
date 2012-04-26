@@ -1,6 +1,6 @@
 <?php
 
-$dataPath = "/tmp/tht/blast";
+$dataPath = "./data";
 $dbPath = "./db";
 $docBase = "./doc";
 

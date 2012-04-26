@@ -808,9 +808,8 @@ class Downloads
        }
      } else {
          $selectedlines = $_GET['lines'];
-         $selected = explode(',', $selectedlines);
-         $count = count($selected);
-         //$_SESSION['selected_lines'] = $selected;
+         $lines = explode(',', $selectedlines);
+         $count = count($lines);
      }
          
      echo "current data selection = $count lines<br>";
@@ -834,10 +833,11 @@ class Downloads
      $this->calculate_af($lines, $min_maf, $max_missing);
      
      ?>
-    <br><input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'></input>
-    <br><b>or</b><br>
-    <input type='button' value='Download for Tassel V3' onclick='javascript:use_session_v3();'></input>
-    
+     <input type="hidden" name="subset" id="subset" value="yes" />
+     <br><input type="button" value="Download for Tassel V2" onclick="javascript:getdownload_tassel();" />
+     <h4> or </h4>
+     <input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel_v3();" /> <br>
+ 
     <?php
     }
     
@@ -1071,7 +1071,7 @@ class Downloads
 		while ($row = mysql_fetch_assoc($res))
 		{
 		 ?>
-		    <option selected value="<?php echo $row['id'] ?>">
+		    <option value="<?php echo $row['id'] ?>">
 		     <?php echo $row['name'] ?>
 		    </option>
 		    <?php
