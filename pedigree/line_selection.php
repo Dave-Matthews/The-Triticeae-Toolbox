@@ -103,13 +103,27 @@ $sql = "select distinct experiment_year from experiments";
       <td><b>Panel</b> <br/>
       <select name="panel[]" multiple="multiple" size="6" style="width: 12em; height: 6em;">
 <?php
-      $sql = "SELECT linepanels_uid, name FROM linepanels";
-      $res = mysql_query($sql) or die(mysql_error());
-      while ($resp = mysql_fetch_row($res)) {
-	$lpid = $resp[0];
-	$s = $resp[1];
- 	echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
-      }
+if (loginTest2()) {
+  $row = loadUser($_SESSION['username']);
+  $myid = $row['users_uid'];
+  $sql = "SELECT linepanels_uid, name FROM linepanels where users_uid = $myid";
+  $res = mysql_query($sql) or die(mysql_error());
+  if (mysql_num_rows($res) > 0) {
+    while ($resp = mysql_fetch_row($res)) {
+      $lpid = $resp[0];
+      $s = $resp[1];
+      echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
+    }
+  echo "<option disabled>Everybody's:</option>";
+  }
+}
+$sql = "SELECT linepanels_uid, name FROM linepanels where users_uid IS NULL";
+$res = mysql_query($sql) or die(mysql_error());
+while ($resp = mysql_fetch_row($res)) {
+  $lpid = $resp[0];
+  $s = $resp[1];
+  echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
+}
 ?>
       </select></td>
       <td><b>Hardness</b> <br/>
