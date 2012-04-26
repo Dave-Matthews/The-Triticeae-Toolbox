@@ -917,14 +917,14 @@ private function typeAnnotationCheck()
                           {
                                 $sql = "insert into experiment_set set
                                         experiment_set_name = '{$experiment->experimentshortname}'";
-                                echo "SQL ".$sql."<br>\n";
+                                //echo "SQL ".$sql."<br>\n";
                                 mysql_query($sql) or die(mysql_error());
                                 $sql = "select experiment_set_uid from experiment_set where experiment_set_name = '{$experiment->experimentshortname}'";
-                                echo "SQL ".$sql."<br>\n";
+                                //echo "SQL ".$sql."<br>\n";
                                 $res = mysql_query($sql) or die(mysql_error());
                                 $row = mysql_fetch_assoc($res);
                                 $experiment_set_uid = $row['experiment_set_uid'];
-				print "experiment found $experiment_set_uid<br>\n";
+				//print "experiment found $experiment_set_uid<br>\n";
                           } else {
 				$row = mysql_fetch_assoc($res);
                                 $experiment_set_uid = $row['experiment_set_uid'];
@@ -1018,7 +1018,7 @@ private function typeAnnotationCheck()
 							created_on = NOW()
 					";
 				
-					echo "New entry inserted into <b>experiments</b> table.<br>\n";
+					echo "New entry added for $experiment->trialcode to <b>experiments</b> table.<br>\n";
                                         //echo "$sql<br>\n";	
 					mysql_query($sql) or die(mysql_error() . "<br>$sql");
 					
@@ -1066,7 +1066,7 @@ private function typeAnnotationCheck()
 <p><input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">
 ");
 
-					echo "New entry inserted into <b>phenotype_experiment_info</b> table.<br>\n";
+					echo "New entry added for $experiment->trialcode to <b>phenotype_experiment_info</b> table.<br>\n";
 			} 
 
 		}// end foreach
