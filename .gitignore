@@ -4,7 +4,7 @@
 includes/bootstrap.inc
 includes/bootstrap_curator.inc
 #
-# ViroBLAST temp files.  To be moved outside the repository.
-viroblast/data
+# ViroBLAST temp files. 
+#viroblast/data/*
 # Other:
 downloads/old
