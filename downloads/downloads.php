@@ -617,6 +617,9 @@ class Downloads
 	 AND pd.tht_base_uid = tb.tht_base_uid
 	 AND p.phenotype_uid = pd.phenotype_uid
 	 AND pd.phenotype_uid IN ($phen_item)";
+	 if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
+	 $sql .= " and data_public_flag > 0";
+	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
 		{
@@ -1067,6 +1070,8 @@ class Downloads
 	    AND lr.line_record_uid = tb.line_record_uid
 	    AND e.experiment_type_uid = 1
 	    AND lr.line_record_uid IN ($selectedlines)";
+	    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
+	    $sql .= " and data_public_flag > 0";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
 		{
@@ -1376,8 +1381,10 @@ class Downloads
 	 AND p_e.location IN ($locations)
 	 AND e.experiment_year IN ($years)
 	 AND e.experiment_type_uid = e_t.experiment_type_uid
-	 AND e_t.experiment_type_name = 'phenotype'
-	 ORDER BY e.experiment_year DESC, e.trial_code";
+	 AND e_t.experiment_type_name = 'phenotype'";
+	 if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
+	 $sql .= " and data_public_flag > 0";
+	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
 	 $res = mysql_query($sql) or die(mysql_error());
 	 while ($row = mysql_fetch_assoc($res)) {
 	   ?>
@@ -1725,8 +1732,10 @@ selected lines</a><br>
 				AND ds.breeding_year IN ($years)
 				AND ds.CAPdata_programs_uid IN ($CAPdata_programs)
 				AND e.experiment_type_uid = e_t.experiment_type_uid
-				AND e_t.experiment_type_name = 'phenotype'
-				ORDER BY e.experiment_year DESC, e.trial_code";
+				AND e_t.experiment_type_name = 'phenotype'";
+		        if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
+		        $sql .= " and data_public_flag > 0";
+				$sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
 				
 		$res = mysql_query($sql) or die(mysql_error());
 		$last_year = NULL;
