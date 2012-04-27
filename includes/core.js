@@ -476,7 +476,7 @@ function DispPhenoSel(value, middle, phenotype_uid) {
 	else {
 	    document.getElementById("phenotypeSelTab").rows[1].cells[2].innerHTML = "";
 	}
- 	document.getElementById('phenotypeSelTab').rows[2].cells[1].innerHTML = "<p><b>Values</b><br>Mean:<br>Range:<p>Search between:<br><input type='text' name='first_value'><br>and<br><input type='text' name='last_value'><br><input type='submit' value='Search'></form>";
+ 	document.getElementById('phenotypeSelTab').rows[2].cells[1].innerHTML = "<b>Values</b><br>Mean:<br>Range:<p>Search between:<br><input type='text' name='first_value'><br>and<br><input type='text' name='last_value'><br><input type='submit' value='Search'></form>";
 	document.getElementById("phenotypeSelTab").rows[2].cells[2].innerHTML = "";
 
 	var resp = document.getElementById("phenotypeSelTab").rows[1].cells[column];
