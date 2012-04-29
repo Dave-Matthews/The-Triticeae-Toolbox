@@ -5,6 +5,6 @@ includes/bootstrap.inc
 includes/bootstrap_curator.inc
 #
 # ViroBLAST temp files. 
-#viroblast/data/*
+viroblast/data/*
 # Other:
 downloads/old

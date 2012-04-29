@@ -1094,7 +1094,8 @@ function displayTable($query, $sortable=FALSE, $link="") {
 function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
 
 	$tables = array();
-	$ret = "\n<table class='tableclass1'>\n";
+	/* $ret = "\n<table class='tableclass1'>\n"; */
+	$ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n";
 
 	$first = TRUE;
 	while($row = mysql_fetch_assoc($query)) {
@@ -1141,7 +1142,7 @@ function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
 
 	}
 
-	$ret .= "</tbody>\n</table>\n";
+	$ret .= "</tbody>\n</table></div>\n";
 
 	return $ret;
 }

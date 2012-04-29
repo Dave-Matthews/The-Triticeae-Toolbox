@@ -121,6 +121,10 @@ if (isset($_POST['deselLines'])) {
         echo "<img src=\"/tmp/tht/bighistogram.jpg?d=$date\">\n";
 	//
 
+	// Get units.
+	$unit = mysql_grab("select unit_name from units, phenotypes
+	 where phenotypes.phenotype_uid = $phenotype 
+	 and units.unit_uid=phenotypes.unit_uid");
 	// Show mean, std. dev., and number of entries
 	$meanquery = mysql_query("
 select avg(value) as avg,
@@ -137,7 +141,8 @@ $in_these_trials
 	$avg = number_format($row['avg'],1);
 	$std = number_format($row['std'],1);
 	$num = $row['num'];
-	echo "<br>Mean: $avg &plusmn; $std, n = $num<br><hr><p>";
+	echo "<br>Mean: <b>$avg</b> &plusmn; <b>$std</b> $unit<br>";
+	echo "n = <b>$num</b><br><hr><p>";
 
 	//setting for sort callback
 	$_GET['phenotype'] = $phenotype;
@@ -168,13 +173,11 @@ $in_these_trials
 	if((is_array($_SESSION['selected_lines'])) && (count($_SESSION['selected_lines']) > 0) && ($_REQUEST['selectWithin'] == "Yes") ) {
 		$in_these_lines = "AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")";
 	}
-
-	$query = "	SELECT lr.line_record_uid, lr.line_record_name, lr.breeding_program_code, pd.value, unit_name, e.trial_code
-				FROM line_records as lr, tht_base, phenotype_data as pd, phenotypes as p, units, experiments as e
+	$query = "	SELECT lr.line_record_uid, lr.line_record_name Line, lr.breeding_program_code Breeding_Program, pd.value, e.trial_code Trial
+				FROM line_records as lr, tht_base, phenotype_data as pd, phenotypes as p, experiments as e
 				WHERE e.experiment_uid = tht_base.experiment_uid
 					AND lr.line_record_uid = tht_base.line_record_uid
 					AND tht_base.tht_base_uid = pd.tht_base_uid
-					AND units.unit_uid = p.unit_uid
 					AND pd.value $searchVal
 					AND pd.phenotype_uid = p.phenotype_uid
 					AND p.phenotype_uid = '$phenotype'
@@ -241,8 +244,8 @@ $in_these_trials
     <thead>
     <tr>
     <th>Category</th>
-    <th>Phenotype</th>
-    <th>Trial</th>
+    <th width=200px>Trait</th>
+    <th width=200px>Trial</th>
     </tr>
     </thead>
     <tbody>
@@ -270,7 +273,7 @@ if ($username && !isset($_SESSION['selected_lines'])) {
 ?>
 </td>
 
-<td></td><td></td></tr>
+<td></td><td height=220></td></tr>
 </tbody>
 </table>
 </div>
