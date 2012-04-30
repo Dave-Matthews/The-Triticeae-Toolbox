@@ -1006,7 +1006,6 @@ function DispPhenotypeSel($arr) {
 		echo "Please Select A Trait";
 		return;
 	}
-
 	// make local the array variables please.
 	extract($arr);
 
@@ -1015,21 +1014,25 @@ function DispPhenotypeSel($arr) {
 	// No experiments selected yet so unset the cookie.
 	unset($_SESSION['experiments']);
 
-	// query please
 	$pquery = mysql_query("SELECT phenotypes_name from phenotypes where phenotype_uid = $id") or die(mysql_error());
 	$pname = mysql_fetch_row($pquery);
 	$pn = $pname[0];
+	// Show only public trials unless signed in as at least Participant.
+	if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
+	  $filter = "";
+	else
+	  $filter = " AND data_public_flag = 1";
         if ((count($_SESSION['selected_lines']) > 0) && ($_SESSION['selectWithin'] == "Yes")) {
           $sql = "SELECT DISTINCT experiments.experiment_uid, trial_code FROM experiments, line_records as lr, tht_base
             WHERE experiments.experiment_uid = tht_base.experiment_uid
             AND lr.line_record_uid = tht_base.line_record_uid
             AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")" .
-            "AND experiments.traits like '%$pn%' ORDER By trial_code";
-            $errMsg = "There are no trials for this trait within selected lines.";
+            "AND experiments.traits like '%$pn%' $filter ORDER By trial_code";
+            $errMsg = "There are no public trials for this trait within selected lines.";
           $query = mysql_query($sql) or die(mysql_error());
         } else {
-	  $query = mysql_query("SELECT DISTINCT experiment_uid, trial_code FROM experiments WHERE experiments.traits like '%$pn%' ORDER BY trial_code") or die(mysql_error());
-          $errMsg = "There are no trials for this trait.";
+	  $query = mysql_query("SELECT DISTINCT experiment_uid, trial_code FROM experiments WHERE experiments.traits like '%$pn%' $filter ORDER BY trial_code") or die(mysql_error());
+          $errMsg = "There are no public trials for this trait.";
         }
 
 	// display in selection box please
