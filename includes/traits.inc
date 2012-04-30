@@ -122,6 +122,11 @@ function getCategoryName($id) {
  */
 function showPhenotypeForLine($line_id, $order="phenotype_category_name") {
 
+	// Show only public trials unless signed in as at least Participant.
+	if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
+	  $filter = "";
+	else
+	  $filter = " AND data_public_flag = 1";
 	$query = "SELECT experiments.trial_code, 
 				phenotype_category.phenotype_category_name, phenotypes.phenotypes_name, 
 				phenotype_data.value, units.unit_name
@@ -136,6 +141,7 @@ function showPhenotypeForLine($line_id, $order="phenotype_category_name") {
 				AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
 				AND  experiment_types.experiment_type_name = 'phenotype'
 				AND phenotypes.phenotype_uid = phenotype_data.phenotype_uid
+                                $filter
 			ORDER BY $order";
 
 	$resource = mysql_query($query) or die(mysql_error());
