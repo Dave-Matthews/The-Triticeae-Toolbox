@@ -156,7 +156,7 @@ if($blast_flag == 1) {
 		
 		fwrite($fp1, $querySeq);
 		fclose($fp1);
-                system("find ".$config['root_dir']."viroblast/data/* -mmin +60 -delete");
+                system("find ".$config['root_dir']."$dataPath/* -mmin +60 -delete");
 	}else {
 		echo "<p style='color: red'>Error: please enter your query sequence or upload your fasta sequence file.</p><br>";
 		exit;
@@ -376,11 +376,14 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 			if($cutoff_count == 0) {
 				echo "<p>No comparison meets cutoff criterion. Please change expect value to blast again.</p>";
 			}else {
-				echo "<img id=\"resultgraph\" src=\"viroblast/data/$jobid.png\" usemap=\"#$jobid\">";
-                                include ('data/'.$jobid.'.imap');
+				/* echo "<img id=\"resultgraph\" src=\"viroblast/data/$jobid.png\" usemap=\"#$jobid\">"; */
+				echo "<img id=\"resultgraph\" src=\"$dataPath/$jobid.png\" usemap=\"#$jobid\">";
+                                /* include ('data/'.$jobid.'.imap'); */
+                                include ($dataPath.'/'.$jobid.'.imap');
                                 echo "</img>";
 
-				echo "<p><a href=viroblast/data/$jobid.blast1.html target='_blank'>Inspect BLAST output</a><br>";			
+				/* echo "<p><a href=viroblast/data/$jobid.blast1.html target='_blank'>Inspect BLAST output</a><br>"; */
+				echo "<p><a href=$dataPath/$jobid.blast1.html target='_blank'>Inspect BLAST output</a><br>";
 				echo "<form action='viroblast/blastresult.php?jobid=$jobid&opt=$opt' method='post'>";		
 				echo "<p>Filter current page by score:</p>";
 				echo "<p>&nbsp;&nbsp;&nbsp;Show <select name='filt_val'>";
@@ -440,7 +443,8 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 							}
 							
 							if($i < 10) {
-								echo "<tr align='center'><td>$element[1]</td><td align=left><input type='checkbox' id='checkedSeq' name='target[]' value='$var_target'>$target_link</td><td><a href=viroblast/data/$jobid.blast$page.html#$element[1]$element[2] target='_blank'>$element[3]</a></td><td>$element[4]</td><td>$element[5]</td><td>$element[6]</td></tr>";
+								/* echo "<tr align='center'><td>$element[1]</td><td align=left><input type='checkbox' id='checkedSeq' name='target[]' value='$var_target'>$target_link</td><td><a href=viroblast/data/$jobid.blast$page.html#$element[1]$element[2] target='_blank'>$element[3]</a></td><td>$element[4]</td><td>$element[5]</td><td>$element[6]</td></tr>"; */
+								echo "<tr align='center'><td>$element[1]</td><td align=left><input type='checkbox' id='checkedSeq' name='target[]' value='$var_target'>$target_link</td><td><a href=$dataPath/$jobid.blast$page.html#$element[1]$element[2] target='_blank'>$element[3]</a></td><td>$element[4]</td><td>$element[5]</td><td>$element[6]</td></tr>";
 								fwrite($fp, "$var_target\n");
 							}					
 						}
