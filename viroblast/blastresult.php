@@ -40,6 +40,8 @@ include($config['root_dir'] . 'theme/admin_header.php');
 <?php
 
 include("include/path.inc");
+if (!is_dir("$dataPath"))
+  mkdir("$dataPath");
 
 $jobid = (empty($_GET['jobid'])) ? '' : $_GET['jobid'];
 $blastdb = (empty($_POST['blastdb'])) ? '' : $_POST['blastdb'];
