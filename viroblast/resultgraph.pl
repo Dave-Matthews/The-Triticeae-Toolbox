@@ -9,10 +9,11 @@ use DBI;
 use IO::File;
 use POSIX;
 
+my $dataPath = "/tmp/tht/blast";
 my $jobid = $ARGV[0];
-my $imagemap = new IO::File( "data/$jobid.imap", 'w' );
+my $imagemap = new IO::File( "$dataPath/$jobid.imap", 'w' );
 print $imagemap "\n<map name=\"" . $jobid . "\">\n";
-my $image = new IO::File( "data/$jobid.png", 'w' );
+my $image = new IO::File( "$dataPath/$jobid.png", 'w' );
 
 my $imgh;
 my $maximgh   = 600;
@@ -31,8 +32,12 @@ my $blue;
 my $white;
 my $green;
 my $pink;
+# my $dbh0 =
+#   DBI->connect( "DBI:CSV:f_dir=data;csv_eol=\n;"
+#       . "csv_sep_char=\t;"
+#       . "csv_escape_char=" );
 my $dbh0 =
-  DBI->connect( "DBI:CSV:f_dir=data;csv_eol=\n;"
+  DBI->connect( "DBI:CSV:f_dir=$dataPath;csv_eol=\n;"
       . "csv_sep_char=\t;"
       . "csv_escape_char=" );
 my ($query0) = "SELECT distinct hit_name FROM pbr_$jobid.csv";
@@ -43,7 +48,7 @@ $sth0->finish();
 $dbh0->disconnect();
 
 my $dbh =
-  DBI->connect( "DBI:CSV:f_dir=data;csv_eol=\n;"
+  DBI->connect( "DBI:CSV:f_dir=$dataPath;csv_eol=\n;"
       . "csv_sep_char=\t;"
       . "csv_escape_char=" );
 my ($query) = "SELECT query_length,query_name FROM pbr_$jobid.csv";
@@ -150,7 +155,7 @@ else {
     }
 
     my $dbh1 =
-      DBI->connect( "DBI:CSV:f_dir=data;csv_eol=\n;"
+      DBI->connect( "DBI:CSV:f_dir=$dataPath;csv_eol=\n;"
           . "csv_sep_char=\t;"
           . "csv_escape_char=" );
 
@@ -185,7 +190,7 @@ else {
 
         my $ankername = $hitnu . "_" . $hsp_rank;
         print $imagemap
-"<area shape=\"rect\" coords=\"$xs,$ys,$xe,$ye\" href=\"viroblast/data/$jobid.html#$ankername\" alt=\"$ankername\" title=\"$ankername\"/>\n";
+"<area shape=\"rect\" coords=\"$xs,$ys,$xe,$ye\" href=\"$dataPath/$jobid.html#$ankername\" alt=\"$ankername\" title=\"$ankername\"/>\n";
 
     }
     $sth1->finish();

@@ -710,9 +710,10 @@ private function typeAnnotationCheck()
 		$tmp = preg_split("/_/",$trialcode_row[$i]);
 		$experiments[$index]->year = intval($tmp[1]);
 		$today = getdate();
-		$curr_year = $today['year'];
+		// dem may12: Allow old data, and next year.
+		$curr_year = $today['year'] + 1;
 		if (DEBUG>1) {echo "curr_year ".$curr_year." exp year: ".$experiments[$index]->year."\n";}
-		if (($experiments[$index]->year<2006)OR ($year>$curr_year)) {
+		if (($experiments[$index]->year < 1950) OR ($year > $curr_year)) {
 			echo "Year value not in range [2006-current year]: ".$tmp."\n";
 			$error_flag = ($error_flag)&(1);
 		}

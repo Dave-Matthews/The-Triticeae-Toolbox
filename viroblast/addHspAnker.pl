@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 my $jobid=$ARGV[0];
-my $dataPath = "data";
+# my $dataPath = "data";
+my $dataPath = "/tmp/tht/blast";
 my $infile = "$dataPath/$jobid.out";
 
 open(IN, $infile);
