@@ -111,13 +111,14 @@ fclose($fp);
 </div>
 <p><input type='button' name="ablast" value='Advanced search' onclick="checkform(this.form, this.value)">&nbsp;&nbsp;<input type='reset' value='Reset' onclick="window.location.reload();"></p>
 </form>
-
+<br>
+<hr>
+<p style="font-size: 8pt;">
+<!-- <a href=<?php echo $config['base_url'] ?>viroblast/docs/aboutviroblast.html>ViroBLAST</a>  -->
+<a href=http://indra.mullins.microbiol.washington.edu/viroblast/viroblast.php>ViroBLAST</a> 
+&copy; 2005-2010 University of Washington. All rights reserved.                                                
+&nbsp;<a href=<?php echo $config['base_url'] ?>viroblast/docs/termsofservice.html>Terms of Service</a>
 </div>
-</div>
-	<div id="footer" style="padding: 15px 0 0 0; height: 160px; background-color: #f9cb73; align="center">
-		<p>&copy; 2005-2010 University of Washington. All rights reserved.
-		&nbsp;<a href=viroblast/docs/termsofservice.html>Terms of Service</a>
-		</p>
-	</div>
-</body>
-</html>
+<?php 
+  $footer_div=1;
+include($config['root_dir'].'theme/footer.php'); ?>
