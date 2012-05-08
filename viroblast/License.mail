@@ -1,0 +1,166 @@
+From license@u.washington.edu  Mon May  7 19:20:13 2012
+Return-Path: <license@u.washington.edu>
+X-Original-To: matthews@graingenes.org
+Delivered-To: matthews@graingenes.org
+Received: from mxout11.cac.washington.edu (mxout11.cac.washington.edu [140.142.32.201])
+        by graingenes.org (Postfix) with ESMTPS id DD7F52C81031
+        for <matthews@graingenes.org>; Mon,  7 May 2012 19:20:12 -0400 (EDT)
+Received: from depts13.u.washington.edu (depts13.u.washington.edu [128.95.155.199])
+        by mxout11.cac.washington.edu (8.14.4+UW11.03/8.14.4+UW12.03) with ESMTP id q47NIEPT027805
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO);
+        Mon, 7 May 2012 16:18:14 -0700
+Received: (from uwc4c@localhost)
+        by depts13.u.washington.edu (8.14.4+UW11.03/8.14.4+Submit) id q47NIEkp031899;
+        Mon, 7 May 2012 16:18:14 -0700
+To: matthews@graingenes.org
+Subject: =?utf-8?Q?New_license_for_ViroBLAST?=
+User-Agent: UWC4CExpressLicenseSystem
+Date: Mon, 7 May 2012 16:18:14 -0700
+From: "UW Center for Commercialization (C4C) - Express Licenses" <license@u.washington.edu>
+Reply-To: "license@u.washington.edu" <license@u.washington.edu>
+X-Sender: license@u.washington.edu
+X-Mailer: UWC4CExpressLicenseSystem
+X-Priority: 3 (Normal)
+Message-ID: <4fa858364a81f@u.washington.edu>
+Mime-Version: 1.0
+Content-Type: multipart/alternative; boundary="B_ALT_4fa858364a8df"
+X-PMX-Version: 6.0.0.2142326, Antispam-Engine: 2.7.2.2107409, Antispam-Data: 2012.5.7.230323
+X-PMX-Server: mxout11.cac.washington.edu
+X-Uwash-Spam: Gauge=X, Probability=10%, Report='
+ BODY_PARA_IS_SENTENCE_URL 0.1, HTML_NO_HTTP 0.1, UTF8_SUBJ_OBFU 0.1, HTML_00_10 0.05, LINES_OF_YELLING_3 0.05, MIME_LOWER_CASE 0.05, SUPERLONG_LINE 0.05, BODYTEXTH_SIZE_10000_LESS 0, BODY_SIZE_6000_6999 0, BODY_SIZE_7000_LESS 0, DATE_TZ_NA 0, FROM_NAME_PHRASE 0, URI_ENDS_IN_HTML 0, __ANY_URI 0, __CP_URI_IN_BODY 0, __CT 0, __CTYPE_HAS_BOUNDARY 0, __CTYPE_MULTIPART 0, __CTYPE_MULTIPART_ALT 0, __HAS_HTML 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __HAS_X_PRIORITY 0, __LINES_OF_YELLING 0, __MIME_HTML 0, __MIME_VERSION 0, __SANE_MSGID 0, __SUBJ_ALPHA_END 0, __TO_MALFORMED_2 0, __TO_NO_NAME 0, __URI_NO_MAILTO 0, __URI_NS , __USER_AGENT 0, __UTF8_SUBJ 0'
+Status: RO
+
+This is a multi-part message in MIME format.
+Your email application may not support this format.
+
+--B_ALT_4fa858364a8df
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<!doctype html><meta charset="utf-8"><html><body>
+	ViroBLAST Software License Agreement<br />
+	<br />
+	The University of Washington (UW) and Professor James Mullins and his
+laboratory (&ldquo;Developers&rdquo;) give permission for you and your
+laboratory (&ldquo;Institution&rdquo;) to use the ViroBLAST software
+(&ldquo;ViroBLAST&rdquo;). ViroBLAST is a BLAST web interface for nucleotide
+and amino acid sequence similarity searches. UW and the Developers allow
+researchers at your Institution to run, copy, and modify ViroBLAST, and to
+offer ViroBLAST functionalities on publicly accessible servers, for research
+purposes, on the following conditions:<br />
+	<br />
+	1. ViroBLAST source code files, including all php, html, and other files,
+remain at your Institution and is not published, distributed, or transferred
+to other than Institution employees and students involved in research under
+your supervision.<br />
+	<br />
+	2. You retain in ViroBLAST and any modifications to ViroBLAST, the
+copyright, trademark, or other notices pertaining to ViroBLAST as provided
+by UW.<br />
+	<br />
+	3. ViroBLAST implements NCBI BLAST 2.2.15. As a condition of using
+ViroBLAST, you acknowledge and agree to the terms and conditions set by NCBI
+and listed at http://www.ncbi.nlm.nih.gov/About/disclaimer.html<br />
+	<br />
+	4. All bug reports and technical questions shall be sent to Dr. James
+Mullins, email: jmullins@u.washington.edu.<br />
+	<br />
+	5. You acknowledge that the Developers, UW and its licensees may develop
+modifications to ViroBLAST that may be substantially similar to your
+modifications of ViroBLAST, and that the Developers, UW and its licensees
+shall not be constrained in any way by you in UW&#39;s or its licensees&#39;
+use or management of such modifications. You acknowledge the right of the
+Developers and UW to prepare and publish modifications to ViroBLAST that may
+be substantially similar or functionally equivalent to your modifications
+and improvements, and if you obtain patent protection for any modification
+or improvement to ViroBLAST you agree not to allege or enjoin infringement
+of your patent by the Developers, the UW or by any of UW&#39;s licensees
+obtaining modifications or improvements to ViroBLAST from the University of
+Washington or the Developers.<br />
+	<br />
+	6. If you offer ViroBLAST on your server or publish results using the
+ViroBLAST software, please specify the version of ViroBLAST you used and
+cite the following source: <br />
+	<br />
+	Deng W, Nickle DC, Learn GH, Maust B, Mullins JI. 2007. ViroBLAST: A
+standalone BLAST web server for flexible queries of multiple databases and
+user&#39;s datasets. Bioinformatics 23(17):2334-6.<br />
+	<br />
+	7. Any risk associated with using the ViroBLAST software at your
+institution is with you and your Institution. ViroBLAST is experimental in
+nature and is made available as a research courtesy &quot;AS IS,&quot;
+without obligation by UW to provide accompanying services or support. <br />
+	<br />
+	8. UW AND THE AUTHORS EXPRESSLY DISCLAIM ANY AND ALL WARRANTIES REGARDING
+THE SOFTWARE, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+WARRANTIES PERTAINING TO MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+PURPOSE.
+</body></html>
+
+
+--B_ALT_4fa858364a8df
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<p>
+	ViroBLAST Software License Agreement<br />
+	<br />
+	The University of Washington (UW) and Professor James Mullins and his labo=
+ratory (&ldquo;Developers&rdquo;) give permission for you and your laborato=
+ry (&ldquo;Institution&rdquo;) to use the ViroBLAST software (&ldquo;ViroBL=
+AST&rdquo;). ViroBLAST is a BLAST web interface for nucleotide and amino ac=
+id sequence similarity searches. UW and the Developers allow researchers at=
+ your Institution to run, copy, and modify ViroBLAST, and to offer ViroBLAS=
+T functionalities on publicly accessible servers, for research purposes, on=
+ the following conditions:<br />
+	<br />
+	1. ViroBLAST source code files, including all php, html, and other files, =
+remain at your Institution and is not published, distributed, or transferre=
+d to other than Institution employees and students involved in research und=
+er your supervision.<br />
+	<br />
+	2. You retain in ViroBLAST and any modifications to ViroBLAST, the copyrig=
+ht, trademark, or other notices pertaining to ViroBLAST as provided by UW.<=
+br />
+	<br />
+	3. ViroBLAST implements NCBI BLAST 2.2.15. As a condition of using ViroBLA=
+ST, you acknowledge and agree to the terms and conditions set by NCBI and l=
+isted at http://www.ncbi.nlm.nih.gov/About/disclaimer.html<br />
+	<br />
+	4. All bug reports and technical questions shall be sent to Dr. James Mull=
+ins, email: jmullins@u.washington.edu.<br />
+	<br />
+	5. You acknowledge that the Developers, UW and its licensees may develop m=
+odifications to ViroBLAST that may be substantially similar to your modific=
+ations of ViroBLAST, and that the Developers, UW and its licensees shall no=
+t be constrained in any way by you in UW&#39;s or its licensees&#39; use or=
+ management of such modifications. You acknowledge the right of the Develop=
+ers and UW to prepare and publish modifications to ViroBLAST that may be su=
+bstantially similar or functionally equivalent to your modifications and im=
+provements, and if you obtain patent protection for any modification or imp=
+rovement to ViroBLAST you agree not to allege or enjoin infringement of you=
+r patent by the Developers, the UW or by any of UW&#39;s licensees obtainin=
+g modifications or improvements to ViroBLAST from the University of Washing=
+ton or the Developers.<br />
+	<br />
+	6. If you offer ViroBLAST on your server or publish results using the Viro=
+BLAST software, please specify the version of ViroBLAST you used and cite t=
+he following source: <br />
+	<br />
+	Deng W, Nickle DC, Learn GH, Maust B, Mullins JI. 2007. ViroBLAST: A stand=
+alone BLAST web server for flexible queries of multiple databases and user&=
+#39;s datasets. Bioinformatics 23(17):2334-6.<br />
+	<br />
+	7. Any risk associated with using the ViroBLAST software at your instituti=
+on is with you and your Institution. ViroBLAST is experimental in nature an=
+d is made available as a research courtesy &quot;AS IS,&quot; without oblig=
+ation by UW to provide accompanying services or support. <br />
+	<br />
+	8. UW AND THE AUTHORS EXPRESSLY DISCLAIM ANY AND ALL WARRANTIES REGARDING =
+THE SOFTWARE, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARR=
+ANTIES PERTAINING TO MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+</p>
+
+--B_ALT_4fa858364a8df--
+
+
