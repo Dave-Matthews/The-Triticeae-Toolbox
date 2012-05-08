@@ -114,10 +114,11 @@ fclose($fp);
 <br>
 <hr>
 <p style="font-size: 8pt;">
-<!-- <a href=<?php echo $config['base_url'] ?>viroblast/docs/aboutviroblast.html>ViroBLAST</a>  -->
-<a href=http://indra.mullins.microbiol.washington.edu/viroblast/viroblast.php>ViroBLAST</a> 
-&copy; 2005-2010 University of Washington. All rights reserved.                                                
+<!-- <a href=<?php echo $config['base_url'] ?>viroblast/docs/aboutviroblast.html>ViroBLAST 2.2+</a>  -->
+<a href=http://indra.mullins.microbiol.washington.edu/viroblast/viroblast.php>ViroBLAST</a> 2.2+ 
+&copy; 2005-2010 University of Washington. All rights reserved. 
 &nbsp;<a href=<?php echo $config['base_url'] ?>viroblast/docs/termsofservice.html>Terms of Service</a>
+<br>Used under the <a href="<?php echo $config['base_url'] ?>viroblast/License.mail">Academic License</a>.
 </div>
 <?php 
   $footer_div=1;
