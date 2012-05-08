@@ -19,7 +19,8 @@ connect();
       <p>
       To obtain it, please send a copy of your ViroBLAST license to 
       <a href="mailto:matthews@graingenes.org">Dave Matthews</a>.  
-      <br>This is necessary to comply with our license to use ViroBLAST.
+      <br>This is necessary to comply with our 
+      <a href="<?php echo $config['base_url'] ?>viroblast/License.mail">license</a> to use ViroBLAST.
       <p>
 	Thanks,
 	<br>- Dave
