@@ -17,7 +17,8 @@ my $image = new IO::File( "$dataPath/$jobid.png", 'w' );
 
 my $imgh;
 my $maximgh   = 600;
-my $imgw      = 800;
+# my $imgw      = 800;
+my $imgw      = 600;
 my $hitxstart = 40;
 my $hitxend   = $imgw - 10;
 my $trackgap  = 10;
