@@ -119,7 +119,7 @@ fclose($fp);
 &copy; 2005-2010 University of Washington. All rights reserved. 
 &nbsp;<a href=<?php echo $config['base_url'] ?>viroblast/docs/termsofservice.html>Terms of Service</a>
 <br>Used under the <a href="<?php echo $config['base_url'] ?>viroblast/License.mail">Academic License</a>. 
-Graphical enhancement from <a href="mailto:flemming@ipk-gatersleben.de">Steffen Flemming</a>.
+ResultGraph feature from <a href="mailto:flemming@ipk-gatersleben.de">Steffen Flemming</a> (thanks!).
 </div>
 <?php 
   $footer_div=1;
