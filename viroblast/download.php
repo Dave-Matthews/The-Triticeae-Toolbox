@@ -7,16 +7,19 @@
 # Modified by Wenjie Deng
 ############################################################### 
 
+include("include/path.inc");
 
 // Download folder, i.e. folder where you keep all files for download.
 // MUST end with slash (i.e. "/" )
-define('BASE_DIR','./data/');
+//define('BASE_DIR','./data/');
+define('BASE_DIR',$dataPath . '/');
 
 // log downloads?  true/false
 define('LOG_DOWNLOADS',true);
 
 // log file name
-define('LOG_FILE','./downloads.log');
+//define('LOG_FILE','./downloads.log');
+define('LOG_FILE','$dataPath/downloads.log');
 
 // Allowed extensions list in format 'extension' => 'mime type'
 // If myme type is set to empty string then script will try to detect mime type 
@@ -56,6 +59,7 @@ $allowed_ext = array (
   'mov' => 'video/quicktime',
   'avi' => 'video/x-msvideo'
 );
+
 
 
 
