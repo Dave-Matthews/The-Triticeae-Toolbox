@@ -153,9 +153,9 @@ Ware)<br/>
 It requires Unix, Apache, MySQL, and PHP.  Details are in
 the <a href="docs/INSTALL.html">INSTALL</a> document.<br>
 The database schema in .sql format
-is <a href="docs/T3wheat_schema.sql">here</a>, and graphically in MySQL
-Workbench (.mwb)
-format <a href="docs/T3wheat_schema_May2012.mwb">here</a>.
+is <a href="docs/T3wheat_schema.sql">here</a>. Graphical diagrams are
+available in MySQL Workbench (<a href="docs/T3wheat_schema_May2012.mwb">.mwb</a>)
+format and <a href="docs/T3wheat_schema_May2012.png">.png</a> format.
 </div>
 
 
