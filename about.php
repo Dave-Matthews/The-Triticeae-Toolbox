@@ -1,8 +1,6 @@
-<?php
-require 'config.php';
+<?php require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
-?>
+include($config['root_dir'].'theme/normal_header.php'); ?>
 
 <h1>About T3</h1>
 <h3>Project Description</h3>
@@ -25,10 +23,17 @@ include($config['root_dir'].'theme/normal_header.php');
   National Small Grains Collection.</a>  </p>
 
 </div>
-<!-- 
+<!--
 <h3 style="margin-top: 40px;">Data Access Policy</h3>
 	<div class="section">
-	<p>All data on <acronym title="The Hordeum Toolbox">THT</acronym> will be made public within six months of release by the <acronym title="The Hordeum Toolbox">THT</acronym> curators. During the six month period, the data will only be available to members of the Barley <acronym title="Coordinated Agricultural Project">CAP</acronym> Team unless explicitly released by the data creators.</p>
+	<p>All data on <acronym title="The Hordeum
+	Toolbox">THT</acronym> will be made public within six months of
+	release by the <acronym title="The Hordeum
+	Toolbox">THT</acronym> curators. During the six month period,
+	the data will only be available to members of the
+	Barley <acronym title="Coordinated Agricultural
+	Project">CAP</acronym> Team unless explicitly released by the
+	data creators.</p>
 
 	</div>
 -->
@@ -38,8 +43,7 @@ include($config['root_dir'].'theme/normal_header.php');
 <div class="section">
 <p>
 <style type="text/css">
-#thtteamtbl td{text-align:left}
-.strong{font-weight:bold}
+#thtteamtbl td{text-align:left} .strong{font-weight:bold}
 </style>
 <table id="thtteamtbl" border="0" cellpadding="0" cellspacing="0">
 <thead>
@@ -48,17 +52,34 @@ include($config['root_dir'].'theme/normal_header.php');
 </tr>
 
 </thead>
-<tr><td class="strong">Jean-Luc Jannink</td><td>USDA-ARS, NAA, RWHCAH, Ithaca, NY</td><td>Project coordinator</td></tr>
-<tr><td class="strong">Mark Sorrells</td><td>Cornell University, Ithaca, NY</td><td>Project coordinator</td></tr>
-<tr><td class="strong">Clay Birkett</td><td>USDA-ARS, NAA, RWHCAH, Ithaca, NY</td><td>Database programming and development</td></tr>
-<tr><td class="strong">Victoria Carollo Blake</td><td>USDA-ARS, WRRC, Albany, CA</td><td>Data curator</td></tr>
-<tr><td class="strong">Dave Matthews</td><td>USDA-ARS, PWA, Ithaca, NY</td><td>Database development, GrainGenes collaborator</td></tr>
-<tr><td class="strong">Shiaoman Chao</td><td>USDA-ARS Biosciences Research Lab, Fargo, ND</td><td>SNP data production and curation</td></tr>
-<tr><td class="strong">Peter Bradbury</td><td>USDA-ARS, NAA, RWHCAH, Ithaca, NY</td><td>Pedigree information and links to <a href="http://www.maizegenetics.net/index.php?page=bioinformatics/tassel/index.html" title="">TASSEL</a></td></tr>
-<tr><td class="strong">Mike Bonman</td><td>USDA-ARS, Aberdeen, ID</td><td>GRIN collaboration</td></tr>
-<tr><td class="strong">Harold Bockelman</td><td>USDA-ARS, Aberdeen, ID</td><td>GRIN collaboration</td></tr>
-<tr><td class="strong">Tim Close</td><td>Botany and Plant Sciences<br/>University of California<br/>Riverside, CA</td><td>Assembly and SNP context information from <a href="http://harvest.ucr.edu/" title="">HarvEST: Barley</a></td></tr>
-<tr><td class="strong"><a href="http://triticeaecap.org/about/t-cap-directory/">T-CAP Participants</a></td><td>Throughout the U.S.A.</td><td>Data collection and contribution</td></tr>
+<tr><td class="strong">Jean-Luc Jannink</td><td>USDA-ARS, NAA, RWHCAH,
+Ithaca, NY</td><td>Project coordinator</td></tr>
+<tr><td class="strong">Mark Sorrells</td><td>Cornell University, Ithaca,
+NY</td><td>Project coordinator</td></tr>
+<tr><td class="strong">Clay Birkett</td><td>USDA-ARS, NAA, RWHCAH,
+Ithaca, NY</td><td>Database programming and development</td></tr>
+<tr><td class="strong">Victoria Carollo Blake</td><td>USDA-ARS, WRRC,
+Albany, CA</td><td>Data curator</td></tr>
+<tr><td class="strong">Dave Matthews</td><td>USDA-ARS, PWA, Ithaca,
+NY</td><td>Database development, GrainGenes collaborator</td></tr>
+<tr><td class="strong">Shiaoman Chao</td><td>USDA-ARS Biosciences
+Research Lab, Fargo, ND</td><td>SNP data production and
+curation</td></tr>
+<tr><td class="strong">Peter Bradbury</td><td>USDA-ARS, NAA, RWHCAH,
+Ithaca, NY</td><td>Pedigree information and links
+to <a href="http://www.maizegenetics.net/index.php?page=bioinformatics/tassel/index.html"
+title="">TASSEL</a></td></tr>
+<tr><td class="strong">Mike Bonman</td><td>USDA-ARS, Aberdeen,
+ID</td><td>GRIN collaboration</td></tr>
+<tr><td class="strong">Harold Bockelman</td><td>USDA-ARS, Aberdeen,
+ID</td><td>GRIN collaboration</td></tr>
+<tr><td class="strong">Tim Close</td><td>Botany and Plant
+Sciences<br/>University of California<br/>Riverside, CA</td><td>Assembly
+and SNP context information from <a href="http://harvest.ucr.edu/"
+title="">HarvEST: Barley</a></td></tr>
+<tr><td class="strong"><a href="http://triticeaecap.org/about/t-cap-directory/">T-CAP
+Participants</a></td><td>Throughout the U.S.A.</td><td>Data collection
+and contribution</td></tr>
 
 
 </tbody>
@@ -72,8 +93,7 @@ include($config['root_dir'].'theme/normal_header.php');
 <div class="section">
 <p>
 <style type="text/css">
-#thtteamtbl td{text-align:left}
-.strong{font-weight:bold}
+#thtteamtbl td{text-align:left} .strong{font-weight:bold}
 </style>
 <table id="thtteamtbl" border="0" cellpadding="0" cellspacing="0">
 <thead>
@@ -83,14 +103,27 @@ include($config['root_dir'].'theme/normal_header.php');
 
 </thead>
 
-<tr><td class="strong">Julie A. Dickerson</td><td>Electrical and Computer Engineering, Iowa State University</td><td>Principal Investigator<td></tr>
-<tr><td class="strong">Roger P. Wise</td><td>USDA-ARS<br/>Department of Plant Pathology<br/>Iowa State University</td><td>Principal Investigator</td></tr>
-<tr><td class="strong">Jennifer Kling</td><td>Dept. of Crop and Soil Science Oregon State University</td><td>Phenotype and pedigree data curation </td></tr>
-<tr><td class="strong">Shreyartha Mukherjee</td><td>Bioinformatics and Computational Biology, Iowa State University</td><td>Developer/Bioinformatics</td></tr>
-<tr><td class="strong">Kartic Ramesh</td><td>Computer Science, Iowa State University</td><td>Developer</td></tr>
-<tr><td class="strong">Gavin Monroe</td><td>Software Engineering, Iowa State University</td><td>Developer</td></tr>
-<tr><td class="strong">Ethan Wilder</td><td>Computer Engineering, Iowa State University</td><td>Developer</td></tr>
-<tr><td class="strong">Yong Huang</td><td>Bioinformatics and Computational Biology, Iowa State University</td><td> Developer/Bioinformatics</td></tr>
+<tr><td class="strong">Julie A. Dickerson</td><td>Electrical and
+Computer Engineering, Iowa State University</td><td>Principal
+Investigator<td></tr>
+<tr><td class="strong">Roger P. Wise</td><td>USDA-ARS<br/>Department of
+Plant Pathology<br/>Iowa State University</td><td>Principal
+Investigator</td></tr>
+<tr><td class="strong">Jennifer Kling</td><td>Dept. of Crop and Soil
+Science Oregon State University</td><td>Phenotype and pedigree data
+curation </td></tr>
+<tr><td class="strong">Shreyartha Mukherjee</td><td>Bioinformatics and
+Computational Biology, Iowa State
+University</td><td>Developer/Bioinformatics</td></tr>
+<tr><td class="strong">Kartic Ramesh</td><td>Computer Science, Iowa
+State University</td><td>Developer</td></tr>
+<tr><td class="strong">Gavin Monroe</td><td>Software Engineering, Iowa
+State University</td><td>Developer</td></tr>
+<tr><td class="strong">Ethan Wilder</td><td>Computer Engineering, Iowa
+State University</td><td>Developer</td></tr>
+<tr><td class="strong">Yong Huang</td><td>Bioinformatics and
+Computational Biology, Iowa State University</td><td>
+Developer/Bioinformatics</td></tr>
 
 
 </tbody>
@@ -101,20 +134,28 @@ include($config['root_dir'].'theme/normal_header.php');
 <h3>Collaborators</h3>
 <div class="section">
 <p>
-<a href="http://bioinf.scri.ac.uk/germinate" title="">SCRI Germinate</a> Development Team (David Marshall, Paul Shaw)<br/>
-<a href="http://www.plexdb.org/" title="">PLEXdb</a> Development Team at Iowa State University (Ethy Cannon and Sudhansu Dash)<br/>
-<a href="http://www.gramene.org/" title="">Gramene</a> Database (Doreen Ware)<br/>
-<a href="http://wheat.pw.usda.gov/" title="">GrainGenes</a> Database (David Matthews) USDA/ARS, Cornell University<br/>
+<a href="http://bioinf.scri.ac.uk/germinate" title="">SCRI Germinate</a>
+Development Team (David Marshall, Paul Shaw)<br/>
+<a href="http://www.plexdb.org/" title="">PLEXdb</a> Development Team at
+Iowa State University (Ethy Cannon and Sudhansu Dash)<br/>
+<a href="http://www.gramene.org/" title="">Gramene</a> Database (Doreen
+Ware)<br/>
+<a href="http://wheat.pw.usda.gov/" title="">GrainGenes</a> Database
+(David Matthews) USDA/ARS, Cornell University<br/>
 </p>
 </div>
 
 <h3>Software availability</h3>
 <div class="section">
-<p> The THT software is available under the GNU General Public License
+<p> The T3 software is available under the GNU General Public License
 (<a href="docs/LICENSE">LICENSE</a>) and may be downloaded from
 <a href="https://github.com/Dave-Matthews/The-Triticeae-Toolbox">github</a>.
 It requires Unix, Apache, MySQL, and PHP.  Details are in
-the <a href="docs/INSTALL.html">INSTALL</a> document.
+the <a href="docs/INSTALL.html">INSTALL</a> document.<br>
+The database schema in .sql format
+is <a href="docs/T3wheat_schema.sql">here</a>, and graphically in MySQL
+Workbench (.mwb)
+format <a href="docs/T3wheat_schema_May2012.mwb">here</a>.
 </div>
 
 
