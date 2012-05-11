@@ -3216,9 +3216,9 @@ selected lines</a><br>
 	   '6H' => '6','7H' => '7','UNK'  => '10');
 	
 	 //using a subset of markers so we have to translate into correct index
-	 foreach ($marker_list as $i => $marker_id) {
-	  $marker_name = $marker_list_name[$i];
+	 foreach ($markers as $marker_id) {
 	  $marker_idx = $marker_idx_list[$marker_id];
+	  $marker_name = $marker_list_name[$marker_idx];
 	  if (isset($marker_lookup[$marker_id])) {
 	   $total = $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx] + $marker_bbcnt[$marker_idx] + $marker_misscnt[$marker_idx];
 	   if ($total>0) {
