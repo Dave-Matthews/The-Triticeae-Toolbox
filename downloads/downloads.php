@@ -167,14 +167,14 @@ class Downloads
 			case 'searchLines':
 				echo $this->step1_search_lines();
 				break;
-			case 'download_session':
-				echo $this->type1_session(null);
-				break;
 			case 'download_session_v2':
 			    echo $this->type1_session(V2);
 			    break;
 			case 'download_session_v3':
 			    echo $this->type1_session(V3);
+			    break;
+			case 'download_session_v4':
+			    echo $this->type1_session(V4);
 			    break;
 			case 'type2_build_tassel_v2':
 			    echo $this->type2_build_tassel(V2);
@@ -439,7 +439,7 @@ class Downloads
         $zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
         $subset = "yes";
         
-        if (($version == "V2") || ($version == "V3") || ($version == "V4")) {
+        if (isset($_SESSION['phenotype'])) {
 		  $zip->newFile("traits.txt");
 		  $zip->writeData($this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset));
         }
@@ -1204,13 +1204,12 @@ class Downloads
 	       echo "<a href=";
 	       echo $config['base_url'];
 	       echo "pedigree/line_selection.php> Select lines</a><br>";
-	     } elseif ( $phenotype != "" ) {
-	       echo "<br>Use existing selection to $message2<br>";
-	       echo "<input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'</input>";
-	       echo "<input type='button' value='Download for Tassel V3' onclick='javascript:use_session_v3();'</input>";
 	     } else {
 	       echo "<br>Use existing selection to $message2<br>";
-	       echo "<input type='button' value='Download for Tassel' onclick='javascript:use_session();'</input>";
+	       ?>
+	       <input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" />
+	       <input type="button" value="Download for Tassel V4" onclick="javascript:use_session('v4');"  />
+	       <?php    
 	     }
 	  }
 	}
