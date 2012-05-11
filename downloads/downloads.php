@@ -167,20 +167,23 @@ class Downloads
 			case 'searchLines':
 				echo $this->step1_search_lines();
 				break;
-			case 'download_session':
-				echo $this->type1_session(null);
-				break;
 			case 'download_session_v2':
 			    echo $this->type1_session(V2);
 			    break;
 			case 'download_session_v3':
 			    echo $this->type1_session(V3);
 			    break;
+			case 'download_session_v4':
+			    echo $this->type1_session(V4);
+			    break;
 			case 'type2_build_tassel_v2':
 			    echo $this->type2_build_tassel(V2);
 			    break;
 			case 'type2_build_tassel_v3':
 			    echo $this->type2_build_tassel(V3);
+			    break;
+			case 'type2_build_tassel_v4':
+			    echo $this->type2_build_tassel(V4);
 			    break;
 			case 'refreshtitle':
 			    echo $this->refresh_title();
@@ -436,19 +439,22 @@ class Downloads
         $zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
         $subset = "yes";
         
-        if (($version == "V2") || ($version == "V3")) {
+        if (isset($_SESSION['phenotype'])) {
 		  $zip->newFile("traits.txt");
 		  $zip->writeData($this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset));
         }
-        if (($version == "V2")) {
+        if ($version == "V2") {
           $zip->newFile("annotated_alignment.txt");
           $zip->writeData($this->type1_build_annotated_align($experiments_g));
-        } else {
+        } elseif ($version == "V3") {
           $zip->newFile("geneticMap.txt");
           $zip->writeData($this->type1_build_geneticMap($experiments_g));
+          $zip->newFile("snpfile.txt");
+          $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
+        } elseif ($version == "V4") {
+          $zip->newFile("genotype_hapmap.txt");
+          $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
         }
-		$zip->newFile("snpfile.txt");
-        $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
         $zip->newFile("allele_conflict.txt");
         $zip->writeData($this->type2_build_conflicts_download($lines,$markers));
         $zip->close();
@@ -836,10 +842,10 @@ class Downloads
      $this->calculate_af($lines, $min_maf, $max_missing);
      
      ?>
-     <input type="hidden" name="subset" id="subset" value="yes" />
-     <br><input type="button" value="Download for Tassel V2" onclick="javascript:getdownload_tassel();" />
+     <input type="hidden" name="subset" id="subset" value="yes" /><br>
+     <input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel('v3');" />
      <h4> or </h4>
-     <input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel_v3();" /> <br>
+     <input type="button" value="Download for Tassel V4" onclick="javascript:getdownload_tassel('v4');" /> <br>
  
     <?php
     }
@@ -1198,13 +1204,12 @@ class Downloads
 	       echo "<a href=";
 	       echo $config['base_url'];
 	       echo "pedigree/line_selection.php> Select lines</a><br>";
-	     } elseif ( $phenotype != "" ) {
-	       echo "<br>Use existing selection to $message2<br>";
-	       echo "<input type='button' value='Download for Tassel V2' onclick='javascript:use_session_v2();'</input>";
-	       echo "<input type='button' value='Download for Tassel V3' onclick='javascript:use_session_v3();'</input>";
 	     } else {
 	       echo "<br>Use existing selection to $message2<br>";
-	       echo "<input type='button' value='Download for Tassel' onclick='javascript:use_session();'</input>";
+	       ?>
+	       <input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" />
+	       <input type="button" value="Download for Tassel V4" onclick="javascript:use_session('v4');"  />
+	       <?php    
 	     }
 	  }
 	}
@@ -1942,10 +1947,10 @@ selected lines</a><br>
 		
 		?>
 		<table> <tr> <td COLSPAN="3">
-		<input type="hidden" name="subset" id="subset" value="yes" />
-		<br><input type="button" value="Download for Tassel V2" onclick="javascript:getdownload_tassel();" />
+		<input type="hidden" name="subset" id="subset" value="yes" /><br>
+		<input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel('v3');" />
 		<h4> or </h4>
-		<input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel_v3();" /> <br>
+		<input type="button" value="Download for Tassel V4" onclick="javascript:getdownload_tassel('v4');" /> <br>
 		</td> </tr> </table>
 		<?php
 		
@@ -2057,10 +2062,10 @@ selected lines</a><br>
 	
 	?>
 	<table> <tr> <td COLSPAN="3">
-	<input type="hidden" name="subset" id="subset" value="yes" />
-	<br><input type="button" value="Download for Tassel V2" onclick="javascript:get_download_loc_v2();" />
+	<input type="hidden" name="subset" id="subset" value="yes" /><br>
+	<input type="button" value="Download for Tassel V3" onclick="javascript:get_download_loc('v3');" /> <br>
 	<h4> or </h4>
-	<input type="button" value="Download for Tassel V3" onclick="javascript:get_download_loc_v3();" /> <br>
+	<input type="button" value="Download for Tassel V4" onclick="javascript:get_download_loc('v4');" /> <br>
 	</td> </tr> </table>
 	<?php
 	
@@ -2410,19 +2415,22 @@ selected lines</a><br>
 	  }
 	  $zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
 	  
-	  if (($version == "V2") || ($version == "V3")) {
+	  if (($version == "V2") || ($version == "V3") || ($version == "V4")) {
 	    $zip->newFile("traits.txt");
 	    $zip->writeData($this->type2_build_tassel_traits_download($experiments,$phen_item,$lines,$subset));
 	  }
 	  if (($version == "V2")) {
 	    $zip->newFile("annotated_alignment.txt");
 	    $zip->writeData($this->type1_build_annotated_align($experiments_g));
-	  } else {
+	  } elseif (($version == "V3")) {
 	    $zip->newFile("geneticMap.txt");
 	    $zip->writeData($this->type1_build_geneticMap($experiments_g));
+	    $zip->newFile("snpfile.txt");
+	    $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
+	  } elseif (($version == "V4")) {
+	    $zip->newFile("genotype_hapmap.txt");
+	    $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
 	  }
-	  $zip->newFile("snpfile.txt");
-	  $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
 	  $zip->newFile("allele_conflict.txt");
 	  $zip->writeData($this->type2_build_conflicts_download($lines,$markers));
 	  $zip->close();
@@ -3088,6 +3096,181 @@ selected lines</a><br>
 		} else {
 			return $num_lines.$delimiter.$nelem.":2\n".$outputheader."\n".$output;
 		}
+	}
+
+	private function type3_build_markers_download($lines,$markers,$dtype)
+	{
+	 $output = '';
+	 $outputheader = '';
+	 $delimiter ="\t";
+	
+	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
+	  $max_missing = $_GET['mm'];
+	 if ($max_missing>100)
+	  $max_missing = 100;
+	 elseif ($max_missing<0)
+	 $max_missing = 0;
+	 // $firephp->log("in sort markers2");
+	 $min_maf = 0.01;//IN PERCENT
+	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+	  $min_maf = $_GET['mmaf'];
+	 if ($min_maf>100)
+	  $min_maf = 100;
+	 elseif ($min_maf<0)
+	 $min_maf = 0;
+	
+	 if (count($markers)>0) {
+	  $markers_str = implode(",", $markers);
+	 } else {
+	  $markers_str = "";
+	 }
+	 if (count($lines)>0) {
+	  $lines_str = implode(",", $lines);
+	 } else {
+	  $lines_str = "";
+	 }
+	 
+	 //get lines and filter to get a list of markers which meet the criteria selected by the user
+	 if (preg_match('/[0-9]/',$markers_str)) {
+	 } else {
+	  //get genotype markers that correspond with the selected lines
+	  $sql_exp = "SELECT DISTINCT marker_uid
+	  FROM allele_cache
+	  WHERE
+	  allele_cache.line_record_uid in ($lines_str)";
+	  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+	  if (mysql_num_rows($res)>0) {
+	   while ($row = mysql_fetch_array($res)){
+	    $markers[] = $row["marker_uid"];
+	   }
+	  }
+	  $markers_str = implode(',',$markers);
+	 }
+	 
+	 //order the markers by map location
+	 $sql = "select markers.marker_uid, markers.marker_name from markers, markers_in_maps as mim, map, mapset
+	 where markers.marker_uid IN ($markers_str)
+	 AND mim.marker_uid = markers.marker_uid
+	 AND mim.map_uid = map.map_uid
+	 AND map.mapset_uid = mapset.mapset_uid
+	 AND mapset.mapset_uid = 1
+	 order by mim.chromosome, mim.start_position";
+	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+	 while ($row = mysql_fetch_array($res)) {
+	  $marker_list[] = $row[0];
+	  $marker_list_name[] = $row[1];
+	 }
+	
+	 //generate an array of selected markers that can be used with isset statement
+	 foreach ($markers as $temp) {
+	  $marker_lookup[$temp] = 1;
+	 }
+	 
+	 $lookup = array(
+	   'AA' => 'AA',
+	   'BB' => 'CC',
+	   '--' => 'NN',
+	   'AB' => 'AC',
+	   '' => 'NN'
+	 );
+	 
+	 foreach ($lines as $i => $line_record_uid) {
+	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
+	  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+	  if ($row = mysql_fetch_array($res)) {
+	   $alleles = $row[0];
+	   $outarray = explode(',',$alleles);
+	   $i = 0;
+	   foreach ($outarray as $allele) {
+	    if ($allele=='AA') $marker_aacnt[$i]++;
+	    if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
+	    if ($allele=='BB') $marker_bbcnt[$i]++;
+	    if ($allele=='--') $marker_misscnt[$i]++;
+	    $i++;
+	   }
+	  }
+	 }
+	 
+	 //get location in allele_byline for each marker
+	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
+	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+	 $i=0;
+	 while ($row = mysql_fetch_array($res)) {
+	   $marker_idx_list[$row[0]] = $i;
+	   $i++;
+	 }
+	 
+	 //get header
+	 $empty = array();
+	 $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode";
+	 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
+	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+	 while ($row = mysql_fetch_array($res)) {
+	  $name = $row[0];
+	  $outputheader .= "\t$name";
+	  $empty[$name] = "NN";
+	 }
+	 
+	 $lookup_chrom = array(
+	   '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
+	   '6H' => '6','7H' => '7','UNK'  => '10');
+	
+	 //using a subset of markers so we have to translate into correct index
+	 foreach ($marker_list as $i => $marker_id) {
+	  $marker_name = $marker_list_name[$i];
+	  $marker_idx = $marker_idx_list[$marker_id];
+	  if (isset($marker_lookup[$marker_id])) {
+	   $total = $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx] + $marker_bbcnt[$marker_idx] + $marker_misscnt[$marker_idx];
+	   if ($total>0) {
+	    $maf[$marker_idx] = round(100 * min((2 * $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx]) /$total, ($marker_abcnt[$marker_idx] + 2 * $marker_bbcnt[$marker_idx]) / $total),1);
+	    $miss[$marker_idx] = round(100*$marker_misscnt[$marker_idx]/$total,1);
+	   } else {
+	    $maf[$marker_idx] = 0;
+	    $miss[$marker_idx] = 100;
+	   }
+	   if (($maf[$marker_idx] >= $min_maf) AND ($miss[$marker_idx]<=$max_missing)) {
+	     $sql = "select A_allele, B_allele, mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset where markers.marker_uid = $marker_id
+	         AND mim.marker_uid = markers.marker_uid
+	         AND mim.map_uid = map.map_uid
+	         AND map.mapset_uid = mapset.mapset_uid
+	         AND mapset.mapset_uid = 1";
+	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+	     if ($row = mysql_fetch_array($res)) {
+	        if (preg_match("/[A-Z]/",$row[0]) && preg_match("/[A-Z]/",$row[1])) {
+	          $allele = $row[0] . "/" . $row[1];
+	        } else {
+	          $allele = "N/N";
+	        }
+	        $chrom = $lookup_chrom[$row[2]];
+	        $pos = 100 * $row[3];
+	     } else {
+	        $allele = "";
+	        $chrom = 0;
+	        $pos = 0;
+	     }
+	     $output .= "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t";
+	     $allele_list = $empty;
+	     $sql = "select line_record_name, alleles from allele_cache where marker_uid = $marker_id and line_record_uid IN ($lines_str)";
+	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+	     while ($row = mysql_fetch_array($res)) {
+	       if (preg_match("/[A-Z]/",$row[1])) {
+	         $allele = $row[1];
+	         $allele = $lookup[$allele];
+	       } else {
+	         $allele = "NN";
+	       }
+	       $allele_list[$row[0]] = $allele;
+	     }
+	     $allele_str = implode("\t",$allele_list);
+	     $output .= "\t$allele_str\n";
+	   } else {
+	    //echo "reject $marker_id $marker_name $maf $miss<br>\n";
+	   }
+	  } else {
+	   //echo "rejected marker $marker_id<br>\n";
+	  }
+	 }
+	 return $outputheader."\n".$output;
 	}
 	
 	private function type2_build_conflicts_download($lines,$markers) {
