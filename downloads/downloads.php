@@ -3097,7 +3097,7 @@ selected lines</a><br>
 			return $num_lines.$delimiter.$nelem.":2\n".$outputheader."\n".$output;
 		}
 	}
-
+  
 	private function type3_build_markers_download($lines,$markers,$dtype)
 	{
 	 $output = '';
@@ -3148,7 +3148,7 @@ selected lines</a><br>
 	 }
 	 
 	 //order the markers by map location
-	 $sql = "select markers.marker_uid, markers.marker_name from markers, markers_in_maps as mim, map, mapset
+	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
 	 AND mim.map_uid = map.map_uid
@@ -3157,15 +3157,51 @@ selected lines</a><br>
 	 order by mim.chromosome, mim.start_position";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
-	  $marker_list[] = $row[0];
-	  $marker_list_name[] = $row[1];
+           $marker_uid = $row[0];
+           $chr = $row[1];
+           $pos = $row[2];
+           if (preg_match("/(\d+)/",$chr,$match)) {
+             $chr = $match[0];
+             $rank = (1000*$chr) + $pos;
+           } else {
+             $rank = 99999;
+           }
+	   $marker_list_mapped[$marker_uid] = $rank;
 	 }
 	
-	 //generate an array of selected markers that can be used with isset statement
-	 foreach ($markers as $temp) {
-	  $marker_lookup[$temp] = 1;
-	 }
-	 
+	 //generate an array of selected markers and add map position if available
+         $sql = "select marker_uid, marker_name, A_allele, B_allele from markers
+         where marker_uid IN ($markers_str)";
+         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+         while ($row = mysql_fetch_array($res)) {
+           $marker_uid = $row[0];
+           $marker_name = $row[1];
+           if (isset($marker_list_mapped[$marker_uid])) {
+             $marker_list_all[$marker_uid] = $marker_list_mapped[$marker_uid];
+           } else {
+             $marker_list_all[$marker_uid] = 0;
+           }
+           if (preg_match("/[A-Z]/",$row[2]) && preg_match("/[A-Z]/",$row[3])) {
+                $allele = $row[2] . "/" . $row[3];
+           } else {
+                $allele = "N/N";
+           }
+           $marker_list_name[$marker_uid] = $marker_name;
+           $marker_list_allele[$marker_uid] = $allele;
+         }
+
+         //sort marker_list_all by map location if available
+         function cmp($a, $b) {
+           if ($a == $b) {
+             return 0;
+           }
+           return ($a < $b) ? -1 : 1;
+         }
+         if (uasort($marker_list_all, "cmp")) {
+         } else {
+           die("could not sort marker list\n");
+         }
+
 	 $lookup = array(
 	   'AA' => 'AA',
 	   'BB' => 'CC',
@@ -3216,10 +3252,10 @@ selected lines</a><br>
 	   '6H' => '6','7H' => '7','UNK'  => '10');
 	
 	 //using a subset of markers so we have to translate into correct index
-	 foreach ($markers as $marker_id) {
+	 foreach ($marker_list_all as $marker_id => $rank) {
 	  $marker_idx = $marker_idx_list[$marker_id];
-	  $marker_name = $marker_list_name[$marker_idx];
-	  if (isset($marker_lookup[$marker_id])) {
+          $marker_name = $marker_list_name[$marker_id];
+          $allele = $marker_list_allele[$marker_id];
 	   $total = $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx] + $marker_bbcnt[$marker_idx] + $marker_misscnt[$marker_idx];
 	   if ($total>0) {
 	    $maf[$marker_idx] = round(100 * min((2 * $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx]) /$total, ($marker_abcnt[$marker_idx] + 2 * $marker_bbcnt[$marker_idx]) / $total),1);
@@ -3236,15 +3272,9 @@ selected lines</a><br>
 	         AND mapset.mapset_uid = 1";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	     if ($row = mysql_fetch_array($res)) {
-	        if (preg_match("/[A-Z]/",$row[0]) && preg_match("/[A-Z]/",$row[1])) {
-	          $allele = $row[0] . "/" . $row[1];
-	        } else {
-	          $allele = "N/N";
-	        }
 	        $chrom = $lookup_chrom[$row[2]];
 	        $pos = 100 * $row[3];
 	     } else {
-	        $allele = "";
 	        $chrom = 0;
 	        $pos = 0;
 	     }
@@ -3263,9 +3293,6 @@ selected lines</a><br>
 	     }
 	     $allele_str = implode("\t",$allele_list);
 	     $output .= "\t$allele_str\n";
-	   } else {
-	    //echo "reject $marker_id $marker_name $maf $miss<br>\n";
-	   }
 	  } else {
 	   //echo "rejected marker $marker_id<br>\n";
 	  }
