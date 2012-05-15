@@ -1,4 +1,4 @@
-/*global $,$$,$A,$H,Prototype,Ajax,Template,Element*/
+/*global alert,$,$$,$A,$H,Prototype,Ajax,Template,Element*/
 var php_self = document.location;
 var breeding_programs_str = "";
 var phenotype_categories_str = "";
@@ -548,9 +548,7 @@ function update_phenotype_linesb(options) {
 			      load_lines();
 			      load_lines2();
 			    } else if (select1_str == "Locations") {
-                  load_locations();
-                } else if (select1_str == "Markers") {
-			      load_markers_select();
+                              load_locations();
 			    } else if (select1_str == "Phenotypes") {
 			      load_phenotypes();
 			    }
@@ -560,7 +558,7 @@ function update_phenotype_linesb(options) {
 			function update_select2(options) {
 			    select2_str = "";
 			    $A(options).each(function(select2) {
-                    		if (select2.selected) {
+                                if (select2.selected) {
                                   select2_str = select2.value;
                                 }
                             });
@@ -570,37 +568,19 @@ function update_phenotype_linesb(options) {
                 document.getElementById('step5').innerHTML = "";
 			} 
 	
-			function use_session() {
-			    var mm = $('mm').getValue();
-                	    var mmaf = $('mmaf').getValue();
-                            var url=php_self + "?function=download_session&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
-			    document.location = url;
-			}
-			function use_session_v2() {
-			    var mm = $('mm').getValue();
-                	    var mmaf = $('mmaf').getValue();
-                            var url=php_self + "?function=download_session_v2&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
-                	document.location = url;
-            		}
-                        function use_session_v3() {
-			    var mm = $('mm').getValue();
-                	    var mmaf = $('mmaf').getValue();
-                            var url=php_self + "?function=download_session_v3&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
-                	    document.location = url;
-                        }
-			function get_download_loc_v2(version) {
+			function use_session(version) {
 			    var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
-                var url=php_self + "?function=type2_build_tassel_v2&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
-                document.location = url;
-			}
-			
-			function get_download_loc_v3(version) {
-                var mm = $('mm').getValue();
-                var mmaf = $('mmaf').getValue();
-                var url=php_self + "?function=type2_build_tassel_v3&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
+                var url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
                 document.location = url;
             }
+
+			function get_download_loc(version) {
+			    var mm = $('mm').getValue();
+                var mmaf = $('mmaf').getValue();
+                var url=php_self + "?function=type2_build_tassel_" + version + "&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
+                document.location = url;
+			}
 			
 			function load_markers_pheno( mm, mmaf) {
                 markers_loading = true;
@@ -612,7 +592,7 @@ function update_phenotype_linesb(options) {
                     {onCreate: function() { Element.show('spinner'); },
                         onComplete: function() {
                         $('step5').show();
-                        if (traits_loading == false) {
+                        if (traits_loading === false) {
                             document.title = title;
                         }
                         markers_loading = false;
@@ -633,7 +613,7 @@ function update_phenotype_linesb(options) {
                     {onCreate: function() { Element.show('spinner'); },
                     onComplete: function() {
                          $('step5').show();
-                        if (traits_loading == false) {
+                        if (traits_loading === false) {
                             document.title = title;
                         }
                         markers_loading = false;
@@ -646,9 +626,9 @@ function update_phenotype_linesb(options) {
 			function selectedTraits() {
 				var ret = '';
 				$A($('traitsbx').options).each(function(trait){
-				 	if (trait.selected)
+                                if (trait.selected)
                                         {
-						ret += (ret == '' ? '' : ',') + trait.value;
+						ret += (ret === '' ? '' : ',') + trait.value;
 					}			 
 				});
 				return ret;
@@ -656,7 +636,7 @@ function update_phenotype_linesb(options) {
 			
 			function getdownload_qtlminer()
 			{
-				if (selectedTraits() == '') {
+				if (selectedTraits() === '') {
 					alert('Please select at least one trait!');
 					return false;
 				}
@@ -668,30 +648,17 @@ function update_phenotype_linesb(options) {
 				
 			}
 
-			function getdownload_tassel()
+			function getdownload_tassel(version)
 			{
-				if (selectedTraits() == '') {
+				if (selectedTraits() === '') {
 					alert("Please select at least one trait!");
 					return false;
 				}
 			    var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
-			    var subset = $('subset').getValue();
-			    var url=php_self + "?function=type2_build_tassel_v2&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
+			    //var subset = $('subset').getValue();
+			    var url=php_self + "?function=type2_build_tassel_" + version + "&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
                document.location = url;
-			}
-
-			function getdownload_tassel_v3()
-			{
-				if (selectedTraits() == '') {
-					alert("Please select at least one trait!");
-					return false;
-				}
-			    var mm = $('mm').getValue();
-                var mmaf = $('mmaf').getValue();
-                var subset = $('subset').getValue();
-                var url=php_self + "?function=type2_build_tassel_v3&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
-                document.location = url;
 			}
 
             function mrefresh() {
