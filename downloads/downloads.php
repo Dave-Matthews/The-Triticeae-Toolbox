@@ -1141,7 +1141,7 @@ class Downloads
 
 	if (isset($_GET['pi'])) {
 	  $phen_item = $_GET['pi'];
-	  if (count($phen_item) > 0) {
+	  if (preg_match("/\d/",$phen_item)) {
 	     $_SESSION['phenotype'] = $phen_item;
 	  } else {
 	     unset($_SESSION['phenotype']);

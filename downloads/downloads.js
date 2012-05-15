@@ -656,7 +656,7 @@ function update_phenotype_linesb(options) {
 				}
 			    var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
-			    var subset = $('subset').getValue();
+			    //var subset = $('subset').getValue();
 			    var url=php_self + "?function=type2_build_tassel_" + version + "&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
                document.location = url;
 			}
