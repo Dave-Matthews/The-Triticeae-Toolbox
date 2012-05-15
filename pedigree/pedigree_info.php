@@ -5,7 +5,12 @@ include($config['root_dir'] . 'includes/bootstrap.inc');
 require_once 'Spreadsheet/Excel/Writer.php';
 connect();
 
-new Pedigree($_GET['function']);
+$method = $_SERVER['REQUEST_METHOD'];
+if ($method == "GET") {
+  new Pedigree($_GET['function']);
+} elseif ($method == "POST") {
+  new Pedigree($_POST['function']);
+}
 
 class Pedigree {
   private $delimiter = "\t";
@@ -60,6 +65,26 @@ function load_excel() {
     var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + arry_length;
     // Opens the url in the same window
      window.open(url, "_self");
+}
+//this works better with large data sets
+function load_excel2() {
+    var myForm = document.createElement("form");
+    var p = new Array();
+    p["function"] = "typeLineExcel";
+    p["mxls1"] = sellineids;
+    p["mxls2"] = (sellineids.length);
+    
+    myForm.method="post";
+    myForm.action = '<?php $_SERVER[PHP_SELF];?>';
+    for (var k in p) {
+        var myInput = document.createElement("input") ;
+        myInput.setAttribute("name", k) ;
+        myInput.setAttribute("value", p[k]);
+        myForm.appendChild(myInput) ;
+     }
+     document.body.appendChild(myForm) ;
+     myForm.submit() ;
+     document.body.removeChild(myForm) ;
 }
 
 // select/deselect
@@ -184,15 +209,15 @@ function exclude_none() {
 </table>
 </div>
 
-<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/>
+<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel2();"/>
 
 <?php
 } /* End of function type_LineInformation*/
   
 private function type_Line_Excel() {
 
-  if (!empty($_GET['mxls1'])) {
-    $sample = $_GET['mxls1'];
+  if (!empty($_POST['mxls1'])) {
+    $sample = $_POST['mxls1'];
   }
   else {
     // If we clicked on the button for Lines Found, retrieve that cookie instead.
