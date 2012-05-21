@@ -13,6 +13,7 @@ var markers_loaded = false;
 var select1_str = "";
 var select2_str = "";
 var subset = "";
+var trait_cmb = "";
 
 var markerids = null;
 var selmarkerids = [];
@@ -155,7 +156,7 @@ function load_phenotypes2() {
 
 function load_phenotypes3() {
     $('step3').hide();
-    var url = php_self + "?function=step3phenotype&pi=" + phenotype_items_str + "&yrs=" + years_str;
+    var url = php_self + "?function=step3phenotype&pi=" + phenotype_items_str + "&trait_cmb=" + trait_cmb;
     document.title = 'Loading Step1...';
     var tmp = new Ajax.Updater($('step3'), url, {
         onComplete : function() {
@@ -404,6 +405,13 @@ function update_phenotype_trial(options) {
 	load_phenotypes5();
 }
 
+function update_phenotype_trialb(options) {
+/*used to update the trials with any/all traits */
+    trait_cmb = options;
+    load_phenotypes3();
+    document.getElementById('step4').innerHTML = "";
+}
+
 function update_line_trial(options) {
     select1_str = "Lines";
     experiments_str = ""; 
@@ -445,7 +453,6 @@ function update_phenotype_lines(options) {
 function update_phenotype_linesb(options) {
 /*used when updating radio button for line selection (session, all, combine) */
     subset = options;
-    lines_str = "";
     if (select1_str == "Phenotypes") {
         load_phenotypes4();
         load_phenotypes5();

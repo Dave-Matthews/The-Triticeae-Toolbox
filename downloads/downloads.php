@@ -603,6 +603,13 @@ class Downloads
 	private function step3_phenotype()
     {  
 		$phen_item = $_GET['pi'];
+		$trait_cmb = (isset($_GET['trait_cmb']) && !empty($_GET['trait_cmb'])) ? $_GET['trait_cmb'] : null;
+		if ($trait_cmb == "all") {
+		   $any_ckd = ""; $all_ckd = "checked";
+		} else {
+		   $trait_cmb = "any";
+		   $any_ckd = "checked"; $all_ckd = "";
+		}
 		?>
 		<p>3.
 		<select name="select1">
@@ -616,7 +623,7 @@ class Downloads
 		<select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_trial(this.options)">
                 <?php
 
-		$sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name 
+		$sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid 
 	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
 	 WHERE
 	 e.experiment_uid = tb.experiment_uid
@@ -629,17 +636,38 @@ class Downloads
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
 		{
-		 ?>
-		    <option value="<?php echo $row['id'] ?>">
-		     <?php echo $row['name'] ?>
-		    </option>
-		    <?php
+		  $exp_uid = $row['id'];
+		  $pi = $row['phenotype_uid'];
+		  $sel_list[$exp_uid] = $row['name'];
+		  $pi_list[$exp_uid][$pi] = 1;        //*array of traits for each trial
+		}
+		$phen_array = explode(",",$phen_item);
+		foreach ($sel_list as $id=>$name) {
+		  $found = 1;
+		  foreach ($phen_array as $item) {    //*check if trial contains all trait
+		    if (!isset($pi_list[$id][$item])) {
+		       $found = 0;
+		    }
+		  }
+		  if ($found || ($trait_cmb == "any")) {
+		  ?>
+		  <option value="<?php echo $id ?>">
+		  <?php echo $name ?>
+		  </option>
+		  <?php
+		  }
 		}
 		?>
 		</select>
 		</table>
-		
-		<?php
+		<?php 
+		$tmp = count($phen_array);
+		if ($tmp > 1) {
+		  ?>
+		  <input type="radio" id="trait_cmb" value="all" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_trialb(this.value)">trials with all traits<br>
+		  <input type="radio" id="trait_cmb" value="any" <?php echo "$any_ckd"; ?> onchange="javascript: update_phenotype_trialb(this.value)">trials with any trait<br>
+		  <?php
+		}
     }
     
 	private function step4_phenotype()
