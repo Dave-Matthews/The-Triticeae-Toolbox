@@ -3,6 +3,14 @@ require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'theme/admin_header.php');
 connect();
+
+function filelink($path, $label) {
+  echo "<a href='curator_data/examples/$path'>$label</a>";
+  // Add "(new <date>)" if newer than 30 days.
+  if (time() - filemtime("examples/$path") < 2592000)
+    echo " <font size= -2 color=red>(new ". date("dMY", filemtime("examples/$path")) . ")</font>";
+}
+
 ?>
 
 <style type="text/css">
@@ -22,7 +30,7 @@ ul ul ul {list-style-type: disc}
     data.
 
       <ul>
-      <li><a href="curator_data/examples/T3/Steps_in_Data_Submission_to_T3.docx"><b>Instructions</b></a>
+      <li><b><?php filelink("T3/Steps_in_Data_Submission_to_T3.docx", "Instructions") ?></b>
 	- Rules for filling in the templates, and sequence of submission
 
       <li><b>Data templates</b>
@@ -36,7 +44,7 @@ ul ul ul {list-style-type: disc}
 	    </ul>
 	  <li><b>Phenotyping</b>
 	    <ul>
-	      <li><a href="curator_data/examples/T3/TrialSubmissionForm.xls">Experiment annotation</a>
+          <li><?php filelink("T3/TrialSubmissionForm.xls", "Experiment annotation") ?>
 		- Location, planting date, experimental design... [ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html">Tutorial</a> ]
 	      <li><a href="curator_data/examples/T3/PhenotypeSubmissionForm.xls">Experiment results</a>
 		- Values for all traits for test lines and checks, summary statistics
