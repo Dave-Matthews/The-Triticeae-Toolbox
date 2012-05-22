@@ -64,8 +64,8 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
     if (!isset($mapids) || !is_array($mapids))
       $mapids = array();
   foreach ($selmkrs as $mkr) {
-    //$sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
-    $sql = "select distinct map_uid from markers where marker_uid = $mkr";
+    $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
+    //$sql = "select distinct map_uid from markers where marker_uid = $mkr";
     $r = mysql_query($sql);
     $row = mysql_fetch_row($r);
     if (! in_array($row[0], $mapids))
@@ -128,7 +128,9 @@ if (isset($_SESSION['clicked_buttons']) && count($_SESSION['clicked_buttons']) >
 
   $chrlist = array();
   $markerlist = array();
+  $count_markers = 0;
   foreach ($_SESSION['clicked_buttons'] as $mkruid) {
+    $count_markers++;
     $mapid = current($mapids);
     next($mapids);
 /*     $sql = "select m.marker_name, mm.chromosome */
@@ -157,6 +159,9 @@ var mlist = \$j('#mlist option').map(function () { return \$j(this).text(); });
 </script>";
 
  // Show GBrowse maps.
+ if ($count_markers > 500) {
+    echo "too many markers to display in Gbrowse<br>\n";
+ } else {
  foreach ($chrlist as $chr) {
    echo "<div id='gbrowse_$chr'></div>\n";
    echo <<<EOD
@@ -206,6 +211,7 @@ var mlist = \$j('#mlist option').map(function () { return \$j(this).text(); });
     });
 </script>
 EOD;
+ }
  }
  print "</td></tr></table>\n";
  print "<p><input type='submit' value='Remove marker' style='color: blue' /></p>";
