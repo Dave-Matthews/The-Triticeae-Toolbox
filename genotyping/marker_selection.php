@@ -1,12 +1,15 @@
 <?php
-/*
-* Logged in page initialization
-*
-* 16mar12 dem Allow selecting markers that are not in maps.
-*             Un-require all marker names to also be in marker_synonyms.value.
-* 9/2/2010   J.Lee modify to add new snippet Gbrowse tracks
-* 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse   
-*/
+/**
+ * select markers and save in session variable
+ * 
+ * @category PHP
+ * @package T3
+ * 
+ * 16mar12 dem Allow selecting markers that are not in maps.
+ *             Un-require all marker names to also be in marker_synonyms.value.
+ * 9/2/2010   J.Lee modify to add new snippet Gbrowse tracks
+ * 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse   
+ */
 $usegbrowse = True;
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
@@ -23,6 +26,10 @@ include($config['root_dir'].'theme/admin_header.php');
   <h3>Currently selected markers</h3>
   <?php
 
+  /**
+   * get map_uid for given mapname
+   * @return integer
+   */
   function get_submitted_mapid() {
   $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
   $sql = "select map_uid from map
