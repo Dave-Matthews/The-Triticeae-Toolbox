@@ -188,8 +188,8 @@ connect();
               		      }
               		      $_SESSION['selected_lines'] = $selected_lines;
             		    }
-			    print "Currently selected lines " . count($selLines) . "<br><br>\n";
-                            print "Currently Selected Markers: " . count($_SESSION['clicked_buttons']) . "<br>\n";
+			    print "Currently selected lines " . count($selLines) . "<br>\n";
+                            print "Currently Selected Markers: " . count($_SESSION['clicked_buttons']) . "<br><br>\n";
 			    ?>
 			    <form action="pedigree/pedigree_markers.php" method="post">
 			    <input type="submit" value="Display Data for Selected Lines and Markers">
