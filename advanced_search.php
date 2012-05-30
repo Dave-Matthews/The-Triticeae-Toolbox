@@ -189,6 +189,7 @@ connect();
               		      $_SESSION['selected_lines'] = $selected_lines;
             		    }
 			    print "Currently selected lines " . count($selLines) . "<br><br>\n";
+                            print "Currently Selected Markers: " . count($_SESSION['clicked_buttons']) . "<br>\n";
 			    ?>
 			    <form action="pedigree/pedigree_markers.php" method="post">
 			    <input type="submit" value="Display Data for Selected Lines and Markers">
@@ -215,7 +216,14 @@ connect();
 				//print_r($_POST);
 			}
 		} elseif (count($_SESSION['selected_lines']) > 0) {
-                  //print "Currently Selected Lines:" . count($_SESSION['selected_lines']) . "<br><br>\n";
+                  print "<a href=pedigree/line_selection.php>Currently Selected Lines:</a> " . count($_SESSION['selected_lines']) . "<br>\n";
+                  print "Currently Selected Markers: " . count($_SESSION['clicked_buttons']) . "<br>\n";
+                  if (isset($_SESSION['phenotype'])) {
+                    $ntraits=substr_count($_SESSION['phenotype'], ',')+1;
+                    print "<a href=pedigree/phenotype_selection.php>Currently Selected Traits:</a> " . $ntraits . "<br><br>\n";
+                  } else {
+                    print "<br>\n";
+                  }
 		?>
 		<form action="pedigree/pedigree_markers.php" method="post">
 		<input type="submit" value="Display Data for Selected Lines and Markers">
