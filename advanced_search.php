@@ -1,7 +1,13 @@
 <?php
-
-/*
- * Logged in page initialization
+/**
+ * select lines by haplotype
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/andvanced_search.php
  */
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
@@ -14,14 +20,16 @@ connect();
 	<div class="box">
 	<?php
 
-	function combinations($num_markers, $marker_idx, $marker_list, $cross) {
-	// num_markers - number of markers
-	// marker_idx - index of marker/allele combinations
-	// marker_list -list of selected markers
-	// cross - 2D array of all allele combinations
-	// sub - which column of marker_idx to increment 
+	/**
+	 * generates combination of haplotypes
+	 * @param integer $num_markers number of markers
+	 * @param array $marker_idx index of marker/allele combinations
+	 * @param array $marker_list list of selected markers
+	 * @param array $cross 2D array of all allele combinations
+	 */
+	function combinations($num_markers, $marker_idx, $marker_list, $cross) { 
 	  global $dispMissing;
-	  $sub = $num_markers - 1;
+	  $sub = $num_markers - 1; /* which column of marker_idx to increment */
 	  $i = 0;
 	  while ($i < $num_markers) {
 	    $markers[$marker_list[$i]] = 1;
@@ -188,7 +196,7 @@ connect();
               		      }
               		      $_SESSION['selected_lines'] = $selected_lines;
             		    }
-			    print "Currently selected lines " . count($selLines) . "<br>\n";
+			    print "Currently selected Lines " . count($selLines) . "<br>\n";
                             print "Currently Selected Markers: " . count($_SESSION['clicked_buttons']) . "<br><br>\n";
 			    ?>
 			    <form action="pedigree/pedigree_markers.php" method="post">
