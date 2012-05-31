@@ -1,9 +1,12 @@
 <?php
-require 'config.php';
-/*
- * Logged in page initialization
+/**
+ * Display Haplotype Data for Selected Lines and Markers
+ * 
+ * @category PHP
+ * @package  T3
+ * 
  */
-
+require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
 connect();
 session_start();
@@ -51,6 +54,13 @@ function get_imagemap (array $blks, $umapname) {
 <?php
   if(isset($_SESSION['phenotype'])) {
     $phenotype = $_SESSION['phenotype'];
+    /* if more than one phenotype selected then only use first one or else script will fail */
+    $ntraits=substr_count($_SESSION['phenotype'], ',')+1;
+    if ($ntraits > 1) {
+      $phenotype_ary = explode(",",$_SESSION['phenotype']);
+      $phenotype = $phenotype_ary[0];
+      echo "warning - only using one trait<br>\n";
+    }
     $r = mysql_query("select phenotypes_name from phenotypes where phenotype_uid = $phenotype");
     $phenotypename = mysql_result($r,0);
   }
