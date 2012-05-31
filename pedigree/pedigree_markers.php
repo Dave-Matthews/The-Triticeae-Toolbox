@@ -1,9 +1,12 @@
 <?php
-require 'config.php';
-/*
- * Logged in page initialization
+/**
+ * Display Haplotype Data for Selected Lines and Markers
+ * 
+ * @category PHP
+ * @package  T3
+ * 
  */
-
+require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
 connect();
 session_start();
@@ -51,6 +54,13 @@ function get_imagemap (array $blks, $umapname) {
 <?php
   if(isset($_SESSION['phenotype'])) {
     $phenotype = $_SESSION['phenotype'];
+    /* if more than one phenotype selected then only use first one or else script will fail */
+    $ntraits=substr_count($_SESSION['phenotype'], ',')+1;
+    if ($ntraits > 1) {
+      $phenotype_ary = explode(",",$_SESSION['phenotype']);
+      $phenotype = $phenotype_ary[0];
+      echo "warning - only using one trait<br>\n";
+    }
     $r = mysql_query("select phenotypes_name from phenotypes where phenotype_uid = $phenotype");
     $phenotypename = mysql_result($r,0);
   }
@@ -292,7 +302,6 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 		$row = mysql_fetch_assoc($result);
 		$trtval = $row['avg(value)'];
 		$cntval = $row['count(value)'];
-		if ($cntval == 0) { $trtval = ""; }
 // 		/* Get the number of significant digits for this unit. */
 // 		$getsigdig = "SELECT sigdigits_display FROM units, phenotypes
 // 			WHERE phenotypes.phenotype_uid = '$phenotype'
@@ -302,6 +311,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 // 		$sigdig = (int) $sigdig[0];
 // 		//$dispval = number_format($trtval,$sigdig); //Not used, too long.
 		$dispval = number_format($trtval,1);
+		if ($cntval == 0) { $trtval = ""; }
 		$dny=$y+7+$cht*($i);
 		array_push($blks, array('coords'=>array($xtrait,$dny+$cmg,$xtrait+$twd-1,$dny+$nht-$cmg),
 					'imgclr'=>'im_whitesmoke',
