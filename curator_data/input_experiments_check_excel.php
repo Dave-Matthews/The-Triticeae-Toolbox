@@ -329,7 +329,7 @@ private function typeExperimentCheck()
 		     if ($check !=2) {
 		       $line_record_uid =	get_lineuid($line_name);
 		       if (count($line_record_uid)>1) {
-			 exit('more than one line record id for {$line_name}');
+			 exit("more than one line record id for {$line_name}");
 		       } elseif ($line_record_uid===FALSE){
 			 exit("line {$line_name} not found in table, stop");
 		       }
@@ -768,7 +768,7 @@ private function typeExperimentCheck()
        if ($check !=2) {
 	 $line_record_uid = get_lineuid($line_name);
 	 if (count($line_record_uid)>1) {
-	   exit('more than one line record id for {$line_name}');
+	   exit("more than one line record id for {$line_name}");
 	 } elseif ($line_record_uid===FALSE){
 	   exit("line {$line_name} not found in table, stop");
 	 }
