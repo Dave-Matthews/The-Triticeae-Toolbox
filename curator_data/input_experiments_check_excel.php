@@ -169,10 +169,10 @@ private function typeExperimentCheck()
 		 $experiment = mysql_fetch_assoc($res);
 		 $experiment_uid = $experiment['id'];
 	       } elseif (0 == mysql_num_rows($res)) {
-		 echo "Fatal Error: experiment ".$trial_code. " does not exist at row " . $i ."<br/><br/>";
+		 echo "Fatal Error: experiment ".$trial_code. " does not exist <br/><br/>";
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	       } else {
-		 echo "Fatal Error: experiment ".$trial_code." matches multiple experiments-must be unique " . $i ."<br/><br/>" ;
+		 echo "Fatal Error: experiment ".$trial_code." matches multiple experiments-must be unique <br/><br/>" ;
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	       } // end if
 
