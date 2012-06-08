@@ -183,29 +183,22 @@ private function typeExperimentCheck()
 		 $teststr= addcslashes(trim($means['cells'][5][$i]),"\0..\37!@\177..\377");
 		 if (empty($teststr)) break; 
 		 else {
-		   //break column title into pieces
 		   $teststr= str_replace('\\n',' ',$teststr);
-		   $pheno= explode(' ',$teststr);
-		   $piece = count($pheno);
-		   $pheno_cur ='';
-		   for ($j=0;$j<$piece;$j++) {
-		     $pheno_cur .= " ".$pheno[$j];
-		     $pheno_cur =trim($pheno_cur);
-		   }
+		   $pheno_cur =trim($teststr);
 		   $sql = "SELECT phenotype_uid as id,phenotypes_name as name, 
                                max_pheno_value as maxphen, min_pheno_value as minphen, datatype
 		             FROM phenotypes
 			     WHERE phenotypes_name = '$pheno_cur'";
 		   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		   if (1 == mysql_num_rows($res)) {
-		     $row = mysql_fetch_assoc($res);
+		   if ($row = mysql_fetch_assoc($res)) {
 		     $datatypes[] = $row['datatype'];
 		     $phenonames[] =  $row['name'];
 		     $phenoids[] = $row['id'];//$phenotype_uid;
 		     $pheno_max[] = $row['maxphen'];
 		     $pheno_min[] = $row['minphen'];
-		   }
-		   else $eflgs[] = $pheno_cur;
+		   } else {
+		     $eflgs[] = $pheno_cur;
+                   }
 		 }
 	       }
 	       if (count($eflgs) > 0) {
@@ -644,35 +637,25 @@ private function typeExperimentCheck()
      $teststr= addcslashes(trim($means['cells'][5][$i]),"\0..\37!@\177..\377");
      if (strlen($teststr) == 0) break;
      else {
-       //break column title into pieces
        $teststr= str_replace('\\n',' ',$teststr);
-       $pheno= explode(' ',$teststr);
-       $piece = count($pheno);
-       $pheno_cur ='';
-       for ($j=0; $j<$piece; $j++){
-	 $eflg = 0;
-	 $pheno_cur .= " ".$pheno[$j];
-	 $pheno_cur =trim($pheno_cur);
+       
+	 $pheno_cur =trim($teststr);
 	 $sql = "SELECT phenotype_uid as id,phenotypes_name as name, max_pheno_value as maxphen, min_pheno_value as minphen, datatype
 					FROM phenotypes
 					WHERE phenotypes_name = '$pheno_cur'";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	 if (1 == mysql_num_rows($res))  {
-	   $row = mysql_fetch_assoc($res);
+	 if ($row = mysql_fetch_assoc($res)) {
 	   $datatypes[] = $row['datatype'];
 	   $phenonames[] =  $row['name'];
 	   $phenoids[] = $row['id'];//$phenotype_uid;
 	   $pheno_max[] = $row['maxphen'];
 	   $pheno_min[] = $row['minphen'];
 	   $eflg = 1;
-	   break;
-	 }
-       }
+	 } else {
+           echo "Trait \"".$pheno_cur."\" does not exist in the database.<p> ";
+           exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+         }
      }
-   }
-   if ($eflg==0) {
-     echo "Trait \"".$pheno_cur."\" does not exist in the database.<p> ";
-     exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
    }
    $pheno_num = count($phenoids);
    
