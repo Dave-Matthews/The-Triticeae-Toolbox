@@ -1009,11 +1009,14 @@ private function typeExperimentCheck()
             while ($row = mysql_fetch_array($res)){
 				$phenotypes[]=$row['name'];
             }
-            $phenotypes = implode(',',$phenotypes);
-		
-            $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid=$experiment_uids[$i]";
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		
+            $countfound = count($phenotypes);
+            if ($countfound > 0) {
+              $phenotypes = implode(',',$phenotypes);
+              $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid=$experiment_uids[$i]";
+              $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+            } else {
+              echo "error - experiments not found<br>$sql\n";
+            }
 		
             // Add meansfile name to the field for meansfile name, append to existing list if different
             $sql = "SELECT input_data_file_name
