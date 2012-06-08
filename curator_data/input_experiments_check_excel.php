@@ -1,12 +1,16 @@
-<?
+<?php 
+/**
+ * Phenotype Experiment Results
+ * 
+ * @category PHP
+ * @package  T3
+ * 
+ */
 // 02/01/2011 JLee  Fix indentations and fatal error not presenting data
 // 02/01/2011 JLee  Fix problem with line with the value of 0
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-/*
- * Logged in page initialization
- */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
@@ -20,7 +24,12 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-// Returns $arg1 if it is set, else fatal error
+/**
+ * Returns $arg1 if it is set, else fatal error
+ * @param unknown_type $arg1
+ * @param unknown_type $msg
+ * @return unknown
+ */
 function ForceValue(& $arg1, $msg) {
   if (isset($arg1))   
     return $arg1;
@@ -33,10 +42,17 @@ $col_lookup = array('trialmean' => 'mean_value', 'std.error' => 'standard_error'
 
 new LineNames_Check($_GET['function']);
 
+/**
+ * 
+ * Phenotype Experiment Results
+ *
+ */
 class LineNames_Check
 {
-  private $delimiter = "\t";
-  // Using the class's constructor to decide which action to perform
+  /**
+   * Using the class's constructor to decide which action to perform
+   * @param unknown_type $function
+   */
   public function __construct($function = null) {	
     switch($function)
       {
@@ -49,6 +65,9 @@ class LineNames_Check
       }	
   }
 
+/**
+ * check experiment data before loading into database
+ */
 private function typeExperimentCheck()
 	{
 		global $config;
@@ -59,7 +78,9 @@ private function typeExperimentCheck()
         include($config['root_dir'].'theme/footer.php');
 	}
 	
-	
+/**
+ * check experiment data before loading into database
+ */	
  private function type_Experiment_Name() {
 ?>
    <script type="text/javascript">
@@ -550,10 +571,10 @@ private function typeExperimentCheck()
 		   <tbody style="padding: 0; width: 700px;  overflow: scroll;border: 1px solid #5b53a6;">
 		   <?php
 		   /* printing the values onto the page for user*/
-		   for($i = 6; $i <= $rows; $i++) {
+		   for ($i = 6; $i <= $rows; $i++) {
 		     echo "<tr>";
 		     $current_row = $means['cells'][$i];
-		     for($j=1; $j<=$cols; $j++) 	{
+		     for ($j=1; $j<=$cols; $j++) {
 		       echo "<td>";
 		       /* $newtext = wordwrap($current_row[$j], 7, "\n", true); */
 		       /* echo  $newtext; */
@@ -567,7 +588,7 @@ private function typeExperimentCheck()
 		   </table>
 			
 		   <input type="Button" value="Accept" onclick="javascript: update_database('<?echo $meansfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $rawdatafile ?>' )"/>
-		   <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
+		   <input type="Button" value="Cancel" onclick="history.go(-1);" />
 
 		   <?php
 		   }
@@ -578,7 +599,10 @@ private function typeExperimentCheck()
 	   }
 	 }
  } /* end of type_Experiment_Name function*/
-		
+
+ /**
+  * after accepting data load into database
+  */
  private function type_Database() {
 	
    global $config;
@@ -1064,4 +1088,3 @@ private function typeExperimentCheck()
     include($config['root_dir'].'theme/footer.php');
 	}/* end of type_database function */
 } /* end of class */
-?>
