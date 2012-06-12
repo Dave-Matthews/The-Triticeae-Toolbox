@@ -39,7 +39,7 @@ set_time_limit(0);
 // For live website file
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
+set_include_path(GET_INCLUDE_PATH() . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
@@ -1290,7 +1290,7 @@ class Downloads
 	 * @param floats $min_maf
 	 * @param floats $max_missing
 	 */
-	private function calculate_af(&$lines, $min_maf, $max_missing) {
+	function calculate_af(&$lines, $min_maf, $max_missing) {
 	 //calculate allele frequencies using 2D table
 	
 	 if (isset($_SESSION['clicked_buttons'])) {
@@ -1936,7 +1936,7 @@ selected lines</a><br>
 	/**
 	 * displays key marker data for the selected breeding programs
 	 */
-	private function type1_markers()
+	function type1_markers()
 	{
 		// parse url
         $experiments = $_GET['exps'];
@@ -2049,7 +2049,7 @@ selected lines</a><br>
 	/**
 	 * displays key marker data when given a set of experiments and phenotypes
 	 */
-	private function type2_markers()
+	function type2_markers()
 	{
 	 // parse url
 	 $experiments = $_GET['exps'];
@@ -2399,7 +2399,7 @@ selected lines</a><br>
 	 * build download files for tassel (V2,V3,V4) when given a set of experiments, traits, and phenotypes
 	 * @param string $version
 	 */
-	private function type2_build_tassel($version) {
+	function type2_build_tassel($version) {
 	  //used for download starting with location
 	  $experiments = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
 	  $traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
@@ -2545,7 +2545,7 @@ selected lines</a><br>
 	 * @param unknown_type $traits
 	 * @param unknown_type $datasets
 	 */
-	private function type1_build_traits_download($experiments, $traits, $datasets)
+	function type1_build_traits_download($experiments, $traits, $datasets)
 	{
 		
 		$output = 'Experiment' . $this->delimiter . 'Inbred';
@@ -2612,7 +2612,7 @@ selected lines</a><br>
      * @param unknown_type $subset
      * @return string
      */
-    private function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
+    function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
 	{
      	//$firephp = FirePHP::getInstance(true);
 		$delimiter = "\t";
@@ -2756,7 +2756,7 @@ selected lines</a><br>
 	 * @param unknown_type $subset
 	 * @return string
 	 */
-	private function type2_build_tassel_traits_download($experiments, $traits, $lines, $subset)
+	function type2_build_tassel_traits_download($experiments, $traits, $lines, $subset)
 	{
 	  //$firephp = FirePHP::getInstance(true);
 	  $delimiter = "\t";
@@ -2875,7 +2875,7 @@ selected lines</a><br>
 	 * @param unknown_type $experiments
 	 * @param unknown_type $dtype
 	 */
-	private function type1_build_markers_download($experiments,$dtype)
+	function type1_build_markers_download($experiments,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
 		$outputheader = '';
@@ -3008,7 +3008,7 @@ selected lines</a><br>
 	 * @param unknown_type $experiments
 	 * @param unknown_type $dtype
 	 */
-	private function type1_build_conflicts_download($experiments,$dtype) {
+	function type1_build_conflicts_download($experiments,$dtype) {
 	 
 	  //get lines and filter to get a list of markers which meet the criteria selected by the user
 	  $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
@@ -3052,7 +3052,7 @@ selected lines</a><br>
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	private function type2_build_markers_download($lines,$markers,$dtype)
+	function type2_build_markers_download($lines,$markers,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
 		$outputheader = '';
@@ -3240,7 +3240,7 @@ selected lines</a><br>
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	private function type3_build_markers_download($lines,$markers,$dtype)
+	function type3_build_markers_download($lines,$markers,$dtype)
 	{
 	 $output = '';
 	 $outputheader = '';
@@ -3448,7 +3448,7 @@ selected lines</a><br>
 	 * @param unknown_type $markers
 	 * @return string
 	 */
-	private function type2_build_conflicts_download($lines,$markers) {
+	function type2_build_conflicts_download($lines,$markers) {
 	 
 	  if (count($markers)>0) {
 	    $markers_str = implode(",",$markers);
@@ -3499,7 +3499,7 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	private function type1_build_annotated_align($experiments)
+	function type1_build_annotated_align($experiments)
 	{
 		$delimiter ="\t";
 		// $firephp = FirePHP::getInstance(true);
@@ -3660,7 +3660,7 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	private function type1_build_geneticMap($experiments)
+	function type1_build_geneticMap($experiments)
 	{
 		$delimiter ="\t";
 		// $firephp = FirePHP::getInstance(true);
@@ -3800,7 +3800,7 @@ selected lines</a><br>
      * create pedigree output file for qtlminer
      * @param string $experiments
      */
-	private function type1_build_pedigree_download($experiments)
+	function type1_build_pedigree_download($experiments)
 	{
 		$delimiter ="\t";
 		// output file header for QTL Miner Pedigree files
@@ -3841,7 +3841,7 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	private function type1_build_inbred_download($experiments)
+	function type1_build_inbred_download($experiments)
 	{
 		$newline ="\n";
 		// output file header for QTL Miner Pedigree files
