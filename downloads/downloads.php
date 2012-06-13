@@ -1285,6 +1285,19 @@ class Downloads
 	}
 	
 	/**
+	 * used by uasort() to order an array
+	 * @param integer $a
+	 * @param integer $b
+	 * @return number
+	 */
+	private function cmp($a, $b) {
+	  if ($a == $b) {
+	    return 0;
+	  }
+	  return ($a < $b) ? -1 : 1;
+	}
+	
+	/**
 	 * display minor allele frequence and missing data using selected lines
 	 * @param array $lines
 	 * @param floats $min_maf
@@ -3333,13 +3346,7 @@ selected lines</a><br>
          }
 
          //sort marker_list_all by map location if available
-         function cmp($a, $b) {
-           if ($a == $b) {
-             return 0;
-           }
-           return ($a < $b) ? -1 : 1;
-         }
-         if (uasort($marker_list_all, "cmp")) {
+         if (uasort($marker_list_all, array($this,'cmp'))) {
          } else {
            die("could not sort marker list\n");
          }
