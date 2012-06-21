@@ -39,20 +39,14 @@ set_time_limit(0);
 // For live website file
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
+set_include_path(GET_INCLUDE_PATH() . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
 require_once $config['root_dir'].'includes/File_Archive/Archive.php';
 
-// for debugging only, comment out in production version to avoid security holes
-//require_once('FirePHPCore/FirePHP.class.php');
-//ob_start();
-//$firephp = FirePHP::getInstance(true);
-
 // connect to database
 connect();
-
 
 new Downloads($_GET['function']);
 
@@ -65,11 +59,16 @@ new Downloads($_GET['function']);
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
 class Downloads
-{
-    
+{   
+    /**
+     * delimiter used for output files
+     */
     public $delimiter = "\t";
     
-    /** Using the class's constructor to decide which action to perform **/
+    /** 
+     * Using the class's constructor to decide which action to perform
+     * @param string $function action to perform
+     */
     public function __construct($function = null)
     {	
         switch($function)
@@ -134,9 +133,6 @@ class Downloads
 			case 'step5phenotype':
 			    $this->step5_phenotype();
 			    break;
-			case 'updatelines_tassel':
-			    $this->updatelines_tassel();
-			    break;
 			case 'step1yearprog':
 			    $this->step1_yearprog();
 			    break;
@@ -149,9 +145,6 @@ class Downloads
 			case 'type2markers':
 			    $this->type2_markers();
 			    break;
-			case 'type1markersselect':
-				$this->type1_markers_select();
-				break;
 			case 'type1build_qtlminer':
 				$this->type1_build_qtlminer();
 				break;
@@ -195,7 +188,9 @@ class Downloads
 		}	
 	}
 
-	// Select to use existing data or create a new selection
+	/**
+	 * load header and footer then check session to use existing data selection
+	 */
 	private function type1_select()
 	{
 		global $config;
@@ -208,8 +203,9 @@ class Downloads
 		include($config['root_dir'].'theme/footer.php');
 	}	
 	
-	// The wrapper action for the type1 download. Handles outputting the header
-	// and footer and calls the first real action of the type1 download.
+	/**
+	 * When there is no data saved in session this handles outputting the header and footer and calls the first real action of the type1 download.
+	 */ 
 	private function type1()
 	{
 		global $config;
@@ -236,11 +232,9 @@ class Downloads
         #	include($config['root_dir'].'theme/footer.php');
 	}
 	
-	//
-	// The first real action of the type1 download. Handles outputting the
-	// Breeding Program and Year selection boxes as well as outputting the
-	// javascript code required by itself and the other type1 actions.
-	
+	/**
+	 * Checks the session variable, if there is lines data saved then go directly to the lines menu
+	 */
 	private function type1_checksession()
     {
             ?>
@@ -321,7 +315,12 @@ class Downloads
                 
                 <?php
         }
-        
+
+    /**
+     * 1. display a spinning activity image when a slow function is running
+     * 2. show button to clear sessin data
+     * 3. show button to save current selection
+     */    
     private function refresh_title() {
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       ?>
@@ -385,7 +384,10 @@ class Downloads
       <?php 
     }
     
-
+    /**
+     * use this download when selecting program and year
+     * @param string $version Tassel version of output
+     */
     private function type1_session($version)
 	{
 	    $experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
@@ -462,10 +464,12 @@ class Downloads
         header("Location: ".$dir.$filename);
 	}
 	
+	/**
+	 * this is the main entry point when there are no lines saved in session variable
+	 */
     private function type1_breeding_programs_year()
 	{
-		?>
-		
+		?>	
 			<div id="step11">
 			<table>
 				<tr>
@@ -537,6 +541,9 @@ class Downloads
 <?php
 	}
 	
+	/**
+	 * starting with phenotype display phenotype categories
+	 */
 	private function step1_phenotype()
 	{
 		?>
@@ -566,6 +573,9 @@ class Downloads
 		<?php
 	}
 
+	/**
+	 * starting with phenotype display phenotype items
+	 */
 	private function step2_phenotype()
     {  
 		$phen_cat = $_GET['pc'];
@@ -600,6 +610,9 @@ class Downloads
 		<?php
     }
     
+    /**
+     * starting with phenotype display trials
+     */
 	private function step3_phenotype()
     {  
 		$phen_item = $_GET['pi'];
@@ -670,6 +683,9 @@ class Downloads
 		}
     }
     
+    /**
+     * starting with phenotype display lines
+     */
 	private function step4_phenotype()
     {  
     	$phen_item = $_GET['pi'];
@@ -795,6 +811,9 @@ class Downloads
 		}
     }
     
+    /**
+     * starting with phenotype display marker data
+     */
     private function step5_phenotype()
     {
      $phen_item = $_GET['pi'];
@@ -878,6 +897,9 @@ class Downloads
     <?php
     }
     
+    /**
+     * starting with year
+     */
     private function step1_yearprog()
     {
      ?>
@@ -907,11 +929,10 @@ class Downloads
     </div>
     <?php
     }
-
-    private function updatelines_tassel()
-    {
-    }
     
+    /**
+     * starting with breeding program display breeding program and year
+     */
 	private function step1_breedprog()
 	{
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
@@ -970,6 +991,10 @@ class Downloads
                         </table>
 <?php	
 	}
+	
+	/**
+	 * starting with data program display dataprogram and year
+	 */
 	private function step1_dataprog()
 	{
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
@@ -1016,6 +1041,10 @@ class Downloads
 </table>
 <?php
 	}	
+	
+	/**
+	 * main entry point when there is a line selection in session variable
+	 */
     private function type1_lines_trial_trait()
     {
 		?>
@@ -1041,6 +1070,10 @@ class Downloads
 	    </div>
 	     <?php 	
 	}
+	
+	/**
+	 * starting with lines display the selected lines
+	 */
 	private function step1_lines()
 	{
 		if (isset($_SESSION['selected_lines'])) {
@@ -1078,6 +1111,9 @@ class Downloads
 	    }
 	}
 	
+	/**
+	 * starting with lines display trials
+	 */
 	private function step2_lines()
 	{
 	    if (isset($_SESSION['selected_lines'])) {
@@ -1121,6 +1157,9 @@ class Downloads
 	    } 
 	}
 	
+	/**
+	 * starting with lines display phenotype items
+	 */
 	private function step3_lines()
 	{
 	    $experiments = $_GET['e'];
@@ -1161,6 +1200,9 @@ class Downloads
 	     <?php 		
 	}
 	
+	/**
+	 * starting with lines display marker data
+	 */
 	private function step4_lines() {
 	 $experiments = $_GET['e'];
 	 
@@ -1242,7 +1284,26 @@ class Downloads
 	  }
 	}
 	
-	private function calculate_af(&$lines, $min_maf, $max_missing) {
+	/**
+	 * used by uasort() to order an array
+	 * @param integer $a
+	 * @param integer $b
+	 * @return number
+	 */
+	private function cmp($a, $b) {
+	  if ($a == $b) {
+	    return 0;
+	  }
+	  return ($a < $b) ? -1 : 1;
+	}
+	
+	/**
+	 * display minor allele frequence and missing data using selected lines
+	 * @param array $lines
+	 * @param floats $min_maf
+	 * @param floats $max_missing
+	 */
+	function calculate_af(&$lines, $min_maf, $max_missing) {
 	 //calculate allele frequencies using 2D table
 	
 	 if (isset($_SESSION['clicked_buttons'])) {
@@ -1251,7 +1312,7 @@ class Downloads
 	   $markers = $_SESSION['clicked_buttons'];
 	   $marker_str = implode(',',$markers);
 	 } else {
-	   $markers = "";
+	   $markers = array();
 	   $marker_str = "";
 	 }
 	 
@@ -1335,6 +1396,9 @@ class Downloads
 	<?php
 	}
 	
+	/**
+	 * starting with location display all locations
+	 */
 	private function step1_locations() {
 	 ?>
 	 <table id="phenotypeSelTab" class="tableclass1">
@@ -1358,6 +1422,9 @@ class Downloads
 	 <?php
 	}
 	
+	/**
+	 * starting with location display years
+	 */
 	private function step2_locations() {
 	 $locations = $_GET['loc'];
 	 $locations = stripslashes($locations);
@@ -1392,6 +1459,9 @@ class Downloads
 	 <?php
 	}
 	
+	/**
+	 * starting with location display experiments
+	 */
 	private function step3_locations() {
 	 $locations = $_GET['loc']; //"'" . implode("','", $_GET['loc']) . "'";
 	 $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
@@ -1431,6 +1501,9 @@ class Downloads
 	 <?php
 	}
 	
+	/**
+	 * starting with locations display marker information
+	 */
 	private function step5_locations() {
 	 // parse url
 	 $experiments = $_GET['exps'];
@@ -1562,6 +1635,9 @@ selected lines</a><br>
 	 } 
 	}
 	
+	/**
+	 * starting with breeding programs display marker information
+	 */
 	private function step5_programs() {
 	  $experiments = $_GET['exps'];
 	  $CAPdataprogram = $_GET['bp'];
@@ -1687,6 +1763,9 @@ selected lines</a><br>
 	  }
 	}
 
+	/**
+	 * allow entry of lines, this function is not used at this time
+	 */
 	private function enter_lines()
 	{
 		if($_SERVER['REQUEST_METHOD'] == "GET")
@@ -1737,6 +1816,10 @@ selected lines</a><br>
       }
 	}
 	}
+	
+	/**
+	 * display a list of experiments
+	 */
 	private function type1_experiments()
 	{
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
@@ -1798,6 +1881,9 @@ selected lines</a><br>
 <?php
 	}
 	
+	/**
+	 * display traits given a list of experiments
+	 */
 	private function type1_traits()
 	{
 		$experiments = $_GET['exps'];
@@ -1860,23 +1946,10 @@ selected lines</a><br>
 		}
 	}
 
-	private function type1_markers_select()
-	{
-		?>
-		<h3>Select markers by name</h3>
-  <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
-  <table><tr><td>
-  <textarea rows=6 cols=10 name=selMarkerstring></textarea>
-  <td>Synonyms will be translated.
-  <p><input type=submit value=Select style=color:blue>
-  </tr></table>
-  </form>
-	<?php		
-	}	
 	/**
-	 * Gets the key marker data for the selected breeding programs
+	 * displays key marker data for the selected breeding programs
 	 */
-	private function type1_markers()
+	function type1_markers()
 	{
 		// parse url
         $experiments = $_GET['exps'];
@@ -1986,9 +2059,11 @@ selected lines</a><br>
 			
 	}
 	
-	private function type2_markers()
+	/**
+	 * displays key marker data when given a set of experiments and phenotypes
+	 */
+	function type2_markers()
 	{
-	
 	 // parse url
 	 $experiments = $_GET['exps'];
 	 $phen_item = $_GET['pi'];
@@ -2101,7 +2176,9 @@ selected lines</a><br>
 	
 	}
 	
-	
+	/**
+	 * creates output files in qtlminer format
+	 */
 	function type1_build_qtlminer()
 	{
 		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
@@ -2177,6 +2254,9 @@ selected lines</a><br>
 	
 	}
 	
+	/**
+	 * build download files for tassel V2
+	 */
 	function type1_build_tassel()
 	{
 		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
@@ -2251,6 +2331,9 @@ selected lines</a><br>
 		header("Location: ".$dir.$filename);
 	}
 
+	/**
+	 * build download files for tassel V3
+	 */
 	function type1_build_tassel_v3()
 	{
 		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
@@ -2325,11 +2408,14 @@ selected lines</a><br>
 		header("Location: ".$dir.$filename);
 	}
 	
-	private function type2_build_tassel($version) {
+	/**
+	 * build download files for tassel (V2,V3,V4) when given a set of experiments, traits, and phenotypes
+	 * @param string $version
+	 */
+	function type2_build_tassel($version) {
 	  //used for download starting with location
 	  $experiments = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
 	  $traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
-	  $years = (isset($_GET['yrs']) && !empty($_GET['yrs'])) ? $_GET['yrs'] : null;
 	  $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
 	  $phen_item = (isset($_GET['pi']) && !empty($_GET['pi'])) ? $_GET['pi'] : null;
 	 
@@ -2466,7 +2552,13 @@ selected lines</a><br>
 	  header("Location: ".$dir.$filename);
 	}
 
-	private function type1_build_traits_download($experiments, $traits, $datasets)
+	/**
+	 * generate download files in qltminer format
+	 * @param unknown_type $experiments
+	 * @param unknown_type $traits
+	 * @param unknown_type $datasets
+	 */
+	function type1_build_traits_download($experiments, $traits, $datasets)
 	{
 		
 		$output = 'Experiment' . $this->delimiter . 'Inbred';
@@ -2525,8 +2617,15 @@ selected lines</a><br>
 		return $output;
 	}
 
-/* Build trait download file for Tassel program interface */
-    private function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
+    /**
+     * Build trait download file for Tassel program interface
+     * @param unknown_type $experiments
+     * @param unknown_type $traits
+     * @param unknown_type $datasets
+     * @param unknown_type $subset
+     * @return string
+     */
+    function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
 	{
      	//$firephp = FirePHP::getInstance(true);
 		$delimiter = "\t";
@@ -2662,8 +2761,15 @@ selected lines</a><br>
 		return $output;
 	}
 
-	/* Build trait download file for Tassel program interface */
-	private function type2_build_tassel_traits_download($experiments, $traits, $lines, $subset)
+	/**
+	 * Build trait download file for Tassel program interface
+	 * @param string $experiments
+	 * @param unknown_type $traits
+	 * @param unknown_type $lines
+	 * @param unknown_type $subset
+	 * @return string
+	 */
+	function type2_build_tassel_traits_download($experiments, $traits, $lines, $subset)
 	{
 	  //$firephp = FirePHP::getInstance(true);
 	  $delimiter = "\t";
@@ -2777,8 +2883,12 @@ selected lines</a><br>
 	return $output;
 	}
 	
-	
-	private function type1_build_markers_download($experiments,$dtype)
+	/**
+	 * build genotype data file for tassle V2 and V3
+	 * @param unknown_type $experiments
+	 * @param unknown_type $dtype
+	 */
+	function type1_build_markers_download($experiments,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
 		$outputheader = '';
@@ -2906,7 +3016,12 @@ selected lines</a><br>
 	   }
 	}
 	
-	private function type1_build_conflicts_download($experiments,$dtype) {
+	/**
+	 * build file listing conflicts in genotype data
+	 * @param unknown_type $experiments
+	 * @param unknown_type $dtype
+	 */
+	function type1_build_conflicts_download($experiments,$dtype) {
 	 
 	  //get lines and filter to get a list of markers which meet the criteria selected by the user
 	  $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
@@ -2944,7 +3059,13 @@ selected lines</a><br>
 	  return $output;
 	}
 	
-	private function type2_build_markers_download($lines,$markers,$dtype)
+	/**
+	 * build genotype data file when given set of lines and markers
+	 * @param unknown_type $lines
+	 * @param unknown_type $markers
+	 * @param unknown_type $dtype
+	 */
+	function type2_build_markers_download($lines,$markers,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
 		$outputheader = '';
@@ -3126,7 +3247,13 @@ selected lines</a><br>
 		}
 	}
   
-	private function type3_build_markers_download($lines,$markers,$dtype)
+	/**
+	 * build genotype data files for tassel V4
+	 * @param unknown_type $lines
+	 * @param unknown_type $markers
+	 * @param unknown_type $dtype
+	 */
+	function type3_build_markers_download($lines,$markers,$dtype)
 	{
 	 $output = '';
 	 $outputheader = '';
@@ -3219,13 +3346,7 @@ selected lines</a><br>
          }
 
          //sort marker_list_all by map location if available
-         function cmp($a, $b) {
-           if ($a == $b) {
-             return 0;
-           }
-           return ($a < $b) ? -1 : 1;
-         }
-         if (uasort($marker_list_all, "cmp")) {
+         if (uasort($marker_list_all, array($this,'cmp'))) {
          } else {
            die("could not sort marker list\n");
          }
@@ -3328,7 +3449,13 @@ selected lines</a><br>
 	 return $outputheader."\n".$output;
 	}
 	
-	private function type2_build_conflicts_download($lines,$markers) {
+	/**
+	 * build genotype conflicts file when given set of lines and markers
+	 * @param unknown_type $lines
+	 * @param unknown_type $markers
+	 * @return string
+	 */
+	function type2_build_conflicts_download($lines,$markers) {
 	 
 	  if (count($markers)>0) {
 	    $markers_str = implode(",",$markers);
@@ -3374,7 +3501,12 @@ selected lines</a><br>
 	  return $output;
 	}
 
-	private function type1_build_annotated_align($experiments)
+	/**
+	 * create map file in Tassel V2 format
+	 * @param string $experiments
+	 * @return string
+	 */
+	function type1_build_annotated_align($experiments)
 	{
 		$delimiter ="\t";
 		// $firephp = FirePHP::getInstance(true);
@@ -3530,10 +3662,14 @@ selected lines</a><br>
 
 	}
 
-	private function type1_build_geneticMap($experiments)
+	/**
+	 * create map file for tassel V3
+	 * @param string $experiments
+	 * @return string
+	 */
+	function type1_build_geneticMap($experiments)
 	{
 		$delimiter ="\t";
-		// $firephp = FirePHP::getInstance(true);
 		$output = '';
 		$doneheader = false;
 		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
@@ -3551,7 +3687,32 @@ selected lines</a><br>
 		elseif ($min_maf<0)
 			$min_maf = 0;
 		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
+		
+		$lookup_chrom = array(
+		  '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
+		  '6H' => '6','7H' => '7','UNK'  => '10'
+		);
 
+		$sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
+		where mim.marker_uid = markers.marker_uid
+		AND mim.map_uid = map.map_uid
+		AND map.mapset_uid = mapset.mapset_uid
+		AND mapset.mapset_uid = 1";
+		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+		while ($row = mysql_fetch_array($res)) {
+		  $uid = $row[0];
+		  $chr = $lookup_chrom[$row[1]];
+		  $pos = $row[2];
+		  $marker_list_mapped[$uid] = "$chr\t$pos";
+		  if (preg_match("/(\d+)/",$chr,$match)) {
+		    $chr = $match[0];
+		    $rank = (1000*$chr) + $pos;
+		  } else {
+		    $rank = 99999;
+		  }  
+		  $marker_list_rank[$uid] = $rank; 
+		}
+		
         //get lines and filter to get a list of markers which meet the criteria selected by the user
         $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
 					SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
@@ -3567,17 +3728,14 @@ selected lines</a><br>
 			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 			  $miss = round(100*$row["summis"]/$row["total"],1);
 					if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
-						$marker_names[] = $row["name"];
-						$outputheader .= $delimiter.$row["name"];
 						$marker_uid[] = $row["marker"];
-						
+						$uid = $row["marker"];
+						if (isset($marker_list_mapped[$uid])) {
+						  $marker_list_name[$uid] = $row["name"];
+						  $marker_list_all[$uid] = $marker_list_rank[$uid];
+						}
 					}
 		}
-
-	    $lookup_chrom = array(
-		  '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
-		  '6H' => '6','7H' => '7','UNK'  => '10'
-        );
 		
         // finish writing file header using a list of line names
         $sql = "SELECT DISTINCT lr.line_record_name AS line_name
@@ -3596,7 +3754,7 @@ selected lines</a><br>
         $n_lines = count($line_names);
 		$empty = array_combine($line_names,array_fill(0,$n_lines,'-'));
 		$nemp = count($empty);
-		$marker_uid = implode(",",$marker_uid);
+		$marker_str = implode(",",$marker_uid);
 		$line_str = implode($delimiter,$line_names);
 		// $firephp = log($nelem." ".$n_lines);
 			
@@ -3608,65 +3766,29 @@ selected lines</a><br>
 		// as the map default
         $mapset = 1;	
 
-        $sql = "SELECT mim.chromosome, mim.start_position, lr.line_record_name as lname, m.marker_name AS mname                    
-			FROM
-            markers as m,
-			markers_in_maps as mim,
-			map,
-			mapset,
-            line_records as lr,
-            alleles as a,
-            tht_base as tb,
-            genotyping_data as gd
-			WHERE
-            a.genotyping_data_uid = gd.genotyping_data_uid
-				AND mim.marker_uid = m.marker_uid
-				AND m.marker_uid = gd.marker_uid
-				AND gd.marker_uid IN ($marker_uid)
-				AND mim.map_uid = map.map_uid
-				AND map.mapset_uid = mapset.mapset_uid
-				AND mapset.mapset_uid = '$mapset'
-				AND tb.line_record_uid = lr.line_record_uid
-				AND gd.tht_base_uid = tb.tht_base_uid
-				AND tb.experiment_uid IN ($experiments)
-		  ORDER BY mim.chromosome,mim.start_position, m.marker_uid, lname";
-
-        $last_marker = "somemarkername";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		
-		$cnt = $num_markers = 0;
-		while ($row = mysql_fetch_array($res)){
-				//first time through loop
-            if ($cnt==0) {
-                $last_marker = $row['mname'];
-				$pos = $row['start_position'];
-				$chrom = $lookup_chrom[$row['chromosome']];
-			}
-				
-			if ($last_marker != $row['mname']){  
-				// Close out the last marker
-				$output .= "$last_marker\t$chrom\t$pos\t";
-				$output .= "\n";
-				$lname = $row['lname'];	//start new line			
-				$last_marker = $row['mname'];
-				$pos = $row['start_position'];
-				$chrom = $lookup_chrom[$row['chromosome']];
-				$num_markers++;
-    		} else {
-				 $lname = $row['lname'];				
-			}
-			$cnt++;
+        //sort marker_list by map location
+        if (uasort($marker_list_all, array($this,'cmp'))) {
+        } else {
+          die("could not sort marker list\n");
+        }
+        
+		$num_markers = 0;
+		/* foreach( $marker_uid as $cnt => $uid) { */
+		foreach($marker_list_all as $uid=>$value) {
+		    $marker_name = $marker_list_name[$uid];
+		    $map_loc = $marker_list_mapped[$uid];
+		    $output .= "$marker_name\t$map_loc\n";
+		    $num_markers++;
 		}
 		
-	  //save data from the last line
-	  $output .= "$last_marker\t$chrom\t$pos\t";
-	  $output .= "\n";
-	  $num_markers++;
-
 	  return $outputheader.$output;
     }
 
-	private function type1_build_pedigree_download($experiments)
+    /**
+     * create pedigree output file for qtlminer
+     * @param string $experiments
+     */
+	function type1_build_pedigree_download($experiments)
 	{
 		$delimiter ="\t";
 		// output file header for QTL Miner Pedigree files
@@ -3702,7 +3824,12 @@ selected lines</a><br>
 		return $outputheader."\n".$output;
 	}
 	
-	private function type1_build_inbred_download($experiments)
+	/**
+	 * create output file for qtlminer
+	 * @param string $experiments
+	 * @return string
+	 */
+	function type1_build_inbred_download($experiments)
 	{
 		$newline ="\n";
 		// output file header for QTL Miner Pedigree files

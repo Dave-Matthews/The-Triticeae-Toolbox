@@ -1,12 +1,16 @@
-<?
+<?php 
+/**
+ * Phenotype Experiment Results
+ * 
+ * @category PHP
+ * @package  T3
+ * 
+ */
 // 02/01/2011 JLee  Fix indentations and fatal error not presenting data
 // 02/01/2011 JLee  Fix problem with line with the value of 0
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-/*
- * Logged in page initialization
- */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
@@ -20,7 +24,12 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-// Returns $arg1 if it is set, else fatal error
+/**
+ * Returns $arg1 if it is set, else fatal error
+ * @param unknown_type $arg1
+ * @param unknown_type $msg
+ * @return unknown
+ */
 function ForceValue(& $arg1, $msg) {
   if (isset($arg1))   
     return $arg1;
@@ -33,10 +42,17 @@ $col_lookup = array('trialmean' => 'mean_value', 'std.error' => 'standard_error'
 
 new LineNames_Check($_GET['function']);
 
+/**
+ * 
+ * Phenotype Experiment Results
+ *
+ */
 class LineNames_Check
 {
-  private $delimiter = "\t";
-  // Using the class's constructor to decide which action to perform
+  /**
+   * Using the class's constructor to decide which action to perform
+   * @param unknown_type $function
+   */
   public function __construct($function = null) {	
     switch($function)
       {
@@ -49,6 +65,9 @@ class LineNames_Check
       }	
   }
 
+/**
+ * check experiment data before loading into database
+ */
 private function typeExperimentCheck()
 	{
 		global $config;
@@ -59,7 +78,9 @@ private function typeExperimentCheck()
         include($config['root_dir'].'theme/footer.php');
 	}
 	
-	
+/**
+ * check experiment data before loading into database
+ */	
  private function type_Experiment_Name() {
 ?>
    <script type="text/javascript">
@@ -148,10 +169,10 @@ private function typeExperimentCheck()
 		 $experiment = mysql_fetch_assoc($res);
 		 $experiment_uid = $experiment['id'];
 	       } elseif (0 == mysql_num_rows($res)) {
-		 echo "Fatal Error: experiment ".$trial_code. " does not exist at row " . $i ."<br/><br/>";
+		 echo "Fatal Error: experiment ".$trial_code. " does not exist <br/><br/>";
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	       } else {
-		 echo "Fatal Error: experiment ".$trial_code." matches multiple experiments-must be unique " . $i ."<br/><br/>" ;
+		 echo "Fatal Error: experiment ".$trial_code." matches multiple experiments-must be unique <br/><br/>" ;
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	       } // end if
 
@@ -183,29 +204,22 @@ private function typeExperimentCheck()
 		 $teststr= addcslashes(trim($means['cells'][5][$i]),"\0..\37!@\177..\377");
 		 if (empty($teststr)) break; 
 		 else {
-		   //break column title into pieces
 		   $teststr= str_replace('\\n',' ',$teststr);
-		   $pheno= explode(' ',$teststr);
-		   $piece = count($pheno);
-		   $pheno_cur ='';
-		   for ($j=0;$j<$piece;$j++) {
-		     $pheno_cur .= " ".$pheno[$j];
-		     $pheno_cur =trim($pheno_cur);
-		   }
+		   $pheno_cur =trim($teststr);
 		   $sql = "SELECT phenotype_uid as id,phenotypes_name as name, 
                                max_pheno_value as maxphen, min_pheno_value as minphen, datatype
 		             FROM phenotypes
 			     WHERE phenotypes_name = '$pheno_cur'";
 		   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		   if (1 == mysql_num_rows($res)) {
-		     $row = mysql_fetch_assoc($res);
+		   if ($row = mysql_fetch_assoc($res)) {
 		     $datatypes[] = $row['datatype'];
 		     $phenonames[] =  $row['name'];
 		     $phenoids[] = $row['id'];//$phenotype_uid;
 		     $pheno_max[] = $row['maxphen'];
 		     $pheno_min[] = $row['minphen'];
-		   }
-		   else $eflgs[] = $pheno_cur;
+		   } else {
+		     $eflgs[] = $pheno_cur;
+                   }
 		 }
 	       }
 	       if (count($eflgs) > 0) {
@@ -329,7 +343,7 @@ private function typeExperimentCheck()
 		     if ($check !=2) {
 		       $line_record_uid =	get_lineuid($line_name);
 		       if (count($line_record_uid)>1) {
-			 exit('more than one line record id for {$line_name}');
+			 exit("more than one line record id for {$line_name}");
 		       } elseif ($line_record_uid===FALSE){
 			 exit("line {$line_name} not found in table, stop");
 		       }
@@ -557,10 +571,10 @@ private function typeExperimentCheck()
 		   <tbody style="padding: 0; width: 700px;  overflow: scroll;border: 1px solid #5b53a6;">
 		   <?php
 		   /* printing the values onto the page for user*/
-		   for($i = 6; $i <= $rows; $i++) {
+		   for ($i = 6; $i <= $rows; $i++) {
 		     echo "<tr>";
 		     $current_row = $means['cells'][$i];
-		     for($j=1; $j<=$cols; $j++) 	{
+		     for ($j=1; $j<=$cols; $j++) {
 		       echo "<td>";
 		       /* $newtext = wordwrap($current_row[$j], 7, "\n", true); */
 		       /* echo  $newtext; */
@@ -574,7 +588,7 @@ private function typeExperimentCheck()
 		   </table>
 			
 		   <input type="Button" value="Accept" onclick="javascript: update_database('<?echo $meansfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $rawdatafile ?>' )"/>
-		   <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
+		   <input type="Button" value="Cancel" onclick="history.go(-1);" />
 
 		   <?php
 		   }
@@ -585,7 +599,10 @@ private function typeExperimentCheck()
 	   }
 	 }
  } /* end of type_Experiment_Name function*/
-		
+
+ /**
+  * after accepting data load into database
+  */
  private function type_Database() {
 	
    global $config;
@@ -644,35 +661,25 @@ private function typeExperimentCheck()
      $teststr= addcslashes(trim($means['cells'][5][$i]),"\0..\37!@\177..\377");
      if (strlen($teststr) == 0) break;
      else {
-       //break column title into pieces
        $teststr= str_replace('\\n',' ',$teststr);
-       $pheno= explode(' ',$teststr);
-       $piece = count($pheno);
-       $pheno_cur ='';
-       for ($j=0; $j<$piece; $j++){
-	 $eflg = 0;
-	 $pheno_cur .= " ".$pheno[$j];
-	 $pheno_cur =trim($pheno_cur);
+       
+	 $pheno_cur =trim($teststr);
 	 $sql = "SELECT phenotype_uid as id,phenotypes_name as name, max_pheno_value as maxphen, min_pheno_value as minphen, datatype
 					FROM phenotypes
 					WHERE phenotypes_name = '$pheno_cur'";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	 if (1 == mysql_num_rows($res))  {
-	   $row = mysql_fetch_assoc($res);
+	 if ($row = mysql_fetch_assoc($res)) {
 	   $datatypes[] = $row['datatype'];
 	   $phenonames[] =  $row['name'];
 	   $phenoids[] = $row['id'];//$phenotype_uid;
 	   $pheno_max[] = $row['maxphen'];
 	   $pheno_min[] = $row['minphen'];
 	   $eflg = 1;
-	   break;
-	 }
-       }
+	 } else {
+           echo "Trait \"".$pheno_cur."\" does not exist in the database.<p> ";
+           exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+         }
      }
-   }
-   if ($eflg==0) {
-     echo "Trait \"".$pheno_cur."\" does not exist in the database.<p> ";
-     exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
    }
    $pheno_num = count($phenoids);
    
@@ -768,7 +775,7 @@ private function typeExperimentCheck()
        if ($check !=2) {
 	 $line_record_uid = get_lineuid($line_name);
 	 if (count($line_record_uid)>1) {
-	   exit('more than one line record id for {$line_name}');
+	   exit("more than one line record id for {$line_name}");
 	 } elseif ($line_record_uid===FALSE){
 	   exit("line {$line_name} not found in table, stop");
 	 }
@@ -1002,11 +1009,14 @@ private function typeExperimentCheck()
             while ($row = mysql_fetch_array($res)){
 				$phenotypes[]=$row['name'];
             }
-            $phenotypes = implode(',',$phenotypes);
-		
-            $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid=$experiment_uids[$i]";
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		
+            $countfound = count($phenotypes);
+            if ($countfound > 0) {
+              $phenotypes = implode(',',$phenotypes);
+              $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid=$experiment_uids[$i]";
+              $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+            } else {
+              echo "error - experiments not found<br>$sql\n";
+            }
 		
             // Add meansfile name to the field for meansfile name, append to existing list if different
             $sql = "SELECT input_data_file_name
@@ -1081,4 +1091,3 @@ private function typeExperimentCheck()
     include($config['root_dir'].'theme/footer.php');
 	}/* end of type_database function */
 } /* end of class */
-?>

@@ -1,4 +1,4 @@
-/*global alert,$,$$,$A,$H,Prototype,Ajax,Template,Element*/
+/*global alert,$,$$,$A,$H,Prototype,Ajax,Template,Element,getXMLHttpRequest*/
 var php_self = document.location;
 var breeding_programs_str = "";
 var phenotype_categories_str = "";
