@@ -1133,7 +1133,7 @@ class Downloads
 	    <?php
 	    $selectedlines= $_SESSION['selected_lines'];
 	    $selectedlines = implode(',', $selectedlines);
-	    $sql="SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name 
+	    $sql="SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, e.experiment_year as year
 	    FROM experiments as e, tht_base as tb, line_records as lr
 	    WHERE
 	    e.experiment_uid = tb.experiment_uid
@@ -1142,9 +1142,23 @@ class Downloads
 	    AND lr.line_record_uid IN ($selectedlines)";
 	    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
 	    $sql .= " and data_public_flag > 0";
+            $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
 		$res = mysql_query($sql) or die(mysql_error());
+                $last_year = NULL;
 		while ($row = mysql_fetch_assoc($res))
 		{
+                  if ($last_year == NULL) {
+                  ?>
+                    <optgroup label="<?php echo $row['year'] ?>">
+                  <?php
+                    $last_year = $row['year'];
+                  } else if ($row['year'] != $last_year) {
+                  ?>
+                  </optgroup>
+                  <optgroup label="<?php echo $row['year'] ?>">
+                  <?php
+                    $last_year = $row['year'];
+                  }
 		 ?>
 		    <option value="<?php echo $row['id'] ?>">
 		     <?php echo $row['name'] ?>
@@ -1152,7 +1166,7 @@ class Downloads
 		    <?php
 		} 
 	    ?>
-	    </select></table>
+	    </optgroup></select></table>
 	    <?php
 	    } 
 	}
@@ -1489,12 +1503,26 @@ class Downloads
 	 $sql .= " and data_public_flag > 0";
 	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
 	 $res = mysql_query($sql) or die(mysql_error());
+         $last_year = NULL;
 	 while ($row = mysql_fetch_assoc($res)) {
+           if ($last_year == NULL) {
+           ?>
+             <optgroup label="<?php echo $row['year'] ?>">
+           <?php 
+             $last_year = $row['year'];
+           } else if ($row['year'] != $last_year) {
+           ?>
+             </optgroup>
+             <optgroup label="<?php echo $row['year'] ?>">
+           <?php
+             $last_year = $row['year'];
+           }
 	   ?>
 	   <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
 	   <?php
 	 }
 	 ?>
+	 </optgroup>
 	 </select>
 	 </td>
 	 </table>
@@ -3736,6 +3764,10 @@ selected lines</a><br>
 						}
 					}
 		}
+		if (count($marker_list_all) == 0) {
+		   $output = "no mapped data found";
+		   return $output;
+		}
 		
         // finish writing file header using a list of line names
         $sql = "SELECT DISTINCT lr.line_record_name AS line_name
@@ -3754,7 +3786,6 @@ selected lines</a><br>
         $n_lines = count($line_names);
 		$empty = array_combine($line_names,array_fill(0,$n_lines,'-'));
 		$nemp = count($empty);
-		$marker_str = implode(",",$marker_uid);
 		$line_str = implode($delimiter,$line_names);
 		// $firephp = log($nelem." ".$n_lines);
 			
