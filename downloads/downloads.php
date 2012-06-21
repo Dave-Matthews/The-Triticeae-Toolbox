@@ -1333,24 +1333,20 @@ class Downloads
 	 if (!preg_match('/[0-9]/',$marker_str)) {
 	   //get genotype markers that correspond with the selected lines
 	   $selectedlines = implode(",",$lines);
-	   $sql_exp = "SELECT DISTINCT marker_uid
+	   $sql_exp = "SELECT marker_uid
 	   FROM allele_cache
 	   WHERE
 	   allele_cache.line_record_uid in ($selectedlines)";
 	   $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
 	   if (mysql_num_rows($res)>0) {
 	     while ($row = mysql_fetch_array($res)){
-	       $markers[] = $row["marker_uid"];
+	       $uid = $row["marker_uid"];
+	       $markers[$uid] = 1;
 	     }
 	    }
 	   $marker_str = implode(',',$markers);
 	   $num_mark = mysql_num_rows($res);
 	   //echo "$num_mark markers in selected lines<br>\n";
-	 }
-	 
-	 //generate an array of selected markers that can be used with isset statement
-	 foreach ($markers as $temp) {
-	   $marker_lookup[$temp] = 1;
 	 }
 	 
 	 //get location information for markers
@@ -1383,7 +1379,7 @@ class Downloads
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
 	 foreach ($marker_list as $marker_uid) {
-	   if (isset($marker_lookup[$marker_uid])) {
+	   if (isset($markers[$marker_uid])) {
 	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
 	   if ($total > 0) {
 	     $maf = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
