@@ -41,22 +41,27 @@ connect();
     if (($data_public_flag ==1)|| ((authenticate(array(USER_TYPE_PARTICIPANT,
 			USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))&&($data_public_flag ==0)))
     {
-        $sql="SELECT experiment_uid FROM experiments WHERE trial_code='$trial_code'";
+        $sql="SELECT experiment_uid, experiment_set_uid FROM experiments WHERE trial_code='$trial_code'";
         $result=mysql_query($sql);
         $row=mysql_fetch_array($result);
         $experiment_uid=$row['experiment_uid'];
+	$set_uid=$row['experiment_set_uid'];
         $datasets_exp_uid=$experiment_uid;
         //echo $experiment_uid."<br>";
         
         // Display Header information about the experiment
         $display_name=ucwords($trial_code); //used to display a beautiful name as the page header
-        echo "<h1>".$display_name."</h1>";
+        echo "<h1>Trial ".$display_name."</h1>";
         
         $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'"; //used to display the annotation details 
         $result_pei=mysql_query($query) or die(mysql_error());
         $row_pei=mysql_fetch_array($result_pei);
 
-	// Get experiment name too.
+        // Get experiment too.   
+	if ($set_uid)
+	  $exptset = mysql_grab("SELECT experiment_set_name from experiment_set where experiment_set_uid=$set_uid");
+
+	// Get experiment description too.
 	$query="SELECT experiment_desc_name from experiments WHERE experiment_uid='$experiment_uid'";
 	$result_exp=mysql_query($query) or die(mysql_error()); 
         $row_exp=mysql_fetch_array($result_exp); 
@@ -72,7 +77,8 @@ connect();
 	$dataprogram = $row_cdp['data_program_name'];
 
         echo "<table>";
-	if ($exptname) {echo "<tr> <td>Experiment</td><td>".$exptname."</td></tr>";}
+	if ($exptset) echo "<tr> <td>Experiment</td><td>".$exptset."</td></tr>";
+	if ($exptname) {echo "<tr> <td>Description</td><td>".$exptname."</td></tr>";}
         echo "<tr> <td>Location (Latitude/Longitude)</td><td>".$row_pei['location']."  ".$row_pei['latitude_longitude']."</td></tr>";
         echo "<tr> <td>Planting Date</td><td>".$row_pei['planting_date']."</td></tr>";
         echo "<tr> <td>Harvest Date</td><td>".$row_pei['harvest_date']."</td></tr>";
@@ -103,9 +109,9 @@ connect();
         //echo $num_lines."<br>";
         $titles=array('Line Name'); //stores the titles for the display table with units
 	$titles[]="Line Synonym";//add CAP Code column to titles
-        
+
+	if (!empty($thtbase_uid)) {
         $thtbasestring = implode(",",$thtbase_uid);
-	if (!empty($thtbasestring)) {
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
                 FROM phenotype_data as pd, phenotypes as p, units
                 WHERE p.phenotype_uid = pd.phenotype_uid

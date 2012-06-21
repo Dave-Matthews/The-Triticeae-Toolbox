@@ -39,7 +39,7 @@ set_time_limit(0);
 // For live website file
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
+set_include_path(GET_INCLUDE_PATH() . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
@@ -1285,12 +1285,25 @@ class Downloads
 	}
 	
 	/**
+	 * used by uasort() to order an array
+	 * @param integer $a
+	 * @param integer $b
+	 * @return number
+	 */
+	private function cmp($a, $b) {
+	  if ($a == $b) {
+	    return 0;
+	  }
+	  return ($a < $b) ? -1 : 1;
+	}
+	
+	/**
 	 * display minor allele frequence and missing data using selected lines
 	 * @param array $lines
 	 * @param floats $min_maf
 	 * @param floats $max_missing
 	 */
-	private function calculate_af(&$lines, $min_maf, $max_missing) {
+	function calculate_af(&$lines, $min_maf, $max_missing) {
 	 //calculate allele frequencies using 2D table
 	
 	 if (isset($_SESSION['clicked_buttons'])) {
@@ -1936,7 +1949,7 @@ selected lines</a><br>
 	/**
 	 * displays key marker data for the selected breeding programs
 	 */
-	private function type1_markers()
+	function type1_markers()
 	{
 		// parse url
         $experiments = $_GET['exps'];
@@ -2049,7 +2062,7 @@ selected lines</a><br>
 	/**
 	 * displays key marker data when given a set of experiments and phenotypes
 	 */
-	private function type2_markers()
+	function type2_markers()
 	{
 	 // parse url
 	 $experiments = $_GET['exps'];
@@ -2399,7 +2412,7 @@ selected lines</a><br>
 	 * build download files for tassel (V2,V3,V4) when given a set of experiments, traits, and phenotypes
 	 * @param string $version
 	 */
-	private function type2_build_tassel($version) {
+	function type2_build_tassel($version) {
 	  //used for download starting with location
 	  $experiments = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
 	  $traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
@@ -2545,7 +2558,7 @@ selected lines</a><br>
 	 * @param unknown_type $traits
 	 * @param unknown_type $datasets
 	 */
-	private function type1_build_traits_download($experiments, $traits, $datasets)
+	function type1_build_traits_download($experiments, $traits, $datasets)
 	{
 		
 		$output = 'Experiment' . $this->delimiter . 'Inbred';
@@ -2612,7 +2625,7 @@ selected lines</a><br>
      * @param unknown_type $subset
      * @return string
      */
-    private function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
+    function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
 	{
      	//$firephp = FirePHP::getInstance(true);
 		$delimiter = "\t";
@@ -2756,7 +2769,7 @@ selected lines</a><br>
 	 * @param unknown_type $subset
 	 * @return string
 	 */
-	private function type2_build_tassel_traits_download($experiments, $traits, $lines, $subset)
+	function type2_build_tassel_traits_download($experiments, $traits, $lines, $subset)
 	{
 	  //$firephp = FirePHP::getInstance(true);
 	  $delimiter = "\t";
@@ -2875,7 +2888,7 @@ selected lines</a><br>
 	 * @param unknown_type $experiments
 	 * @param unknown_type $dtype
 	 */
-	private function type1_build_markers_download($experiments,$dtype)
+	function type1_build_markers_download($experiments,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
 		$outputheader = '';
@@ -3008,7 +3021,7 @@ selected lines</a><br>
 	 * @param unknown_type $experiments
 	 * @param unknown_type $dtype
 	 */
-	private function type1_build_conflicts_download($experiments,$dtype) {
+	function type1_build_conflicts_download($experiments,$dtype) {
 	 
 	  //get lines and filter to get a list of markers which meet the criteria selected by the user
 	  $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
@@ -3052,7 +3065,7 @@ selected lines</a><br>
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	private function type2_build_markers_download($lines,$markers,$dtype)
+	function type2_build_markers_download($lines,$markers,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
 		$outputheader = '';
@@ -3240,7 +3253,7 @@ selected lines</a><br>
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	private function type3_build_markers_download($lines,$markers,$dtype)
+	function type3_build_markers_download($lines,$markers,$dtype)
 	{
 	 $output = '';
 	 $outputheader = '';
@@ -3333,13 +3346,7 @@ selected lines</a><br>
          }
 
          //sort marker_list_all by map location if available
-         function cmp($a, $b) {
-           if ($a == $b) {
-             return 0;
-           }
-           return ($a < $b) ? -1 : 1;
-         }
-         if (uasort($marker_list_all, "cmp")) {
+         if (uasort($marker_list_all, array($this,'cmp'))) {
          } else {
            die("could not sort marker list\n");
          }
@@ -3448,7 +3455,7 @@ selected lines</a><br>
 	 * @param unknown_type $markers
 	 * @return string
 	 */
-	private function type2_build_conflicts_download($lines,$markers) {
+	function type2_build_conflicts_download($lines,$markers) {
 	 
 	  if (count($markers)>0) {
 	    $markers_str = implode(",",$markers);
@@ -3499,7 +3506,7 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	private function type1_build_annotated_align($experiments)
+	function type1_build_annotated_align($experiments)
 	{
 		$delimiter ="\t";
 		// $firephp = FirePHP::getInstance(true);
@@ -3660,10 +3667,9 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	private function type1_build_geneticMap($experiments)
+	function type1_build_geneticMap($experiments)
 	{
 		$delimiter ="\t";
-		// $firephp = FirePHP::getInstance(true);
 		$output = '';
 		$doneheader = false;
 		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
@@ -3681,7 +3687,32 @@ selected lines</a><br>
 		elseif ($min_maf<0)
 			$min_maf = 0;
 		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
+		
+		$lookup_chrom = array(
+		  '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
+		  '6H' => '6','7H' => '7','UNK'  => '10'
+		);
 
+		$sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
+		where mim.marker_uid = markers.marker_uid
+		AND mim.map_uid = map.map_uid
+		AND map.mapset_uid = mapset.mapset_uid
+		AND mapset.mapset_uid = 1";
+		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+		while ($row = mysql_fetch_array($res)) {
+		  $uid = $row[0];
+		  $chr = $lookup_chrom[$row[1]];
+		  $pos = $row[2];
+		  $marker_list_mapped[$uid] = "$chr\t$pos";
+		  if (preg_match("/(\d+)/",$chr,$match)) {
+		    $chr = $match[0];
+		    $rank = (1000*$chr) + $pos;
+		  } else {
+		    $rank = 99999;
+		  }  
+		  $marker_list_rank[$uid] = $rank; 
+		}
+		
         //get lines and filter to get a list of markers which meet the criteria selected by the user
         $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
 					SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
@@ -3697,17 +3728,14 @@ selected lines</a><br>
 			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 			  $miss = round(100*$row["summis"]/$row["total"],1);
 					if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
-						$marker_names[] = $row["name"];
-						$outputheader .= $delimiter.$row["name"];
 						$marker_uid[] = $row["marker"];
-						
+						$uid = $row["marker"];
+						if (isset($marker_list_mapped[$uid])) {
+						  $marker_list_name[$uid] = $row["name"];
+						  $marker_list_all[$uid] = $marker_list_rank[$uid];
+						}
 					}
 		}
-
-	    $lookup_chrom = array(
-		  '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
-		  '6H' => '6','7H' => '7','UNK'  => '10'
-        );
 		
         // finish writing file header using a list of line names
         $sql = "SELECT DISTINCT lr.line_record_name AS line_name
@@ -3726,7 +3754,7 @@ selected lines</a><br>
         $n_lines = count($line_names);
 		$empty = array_combine($line_names,array_fill(0,$n_lines,'-'));
 		$nemp = count($empty);
-		$marker_uid = implode(",",$marker_uid);
+		$marker_str = implode(",",$marker_uid);
 		$line_str = implode($delimiter,$line_names);
 		// $firephp = log($nelem." ".$n_lines);
 			
@@ -3738,61 +3766,21 @@ selected lines</a><br>
 		// as the map default
         $mapset = 1;	
 
-        $sql = "SELECT mim.chromosome, mim.start_position, lr.line_record_name as lname, m.marker_name AS mname                    
-			FROM
-            markers as m,
-			markers_in_maps as mim,
-			map,
-			mapset,
-            line_records as lr,
-            alleles as a,
-            tht_base as tb,
-            genotyping_data as gd
-			WHERE
-            a.genotyping_data_uid = gd.genotyping_data_uid
-				AND mim.marker_uid = m.marker_uid
-				AND m.marker_uid = gd.marker_uid
-				AND gd.marker_uid IN ($marker_uid)
-				AND mim.map_uid = map.map_uid
-				AND map.mapset_uid = mapset.mapset_uid
-				AND mapset.mapset_uid = '$mapset'
-				AND tb.line_record_uid = lr.line_record_uid
-				AND gd.tht_base_uid = tb.tht_base_uid
-				AND tb.experiment_uid IN ($experiments)
-		  ORDER BY mim.chromosome,mim.start_position, m.marker_uid, lname";
-
-        $last_marker = "somemarkername";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		
-		$cnt = $num_markers = 0;
-		while ($row = mysql_fetch_array($res)){
-				//first time through loop
-            if ($cnt==0) {
-                $last_marker = $row['mname'];
-				$pos = $row['start_position'];
-				$chrom = $lookup_chrom[$row['chromosome']];
-			}
-				
-			if ($last_marker != $row['mname']){  
-				// Close out the last marker
-				$output .= "$last_marker\t$chrom\t$pos\t";
-				$output .= "\n";
-				$lname = $row['lname'];	//start new line			
-				$last_marker = $row['mname'];
-				$pos = $row['start_position'];
-				$chrom = $lookup_chrom[$row['chromosome']];
-				$num_markers++;
-    		} else {
-				 $lname = $row['lname'];				
-			}
-			$cnt++;
+        //sort marker_list by map location
+        if (uasort($marker_list_all, array($this,'cmp'))) {
+        } else {
+          die("could not sort marker list\n");
+        }
+        
+		$num_markers = 0;
+		/* foreach( $marker_uid as $cnt => $uid) { */
+		foreach($marker_list_all as $uid=>$value) {
+		    $marker_name = $marker_list_name[$uid];
+		    $map_loc = $marker_list_mapped[$uid];
+		    $output .= "$marker_name\t$map_loc\n";
+		    $num_markers++;
 		}
 		
-	  //save data from the last line
-	  $output .= "$last_marker\t$chrom\t$pos\t";
-	  $output .= "\n";
-	  $num_markers++;
-
 	  return $outputheader.$output;
     }
 
@@ -3800,7 +3788,7 @@ selected lines</a><br>
      * create pedigree output file for qtlminer
      * @param string $experiments
      */
-	private function type1_build_pedigree_download($experiments)
+	function type1_build_pedigree_download($experiments)
 	{
 		$delimiter ="\t";
 		// output file header for QTL Miner Pedigree files
@@ -3841,7 +3829,7 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	private function type1_build_inbred_download($experiments)
+	function type1_build_inbred_download($experiments)
 	{
 		$newline ="\n";
 		// output file header for QTL Miner Pedigree files
