@@ -1,19 +1,31 @@
 <?php
+<<<<<<< HEAD
 /*
 * 1apr12 dem: Small cleanups.  Needs work.
 * 10/19/2010   J.Lee use dynamic GBrowse tracks generation
 * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks 
+=======
+/**
+ * Display Map information from database
+ * 
+ * PHP version 5.3
+ * 
+ * @category PHP
+ * @package  T3
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/maps.php
+ * 
+ * 06/22/2012   C.Birkett sort each column so rows are aligned, move style sheet to top
+ * 1apr12 dem: Small cleanups.  Needs work.
+ * 10/19/2010   J.Lee use dynamic GBrowse tracks generation
+ * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks 
+>>>>>>> 4f64ae149478f7bf1c9723d94385027820101216
 */
 $usegbrowse = True;
 require_once('config.php');
 include_once($config['root_dir'].'includes/bootstrap.inc');
 require_once 'Spreadsheet/Excel/Writer.php';
 connect();
-
-// for debugging only, comment out in production version to avoid security holes
-//require_once('FirePHPCore/FirePHP.class.php');
-//ob_start();
-//$firephp = FirePHP::getInstance(true);
 
 $mapsetStr = "";
 $sql = "select mapset_name from mapset";
@@ -28,9 +40,23 @@ $mapsetStr = (substr($mapsetStr, 0, (strlen($mapsetStr)-1)));
 
 new Maps($_GET['function']);
 
+<<<<<<< HEAD
 class Maps {
   private $delimiter = "\t";
   // Using the class's constructor to decide which action to perform
+=======
+/**
+ * Using the class's constructor to decide which action to perform
+ * @author claybirkett
+ *
+ */
+class Maps {
+  /**
+   * delimiter used for output files
+   */
+  private $delimiter = "\t";
+ 
+>>>>>>> 4f64ae149478f7bf1c9723d94385027820101216
   public function __construct($function = null)  {	
     switch($function) {
     case 'typeMaps':
@@ -73,7 +99,28 @@ class Maps {
   private function type_MapSet_Display()
   {
 ?>
+<<<<<<< HEAD
 
+=======
+		<!--Style sheet for better user interface-->
+		
+		<style type="text/css">
+			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+			table {background: none; border-collapse: collapse}
+			td {border: 1px solid #eee !important;}
+			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+		</style>
+		<style type="text/css">
+
+                   table.marker
+                   {background: none; border-collapse: collapse}
+                    th.marker
+                    { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
+                    
+                    td.marker
+                    { padding: 5px 0; border: 0 !important; }
+        </style>
+>>>>>>> 4f64ae149478f7bf1c9723d94385027820101216
 <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
 <a href="/cgi-bin/gbrowse/tht">View in GBrowse.</a><br><br>
 
@@ -288,25 +335,12 @@ class Maps {
 			
 
       </script>		
+<<<<<<< HEAD
 		
 		<!--Style sheet for better user interface-->
+=======
+>>>>>>> 4f64ae149478f7bf1c9723d94385027820101216
 		
-		<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-		<style type="text/css">
-
-                   table.marker
-                   {background: none; border-collapse: collapse}
-                    th.marker
-                    { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
-                    
-                    td.marker
-                    { padding: 5px 0; border: 0 !important; }
-                </style>
 		<div style=" float: left; margin-bottom: 1.5em;">
 		<table>
 				<tr>
@@ -343,7 +377,7 @@ class Maps {
 		<?php
 
 		
-		$sql = "SELECT map_type FROM mapset ";
+		$sql = "SELECT map_type FROM mapset ORDER BY mapset_name DESC";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res)) {
 			?>
@@ -360,7 +394,7 @@ class Maps {
 
 		
 		
-		$sql = "SELECT map_unit FROM mapset ";
+		$sql = "SELECT map_unit FROM mapset ORDER BY mapset_name DESC";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res)) {
 			?>
@@ -378,7 +412,7 @@ class Maps {
 		<?php
 
 		
-		$sql = "SELECT comments FROM mapset ";
+		$sql = "SELECT comments FROM mapset ORDER BY mapset_name DESC";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res)) {
 			?>
