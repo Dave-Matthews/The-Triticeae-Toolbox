@@ -5,10 +5,14 @@ include($config['root_dir'].'theme/admin_header.php');
 connect();
 
 function filelink($path, $label) {
-  echo "<a href='curator_data/examples/$path'>$label</a>";
+// Date-stamp the template files etc. if new.
+// $path is relative to curator_data/examples/.
+  global $config;
+  echo "<a href='".$config['base_url']."curator_data/examples/$path'>$label</a>";
   // Add "(new <date>)" if newer than 30 days.
-  if (time() - filemtime("examples/$path") < 2592000)
-    echo " <font size= -2 color=red>(new ". date("dMY", filemtime("examples/$path")) . ")</font>";
+  $fullpath = $config['root_dir'] . "curator_data/examples/$path";
+  if (time() - filemtime($fullpath) < 2592000)
+    echo " <font size= -2 color=red>(new ". date("dMY", filemtime($fullpath)) . ")</font>";
 }
 
 ?>
@@ -40,7 +44,7 @@ ul ul ul {list-style-type: disc}
 	    - Name, properties, pedigree, GRIN accession... [ <a href="curator_data/tutorial/T3_Lesson1_LineUpload.html">Tutorial</a> ]
 	    <ul>
 	      <li><a href="curator_data/examples/T3/LineSubmissionForm_Wheat.xls">Wheat</a>
-	      <li><a href="curator_data/examples/T3/LineSubmissionForm_Barley.xls">Barley</a>
+              <li><?php filelink("T3/LineSubmissionForm_Barley.xls", "Barley") ?>
 	      <li><a href="curator_data/examples/T3/T3NameConversion.xlsm">Macros</a> for converting line names to T3 format
 	    </ul>
 <p>	  <li><b>Phenotyping</b>
