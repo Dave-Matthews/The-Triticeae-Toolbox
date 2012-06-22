@@ -1,10 +1,4 @@
 <?php
-<<<<<<< HEAD
-/*
-* 1apr12 dem: Small cleanups.  Needs work.
-* 10/19/2010   J.Lee use dynamic GBrowse tracks generation
-* 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks 
-=======
 /**
  * Display Map information from database
  * 
@@ -19,7 +13,6 @@
  * 1apr12 dem: Small cleanups.  Needs work.
  * 10/19/2010   J.Lee use dynamic GBrowse tracks generation
  * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks 
->>>>>>> 4f64ae149478f7bf1c9723d94385027820101216
 */
 $usegbrowse = True;
 require_once('config.php');
@@ -40,11 +33,6 @@ $mapsetStr = (substr($mapsetStr, 0, (strlen($mapsetStr)-1)));
 
 new Maps($_GET['function']);
 
-<<<<<<< HEAD
-class Maps {
-  private $delimiter = "\t";
-  // Using the class's constructor to decide which action to perform
-=======
 /**
  * Using the class's constructor to decide which action to perform
  * @author claybirkett
@@ -56,7 +44,6 @@ class Maps {
    */
   private $delimiter = "\t";
  
->>>>>>> 4f64ae149478f7bf1c9723d94385027820101216
   public function __construct($function = null)  {	
     switch($function) {
     case 'typeMaps':
@@ -99,9 +86,6 @@ class Maps {
   private function type_MapSet_Display()
   {
 ?>
-<<<<<<< HEAD
-
-=======
 		<!--Style sheet for better user interface-->
 		
 		<style type="text/css">
@@ -120,7 +104,6 @@ class Maps {
                     td.marker
                     { padding: 5px 0; border: 0 !important; }
         </style>
->>>>>>> 4f64ae149478f7bf1c9723d94385027820101216
 <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
 <a href="/cgi-bin/gbrowse/tht">View in GBrowse.</a><br><br>
 
@@ -335,11 +318,6 @@ class Maps {
 			
 
       </script>		
-<<<<<<< HEAD
-		
-		<!--Style sheet for better user interface-->
-=======
->>>>>>> 4f64ae149478f7bf1c9723d94385027820101216
 		
 		<div style=" float: left; margin-bottom: 1.5em;">
 		<table>
