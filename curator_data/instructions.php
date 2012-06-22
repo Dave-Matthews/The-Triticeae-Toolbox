@@ -24,17 +24,18 @@ ul ul ul {list-style-type: disc}
   <h1>Data Submission</h1>
   <div class="section">
 
-    <br>The data templates are Excel worksheets with column headers for
+  <br>The data templates are .csv, .txt or Excel worksheets with column headers for
     the data T3 can accept or requires, some example values to be
     replaced with yours, and notes about the restrictions for valid
     data.
 
       <ul>
+<p>
       <li><b><?php filelink("T3/Steps_in_Data_Submission_to_T3.docx", "Instructions") ?></b>
 	- Rules for filling in the templates, and sequence of submission
-
+<p>
       <li><b>Data templates</b>
-	<ul>
+<p>	<ul>
 	  <li><b>Germplasm lines</b>
 	    - Name, properties, pedigree, GRIN accession... [ <a href="curator_data/tutorial/T3_Lesson1_LineUpload.html">Tutorial</a> ]
 	    <ul>
@@ -42,16 +43,16 @@ ul ul ul {list-style-type: disc}
 	      <li><a href="curator_data/examples/T3/LineSubmissionForm_Barley.xls">Barley</a>
 	      <li><a href="curator_data/examples/T3/T3NameConversion.xlsm">Macros</a> for converting line names to T3 format
 	    </ul>
-	  <li><b>Phenotyping</b>
+<p>	  <li><b>Phenotyping</b>
 	    <ul>
           <li><?php filelink("T3/TrialSubmissionForm.xls", "Experiment annotation") ?>
 		- Location, planting date, experimental design... [ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html">Tutorial</a> ]
-	      <li><a href="curator_data/examples/T3/PhenotypeSubmissionForm.xls">Experiment results</a>
+	      <li><a href="curator_data/examples/T3/PhenotypeSubmissionForm_wheat.xls">Experiment results</a>
 		- Values for all traits for test lines and checks, summary statistics
 	      <li><a href="curator_data/examples/trait_template.xls">Traits</a>
 		- Within T-CAP the traits, protocols and units will be specified by the project.
 	    </ul>
-	  <li><b>Genotyping</b> ... [ <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html">Tutorial</a> ]
+<p>	  <li><b>Genotyping</b> ... [ <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html">Tutorial</a> ]
 	    <ul>
 	      <li><a href="curator_data/examples/Geno_Annotation_Sample.txt">Experiment annotation</a>
 		- Description of the assay
@@ -61,13 +62,15 @@ ul ul ul {list-style-type: disc}
 		- 1D table of alleles for lines and markers
 	      <li><a href="curator_data/examples/TCAPbarley9K-sample.txt">Experiment results</a>
 		- 2D table of alleles for lines and markers
-	      <li>Markers
-		<br><a href="curator_data/examples/Generic_SNP.txt">Sequence</a>, 
-		<a href="curator_data/examples/mapupload_example.txt">map location</a>, 
-		<a href="curator_data/examples/Marker_import_sample4.txt">gene function</a>
+</ul>
+<p>
+	      <li><b>Markers</b>
+              <ul>
+		<li><a href="curator_data/examples/Generic_SNP.txt">Sequence</a>
+		<li><a href="curator_data/examples/mapupload_example.txt">Map location</a>
+		<li><a href="curator_data/examples/Marker_import_sample4.txt">Gene function</a> -  Annotations and synonyms 
 	    </ul>
-	</ul>
-    </ul>
+	 </ul>
 
     <p>Once filled in, the resulting Excel files are to be uploaded
       directly into the T3 software. Some values are checked for
