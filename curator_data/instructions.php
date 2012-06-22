@@ -4,9 +4,9 @@ include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'theme/admin_header.php');
 connect();
 
-function filelink($path, $label) {
 // Date-stamp the template files etc. if new.
 // $path is relative to curator_data/examples/.
+function filelink($path, $label) {
   global $config;
   echo "<a href='".$config['base_url']."curator_data/examples/$path'>$label</a>";
   // Add "(new <date>)" if newer than 30 days.
@@ -28,53 +28,60 @@ ul ul ul {list-style-type: disc}
   <h1>Data Submission</h1>
   <div class="section">
 
-  <br>The data templates are .csv, .txt or Excel worksheets with column headers for
+
+
+  <br>The data templates are .csv, .txt or  Excel worksheets with column headers for
     the data T3 can accept or requires, some example values to be
     replaced with yours, and notes about the restrictions for valid
-    data.
+    data are included.
+
+
 
       <ul>
-<p>
       <li><b><?php filelink("T3/Steps_in_Data_Submission_to_T3.docx", "Instructions") ?></b>
 	- Rules for filling in the templates, and sequence of submission
 <p>
       <li><b>Data templates</b>
-<p>	<ul>
+<p>
+	<ul>
 	  <li><b>Germplasm lines</b>
 	    - Name, properties, pedigree, GRIN accession... [ <a href="curator_data/tutorial/T3_Lesson1_LineUpload.html">Tutorial</a> ]
 	    <ul>
-	      <li><a href="curator_data/examples/T3/LineSubmissionForm_Wheat.xls">Wheat</a>
+	      <li><?php filelink("T3/LineSubmissionForm_Wheat.xls", "Wheat") ?>
               <li><?php filelink("T3/LineSubmissionForm_Barley.xls", "Barley") ?>
-	      <li><a href="curator_data/examples/T3/T3NameConversion.xlsm">Macros</a> for converting line names to T3 format
+	      <li><?php filelink("T3/T3NameConversion.xlsm", "Macros") ?> for converting line names to T3 format
 	    </ul>
-<p>	  <li><b>Phenotyping</b>
+<p>
+	  <li><b>Phenotyping</b>
 	    <ul>
           <li><?php filelink("T3/TrialSubmissionForm.xls", "Experiment annotation") ?>
 		- Location, planting date, experimental design... [ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html">Tutorial</a> ]
-	      <li><a href="curator_data/examples/T3/PhenotypeSubmissionForm_wheat.xls">Experiment results</a>
+	      <li><?php filelink("T3/PhenotypeSubmissionForm.xls", "Experiment results") ?>
 		- Values for all traits for test lines and checks, summary statistics
-	      <li><a href="curator_data/examples/trait_template.xls">Traits</a>
+	      <li><?php filelink("trait_template.xls", "Traits") ?>
 		- Within T-CAP the traits, protocols and units will be specified by the project.
 	    </ul>
-<p>	  <li><b>Genotyping</b> ... [ <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html">Tutorial</a> ]
+<p>
+	  <li><b>Genotyping</b> ... [ <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html">Tutorial</a> ]
 	    <ul>
-	      <li><a href="curator_data/examples/Geno_Annotation_Sample.txt">Experiment annotation</a>
+	      <li><?php filelink("Geno_Annotation_Sample.txt", "Experiment annotation") ?>
 		- Description of the assay
- 	      <li><a href="curator_data/examples/LinesTrialCode_Sample.txt">Line translation</a>
+ 	      <li><?php filelink("LinesTrialCode_Sample.txt", "Line translation") ?>
 		- Line Name and Trial Code
-	      <li><a href="curator_data/examples/genotypeData_T3.txt">Experiment results</a>
+	      <li><?php filelink("genotypeData_T3.txt", "Experiment results") ?>
 		- 1D table of alleles for lines and markers
-	      <li><a href="curator_data/examples/TCAPbarley9K-sample.txt">Experiment results</a>
+	      <li><?php filelink("TCAPbarley9K-sample.txt", "Experiment results") ?>
 		- 2D table of alleles for lines and markers
-</ul>
+              </ul> 
 <p>
 	      <li><b>Markers</b>
-              <ul>
-		<li><a href="curator_data/examples/Generic_SNP.txt">Sequence</a>
-		<li><a href="curator_data/examples/mapupload_example.txt">Map location</a>
-		<li><a href="curator_data/examples/Marker_import_sample4.txt">Gene function</a> -  Annotations and synonyms 
+              <ul>		
+                <li><?php filelink("Generic_SNP.txt", "Sequence") ?> 
+		<li><?php filelink("mapupload_example.txt", "Map location") ?>
+		<li><?php filelink("Marker_import_sample4.txt", "Gene function") ?> -  Annotations and synonyms 
 	    </ul>
-	 </ul>
+	</ul>
+    </ul>
 
     <p>Once filled in, the resulting Excel files are to be uploaded
       directly into the T3 software. Some values are checked for
