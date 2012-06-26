@@ -1367,10 +1367,11 @@ class Downloads
 	    $outarray = explode(',',$alleles);
 	    $i=0;
 	    foreach ($outarray as $allele) {
-	      if ($allele=='AA') $marker_aacnt[$i]++;
-	      if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
-	      if ($allele=='BB') $marker_bbcnt[$i]++;
-	      if ($allele=='--') $marker_misscnt[$i]++;
+              if ($allele=='AA') { $marker_aacnt[$i]++; }
+              elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
+              elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
+              elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
+              else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
 	      $i++;
 	    }
           }
@@ -3163,10 +3164,11 @@ selected lines</a><br>
 		    $outarray = explode(',',$alleles);
 		    $i=0;
 		    foreach ($outarray as $allele) {
-		      if ($allele=='AA') $marker_aacnt[$i]++;
-		      if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
-		      if ($allele=='BB') $marker_bbcnt[$i]++;
-		      if ($allele=='--') $marker_misscnt[$i]++;
+		      if ($allele=='AA') { $marker_aacnt[$i]++; }
+		      elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
+		      elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
+		      elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
+                      else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
 		      $i++;
                     }
 		  }
@@ -3391,10 +3393,11 @@ selected lines</a><br>
 	   $outarray = explode(',',$alleles);
 	   $i = 0;
 	   foreach ($outarray as $allele) {
-	    if ($allele=='AA') $marker_aacnt[$i]++;
-	    if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
-	    if ($allele=='BB') $marker_bbcnt[$i]++;
-	    if ($allele=='--') $marker_misscnt[$i]++;
+            if ($allele=='AA') { $marker_aacnt[$i]++; }
+            elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
+            elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
+            elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
+            else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
 	    $i++;
 	   }
 	  }
