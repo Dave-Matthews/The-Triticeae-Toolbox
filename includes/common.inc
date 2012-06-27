@@ -1,5 +1,6 @@
 <?php
 
+// DEM 20jun12: Added check_version().
 // DEM 17oct11: Added functions mysql_grab() and print_h().
 // 7/1/2011   JLee  Change to use excel reader in ../lib/Excel
 /* DEM 7dec10: Revised updateTable() to handle enum and longtext columns. */
@@ -7,6 +8,22 @@
 /*
  * Generic / Common functions are stored here. 
  */
+
+/* Check whether the curator is submitting data using the current version
+ * of the data input template, $file. */
+function check_version($submitted, $file) {
+  $latest = date("jMy", filemtime($file));
+  echo "User's submitted template version: $submitted<br>";
+  echo "Current version: $latest<br>";
+  $phpsubmitted =  date_create_from_format('jMy', $submitted);
+  $phplatest = date_create_from_format('jMy', $latest);
+  if ($phpsubmitted > $phplatest)
+    echo "Template too new!<p>";
+  if ($phpsubmitted < $phplatest)
+    return FALSE;
+  else
+    return TRUE;
+}
 
 /* Shorthand MySQL query for a single value. Returns the value.
    Dies if there's more than one result or a MySQL error. 

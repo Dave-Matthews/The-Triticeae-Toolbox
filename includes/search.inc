@@ -5,15 +5,15 @@
 // 07/05/2011  JLee   Update table names to reflect current schema
 //*****************************************************************************
 /* 
- * This file contains most of the functions used when searching
+ * This file contains most of the functions used when searching with Quick Search.
+ * Special handling of certain data classes such as Trial is routed
+ * in function displayTermSearchResults().
  */
-
 
 /*
  * The following functions are general term searching functions, match the term in the table. 
  * Nothing fancy.
  */
-
 
 /* 
  * These functions all return the following:
@@ -215,16 +215,20 @@ function displayTermSearchResults(array $found) {
 		  if (mysql_num_rows($msquery) > 0) { $skip = "yes"; }
 		}
 		// Intercept experiments and route to display_phenotype.php or display_genotype.php.
-		if ($line[0] == "experiments") {
+		if ($type == "Experiment") {
+		  $type = "Trial";
 		  $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $line[2]");
 		  $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
-		  if ($expttype == 1)
-		    echo "<p><strong><a href=\"display_phenotype.php?trial_code=$trialcode\">$trialcode</a></strong> &mdash; " . $type . "</p>\n";
+		  if ($expttype == 1) 
+		    echo "<p><strong><a href=\"display_phenotype.php?trial_code=$trialcode\">$trialcode</a></strong> &mdash; " . $type . "</p>\n";		  
 		  else
 		    echo "<p><strong><a href=\"display_genotype.php?trial_code=$trialcode\">$trialcode</a></strong> &mdash; " . $type . "</p>\n";
 		}
 		else {
 		  if (! $skip) {
+		    // Use a better class name than the table name:
+		    if ($type == 'Experiment Set')
+		      $type = 'Experiment';
 		    $query = mysql_query("SELECT $line[1] FROM $line[0] WHERE $key = '$line[2]'");
 		    while($row = mysql_fetch_assoc($query)) {
 		      echo "<p title=\"$type\"><strong><a href=\"view.php?table=" . urlencode($line[0]) . "&uid=" . urlencode($line[2]) ."\">" . $row[$line[1]] . "</a></strong> &mdash; " . $type . "</p>\n";
