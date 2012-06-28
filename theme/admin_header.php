@@ -152,13 +152,13 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
       Add Phenotype Experiment Annotations</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data">
-      Add Phenotype Experiment Results</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
-      Delete a Phenotype Experiment</a></li>
+      Add Phenotype Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
-      Add Genotype Annotations</a></li>
+      Add Genotype Experiment Annotations</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
       Add Genotype Results </a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
+      Delete Trials / Experiments</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
       Add Maps</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
