@@ -403,14 +403,31 @@ class Downloads
 		if (isset($_SESSION['clicked_buttons'])) {
 		    $selectcount = $_SESSION['clicked_buttons'];
 		    $markers = $_SESSION['clicked_buttons'];
-		    //$markers = implode(",", $_SESSION['clicked_buttons']);
+		    $markers_str = implode(",", $_SESSION['clicked_buttons']);
 		} else {
 		    $markers = array();
+		    $markers_str = "";
 		}
 		if (isset($_SESSION['phenotype'])) {
 		    $phenotype = $_SESSION['phenotype'];
 		} else {
 		    $phenotype = "";
+		}
+		
+		if (!preg_match('/[0-9]/',$marker_str)) {
+		  //get genotype markers that correspond with the selected lines
+		  $sql_exp = "SELECT DISTINCT marker_uid
+		  FROM allele_cache
+		  WHERE
+		  allele_cache.line_record_uid in ($lines_str)";
+		  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+		  if (mysql_num_rows($res)>0) {
+		    while ($row = mysql_fetch_array($res)){
+		      $markers[] = $row["marker_uid"];
+		    }
+		  }
+		} else {
+		  $markers = array();
 		}
 		
 		//get genotype experiments
@@ -450,7 +467,7 @@ class Downloads
           $zip->writeData($this->type1_build_annotated_align($experiments_g));
         } elseif ($version == "V3") {
           $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($experiments_g));
+          $zip->writeData($this->type1_build_geneticMap($lines,$markers));
           $zip->newFile("snpfile.txt");
           $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
         } elseif ($version == "V4") {
@@ -2511,6 +2528,14 @@ selected lines</a><br>
 	    $lines = explode(',', $lines_str);
 	  }
 	  
+	  if (isset($_SESSION['clicked_buttons'])) {
+	    $selectcount = $_SESSION['clicked_buttons'];
+	    $markers = $_SESSION['clicked_buttons'];
+	    $markers_str = implode(",", $_SESSION['clicked_buttons']);
+	  } else {
+	    $markers = array();
+	    $markers_str = "";
+	  }
 	  if (!preg_match('/[0-9]/',$marker_str)) {
 	    //get genotype markers that correspond with the selected lines
 	    $sql_exp = "SELECT DISTINCT marker_uid
@@ -2563,7 +2588,7 @@ selected lines</a><br>
 	    $zip->writeData($this->type1_build_annotated_align($experiments_g));
 	  } elseif (($version == "V3")) {
 	    $zip->newFile("geneticMap.txt");
-	    $zip->writeData($this->type1_build_geneticMap($experiments_g));
+	    $zip->writeData($this->type1_build_geneticMap($lines,$markers));
 	    $zip->newFile("snpfile.txt");
 	    $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
 	  } elseif (($version == "V4")) {
@@ -3694,7 +3719,7 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	function type1_build_geneticMap($experiments)
+	function type1_build_geneticMap($lines,$markers)
 	{
 		$delimiter ="\t";
 		$output = '';
@@ -3720,6 +3745,21 @@ selected lines</a><br>
 		  '6H' => '6','7H' => '7','UNK'  => '10'
 		);
 
+		
+		//generate an array of selected markers that can be used with isset statement
+		foreach ($markers as $temp) {
+		  $marker_lookup[$temp] = 1;
+		}
+		
+		$sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
+		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+		$i=0;
+		while ($row = mysql_fetch_array($res)) {
+		  $marker_list[$i] = $row[0];
+		  $marker_list_name[$i] = $row[1];
+		  $i++;
+		}
+		
 		$sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
 		where mim.marker_uid = markers.marker_uid
 		AND mim.map_uid = map.map_uid
@@ -3740,52 +3780,67 @@ selected lines</a><br>
 		  $marker_list_rank[$uid] = $rank; 
 		}
 		
+		foreach ($lines as $line_record_uid) {
+		  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
+		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+		  if ($row = mysql_fetch_array($res)) {
+		    $alleles = $row[0];
+		    $outarray = explode(',',$alleles);
+		    $i=0;
+		    foreach ($outarray as $allele) {
+		      if ($allele=='AA') {
+		        $marker_aacnt[$i]++;
+		      }
+		      elseif (($allele=='AB') or ($allele=='BA')) {
+		        $marker_abcnt[$i]++;
+		      }
+		      elseif ($allele=='BB') {
+		        $marker_bbcnt[$i]++;
+		      }
+		      elseif (($allele=='--') or ($allele=='')) {
+		        $marker_misscnt[$i]++;
+		      }
+		      else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
+		      }
+		      $i++;
+		    }
+		  }
+		  //echo "$line_record_uid<br>\n";
+		}
+		
+		
         //get lines and filter to get a list of markers which meet the criteria selected by the user
-        $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
-					SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
-					FROM allele_frequencies AS af, markers as m
-					WHERE m.marker_uid = af.marker_uid
-						AND af.experiment_uid in ($experiments)
-					group by af.marker_uid"; 
-
-		$res = mysql_query($sql_mstat) or die(mysql_error());
 		$num_maf = $num_miss = 0;
-
-		while ($row = mysql_fetch_array($res)){
-			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
-			  $miss = round(100*$row["summis"]/$row["total"],1);
-					if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
-						$marker_uid[] = $row["marker"];
-						$uid = $row["marker"];
-						if (isset($marker_list_mapped[$uid])) {
-						  $marker_list_name[$uid] = $row["name"];
-						  $marker_list_all[$uid] = $marker_list_rank[$uid];
-						}
-					}
+		foreach ($marker_list as $i => $uid) {
+		  $marker_name = $marker_list_name[$i];
+		  if (isset($marker_lookup[$uid])) {
+		    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
+		    if ($total>0) {
+		      $maf[$i] = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
+		      $miss[$i] = round(100*$marker_misscnt[$i]/$total,1);
+		    } else {
+		      $maf[$i] = 0;
+		      $miss[$i] = 100;
+		    }
+		    if (($maf[$i] >= $min_maf)AND ($miss[$i]<=$max_missing)) {
+		      if (isset($marker_list_mapped[$uid])) {
+		        $marker_list_all_name[$uid] = $marker_name;
+		        $marker_list_all[$uid] = $marker_list_rank[$uid];
+		      }
+		    }
+		  }
 		}
 		if (count($marker_list_all) == 0) {
 		   $output = "no mapped data found";
 		   return $output;
 		}
-		
-        // finish writing file header using a list of line names
-        $sql = "SELECT DISTINCT lr.line_record_name AS line_name
-			 FROM line_records AS lr, tht_base AS tb
-			 WHERE
-				  lr.line_record_uid = tb.line_record_uid
-				  AND tb.experiment_uid IN ($experiments)
-				  ORDER BY line_name";
-        $res = mysql_query($sql) or die(mysql_error());
-        while ($row = mysql_fetch_array($res)) {
-            $line_names[] = $row['line_name'];
-        }
 			  
         // make an empty marker with the lines as array keys 
         $nelem = count($marker_uid);
-        $n_lines = count($line_names);
-		$empty = array_combine($line_names,array_fill(0,$n_lines,'-'));
+        $n_lines = count($lines);
+		$empty = array_combine($lines,array_fill(0,$n_lines,'-'));
 		$nemp = count($empty);
-		$line_str = implode($delimiter,$line_names);
+		$line_str = implode($delimiter,$lines);
 		// $firephp = log($nelem." ".$n_lines);
 			
 		// write output file header
@@ -3805,7 +3860,7 @@ selected lines</a><br>
 		$num_markers = 0;
 		/* foreach( $marker_uid as $cnt => $uid) { */
 		foreach($marker_list_all as $uid=>$value) {
-		    $marker_name = $marker_list_name[$uid];
+		    $marker_name = $marker_list_all_name[$uid];
 		    $map_loc = $marker_list_mapped[$uid];
 		    $output .= "$marker_name\t$map_loc\n";
 		    $num_markers++;
