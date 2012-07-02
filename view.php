@@ -30,8 +30,8 @@
 
 <?php 
 
-	    //Example:  Line records = show_line_records();
-	    //	    Breeding Programs = show_breeding_programs();
+	    //Example:  Line records = includes/pedigree.inc/show_line_records();
+	    //	    Breeding Programs = includes/general.inc/show_breeding_programs();
 
 	    $func = "show_" . $_REQUEST['table'];
 

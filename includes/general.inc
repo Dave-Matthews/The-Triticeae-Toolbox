@@ -72,6 +72,16 @@ function loadUser($user) {
 }
 
 /**
+ * This function is a special function when viewing line_records.
+ * It is used by view.php.
+ *
+ * @param $id - unique id of the dataset.
+ */
+// function show_line_records($id) {
+//   Defined in includes/pedigree.inc
+// }
+
+/**
  * This function is a special function when viewing datasets. It will go ahead and retrieve the breeding
  * programs and associated experiments. It is used in correlation with view.php
  *
