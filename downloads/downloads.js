@@ -613,7 +613,7 @@ function update_phenotype_linesb(options) {
 			    select1_str = "Lines";
                 markers_loading = true;
                 $('step5').hide();
-                var url=php_self + "?function=step4lines&pi=" + phenotpe_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
+                var url=php_self + "?function=step4lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
                 //changes are right here
                 var tmp = new Ajax.Updater($('step5'),url,
