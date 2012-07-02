@@ -3824,7 +3824,7 @@ selected lines</a><br>
 		    }
 		    if (($maf[$i] >= $min_maf)AND ($miss[$i]<=$max_missing)) {
 		      if (isset($marker_list_mapped[$uid])) {
-		        $marker_list_name[$uid] = $marker_name;
+		        $marker_list_all_name[$uid] = $marker_name;
 		        $marker_list_all[$uid] = $marker_list_rank[$uid];
 		      }
 		    }
@@ -3860,7 +3860,7 @@ selected lines</a><br>
 		$num_markers = 0;
 		/* foreach( $marker_uid as $cnt => $uid) { */
 		foreach($marker_list_all as $uid=>$value) {
-		    $marker_name = $marker_list_name[$uid];
+		    $marker_name = $marker_list_all_name[$uid];
 		    $map_loc = $marker_list_mapped[$uid];
 		    $output .= "$marker_name\t$map_loc\n";
 		    $num_markers++;
