@@ -121,7 +121,12 @@ function showRecord($id) {
 		// Immediate Parents
 		echo "\n\t<tr>";
 		echo "\n\t\t<td><strong>Direct Parents</strong></td>";
-		echo "\n\t\t<td>". implode(", ", getParents($id)) ."</td>";
+		echo "<td>";
+		$prnts = getParents($id);
+		foreach ($prnts as $pt) {
+		  $lnkpts .= "<a href=".$config['base_url']."view.php?table=line_records&name=$pt>$pt</a>, ";
+		}
+		echo rtrim($lnkpts, ' ,')."</td>";
 		echo "\n\t</tr>";
 
 		// Children
