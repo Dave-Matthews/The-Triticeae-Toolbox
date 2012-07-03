@@ -69,9 +69,14 @@ include($config['root_dir'].'theme/admin_header.php');
   </div>
 <?php
 
-  }
+  } // end of "if (!isset($_GET) OR empty($_GET))"
 
 // Something has been selected. Execute it:
+elseif ($_GET['doit'] == "trial") {
+  //A trial has been selected and confirmed.
+  delete_trial($_GET['exptuid']); // function defined below
+  print "<p><input type='Button' value='Return' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\" style='font: bold 13px Arial'>";
+}
 elseif ($_GET['trialcode'] OR $_GET['exptuid']) {
    // A Trial has been selected. Display its contents and confirm.
    if (!empty($_GET['trialcode'])) {
@@ -114,7 +119,7 @@ elseif ($_GET['trialcode'] OR $_GET['exptuid']) {
    $traitcount = mysql_num_rows($r);
    echo "<p><b>$vals</b> data points (phenotype values) for 
          <b>$traitcount</b> traits from <b>$linecount</b> lines will be deleted.<br>";
-   print "<p><input type='Button' value='Yikes! No' onClick='history.go(-1)' style='font: bold 13px Arial'>";
+   print "<p><input type='Button' value='Yikes! No' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\" style='font: bold 13px Arial'>";
    ?>
    <input type='Button' value='Do it.' onClick="window.open('<?php echo $config['base_url']; ?>curator_data/delete_experiment.php?doit=trial&exptuid=<?php echo $exptuid ?>', '_top')">
    <p>To undelete you must reload the original files, including the experiment annotation file.
@@ -143,19 +148,16 @@ elseif ($_GET['exptsetname'] OR $_GET['exptsetuid']) {
     $sql = "delete from experiment_set where experiment_set_uid = $esuid";
     mysql_query($sql) or die(mysql_error() . "<br>Query was: $sql");
     echo "Experiment <b>$esname</b> has been deleted.<p>";
-    echo "<input type='Button' value='Return' onClick='history.go(-1)' style='font: bold 13px Arial'>";
+    echo "<input type='Button' value='Return' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\"' style='font: bold 13px Arial'>";
   }
   else {
     echo "Can't delete Experiment <b>$esname</b>. Please delete the Trials it contains first.<p>";
     echo "<b>Trials</b>:<br>";
     while ($tr = mysql_fetch_row($r))
       echo "$tr[0]<br>";
-    echo "<br><input type='Button' value='Return' onClick='history.go(-1)' style='font: bold 13px Arial'>";    
+    echo "<br><input type='Button' value='Return' onClick=\"location.href='".$config['base_url']."curator_data/delete_experimen\
+t.php'\" style='font: bold 13px Arial'>";    
   }
-}
-elseif ($_GET['doit'] == "trial") {
-  //A trial has been selected and confirmed.
-  delete_trial($_GET['exptuid']); // function defined below
 }
 else echo "Error, invalid _GET[] value. See script line ".__LINE__;
 
