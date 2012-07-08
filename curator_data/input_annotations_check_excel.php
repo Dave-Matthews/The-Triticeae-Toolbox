@@ -268,7 +268,7 @@ private function typeAnnotationCheck()
 	    $n_trials++;
 	}
 
-	// Check for current version of the Template file.
+	// Check for current version of the Template file, using check_version() from includes/common.inc.
 	$version = trim($version_row[2]);
 	$template = $config['root_dir']."curator_data/examples/T3/TrialSubmissionForm.xls";
 	if (!check_version($version, $template)) {
@@ -337,7 +337,6 @@ private function typeAnnotationCheck()
 	  $experiments[$index]->seedingrate = $seedingrate_row[$i];
 	  $experiments[$index]->trialdesc = mysql_real_escape_string(trim($trialdesc_row[$i]));
 	  $experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
-	  $experiments[$index]->beginweatherdate = mysql_real_escape_string($beginweatherdate_row[$i]);
 	  $experiments[$index]->greenhouse = mysql_real_escape_string($greenhouse_row[$i]);
 	  $experiments[$index]->experimentset = mysql_real_escape_string(trim($experimentset_row[$i]));
 
@@ -430,7 +429,7 @@ private function typeAnnotationCheck()
 	}
 	
 	// Weather Date, optional
-	$teststr= addcslashes(trim($beginweatherdate_row[$i]),"\0..\37!@\177..\377");
+	$teststr= addcslashes(($beginweatherdate_row[$i]),"\0..\37!@\177..\377");
 	if ($teststr) {
 	  $phpdate = date_create_from_format('n/j/Y', $teststr);
 	  if ($phpdate === FALSE) {
@@ -745,6 +744,19 @@ private function typeAnnotationCheck()
 
 	      }
 
+	      // Harvest Date
+	      // convert Microsoft Excel timestamp to Unix timestamp
+	      $teststr= addcslashes(trim($harvestdate_row[$i]),"\0..\37!@\177..\377");
+	      if (DEBUG>2) {echo $teststr."\n";}
+	      if (preg_match("/\d+\/\d+\/\d+/",$teststr)) {	
+		if (DEBUG>2) {echo $teststr."\n";}
+		$experiments[$index]->harvestdate = $teststr;
+	      } else {
+		$experiments[$index]->harvestdate = '';
+		echo "<b>ERROR: Please use correct format for harvest date (4/14/2009) </b><br>";
+		exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+	      }
+		
 	      //Check number of entries
 	      if ((is_numeric($numberofentries_row[$i])) || ($numberofentries_row[$i] == '' )) {
 		$experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
@@ -761,27 +773,10 @@ private function typeAnnotationCheck()
 		echo "<b>ERROR: Value for 'Number of replications' must be an integer </b><br/><br/>";
 		exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	      }
-
 		
 	      // Plot Size
 	      $experiments[$index]->plotsize = mysql_real_escape_string($plotsize_row[$i]);
-		
-	      // Harvest Date
-	      // convert Microsoft Excel timestamp to Unix timestamp
-	      $teststr= addcslashes(trim($harvestdate_row[$i]),"\0..\37!@\177..\377");
-	      if (DEBUG>2) {echo $teststr."\n";}
-	
-	      if (preg_match("/\d+\/\d+\/\d+/",$teststr)) {	
-		if (DEBUG>2) {echo $teststr."\n";}
-		$experiments[$index]->harvestdate = $teststr;
-	      } else {
-		$experiments[$index]->harvestdate = '';
-		echo "<b>ERROR: Please use correct format for harvest date (4/14/2009) </b><br>";
-		exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-	      }
-		
-		
-	
+			
 	      // Harvest Area
 	      $experiments[$index]->harvestedarea = mysql_real_escape_string($harvestedarea_row[$i]);
 	      // irrigation
