@@ -17,14 +17,13 @@ function check_version($submitted, $file) {
   echo "Current version: $latest<br>";
   $phpsubmitted =  date_create_from_format('jMy', $submitted);
   $phplatest = date_create_from_format('jMy', $latest);
+  if ($phpsubmitted < $phplatest) 
+    return FALSE;
   /* Allow a day of slack in the Too-new direction. */
   /* if ($phpsubmitted > $phplatest) */
-  if ($phpsubmitted > date_add($phplatest, date_interval_create_from_date_string('1 day')))
+  if ($phpsubmitted > date_add($phplatest, date_interval_create_from_date_string('1 day'))) 
     echo "Template too new!<p>";
-  if ($phpsubmitted < $phplatest)
-    return FALSE;
-  else
-    return TRUE;
+  return TRUE;
 }
 
 /* Shorthand MySQL query for a single value. Returns the value.
