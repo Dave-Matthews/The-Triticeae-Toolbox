@@ -51,12 +51,14 @@ if (isset($_SESSION['selected_lines'])) {
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h1>Cluster Lines by Genotype</h1>
+  <h1>Cluster Lines by Genotype, SVD</h1>
   <div class="section">
 
   <p>The 
   <font color=blue>Currently selected lines</font> will be clustered according to their 
-  alleles for all markers, using the R procedure "pam" (Partitioning Around Medoids).  
+  alleles for all markers, using the R procedure <b>pam()</b> (Partitioning Around Medoids).  
+  The clusters will be displayed in three dimensions calculated by <b>Singular
+  Value Decomposition</b>, R procedure <b>svd()</b>.<p>
   When you have examined the results you can select the clusters you want to use
   as your new <font color=blue>Currently selected lines</font>.
 

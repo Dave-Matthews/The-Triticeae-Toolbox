@@ -7,7 +7,7 @@ connect();
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h1>Cluster Lines by Genotype</h1>
+  <h1>Cluster Lines by Genotype, SVD</h1>
   <div class="section">
 
 <?php
