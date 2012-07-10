@@ -89,7 +89,7 @@ class Maps {
 		<!--Style sheet for better user interface-->
 		
 		<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+			th {background: #5B53A6 !important; color: white !important; }
 			table {background: none; border-collapse: collapse}
 			td {border: 1px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
@@ -99,10 +99,10 @@ class Maps {
                    table.marker
                    {background: none; border-collapse: collapse}
                     th.marker
-                    { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
+		      { background: #5b53a6; color: #fff; border: 1px solid #666 !important; border-color: black; text-align: left;}
                     
                     td.marker
-                    { padding: 5px 0; border: 0 !important; }
+                    { border: 1 !important; }
         </style>
 <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
 <a href="/cgi-bin/gbrowse/tht">View in GBrowse.</a><br><br>
@@ -250,17 +250,17 @@ class Maps {
 				      $j(this)
 					.removeClass('inprogress');
 				    });
-                            loadGbrowse('#map_gbrowse',
-					' #details_panel',
-					['name=' +
-					 'chr' + chr.toUpperCase(),
-					all_mapSets, 'grid=on', 'show_tooltips=on',
-'.cgifields=show_tooltips', 'drag_and_drop=on'].join('&'),
-					function () {
-					  tocollapse
-					    .each(function () {
-						collapse('Marker ' + this );});
-					});
+//                             loadGbrowse('#map_gbrowse',
+// 					' #details_panel',
+// 					['name=' +
+// 					 'chr' + chr.toUpperCase(),
+// 					all_mapSets, 'grid=on', 'show_tooltips=on',
+// '.cgifields=show_tooltips', 'drag_and_drop=on'].join('&'),
+// 					function () {
+// 					  tocollapse
+// 					    .each(function () {
+// 						collapse('Marker ' + this );});
+// 					});
                         }
                     }
 				);
@@ -465,24 +465,27 @@ private function type_Markers()
 ?>
 <h2>Map</h2>
  <div id="map_gbrowse"></div>
- <table>
+ <table style="table-layout:fixed; width: 510px">
 	<tr>
-	<th style="width: 10px;"class="marker">Info</th>
-	<th style="width: 145px;" class="marker">Marker</th>
-	<th style="width: 160px;" class="marker" >Position </th>
-	<th style="width: 150px;" class="marker">Chromosome </th>
-	<th style="width: 130px;" class="marker">Arm </th>
-	<th style="width: 25px;" class="marker"></th>
+   <th style="width: 25px;"class="marker">&nbsp;&nbsp;Info</th>
+	<th style="width: 125px;" class="marker">Marker</th>
+	<th style="width: 50px;" class="marker">Chromo- some </th>
+	<th style="width: 50px;" class="marker" >Start </th>
+	<th style="width: 50px;" class="marker" >End </th>
+	<th style="width: 100px; border-right: 0px" class="marker">Bin </th>
+	<!-- <th style="width: 130px;" class="marker">Arm </th> -->
+	<th style="width: 15px; padding: 0; border: 0px" class="marker"></th>
 	</tr>
 	</table> 
 
-<div style="padding: 0; height: 300px; width: 630px;  overflow: scroll;border: 1px solid #5b53a6;">
-<table>	
+<div style="padding: 0; height: 300px; width: 507px;  overflow: scroll;border: 1px solid #5b53a6;">
+<table style="table-layout:fixed; ">	
 	
 <?php
 
 	/* Query for fetching marker name, start position, end position, chromosome and arm values based on user selected map name */
-		$sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position";
+		/* $sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position"; */
+		$sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.bin_name, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position";
 
 			$res = mysql_query($sql) or die(mysql_error());
 			
@@ -494,14 +497,16 @@ private function type_Markers()
 			?>
 	
 		<tr>
-		    <td class="marker">
+		    <td style="width: 25px;" class="marker">
 		    <input type="radio" name="btn1" value="<?php echo $row['marker_name'] ?>" onclick="javascript: update_markers_annotations(this.value)" /> 
 		    </td>
 		    <!-- Display Marker name, start position, chromosome, arm-->		
-		    <td style="width: 150px;" class="marker"><?php echo $row['marker_name'] ?> </td>
-		    <td style="width: 170px;" class="marker"> <?php echo $row['start_position'] ?> </td>
-		    <td style="width: 160px;" class="marker"> <?php echo $row['chromosome'] ?>   </td>
-		    <td style="width: 160px;" class="marker"> <?php echo $row['arm'] ?>	</td>
+		    <td style="width: 125px;" class="marker"><?php echo $row['marker_name'] ?> </td>
+		    <td style="width: 50px;" class="marker"> <?php echo $row['chromosome'] ?>   </td>
+		    <td style="width: 50px;" class="marker"> <?php echo $row['start_position'] ?> </td>
+		    <td style="width: 50px;" class="marker"> <?php echo $row['end_position'] ?> </td>
+		    <td style="width: 100px;" class="marker"> <?php echo $row['bin_name'] ?> </td>
+		    <!-- <td style="width: 160px;" class="marker"> <?php echo $row['arm'] ?>	</td> -->
 		    </tr>
 		    <?php
 		}
@@ -513,6 +518,7 @@ private function type_Markers()
 <div align="left">
 <input type="button" value="Download Map Data (XLS)" onclick="javascript:load_excel()" />
 </div>
+
 
 <?php
 }
