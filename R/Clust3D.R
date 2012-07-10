@@ -12,8 +12,15 @@ mrkData <- read.csv(mrkDataFile)
 # DEM oct11: Now this line is breaking the script. Wonder why.
 #system2("rm", mrkDataFile)
 
+# DEM 6mar12: Allow up to 10% missing data.
+fracNA <- apply(mrkData, 2, function(vec) return(sum(is.na(vec)))) / nrow(mrkData)
+mrkData <- mrkData[, fracNA <= 0.1]
+
 library(cluster)
 scaledMrk <- scale(mrkData, TRUE, FALSE)
+# Replace remaining NA's with 0, the mean.
+scaledMrk[is.na(scaledMrk)] <- 0
+#write.table(scaledMrk, "scaledMrk", sep=",", quote=FALSE)  # DEBUG
 
 # R runs a cluster analysis and a principal components analysis for display
 whichClust <- pam(scaledMrk, nClust, metric="manhattan", cluster.only=TRUE)
