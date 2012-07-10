@@ -414,7 +414,7 @@ class Downloads
 		    $phenotype = "";
 		}
 		
-		if (!preg_match('/[0-9]/',$marker_str)) {
+		if (!preg_match('/[0-9]/',$markers_str)) {
 		  //get genotype markers that correspond with the selected lines
 		  $sql_exp = "SELECT DISTINCT marker_uid
 		  FROM allele_cache
@@ -426,8 +426,6 @@ class Downloads
 		      $markers[] = $row["marker_uid"];
 		    }
 		  }
-		} else {
-		  $markers = array();
 		}
 		
 		//get genotype experiments
@@ -1406,7 +1404,9 @@ class Downloads
 	     if ($miss > $max_missing) $num_miss++;
 	     if (($miss > $max_missing) OR ($maf < $min_maf)) $num_removed++;
 	     $num_mark++;
-	   }
+	   } else {
+             $num_removed++;
+           }
 	   }
 	  $i++;
 	 }
@@ -2536,7 +2536,7 @@ selected lines</a><br>
 	    $markers = array();
 	    $markers_str = "";
 	  }
-	  if (!preg_match('/[0-9]/',$marker_str)) {
+	  if (!preg_match('/[0-9]/',$markers_str)) {
 	    //get genotype markers that correspond with the selected lines
 	    $sql_exp = "SELECT DISTINCT marker_uid
 	    FROM allele_cache
@@ -2548,8 +2548,6 @@ selected lines</a><br>
 	        $markers[] = $row["marker_uid"];
 	      }
 	    }
-	  } else {
-	    $markers = array();
 	  }
 	  
 	  //get genotype experiments
@@ -3170,9 +3168,7 @@ selected lines</a><br>
 		foreach ($markers as $temp) {
 		  $marker_lookup[$temp] = 1;
 		}
-		//echo "<pre>";
-		//print_r($marker_lookup);
-		//echo "</pre>";
+
 		$sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
 		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		$i=0;
