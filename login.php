@@ -142,16 +142,25 @@ function HTMLLoginForm($msg = "") {
   $retval = "";
   if (!empty($msg))
     $retval .= "<div id='form_error'>$msg</div>";
+  global $config;
+  $dir = explode("/", $config['root_dir']);
+  // Pop twice.
+  $crop = array_pop($dir); $crop = array_pop($dir);
   $retval .= <<<HTML
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
-  Registered members of the Triticeae CAP team have pre-release
-    access to all phenotype and genotype data from the project, 
-    and will be allowed to add their own private data to the database
-    (feature to be added).
+  <b>Triticeae CAP Participants</b>
+  <ul>
+    <li>have pre-release access to all phenotype and genotype data from the project.
+    <li>will be allowed to add their own private data to the database (feature to be added).
+    <li>can test-load their data files in the Sandbox database before submitting them to the curator. 
+      For this purpose please register at the <a href=http://malt.pw.usda.gov/t3/sandbox/$crop>Sandbox site</a>.
+  </ul>
 
-    <p>For registered non-CAP users, selections made during
-    their searches are saved from session to session.
+  <b>All Registered Users</b>
+  <ul>
+    <li> Selections made during searches are saved from session to session.
+  </ul>
 
     <h3>What is your email address?</h3>
     My email address is:
@@ -462,8 +471,21 @@ $safe_institution)";
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
+     // If not currently in the Sandbox, mention it.
+     $rd = $config['root_dir'];
+     if (!strpos($rd, "sandbox")) {
+       $dir = explode("/", $rd); 
+       // Pop twice.
+       $crop = array_pop($dir);
+       $crop = array_pop($dir);
+       $sbmsg = "\nIf you will be submitting data to be loaded in T3, 
+please register also in the Sandbox, 
+http://malt.pw.usda.gov/t3/sandbox/$crop
+There you can load your own files directly to see the results 
+and verify them before sending the files to the curator.\n";
+     }
      send_email($email, "Triticeae Toolbox registration in progress",
-"Dear $name,
+"<pre>Dear $name,
 
 Thank you for requesting an account on The Triticeae Toolbox.
 
@@ -472,10 +494,11 @@ by visiting the following URL:
 {$root}fromemail.php?token=$urltoken
 
 Your registration will be complete when you have performed this step.
-
+$sbmsg
 Sincerely,
 The Triticeae Toolbox Team
 ");
+
      if ($desired_usertype == USER_TYPE_PARTICIPANT) {
        $capkey = setting('capencryptionkey');
        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
