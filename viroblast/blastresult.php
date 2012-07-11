@@ -40,6 +40,8 @@ include($config['root_dir'] . 'theme/admin_header.php');
 <?php
 
 include("include/path.inc");
+if (!is_dir("$dataPath"))
+  mkdir("$dataPath");
 
 $jobid = (empty($_GET['jobid'])) ? '' : $_GET['jobid'];
 $blastdb = (empty($_POST['blastdb'])) ? '' : $_POST['blastdb'];
@@ -59,8 +61,8 @@ $querySeq = (empty($_POST['querySeq'])) ? '' : $_POST['querySeq'];
 $blastagainstfile = (empty($_FILES['blastagainstfile']['name'])) ? '' : $_FILES['blastagainstfile']['name'];
 $alignmentView = (empty($_GET['alignmentView'])) ? '' : $_GET['alignmentView'];
 
-$querySeq = str_replace('\n', '', $querySeq);
-$querySeq = str_replace('\r', '', $querySeq);
+$querySeq = str_replace('&gt;','>', $querySeq);
+$querySeq = str_replace('\r\n', "\n", $querySeq);
 
 if ($blast_flag == 1) {
 	$jobid = time().rand(10, 99);
@@ -156,7 +158,7 @@ if($blast_flag == 1) {
 		
 		fwrite($fp1, $querySeq);
 		fclose($fp1);
-                system("find ".$config['root_dir']."viroblast/data/* -mmin +60 -delete");
+                system("find ".$config['root_dir']."$dataPath/* -mmin +60 -delete");
 	}else {
 		echo "<p style='color: red'>Error: please enter your query sequence or upload your fasta sequence file.</p><br>";
 		exit;
@@ -376,11 +378,14 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 			if($cutoff_count == 0) {
 				echo "<p>No comparison meets cutoff criterion. Please change expect value to blast again.</p>";
 			}else {
-				echo "<img id=\"resultgraph\" src=\"viroblast/data/$jobid.png\" usemap=\"#$jobid\">";
-                                include ('data/'.$jobid.'.imap');
+				/* echo "<img id=\"resultgraph\" src=\"viroblast/data/$jobid.png\" usemap=\"#$jobid\">"; */
+				echo "<img id=\"resultgraph\" src=\"$dataPath/$jobid.png\" usemap=\"#$jobid\">" ;
+                                /* include ('data/'.$jobid.'.imap'); */
+                                include ($dataPath.'/'.$jobid.'.imap');
                                 echo "</img>";
 
-				echo "<p><a href=viroblast/data/$jobid.blast1.html target='_blank'>Inspect BLAST output</a><br>";			
+				/* echo "<p><a href=viroblast/data/$jobid.blast1.html target='_blank'>Inspect BLAST output</a><br>"; */
+				echo "<p><a href=$dataPath/$jobid.blast1.html target='_blank'>Inspect BLAST output</a><br>";
 				echo "<form action='viroblast/blastresult.php?jobid=$jobid&opt=$opt' method='post'>";		
 				echo "<p>Filter current page by score:</p>";
 				echo "<p>&nbsp;&nbsp;&nbsp;Show <select name='filt_val'>";
@@ -403,7 +408,7 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 				echo "<p><input type='checkbox' name='dldseq' value='all'>  Check here to download All sequences... ";
 				echo "OR select particular sequences of interest below</p>";	
 				echo "<p><input type='submit' value='Submit'> your selection of sequences to download</p>";	
-				echo "<p><table border = 1 style='font-size:10px' width=100% class='sortable'>";
+				echo "<p><table border = 1 style='font-size:10px' class='sortable'>";
 				echo "<thead><tr align='center'><th>Query</th><th>Subject</th><th>Score</th><th>Identities (Query length)</th><th>Percentage</th><th>Expect</th></tr></thead>";
 				echo "<tbody>";
 				@ $fp = fopen("$dataPath/$jobid.download.txt", "w", 1) or die("Cannot open file: $jobid.download.txt");
@@ -440,7 +445,8 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 							}
 							
 							if($i < 10) {
-								echo "<tr align='center'><td>$element[1]</td><td align=left><input type='checkbox' id='checkedSeq' name='target[]' value='$var_target'>$target_link</td><td><a href=viroblast/data/$jobid.blast$page.html#$element[1]$element[2] target='_blank'>$element[3]</a></td><td>$element[4]</td><td>$element[5]</td><td>$element[6]</td></tr>";
+								/* echo "<tr align='center'><td>$element[1]</td><td align=left><input type='checkbox' id='checkedSeq' name='target[]' value='$var_target'>$target_link</td><td><a href=viroblast/data/$jobid.blast$page.html#$element[1]$element[2] target='_blank'>$element[3]</a></td><td>$element[4]</td><td>$element[5]</td><td>$element[6]</td></tr>"; */
+								echo "<tr align='center'><td>$element[1]</td><td align=left><input type='checkbox' id='checkedSeq' name='target[]' value='$var_target'>$target_link</td><td><a href=$dataPath/$jobid.blast$page.html#$element[1]$element[2] target='_blank'>$element[3]</a></td><td>$element[4]</td><td>$element[5]</td><td>$element[6]</td></tr>";
 								fwrite($fp, "$var_target\n");
 							}					
 						}
@@ -500,10 +506,15 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 }
 
 ?>
+<br>
+<hr>
+<p style="font-size: 8pt;">
+<a href=http://indra.mullins.microbiol.washington.edu/viroblast/viroblast.php>ViroBLAST</a> 2.2+ 
+&copy; 2005-2010 University of Washington. All rights reserved. 
+&nbsp;<a href=<?php echo $config['base_url'] ?>viroblast/docs/termsofservice.html>Terms of Service</a>
+<br>Used under the <a href="<?php echo $config['base_url'] ?>viroblast/License.mail">Academic License</a>. 
+ResultGraph feature from <a href="mailto:flemming@ipk-gatersleben.de">Steffen Flemming</a> (thanks!).
 
-</div>
-	<div id="footer" style="padding: 15px 0 0 0; height: 160px; background-color: #f9cb73; align="center">
-		<p><font color='gray'>&copy; 2005-2010 University of Washington. All rights reserved.&nbsp;<a href=viroblast/docs/termsofservice.html>Terms of Service</a></p>
-	</div>
-</body>
-</html>
+<?php 
+  $footer_div=1;
+include($config['root_dir'].'theme/footer.php'); ?>
