@@ -14,7 +14,7 @@ include($config['root_dir'] . 'theme/admin_header.php');
 
 <div id="primaryContentContainer">
 	<div id="primaryContent">
-
+        <script type="text/javascript" src="theme/new.js"></script>
 <?php
 
 function DispCombinOpt() {
@@ -61,6 +61,7 @@ if (isset($_POST['deselLines'])) {
   }
   $_SESSION['selected_lines']=$selected_lines;
 }
+
   if (isset($_POST['selectWithin']) && ($_SESSION['selectWithin'] != $_POST['selectWithin'])) { //change in combine selection, no form submitted
     $_SESSION['selectWithin'] = $_POST['selectWithin'];
   } elseif(isset($_POST['phenotypecategory']) || isset($_GET['phenotype'])) {	//form has been submitted
@@ -121,6 +122,10 @@ if (isset($_POST['deselLines'])) {
         echo "<img src=\"/tmp/tht/bighistogram.jpg?d=$date\">\n";
 	//
 
+	// Get units.
+	$unit = mysql_grab("select unit_name from units, phenotypes
+	 where phenotypes.phenotype_uid = $phenotype 
+	 and units.unit_uid=phenotypes.unit_uid");
 	// Show mean, std. dev., and number of entries
 	$meanquery = mysql_query("
 select avg(value) as avg,
@@ -137,7 +142,8 @@ $in_these_trials
 	$avg = number_format($row['avg'],1);
 	$std = number_format($row['std'],1);
 	$num = $row['num'];
-	echo "<br>Mean: $avg &plusmn; $std, n = $num<br><hr><p>";
+	echo "<br>Mean: <b>$avg</b> &plusmn; <b>$std</b> $unit<br>";
+	echo "n = <b>$num</b><br><hr><p>";
 
 	//setting for sort callback
 	$_GET['phenotype'] = $phenotype;
@@ -168,13 +174,11 @@ $in_these_trials
 	if((is_array($_SESSION['selected_lines'])) && (count($_SESSION['selected_lines']) > 0) && ($_REQUEST['selectWithin'] == "Yes") ) {
 		$in_these_lines = "AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")";
 	}
-
-	$query = "	SELECT lr.line_record_uid, lr.line_record_name, lr.breeding_program_code, pd.value, unit_name, e.trial_code
-				FROM line_records as lr, tht_base, phenotype_data as pd, phenotypes as p, units, experiments as e
+	$query = "	SELECT lr.line_record_uid, lr.line_record_name Line, lr.breeding_program_code Breeding_Program, pd.value, e.trial_code Trial
+				FROM line_records as lr, tht_base, phenotype_data as pd, phenotypes as p, experiments as e
 				WHERE e.experiment_uid = tht_base.experiment_uid
 					AND lr.line_record_uid = tht_base.line_record_uid
 					AND tht_base.tht_base_uid = pd.tht_base_uid
-					AND units.unit_uid = p.unit_uid
 					AND pd.value $searchVal
 					AND pd.phenotype_uid = p.phenotype_uid
 					AND p.phenotype_uid = '$phenotype'
@@ -209,7 +213,12 @@ $in_these_trials
 
 	/* Display Result */
 
-	echo "<div class='box'><h2>Results</h2><div class='boxContent'>";
+        ?>
+        <script type="text/javascript">
+          update_side_menu();
+        </script> 
+	<div class='box'><h2>Results</h2><div class='boxContent'>
+        <?php
 
 	if(mysql_num_rows($search) > 0) {
 	  echo displayTableSigdig($search, TRUE, $sigdig);
@@ -221,28 +230,26 @@ $in_these_trials
 
 	echo "<br></div></div>";
   }
-  
 ?>
 
 <div class="box">
-    
-    <h2>Select Lines by Phenotype</h2>  
-    
+    <h2>Select Lines by Phenotype</h2>
+
     <div id="phenotypeSel" class="boxContent">
     <h3> Select Phenotype and Trials</h3>
     <form action="<?php echo $config['base_url']; ?>phenotype/compare.php" method="post">
     <?php
     if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
       DispCombinOpt();
-    } 
+    }
     ?>
 
     <table id="phenotypeSelTab" class="tableclass1">
     <thead>
     <tr>
     <th>Category</th>
-    <th>Phenotype</th>
-    <th>Trial</th>
+    <th width=200px>Trait</th>
+    <th width=200px>Trial</th>
     </tr>
     </thead>
     <tbody>
@@ -270,7 +277,7 @@ if ($username && !isset($_SESSION['selected_lines'])) {
 ?>
 </td>
 
-<td></td><td></td></tr>
+<td></td><td height=220></td></tr>
 </tbody>
 </table>
 </div>
