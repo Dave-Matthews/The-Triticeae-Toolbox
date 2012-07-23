@@ -16,7 +16,7 @@
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/new.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
-  <?php
+<?php
    // Create <title> for browser to show.
    connect();
    $title = mysql_grab("select value from settings where name='title'");
