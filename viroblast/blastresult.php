@@ -61,8 +61,8 @@ $querySeq = (empty($_POST['querySeq'])) ? '' : $_POST['querySeq'];
 $blastagainstfile = (empty($_FILES['blastagainstfile']['name'])) ? '' : $_FILES['blastagainstfile']['name'];
 $alignmentView = (empty($_GET['alignmentView'])) ? '' : $_GET['alignmentView'];
 
-$querySeq = str_replace('\n', '', $querySeq);
-$querySeq = str_replace('\r', '', $querySeq);
+$querySeq = str_replace('&gt;','>', $querySeq);
+$querySeq = str_replace('\r\n', "\n", $querySeq);
 
 if ($blast_flag == 1) {
 	$jobid = time().rand(10, 99);

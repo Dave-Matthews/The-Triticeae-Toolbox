@@ -86,11 +86,12 @@ Apache user too.
 All output and temporary files are stored in directory /tmp/tht/, where
 write-access for the scripts isn't a problem and they're all in one
 place to be purged daily or hourly with a cron() job.  In order for this
-to work there must be a symbolic link from the Apache webserver's
-DocumentRoot to /tmp/tht.  If your webserver top directory is
-/www/htdocs, say
+to work there must be a symbolic link from somewhere in the webserver's
+documents directory to /tmp/tht.  For example if your T3 repositories
+are in a subdirectory "t3" of the webserver's top directory
+"/www/htdocs", this would make the link:
 
-% cd /www/htdocs; mdkir tmp; ln -s /tmp/tht tmp/tht
+% cd /www/htdocs/t3; mkdir tmp; ln -s /tmp/tht tmp/tht
 
 <b>PHP configuration</b>
 Some helpful modifications for the php.ini file, such as 
