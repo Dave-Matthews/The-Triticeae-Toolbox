@@ -442,7 +442,9 @@ class Downloads
                 $hi = fopen($filename4, "r");
                 $contents = fread($hi, filesize($filename4));
                 fclose($hi);
+                $url = $_SERVER['SERVER_NAME'];
                 $contents = str_replace("chr1.diversity_arabidopsis.daa1.live.jnlp","$filename2",$contents);
+                $contents = str_replace("malt.pw.usda.gov","$url",$contents);
                 $contents = str_replace("genotype_hapmap.txt","$filename1",$contents);
                 $contents = str_replace("traits.txt","$filename3",$contents);
                 fwrite($h,"$contents");
