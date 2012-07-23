@@ -1,6 +1,6 @@
 <?php
 /**
- * Download Gateway
+ * Download Gateway New
  * 
  * PHP version 5.3
  * Prototype version 1.5.0
@@ -16,24 +16,7 @@
 // |                                                                      |
 // | The purpose of this script is to provide the user with an interface  |
 // | for downloading certain kinds of files from THT.                     |
-// +----------------------------------------------------------------------+
-// | Authors:  Gavin Monroe <gemonroe@iastate.edu>  						|
-// | Updated: December 2008 by Julie A Dickerson, julied@iastate.edu	  |
-// +----------------------------------------------------------------------+
-// +----------------------------------------------------------------------+
-// | Change log								  |
-// | 2/8/11:  DEM - Include markers with MAF = 0 too if user wishes.      |
-// | 1/5/01:  JLee - Add support to generate datafile for Tassel V3       |  
-// |                                                                      |
-// | 2/28/09: removed table summarizing all allelles to avoid timeout	  |
-// |          problems when getting SNP data across multiple programs
-// | 5/20/09: added in tassel support functionality and commented out
-// | 			routines for QTLMiner
-// | September 2009: added in the ability put check lines into the output |
-// |			file for traits; if there are multiple check lines of the |
-// | 			same name, then the mean is used.	Also added in seesions  |
-// | 			to verify that data is available for a user.			  |
-// +----------------------------------------------------------------------+
+
 set_time_limit(0);
 
 // For live website file
@@ -115,6 +98,9 @@ class Downloads
 		 	case 'step4lines':
 				$this->step4_lines();
 				break;
+                        case 'step5lines':
+                                $this->step5_lines();
+                                break;
 			case 'step1breedprog':
 				$this->step1_breedprog();
 				break;
@@ -291,24 +277,18 @@ class Downloads
          ?>        
         </div>
 		<div id="step1" style="float: left; margin-bottom: 1.5em;">
-		<p>1. 
-		<select name="select1" onchange="javascript: update_select1(this.options)">
-		  <option value="BreedingProgram">Program</option>
-		  <!-- option value="Years">Year</option-->
-		  <option <?php 
-		  if (isset($_SESSION['selected_lines'])) {
-		       echo "selected='selected'";
-		  }
-		  ?> value="Lines">Lines</option>
-		  <option value="Locations">Locations</option>
-		  <option value="Phenotypes">Trait Category</option>
-		</select></p>
-		        <script type="text/javascript" src="downloads/downloads.js"></script>
-                <?php 
+		<script type="text/javascript" src="downloads/downloads.js"></script>
+         <?php 
                 if (isset($_SESSION['selected_lines'])) {
                     $this->type1_lines_trial_trait();
                 } else {
-                    $this->type1_breeding_programs_year();
+                    echo "Please select lines before using this feature.<br><br>";
+                    echo "<a href=";
+                    echo $config['base_url'];
+                    echo "pedigree/line_selection.php>Select Lines by Properties</a><br><br>";
+                    echo "<a href=";
+                    echo $config['base_url'];
+                    echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
                 }
                 ?>
                 </div>
@@ -325,23 +305,9 @@ class Downloads
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       ?>
       <h2>Tassel Download</h2>
-      <p>
-      <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
+      <p> 
       <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
       <?php 
-      $selection_ready = 0;
-      if (isset($_SESSION['selected_lines'])) {
-        ?>
-        <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
-        <?php 
-      }
-      if (isset($_GET['lines']) && !empty($_GET['lines'])) {
-        $selection_ready = 1;
-      } elseif (isset($_GET['pi']) && !empty($_GET['pi'])) {
-        $selection_ready = 1;
-      } elseif (isset($_GET['e']) && !empty($_GET['e'])) {
-        $selection_ready = 1;
-      }
       if ($command == "save") {
         if (!empty($_GET['lines'])) {
           $lines_str = $_GET['lines'];
@@ -390,8 +356,13 @@ class Downloads
      */
     private function type1_session($version)
 	{
-	    $experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
 	    $datasets_exp = "";
+                if (isset($_SESSION['selected_trials'])) {
+                        $experiments_t = $_SESSION['selected_trials'];
+                        $experiments_t = implode(",",$experiments_t);
+                } else {
+                        $experiments_t = "";
+                }
 		if (isset($_SESSION['selected_lines'])) {
 			$selectedcount = count($_SESSION['selected_lines']);
 			$lines = $_SESSION['selected_lines'];
@@ -406,27 +377,27 @@ class Downloads
 		    $markers_str = implode(",", $_SESSION['clicked_buttons']);
 		} else {
 		    $markers = array();
-		    $markers_str = "";
+                    $markers_str = "";
 		}
 		if (isset($_SESSION['phenotype'])) {
 		    $phenotype = $_SESSION['phenotype'];
 		} else {
 		    $phenotype = "";
 		}
-		
-		if (!preg_match('/[0-9]/',$markers_str)) {
-		  //get genotype markers that correspond with the selected lines
-		  $sql_exp = "SELECT DISTINCT marker_uid
-		  FROM allele_cache
-		  WHERE
-		  allele_cache.line_record_uid in ($lines_str)";
-		  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-		  if (mysql_num_rows($res)>0) {
-		    while ($row = mysql_fetch_array($res)){
-		      $markers[] = $row["marker_uid"];
-		    }
-		  }
-		}
+ 
+                if (!preg_match('/[0-9]/',$markers_str)) {
+                  //get genotype markers that correspond with the selected lines
+                  $sql_exp = "SELECT DISTINCT marker_uid
+                  FROM allele_cache
+                  WHERE
+                  allele_cache.line_record_uid in ($lines_str)";
+                  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+                  if (mysql_num_rows($res)>0) {
+                    while ($row = mysql_fetch_array($res)){
+                      $markers[] = $row["marker_uid"];
+                    }
+                  }
+                }
 		
 		//get genotype experiments
 		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
@@ -1069,17 +1040,22 @@ class Downloads
 		?>
 	    </div></div>    
 	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
-	    <?php
- 	    $this->step2_lines();
-	    ?>
-	    </div>
-	    <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
-	    <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
+	    <?php 
+	    $this->step2_lines();
+	    ?></div>
+	    <div id="step3" style="float: left; margin-bottom: 1.5em;">
+            <?php
+            $this->step3_lines();
+            ?></div>
+	    <div id="step4" style="float: left; margin-bottom: 1.5em;">
+            <?php
+            $this->step4_lines();
+            ?></div>
 	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 	    <script type="text/javascript">
-	      var mm = 99.9;
-	      var mmaf = 0.01; 
+	      var mm = 10;
+	      var mmaf = 5; 
           window.onload = load_markers_lines( mm, mmaf);
 	    </script>
 	    </div>
@@ -1131,59 +1107,37 @@ class Downloads
 	 */
 	private function step2_lines()
 	{
-	    if (isset($_SESSION['selected_lines'])) {
-	        $selectedlines= $_SESSION['selected_lines'];
-	        $count = count($_SESSION['selected_lines']);
-		?>
-	    <p>2.
-	    <select name="select2">
-	      <option value="trials">Trials</option>
-	    </select></p>
+	    ?>
 	    <table id="linessel" class="tableclass1">
 	    <tr>
-	    <th>Trials</th>
+	    <th>Markers</th>
 	    </tr>
 	    <tr><td>
-	    <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_trial(this.options)">
-	    <?php
-	    $selectedlines= $_SESSION['selected_lines'];
-	    $selectedlines = implode(',', $selectedlines);
-	    $sql="SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, e.experiment_year as year
-	    FROM experiments as e, tht_base as tb, line_records as lr
-	    WHERE
-	    e.experiment_uid = tb.experiment_uid
-	    AND lr.line_record_uid = tb.line_record_uid
-	    AND e.experiment_type_uid = 1
-	    AND lr.line_record_uid IN ($selectedlines)";
-	    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
-	    $sql .= " and data_public_flag > 0";
-            $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
-		$res = mysql_query($sql) or die(mysql_error());
-                $last_year = NULL;
-		while ($row = mysql_fetch_assoc($res))
-		{
-                  if ($last_year == NULL) {
-                  ?>
-                    <optgroup label="<?php echo $row['year'] ?>">
-                  <?php
-                    $last_year = $row['year'];
-                  } else if ($row['year'] != $last_year) {
-                  ?>
-                  </optgroup>
-                  <optgroup label="<?php echo $row['year'] ?>">
-                  <?php
-                    $last_year = $row['year'];
-                  }
-		 ?>
-		    <option value="<?php echo $row['id'] ?>">
-		     <?php echo $row['name'] ?>
-		    </option>
-		    <?php
-		} 
+	    <?php 
+	    if (isset($_SESSION['clicked_buttons'])) {
+	      $selected = $_SESSION['clicked_buttons'];
+		  ?>
+	      <select name="markers" multiple="multiple" style="height: 12em;">
+	      <?php
+	      foreach($selected as $uid) {
+	        $sql = "SELECT marker_name from markers where marker_uid = $uid";
+	        $res = mysql_query($sql) or die(mysql_error());
+	        $row = mysql_fetch_assoc($res)
+	        ?>
+	        <option disabled="disabled" value="
+	        <?php $uid ?>">
+	        <?php echo $row['marker_name'] ?>
+	        </option>
+	        <?php
+	      }
+	    } else {
+	      echo "none selected";
+	    }
 	    ?>
-	    </optgroup></select></table>
-	    <?php
-	    } 
+	    </select>
+	    </td>
+	    </table>
+	    <?php  
 	}
 	
 	/**
@@ -1191,61 +1145,80 @@ class Downloads
 	 */
 	private function step3_lines()
 	{
-	    $experiments = $_GET['e'];
-	    if (isset($_GET['pi'])) {
-	      if (preg_match("/\d/",$phen_item)) {
-	         $_SESSION['phenotype'] = $phen_item;
-	       } else {
-	         unset($_SESSION['phenotype']);
-	       }
-	    }
-		?>
-	    <p>3.
-	    <select name="select3">
-	      <option value="phenotypes">Traits</option>
-	    </select></p>
+	    ?>
 	    <table id="" class="tableclass1">
 	    <tr>
 	    <th>Traits</th>
 	    </tr>
 	    <tr><td>
-            <select id="traitsbx" name="traits" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_pheno(this.options)">
 	    <?php
-		$sql = "SELECT DISTINCT p.phenotype_uid AS id, phenotypes_name AS name from phenotypes as p, tht_base as tb, phenotype_data as pd
-	        where pd.tht_base_uid = tb.tht_base_uid
-                AND p.phenotype_uid = pd.phenotype_uid
-	        AND tb.experiment_uid in ($experiments)";
-		$res = mysql_query($sql) or die(mysql_error() . $sql);
-		while ($row = mysql_fetch_assoc($res))
-		{
-		 ?>
-		    <option value="<?php echo $row['id'] ?>">
-		     <?php echo $row['name'] ?>
-		    </option>
-		    <?php
-		}
-	    ?>
-	    </select></table>
-	     <?php 		
-	}
-	
+            if (isset($_SESSION['selected_traits'])) {
+              $selected = $_SESSION['selected_traits'];
+              ?>
+              <select name="traits" multiple="multiple" style="height: 12em;">
+              <?php
+              foreach($selected as $uid) {
+                $sql = "SELECT phenotypes_name from phenotypes where phenotype_uid = $uid";
+                $res = mysql_query($sql) or die(mysql_error());
+                $row = mysql_fetch_assoc($res)
+                ?>
+                    <option disabled="disabled" value="<?php echo $row['phenotypes_name'] ?>">
+                     <?php echo $row['phenotypes_name'] ?>
+                    </option>
+                    <?php
+                }
+            } else {
+              echo "none selected";
+            }
+            ?>
+            </select></table>
+             <?php
+        }
+
+        /**
+         * starting with lines display phenotype items
+         */
+        private function step4_lines()
+        {
+            ?>
+            <table id="" class="tableclass1">
+            <tr>
+            <th>Trials</th>
+            </tr>
+            <tr><td>
+            <?php
+            if (isset($_SESSION['selected_trials'])) {
+              $selected = $_SESSION['selected_trials'];
+              ?>
+              <select name="traits" multiple="multiple" style="height: 12em;">
+              <?php
+              foreach($selected as $uid) {
+                $sql = "SELECT trial_code from experiments where experiment_uid = $uid";
+                $res = mysql_query($sql) or die(mysql_error());
+                $row = mysql_fetch_assoc($res)
+                ?>
+                    <option disabled="disabled" value="<?php echo $row['trial_code'] ?>">
+                     <?php echo $row['trial_code'] ?>
+                    </option>
+                    <?php
+                }
+            } else {
+              echo "none selected";
+            }
+            ?>
+            </select></table>
+             <?php
+        }
+
+
 	/**
 	 * starting with lines display marker data
 	 */
-	private function step4_lines() {
-	 $experiments = $_GET['e'];
+	private function step5_lines() {
 	 
 	$saved_session = "";
 	$message2 = "";
 
-	if (isset($_GET['pi'])) {
-	  $phen_item = $_GET['pi'];
-	  if (preg_match("/\d/",$phen_item)) {
-	     $_SESSION['phenotype'] = $phen_item;
-	  } else {
-	     unset($_SESSION['phenotype']);
-	  }
-	}	
 	if (isset($_SESSION['phenotype'])) {
 	    $phenotype = $_SESSION['phenotype'];
 	    $message2 = "download phenotype and genotype data";
@@ -1387,11 +1360,11 @@ class Downloads
               elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
               elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
               else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-	      $i++;
+              $i++;
 	    }
           }
 	 }
-	 $i=0;
+         $i=0;
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
 	 foreach ($marker_list as $marker_uid) {
@@ -1405,10 +1378,10 @@ class Downloads
 	     if (($miss > $max_missing) OR ($maf < $min_maf)) $num_removed++;
 	     $num_mark++;
 	   } else {
-             $num_removed++;
-           }
+	     $num_removed++;
 	   }
-	  $i++;
+	   }
+           $i++; 
 	 }
 	 
 	  ?>
@@ -2527,15 +2500,16 @@ selected lines</a><br>
 	    $lines_str = $_GET['lines'];
 	    $lines = explode(',', $lines_str);
 	  }
+
+          if (isset($_SESSION['clicked_buttons'])) {
+            $selectcount = $_SESSION['clicked_buttons'];
+            $markers = $_SESSION['clicked_buttons'];
+            $markers_str = implode(",", $_SESSION['clicked_buttons']);
+          } else {
+            $markers = array();
+            $markers_str = "";
+          }
 	  
-	  if (isset($_SESSION['clicked_buttons'])) {
-	    $selectcount = $_SESSION['clicked_buttons'];
-	    $markers = $_SESSION['clicked_buttons'];
-	    $markers_str = implode(",", $_SESSION['clicked_buttons']);
-	  } else {
-	    $markers = array();
-	    $markers_str = "";
-	  }
 	  if (!preg_match('/[0-9]/',$markers_str)) {
 	    //get genotype markers that correspond with the selected lines
 	    $sql_exp = "SELECT DISTINCT marker_uid
@@ -3163,12 +3137,12 @@ selected lines</a><br>
 		  }
 		  $markers_str = implode(',',$markers);
 		}
-		
-		//generate an array of selected markers that can be used with isset statement
-		foreach ($markers as $temp) {
-		  $marker_lookup[$temp] = 1;
-		}
-
+	
+                //generate an array of selected markers that can be used with isset statement
+                foreach ($markers as $temp) {
+                  $marker_lookup[$temp] = 1;
+                }
+	
 		$sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
 		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		$i=0;
@@ -3185,12 +3159,12 @@ selected lines</a><br>
 		    $outarray = explode(',',$alleles);
 		    $i=0;
 		    foreach ($outarray as $allele) {
-		      if ($allele=='AA') { $marker_aacnt[$i]++; }
-		      elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-		      elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-		      elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
+                      if ($allele=='AA') { $marker_aacnt[$i]++; }
+                      elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
+                      elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
+                      elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
                       else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-		      $i++;
+                      $i++;
                     }
 		  }
 		  //echo "$line_record_uid<br>\n";
@@ -3198,7 +3172,7 @@ selected lines</a><br>
 		
 		$num_maf = $num_miss = 0;
 
-                foreach ($marker_list as $i => $marker_id) {
+        foreach ($marker_list as $i => $marker_id) {
 		  $marker_name = $marker_list_name[$i];
 		  if (isset($marker_lookup[$marker_id])) {
 		    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
@@ -3414,12 +3388,12 @@ selected lines</a><br>
 	   $outarray = explode(',',$alleles);
 	   $i = 0;
 	   foreach ($outarray as $allele) {
-            if ($allele=='AA') { $marker_aacnt[$i]++; }
+             if ($allele=='AA') { $marker_aacnt[$i]++; }
             elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
             elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
             elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
             else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-	    $i++;
+            $i++;
 	   }
 	  }
 	 }
@@ -3741,21 +3715,20 @@ selected lines</a><br>
 		  '6H' => '6','7H' => '7','UNK'  => '10'
 		);
 
-		
-		//generate an array of selected markers that can be used with isset statement
-		foreach ($markers as $temp) {
-		  $marker_lookup[$temp] = 1;
-		}
-		
-		$sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		$i=0;
-		while ($row = mysql_fetch_array($res)) {
-		  $marker_list[$i] = $row[0];
-		  $marker_list_name[$i] = $row[1];
-		  $i++;
-		}
-		
+                //generate an array of selected markers that can be used with isset statement
+                foreach ($markers as $temp) {
+                  $marker_lookup[$temp] = 1;
+                }
+
+                $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
+                $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+                $i=0;
+                while ($row = mysql_fetch_array($res)) {
+                  $marker_list[$i] = $row[0];
+                  $marker_list_name[$i] = $row[1];
+                  $i++;
+                }
+
 		$sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
 		where mim.marker_uid = markers.marker_uid
 		AND mim.map_uid = map.map_uid
@@ -3775,78 +3748,77 @@ selected lines</a><br>
 		  }  
 		  $marker_list_rank[$uid] = $rank; 
 		}
-		
-		foreach ($lines as $line_record_uid) {
-		  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		  if ($row = mysql_fetch_array($res)) {
-		    $alleles = $row[0];
-		    $outarray = explode(',',$alleles);
-		    $i=0;
-		    foreach ($outarray as $allele) {
-		      if ($allele=='AA') {
-		        $marker_aacnt[$i]++;
-		      }
-		      elseif (($allele=='AB') or ($allele=='BA')) {
-		        $marker_abcnt[$i]++;
-		      }
-		      elseif ($allele=='BB') {
-		        $marker_bbcnt[$i]++;
-		      }
-		      elseif (($allele=='--') or ($allele=='')) {
-		        $marker_misscnt[$i]++;
-		      }
-		      else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
-		      }
-		      $i++;
-		    }
-		  }
-		  //echo "$line_record_uid<br>\n";
-		}
-		
-		
-        //get lines and filter to get a list of markers which meet the criteria selected by the user
-		$num_maf = $num_miss = 0;
-		foreach ($marker_list as $i => $uid) {
-		  $marker_name = $marker_list_name[$i];
-		  if (isset($marker_lookup[$uid])) {
-		    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-		    if ($total>0) {
-		      $maf[$i] = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
-		      $miss[$i] = round(100*$marker_misscnt[$i]/$total,1);
-		    } else {
-		      $maf[$i] = 0;
-		      $miss[$i] = 100;
-		    }
-		    if (($maf[$i] >= $min_maf)AND ($miss[$i]<=$max_missing)) {
-		      if (isset($marker_list_mapped[$uid])) {
-		        $marker_list_all_name[$uid] = $marker_name;
-		        $marker_list_all[$uid] = $marker_list_rank[$uid];
-		      }
-		    }
-		  }
-		}
-		if (count($marker_list_all) == 0) {
-		   $output = "no mapped data found";
-		   return $output;
-		}
-			  
+	
+                foreach ($lines as $line_record_uid) {
+                  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
+                  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+                  if ($row = mysql_fetch_array($res)) {
+                    $alleles = $row[0];
+                    $outarray = explode(',',$alleles);
+                    $i=0;
+                    foreach ($outarray as $allele) {
+                      if ($allele=='AA') {
+                        $marker_aacnt[$i]++;
+                      }
+                      elseif (($allele=='AB') or ($allele=='BA')) {
+                        $marker_abcnt[$i]++;
+                      }
+                      elseif ($allele=='BB') {
+                        $marker_bbcnt[$i]++;
+                      }
+                      elseif (($allele=='--') or ($allele=='')) {
+                        $marker_misscnt[$i]++;
+                      }
+                      else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
+                      }
+                      $i++;
+                    }
+                  }
+                  //echo "$line_record_uid<br>\n";
+                }
+
+                //get lines and filter to get a list of markers which meet the criteria selected by the user
+                $num_maf = $num_miss = 0;
+                foreach ($marker_list as $i => $uid) {
+                  $marker_name = $marker_list_name[$i];
+                  if (isset($marker_lookup[$uid])) {
+                    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
+                    if ($total>0) {
+                      $maf[$i] = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
+                      $miss[$i] = round(100*$marker_misscnt[$i]/$total,1);
+                    } else {
+                      $maf[$i] = 0;
+                      $miss[$i] = 100;
+                    }
+                    if (($maf[$i] >= $min_maf)AND ($miss[$i]<=$max_missing)) {
+                      if (isset($marker_list_mapped[$uid])) {
+                        $marker_list_all_name[$uid] = $marker_name;
+                        $marker_list_all[$uid] = $marker_list_rank[$uid];
+                      }
+                    }
+                  }
+                }
+                if (count($marker_list_all) == 0) {
+                   $output = "no mapped data found";
+                   return $output;
+                }
+
         // make an empty marker with the lines as array keys 
         $nelem = count($marker_uid);
         $n_lines = count($lines);
-		$empty = array_combine($lines,array_fill(0,$n_lines,'-'));
-		$nemp = count($empty);
-		$line_str = implode($delimiter,$lines);
-		// $firephp = log($nelem." ".$n_lines);
-			
-		// write output file header
-		$outputheader = "<Map>\n";
-	    // $firephp = log($outputheader);
+                $empty = array_combine($lines,array_fill(0,$n_lines,'-'));
+                $nemp = count($empty);
+                $line_str = implode($delimiter,$lines);
+                // $firephp = log($nelem." ".$n_lines);
 
-		// get marker map data, line and marker names; use latest consensus map
-		// as the map default
-        $mapset = 1;	
+                // write output file header
+                $outputheader = "<Map>\n";
+            // $firephp = log($outputheader);
 
+                // get marker map data, line and marker names; use latest consensus map
+                // as the map default
+        $mapset = 1;
+	
         //sort marker_list by map location
         if (uasort($marker_list_all, array($this,'cmp'))) {
         } else {

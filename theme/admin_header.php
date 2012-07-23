@@ -16,15 +16,15 @@
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/new.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
-<?php
+  <?php
    // Create <title> for browser to show.
    connect();
    $title = mysql_grab("select value from settings where name='title'");
    if (empty($title))
      $title = "The Triticeae Toolbox";
    echo "<title>$title</title>";
+   global $usegbrowse;
 
-  global $usegbrowse;
 if (isset($usegbrowse) && $usegbrowse)
   require_once $config['root_dir'] . 'includes/gbrowse-deps.inc';
 ?>
@@ -86,48 +86,65 @@ EOD;
 		"desc_sc6" => "Visualization tools",
 		);
 ?>
- <div id="nav">
+<div id="nav">
   <ul>
-  <li>
-  <a href="">
-  Home
-  </a>
-  <li>
-  <a title="<?php echo $lang["desc_sc1"]; ?>">Lines</a>
-  <ul>
-  <?php  			
-    if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-    ?>
-    <li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=#b0cb73>My Line Panels</font></a>
-  <?php endif ?>
-  <li>
-  <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select Lines">
-  Select Lines by Properties</a>
-  <li>
-  <a href="<?php echo $config['base_url']; ?>phenotype/compare.php" title="Select Lines by Phenotype">
-  Select Lines by Phenotype</a>
-  <li>
-  <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show Pedigree Tree">
-  Pedigree Trees</a>
-  </ul>
-  <li>
-  <a title="<?php echo $lang["desc_sc3"]; ?>">Markers</a>
-  <ul>
-  <li>
-  <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select Markers">Select Markers</a>
-  <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
-  <li><a href="<?php echo $config['base_url']; ?>viroblast">BLAST Search</a>
-  <li><a href="<?php echo $config['base_url']; ?>snps.php" title="SNP alleles and sequences">SNP alleles and sequences</a> 
-  </ul>
-  <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analysis</a>
-  <ul>
-  <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Find lines like my lines of interest">Cluster Lines by Genotype</a>
-  <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Find lines like my lines of interest">Cluster Lines by Genotype, 3D</a>
-  <li><a href="<?php echo $config['base_url']; ?>advanced_search.php" title="Alleles for selected markers">Select Lines by Haplotypes</a>
-  <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
-  <li><a href="<?php echo $config['base_url']; ?>genotyping/allele_conflicts.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
-<!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
-  </ul>
+    <li>
+      <a href="">Home</a>
+    <li><a title="">Select</a>
+      <ul>
+	<li>
+	  <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters">
+	    Lines by Properties</a>
+	<li>
+	  <a href="<?php echo $config['base_url']; ?>phenotype/compare.php" title="Select within a range of trait values">
+	    Lines by Phenotype</a>
+	<li><a href="<?php echo $config['base_url']; ?>haplotype_search.php" title="Select desired alleles for a set of markers">
+	    Lines by Haplotype</a>
+ <?php if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
+	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=green>My Line Panels</font></a>
+ <?php endif ?>
+	<li>
+	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
+	    Traits and Trials</a>
+	<li>
+	  <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select by name or map position">
+	    Markers</a>
+	<li>
+	  <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
+	    Wizard (Lines, Traits, Trials) </a>
+        <li>
+          <a href="<?php echo $config['base_url']; ?>downloads/clear_selection.php" title="Clear selection">Clear selection</a>
+      </ul>
+    <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analyze</a>
+      <ul>
+	<li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
+	<li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines by Genotype, 3D</a>
+	  <!-- Waiting for Jean-Luc's input:
+	       <li><a href="<?php echo $config['base_url']; ?>cluster_lines3dpco.php" title="Genetic structure">Cluster Lines by Genotype, 3D, PCO</a>
+		 -->
+	<li>
+	  <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
+	    Track Alleles through Pedigree</a>
+	<li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
+	<li><a href="<?php echo $config['base_url']; ?>genotyping/allele_conflicts.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
+	<li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
+	    BLAST Search against Markers</a>
+        <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
+        <li><a href="<?php echo $config['base_url']; ?>downloads/downloads_tassel.php" title="Open TASSEL with selected data">Open TASSEL</a>
+	  <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
+      </ul>
+    <li><a title="">Download</a>
+      <ul>
+	<li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
+            Genotype and Phenotype Data</a>
+	<li><a href="<?php echo $config['base_url']; ?>flapjack_download.php" title="Flapjack format">
+            Genotype Data</a>
+	  <!-- dem 12jan12 Needs data correctness check. -->
+	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
+	    SNP Alleles and Sequences</a> 
+	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
+      </ul>
+
   <li>
   <a title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
   <ul>
@@ -222,23 +239,26 @@ EOD;
 <div id="quicklinks" style="top:141px">
   <h2>Quick Links </h2>
   <ul>
-  <!--  <li>
-  <a href="">Home</a>
-  -->
   <?php if ( isset( $_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ):  ?>
     <li>
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
             <?php else: ?>
-       <li>
-	  <a title="Login" href="<?php echo $config['base_url']; ?>login.php"><strong>Login/Register</strong></a>
-		  <?php endif; ?>
-			
-<li>
-<a href="<?php echo $config['base_url']; ?>downloads/downloads.php">Download Genotype/Phenotype Data (Tassel format)</a>
-			
-  <li>
-  <a href="<?php echo $config['base_url']; ?>flapjack_download.php">Download Genotype Data (Flapjack format)</a>
-			
+    <li>
+      <a title="Login" href="<?php echo $config['base_url']; ?>login.php"><strong>Login/Register</strong></a>
+   <?php endif; ?>
+
+<?php
+   echo "<p><li><b>Current selections:</b>";
+   echo "<li><a href='".$config['base_url']."pedigree/line_selection.php'>Lines:</a> ". count($_SESSION['selected_lines']);
+   echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers:</a> ";
+   if (isset($_SESSION['clicked_buttons'])) {
+     echo count($_SESSION['clicked_buttons']);
+   } else {
+     echo "All";
+   }
+   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits:</a> ". count($_SESSION['selected_traits']);
+   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Trials:</a> " . count($_SESSION['selected_trials']);
+?>
 			
   </ul>
   <div id="searchbox">
