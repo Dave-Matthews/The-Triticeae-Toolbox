@@ -20,6 +20,7 @@ include($config['root_dir'].'theme/admin_header.php');
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
+  <script type="text/javascript" src="theme/new.js"></script>
   <h2> Select Markers</h2>
   <br>
   <div class="boxContent">
@@ -79,6 +80,11 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
       array_push($mapids, $row[0]);
   }
   $_SESSION['mapids'] = $mapids;
+  ?>
+  <script type="text/javascript">
+    update_side_menu();
+  </script>
+  <?php
  }
 
 if (isset($_POST['selMkrs']) || isset($_POST['selbyname'])) {
@@ -108,6 +114,11 @@ m.marker_name='" . mysql_real_escape_string($selbyname) . "'";
     }
     $_SESSION['clicked_buttons'] = $clkmkrs;
     $_SESSION['mapids'] = $mapids;
+    ?>
+    <script type="text/javascript">
+      update_side_menu();
+    </script>
+    <?php
   }
 
 if (isset($_POST['deselMkrs'])) {
@@ -119,8 +130,17 @@ if (isset($_POST['deselMkrs'])) {
       array_splice($mapids, $mkridx, 1);
     }
   }
-  $_SESSION['clicked_buttons']=$selmkrs;
-  $_SESSION['mapids']=$mapids;
+  if (count($selmkrs) > 0) {
+    $_SESSION['clicked_buttons']=$selmkrs;
+    $_SESSION['mapids']=$mapids;
+  } else {
+    unset($_SESSION['clicked_buttons']);
+  }
+  ?>
+  <script type="text/javascript">
+    update_side_menu();
+  </script>
+  <?php
  }
 
 // If anything is Currently Selected, show.
@@ -224,8 +244,8 @@ EOD;
  print "<p><input type='submit' value='Remove marker' style='color: blue' /></p>";
  print "</form>";
 
-  print "<form action='".$config['base_url']."advanced_search.php'>";
- print "<p><input type='submit' value='View haplotypes'></form>";
+ //* print "<form action='".$config['base_url']."haplotype_search.php'>";
+ //* print "<p><input type='submit' value='View haplotypes'></form>"; */
 
  // store the selected markers into the database
  $username=$_SESSION['username'];
