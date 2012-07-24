@@ -31,7 +31,7 @@ fclose($setup);
 $starttime = time();
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
-//echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla");
+//echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
 exec("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla");
 $elapsed = time() - $starttime;
 
