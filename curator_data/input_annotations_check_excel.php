@@ -1,4 +1,4 @@
-<?
+<?php
 // 18may2012  DEM Added Trial Year. Renamed some fields.
 // 09/01/2011 CBirkett	changed to new template and schema
 // 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
@@ -558,7 +558,7 @@ private function typeAnnotationCheck()
 	      <p>		
 	      If Status is "<font color=red>Update</font>", this Trial has been loaded previously and the values shown will replace the existing ones.
 	      <p>
-	      <input type="Button" value="Accept" onclick="javascript: update_database('<?echo $annotfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $data_public_flag?>' )"/>
+	      <input type="Button" value="Accept" onclick="javascript: update_database('<?php echo $annotfile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $data_public_flag?>' )"/>
 	      <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
 	
 <?php
