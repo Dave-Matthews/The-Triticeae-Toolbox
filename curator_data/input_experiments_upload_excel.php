@@ -1,4 +1,4 @@
-<?
+<?php
 // uploading it to main server
 
 // 12/14/2010 JLee  Change to use curator bootstrap
@@ -82,7 +82,7 @@ private function typeExperiments()
   <p><input type="submit" value="Upload" /></p>
 </form>
 		
-<?
+<?php
 	} /* end of type_Experiment_Name function*/
 } /* end of class */
 

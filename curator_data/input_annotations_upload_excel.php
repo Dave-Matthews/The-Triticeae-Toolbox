@@ -1,4 +1,4 @@
-<?
+<?php
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
@@ -95,7 +95,7 @@ private function typeAnnotations()
 	
 		
 		
-<?
+<?php
  
 	} /* end of type_Pedigree_Name function*/
 	
