@@ -1,4 +1,4 @@
-<?
+<?php
 // 06/03/2011 JLee  Change to use curator bootstrap
 
 require 'config.php';
@@ -89,7 +89,7 @@ private function typeLineName()
 	
 		
 		
-<?
+<?php
  
 	} /* end of type_GenoType_Display function*/
 	

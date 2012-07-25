@@ -1,4 +1,4 @@
-<?
+<?php
 // uploading it to main server
 
 // 12/14/2010 JLee  Change to use curator bootstrap
@@ -87,7 +87,7 @@ private function typeExperiments()
 	
 		
 		
-<?
+<?php
  
 	} /* end of type_Experiment_Name function*/
 	
