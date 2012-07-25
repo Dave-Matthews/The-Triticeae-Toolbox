@@ -1,4 +1,4 @@
-<?
+<?php
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
@@ -74,7 +74,7 @@ private function typeAnnotations()
 	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_text.php"><p><strong><li>Upload a tab-delimited (.txt) file</li> </strong> </a>  
 	<a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php"><p><strong><li>Delete an existing experiment</li></strong></a>
 	</ul>
-<?
+<?php
  
 	} /* end of type_Pedigree_Name function*/
 	
