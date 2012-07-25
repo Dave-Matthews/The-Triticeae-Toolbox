@@ -612,7 +612,7 @@ class LineNames_Check
             } /* end of while loop */ ?>
 </tbody>
 </table>
-<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $meansfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $rawdatafile ?>' )"/>
+<input type="Button" value="Accept" onclick="javascript: update_database('<?php echo $meansfile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $rawdatafile ?>' )"/>
 <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
 <?php
             } else {

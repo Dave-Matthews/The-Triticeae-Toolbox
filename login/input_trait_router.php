@@ -1,4 +1,4 @@
-<?
+<?php
 
 require 'config.php';
 /*
@@ -90,7 +90,7 @@ private function typeTraits()
 	
 		
 		
-<?
+<?php
  
 	} /* end of type_Pedigree_Name function*/
 	

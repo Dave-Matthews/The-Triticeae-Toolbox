@@ -6,7 +6,7 @@ include($config['root_dir'] . 'theme/admin_header.php');
 ?>
 
 
-<?
+<?php
 if($_SERVER['REQUEST_METHOD'] == "POST")
 {
        
@@ -115,7 +115,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
   <form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME']?>" method="POST">
   
 	<tr> <td>
-  <b>Name</b> <br/><br/><input type="text" name="LineSearchInput" value="<? echo $name?>"/> <br/><br/> Eg: Excel,Morex,.. </td>
+  <b>Name</b> <br/><br/><input type="text" name="LineSearchInput" value="<?php echo $name?>"/> <br/><br/> Eg: Excel,Morex,.. </td>
   <td> 
 	<b> Breeding Program </b> <br/><br/>
 		
@@ -128,7 +128,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 		while ($resp = mysql_fetch_assoc($res))
 		{
 			?>
-				<option value="<?php echo $resp['breeding_program_code'] ?>" <? echo $breeding[$resp['breeding_program_code']]?>><?php echo $resp['breeding_program_code'] ?><?php echo "--".$resp['data_program_name'] ?></option>
+				<option value="<?php echo $resp['breeding_program_code'] ?>" <?php echo $breeding[$resp['breeding_program_code']]?>><?php echo $resp['breeding_program_code'] ?><?php echo "--".$resp['data_program_name'] ?></option>
 			<?php
 		}
 		?>
@@ -146,7 +146,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 		{
 			
 			?>
-				<option value="<?php echo $resp['primary_end_use'] ?>" <? echo $primary[$resp['primary_end_use']]?>><?php echo $resp['primary_end_use'] ?></option>
+				<option value="<?php echo $resp['primary_end_use'] ?>" <?php echo $primary[$resp['primary_end_use']]?>><?php echo $resp['primary_end_use'] ?></option>
 			<?php
 		}
 		?>
@@ -169,7 +169,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 		{
 			
 			?>
-				<option value="<?php echo $resp['growth_habit'] ?>" <? echo $growth[$resp['growth_habit']]?>><?php echo $resp['growth_habit'] ?></option>
+				<option value="<?php echo $resp['growth_habit'] ?>" <?php echo $growth[$resp['growth_habit']]?>><?php echo $resp['growth_habit'] ?></option>
 			<?php
 			//	$count++;
 		}
@@ -180,11 +180,11 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 	</td>
   <td>
   <b>Row Type </b> <br/><br/>
-	<input type="radio" name="RowType" value="2" <? echo $typeSelected['2'] ?>/> 2 &nbsp;&nbsp; <input type="radio" name="RowType" value="6" <? echo $typeSelected['6'] ?>/> 6 
+	<input type="radio" name="RowType" value="2" <?php echo $typeSelected['2'] ?>/> 2 &nbsp;&nbsp; <input type="radio" name="RowType" value="6" <?php echo $typeSelected['6'] ?>/> 6 
 	</td>
 	<td>
 	<b> Hull </b> <br/><br/>
-	<input type="radio" name="Hull" value="hulled" <? echo $hullSelected['hulled']?>/> Hulled &nbsp;&nbsp; <input type="radio" name="Hull" value="hulless" <? echo $hullSelected['hulless']?>/> Hulless
+	<input type="radio" name="Hull" value="hulled" <?php echo $hullSelected['hulled']?>/> Hulled &nbsp;&nbsp; <input type="radio" name="Hull" value="hulless" <?php echo $hullSelected['hulless']?>/> Hulless
 	</td>
 	</tr>
 	<tr align="center">
@@ -196,7 +196,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
   </form>
   </table>
   
-	<?
+	<?php
 		
   if (isset($_POST['LineSearchInput'])) {
     $linename = $_POST['LineSearchInput'];
@@ -350,7 +350,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 	?>
   <h2> Select Lines</h2>
 	<div style="width: 420px; height: 280px; overflow: scroll;border: 1px solid #5b53a6;">
-	<?
+	<?php
 		
    //  echo "<input type='submit' value='Select Lines'><br/>";
   	
@@ -358,7 +358,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     ?><tr><th>Check <br/>
 		 <input type="radio" name="btn1" value="ALL" onclick="javascript:exclude_all();"/>All
 		 <input type="radio" name="btn1" value="NONE" onclick="javascript:exclude_none();"/>None</th><th><b>Line name</b></th></tr>
-		<?
+		<?php
 		
 		 echo "<form name='lines' id='selectLines' action='pedigree/line_selection.php' method='post'>";
     
@@ -370,20 +370,20 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 	<tr>
 	
 
-	<td><input type='checkbox' value="<? echo $line_record_uid?>" name='selLines[]'id="exbx_<?php echo $line_record_uid ?>"/>
+	<td><input type='checkbox' value="<?php echo $line_record_uid?>" name='selLines[]'id="exbx_<?php echo $line_record_uid ?>"/>
 	</td>
 	
 	<td>
-	 <? echo $line_record_name ?> 
+	 <?php echo $line_record_name ?> 
 	</td>
 	</tr>
-	<?
+	<?php
       }
     }
     ?>
   </table>    
   </div>
-    <?
+    <?php
    
    // echo "</div>";
     echo "<input type='submit' value='Select Lines'>";
@@ -395,7 +395,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 </div>
 </div>
 
-<? 
+<?php
 $verify_selected_lines = $_POST['selLines'];
 $verify_session = $_SESSION['selected_lines'];
 if (count($verify_selected_lines)!=0 OR count($verify_session)!=0)
@@ -458,7 +458,7 @@ if ($username)
   store_session_variables('selected_lines', $username);
 ?>
 </div>
-<?
+<?php
 }
 ?>
 
@@ -475,6 +475,6 @@ if ($username)
 
 
 
-<?
+<?php
 require $config['root_dir'] . 'theme/footer.php';
 ?>

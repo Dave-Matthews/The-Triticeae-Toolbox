@@ -1,4 +1,4 @@
-<?
+<?php
 
 require 'config.php';
 //require_once("../includes/common_import.inc");
@@ -84,7 +84,7 @@ private function typeLineNameCheck()
 		
 		
 		
-<?
+<?php
 
 
 
@@ -460,7 +460,7 @@ private function typeLineNameCheck()
 			
 			<div id="test" style="padding: 0; height: 200px; width: 290px;  overflow: scroll;border: 1px solid #5b53a6;">
 			<table>
-			<?
+			<?php
 				for ($i = 0; $i < max(count($line_insert_data),count($line_update_data)); $i++)
 				{
 			
@@ -468,12 +468,12 @@ private function typeLineNameCheck()
 			
 			<tr>
 			<td style="width: 130px;">
-			<? echo $line_insert_data[$i] ?>
+			<?php echo $line_insert_data[$i] ?>
 			</td> 
 			<td style="width: 160px;">
-			<?echo $line_update_data[$i] ?>
+			<?php echo $line_update_data[$i] ?>
 			</td>
-			<?
+			<?php
 				}/* end of for loop */
 			?>
 			
@@ -495,7 +495,7 @@ private function typeLineNameCheck()
 			
 			
 			
-			<?
+			<?php
 				echo " <b>Please fix these errors before you insert into/update the database </b><br/><br/>";
 				
 				exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
