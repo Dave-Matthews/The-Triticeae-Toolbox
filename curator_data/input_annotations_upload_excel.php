@@ -1,4 +1,4 @@
-<?
+<?php
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
@@ -19,6 +19,12 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
+/* Add "(new <date>)" if newer than 30 days. */
+function filelink($path, $label) {
+  echo "<a href='curator_data/examples/$path'>$label</a>";
+  if (time() - filemtime("examples/$path") < 2592000)
+    echo " <font size= -2 color=red>(new ". date("dMY", filemtime("examples/$path")) . ")</font>";
+}
 
 new Annotations($_GET['function']);
 
@@ -76,7 +82,8 @@ private function typeAnnotations()
 		<form action="curator_data/input_annotations_check_excel.php" method="post" enctype="multipart/form-data">
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
-	<p><strong>Annotation File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/TrialSubmissionForm.xls">Example Annotation File</a></p>
+	<p><strong>Annotation File:</strong> <input id="file[]" type="file" name="file[]" size="50%" /><br>
+<?php filelink("T3/TrialSubmissionForm.xls", "Example template") ?>
 	
 	
 	<p> <strong> Do You Want This Data To Be Public: </strong> <input type='radio' name='flag' value="1" checked/> Yes &nbsp;&nbsp; <input type='radio' name='flag' value="0"/> No
@@ -88,7 +95,7 @@ private function typeAnnotations()
 	
 		
 		
-<?
+<?php
  
 	} /* end of type_Pedigree_Name function*/
 	
