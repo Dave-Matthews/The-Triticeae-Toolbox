@@ -14,7 +14,7 @@ include($config['root_dir'] . 'theme/admin_header.php');
 
 <div id="primaryContentContainer">
 	<div id="primaryContent">
-
+        <script type="text/javascript" src="theme/new.js"></script>
 <?php
 
 function DispCombinOpt() {
@@ -61,6 +61,7 @@ if (isset($_POST['deselLines'])) {
   }
   $_SESSION['selected_lines']=$selected_lines;
 }
+
   if (isset($_POST['selectWithin']) && ($_SESSION['selectWithin'] != $_POST['selectWithin'])) { //change in combine selection, no form submitted
     $_SESSION['selectWithin'] = $_POST['selectWithin'];
   } elseif(isset($_POST['phenotypecategory']) || isset($_GET['phenotype'])) {	//form has been submitted
@@ -212,7 +213,12 @@ $in_these_trials
 
 	/* Display Result */
 
-	echo "<div class='box'><h2>Results</h2><div class='boxContent'>";
+        ?>
+        <script type="text/javascript">
+          update_side_menu();
+        </script> 
+	<div class='box'><h2>Results</h2><div class='boxContent'>
+        <?php
 
 	if(mysql_num_rows($search) > 0) {
 	  echo displayTableSigdig($search, TRUE, $sigdig);
@@ -224,20 +230,18 @@ $in_these_trials
 
 	echo "<br></div></div>";
   }
-  
 ?>
 
 <div class="box">
-    
-    <h2>Select Lines by Phenotype</h2>  
-    
+    <h2>Select Lines by Phenotype</h2>
+
     <div id="phenotypeSel" class="boxContent">
     <h3> Select Phenotype and Trials</h3>
     <form action="<?php echo $config['base_url']; ?>phenotype/compare.php" method="post">
     <?php
     if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
       DispCombinOpt();
-    } 
+    }
     ?>
 
     <table id="phenotypeSelTab" class="tableclass1">

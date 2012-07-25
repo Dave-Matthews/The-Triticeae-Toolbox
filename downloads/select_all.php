@@ -1,6 +1,6 @@
 <?php
 /**
- * Download Gateway New
+ * Download Gateway
  * 
  * PHP version 5.3
  * Prototype version 1.5.0
@@ -16,13 +16,30 @@
 // |                                                                      |
 // | The purpose of this script is to provide the user with an interface  |
 // | for downloading certain kinds of files from THT.                     |
-
+// +----------------------------------------------------------------------+
+// | Authors:  Gavin Monroe <gemonroe@iastate.edu>  						|
+// | Updated: December 2008 by Julie A Dickerson, julied@iastate.edu	  |
+// +----------------------------------------------------------------------+
+// +----------------------------------------------------------------------+
+// | Change log								  |
+// | 2/8/11:  DEM - Include markers with MAF = 0 too if user wishes.      |
+// | 1/5/01:  JLee - Add support to generate datafile for Tassel V3       |  
+// |                                                                      |
+// | 2/28/09: removed table summarizing all allelles to avoid timeout	  |
+// |          problems when getting SNP data across multiple programs
+// | 5/20/09: added in tassel support functionality and commented out
+// | 			routines for QTLMiner
+// | September 2009: added in the ability put check lines into the output |
+// |			file for traits; if there are multiple check lines of the |
+// | 			same name, then the mean is used.	Also added in seesions  |
+// | 			to verify that data is available for a user.			  |
+// +----------------------------------------------------------------------+
 set_time_limit(0);
 
 // For live website file
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-set_include_path(GET_INCLUDE_PATH() . PATH_SEPARATOR . '../pear/');
+set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
@@ -98,9 +115,6 @@ class Downloads
 		 	case 'step4lines':
 				$this->step4_lines();
 				break;
-                        case 'step5lines':
-                                $this->step5_lines();
-                                break;
 			case 'step1breedprog':
 				$this->step1_breedprog();
 				break;
@@ -202,6 +216,8 @@ class Downloads
 		#</em></p>";
 		unset($_SESSION['selected_lines']);
 		unset($_SESSION['phenotype']);
+                unset($_SESSION['selected_traits']);
+                unset($_SESSION['selected_trials']);
 		unset($_SESSION['clicked_buttons']);
 		
 		?>
@@ -277,19 +293,16 @@ class Downloads
          ?>        
         </div>
 		<div id="step1" style="float: left; margin-bottom: 1.5em;">
-		<script type="text/javascript" src="downloads/downloads.js"></script>
-         <?php 
-                if (isset($_SESSION['selected_lines'])) {
-                    $this->type1_lines_trial_trait();
-                } else {
-                    echo "Please select lines before using this feature.<br><br>";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "pedigree/line_selection.php>Select Lines by Properties</a><br><br>";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
-                }
+		<p>1. 
+		<select name="select1" onchange="javascript: update_select1(this.options)">
+		  <option value="BreedingProgram">Program</option>
+		  <option value="Lines">Lines</option> 
+		  <option value="Locations">Locations</option>
+		  <option value="Phenotypes">Trait Category</option>
+		</select></p>
+		        <script type="text/javascript" src="downloads/downloads.js"></script>
+                <?php 
+                $this->type1_breeding_programs_year();
                 ?>
                 </div>
                 
@@ -303,46 +316,116 @@ class Downloads
      */    
     private function refresh_title() {
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
+      $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
       ?>
-      <h2>Tassel Download</h2>
-      <p> 
+      <h2>Select Lines, Traits, and Trials</h2>
+      <p>
+      <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
       <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
       <?php 
+      $selection_ready = 0;
+      if (isset($_SESSION['selected_lines'])) {
+        ?>
+        <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
+        <?php 
+      }
       if ($command == "save") {
-        if (!empty($_GET['lines'])) {
+        if (empty($_GET['lines'])) {
+          if ((!empty($_GET['pi'])) && (!empty($_GET['exps']))) {
+            $phen_item = $_GET['pi'];
+            $experiments = $_GET['exps'];
+          } else {
+            echo "error phenotype and experiments not set";
+          }
+          if ((($subset == "yes") || ($subset == "comb")) && count($_SESSION['selected_lines'])>0) {
+            $lines = $_SESSION['selected_lines'];
+            $lines_str = implode(",", $lines);
+            $count = count($_SESSION['selected_lines']);
+          } else {
+            $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+            FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+            WHERE
+            pd.tht_base_uid = tb.tht_base_uid
+            AND p.phenotype_uid = pd.phenotype_uid
+            AND lr.line_record_uid = tb.line_record_uid
+            AND pd.phenotype_uid IN ($phen_item)
+            AND tb.experiment_uid IN ($experiments)
+            ORDER BY lr.line_record_name";
+            $lines = array();
+            $res = mysql_query($sql) or die(mysql_error() . $sql);
+            while ($row = mysql_fetch_assoc($res))
+            {
+              array_push($lines,$row['id']);
+            }
+            $lines_str = implode(",", $lines);
+            $count = count($lines);
+          }
+          //overide these setting is radio button checked
+          if ($subset == "no") {
+            $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+            FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+            WHERE
+            pd.tht_base_uid = tb.tht_base_uid
+            AND p.phenotype_uid = pd.phenotype_uid
+            AND lr.line_record_uid = tb.line_record_uid
+            AND pd.phenotype_uid IN ($phen_item)
+            AND tb.experiment_uid IN ($experiments)
+            ORDER BY lr.line_record_name";
+            $lines = array();
+            $res = mysql_query($sql) or die(mysql_error() . $sql);
+            while ($row = mysql_fetch_assoc($res))
+            {
+              array_push($lines,$row['id']);
+            }
+            $lines_str = implode(",", $lines);
+            $count = count($lines);
+          }
+          if ($subset == "comb") {
+            $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+            FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+            WHERE
+            pd.tht_base_uid = tb.tht_base_uid
+            AND p.phenotype_uid = pd.phenotype_uid
+            AND lr.line_record_uid = tb.line_record_uid
+            AND pd.phenotype_uid IN ($phen_item)
+            AND tb.experiment_uid IN ($experiments)
+            ORDER BY lr.line_record_name";
+            $res = mysql_query($sql) or die(mysql_error() . $sql);
+            while ($row = mysql_fetch_assoc($res))
+            {
+              array_push($lines,$row['id']);
+            }
+            $lines_str = implode(",", $lines);
+          }
+        } else {
           $lines_str = $_GET['lines'];
           $lines = explode(',', $lines_str);
-          $_SESSION['selected_lines'] = $lines;
-        } elseif ((!empty($_GET['pi'])) && (!empty($_GET['exps']))) {
-          $phen_item = $_GET['pi'];
-          $experiments = $_GET['exps'];
-          $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-          FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-          WHERE
-          pd.tht_base_uid = tb.tht_base_uid
-          AND p.phenotype_uid = pd.phenotype_uid
-          AND lr.line_record_uid = tb.line_record_uid
-          AND pd.phenotype_uid IN ($phen_item)
-          AND tb.experiment_uid IN ($experiments)
-          ORDER BY lr.line_record_name";
-          $lines = array();
-          $res = mysql_query($sql) or die(mysql_error() . $sql);
-          while ($row = mysql_fetch_assoc($res))
-          {
-            array_push($lines,$row['id']);
-          }
-          $lines_str = implode(",", $lines);
-          $_SESSION['selected_lines'] = $lines;
+        }
+        $_SESSION['selected_lines'] = $lines;
+          
+        if (isset($_GET['pi'])) {
+          $_SESSION['phenotype'] = $_GET['pi'];
+          $phenotype_ary = explode(",",$_SESSION['phenotype']);
+          $_SESSION['selected_traits'] = $phenotype_ary;
         } else {
           echo "error - no selection found";
         }
+        if (isset($_GET['exps'])) {
+          $trials_ary = explode(",",$_GET['exps']);
+          $_SESSION['selected_trials'] = $trials_ary;
+          $_SESSION['experiments'] = $_GET['exps'];
+        } else {
+          echo "error - no trials selection found";
+        }
+
+
         $username=$_SESSION['username'];
         if ($username) {
           store_session_variables('selected_lines', $username);
         }
       } elseif ($selection_ready) {
         ?>
-        <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
+        <!-- input type="button" value="Save current selection" onclick="javascript: load_title('save');"/-->
        <?php
       }
       ?>
@@ -356,13 +439,8 @@ class Downloads
      */
     private function type1_session($version)
 	{
+	    $experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
 	    $datasets_exp = "";
-                if (isset($_SESSION['selected_trials'])) {
-                        $experiments_t = $_SESSION['selected_trials'];
-                        $experiments_t = implode(",",$experiments_t);
-                } else {
-                        $experiments_t = "";
-                }
 		if (isset($_SESSION['selected_lines'])) {
 			$selectedcount = count($_SESSION['selected_lines']);
 			$lines = $_SESSION['selected_lines'];
@@ -374,30 +452,15 @@ class Downloads
 		if (isset($_SESSION['clicked_buttons'])) {
 		    $selectcount = $_SESSION['clicked_buttons'];
 		    $markers = $_SESSION['clicked_buttons'];
-		    $markers_str = implode(",", $_SESSION['clicked_buttons']);
+		    //$markers = implode(",", $_SESSION['clicked_buttons']);
 		} else {
 		    $markers = array();
-                    $markers_str = "";
 		}
 		if (isset($_SESSION['phenotype'])) {
 		    $phenotype = $_SESSION['phenotype'];
 		} else {
 		    $phenotype = "";
 		}
- 
-                if (!preg_match('/[0-9]/',$markers_str)) {
-                  //get genotype markers that correspond with the selected lines
-                  $sql_exp = "SELECT DISTINCT marker_uid
-                  FROM allele_cache
-                  WHERE
-                  allele_cache.line_record_uid in ($lines_str)";
-                  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-                  if (mysql_num_rows($res)>0) {
-                    while ($row = mysql_fetch_array($res)){
-                      $markers[] = $row["marker_uid"];
-                    }
-                  }
-                }
 		
 		//get genotype experiments
 		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
@@ -436,7 +499,7 @@ class Downloads
           $zip->writeData($this->type1_build_annotated_align($experiments_g));
         } elseif ($version == "V3") {
           $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($lines,$markers));
+          $zip->writeData($this->type1_build_geneticMap($experiments_g));
           $zip->newFile("snpfile.txt");
           $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
         } elseif ($version == "V4") {
@@ -663,8 +726,8 @@ class Downloads
 		$tmp = count($phen_array);
 		if ($tmp > 1) {
 		  ?>
-		  <input type="radio" id="trait_cmb" value="all" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_trialb(this.value)">trials with all traits<br>
-		  <input type="radio" id="trait_cmb" value="any" <?php echo "$any_ckd"; ?> onchange="javascript: update_phenotype_trialb(this.value)">trials with any trait<br>
+		  <input type="radio" id="trait_cmb" value="all" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with all traits<br>
+		  <input type="radio" id="trait_cmb" value="any" <?php echo "$any_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with any trait<br>
 		  <?php
 		}
     }
@@ -789,10 +852,9 @@ class Downloads
 		<?php
 		if (count($_SESSION['selected_lines']) > 0) {
 		  ?>
-		  <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently
-		  selected lines</a><br>
-		  <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
-		  <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
+                  Combine with currently selected lines:<br>
+		  <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Replace<br>
+		  <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Add (OR)<br>
 		  <?php
 		}
     }
@@ -854,7 +916,7 @@ class Downloads
          $count = count($lines);
      }
          
-     echo "current data selection = $count lines<br>";
+     echo "current data selection = $count lines";
      
      // initialize markers and flags if not already set
      $max_missing = 99.9;//IN PERCENT
@@ -872,13 +934,14 @@ class Downloads
      elseif ($min_maf<0)
      $min_maf = 0;
      
-     $this->calculate_af($lines, $min_maf, $max_missing);
+     /* $this->calculate_af($lines, $min_maf, $max_missing); */
+     $traits_ary = explode(",",$phen_item);
+     $count = count($traits_ary);
+     echo ", $count traits";
      
      ?>
      <input type="hidden" name="subset" id="subset" value="yes" /><br>
-     <input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel('v3');" />
-     <h4> or </h4>
-     <input type="button" value="Download for Tassel V4" onclick="javascript:getdownload_tassel('v4');" /> <br>
+     <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
  
     <?php
     }
@@ -1040,22 +1103,17 @@ class Downloads
 		?>
 	    </div></div>    
 	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
-	    <?php 
-	    $this->step2_lines();
-	    ?></div>
-	    <div id="step3" style="float: left; margin-bottom: 1.5em;">
-            <?php
-            $this->step3_lines();
-            ?></div>
-	    <div id="step4" style="float: left; margin-bottom: 1.5em;">
-            <?php
-            $this->step4_lines();
-            ?></div>
+	    <?php
+ 	    $this->step2_lines();
+	    ?>
+	    </div>
+	    <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
+	    <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 	    <script type="text/javascript">
-	      var mm = 10;
-	      var mmaf = 5; 
+	      var mm = 99.9;
+	      var mmaf = 0.01; 
           window.onload = load_markers_lines( mm, mmaf);
 	    </script>
 	    </div>
@@ -1107,37 +1165,60 @@ class Downloads
 	 */
 	private function step2_lines()
 	{
-	    ?>
+	    if (isset($_SESSION['selected_lines'])) {
+	        $selectedlines= $_SESSION['selected_lines'];
+	        $count = count($_SESSION['selected_lines']);
+		?>
+	    <p>2.
+	    <select name="select2">
+	      <option value="trials">Trials</option>
+	    </select></p>
 	    <table id="linessel" class="tableclass1">
 	    <tr>
-	    <th>Markers</th>
+	    <th>Trials</th>
 	    </tr>
 	    <tr><td>
-	    <?php 
-	    if (isset($_SESSION['clicked_buttons'])) {
-	      $selected = $_SESSION['clicked_buttons'];
-		  ?>
-	      <select name="markers" multiple="multiple" style="height: 12em;">
-	      <?php
-	      foreach($selected as $uid) {
-	        $sql = "SELECT marker_name from markers where marker_uid = $uid";
-	        $res = mysql_query($sql) or die(mysql_error());
-	        $row = mysql_fetch_assoc($res)
-	        ?>
-	        <option disabled="disabled" value="
-	        <?php $uid ?>">
-	        <?php echo $row['marker_name'] ?>
-	        </option>
-	        <?php
-	      }
-	    } else {
-	      echo "none selected";
-	    }
+	    <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_trial(this.options)">
+	    <?php
+	    $selectedlines= $_SESSION['selected_lines'];
+	    $selectedlines = implode(',', $selectedlines);
+	    $sql="SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, e.experiment_year as year
+	    FROM experiments as e, tht_base as tb, line_records as lr
+	    WHERE
+	    e.experiment_uid = tb.experiment_uid
+	    AND lr.line_record_uid = tb.line_record_uid
+	    AND e.experiment_type_uid = 1
+	    AND lr.line_record_uid IN ($selectedlines)";
+	    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
+	    $sql .= " and data_public_flag > 0";
+            $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
+		$res = mysql_query($sql) or die(mysql_error());
+                $last_year = NULL;
+		while ($row = mysql_fetch_assoc($res))
+		{
+                  if ($last_year == NULL) {
+                  ?>
+                    <optgroup label="<?php echo $row['year'] ?>">
+                  <?php
+                    $last_year = $row['year'];
+                  } else if ($row['year'] != $last_year) {
+                  ?>
+                  </optgroup>
+                  <optgroup label="<?php echo $row['year'] ?>">
+                  <?php
+                    $last_year = $row['year'];
+                  }
+                 ?>
+		    <option value="<?php echo $row['id'] ?>">
+		     <?php echo $row['name'] ?>
+		    </option>
+		    <?php
+		} 
 	    ?>
-	    </select>
-	    </td>
-	    </table>
-	    <?php  
+            </optgroup>
+	    </select></table>
+	    <?php
+	    } 
 	}
 	
 	/**
@@ -1145,80 +1226,60 @@ class Downloads
 	 */
 	private function step3_lines()
 	{
-	    ?>
+	    $experiments = $_GET['e'];
+	    if (isset($_GET['pi'])) {
+	      if (preg_match("/\d/",$phen_item)) {
+	         $_SESSION['phenotype'] = $phen_item;
+	       } else {
+	         unset($_SESSION['phenotype']);
+	       }
+	    }
+		?>
+	    <p>3.
+	    <select name="select3">
+	      <option value="phenotypes">Traits</option>
+	    </select></p>
 	    <table id="" class="tableclass1">
 	    <tr>
 	    <th>Traits</th>
 	    </tr>
 	    <tr><td>
+            <select id="traitsbx" name="traits" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_pheno(this.options)">
 	    <?php
-            if (isset($_SESSION['selected_traits'])) {
-              $selected = $_SESSION['selected_traits'];
-              ?>
-              <select name="traits" multiple="multiple" style="height: 12em;">
-              <?php
-              foreach($selected as $uid) {
-                $sql = "SELECT phenotypes_name from phenotypes where phenotype_uid = $uid";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_assoc($res)
-                ?>
-                    <option disabled="disabled" value="<?php echo $row['phenotypes_name'] ?>">
-                     <?php echo $row['phenotypes_name'] ?>
-                    </option>
-                    <?php
-                }
-            } else {
-              echo "none selected";
-            }
-            ?>
-            </select></table>
-             <?php
-        }
-
-        /**
-         * starting with lines display phenotype items
-         */
-        private function step4_lines()
-        {
-            ?>
-            <table id="" class="tableclass1">
-            <tr>
-            <th>Trials</th>
-            </tr>
-            <tr><td>
-            <?php
-            if (isset($_SESSION['selected_trials'])) {
-              $selected = $_SESSION['selected_trials'];
-              ?>
-              <select name="traits" multiple="multiple" style="height: 12em;">
-              <?php
-              foreach($selected as $uid) {
-                $sql = "SELECT trial_code from experiments where experiment_uid = $uid";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_assoc($res)
-                ?>
-                    <option disabled="disabled" value="<?php echo $row['trial_code'] ?>">
-                     <?php echo $row['trial_code'] ?>
-                    </option>
-                    <?php
-                }
-            } else {
-              echo "none selected";
-            }
-            ?>
-            </select></table>
-             <?php
-        }
-
-
+		$sql = "SELECT DISTINCT p.phenotype_uid AS id, phenotypes_name AS name from phenotypes as p, tht_base as tb, phenotype_data as pd
+	        where pd.tht_base_uid = tb.tht_base_uid
+                AND p.phenotype_uid = pd.phenotype_uid
+	        AND tb.experiment_uid in ($experiments)";
+		$res = mysql_query($sql) or die(mysql_error() . $sql);
+		while ($row = mysql_fetch_assoc($res))
+		{
+		 ?>
+		    <option value="<?php echo $row['id'] ?>">
+		     <?php echo $row['name'] ?>
+		    </option>
+		    <?php
+		}
+	    ?>
+	    </select></table>
+	     <?php 		
+	}
+	
 	/**
 	 * starting with lines display marker data
 	 */
-	private function step5_lines() {
-	 
-	$saved_session = "";
-	$message2 = "";
+	private function step4_lines() {
+	 $experiments = $_GET['e'];
+	 $saved_session = "";
+	 $message2 = "";
 
+	if (isset($_GET['pi'])) {
+	  $phen_item = $_GET['pi'];
+	  if (preg_match("/\d/",$phen_item)) {
+	     $_SESSION['phenotype'] = $phen_item;
+	  } else {
+	     unset($_SESSION['phenotype']);
+	  }
+	}	
 	if (isset($_SESSION['phenotype'])) {
 	    $phenotype = $_SESSION['phenotype'];
 	    $message2 = "download phenotype and genotype data";
@@ -1249,7 +1310,7 @@ class Downloads
 	 }
 	 
 	 if ($saved_session != "") {
-	  echo "current data selection = $saved_session<br>";
+	  echo "current data selection = $saved_session";
 	 }
 	 
 	 // initialize markers and flags if not already set
@@ -1268,7 +1329,10 @@ class Downloads
 	 elseif ($min_maf<0)
 	  $min_maf = 0;
 	 
-	 $this->calculate_af($lines, $min_maf, $max_missing); 
+	 /* $this->calculate_af($lines, $min_maf, $max_missing); */
+         $traits_ary = explode(",",$phen_item);
+         $count = count($traits_ary);
+         echo ", $count traits";
 	 
 	 if ($saved_session != "") {
 	     if ($countLines == 0) {
@@ -1277,26 +1341,14 @@ class Downloads
 	       echo $config['base_url'];
 	       echo "pedigree/line_selection.php> Select lines</a><br>";
 	     } else {
-	       echo "<br>Use existing selection to $message2<br>";
 	       ?>
-	       <input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" />
-	       <input type="button" value="Download for Tassel V4" onclick="javascript:use_session('v4');"  />
+               <table> <tr> <td COLSPAN="3">
+               <input type="hidden" name="subset" id="subset" value="yes" /><br>
+               <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
+               </td> </tr> </table>
 	       <?php    
 	     }
 	  }
-	}
-	
-	/**
-	 * used by uasort() to order an array
-	 * @param integer $a
-	 * @param integer $b
-	 * @return number
-	 */
-	private function cmp($a, $b) {
-	  if ($a == $b) {
-	    return 0;
-	  }
-	  return ($a < $b) ? -1 : 1;
 	}
 	
 	/**
@@ -1305,7 +1357,7 @@ class Downloads
 	 * @param floats $min_maf
 	 * @param floats $max_missing
 	 */
-	function calculate_af(&$lines, $min_maf, $max_missing) {
+	private function calculate_af(&$lines, $min_maf, $max_missing) {
 	 //calculate allele frequencies using 2D table
 	
 	 if (isset($_SESSION['clicked_buttons'])) {
@@ -1321,22 +1373,30 @@ class Downloads
 	 if (!preg_match('/[0-9]/',$marker_str)) {
 	   //get genotype markers that correspond with the selected lines
 	   $selectedlines = implode(",",$lines);
-	   $sql_exp = "SELECT marker_uid
+	   $sql_exp = "SELECT DISTINCT marker_uid
 	   FROM allele_cache
 	   WHERE
 	   allele_cache.line_record_uid in ($selectedlines)";
 	   $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
 	   if (mysql_num_rows($res)>0) {
 	     while ($row = mysql_fetch_array($res)){
-	       $uid = $row["marker_uid"];
-	       $markers[$uid] = 1;
+	       $markers[] = $row["marker_uid"];
 	     }
 	    }
 	   $marker_str = implode(',',$markers);
 	   $num_mark = mysql_num_rows($res);
 	   //echo "$num_mark markers in selected lines<br>\n";
 	 }
+       
+         $count = count($markers);
+         echo ", $count markers";
 	 
+	 //generate an array of selected markers that can be used with isset statement
+	 foreach ($markers as $temp) {
+	   $marker_lookup[$temp] = 1;
+	 }
+	
+         return; /* skip rest of calculation, this will be done at download */ 
 	 //get location information for markers
 	 $sql = "select marker_uid from allele_byline_idx order by marker_uid";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -1355,20 +1415,19 @@ class Downloads
 	    $outarray = explode(',',$alleles);
 	    $i=0;
 	    foreach ($outarray as $allele) {
-              if ($allele=='AA') { $marker_aacnt[$i]++; }
-              elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-              elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-              elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
-              else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-              $i++;
+	      if ($allele=='AA') $marker_aacnt[$i]++;
+	      if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
+	      if ($allele=='BB') $marker_bbcnt[$i]++;
+	      if ($allele=='--') $marker_misscnt[$i]++;
+	      $i++;
 	    }
           }
 	 }
-         $i=0;
+	 $i=0;
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
 	 foreach ($marker_list as $marker_uid) {
-	   if (isset($markers[$marker_uid])) {
+	   if (isset($marker_lookup[$marker_uid])) {
 	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
 	   if ($total > 0) {
 	     $maf = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
@@ -1377,11 +1436,9 @@ class Downloads
 	     if ($miss > $max_missing) $num_miss++;
 	     if (($miss > $max_missing) OR ($maf < $min_maf)) $num_removed++;
 	     $num_mark++;
-	   } else {
-	     $num_removed++;
 	   }
 	   }
-           $i++; 
+	  $i++;
 	 }
 	 
 	  ?>
@@ -1495,7 +1552,7 @@ class Downloads
            if ($last_year == NULL) {
            ?>
              <optgroup label="<?php echo $row['year'] ?>">
-           <?php 
+           <?php
              $last_year = $row['year'];
            } else if ($row['year'] != $last_year) {
            ?>
@@ -1504,12 +1561,12 @@ class Downloads
            <?php
              $last_year = $row['year'];
            }
-	   ?>
+           ?>
 	   <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
 	   <?php
 	 }
 	 ?>
-	 </optgroup>
+         </optgroup>
 	 </select>
 	 </td>
 	 </table>
@@ -1642,10 +1699,9 @@ class Downloads
 	 <?php 
 	 if (count($_SESSION['selected_lines']) > 0) {
 	   ?>
-	   <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently 
-selected lines</a><br>
-	   <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
-	   <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
+           Combine with currently selected lines:<br>
+	   <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Replace</b><br>
+	   <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Add (OR)<br>
 	   <?php
 	 } 
 	}
@@ -1677,26 +1733,67 @@ selected lines</a><br>
 	  <option value="BreedingProgram">Lines</option>
 	  </select></p>
 	  
-	  <table id="phenotypeSelTab" class="tableclass1">
+	  <table id="phenotypeSelTab">
 	  <tr>
-	  <th>Lines</th>
+	  <td>Lines found: <?php 
+	  $sql_option = "";
+	  if (preg_match("/\d/",$experiments)) {
+	  	$sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
+	  }
+	  if (preg_match("/\d/",$datasets)) {
+	  	$sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
+	  }
+	  $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
+	  FROM line_records, tht_base
+	  WHERE line_records.line_record_uid=tht_base.line_record_uid
+	  $sql_option";
+	  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	  while($row = mysql_fetch_array($res)) {
+	  	$count++;
+	  }
+	  echo $count;
+          if (isset($_SESSION['selected_lines'])) {
+            ?>
+            <td><td>Current selection: <?php echo count($_SESSION['selected_lines']); ?></td><td></td>
+            <?php
+          }
+          ?>
 	  </tr>
 	  <tr><td>
-	  <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
-	  <?php
-	  if ($sub_ckd == "checked") {
-	    $selected_lines = $_SESSION['selected_lines'];
-	    foreach ($selected_lines as $line) {
-	      $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      $row = mysql_fetch_assoc($res);
-	      ?>
-	      <option selected value="<?php echo $row['id'] ?>">
-	      <?php echo $row['name'] ?>
-	      </option>
-	     <?php
-	    }
-	  } elseif ($cmb_ckd == "checked") {
+          <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">;
+            <?php
+            $sql_option = "";
+            if (preg_match("/\d/",$experiments)) {
+              $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
+            }
+            if (preg_match("/\d/",$datasets)) {
+              $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
+            }
+            $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
+            FROM line_records, tht_base
+            WHERE line_records.line_record_uid=tht_base.line_record_uid
+            $sql_option";
+            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+            while($row = mysql_fetch_array($res)) {
+              ?>
+              <option selected value="<?php echo $row['id'] ?>">
+              <?php echo $row['name'] ?>
+              </option>
+              <?php
+            }
+            ?>
+          </select>
+          <?php
+
+	  if (isset($_SESSION['selected_lines'])) {
+            ?>
+            <td>
+            Combine with currently<br>selected lines:<br>
+            <input type="radio" name="subset" id="subset" value="no" <?php echo $all_ckd; ?> onclick="javascript: update_phenotype_linesb(this.value)">Replace</b><br>
+            <input type="radio" name="subset" id="subset" value="comb" <?php echo $cmb_ckd; ?> onclick="javascript: update_phenotype_linesb(this.value)">Add (OR)<br>
+            <td>
+	    <select name="lines" multiple="multiple" style="height: 12em;">
+	    <?php 
 	    $lines_list = array();
 	    $lines_new = "";
 	    $selected_lines = $_SESSION['selected_lines'];
@@ -1707,75 +1804,18 @@ selected lines</a><br>
 	      $temp = $row['id'];
 	      $lines_list[$temp] = 1;
 	      ?>
-	      <option selected value="<?php echo $row['id'] ?>">
+	      <option disabled="disabled" value="<?php echo $row['id'] ?>">
 	      <?php echo $row['name'] ?>
 	      </option>
 	      <?php
 	    }
-	    $sql_option = "";
-	    if (preg_match("/\d/",$experiments)) {
-	      $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
-	    }
-	    if (preg_match("/\d/",$datasets)) {
-	      $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-	    }
-	    $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
-	    FROM line_records, tht_base
-	    WHERE line_records.line_record_uid=tht_base.line_record_uid
-	    $sql_option";
-	    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	    while($row = mysql_fetch_array($res)) {
-	      $temp1 = $row['name'];
-	      $temp2 = $row['id'];
-	      if (isset($lines_list[$temp2])) {
-	      } else {
-	        if ($lines_new == "") {
-	          $lines_new = $temp1;
-	          ?>
-	          <option disabled="disabled">--added--
-	          </option>
-	          <?php
-	        }
-	        ?>
-	        <option selected value="<?php echo $row['id'] ?>">
-	        <?php echo $row['name'] ?>
-	        </option>
-	        <?php
-	      }
-	    }
-	  } else {
-	    $sql_option = "";
-	    if (preg_match("/\d/",$experiments)) {
-	      $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
-	    }
-	    if (preg_match("/\d/",$datasets)) {
-	      $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-	    }
-	    $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
-	    FROM line_records, tht_base
-	    WHERE line_records.line_record_uid=tht_base.line_record_uid
-	    $sql_option";
-	    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	    while($row = mysql_fetch_array($res)) {
-	      ?>
-	      <option selected value="<?php echo $row['id'] ?>">
-	      <?php echo $row['name'] ?>
-	      </option>
-	      <?php 
-	    }
+	    ?>
+	    </select>
+	  <?php
 	  }
 	  ?>
-	  </select>
 	  </table>
 	  <?php 
-	  if (count($_SESSION['selected_lines']) > 0) {
-	    ?>
-	    <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently
-	    selected lines</a><br>
-	    <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
-	    <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
-	    <?php
-	  }
 	}
 
 	/**
@@ -1964,12 +2004,14 @@ selected lines</a><br>
 	/**
 	 * displays key marker data for the selected breeding programs
 	 */
-	function type1_markers()
+	private function type1_markers()
 	{
 		// parse url
         $experiments = $_GET['exps'];
 		$CAPdataprogram = $_GET['bp'];
+		$phen_item = $_GET['t'];
 		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+                $traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
 		
 		if (empty($_GET['lines'])) {
 		if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
@@ -1981,20 +2023,24 @@ selected lines</a><br>
 		  $lines = array();
 		  if ($subset == "yes" && count($_SESSION['selected_lines']) > 0) {
 		    $selectedlines = implode(",", $_SESSION['selected_lines']);
-		    $sql_option = " AND line_records.line_record_uid IN ($selectedlines)";
+		    $sql_option = " AND tb.line_record_uid IN ($selectedlines)";
 		  }
 		  if (preg_match("/\d/",$experiments)) {
-		    $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
+		    $sql_option .= "AND tb.experiment_uid IN ($experiments)";
+		  }
+		  if (preg_match("/\d/",$phen_item)) {
+		     $sql_option .= "AND pd.phenotype_uid IN ($phen_item)";
 		  }
 		  if (preg_match("/\d/",$datasets)) {
-		    $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
+		    $sql_option .= "AND ((tb.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
 		  }
-		  $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid FROM line_records, tht_base
-		  WHERE line_records.line_record_uid=tht_base.line_record_uid $sql_option";
+		  $sql = "SELECT DISTINCT tb.line_record_uid FROM tht_base as tb, phenotype_data as pd
+		  WHERE pd.tht_base_uid = tb.tht_base_uid $sql_option";
 		  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		  while($row = mysql_fetch_array($res)) {
 		    $lines[] = $row['line_record_uid'];
 		  }
+		  //echo "$sql<br>\n";
 		  $lines_str = implode(",", $lines);
 		  $count = count($lines);
 		}
@@ -2037,11 +2083,8 @@ selected lines</a><br>
 	      $lines = explode(',', $lines_str);
 	      $count = count($lines);
 		}
-		echo "current data selection = $count lines<br>";
-		?>
-        <h3>6. Markers</h3>
-		<div>
-		<?php
+                echo "<div>";
+		echo "current data selection = $count lines";
 		    		
 		// initialize markers and flags if not already set
         $max_missing = 99.9;//IN PERCENT
@@ -2059,14 +2102,15 @@ selected lines</a><br>
 		elseif ($min_maf<0)
 			$min_maf = 0;
 		
-		$this->calculate_af($lines, $min_maf, $max_missing);
+		/* $this->calculate_af($lines, $min_maf, $max_missing);  */
+                $traits_ary = explode(",",$traits); 
+                $count = count($traits_ary);
+                echo ", $count traits";
 		
 		?>
 		<table> <tr> <td COLSPAN="3">
 		<input type="hidden" name="subset" id="subset" value="yes" /><br>
-		<input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel('v3');" />
-		<h4> or </h4>
-		<input type="button" value="Download for Tassel V4" onclick="javascript:getdownload_tassel('v4');" /> <br>
+                <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
 		</td> </tr> </table>
 		<?php
 		
@@ -2077,7 +2121,7 @@ selected lines</a><br>
 	/**
 	 * displays key marker data when given a set of experiments and phenotypes
 	 */
-	function type2_markers()
+	private function type2_markers()
 	{
 	 // parse url
 	 $experiments = $_GET['exps'];
@@ -2152,13 +2196,7 @@ selected lines</a><br>
 	   $count = count($lines);
 	   //$_SESSION['selected_lines'] = $lines;
 	 }
-	 echo "current data selection = $count lines<br>";
-	
-	 ?>
-	
-	 <h3>6. Markers</h3>
-	 <div>
-	 <?php
+	 echo "current data selection = $count lines";
 	
 	 // initialize markers and flags if not already set
 	 $max_missing = 99.9;//IN PERCENT
@@ -2176,14 +2214,15 @@ selected lines</a><br>
 	 elseif ($min_maf<0)
 	   $min_maf = 0;
 	
-	$this->calculate_af($lines, $min_maf, $max_missing);
+	/* $this->calculate_af($lines, $min_maf, $max_missing); */
+        $traits_ary = explode(",",$phen_item);
+        $count = count($traits_ary);
+        echo ", $count traits";
 	
 	?>
 	<table> <tr> <td COLSPAN="3">
 	<input type="hidden" name="subset" id="subset" value="yes" /><br>
-	<input type="button" value="Download for Tassel V3" onclick="javascript:get_download_loc('v3');" /> <br>
-	<h4> or </h4>
-	<input type="button" value="Download for Tassel V4" onclick="javascript:get_download_loc('v4');" /> <br>
+        <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
 	</td> </tr> </table>
 	<?php
 	
@@ -2427,7 +2466,7 @@ selected lines</a><br>
 	 * build download files for tassel (V2,V3,V4) when given a set of experiments, traits, and phenotypes
 	 * @param string $version
 	 */
-	function type2_build_tassel($version) {
+	private function type2_build_tassel($version) {
 	  //used for download starting with location
 	  $experiments = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
 	  $traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
@@ -2500,17 +2539,8 @@ selected lines</a><br>
 	    $lines_str = $_GET['lines'];
 	    $lines = explode(',', $lines_str);
 	  }
-
-          if (isset($_SESSION['clicked_buttons'])) {
-            $selectcount = $_SESSION['clicked_buttons'];
-            $markers = $_SESSION['clicked_buttons'];
-            $markers_str = implode(",", $_SESSION['clicked_buttons']);
-          } else {
-            $markers = array();
-            $markers_str = "";
-          }
 	  
-	  if (!preg_match('/[0-9]/',$markers_str)) {
+	  if (!preg_match('/[0-9]/',$marker_str)) {
 	    //get genotype markers that correspond with the selected lines
 	    $sql_exp = "SELECT DISTINCT marker_uid
 	    FROM allele_cache
@@ -2522,6 +2552,8 @@ selected lines</a><br>
 	        $markers[] = $row["marker_uid"];
 	      }
 	    }
+	  } else {
+	    $markers = array();
 	  }
 	  
 	  //get genotype experiments
@@ -2560,7 +2592,7 @@ selected lines</a><br>
 	    $zip->writeData($this->type1_build_annotated_align($experiments_g));
 	  } elseif (($version == "V3")) {
 	    $zip->newFile("geneticMap.txt");
-	    $zip->writeData($this->type1_build_geneticMap($lines,$markers));
+	    $zip->writeData($this->type1_build_geneticMap($experiments_g));
 	    $zip->newFile("snpfile.txt");
 	    $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
 	  } elseif (($version == "V4")) {
@@ -2580,7 +2612,7 @@ selected lines</a><br>
 	 * @param unknown_type $traits
 	 * @param unknown_type $datasets
 	 */
-	function type1_build_traits_download($experiments, $traits, $datasets)
+	private function type1_build_traits_download($experiments, $traits, $datasets)
 	{
 		
 		$output = 'Experiment' . $this->delimiter . 'Inbred';
@@ -2647,7 +2679,7 @@ selected lines</a><br>
      * @param unknown_type $subset
      * @return string
      */
-    function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
+    private function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
 	{
      	//$firephp = FirePHP::getInstance(true);
 		$delimiter = "\t";
@@ -2791,7 +2823,7 @@ selected lines</a><br>
 	 * @param unknown_type $subset
 	 * @return string
 	 */
-	function type2_build_tassel_traits_download($experiments, $traits, $lines, $subset)
+	private function type2_build_tassel_traits_download($experiments, $traits, $lines, $subset)
 	{
 	  //$firephp = FirePHP::getInstance(true);
 	  $delimiter = "\t";
@@ -2910,7 +2942,7 @@ selected lines</a><br>
 	 * @param unknown_type $experiments
 	 * @param unknown_type $dtype
 	 */
-	function type1_build_markers_download($experiments,$dtype)
+	private function type1_build_markers_download($experiments,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
 		$outputheader = '';
@@ -3043,7 +3075,7 @@ selected lines</a><br>
 	 * @param unknown_type $experiments
 	 * @param unknown_type $dtype
 	 */
-	function type1_build_conflicts_download($experiments,$dtype) {
+	private function type1_build_conflicts_download($experiments,$dtype) {
 	 
 	  //get lines and filter to get a list of markers which meet the criteria selected by the user
 	  $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
@@ -3087,7 +3119,7 @@ selected lines</a><br>
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	function type2_build_markers_download($lines,$markers,$dtype)
+	private function type2_build_markers_download($lines,$markers,$dtype)
 	{
 		// $firephp = FirePHP::getInstance(true);
 		$outputheader = '';
@@ -3137,12 +3169,14 @@ selected lines</a><br>
 		  }
 		  $markers_str = implode(',',$markers);
 		}
-	
-                //generate an array of selected markers that can be used with isset statement
-                foreach ($markers as $temp) {
-                  $marker_lookup[$temp] = 1;
-                }
-	
+		
+		//generate an array of selected markers that can be used with isset statement
+		foreach ($markers as $temp) {
+		  $marker_lookup[$temp] = 1;
+		}
+		//echo "<pre>";
+		//print_r($marker_lookup);
+		//echo "</pre>";
 		$sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
 		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		$i=0;
@@ -3159,12 +3193,11 @@ selected lines</a><br>
 		    $outarray = explode(',',$alleles);
 		    $i=0;
 		    foreach ($outarray as $allele) {
-                      if ($allele=='AA') { $marker_aacnt[$i]++; }
-                      elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-                      elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-                      elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
-                      else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-                      $i++;
+		      if ($allele=='AA') $marker_aacnt[$i]++;
+		      if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
+		      if ($allele=='BB') $marker_bbcnt[$i]++;
+		      if ($allele=='--') $marker_misscnt[$i]++;
+		      $i++;
                     }
 		  }
 		  //echo "$line_record_uid<br>\n";
@@ -3172,7 +3205,7 @@ selected lines</a><br>
 		
 		$num_maf = $num_miss = 0;
 
-        foreach ($marker_list as $i => $marker_id) {
+                foreach ($marker_list as $i => $marker_id) {
 		  $marker_name = $marker_list_name[$i];
 		  if (isset($marker_lookup[$marker_id])) {
 		    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
@@ -3274,7 +3307,7 @@ selected lines</a><br>
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	function type3_build_markers_download($lines,$markers,$dtype)
+	private function type3_build_markers_download($lines,$markers,$dtype)
 	{
 	 $output = '';
 	 $outputheader = '';
@@ -3367,7 +3400,13 @@ selected lines</a><br>
          }
 
          //sort marker_list_all by map location if available
-         if (uasort($marker_list_all, array($this,'cmp'))) {
+         function cmp($a, $b) {
+           if ($a == $b) {
+             return 0;
+           }
+           return ($a < $b) ? -1 : 1;
+         }
+         if (uasort($marker_list_all, "cmp")) {
          } else {
            die("could not sort marker list\n");
          }
@@ -3388,12 +3427,11 @@ selected lines</a><br>
 	   $outarray = explode(',',$alleles);
 	   $i = 0;
 	   foreach ($outarray as $allele) {
-             if ($allele=='AA') { $marker_aacnt[$i]++; }
-            elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-            elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-            elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
-            else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-            $i++;
+	    if ($allele=='AA') $marker_aacnt[$i]++;
+	    if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
+	    if ($allele=='BB') $marker_bbcnt[$i]++;
+	    if ($allele=='--') $marker_misscnt[$i]++;
+	    $i++;
 	   }
 	  }
 	 }
@@ -3477,7 +3515,7 @@ selected lines</a><br>
 	 * @param unknown_type $markers
 	 * @return string
 	 */
-	function type2_build_conflicts_download($lines,$markers) {
+	private function type2_build_conflicts_download($lines,$markers) {
 	 
 	  if (count($markers)>0) {
 	    $markers_str = implode(",",$markers);
@@ -3528,7 +3566,7 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	function type1_build_annotated_align($experiments)
+	private function type1_build_annotated_align($experiments)
 	{
 		$delimiter ="\t";
 		// $firephp = FirePHP::getInstance(true);
@@ -3689,9 +3727,10 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	function type1_build_geneticMap($lines,$markers)
+	private function type1_build_geneticMap($experiments)
 	{
 		$delimiter ="\t";
+		// $firephp = FirePHP::getInstance(true);
 		$output = '';
 		$doneheader = false;
 		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
@@ -3709,131 +3748,118 @@ selected lines</a><br>
 		elseif ($min_maf<0)
 			$min_maf = 0;
 		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
-		
-		$lookup_chrom = array(
+
+        //get lines and filter to get a list of markers which meet the criteria selected by the user
+        $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+					SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+					FROM allele_frequencies AS af, markers as m
+					WHERE m.marker_uid = af.marker_uid
+						AND af.experiment_uid in ($experiments)
+					group by af.marker_uid"; 
+
+		$res = mysql_query($sql_mstat) or die(mysql_error());
+		$num_maf = $num_miss = 0;
+
+		while ($row = mysql_fetch_array($res)){
+			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+			  $miss = round(100*$row["summis"]/$row["total"],1);
+					if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
+						$marker_names[] = $row["name"];
+						$outputheader .= $delimiter.$row["name"];
+						$marker_uid[] = $row["marker"];
+						
+					}
+		}
+
+	    $lookup_chrom = array(
 		  '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
 		  '6H' => '6','7H' => '7','UNK'  => '10'
-		);
-
-                //generate an array of selected markers that can be used with isset statement
-                foreach ($markers as $temp) {
-                  $marker_lookup[$temp] = 1;
-                }
-
-                $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-                $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-                $i=0;
-                while ($row = mysql_fetch_array($res)) {
-                  $marker_list[$i] = $row[0];
-                  $marker_list_name[$i] = $row[1];
-                  $i++;
-                }
-
-		$sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
-		where mim.marker_uid = markers.marker_uid
-		AND mim.map_uid = map.map_uid
-		AND map.mapset_uid = mapset.mapset_uid
-		AND mapset.mapset_uid = 1";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		while ($row = mysql_fetch_array($res)) {
-		  $uid = $row[0];
-		  $chr = $lookup_chrom[$row[1]];
-		  $pos = $row[2];
-		  $marker_list_mapped[$uid] = "$chr\t$pos";
-		  if (preg_match("/(\d+)/",$chr,$match)) {
-		    $chr = $match[0];
-		    $rank = (1000*$chr) + $pos;
-		  } else {
-		    $rank = 99999;
-		  }  
-		  $marker_list_rank[$uid] = $rank; 
-		}
-	
-                foreach ($lines as $line_record_uid) {
-                  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-                  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-                  if ($row = mysql_fetch_array($res)) {
-                    $alleles = $row[0];
-                    $outarray = explode(',',$alleles);
-                    $i=0;
-                    foreach ($outarray as $allele) {
-                      if ($allele=='AA') {
-                        $marker_aacnt[$i]++;
-                      }
-                      elseif (($allele=='AB') or ($allele=='BA')) {
-                        $marker_abcnt[$i]++;
-                      }
-                      elseif ($allele=='BB') {
-                        $marker_bbcnt[$i]++;
-                      }
-                      elseif (($allele=='--') or ($allele=='')) {
-                        $marker_misscnt[$i]++;
-                      }
-                      else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
-                      }
-                      $i++;
-                    }
-                  }
-                  //echo "$line_record_uid<br>\n";
-                }
-
-                //get lines and filter to get a list of markers which meet the criteria selected by the user
-                $num_maf = $num_miss = 0;
-                foreach ($marker_list as $i => $uid) {
-                  $marker_name = $marker_list_name[$i];
-                  if (isset($marker_lookup[$uid])) {
-                    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-                    if ($total>0) {
-                      $maf[$i] = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
-                      $miss[$i] = round(100*$marker_misscnt[$i]/$total,1);
-                    } else {
-                      $maf[$i] = 0;
-                      $miss[$i] = 100;
-                    }
-                    if (($maf[$i] >= $min_maf)AND ($miss[$i]<=$max_missing)) {
-                      if (isset($marker_list_mapped[$uid])) {
-                        $marker_list_all_name[$uid] = $marker_name;
-                        $marker_list_all[$uid] = $marker_list_rank[$uid];
-                      }
-                    }
-                  }
-                }
-                if (count($marker_list_all) == 0) {
-                   $output = "no mapped data found";
-                   return $output;
-                }
-
+        );
+		
+        // finish writing file header using a list of line names
+        $sql = "SELECT DISTINCT lr.line_record_name AS line_name
+			 FROM line_records AS lr, tht_base AS tb
+			 WHERE
+				  lr.line_record_uid = tb.line_record_uid
+				  AND tb.experiment_uid IN ($experiments)
+				  ORDER BY line_name";
+        $res = mysql_query($sql) or die(mysql_error());
+        while ($row = mysql_fetch_array($res)) {
+            $line_names[] = $row['line_name'];
+        }
+			  
         // make an empty marker with the lines as array keys 
         $nelem = count($marker_uid);
-        $n_lines = count($lines);
-                $empty = array_combine($lines,array_fill(0,$n_lines,'-'));
-                $nemp = count($empty);
-                $line_str = implode($delimiter,$lines);
-                // $firephp = log($nelem." ".$n_lines);
+        $n_lines = count($line_names);
+		$empty = array_combine($line_names,array_fill(0,$n_lines,'-'));
+		$nemp = count($empty);
+		$marker_uid = implode(",",$marker_uid);
+		$line_str = implode($delimiter,$line_names);
+		// $firephp = log($nelem." ".$n_lines);
+			
+		// write output file header
+		$outputheader = "<Map>\n";
+	    // $firephp = log($outputheader);
 
-                // write output file header
-                $outputheader = "<Map>\n";
-            // $firephp = log($outputheader);
+		// get marker map data, line and marker names; use latest consensus map
+		// as the map default
+        $mapset = 1;	
 
-                // get marker map data, line and marker names; use latest consensus map
-                // as the map default
-        $mapset = 1;
-	
-        //sort marker_list by map location
-        if (uasort($marker_list_all, array($this,'cmp'))) {
-        } else {
-          die("could not sort marker list\n");
-        }
-        
-		$num_markers = 0;
-		/* foreach( $marker_uid as $cnt => $uid) { */
-		foreach($marker_list_all as $uid=>$value) {
-		    $marker_name = $marker_list_all_name[$uid];
-		    $map_loc = $marker_list_mapped[$uid];
-		    $output .= "$marker_name\t$map_loc\n";
-		    $num_markers++;
+        $sql = "SELECT mim.chromosome, mim.start_position, lr.line_record_name as lname, m.marker_name AS mname                    
+			FROM
+            markers as m,
+			markers_in_maps as mim,
+			map,
+			mapset,
+            line_records as lr,
+            alleles as a,
+            tht_base as tb,
+            genotyping_data as gd
+			WHERE
+            a.genotyping_data_uid = gd.genotyping_data_uid
+				AND mim.marker_uid = m.marker_uid
+				AND m.marker_uid = gd.marker_uid
+				AND gd.marker_uid IN ($marker_uid)
+				AND mim.map_uid = map.map_uid
+				AND map.mapset_uid = mapset.mapset_uid
+				AND mapset.mapset_uid = '$mapset'
+				AND tb.line_record_uid = lr.line_record_uid
+				AND gd.tht_base_uid = tb.tht_base_uid
+				AND tb.experiment_uid IN ($experiments)
+		  ORDER BY mim.chromosome,mim.start_position, m.marker_uid, lname";
+
+        $last_marker = "somemarkername";
+		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+		
+		$cnt = $num_markers = 0;
+		while ($row = mysql_fetch_array($res)){
+				//first time through loop
+            if ($cnt==0) {
+                $last_marker = $row['mname'];
+				$pos = $row['start_position'];
+				$chrom = $lookup_chrom[$row['chromosome']];
+			}
+				
+			if ($last_marker != $row['mname']){  
+				// Close out the last marker
+				$output .= "$last_marker\t$chrom\t$pos\t";
+				$output .= "\n";
+				$lname = $row['lname'];	//start new line			
+				$last_marker = $row['mname'];
+				$pos = $row['start_position'];
+				$chrom = $lookup_chrom[$row['chromosome']];
+				$num_markers++;
+    		} else {
+				 $lname = $row['lname'];				
+			}
+			$cnt++;
 		}
 		
+	  //save data from the last line
+	  $output .= "$last_marker\t$chrom\t$pos\t";
+	  $output .= "\n";
+	  $num_markers++;
+
 	  return $outputheader.$output;
     }
 
@@ -3841,7 +3867,7 @@ selected lines</a><br>
      * create pedigree output file for qtlminer
      * @param string $experiments
      */
-	function type1_build_pedigree_download($experiments)
+	private function type1_build_pedigree_download($experiments)
 	{
 		$delimiter ="\t";
 		// output file header for QTL Miner Pedigree files
@@ -3882,7 +3908,7 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	function type1_build_inbred_download($experiments)
+	private function type1_build_inbred_download($experiments)
 	{
 		$newline ="\n";
 		// output file header for QTL Miner Pedigree files

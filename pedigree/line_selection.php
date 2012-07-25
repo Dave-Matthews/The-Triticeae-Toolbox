@@ -51,6 +51,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST") {
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
+  <script type="text/javascript" src="theme/new.js"></script>
   <h2> Select Lines by Properties</h2>
   <div class="boxContent">
   <h3> Select any combination of properties </h3>
@@ -362,6 +363,11 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
       }
       $_SESSION['selected_lines'] = $selected_lines;
     }
+    ?>
+    <script type="text/javascript">
+      update_side_menu();
+    </script>
+    <?php
   }
   // Deselect highlighted cookie lines.
   if (isset($_POST['deselLines'])) {
@@ -377,6 +383,11 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
     $stored = retrieve_session_variables('selected_lines', $username);
     if (-1 != $stored)
       $_SESSION['selected_lines'] = $stored;
+      ?>
+      <script type="text/javascript">
+      update_side_menu();
+      </script>
+      <?php
   }
   // Show "Currently selected lines" box.
   $selectedcount = count($_SESSION['selected_lines']);

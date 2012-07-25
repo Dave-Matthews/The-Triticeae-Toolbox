@@ -1,5 +1,5 @@
-/*global alert,$,$$,$A,$H,Prototype,Ajax,Template,Element,getXMLHttpRequest*/
-var php_self = document.location.href;
+/*global alert,$,$$,$A,$H,Prototype,Ajax,Template,Element*/
+var php_self = document.location;
 var breeding_programs_str = "";
 var phenotype_categories_str = "";
 var phenotype_items_str = "";
@@ -14,6 +14,8 @@ var select1_str = "";
 var select2_str = "";
 var subset = "";
 var trait_cmb = "";
+var traits_remove = "";
+var trials_remove = "";
 
 var markerids = null;
 var selmarkerids = [];
@@ -73,27 +75,15 @@ function load_title(command) {
     });
 }
 
-function haplotype_step2(command) {
-    var i = document.myForm.elements.length;
-    var e = document.myForm.elements;
-    var k = 0;
-    //var form = new Element('form', {method: 'post', action: php_self});
-    var param = 'function=step2';
-    //form.insert(new Element('input', {name: 'function', value: 'step2'}));
-    for (k=0; k<i; k++) {
-      if (document.myForm.elements[k].checked === true) { 
-      param += '&' + document.myForm.elements[k].name + '=' + document.myForm.elements[k].value;
-      //*form.insert(new Element('input', {name: document.myForm.elements[k].name, value: document.myForm.elements[k].value})); */
-      //$(document.body).insert(form);
-    } 
-    }
-    //*form.submit(); */
-    var url = php_self;
-    var tmp = new Ajax.Updater($('step1'), url, {method: 'post', postBody: param, asynchronous:false}, { 
+function phenotype_save() {
+    phenotype_items_remove = "";
+    trials_remove = "";
+    var url = php_self + "?function=refreshtitle&pi=" + phenotype_items_str + "&exps=" + experiments_str + '&cmd=save';
+    var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
         onComplete : function() {
-            $('step1').show();
+            $('title').show();
             document.title = title;
-       }
+        }
     });
     url = "side_menu.php";
     tmp = new Ajax.Updater($('quicklinks'), url, {
@@ -102,38 +92,15 @@ function haplotype_step2(command) {
       document.title = title;
     }
     });
-    param = 'function=step1';
-    url = php_self;
-    tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
-        onComplete : function() {
-            $('step1').show();
-            document.title = title;
-       }
-    });
 }
 
-function haplotype_step2_combine() {
-    var param = 'function=selLines';
-    param += '&selLines=' + document.lines.elements["selLines"].value;
-    if (document.lines.elements[0].checked) {
-      param += '&selectWithin=' + document.lines.elements[0].value;
-    }
-    if (document.lines.elements[1].checked) {
-      param += '&selectWithin=' + document.lines.elements[1].value;
-    }
-    if (document.lines.elements[2].checked) {
-      param += '&selectWithin=' + document.lines.elements[2].value;
-    }
-    if (document.lines.elements[3].checked) {
-      param += '&selectWithin=' + document.lines.elements[3].value;
-    }
-
-    var url = php_self;
-    var tmp = new Ajax.Updater($('step1'), url, {method: 'post', postBody: param, asynchronous:false}, {
+function phenotype_deselect() {
+    var url = php_self + "?function=refreshtitle&pi=" + phenotype_items_remove + '&cmd=deselect';
+    var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
         onComplete : function() {
-            $('step1').show();
+            $('title').show();
             document.title = title;
-       }
+        }
     });
     url = "side_menu.php";
     tmp = new Ajax.Updater($('quicklinks'), url, {
@@ -142,15 +109,25 @@ function haplotype_step2_combine() {
       document.title = title;
     }
     });
-    param = 'function=step1';
-    url = php_self;
-    tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
+}
+
+function trials_deselect() {
+    var url = php_self + "?function=refreshtitle&exp=" + trials_remove + '&cmd=deselect';
+    var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
         onComplete : function() {
-            $('step1').show();
+            $('title').show();
             document.title = title;
-       }
+        }
+    });
+    url = "side_menu.php";
+    tmp = new Ajax.Updater($('quicklinks'), url, {
+    onComplete : function() {
+      $('quicklinks').show();
+      document.title = title;
+    }
     });
 }
+
 
 function load_experiments() {
     $('step3').hide();
@@ -285,6 +262,18 @@ function load_phenotypes5() {
     });
 }
 
+function save_pheno_selection() {
+    $('step5').hide();
+    var url = php_self + "?function=step5phenotype&pi=" + phenotype_items_str + "&e=" + experiments_str + '&subset=' + subset;
+    document.title = 'Loading Step1...';
+    var tmp = new Ajax.Updater($('step5'), url, {
+        onComplete : function() {
+            $('step5').show();
+            document.title = title;
+            load_title();
+        }
+    });
+}
 function load_lines() {
     $('step11').hide();
     var url = php_self + "?function=step1lines&bp=" + breeding_programs_str + '&yrs=' + years_str;
@@ -356,7 +345,7 @@ function load_traits()
 function load_markers( mm, mmaf) {
     markers_loading = true;
     $('step5').hide();
-    var url=php_self + "?function=type1markers&bp=" + breeding_programs_str + '&lines=' + lines_str + '&exps=' + experiments_str + '&t=' + selectedTraits() + '&mm=' + mm + '&mmaf=' + mmaf + '&subset=' + subset;
+    var url=php_self + "?function=type1markers&bp=" + breeding_programs_str + '&lines=' + lines_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&subset=' + subset;
     document.title='Loading Markers...';
     var tmp = new Ajax.Updater($('step5'),url,
         {onCreate: function() { Element.show('spinner'); },
@@ -445,7 +434,7 @@ function update_phenotype_categories(options) {
     phenotype_items_str = "";
     experiments_str = "";
     lines_str = "";
-    experiments_str = "";
+    select1_str = "Phenotypes";
     $A(options).each(
                 function(phenotype_categories) {
             if (phenotype_categories.selected) {
@@ -471,6 +460,7 @@ function update_phenotype_items(options) {
                     });
     if (select1_str == "Phenotypes") {
         load_phenotypes3();
+        //save_pheno_selection();
         document.getElementById('step4').innerHTML = "";
     } else if (select1_str == "Locations") {
         load_locations5();
@@ -485,6 +475,30 @@ function update_phenotype_items(options) {
     document.getElementById('step5').innerHTML = "";
 }
 
+function remove_phenotype_items(options) {
+  phenotype_items_remove = "";
+  $A(options)
+            .each(
+                    function(phenotype_items) {
+                        if (phenotype_items.selected) {
+                            phenotype_items_remove += (phenotype_items_remove === "" ? ""
+                                    : ",") + phenotype_items.value;
+                        }
+                    });
+}
+
+function remove_trial_items(options) {
+  trials_remove = "";
+  $A(options)
+            .each(
+                    function(phenotype_items) {
+                        if (phenotype_items.selected) {
+                            trials_remove += (trials_remove === "" ? ""
+                                    : ",") + phenotype_items.value;
+                        }
+                    });
+}
+
 function update_phenotype_trial(options) {
 	experiments_str = ""; 
 	lines_str = "";
@@ -493,9 +507,10 @@ function update_phenotype_trial(options) {
 			experiments_str += (experiments_str === "" ? "" : ",") + experiment.value;
 		}
 	});
-	load_phenotypes4();
-	load_title();
-	load_phenotypes5();
+	//load_phenotypes4();
+        save_pheno_selection();
+	//load_title();
+	//load_phenotypes5();
 }
 
 function update_phenotype_trialb(options) {
@@ -685,7 +700,7 @@ function update_phenotype_linesb(options) {
 			function load_markers_pheno( mm, mmaf) {
                 markers_loading = true;
                 $('step5').hide();
-                var url=php_self + "?function=step5phenotype&pi=" + phenotype_items_str + '&yrs=' + years_str + '&e=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
+                var url=php_self + "?function=step5phenotype&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
                 //changes are right here
                 var tmp = new Ajax.Updater($('step5'),url,
@@ -706,7 +721,7 @@ function update_phenotype_linesb(options) {
 			    select1_str = "Lines";
                 markers_loading = true;
                 $('step5').hide();
-                var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
+                var url=php_self + "?function=step4lines&bp=" + breeding_programs_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
                 //changes are right here
                 var tmp = new Ajax.Updater($('step5'),url,
