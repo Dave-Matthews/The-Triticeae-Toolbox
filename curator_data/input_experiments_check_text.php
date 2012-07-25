@@ -1,4 +1,4 @@
-<?
+<?php
 //uploading it to main server
 
 // 02/01/2011 JLee  Fix indentations and fatal error not presenting data
@@ -570,20 +570,20 @@ class LineNames_Check
 	<table >
     <thead>
     <tr> 
-    <?
+    <?php
     		for ($i = 0; $i <= count($header); $i++) {
 				$teststr = str_replace(' ','',$header[$i]);
 				$newtext = wordwrap($teststr, 7, "\n", true);
     ?>
-    <th ><?echo $newtext?></th>
-    <?
+    <th ><?php echo $newtext?></th>
+    <?php
       		}
     ?>
     </tr>
     </thead>
 	
  <tbody style="padding: 0; height: 300px; width: 700px;  overflow: scroll;border: 1px solid #5b53a6;">
- <?
+ <?php
     /* printing the values onto the page for user*/
    
 	/* re opening the file since the pointer gets to the end */
@@ -592,22 +592,22 @@ class LineNames_Check
             while(($data_print = fgetcsv($handle, 0, "\t")) !== FALSE) {
 ?>
 <tr>
-<?
+<?php
                 if($skip_first > 0) {
                     $current_row = $data_print;
                     for($j = 0; $j <= count($header); $j++) {
  ?>
  <td>
- <?
+ <?php
                         $newtext = wordwrap($current_row[$j], 7, "\n", true);
                         echo  $newtext;
 ?>
 </td>
-<?
+<?php
                     }
 ?>
 </tr>
-<?
+<?php
                 } /* end of if */
                 $skip_first++;
             } /* end of while loop */ ?>
@@ -615,7 +615,7 @@ class LineNames_Check
 </table>
 <input type="Button" value="Accept" onclick="javascript: update_database('<?echo $meansfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $rawdatafile ?>' )"/>
 <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
-<?
+<?php
             } else {
                 error(1,"There was an error uploading the file, please try again!");
                 print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
@@ -1173,7 +1173,7 @@ echo " <b>The Data is inserted/updated successfully </b>";
 echo"<br/><br/>";
 ?>
 <a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_text.php"> Go Back To Main Page </a>
-<?
+<?php
         $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
     }/* end of type_database function */
