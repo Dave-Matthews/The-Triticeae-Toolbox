@@ -1,4 +1,4 @@
-<?
+<?php
 
 require 'config.php';
 /*
@@ -59,6 +59,8 @@ private function typeTraits()
 	
 	private function type_Trait_Name()
 	{
+	  $url1 = $config['base_url'] . "curator_data/traitAdd.php";
+	  $url2 = $config['base_url'] . "login/edit_traits.php";
 	?>
 	<script type="text/javascript">
 	
@@ -75,12 +77,14 @@ private function typeTraits()
 		<table>
 		<tr>
 		<td>
-	<a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php"><p><strong><li>Add Traits</li></strong></p></a>
-	</td>
+	<form action="<?php echo $url1; ?>" method="GET">
+	<input type="submit" value="Add Traits">
+	</form>
 	<td colspan="2">
-	</td>
 	<td>
-	<a href="<?php echo $config['base_url']; ?>login/edit_traits.php"><p><strong><li>Edit Traits</li> </strong></p> </a>  
+	<form action="<?php echo $url2; ?>" method="GET">
+	<input type="submit" value="Edit Traits">
+	</form>  
 	</td>
 	</tr>
 	</table>
@@ -90,10 +94,8 @@ private function typeTraits()
 	
 		
 		
-<?
+<?php
  
 	} /* end of type_Pedigree_Name function*/
 	
 } /* end of class */
-
-?>
