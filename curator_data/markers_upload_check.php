@@ -62,7 +62,7 @@ class Markers_Check {
 		include($config['root_dir'] . 'theme/admin_header.php');
 
 		echo "<h2> Enter/Update Markers: Validation</h2>"; 
-		
+
         if ($_FILES['file']['name'][0] != "") 	
             $this->type_MarkersAnnot();
         elseif ( $_FILES['file']['name'][1] != "")
@@ -273,8 +273,12 @@ class Markers_Check {
                     <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
                     <?php
                 }
-            }    
-		}
+		    } // end of if(move_uploaded_file())
+		    else {
+		      echo "<b>Error</b>: Couldn't save file in curator_data/uploads/ directory.<p>";
+		      echo "<input type='Button' value='Cancel' onclick='history.go(-1); return;'/>";
+		    }
+	}
     } /* end of MarkersAnnot function*/
 
 //**************************************************************

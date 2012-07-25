@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- JNLP File for TASSEL application -->
+<jnlp spec="1.0+"
+      codebase="http://www.maizegenetics.net/tassel/jws"
+      href="http://malt.pw.usda.gov/tmp/tht/chr1.diversity_arabidopsis.daa1.live.jnlp">
+   <information>
+      <title>TASSEL</title>
+      <vendor>Cornell-USDA-ARS</vendor>
+      <homepage href="http://www.maizegenetics.net/tassel"/>
+      <application>TASSEL Application</application>
+      <description kind="short">Trait Analysis and aSSociation Evolution and Linkage</description>
+      <icon href="tassel-icon.gif"/>
+      <offline-allowed/>
+    </information>
+    <security>
+      <all-permissions/>
+    </security>
+    <resources>
+
+      <j2se version="1.6+" initial-heap-size="256m" max-heap-size="1024m" href="http://java.sun.com/products/autodl/j2se"/>
+
+      <jar href="sTASSEL3.jar" main="true" download="eager"/>
+      <jar href="LiuExt.jar" download="eager"/>
+      <jar href="crimson-parser.jar" download="eager"/>
+      <jar href="batik-awt-util.jar" download="eager"/>
+      <jar href="batik-css.jar" download="eager"/>
+      <jar href="batik-gvt.jar" download="eager"/>
+      <jar href="batik-dom.jar" download="eager"/>
+      <jar href="batik-parser.jar" download="eager"/>
+      <jar href="batik-svg-dom.jar" download="eager"/>
+      <jar href="batik-svggen.jar" download="eager"/>
+      <jar href="batik-util.jar" download="eager"/>
+      <jar href="batik-xml.jar" download="eager"/>
+      <jar href="batik-gui-util.jar" download="eager"/>
+      <jar href="batik-ext.jar" download="eager"/>
+      <jar href="geronimo-spec-activation-1.0.2-rc4.jar" download="eager"/>
+      <jar href="jcommon-1.0.6.jar" download="eager"/>
+      <jar href="jfreechart-1.0.3.jar" download="eager"/>
+      <jar href="jgrapht-0.5.3.jar" download="eager"/>
+      <jar href="jung-1.7.5.jar" download="eager"/>
+      <jar href="colt.jar" download="eager"/>
+      <jar href="ssj.jar" download="eager"/>
+      <jar href="xml.jar" download="eager"/>
+      <jar href="ejml-0.13.jar" download="eager"/>
+
+
+      <!-- gdpc/maizegenetics jar -->
+      <jar href="http://www.maizegenetics.net/gdpc/browser/gdpc_new.jar" download="eager"/>
+
+      <!-- axis2 1.2 -->
+      <jar href="http://www.maizegenetics.net/gdpc/browser/XmlSchema-1.3.1.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/axis2-kernel-1.2.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/axiom-api-1.2.4.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/mail-1.4.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/axiom-impl-1.2.4.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/wsdl4j-1.6.2.jar" download="eager"/>
+
+      <!-- commons -->
+
+      <jar href="commons-math-2.2.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/commons-discovery.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/commons-collections-3.1.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/commons-codec-1.3.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/commons-httpclient-3.0.1.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/commons-logging-1.1.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/commons-dbcp-1.2.1.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/commons-pool-1.3.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/commons-configuration-1.2.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/commons-lang-2.1.jar" download="eager"/>
+      <jar href="http://www.maizegenetics.net/gdpc/browser/log4j-1.2.13.jar" download="eager"/>
+
+      <!-- mysql jdbc driver -->
+      <jar href="http://www.maizegenetics.net/gdpc/browser/mysql-connector-java-5.0.5-bin.jar" download="eager"/>
+
+
+
+    </resources>
+    <application-desc main-class="net.maizegenetics.tassel.TASSELMainApp">
+       <argument>-fork1</argument>
+       <argument>-h</argument> 
+       <argument>http://malt.pw.usda.gov/tmp/tht/genotype_hapmap.txt</argument>
+       <argument>-t</argument>
+       <argument>http://malt.pw.usda.gov/tmp/tht/traits.txt</argument>
+       
+	   <argument>-runfork1</argument>
+	   
+    </application-desc>
+
+</jnlp>
