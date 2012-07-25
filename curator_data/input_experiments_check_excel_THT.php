@@ -1,4 +1,4 @@
-<?
+<?php
 //uploading it to main server
 
 // 02/01/2011 JLee  Fix indentations and fatal error not presenting data
@@ -637,15 +637,15 @@ else {
 <table >
 <thead>
 <tr> 
- <?PHP
+ <?php
     
     for ($i = 1; $i <= $cols; $i++) {
 		$teststr = str_replace(' ','',$means['cells'][1][$i]);
 		$newtext = wordwrap($teststr, 7, "\n", true);
         
  ?>
-<th ><?echo $newtext?></th>
-<?
+<th ><?php echo $newtext?></th>
+<?php
 	}
 ?>
 
@@ -653,34 +653,34 @@ else {
 </thead>
      
 <tbody style="padding: 0; height: 300px; width: 700px;  overflow: scroll;border: 1px solid #5b53a6;">
-<?
+<?php
    /* printing the values onto the page for user*/
   for($i = 2; $i <= $rows; $i++) {
  ?>
  <tr>
- <?
+ <?php
    $current_row = $means['cells'][$i];
    for($j=1; $j<=$cols; $j++) 	{
  ?>
    	<td>
-   	<?
+   	<?php
    		$newtext = wordwrap($current_row[$j], 7, "\n", true);
 		 echo  $newtext;
    	?>
    	</td>
- <?
+ <?php
     }
   ?>
   	</tr>
-<?
+<?php
   	} ?>
 </tbody>
 </table>
 			
 			
-<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $meansfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $rawdatafile ?>' )"/>
+<input type="Button" value="Accept" onclick="javascript: update_database('<?php echo $meansfile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $rawdatafile ?>' )"/>
 <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
-<?
+<?php
     } else {
  	    error(1,"There was an error uploading the file, please try again!");
  	    print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
@@ -1281,7 +1281,7 @@ private function type_Database() {
 
 	?>
 	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php"> Go Back To Main Page </a>
-	<?
+	<?php
    	$footer_div = 1;
     include($config['root_dir'].'theme/footer.php');
 	}/* end of type_database function */

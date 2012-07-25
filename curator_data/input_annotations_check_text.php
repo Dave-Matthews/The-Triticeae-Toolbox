@@ -388,7 +388,7 @@ private function typeAnnotationCheck()
 	
 <tbody style="padding: 0; height: 200px; width: 1600px;  overflow: scroll;border: 1px solid #5b53a6;">	
 
-			<?
+			<?php
 				for ($i = 0; $i<count($trialcode_data); $i++)
 				{
 				//Extract data
@@ -397,118 +397,118 @@ private function typeAnnotationCheck()
 			
 			<tr>
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($capyear[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			<td >
-			<?
+			<?php
 			$newtext = wordwrap($bp_data[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td>
 			<td>
-			<? 
+			<?php
 			$newtext = wordwrap($location_data[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($lat_data[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($long_data[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($collab[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			<td >
-			<? 
+		<?php
 			$newtext = wordwrap($collabCode[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($experiment[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($descExperiment[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td>
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($trialcode_data[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 		
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($planting_date[$i], 10, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($seedingRate[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($expDesign[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($numEntries[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($numReplications[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($plotSize[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($harvestArea[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($irrigation[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($harvest_date[$i], 10, "\n", true);
 			echo $newtext ?>
 			</td> 
 			
 			<td >
-			<? 
+			<?php
 			$newtext = wordwrap($otherRemarks[$i], 6, "\n", true);
 			echo $newtext ?>
 			</td> 
 		
 			</tr>
-			<?
+			<?php
 				}/* end of for loop */
 			?>
 			</tbody>
@@ -516,7 +516,7 @@ private function typeAnnotationCheck()
 			
 		
 		
-		<input type="Button" value="Accept" onclick="javascript: update_database('<?echo $annotfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $data_public_flag?>' )">
+		<input type="Button" value="Accept" onclick="javascript: update_database('<?php echo $annotfile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $data_public_flag?>' )">
         <input type="Button" value="Cancel" onclick="history.go(-1);">
         
 	
@@ -968,7 +968,7 @@ private function typeAnnotationCheck()
 				echo"<br/><br/>";
 	?>
 	<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"> Go Back To Main Page </a>
-	<?
+	<?php
 	
 	$sql = "INSERT INTO input_file_log (file_name,users_name)
 										VALUES('$filename', '$username')";

@@ -587,7 +587,7 @@ private function typeExperimentCheck()
 	       </tbody>
 		   </table>
 			
-		   <input type="Button" value="Accept" onclick="javascript: update_database('<?echo $meansfile?>','<?echo $uploadfile?>','<?echo $username?>','<?echo $rawdatafile ?>' )"/>
+		   <input type="Button" value="Accept" onclick="javascript: update_database('<?php echo $meansfile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $rawdatafile ?>' )"/>
 		   <input type="Button" value="Cancel" onclick="history.go(-1);" />
 
 		   <?php
@@ -1015,7 +1015,7 @@ private function typeExperimentCheck()
               $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid=$experiment_uids[$i]";
               $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
             } else {
-              echo "error - experiments not found<br>$sql\n";
+              echo "error - experiments not found<br>$sql<br>\n";
             }
 		
             // Add meansfile name to the field for meansfile name, append to existing list if different
@@ -1086,7 +1086,7 @@ private function typeExperimentCheck()
         <b>The data was inserted/updated successfully. </b><br>
 	<a href="<?php echo $config['base_url']; ?>display_phenotype.php?trial_code=<?php echo $trial_code ?>"> View </a><br>
 	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php"> Go Back To Main Page </a>
-	<?
+	<?php
    	$footer_div = 1;
     include($config['root_dir'].'theme/footer.php');
 	}/* end of type_database function */

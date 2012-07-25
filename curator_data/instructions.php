@@ -45,7 +45,7 @@ ul ul ul {list-style-type: disc}
 <p>
 	<ul>
 	  <li><b>Germplasm lines</b>
-	    - Name, properties, pedigree, GRIN accession... [ <a href="curator_data/tutorial/T3_Lesson1_LineUpload.html">Tutorial</a> ]
+	    - Name, properties, pedigree, GRIN accession... [ <a href="curator_data/tutorial/T3_Lesson1_LineUpload.html"><b>Tutorial</b></a> ]
 	    <ul>
 	      <li><?php filelink("T3/LineSubmissionForm_Wheat.xls", "Wheat") ?>
               <li><?php filelink("T3/LineSubmissionForm_Barley.xls", "Barley") ?>
@@ -55,14 +55,14 @@ ul ul ul {list-style-type: disc}
 	  <li><b>Phenotyping</b>
 	    <ul>
           <li><?php filelink("T3/TrialSubmissionForm.xls", "Experiment annotation") ?>
-		- Location, planting date, experimental design... [ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html">Tutorial</a> ]
+		- Location, planting date, experimental design... [ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html"><b>Tutorial</b></a> ]
 	      <li><?php filelink("T3/PhenotypeSubmissionForm.xls", "Experiment results") ?>
 		- Values for all traits for test lines and checks, summary statistics
 	      <li><?php filelink("trait_template.xls", "Traits") ?>
 		- Within T-CAP the traits, protocols and units will be specified by the project.
 	    </ul>
 <p>
-	  <li><b>Genotyping</b> ... [ <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html">Tutorial</a> ]
+	  <li><b>Genotyping</b> ... [ <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html"><b>Tutorial</b></a> ]
 	    <ul>
 	      <li><?php filelink("Geno_Annotation_Sample.txt", "Experiment annotation") ?>
 		- Description of the assay
