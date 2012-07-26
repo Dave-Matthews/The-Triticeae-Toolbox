@@ -71,7 +71,7 @@ ob_end_flush();
 				$colnames[$j]=$data->sheets[0]['cells'][$i][$j];
 			}
 			else {
-				$ele=trim(strtolower($data->sheets[0]['cells'][$i][$j]));
+				$ele=trim($data->sheets[0]['cells'][$i][$j]);
 
 				//special "Same As Above" check
 				if (preg_match('/same\sas\sabove/',$ele) || $ele=="saa") {
