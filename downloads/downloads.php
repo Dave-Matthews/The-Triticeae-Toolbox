@@ -3372,14 +3372,6 @@ selected lines</a><br>
            die("could not sort marker list\n");
          }
 
-	 $lookup = array(
-	   'AA' => 'AA',
-	   'BB' => 'CC',
-	   '--' => 'NN',
-	   'AB' => 'AC',
-	   '' => 'NN'
-	 );
-	 
 	 foreach ($lines as $i => $line_record_uid) {
 	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
 	  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -3427,6 +3419,16 @@ selected lines</a><br>
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
+
+          $lookup = array(
+           'AA' => substr($allele,0,1) . substr($allele,0,1),
+           'BB' => substr($allele,2,1) . substr($allele,2,1),
+           '--' => 'NN',
+           'AB' => substr($allele,0,1) . substr($allele,2,1),
+           'BA' => substr($allele,2,1) . substr($allele,0,1),
+           '' => 'NN'
+          );
+
 	   $total = $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx] + $marker_bbcnt[$marker_idx] + $marker_misscnt[$marker_idx];
 	   if ($total>0) {
 	    $maf[$marker_idx] = round(100 * min((2 * $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx]) /$total, ($marker_abcnt[$marker_idx] + 2 * $marker_bbcnt[$marker_idx]) / $total),1);
