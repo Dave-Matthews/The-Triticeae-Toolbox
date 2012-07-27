@@ -76,7 +76,7 @@ function find_unambig ($snp, $offset) {
       $found = 0;
      }
    }  else {
-      echo "Error: bad sequence $snp\n";
+      echo "Error: not enough flanking sequence $snp offset=$offset\n";
    }
    if ($offset > 0) {
       if (($match[1] == "A") || ($match[1] == "T")) {
@@ -99,14 +99,18 @@ function find_unambig ($snp, $offset) {
 
 function find_Illumina ($seq, $marker_ab) {
   global $strand, $a_allele, $b_allele;
-  $pattern = "/([A-Z])\/([A-Z])/";
+  $strand = "";
+  $a_allele = "";
+  $b_allele = "";
   $ambiguous = 1;
   $offset = 0;
   while ($ambiguous) {
     $ambiguous = find_unambig($seq, $offset);
     $offset++;
     if ($offset > 10) {
-       exitFatal($errFile,  "No unambiguous base pair found $seq");
+       echo "Error: offset is greater than 10\n";
+       break;
+       //exitFatal($errFile,  "No unambiguous base pair found $seq");
     }
   }
   $offset--;
@@ -119,15 +123,17 @@ function find_Illumina ($seq, $marker_ab) {
 
 function convert2Illumina ($alleles) {
   global $a_allele, $b_allele;
-  if ($alleles == $a_allele) {
+  $results = "";
+  if (($a_allele == "") || ($b_allele == "")) {
+    echo "Error: A allele and B allele undetermined\n";
+  } elseif ($alleles == $a_allele) {
     $results = 'AA';
   } elseif ($alleles == $b_allele) {
     $results = 'BB';
   } elseif ($alleles == 'N') {
     $results = '--';
   } else {
-    echo "Error: $a_allele, $b_allele, $alleles\n";
-    $results = '0';
+    echo "Error: allele is not valid SNP $a_allele, $b_allele, $alleles\n";
   }
   return $results;
 } 
@@ -437,14 +443,20 @@ while (!feof($reader))  {
         $allele1 = substr($data[$data_pt],0,1);
 	$allele2 = substr($data[$data_pt],1,1);
         if (($alleles == 'A') || ($alleles == 'C') || ($alleles == 'T') || ($alleles == 'G') || ($alleles == 'N')) {
-          $alleles = convert2Illumina($alleles);
-          $allele1 = substr($alleles,0,1);
-          $allele2 = substr($alleles,1,1);
+          $results = convert2Illumina($alleles);
+          if ($results == "") {
+            echo "Error: could not convert to Illumina AB format\n";
+            exitFatal($errFile,  "No unambiguous base pair found for $marker\n$seq");
+          } else {
+            $alleles = $results;
+            $allele1 = substr($alleles,0,1);
+            $allele2 = substr($alleles,1,1);
+          }
         }
 	if (($alleles == 'AA') || ($alleles == 'BB') || ($alleles == '--') || ($alleles == 'AB') || ($alleles == 'BA')) {
             $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid") or exitFatal($errFile, "Database Error: gd lookup $sql");
-	    $gd_uid = $result['genotyping_data_uid'];
-	    if (empty($gd_uid)) {
+            $rgen=mysql_num_rows($result);
+            if ($rgen < 1) {
 		      $sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
 						updated_on, created_on)
 						VALUES ($gen_uid,'$allele1','$allele2', NOW(), NOW()) ";
