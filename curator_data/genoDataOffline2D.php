@@ -3,6 +3,7 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 07/18/2012 cbirkett convert AGCT to Illumina base calls
 // 04/17/2011 cbirkett Replace loop control "next" with "continue", allow E_NOTICE errors
 // 02/08/2011 cbirkett	Ignore space characters in line input file
 // 10/25/2011  JLee   Ignore "cut" portion of input file 
@@ -41,6 +42,102 @@ echo "Genotype Data File - ". $gDataFile. "\n";
 echo "URL - " . $urlPath . "\n";
 echo "Email - ". $emailAddr."\n";
 
+function find_unambig ($snp, $offset) {
+   global $strand, $a_allele, $b_allele;
+   $pattern = "/([A-Z])\/([A-Z])/";
+   if (preg_match($pattern,$snp,$match)) {
+     $snp_pos1 = $match[1];
+     $snp_pos2 = $match[2];
+   } else {
+     echo "Error: bad SNP sequence $snp\n";
+   }
+   if ($offset > 0) {
+     $pattern = "/([A-Z])[A-Z]{" . $offset . "}\[[A-Z]\/[A-Z]\][A-Z]{" . $offset . "}([A-Z])/";
+   }
+   if (preg_match($pattern,$snp,$match)) {
+     $found = 1;
+     if (($match[1] == "A") &&  (($match[2] == "C") || ($match[2] == "G"))) {
+      $strand = "TOP";
+      $a_allele = $match[1];
+      $b_allele = $match[2];
+     } elseif (($match[2] == "A") &&  (($match[1] == "C") || ($match[1] == "G"))) {
+      $strand = "TOP";
+      $a_allele = $match[2];
+      $b_allele = $match[1];
+     } elseif (($match[1] == "T") &&  (($match[2] == "C") || ($match[2] == "G"))) {
+      $strand = "BOT";
+      $a_allele = $match[1];
+      $b_allele = $match[2];
+     } elseif (($match[2] == "T") &&  (($match[1] == "C") || ($match[1] == "G"))) {
+      $strand = "BOT";
+      $a_allele = $match[2];
+      $b_allele = $match[1];
+     } else {
+      $found = 0;
+     }
+   }  else {
+      echo "Error: not enough flanking sequence $snp offset=$offset\n";
+   }
+   if ($offset > 0) {
+      if (($match[1] == "A") || ($match[1] == "T")) {
+         $strand = "TOP";
+         $a_allele = $snp_pos1;
+         $b_allele = $snp_pos2;
+      }
+      if (($match[2] == "A") || ($match[2] == "T")) {
+         $strand = "BOT";
+         $a_allele = $snp_pos2;
+         $b_allele = $snp_pos1;
+      }
+   }
+   if ($found) {
+     return 0;
+   } else {
+     return 1;
+   }
+}
+
+function find_Illumina ($seq, $marker_ab) {
+  global $strand, $a_allele, $b_allele;
+  $strand = "";
+  $a_allele = "";
+  $b_allele = "";
+  $ambiguous = 1;
+  $offset = 0;
+  while ($ambiguous) {
+    $ambiguous = find_unambig($seq, $offset);
+    $offset++;
+    if ($offset > 10) {
+       echo "Error: offset is greater than 10\n";
+       break;
+       //exitFatal($errFile,  "No unambiguous base pair found $seq");
+    }
+  }
+  $offset--;
+  echo "$marker $seq $strand $a_allele $b_allele $offset\n";
+  $tmp = $a_allele . $b_allele;
+  if ($tmp != $marker_ab) {
+    echo "Warning: from marker table A_allele B_allele = $marker_ab\n";
+  }
+}
+
+function convert2Illumina ($alleles) {
+  global $a_allele, $b_allele;
+  $results = "";
+  if (($a_allele == "") || ($b_allele == "")) {
+    echo "Error: A allele and B allele undetermined\n";
+  } elseif ($alleles == $a_allele) {
+    $results = 'AA';
+  } elseif ($alleles == $b_allele) {
+    $results = 'BB';
+  } elseif ($alleles == 'N') {
+    $results = '--';
+  } else {
+    echo "Error: allele is not valid SNP $a_allele, $b_allele, $alleles\n";
+  }
+  return $results;
+} 
+
 $linkID = connect(); 
 
 $target_Path = substr($lineTransFile, 0, strrpos($lineTransFile, '/')+1);
@@ -51,6 +148,15 @@ echo $errorFile."\n";
 if (($errFile = fopen($errorFile, "w")) === false) {
    echo "Unable to open the error log file.";
    exit(1);
+}
+
+//get marker seq
+$sql = "SELECT marker_name, A_allele, B_allele, sequence from markers where sequence is not NULL";
+$res = mysql_query($sql) or die("Database Error: setting lookup - ". mysql_error()."\n\n$sql");
+while ($row = mysql_fetch_array($res)) {
+   $marker_name = $row['marker_name'];
+   $marker_snp[$marker_name] = $row['A_allele'] . $row['B_allele'];
+   $marker_seq[$marker_name] = $row['sequence'];
 }
 
 // Testing for non-processing
@@ -225,17 +331,17 @@ while (!feof($reader))  {
     if (feof($reader)) break;
     $data = str_getcsv($line,"\t");
     $marker = $data[$nameIdx];
-    echo "working on marker $marker\n";
     $num = count($data);		// number of fields
-    // Check line for missing column    
-    if ($num < 96) { 
-        $msg = "ERROR: Wrong number of entries  for marker - " . $marker;
-        fwrite($errFile, $msg);
-        $errLines++;
-        continue;
+    echo "working on marker $marker with $num of lines\n";
+
+    if (isset($marker_seq[$marker])) {
+      $seq = $marker_seq[$marker];
+      $marker_ab = $marker_snp[$marker];
+      find_Illumina($seq, $marker_ab);
     } else {
- 	echo "found $num of entries data $num\n";
-    }   
+      echo "Warning: no marker sequence found for $marker\n";
+      $seq = "unknown";
+    }
     
     /* check if marker is EST synonym, if not found, then check name */
     $sql ="SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE ms.value='$marker'";
@@ -336,10 +442,21 @@ while (!feof($reader))  {
         $alleles = $data[$data_pt];
         $allele1 = substr($data[$data_pt],0,1);
 	$allele2 = substr($data[$data_pt],1,1);
+        if (($alleles == 'A') || ($alleles == 'C') || ($alleles == 'T') || ($alleles == 'G') || ($alleles == 'N')) {
+          $results = convert2Illumina($alleles);
+          if ($results == "") {
+            echo "Error: could not convert to Illumina AB format\n";
+            exitFatal($errFile,  "No unambiguous base pair found for $marker\n$seq");
+          } else {
+            $alleles = $results;
+            $allele1 = substr($alleles,0,1);
+            $allele2 = substr($alleles,1,1);
+          }
+        }
 	if (($alleles == 'AA') || ($alleles == 'BB') || ($alleles == '--') || ($alleles == 'AB') || ($alleles == 'BA')) {
-            $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid");
-	    $rgen=mysql_num_rows($result);
-	    if ($rgen < 1) {
+            $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid") or exitFatal($errFile, "Database Error: gd lookup $sql");
+            $rgen=mysql_num_rows($result);
+            if ($rgen < 1) {
 		      $sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
 						updated_on, created_on)
 						VALUES ($gen_uid,'$allele1','$allele2', NOW(), NOW()) ";
@@ -350,13 +467,16 @@ while (!feof($reader))  {
 			  WHERE genotyping_data_uid = $gen_uid";
 	    }
 	    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: alleles processing - ". mysql_error() . ".\n\n$sql");
+            //echo "$sql\n";
 	    if ($res != 1) { 
                   $msg = "ERROR:  Allele not loaded! row = " . $rowNum ."\t" . $line;
                   fwrite($errFile, $msg);
                   $errLines++;
             }
  	} else {
- 	    	echo "bad data at " . $line_name . " $data[$data_pt]\n";
+ 	    	$msg = "bad data at " . $line_name . " $data[$data_pt]\n";
+                fwrite($errFile, $msg);
+                $errLines++;
  	}
       }
     }
@@ -366,6 +486,7 @@ while (!feof($reader))  {
 fclose($reader);
 echo "Genotyping record creation completed.\n";
 echo "Start allele frequency calculation processing...\n";
+die;
 
 // Do allele frequency calculations
 $uniqExpID = array_unique($lineExpHash);
