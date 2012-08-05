@@ -1062,8 +1062,8 @@ class Downloads
 	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 	    <script type="text/javascript">
-	      var mm = 99.9;
-	      var mmaf = 0.01; 
+	      var mm = 10;
+	      var mmaf = 5; 
           window.onload = load_markers_lines( mm, mmaf);
 	    </script>
 	    </div>
@@ -3435,6 +3435,16 @@ selected lines</a><br>
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
+
+          $lookup = array(
+           'AA' => substr($allele,0,1) . substr($allele,0,1),
+           'BB' => substr($allele,2,1) . substr($allele,2,1),
+           '--' => 'NN',
+           'AB' => substr($allele,0,1) . substr($allele,2,1),
+           'BA' => substr($allele,2,1) . substr($allele,0,1),
+           '' => 'NN'
+          );
+
 	   $total = $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx] + $marker_bbcnt[$marker_idx] + $marker_misscnt[$marker_idx];
 	   if ($total>0) {
 	    $maf[$marker_idx] = round(100 * min((2 * $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx]) /$total, ($marker_abcnt[$marker_idx] + 2 * $marker_bbcnt[$marker_idx]) / $total),1);

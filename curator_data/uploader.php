@@ -96,7 +96,7 @@ ob_end_flush();
     			print "<input type=\"Button\" value=\"Not Accept\" onClick=\"history.go(-1); return;\">";
     			print "</form>";
    			} else {
-    			error(1,"There was an error uploading the file to the server, please contact website administator to resolve the problem.");
+    			error(1,"There was an error uploading the file to the server, please contact website administrator to resolve the problem.");
 			}
 		}
 	}
