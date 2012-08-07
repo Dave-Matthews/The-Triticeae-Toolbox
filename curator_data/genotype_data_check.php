@@ -92,6 +92,7 @@ class gLineNames_Check
 	if ($_FILES['file']['error'][0] != 0 or $_FILES['file']['error'][1] != 0) {
 	  error(1, "File upload failed.  If it fails again please contact the programmers.");
 	  error_log("Upload error: A file, possibly" . $_FILES['file']['name'][1] . ", failed to upload.");
+          error_log($_FILES['file']['error'][0] . " " . $_FILES['file']['error'][1]);
 	  // $_FILES['file']['error'][*] == 1 if php.ini upload_max_filesize was exceeded.
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
