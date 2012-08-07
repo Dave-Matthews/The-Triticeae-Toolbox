@@ -1,6 +1,7 @@
 <?php
 // Genotype data importer
 
+// 10/17/2011 JLee  Pass username to offline app
 // 04/11/2011 Jlee  Add zip file handling
 //
 // Written By: John Lee
@@ -76,7 +77,7 @@ class gLineNames_Check
         }
 
         $target_path=$tmp_dir."/";
- 	
+
         if ($_FILES['file']['name'][0] == "") {
             error(1, "No Line Translation File Uploaded");
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
@@ -87,6 +88,15 @@ class gLineNames_Check
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
         }  
         
+	// Test whether file upload succeeded.
+	if ($_FILES['file']['error'][0] != 0 or $_FILES['file']['error'][1] != 0) {
+	  error(1, "File upload failed.  If it fails again please contact the programmers.");
+	  error_log("Upload error: A file, possibly" . $_FILES['file']['name'][1] . ", failed to upload.");
+          error_log($_FILES['file']['error'][0] . " " . $_FILES['file']['error'][1]);
+	  // $_FILES['file']['error'][*] == 1 if php.ini upload_max_filesize was exceeded.
+	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+	}
+
         // Check filetype
         $uploadFile1 = $_FILES['file']['name'][0];
         $uploadFile2 = $_FILES['file']['name'][1];
@@ -116,17 +126,17 @@ class gLineNames_Check
         if(move_uploaded_file($_FILES['file']['tmp_name'][1], $genoDataFile) == FALSE) 	{
             error(1, "Unable to move the genotype data file to the upload directory.");
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");           
-       }
-        if ($_POST['data_format'] == '1D') { 
-          $cmd = "php genoDataOffline.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." > " . $processOut . " &";
-	} else {
-          $cmd = "php genoDataOffline2D.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." > " . $processOut . " &";
+       	}
+       	if ($_POST['data_format'] == '1D') { 
+       		$cmd = "php genoDataOffline.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." ". $username ." > " . $processOut . " &";
+		} else {
+        	$cmd = "php genoDataOffline2D.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." ". $username ." > " . $processOut . " &";
         }
         //echo "Cmd - " . $cmd . "<br>";
         exec($cmd);
    
-        echo "<h3>Files has been submitted to off-line processor.<br>";
-        echo "An upload status email will be send to you once the uploading process has been completed. </h3><br>";
+        echo "<h3>The files have been uploaded and submitted to the off-line processor.<br>";
+        echo "A report will be emailed to you once the data import to the database has been completed. </h3><br>";
         echo "<br>";
         exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
    }
