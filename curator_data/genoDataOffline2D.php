@@ -1,25 +1,37 @@
 <?php
-//*********************************************
-// Genotype data importer - also contains various   
-// pieces of import code by Julie's team @ iowaStateU  
+/**
+ * 2D Genotype data importer
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <cbirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/genotype_data_upload.php
+ *  
+ * pieces of import code by Julie's team @ iowaStateU  
 
-// 07/18/2012 cbirkett convert AGCT to Illumina base calls
-// 04/17/2011 cbirkett Replace loop control "next" with "continue", allow E_NOTICE errors
-// 02/08/2011 cbirkett	Ignore space characters in line input file
-// 10/25/2011  JLee   Ignore "cut" portion of input file 
-// 10/17/2011 JLee  Add username and resubmission entry to input file log table
-// 10/17/2011 JLee  Create of input file log entry
-// 4/11/2011 JLee   Add ability to handle zipped data files
+ * 07/18/2012 cbirkett convert AGCT to Illumina base calls
+ * 04/17/2011 cbirkett Replace loop control "next" with "continue"
+ * 04/17/2011 cbirkett allow E_NOTICE errors
+ * 02/08/2011 cbirkett	Ignore space characters in line input file
+ * 10/25/2011  JLee   Ignore "cut" portion of input file 
+ * 10/17/2011 JLee  Add username and resubmission entry to input file log table
+ * 10/17/2011 JLee  Create of input file log entry
+ * 4/11/2011 JLee   Add ability to handle zipped data files
 
-// Written By: John Lee
-//*********************************************
+ * Written By: John Lee
+ */
 $progPath = realpath(dirname(__FILE__).'/../').'/';
 
-include($progPath. 'includes/bootstrap_curator.inc');
-include($progPath . 'curator_data/lineuid.php');
-require_once $progPath . 'includes/email.inc';
+require "$progPath" . "includes/bootstrap_curator.inc";
+require "$progPath" . "curator_data/lineuid.php";
+require_once "$progPath" . "includes/email.inc";
 
-ini_set(auto_detect_line_endings,1);
+ini_set('auto_detect_line_endings', 1);
 
 $num_args = $_SERVER["argc"];
 $fnames = $_SERVER["argv"];
@@ -28,7 +40,7 @@ $gDataFile = $fnames[2];
 $emailAddr = $fnames[3];
 $urlPath = $fnames[4];
 $userName = $fnames[5];
-$filename = stristr($gDataFile,basename($gDataFile));
+$filename = stristr($gDataFile, basename($gDataFile));
 
 $error_flag = 0;
 $lineExpHash = array ();
@@ -42,121 +54,148 @@ echo "Genotype Data File - ". $gDataFile. "\n";
 echo "URL - " . $urlPath . "\n";
 echo "Email - ". $emailAddr."\n";
 
-function find_unambig ($snp, $offset) {
-   global $strand, $a_allele, $b_allele;
-   $pattern = "/([A-Z])\/([A-Z])/";
-   if (preg_match($pattern,$snp,$match)) {
-     $snp_pos1 = $match[1];
-     $snp_pos2 = $match[2];
-   } else {
-     echo "Error: bad SNP sequence $snp\n";
-   }
-   if ($offset > 0) {
-     $pattern = "/([A-Z])[A-Z]{" . $offset . "}\[[A-Z]\/[A-Z]\][A-Z]{" . $offset . "}([A-Z])/";
-   }
-   if (preg_match($pattern,$snp,$match)) {
-     $found = 1;
-     if (($match[1] == "A") &&  (($match[2] == "C") || ($match[2] == "G"))) {
-      $strand = "TOP";
-      $a_allele = $match[1];
-      $b_allele = $match[2];
-     } elseif (($match[2] == "A") &&  (($match[1] == "C") || ($match[1] == "G"))) {
-      $strand = "TOP";
-      $a_allele = $match[2];
-      $b_allele = $match[1];
-     } elseif (($match[1] == "T") &&  (($match[2] == "C") || ($match[2] == "G"))) {
-      $strand = "BOT";
-      $a_allele = $match[1];
-      $b_allele = $match[2];
-     } elseif (($match[2] == "T") &&  (($match[1] == "C") || ($match[1] == "G"))) {
-      $strand = "BOT";
-      $a_allele = $match[2];
-      $b_allele = $match[1];
-     } else {
-      $found = 0;
-     }
-   }  else {
-      echo "Error: not enough flanking sequence $snp offset=$offset\n";
-   }
-   if ($offset > 0) {
-      if (($match[1] == "A") || ($match[1] == "T")) {
-         $strand = "TOP";
-         $a_allele = $snp_pos1;
-         $b_allele = $snp_pos2;
-      }
-      if (($match[2] == "A") || ($match[2] == "T")) {
-         $strand = "BOT";
-         $a_allele = $snp_pos2;
-         $b_allele = $snp_pos1;
-      }
-   }
-   if ($found) {
-     return 0;
-   } else {
-     return 1;
-   }
-}
-
-function find_Illumina ($seq, $marker_ab) {
-  global $strand, $a_allele, $b_allele;
-  $strand = "";
-  $a_allele = "";
-  $b_allele = "";
-  $ambiguous = 1;
-  $offset = 0;
-  while ($ambiguous) {
-    $ambiguous = find_unambig($seq, $offset);
-    $offset++;
-    if ($offset > 10) {
-       echo "Error: offset is greater than 10\n";
-       break;
-       //exitFatal($errFile,  "No unambiguous base pair found $seq");
+/**
+ * look for unambiguous base at location specified by offset
+ * http://www.illumina.com/documents/products/technotes/technote_topbot.pdf
+ * 
+ * @param string $snp    marker sequence
+ * @param number $offset position in squence
+ * 
+ * @return number (0=not found 1=found)
+ */
+function findUnambig ($snp, $offset)
+{
+    global $strand, $a_allele, $b_allele;
+    $pattern = "/([A-Z])\/([A-Z])/";
+    if (preg_match($pattern, $snp, $match)) {
+        $snp_pos1 = $match[1];
+        $snp_pos2 = $match[2];
+    } else {
+        echo "Error: bad SNP sequence $snp\n";
     }
-  }
-  $offset--;
-  echo "$marker $seq $strand $a_allele $b_allele $offset\n";
-  $tmp = $a_allele . $b_allele;
-  if ($tmp != $marker_ab) {
-    echo "Warning: from marker table A_allele B_allele = $marker_ab\n";
-  }
+    if ($offset > 0) {
+        $pattern = "/([A-Z])[A-Z]{" . $offset . "}\[[A-Z]\/[A-Z]\][A-Z]{" . $offset . "}([A-Z])/";
+    }
+    if (preg_match($pattern, $snp, $match)) {
+        $found = 1;
+        if (($match[1] == "A") &&  (($match[2] == "C") || ($match[2] == "G"))) {
+            $strand = "TOP";
+            $a_allele = $match[1];
+            $b_allele = $match[2];
+        } elseif (($match[2] == "A") &&  (($match[1] == "C") || ($match[1] == "G"))) {
+            $strand = "TOP";
+            $a_allele = $match[2];
+            $b_allele = $match[1];
+        } elseif (($match[1] == "T") &&  (($match[2] == "C") || ($match[2] == "G"))) {
+            $strand = "BOT";
+            $a_allele = $match[1];
+            $b_allele = $match[2];
+        } elseif (($match[2] == "T") &&  (($match[1] == "C") || ($match[1] == "G"))) {
+            $strand = "BOT";
+            $a_allele = $match[2];
+            $b_allele = $match[1];
+        } else {
+            $found = 0;
+        }
+    } else {
+        echo "Error: not enough flanking sequence $snp offset=$offset\n";
+    }
+    if ($offset > 0) {
+        if (($match[1] == "A") || ($match[1] == "T")) {
+            $strand = "TOP";
+            $a_allele = $snp_pos1;
+            $b_allele = $snp_pos2;
+        }
+        if (($match[2] == "A") || ($match[2] == "T")) {
+            $strand = "BOT";
+            $a_allele = $snp_pos2;
+            $b_allele = $snp_pos1;
+        }
+    }
+    if ($found) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
-function convert2Illumina ($alleles) {
-  global $a_allele, $b_allele;
-  $results = "";
-  if (($a_allele == "") || ($b_allele == "")) {
-    echo "Error: A allele and B allele undetermined\n";
-  } elseif ($alleles == $a_allele) {
-    $results = 'AA';
-  } elseif ($alleles == $b_allele) {
-    $results = 'BB';
-  } elseif ($alleles == 'N') {
-    $results = '--';
-  } else {
-    echo "Error: allele is not valid SNP $a_allele, $b_allele, $alleles\n";
-  }
-  return $results;
+/**
+ * step through the offset until unambigous base found
+ * 
+ * @param string $seq       sequence from marker table
+ * @param string $marker_ab snp as defined by the A_allele B_allele in marker table
+ * 
+ * @return NULL
+ */
+function findIllumina ($seq, $marker_ab)
+{
+    global $strand, $a_allele, $b_allele;
+    $strand = "";
+    $a_allele = "";
+    $b_allele = "";
+    $ambiguous = 1;
+    $offset = 0;
+    while ($ambiguous) {
+        $ambiguous = findUnambig($seq, $offset);
+        $offset++;
+        if ($offset > 10) {
+            echo "Error: offset is greater than 10\n";
+            break;
+            //exitFatal($errFile,  "No unambiguous base pair found $seq");
+        }
+    }
+    $offset--;
+    echo "$marker $seq $strand $a_allele $b_allele $offset\n";
+    $tmp = $a_allele . $b_allele;
+    if ($tmp != $marker_ab) {
+        echo "Warning: from marker table A_allele B_allele = $marker_ab\n";
+    }
+}
+
+/**
+ * convert ACTG to Illumina AB format
+ * 
+ * @param string $alleles ACTG base calls
+ * 
+ * @return string converted base calls
+ */
+function convert2Illumina ($alleles)
+{
+    global $a_allele, $b_allele;
+    $results = "";
+    if (($a_allele == "") || ($b_allele == "")) {
+        echo "Error: A allele and B allele undetermined\n";
+    } elseif ($alleles == $a_allele) {
+        $results = 'AA';
+    } elseif ($alleles == $b_allele) {
+        $results = 'BB';
+    } elseif ($alleles == 'N') {
+        $results = '--';
+    } else {
+        echo "Error: allele is not valid SNP $a_allele, $b_allele, $alleles\n";
+    }
+    return $results;
 } 
 
 $linkID = connect(); 
 
 $target_Path = substr($lineTransFile, 0, strrpos($lineTransFile, '/')+1);
-$tPath = str_replace('./','',$target_Path);
+$tPath = str_replace('./', '', $target_Path);
 
 $errorFile = $target_Path."importError.txt";
 echo $errorFile."\n";
 if (($errFile = fopen($errorFile, "w")) === false) {
-   echo "Unable to open the error log file.";
-   exit(1);
+    echo "Unable to open the error log file.";
+    exit(1);
 }
 
 //get marker seq
 $sql = "SELECT marker_name, A_allele, B_allele, sequence from markers where sequence is not NULL";
 $res = mysql_query($sql) or die("Database Error: setting lookup - ". mysql_error()."\n\n$sql");
 while ($row = mysql_fetch_array($res)) {
-   $marker_name = $row['marker_name'];
-   $marker_snp[$marker_name] = $row['A_allele'] . $row['B_allele'];
-   $marker_seq[$marker_name] = $row['sequence'];
+    $marker_name = $row['marker_name'];
+    $marker_snp[$marker_name] = $row['A_allele'] . $row['B_allele'];
+    $marker_seq[$marker_name] = $row['sequence'];
 }
 
 // Testing for non-processing
@@ -337,7 +376,7 @@ while (!feof($reader))  {
     if (isset($marker_seq[$marker])) {
       $seq = $marker_seq[$marker];
       $marker_ab = $marker_snp[$marker];
-      find_Illumina($seq, $marker_ab);
+      findIllumina($seq, $marker_ab);
     } else {
       echo "Warning: no marker sequence found for $marker\n";
       $seq = "unknown";
@@ -467,7 +506,6 @@ while (!feof($reader))  {
 			  WHERE genotyping_data_uid = $gen_uid";
 	    }
 	    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: alleles processing - ". mysql_error() . ".\n\n$sql");
-            //echo "$sql\n";
 	    if ($res != 1) { 
                   $msg = "ERROR:  Allele not loaded! row = " . $rowNum ."\t" . $line;
                   fwrite($errFile, $msg);
@@ -486,7 +524,6 @@ while (!feof($reader))  {
 fclose($reader);
 echo "Genotyping record creation completed.\n";
 echo "Start allele frequency calculation processing...\n";
-die;
 
 // Do allele frequency calculations
 $uniqExpID = array_unique($lineExpHash);
