@@ -16,6 +16,7 @@ var subset = "";
 var trait_cmb = "";
 var traits_remove = "";
 var trials_remove = "";
+var lines_within = "";
 
 var markerids = null;
 var selmarkerids = [];
@@ -76,7 +77,7 @@ function load_title(command) {
 }
 
 function phenotype_save() {
-    phenotype_items_remove = "";
+    traits_remove = "";
     trials_remove = "";
     var url = php_self + "?function=refreshtitle&pi=" + phenotype_items_str + "&exps=" + experiments_str + '&cmd=save';
     var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
@@ -92,10 +93,11 @@ function phenotype_save() {
       document.title = title;
     }
     });
+    document.getElementById('step5').innerHTML = "";
 }
 
 function phenotype_deselect() {
-    var url = php_self + "?function=refreshtitle&pi=" + phenotype_items_remove + '&cmd=deselect';
+    var url = php_self + "?function=refreshtitle&pi=" + traits_remove + '&cmd=deselect';
     var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
         onComplete : function() {
             $('title').show();
@@ -214,7 +216,7 @@ function load_programs5() {
 
 function load_phenotypes2() {
     $('step2').hide();
-    var url = php_self + "?function=step2phenotype&pc=" + phenotype_categories_str + "&yrs=" + years_str;
+    var url = php_self + "?function=step2phenotype&pc=" + phenotype_categories_str + "&lw=" + lines_within;
     document.title = 'Loading Step1...';
     var tmp = new Ajax.Updater($('step2'), url, {
         onComplete : function() {
@@ -276,7 +278,7 @@ function save_pheno_selection() {
 }
 function load_lines() {
     $('step11').hide();
-    var url = php_self + "?function=step1lines&bp=" + breeding_programs_str + '&yrs=' + years_str;
+    var url = php_self + "?function=step1lines&bp=" + breeding_programs_str + '&lw=' + lines_within;
     document.title = 'Loading Step1...';
     var tmp = new Ajax.Updater($('step11'), url, {
         onComplete : function() {
@@ -284,6 +286,10 @@ function load_lines() {
             document.title = title;
         }
     });
+    document.getElementById('step2').innerHTML = "";
+    document.getElementById('step3').innerHTML = "";
+    document.getElementById('step4').innerHTML = "";
+    document.getElementById('step5').innerHTML = "";
 }
 function load_lines2() {
     $('step2').hide();
@@ -458,30 +464,18 @@ function update_phenotype_items(options) {
                                     : ",") + phenotype_items.value;
                         }
                     });
-    if (select1_str == "Phenotypes") {
-        load_phenotypes3();
-        //save_pheno_selection();
-        document.getElementById('step4').innerHTML = "";
-    } else if (select1_str == "Locations") {
-        load_locations5();
-        //load_title();
-        load_markers_loc('', '', 100, 0);
-    } else {
-        load_programs5();
-        //load_title();
-        load_markers('', '', 100, 0);
-        document.getElementById('step5').innerHTML = "";
-    }
+    load_phenotypes3();
+    document.getElementById('step4').innerHTML = "";
     document.getElementById('step5').innerHTML = "";
 }
 
 function remove_phenotype_items(options) {
-  phenotype_items_remove = "";
+  traits_remove = "";
   $A(options)
             .each(
                     function(phenotype_items) {
                         if (phenotype_items.selected) {
-                            phenotype_items_remove += (phenotype_items_remove === "" ? ""
+                            traits_remove += (traits_remove === "" ? ""
                                     : ",") + phenotype_items.value;
                         }
                     });
@@ -558,6 +552,21 @@ function update_phenotype_lines(options) {
         load_markers();
     }
 }
+function update_lines_within(options) {
+/*used when updateing radio button for traits and trials*/
+    lines_within = options;
+    if (lines_within == "yes") {
+      select1_str = "Lines";
+    } else {
+      select1_str = "Phenotypes";
+    }
+    if (select1_str == "Phenotypes") {
+      load_phenotypes();
+    } else {
+      load_lines();
+      load_phenotypes2();
+    }
+}
 function update_phenotype_linesb(options) {
 /*used when updating radio button for line selection (session, all, combine) */
     subset = options;
@@ -608,7 +617,7 @@ function update_phenotype_linesb(options) {
 
 			function load_phenotypes() {
 			    $('step11').hide();
-			    var url = php_self + "?function=step1phenotype&bp=" + breeding_programs_str + "&yrs=" + years_str;
+			    var url = php_self + "?function=step1phenotype&bp=" + breeding_programs_str + "&lw=" + lines_within;
 			    document.title = 'Loading Step1...';
 			    var tmp = new Ajax.Updater($('step11'), url, {
 			        onComplete : function() {
@@ -619,6 +628,7 @@ function update_phenotype_linesb(options) {
 			    document.getElementById('step2').innerHTML = "";
 			    document.getElementById('step3').innerHTML = "";
 			    document.getElementById('step4').innerHTML = "";
+                            document.getElementById('step5').innerHTML = "";
 			}
 
 			function load_yearprog() {

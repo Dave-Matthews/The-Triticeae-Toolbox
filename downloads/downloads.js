@@ -515,7 +515,8 @@ function update_line_trial(options) {
         }
     });
     load_lines3();
-    load_lines4();
+    document.getElementById('step4').innerHTML = "";
+    document.getElementById('step5').innerHTML = "";
 }
 
 function update_line_pheno(options) {
