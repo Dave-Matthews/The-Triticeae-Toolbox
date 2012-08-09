@@ -51,15 +51,18 @@ class Downloads
             case 'type1':
                 $this->type1();
                 break;
+                        case 'step1lines':
+                            $this->step1_lines();
+                            break;
 			case 'step1phenotype':
-				$this->step1_phenotype();
-				break;
+			    $this->step1_phenotype();
+			    break;
 			case 'step2phenotype':
-				$this->step2_phenotype();
-				break;
+			    $this->step2_phenotype();
+			    break;
 			case 'step3phenotype':
-				$this->step3_phenotype();
-				break;
+			    $this->step3_phenotype();
+			    break;
 			case 'step4phenotype':
 			    $this->step4_phenotype();
 			    break;
@@ -246,6 +249,16 @@ class Downloads
 	 */
 	private function step1_phenotype()
 	{
+                $lines_within = $_GET['lw'];
+                if (count($_SESSION['selected_lines']) > 0) {
+                  $sub_ckd = "checked";
+                  $all_ckd = "";
+                }
+                if ($lines_within == "no") {
+                  $sub_ckd = "";
+                  $all_ckd = "checked";
+                }
+
 		?>
         <table id="phenotypeSelTab" class="tableclass1">
 		<tr>
@@ -268,9 +281,56 @@ class Downloads
 		</select>
 		</td>
 		</table>
-		
+                <?php
+                if (count($_SESSION['selected_lines']) > 0) {
+                ?>
+	        Show traits and trials containing<br>
+                <input type="radio" name = "subset" value="yes" <?php echo "$sub_ckd"; ?> onclick="javascript: update_lines_within(this.value)">Selected lines<br>
+                <input type="radio" name = "subset" value="no" <?php echo "$all_ckd"; ?> onclick="javascript: update_lines_within(this.value)">Selected Categories<br>
 		<?php
+                }
 	}
+
+        private function step1_lines()
+        {
+            $lines_within = $_GET['lw'];
+            if (count($_SESSION['selected_lines']) > 0) {
+                $selectedlines= $_SESSION['selected_lines'];
+                $sub_ckd = "checked";
+                $all_ckd = "";
+            }
+            if ($lines_within == "no") {
+                $sub_ckd = "";
+                $all_ckd = "checked";
+            } 
+            ?>
+            <table id="phenotypeSelTab" class="tableclass1">
+            <tr>
+            <th>Lines</th>
+            </tr>
+            <tr><td>
+            <select name="lines" multiple="multiple" style="height: 12em;">
+            <?php
+            foreach($selectedlines as $uid) {
+              $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
+              $res = mysql_query($sql) or die(mysql_error());
+              $row = mysql_fetch_assoc($res)
+              ?>
+              <option disabled="disabled" value="
+              <?php $uid ?>">
+              <?php echo $row['line_record_name'] ?>
+              </option>
+              <?php
+            }
+            ?>
+            </select>
+            </td>
+            </table>
+            Show traits and trials containing<br>
+            <input type="radio" name = "subset" value="yes" <?php echo "$sub_ckd"; ?> onclick="javascript: update_lines_within(this.value)">Selected lines<br>
+            <input type="radio" name = "subset" value="no" <?php echo "$all_ckd"; ?> onclick="javascript: update_lines_within(this.value)">Selected Categories<br>
+            <?php
+        }
 
 	/**
 	 * starting with phenotype display phenotype items
@@ -278,6 +338,12 @@ class Downloads
 	private function step2_phenotype()
     {  
 		$phen_cat = $_GET['pc'];
+                $lines_within = $_GET['lw'];
+                if (isset($_SESSION['selected_lines'])) {
+                  $selectedlines= $_SESSION['selected_lines'];
+                  $selectedlines = implode(',', $selectedlines);
+                  $lines_within = "yes";
+                }
 		?><br>
         <table id="phenotypeSelTab" class="tableclass1">
 		<tr>
@@ -287,8 +353,17 @@ class Downloads
 		<select id="traitsbx" name="phenotype_items" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_items(this.options)">
                 <?php
 
-		$sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
+                if ($lines_within == "yes") {
+                  $sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, e.experiment_year as year FROM experiments as e, tht_base as tb, line_records as lr WHERE e.experiment_uid = tb.experiment_uid
+            AND lr.line_record_uid = tb.line_record_uid
+            AND e.experiment_type_uid = 1
+            AND lr.line_record_uid IN ($selectedlines)";
+                } else {
+		  $sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
 		 where phenotypes.phenotype_category_uid = phenotype_category.phenotype_category_uid and phenotype_category.phenotype_category_uid in ($phen_cat)";
+                }
+                if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
+                $sql .= " and data_public_flag > 0";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
 		{
@@ -301,7 +376,6 @@ class Downloads
 		?>
 		</select>
 		</table>
-		
 		<?php
     }
     
@@ -559,10 +633,20 @@ class Downloads
 		?>
 		<div id="step11">
 		<?php
-	    $this->step1_phenotype();
+                if (isset($_SESSION['selected_lines'])) {
+                  $this->step1_lines();
+                } else {
+	          $this->step1_phenotype();
+                }
 		?>
 	    </div></div>    
-	    <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
+	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
+            <?php
+            if (isset($_SESSION['selected_lines'])) {
+                $this->step2_phenotype();
+            }
+            ?> 
+            </div>
 	    <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
