@@ -1321,7 +1321,7 @@ class Downloads
 	 if (!preg_match('/[0-9]/',$marker_str)) {
 	   //get genotype markers that correspond with the selected lines
 	   $selectedlines = implode(",",$lines);
-	   $sql_exp = "SELECT marker_uid
+	   $sql_exp = "SELECT DISTINCT marker_uid
 	   FROM allele_cache
 	   WHERE
 	   allele_cache.line_record_uid in ($selectedlines)";
@@ -1329,11 +1329,11 @@ class Downloads
 	   if (mysql_num_rows($res)>0) {
 	     while ($row = mysql_fetch_array($res)){
 	       $uid = $row["marker_uid"];
-	       $markers[$uid] = 1;
+	       $markers[] = $uid;
 	     }
 	    }
 	   $marker_str = implode(',',$markers);
-	   $num_mark = mysql_num_rows($res);
+	   $num_mark = count($markers);
 	   //echo "$num_mark markers in selected lines<br>\n";
 	 }
 
