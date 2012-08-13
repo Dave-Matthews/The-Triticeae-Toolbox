@@ -354,7 +354,7 @@ class Downloads
                 <?php
 
                 if ($lines_within == "yes") {
-                  $sql = "SELECT phenotypes.phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_data, line_records, tht_base
+                  $sql = "SELECT DISTINCT phenotypes.phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_data, line_records, tht_base
                   where phenotypes.phenotype_uid = phenotype_data.phenotype_uid
                   AND phenotype_data.tht_base_uid = tht_base.tht_base_uid 
                   AND line_records.line_record_uid = tht_base.line_record_uid 
