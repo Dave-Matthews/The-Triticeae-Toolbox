@@ -358,11 +358,11 @@ class Downloads
             AND lr.line_record_uid = tb.line_record_uid
             AND e.experiment_type_uid = 1
             AND lr.line_record_uid IN ($selectedlines)";
+                  if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
+                  $sql .= " and data_public_flag > 0";
                 } else {
 		  $sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
 		 where phenotypes.phenotype_category_uid = phenotype_category.phenotype_category_uid and phenotype_category.phenotype_category_uid in ($phen_cat)";
-                  if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
-                  $sql .= " and data_public_flag > 0";
                 }
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
