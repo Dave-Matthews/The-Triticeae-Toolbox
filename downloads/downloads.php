@@ -1336,6 +1336,11 @@ class Downloads
 	   $num_mark = mysql_num_rows($res);
 	   //echo "$num_mark markers in selected lines<br>\n";
 	 }
+
+         //for use with isset
+         foreach ($markers as $marker_uid) {
+           $markers_lookup[$marker_uid] = 1;
+         }
 	 
 	 //get location information for markers
 	 $sql = "select marker_uid from allele_byline_idx order by marker_uid";
@@ -1368,7 +1373,7 @@ class Downloads
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
 	 foreach ($marker_list as $marker_uid) {
-	   if (isset($markers[$marker_uid])) {
+	   if (isset($markers_lookup[$marker_uid])) {
 	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
 	   if ($total > 0) {
 	     $maf = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
