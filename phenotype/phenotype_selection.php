@@ -354,12 +354,11 @@ class Downloads
                 <?php
 
                 if ($lines_within == "yes") {
-                  $sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, e.experiment_year as year FROM experiments as e, tht_base as tb, line_records as lr WHERE e.experiment_uid = tb.experiment_uid
-            AND lr.line_record_uid = tb.line_record_uid
-            AND e.experiment_type_uid = 1
-            AND lr.line_record_uid IN ($selectedlines)";
-                  if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
-                  $sql .= " and data_public_flag > 0";
+                  $sql = "SELECT phenotypes.phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_data, line_records, tht_base
+                  where phenotypes.phenotype_uid = phenotype_data.phenotype_uid
+                  AND phenotype_data.tht_base_uid = tht_base.tht_base_uid 
+                  AND line_records.line_record_uid = tht_base.line_record_uid 
+                  AND line_records.line_record_uid IN ($selectedlines)";
                 } else {
 		  $sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
 		 where phenotypes.phenotype_category_uid = phenotype_category.phenotype_category_uid and phenotype_category.phenotype_category_uid in ($phen_cat)";
