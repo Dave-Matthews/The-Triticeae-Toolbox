@@ -228,7 +228,7 @@ function load_phenotypes2() {
 
 function load_phenotypes3() {
     $('step3').hide();
-    var url = php_self + "?function=step3phenotype&pi=" + phenotype_items_str + "&trait_cmb=" + trait_cmb;
+    var url = php_self + "?function=step3phenotype&pi=" + phenotype_items_str + "&trait_cmb=" + trait_cmb + "&lw=" + lines_within;
     document.title = 'Loading Step1...';
     var tmp = new Ajax.Updater($('step3'), url, {
         onComplete : function() {
@@ -554,18 +554,13 @@ function update_phenotype_lines(options) {
 }
 function update_lines_within(options) {
 /*used when updateing radio button for traits and trials*/
-    lines_within = options;
-    if (lines_within == "yes") {
-      select1_str = "Lines";
+    if (document.getElementById("selectwithin").checked) {
+      lines_within = "yes";
     } else {
-      select1_str = "Phenotypes";
+      lines_within = "no";
     }
-    if (select1_str == "Phenotypes") {
-      load_phenotypes();
-    } else {
-      load_lines();
-      load_phenotypes2();
-    }
+    select1_str = "Phenotypes";
+    load_phenotypes();
 }
 function update_phenotype_linesb(options) {
 /*used when updating radio button for line selection (session, all, combine) */
