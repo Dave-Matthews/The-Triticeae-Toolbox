@@ -133,23 +133,8 @@ function findIllumina ($seq, $marker_ab)
     $strand = "";
     $a_allele = "";
     $b_allele = "";
-    $ambiguous = 1;
-    $offset = 0;
-    while ($ambiguous) {
-        $ambiguous = findUnambig($seq, $offset);
-        $offset++;
-        if ($offset > 10) {
-            echo "Error: offset is greater than 10\n";
-            break;
-            //exitFatal($errFile,  "No unambiguous base pair found $seq");
-        }
-    }
-    $offset--;
-    echo "$marker $seq $strand $a_allele $b_allele $offset\n";
-    $tmp = $a_allele . $b_allele;
-    if ($tmp != $marker_ab) {
-        echo "Warning: from marker table A_allele B_allele = $marker_ab\n";
-    }
+    $a_allele = substr($marker_ab,0,1);
+    $b_allele = substr($marker_ab,1,1);
 }
 
 /**
@@ -190,12 +175,12 @@ if (($errFile = fopen($errorFile, "w")) === false) {
 }
 
 //get marker seq
-$sql = "SELECT marker_name, A_allele, B_allele, sequence from markers where sequence is not NULL";
+$sql = "SELECT marker_uid, A_allele, B_allele, sequence from markers where sequence is not NULL";
 $res = mysql_query($sql) or die("Database Error: setting lookup - ". mysql_error()."\n\n$sql");
 while ($row = mysql_fetch_array($res)) {
-    $marker_name = $row['marker_name'];
-    $marker_snp[$marker_name] = $row['A_allele'] . $row['B_allele'];
-    $marker_seq[$marker_name] = $row['sequence'];
+    $marker_uid = $row['marker_uid'];
+    $marker_snp[$marker_uid] = $row['A_allele'] . $row['B_allele'];
+    $marker_seq[$marker_uid] = $row['sequence'];
 }
 
 // Testing for non-processing
@@ -372,15 +357,6 @@ while (!feof($reader))  {
     $marker = $data[$nameIdx];
     $num = count($data);		// number of fields
     echo "working on marker $marker with $num of lines\n";
-
-    if (isset($marker_seq[$marker])) {
-      $seq = $marker_seq[$marker];
-      $marker_ab = $marker_snp[$marker];
-      findIllumina($seq, $marker_ab);
-    } else {
-      echo "Warning: no marker sequence found for $marker\n";
-      $seq = "unknown";
-    }
     
     /* check if marker is EST synonym, if not found, then check name */
     $sql ="SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE ms.value='$marker'";
@@ -402,6 +378,16 @@ while (!feof($reader))  {
     		$rdata = mysql_fetch_assoc($res);
     		$marker_uid=$rdata['marker_uid'];
     	}
+    }
+    
+    if (isset($marker_seq[$marker_uid])) {
+      $seq = $marker_seq[$marker_uid];
+      $marker_ab = $marker_snp[$marker_uid];
+      $a_allele = substr($marker_ab,0,1);
+      $b_allele = substr($marker_ab,1,1);
+    } else {
+      echo "Warning: no marker sequence found for $marker\n";
+      $seq = "unknown";
     }
     
     $rowNum++;		// number of lines
@@ -480,17 +466,18 @@ while (!feof($reader))  {
 		/* Read in the rest of the variables */
         $alleles = $data[$data_pt];
         $allele1 = substr($data[$data_pt],0,1);
-	$allele2 = substr($data[$data_pt],1,1);
+	    $allele2 = substr($data[$data_pt],1,1);
         if (($alleles == 'A') || ($alleles == 'C') || ($alleles == 'T') || ($alleles == 'G') || ($alleles == 'N')) {
           $results = convert2Illumina($alleles);
           if ($results == "") {
-            echo "Error: could not convert to Illumina AB format\n";
-            exitFatal($errFile,  "No unambiguous base pair found for $marker\n$seq");
+            $msg = "Error: could not convert to Illumina AB format\n";
+            fwrite($errFile, $msg);
+            $alleles = $marker_ab;
           } else {
             $alleles = $results;
-            $allele1 = substr($alleles,0,1);
-            $allele2 = substr($alleles,1,1);
           }
+          $allele1 = substr($alleles,0,1);
+          $allele2 = substr($alleles,1,1);
         }
 	if (($alleles == 'AA') || ($alleles == 'BB') || ($alleles == '--') || ($alleles == 'AB') || ($alleles == 'BA')) {
             $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid") or exitFatal($errFile, "Database Error: gd lookup $sql");

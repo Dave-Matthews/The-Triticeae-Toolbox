@@ -1343,11 +1343,12 @@ class Downloads
          }
 	 
 	 //get location information for markers
-	 $sql = "select marker_uid from allele_byline_idx order by marker_uid";
+	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 $i=0;
 	 while ($row = mysql_fetch_array($res)) {
 	  $marker_list[$i] = $row[0];
+          $marker_list_name[$i] = $row[1];
 	  $i++;
 	 }
 	
