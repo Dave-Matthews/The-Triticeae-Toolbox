@@ -1023,15 +1023,32 @@ function DispPhenotypeSel($arr) {
 	else
 	  $filter = " AND data_public_flag = 1";
         if ((count($_SESSION['selected_lines']) > 0) && ($_SESSION['selectWithin'] == "Yes")) {
-          $sql = "SELECT DISTINCT experiments.experiment_uid, trial_code FROM experiments, line_records as lr, tht_base
-            WHERE experiments.experiment_uid = tht_base.experiment_uid
-            AND lr.line_record_uid = tht_base.line_record_uid
-            AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")" .
-            "AND experiments.traits like '%$pn%' $filter ORDER By trial_code";
+	  /* dem aug2012: This query breaks if the trait name is changed after loading the data, unless */
+	  /* column experiments.traits get corrected, which is currently not done. */
+          /* $sql = "SELECT DISTINCT experiments.experiment_uid, trial_code FROM experiments, line_records as lr, tht_base */
+          /*   WHERE experiments.experiment_uid = tht_base.experiment_uid */
+          /*   AND lr.line_record_uid = tht_base.line_record_uid */
+          /*   AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")" . */
+          /*   "AND experiments.traits like '%$pn%' $filter ORDER By trial_code"; */
+			      $sql = "SELECT DISTINCT experiments.experiment_uid, trial_code
+		    FROM experiments, line_records as lr, tht_base, phenotype_data pd, phenotypes p
+		    WHERE experiments.experiment_uid = tht_base.experiment_uid
+		    AND pd.phenotype_uid = p.phenotype_uid
+		    and tht_base.tht_base_uid = pd.tht_base_uid
+		    AND lr.line_record_uid = tht_base.line_record_uid
+		    AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")" .
+		    "and p.phenotypes_name like '%$pn%' $filter ORDER By trial_code";
             $errMsg = "There are no public trials for this trait within selected lines.";
           $query = mysql_query($sql) or die(mysql_error());
         } else {
-	  $query = mysql_query("SELECT DISTINCT experiment_uid, trial_code FROM experiments WHERE experiments.traits like '%$pn%' $filter ORDER BY trial_code") or die(mysql_error());
+	  /* $query = mysql_query("SELECT DISTINCT experiment_uid, trial_code FROM experiments WHERE experiments.traits like '%$pn%' $filter ORDER BY trial_code") or die(mysql_error()); */
+	  $query = mysql_query("select distinct e.experiment_uid, trial_code
+		    from tht_base tb, phenotype_data pd, phenotypes p, experiments e
+		    where pd.phenotype_uid = p.phenotype_uid
+		    and tb.tht_base_uid = pd.tht_base_uid
+		    and tb.experiment_uid =  e.experiment_uid
+		    and p.phenotypes_name like '%$pn%' $filter ORDER BY trial_code
+		    ") or die(mysql_error());
           $errMsg = "There are no public trials for this trait.";
         }
 
