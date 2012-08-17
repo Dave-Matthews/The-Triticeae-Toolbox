@@ -241,26 +241,39 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	      $mkruid=$smkrs[$j];
 	      $mkrval="";
 	      $result=mysql_query("
-		select marker_name, line_record_name, allele_1, allele_2 
-		from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E
+		select marker_name, line_record_name, allele_1, allele_2, A_allele, B_allele, marker_type_name
+		from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E, marker_types as F
 		where A.marker_uid=B.marker_uid 
 		and B.genotyping_data_uid=C.genotyping_data_uid 
 		and B.tht_base_uid=D.tht_base_uid
 		and D.line_record_uid=E.line_record_uid 
+                and A.marker_type_uid=F.marker_type_uid
 		and E.line_record_uid=$lineuid and A.marker_uid=$mkruid
 		") 
 		or die (mysql_error());
 	      if (mysql_num_rows($result)>=1) {
 		$row = mysql_fetch_assoc($result);
 		$mkrval=$row['allele_1'].$row['allele_2'];
+                $mkrtyp=$row['marker_type_name'];
+                $allele=$row['A_allele'] . $row['B_allele'];
 	      }
 	      else {
 		// print "$linename no marker information\n";
 	      }
+              if ($mkrtyp=="GBS") {
+                if ($mkrval=='AA') { $mkrval = substr($allele,0,1) . substr($allele,0,1); }
+                elseif ($mkrval=='BB') { $mkrval = substr($allele,1,1) . substr($allele,1,1); } 
+                elseif ($mkrval=='AB') { $mkrval = substr($allele,0,1) . substr($allele,1,1); }
+                elseif ($mkrval=='BA') { $mkrval = substr($allele,1,1) . substr($allele,0,1); }
+                elseif ($mkrval=='--') {}
+                else { echo "$mkrval error"; }
+                $cls=array('AA'=>'im_tomato', 'CC'=>'im_grayblue', 'TT'=>'im_purple', 'GG'=>'im_green', '--'=>'im_whitesmoke', 'N'=>'im_gray');
+              } else {
+                $cls=array('AA'=>'im_tomato', 'BB'=>'im_grayblue', 'AB'=>'im_purple', '--'=>'im_whitesmoke', 'N'=>'im_gray');
+              } 
 	      $dispval=$mkrval;
 	      $dnx=$nx+$j*$nwd;
 	      $dny=$y+7+$cht*($i);
-	      $cls=array('AA'=>'im_tomato', 'BB'=>'im_grayblue', 'AB'=>'im_purple', '--'=>'im_whitesmoke', 'N'=>'im_gray');
 	      if (! isset($mkrval) || strlen($mkrval)<1) $mkrval="N";
 	      array_push($blks, array('coords'=>array($dnx+1,$dny+$cmg,$dnx+$nwd-1,$dny+$nht-$cmg),
 				      'imgclr'=>$cls[$mkrval],
@@ -377,7 +390,10 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	      //	  echo "$tf['trial_code']<br>";  //??? Why doesn't this work?
 	    }
 	    echo "<br><i>Trait value is mean over experiments.</i><br>";
-	    echo "<a href=".$config['base_url']."advanced_search.php>Re-select alleles and trait</a>";
+	    echo "<a href=".$config['base_url']."advanced_search.php>Re-select alleles and trait</a><br><br>";
+            echo "<form action='pedigree/pedigree_markers_export.php' method='post'>";
+            echo "<input type='submit' value='Export to CSV'/>";
+            echo "</form>";
 	  }
 
 	echo "</td></tr></table>";

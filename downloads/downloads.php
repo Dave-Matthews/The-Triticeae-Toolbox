@@ -279,9 +279,7 @@ class Downloads
 		<div id="step1" style="float: left; margin-bottom: 1.5em;">
 		<script type="text/javascript" src="downloads/downloads.js"></script>
          <?php 
-                if (isset($_SESSION['selected_lines'])) {
-                    $this->type1_lines_trial_trait();
-                } else {
+                if (empty($_SESSION['selected_lines'])) {
                     echo "Please select lines before using this feature.<br><br>";
                     echo "<a href=";
                     echo $config['base_url'];
@@ -289,6 +287,8 @@ class Downloads
                     echo "<a href=";
                     echo $config['base_url'];
                     echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
+                } else {
+                   $this->type1_lines_trial_trait(); 
                 }
                 ?>
                 </div>
