@@ -390,12 +390,11 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	      //	  echo "$tf['trial_code']<br>";  //??? Why doesn't this work?
 	    }
 	    echo "<br><i>Trait value is mean over experiments.</i><br>";
-	    echo "<a href=".$config['base_url']."advanced_search.php>Re-select alleles and trait</a><br><br>";
-            echo "<form action='pedigree/pedigree_markers_export.php' method='post'>";
-            echo "<input type='submit' value='Export to CSV'/>";
-            echo "</form>";
+	    echo "<a href=".$config['base_url']."advanced_search.php>Re-select alleles and trait</a>";
 	  }
-
+        echo "<br><br><form action='pedigree/pedigree_markers_export.php' method='post'>";
+        echo "<input type='submit' value='Export to CSV'/>";
+        echo "</form>";
 	echo "</td></tr></table>";
 
 }
