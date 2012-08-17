@@ -50,7 +50,7 @@ class Haplotype
     }
   }
 
- function combinations($num_markers, $marker_idx, $marker_list, $cross) {
+ function combinations($num_markers, $marker_idx, $marker_list, $cross, $cross_c) {
    global $dispMissing;
    $sub = $num_markers - 1; /* which column of marker_idx to increment */
    $i = 0;
@@ -100,11 +100,11 @@ class Haplotype
          $alleles = $marker_idx[$k];
          if ($tmp1 == "") {
            $tmp1 = $marker_list[$k] . "_" . $cross[$k][$alleles];
-           $tmp2 = $cross[$k][$alleles];
+           $tmp2 = $cross_c[$k][$alleles];
            $tmp3 = $cross[$k][$alleles];
          } else {
            $tmp1 = $tmp1 . "_" . $marker_list[$k] . "_" . $cross[$k][$alleles];
-           $tmp2 = $tmp2 . "<td>" . $cross[$k][$alleles];
+           $tmp2 = $tmp2 . "<td>" . $cross_c[$k][$alleles];
            $tmp3 = $tmp3 . $cross[$k][$alleles];
          }
          $markers[$marker_list[$k]] = $cross[$k][$alleles];
@@ -179,7 +179,8 @@ class Haplotype
 		  $dispMissing = 0;
 		}
  }
- 
+
+ /* for GBS data convert calls to ACTG */
  function dispHaplo() {
    if (isset($_POST['dispMissing'])) {
      $dispMissing = 1;
@@ -204,12 +205,17 @@ class Haplotype
 						if(isset($_SESSION['clicked_buttons']) && count($_SESSION['clicked_buttons']) > 0) {
 						 $i = 0;
 						 $cross = array();
+						 $crossc = array();
 						 foreach($_SESSION['clicked_buttons'] as $marker) {
 
 						  // Show Marker Name
-						  $nme = mysql_query("SELECT marker_name FROM markers WHERE marker_uid = $marker") or die(mysql_error());
+						  $nme = mysql_query("SELECT marker_name, A_allele, B_allele, marker_type_name FROM markers, marker_types
+                                                   WHERE markers.marker_type_uid = marker_types.marker_type_uid
+                                                   and marker_uid = $marker") or die(mysql_error());
 						  $row = mysql_fetch_assoc($nme);
 						  echo "<th>$row[marker_name]</th>";
+                                                  $mkrtyp=$row['marker_type_name'];
+                                                  $marker_ab=$row['A_allele'] . $row['B_allele'];
 
 						  // Show Alleles corresponding to the marker.
 						  $allele = mysql_query("SELECT DISTINCT allele_1, allele_2
@@ -222,9 +228,25 @@ class Haplotype
 						   $j = 0;
 						   while ($row = mysql_fetch_assoc($allele)) {
 						    $alleles = $row[allele_1].$row[allele_2];
+                            $alleles_c = $alleles;
+                            if ($mkrtyp == "GBS") {
+                              if ($alleles=='AA') {
+                                $alleles_c = substr($marker_ab,0,1) . substr($marker_ab,0,1);
+                              }
+                              elseif ($alleles=='BB') {
+                                $alleles_c = substr($marker_ab,1,1) . substr($marker_ab,1,1);
+                              }
+                              elseif ($alleles=='AB') {
+                                $alleles_c = substr($marker_ab,0,1) . substr($marker_ab,1,1);
+                              }
+                              elseif ($alleles=='BA') {
+                                $alleles_c = substr($marker_ab,1,1) . substr($marker_ab,0,1);
+                              }
+                            }
 						    $marker_list[$i] = $marker;
 						    $marker_idx[$i] = 0;
 						    $cross[$i][$j] = $alleles;
+						    $crossc[$i][$j] = $alleles_c;
 						    $j++;
 						   }
 						   $num_alleles[$i] = $j;
@@ -250,7 +272,7 @@ class Haplotype
 						  $current2 = $num_markers - 3;
 						  //echo "total $total";
 						  while ($i < $total) {
-						   $this->combinations($num_markers,$marker_idx,$marker_list,$cross);
+						   $this->combinations($num_markers,$marker_idx,$marker_list,$cross,$crossc);
 						   $marker_idx[$current2]++;
 						   $j = $current2;
 						   while ($j > 0) {
@@ -387,9 +409,9 @@ class Haplotype
               $lines_list[$temp] = 1;
               echo "<option disabled=\"disabled\" value=\"" . $row['id'] . "\">" . $row['name'] . "</option>\n";
             }
-       print "</select><td>";
        ?>
-            <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">;
+            </select>
+            <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
             <?php
        foreach ($selLines as $line) {
          $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
@@ -402,11 +424,13 @@ class Haplotype
               <?php echo $row['name'] ?>
               </option> 
               <?php     
-            }           
-       print "</select>"; 
+            } 
+       ?>          
+       </select> 
       
-       print "</table><br>";
-       echo "<form name='lines' id='selectLines' action='haplotype_search.php' method='post'>";
+       </table><br>
+       <form name='lines' id='selectLines' action='haplotype_search.php' method='post'>
+       <?php 
        $lines_str = implode(",",$selLines);
        ?>
 		<input type="hidden" name="selLines" value="<?php echo $lines_str?>">
@@ -416,7 +440,7 @@ class Haplotype
 			<input type="radio" name="selectWithin" value="Add">Add (OR)<br>
 		        <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
 		        <!--input type="submit" value="Combine" style='color: blue'-->
-                        <input type="button" name="haplotype" value="Submit" onclick="javascript: haplotype_step2_combine();"
+                        <input type="button" name="haplotype" value="Submit" onclick="javascript: haplotype_step2_combine()">
 	
 	</form>
 	<?php
