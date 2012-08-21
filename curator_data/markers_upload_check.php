@@ -62,7 +62,7 @@ class Markers_Check {
 		include($config['root_dir'] . 'theme/admin_header.php');
 
 		echo "<h2> Enter/Update Markers: Validation</h2>"; 
-		
+
         if ($_FILES['file']['name'][0] != "") 	
             $this->type_MarkersAnnot();
         elseif ( $_FILES['file']['name'][1] != "")
@@ -273,8 +273,12 @@ class Markers_Check {
                     <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
                     <?php
                 }
-            }    
-		}
+		    } // end of if(move_uploaded_file())
+		    else {
+		      echo "<b>Error</b>: Couldn't save file in curator_data/uploads/ directory.<p>";
+		      echo "<input type='Button' value='Cancel' onclick='history.go(-1); return;'/>";
+		    }
+	}
     } /* end of MarkersAnnot function*/
 
 //**************************************************************
@@ -322,34 +326,61 @@ class Markers_Check {
         $ext = substr(strrchr($uploadfile, '.'), 1);
         
         $uftype = $_FILES['file']['type'][1];
+        //Read header to check if Golden Gate or Infinium
+        if(move_uploaded_file($_FILES['file']['tmp_name'][1], $target_path.$uploadfile))    {
+          $infile = $target_path.$uploadfile;
+          if (($reader = fopen($infile, "r")) == FALSE) {
+            error(1, "Unable to access file.");
+            exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+          }
+          $fileFormat = 0;
+          while(!feof($reader)) {
+            $line = fgets($reader);
+            if (stripos($line, 'Golden Gate') != false) {
+              $fileFormat = 1;
+              echo "$line\n";
+            } elseif (stripos($line, 'Infinium HD') != false) {
+              echo "$line\n";
+              $fileFormat = 2;
+            }
+          }
+          if ($fileFormat == 0) {
+            echo "using generic format\n";
+          }
+          fclose($reader);
+        } else {
+          error(1, "Unable to upload file to tempory location.");
+          exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+        }
         //Illumina format
-        if (strcmp($ext , "opa") == 0) {
-            if(move_uploaded_file($_FILES['file']['tmp_name'][1], $target_path.$uploadfile)) 	{
-                $infile = $target_path.$uploadfile;
-                // Convert it to generic format
-                $cmd = "perl AB_to_ATCG.pl \"$infile\"";
-                //echo "Cmd - " . $cmd . "<br>";
-                exec($cmd);
-                $infile = $target_path.$uploadfile.".txt";
-		if (!file_exists($infile)) {
+        if ($fileFormat == 1) {
+            $infile = $target_path.$uploadfile;
+            // Convert it to generic format
+            $cmd = "perl AB_to_ATCG.pl \"$infile\"";
+            //echo "Cmd - " . $cmd . "<br>";
+            exec($cmd);
+            $infile = $target_path.$uploadfile.".txt";
+	    if (!file_exists($infile)) {
 		  error(1, "Conversion of .opa file failed.");
 		  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-		}
-            } else {
-                error(1, "Unable to upload file to tempory location.");
-                exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-            }
-        }
+	    }
+        } elseif ($fileFormat == 2) {
+            $infile = $target_path.$uploadfile;
+            // Convert it to generic format
+            $cmd = "perl AB_to_ATCG_Infinium.pl \"$infile\"";
+            //echo "Cmd - " . $cmd . "<br>";
+            exec($cmd);
+            $infile = $target_path.$uploadfile.".txt";
+            if (!file_exists($infile)) {
+                  error(1, "Conversion of manifest file failed.");
+                  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            }   
+
         // Generic SNP format
-        elseif (strcmp($ext , "txt") == 0) {
-            if(move_uploaded_file($_FILES['file']['tmp_name'][1], $target_path.$uploadfile)) 	{
+        } else {
                 /* start reading the input */
                 $infile = $target_path.$uploadfile;
-            }    
-        } else {
-            error(1, "Expecting file to have either Illumina Manifest (opa) Format or Generic SNP (txt) Format. <br> The type of the uploaded file is ".$uftype);
-            exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-        }   
+        }    
 
         /* Read the file */
         if (($reader = fopen($infile, "r")) == FALSE) {
