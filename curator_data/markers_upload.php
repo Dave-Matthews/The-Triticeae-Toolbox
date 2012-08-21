@@ -66,16 +66,21 @@ class Markers {
 	<form action="curator_data/markers_upload_check.php" method="post" enctype="multipart/form-data">
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
-	<p><strong>Marker Annotation File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp; <a href="curator_data/examples/Marker_import_sample4.txt">Example Marker Annotation File</a></p>
-	<p> <H4> &nbsp;&nbsp;&nbsp;&nbsp;Or </H4> </p>
- 	<p><strong>SNP Sequence File:</strong> <input id="file[]" type="file" name="file[]" size="80%" /> &nbsp;&nbsp;&nbsp; <a href="curator_data/examples/SNP_assay.txt">Illumina Manifest (opa) Format</a>
- or <a href="curator_data/examples/Generic_SNP.txt">Generic Format(txt)</a> </p>
+        <table>
+	<tr><td><strong>Marker Annotation File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
+        <tr><td><td><a href="curator_data/examples/Marker_import_sample4.txt">Example Marker Annotation File</a>
+	<tr><td> <H4> &nbsp;&nbsp;&nbsp;&nbsp;Or </H4>
+ 	<tr><td><strong>SNP Sequence File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
+        <tr><td><td><a href="curator_data/examples/SNP_assay.txt">Illumina Manifest (opa) Format</a>
+ , <a href="curator_data/examples/Marker_import_sample5.txt">Illumina Manifest (Infinium) Format</a>
+ or <a href="curator_data/examples/Generic_SNP.txt">Generic Format(txt)</a>
+        </table><br>
 	<p><input type="submit" value="Upload Marker Import Files" /></p>
     </form>
 	<br>
 	<br>
 	<p>
-	NOTE: Different marker SNP files can be submitted as long as their marker names had been previously defined in the marker annotation file.
+	NOTE: Use Illumina format for files with AB base calls. Use Generic format for ACTG base calls. Different marker SNP files can be submitted as long as their marker names had been previously defined in the marker annotation file.
 	</p>
 <?php
  
