@@ -345,7 +345,8 @@ class Markers_Check {
             }
           }
           if ($fileFormat == 0) {
-            echo "using generic format\n";
+            echo "warning, using generic format\n";
+            echo "Generic format is for ACTG base calls\n";
           }
           fclose($reader);
         } else {
