@@ -24,30 +24,51 @@ class Experiments {
   public function __construct($function = null) {	
     switch($function) {
     default:
-      $this->typeExperiments(); /* intial case*/
+      $this->typeExperiments(); /* initial case*/
       break;
-    }	
+    }
   }
 
   private function typeExperiments() {
     global $config;
     include($config['root_dir'] . 'theme/admin_header.php');
+?>
+<style type="text/css">
+table {background: none; border-collapse: collapse}
+td {border: 0px solid #eee !important;}
+h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+#confirm { display: none;
+           top: 25%; left: 25%; width: 40%; 
+           padding: 4px;
+           border: 1px solid red; background-color: #efefef;
+           position: fixed;
+           opacity: 1.0;
+	   overflow: auto;
+           }
+<!-- #dont { position: relative; -->
+<!--         left: 50px; } -->
+
+<!-- .btn { position: static; -->
+<!--     } -->
+
+}
+</style>
+
+<?php
     echo "<h2>Add Phenotype Experiment Results</h2>"; 
     $this->type_Experiment_Name();
     $footer_div = 1;
     include($config['root_dir'].'theme/footer.php');
-  }
-	
-	
+  } // end of function typeExperiments()
+
+// Entry states with their own blocks of code:
+// $_POST['raw']
+// $_POST['updatenew']	
+// $_POST['updateold']
+// $_GET['delete']
   private function type_Experiment_Name() {
     global $config;
 ?>
-
-<style type="text/css">
-  table {background: none; border-collapse: collapse}
-  td {border: 0px solid #eee !important;}
-  h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-</style>
 
 <p>Here you can load the results of a single field or greenhouse Trial.  The Annotation describing
 the conditions of the Trial must already have been 
@@ -66,14 +87,43 @@ step by step instructions.</font>
   <br><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PhenotypeSubmissionForm.xls">Example Means file</a>
   <br><input type="submit" value="Upload" /></p>
 </form>
-</div>
+</div> <!-- end of div 'section' -->
 
-<div class="section">
+
+<div id='rawsection' class="section">
   <h3>Add Raw Files</h3>
   One or more files of additional information maybe be attached to each Trial.  The files are archived for 
   downloading but their contents are not loaded into the database.  
 
 <?php
+
+if ($_GET['delete']) {
+  $tc = $_GET['trial'];
+  $top_path = $config['root_dir']."raw/phenotype/";
+  $trial_path = $top_path . $tc . "/";
+  $files = explode(',', trim($_GET['files'], ','));
+  $exptuid = mysql_grab("select experiment_uid from experiments where trial_code = '$tc'");
+  foreach ($files as $fl) {
+    if (file_exists($top_path.$fl))
+      unlink($top_path.$fl);
+    elseif (file_exists($trial_path.$fl))
+      unlink($trial_path.$fl);
+    else {
+      echo ("<p><b>Error:</b> Couldn't find file $fl.<p>");
+      $failed = true;
+    }
+    if (!$failed) {
+      $sql = "delete from rawfiles where experiment_uid = $exptuid and name = '$fl'";
+      mysql_query($sql) or die (mysql_error()."<br>Query was:<br>".$sql);
+    }
+  }
+  if (!$failed) {
+    echo "<p><font color=red><b>Files deleted:";
+    foreach ($files as $fl) 
+      echo "<br>&nbsp;&nbsp;&nbsp;$fl";
+    echo "</b></font><p>";
+  }
+}
 
   if ($_POST['raw'] OR $_POST['updatenew']) {
     $trialcode = $_POST['trialcode'];
@@ -91,13 +141,16 @@ step by step instructions.</font>
     $oldfile = $_POST['oldfile'];
     $desc = $_POST['desc'];
     $todelete = $_POST['delete'];
+    if ($todelete) {
+      deleteraw();
+    }
     $sql = "select name, description, directory from rawfiles where experiment_uid=$exptuid";
     $res = mysql_query($sql) or die (mysql_error()."<br>Query was:<br>".$sql);
     $j = 0;
     while ($info = mysql_fetch_assoc($res)) {
       if ($oldfile[$j] != $info['name'])
 	die ("<p><b>ERROR</b>: filename mismatch, '$oldfile[$j]' vs. '".$info['name']."'.");
-      if (in_array($j, $todelete)) {
+      if ($todelete AND in_array($j, $todelete)) {
       	if (!unlink($config['root_dir']."raw/phenotype/".$trialcode."/".$info['name']))
       	    echo "<p><b>ERROR</b>: Couldn't delete file ".$config['root_dir']."raw/phenotype/".$trialcode."/".$info['name'];
 	else {
@@ -187,7 +240,7 @@ step by step instructions.</font>
 	}
 	$res = mysql_query($sql) or die (mysql_error()."<br>Query was:<br>".$sql);
       }  // end for(all $nf)
-      echo "<p><b><font color=red>File saved.</font></b>";
+      echo "<p><b><font color=red>Files saved.</font></b>";
 
     }
 
@@ -258,26 +311,92 @@ step by step instructions.</font>
     if (mysql_num_rows($res) == 0)
       echo "<p>No raw files saved yet.<br>";
     else {
-      echo "<table><tr><th>Delete</th><th>Current raw files</th><th>Description</th></tr><form method='post'>";
+      echo "<table><tr><th>Delete</th><th>Current raw files</th><th>Description</th></tr>";
+      echo "<form method='post' name='oldfiles'>";
       echo "<input type=hidden name=trialcode value=$trialcode>";
       $j = 0;
       while ($info = mysql_fetch_assoc($res)) {
 	$oldfile[$j] = $info['name'];
 	$de[$j] = $info['description'];
 	// Array delete[] will be a list of the $j numbers of whatever boxes are checked.
-	echo "<tr><td><input type=checkbox name=delete[] value='$j'></td>";
+	echo "<tr><td align='center'><input type=checkbox name=delete value='$oldfile[$j]'></td>";
 	echo "<td><input type=hidden name=oldfile[] value='$oldfile[$j]'>$oldfile[$j]</td>";
 	echo "<td><input type=text name=desc[] value='$de[$j]' size=60></td></tr>";
 	$j++;
       }
 ?>
-  </table>
-  <input type=hidden name=updateold value=1>
-  <input type=submit value=Update>
-  </form>
-</div>
+<tr>
+  <td align='center'>
+
+<script type=text/javascript>
+
+	function popup() {
+	    var i, fname, found, pp;
+	    pp = document.getElementById('confirm');
+	    pptxt = document.getElementById('pptxt');
+	    document.getElementById('rawsection').style.opacity = '.2';
+	    pp.style.display = 'block';
+	    pptxt.innerHTML =  'Really delete these files?:';
+	    for (i = 0; i < document.oldfiles.delete.length; i++) {
+		if (document.oldfiles.delete[i].checked) {
+		    fname = document.oldfiles.delete[i].value;
+		    pptxt.innerHTML +=  '<br>&nbsp;&nbsp;' + fname;
+		    found = true;
+		}
+	    }
+	    if (!found) {
+		pptxt.innerHTML +=  '<br>No files checked for deletion.';
+		document.getElementById('do').style.display='none';
+	    }
+	    else 
+		document.getElementById('do').style.display='inline';
+	}
+
+
+	function deleteold() {
+	    var getstring, i, fname;
+	    getstring = "?delete=1&trial=<?php echo $trialcode ?>&files=";
+	    for (i = 0; i < document.oldfiles.delete.length; i++) {
+		if (document.oldfiles.delete[i].checked) {
+		    fname = document.oldfiles.delete[i].value;
+		    getstring += fname + ",";
+		}	    
+	    }
+	    window.location = "<?php echo $_SERVER[PHP_SELF] ?>" + getstring;
+	}
+
+</script>
+
+    <button type=button onclick = "popup();">Delete</button></td>
+  <td></td><td>
+    <input type=submit value=Update></td>
+</tr>
+</table>
+<input type=hidden name=updateold value=1>
+</form>
+
+</div> <!-- End of div 'rawsection' -->
+
+<!-- Popup box: -->
+
+<div name="popup" id="confirm">
+  <div id="pptxt"></div>
+    <button id="do" style="position:static;" onclick = "deleteold();
+		       document.getElementById('confirm').style.display='none';
+		       document.getElementById('pptxt').innerHTML ='';
+		       document.getElementById('rawsection').style.opacity='1';
+		       ">Confirm</button>
+    <button style="position:static;" onclick = "
+		       document.getElementById('confirm').style.display='none';
+		       document.getElementById('pptxt').innerHTML ='';
+		       document.getElementById('rawsection').style.opacity='1';
+		       ">Cancel</button>
+</div> <!-- End of div 'confirm' -->
+
+
+
 <?php
-      } // end editing form for previous raw files
+    } // end editing form for previous raw files
 
   } /* end of else*/
   } /* end of type_Experiment_Name function*/
