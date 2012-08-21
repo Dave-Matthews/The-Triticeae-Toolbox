@@ -157,17 +157,6 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	    }
             $lineuid = $slines[$i];
             $trtval = -9999;
-            // Show mean over selected experiments.
-            $result = mysql_query("
-                              select avg(value)
-                              from line_records as lr, phenotype_data as pd, tht_base as tb
-                              where lr.line_record_uid = tb.line_record_uid
-                              and tb.tht_base_uid = pd.tht_base_uid
-                              and pd.phenotype_uid = $phenotype
-                              and lr.line_record_uid = $lineuid
-                               $in_these_experiments
-                               -- and value is not null
-                              ") or die (mysql_error());
 	  }
 	}
 
