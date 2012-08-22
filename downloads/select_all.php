@@ -588,7 +588,7 @@ class Downloads
 					USER_TYPE_CURATOR,
 					USER_TYPE_ADMINISTRATOR)))
 			$sql .= " and data_public_flag > 0";
-		$sql .= " GROUP BY e.experiment_year ASC";
+		$sql .= " GROUP BY e.experiment_year DESC";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res)) {
 			?>

@@ -78,7 +78,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST") {
 <td><b>Year</b><br>
 <select name="year[]" multiple="multiple" size="6">
 <?php
-$sql = "select distinct experiment_year from experiments";
+$sql = "select distinct experiment_year from experiments order by experiment_year DESC";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($resp = mysql_fetch_assoc($res))
 		{
