@@ -1777,7 +1777,7 @@ class Downloads
 	  
 	  <table id="phenotypeSelTab">
 	  <tr>
-	  <td>Lines found: <?php 
+	  <?php 
 	  $sql_option = "";
 	  if (preg_match("/\d/",$experiments)) {
 	  	$sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
@@ -1793,11 +1793,17 @@ class Downloads
 	  while($row = mysql_fetch_array($res)) {
 	  	$count++;
 	  }
-	  echo $count;
           if (isset($_SESSION['selected_lines'])) {
+            ?>
+            <td>Lines found: <?php
+            echo $count;
             ?>
             <td><td>Current selection: <?php echo count($_SESSION['selected_lines']); ?></td><td></td>
             <?php
+          } else {
+          ?>
+            <th>Lines</th>
+          <?php
           }
           ?>
 	  </tr>
