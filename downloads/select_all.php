@@ -379,8 +379,7 @@ class Downloads
             }
             $lines_str = implode(",", $lines);
             $count = count($lines);
-          }
-          if ($subset == "comb") {
+          } elseif ($subset == "comb") {
             $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
             FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
             WHERE
@@ -393,8 +392,28 @@ class Downloads
             $res = mysql_query($sql) or die(mysql_error() . $sql);
             while ($row = mysql_fetch_assoc($res))
             {
-              array_push($lines,$row['id']);
+              $line_uid = $row['id'];
+              if (!in_array($line_uid,$lines)) {
+                array_push($lines,$row['id']);
+              }
             }
+            $lines_str = implode(",", $lines);
+          } elseif ($subset == "yes") {
+            $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+            FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+            WHERE
+            pd.tht_base_uid = tb.tht_base_uid
+            AND p.phenotype_uid = pd.phenotype_uid
+            AND lr.line_record_uid = tb.line_record_uid
+            AND pd.phenotype_uid IN ($phen_item)
+            AND tb.experiment_uid IN ($experiments)
+            ORDER BY lr.line_record_name";
+            $res = mysql_query($sql) or die(mysql_error() . $sql);
+            while ($row = mysql_fetch_assoc($res))
+            {
+              $temp[] = $row['id'];
+            }
+            $lines = array_intersect($lines, $temp);
             $lines_str = implode(",", $lines);
           }
         } else {
@@ -749,7 +768,7 @@ class Downloads
 		 $sub_ckd = "disabled"; $all_ckd = "checked";
 		}
 		if ($subset == "yes") {
-		 $sub_ckd = "checked"; $all_ckd = "";
+		 $sub_ckd = "yes"; $yes_ckd = "checked";
 		} elseif ($subset == "no") {
 		 $sub_ckd = ""; $all_ckd = "checked";
 		} elseif ($subset == "comb") {
@@ -855,6 +874,7 @@ class Downloads
                   Combine with currently selected lines:<br>
 		  <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Replace<br>
 		  <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Add (OR)<br>
+                  <input type="radio" name="subset" id="subset" value="yes" <?php echo "$yes_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Intersect (AND)<br>
 		  <?php
 		}
     }
@@ -905,8 +925,29 @@ class Downloads
          $res = mysql_query($sql) or die(mysql_error());
          while ($row = mysql_fetch_assoc($res))
          {
-           array_push($lines,$row['id']);
+           $line_uid = $row['id'];
+           if (!in_array($line_uid, $lines)) {
+              $lines[] = $row['line_record_uid'];
+           }
          }
+         $selectedlines = implode(",", $lines);
+         $count = count($lines);
+       } elseif ($subset == "yes") {
+         $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+         FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+         WHERE
+         pd.tht_base_uid = tb.tht_base_uid
+         AND p.phenotype_uid = pd.phenotype_uid
+         AND lr.line_record_uid = tb.line_record_uid
+         AND pd.phenotype_uid IN ($phen_item)
+         AND tb.experiment_uid IN ($experiments)
+         ORDER BY lr.line_record_name";
+         $res = mysql_query($sql) or die(mysql_error());
+         while ($row = mysql_fetch_assoc($res))
+         {
+           $temp[] = $row['id'];
+         }
+         array_intersect($lines, $temp);
          $selectedlines = implode(",", $lines);
          $count = count($lines);
        }
@@ -1592,7 +1633,7 @@ class Downloads
 	   $sub_ckd = "disabled"; $all_ckd = "checked";
 	 }
 	 if ($subset == "yes") {
-	   $sub_ckd = "checked"; $all_ckd = "";
+	   $sub_ckd = "yes"; $yes_ckd = "checked";
 	 } elseif ($subset == "no") {
 	   $sub_ckd = ""; $all_ckd = "checked";
 	 } elseif ($subset == "comb") {
@@ -1702,6 +1743,7 @@ class Downloads
            Combine with currently selected lines:<br>
 	   <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Replace</b><br>
 	   <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Add (OR)<br>
+           <input type="radio" name="subset" id="subset" value="yes" <?php echo "$yes_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Intersect (AND)<br>
 	   <?php
 	 } 
 	}
@@ -1722,7 +1764,7 @@ class Downloads
 	    $sub_ckd = "disabled"; $all_ckd = "checked";
 	  }
 	  if ($subset == "yes") {
-	    $sub_ckd = "checked"; $all_ckd = "";
+	    $sub_ckd = "yes"; $yes_ckd = "checked";
 	  } elseif ($subset == "no") {
 	    $sub_ckd = ""; $all_ckd = "checked";
 	  } elseif ($subset == "comb") {
@@ -1791,6 +1833,7 @@ class Downloads
             Combine with currently<br>selected lines:<br>
             <input type="radio" name="subset" id="subset" value="no" <?php echo $all_ckd; ?> onclick="javascript: update_phenotype_linesb(this.value)">Replace</b><br>
             <input type="radio" name="subset" id="subset" value="comb" <?php echo $cmb_ckd; ?> onclick="javascript: update_phenotype_linesb(this.value)">Add (OR)<br>
+            <input type="radio" name="subset" id="subset" value="yes" <?php echo $yes_ckd; ?> onclick="javascript: update_phenotype_linesb(this.value)">Intersect (AND)<br>
             <td>
 	    <select name="lines" multiple="multiple" style="height: 12em;">
 	    <?php 
@@ -2073,11 +2116,30 @@ class Downloads
 		  WHERE line_records.line_record_uid=tht_base.line_record_uid $sql_option";
 		  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		  while($row = mysql_fetch_array($res)) {
-		    $lines[] = $row['line_record_uid'];
+                    $line_uid = $row['line_record_uid'];
+                    if (!in_array($line_uid, $lines)) {
+		      $lines[] = $row['line_record_uid'];
+                    }
 		  }
 		  $lines_str = implode(",", $lines);
 		  $count = count($lines);
-		}
+		} elseif ($subset == "yes") {
+                  if (preg_match("/\d/",$experiments)) {
+                    $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
+                  }
+                  if (preg_match("/\d/",$datasets)) {
+                    $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
+                  }
+                  $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid FROM line_records, tht_base
+                  WHERE line_records.line_record_uid=tht_base.line_record_uid $sql_option";
+                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+                  while($row = mysql_fetch_array($res)) {
+                    $temp[] = $row['line_record_uid'];
+                  }
+                  $lines = array_intersect($lines,$temp);
+                  $lines_str = implode(",", $lines);
+                  $count = count($lines);
+                }
 		} else {
 	      $lines_str = $_GET['lines'];
 	      $lines = explode(',', $lines_str);
@@ -2185,11 +2247,32 @@ class Downloads
 	     $res = mysql_query($sql) or die(mysql_error() . $sql);
 	     while ($row = mysql_fetch_assoc($res))
 	     {
-	       array_push($lines,$row['id']);
+               $line_uid = $row['id'];
+               if (!in_array($line_uid, $lines)) {
+                 $lines[] = $row['line_record_uid'];
+               }
 	     }
 	     $lines_str = implode(",", $lines);
 	     $count = count($lines);
-	   }
+	   } elseif ($subset = "yes") {
+             $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+             FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+             WHERE
+             pd.tht_base_uid = tb.tht_base_uid
+             AND p.phenotype_uid = pd.phenotype_uid
+             AND lr.line_record_uid = tb.line_record_uid
+             AND pd.phenotype_uid IN ($phen_item)
+             AND tb.experiment_uid IN ($experiments)
+             ORDER BY lr.line_record_name";
+             $res = mysql_query($sql) or die(mysql_error() . $sql);
+             while ($row = mysql_fetch_assoc($res))
+             {
+               $temp[] = $row['id'];
+             }
+             $lines = array_intersect($lines, $temp);
+             $lines_str = implode(",", $lines);
+             $count = count($lines);
+           }
 	 } else {
 	   $lines_str = $_GET['lines'];
 	   $lines = explode(',', $lines_str);
@@ -2517,8 +2600,7 @@ class Downloads
 	      }
 	      $lines_str = implode(",", $lines);
 	      $count = count($lines);
-	    }
-	    if ($subset == "comb") {
+	    } elseif ($subset == "comb") {
 	      $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
 	      FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
 	      WHERE
@@ -2531,10 +2613,30 @@ class Downloads
 	      $res = mysql_query($sql) or die(mysql_error() . $sql);
 	      while ($row = mysql_fetch_assoc($res))
 	      {
-	        array_push($lines,$row['id']);
+                $line_uid = $row['id'];
+                if (!in_array($line_uid, $lines)) {
+	          array_push($lines,$row['id']);
+                }
 	      }
 	      $lines_str = implode(",", $lines);
-	    }
+	    } elseif ($subset = "yes") {
+              $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+              FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+              WHERE
+              pd.tht_base_uid = tb.tht_base_uid
+              AND p.phenotype_uid = pd.phenotype_uid
+              AND lr.line_record_uid = tb.line_record_uid
+              AND pd.phenotype_uid IN ($phen_item)
+              AND tb.experiment_uid IN ($experiments)
+              ORDER BY lr.line_record_name";
+              $res = mysql_query($sql) or die(mysql_error() . $sql);
+              while ($row = mysql_fetch_assoc($res))
+              {
+                $temp[] = $row['id'];
+              }
+              $lines = array_intersect($lines, $temp);
+              $lines_str = implode(",", $lines);
+            }
 	  } else {
 	    $lines_str = $_GET['lines'];
 	    $lines = explode(',', $lines_str);
