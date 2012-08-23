@@ -310,7 +310,7 @@ if ($_GET['delete']) {
     $sql = "select name, description from rawfiles where experiment_uid = $exptuid";
     $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
     if (mysql_num_rows($res) == 0)
-      echo "<p>No raw files saved yet.<br>";
+      echo "<p>No raw files saved yet.<br></div>";
     else {
       echo "<table><tr><th>Delete</th><th>Current raw files</th><th>Description</th></tr>";
       echo "<form method='post' name='oldfiles'>";
