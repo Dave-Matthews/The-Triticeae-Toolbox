@@ -103,6 +103,7 @@ if ($_GET['delete']) {
   $trial_path = $top_path . $tc . "/";
   $files = explode(',', trim($_GET['files'], ','));
   $exptuid = mysql_grab("select experiment_uid from experiments where trial_code = '$tc'");
+  $_GET['exptuid'] = $exptuid;
   foreach ($files as $fl) {
     if (file_exists($top_path.$fl))
       unlink($top_path.$fl);
@@ -337,11 +338,19 @@ if ($_GET['delete']) {
 	    document.getElementById('rawsection').style.opacity = '.2';
 	    pp.style.display = 'block';
 	    pptxt.innerHTML =  'Really delete these files?:';
-	    for (i = 0; i < document.oldfiles.delete.length; i++) {
-		if (document.oldfiles.delete[i].checked) {
-		    fname = document.oldfiles.delete[i].value;
-		    pptxt.innerHTML +=  '<br>&nbsp;&nbsp;' + fname;
-		    found = true;
+	    // If only one item is checked, .delete.length will be undefined.
+	    if (document.oldfiles.delete.checked) {
+		fname = document.oldfiles.delete.value;
+                pptxt.innerHTML +=  '<br>&nbsp;&nbsp;' + fname;
+                found = true;
+	    }
+	    else {
+		for (i = 0; i < document.oldfiles.delete.length; i++) {
+		    if (document.oldfiles.delete[i].checked) {
+			fname = document.oldfiles.delete[i].value;
+			pptxt.innerHTML +=  '<br>&nbsp;&nbsp;' + fname;
+			found = true;
+		    }
 		}
 	    }
 	    if (!found) {
@@ -356,11 +365,19 @@ if ($_GET['delete']) {
 	function deleteold() {
 	    var getstring, i, fname;
 	    getstring = "?delete=1&trial=<?php echo $trialcode ?>&files=";
-	    for (i = 0; i < document.oldfiles.delete.length; i++) {
-		if (document.oldfiles.delete[i].checked) {
-		    fname = document.oldfiles.delete[i].value;
-		    getstring += fname + ",";
-		}	    
+	    // If only one item is checked, .delete.length will be undefined.
+            if (document.oldfiles.delete.checked) {
+                fname = document.oldfiles.delete.value;
+		getstring += fname + ",";
+		// getstring += fname;
+            }
+            else {
+		for (i = 0; i < document.oldfiles.delete.length; i++) {
+		    if (document.oldfiles.delete[i].checked) {
+			fname = document.oldfiles.delete[i].value;
+			getstring += fname + ",";
+		    }	    
+		}
 	    }
 	    window.location = "<?php echo $_SERVER[PHP_SELF] ?>" + getstring;
 	}
@@ -376,6 +393,7 @@ if ($_GET['delete']) {
 </form>
 
 </div> <!-- End of div 'rawsection' -->
+
 
 <!-- Popup box: -->
 
