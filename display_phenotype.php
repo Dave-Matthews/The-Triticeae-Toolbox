@@ -7,11 +7,12 @@
 
 //Author: Kartic Ramesh; drastically rewritten by Julie Dickerson, 2009 to make usable and use sessions
 
-// 08/17/2012 DEM   Display GRIN Accession instead of Line Synonym, for Jorge Dubcovsky.
-// 03/25/2011 DEM   Oops, the Collaborator should be the one in table phenotype_experiment_info.
-// 02/07/2011 DEM   Add CAPdata_program and Collaborator to the first table.
-// 01/12/2011 JLee  Add so experiment download data displays on separate page
-// 01/12/2011 JLee  Mod so mean and std.err values in experiment datafile do have signif digit applied to them   
+// 08/22/2012 DEM  Display multiple raw files, table rawfiles. 
+// 08/17/2012 DEM  Display GRIN Accession instead of Line Synonym, for Jorge Dubcovsky.
+// 03/25/2011 DEM  Oops, the Collaborator should be the one in table phenotype_experiment_info.
+// 02/07/2011 DEM  Add CAPdata_program and Collaborator to the first table.
+// 01/12/2011 JLee Add so experiment download data displays on separate page
+// 01/12/2011 JLee Mod so mean and std.err values in experiment datafile do have signif digit applied to them   
 // 10/07/2010 DEM Stop rounding-off values when exported via "Download Experiment Data".
 // 9/30/2010 DEM Fixed comma-separated header line in tab-delimited "Download Experiment Data" output.
 // 9/30/2010 DEM Add "Experiment" to display list. 
@@ -418,21 +419,21 @@ $sources=$sourcerow['input_data_file_name'];
 if ($sources)
   echo "<p><b>Means file:</b> $sources";
 
-echo "<p><b>Raw data file:</b> ";
-$rawsql="SELECT raw_data_file_name FROM experiments WHERE trial_code='$trial_code'";
+echo "<p><b>Raw data files:</b><br>";
+$rawsql="SELECT name, directory from rawfiles where experiment_uid = $experiment_uid";
 $rawres=mysql_query($rawsql) or die(mysql_error());
-$rawrow=mysql_fetch_array($rawres);
-$rawfilename=$rawrow['raw_data_file_name'];
-$rawfile="raw/phenotype/".$rawfilename;
+while ($rawrow = mysql_fetch_assoc($rawres)) {
+  $rawfilename=$rawrow['name'];
+  $rawdir = $rawrow['directory'];
+  if ($rawdir)
+    $rawfilename=$rawrow['directory']."/".$rawfilename;
+  $rawfile="raw/phenotype/".$rawfilename;
+  echo "<a href=".$config['base_url'].$rawfile.">".$rawrow['name']."</a><br>";
+}
+
 		
 if (empty($rawfilename))  echo "none"; 
-  /* echo "<h3><b>NOTE: Sorry raw data file not available.</b> </h3>";  */
-else {
-  echo "$rawfilename";
-  echo "<form action='$rawfile'>";
-  echo "<input type='submit' value='Download Raw File'>";
-  echo "</form>";
-}
+
 }
   
     //-----------------------------------------------------------------------------------
