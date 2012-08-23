@@ -793,7 +793,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 		//Show column values, ensure that the column is not in the ignore array.
 		foreach($row as $k=>$v) {
 			if( !in_array($k, $ignore) && !in_array($k, $fpkeys) )
-				$line .= "\t\t\t<td><textarea name=\"$k\" rows=\"4\" cols=\"12\" disabled>".stripslashes($v)."</textarea></td>\n";
+				$line .= "\t\t\t<td><textarea name=\"$k\" rows=\"4\" cols=\"20\" disabled>".stripslashes($v)."</textarea></td>\n";
 		}
 
 		$line .= "</form></tr>";

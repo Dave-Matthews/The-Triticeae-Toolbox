@@ -36,7 +36,7 @@ class Annotations {
     global $config;
     include($config['root_dir'] . 'theme/admin_header.php');
 
-    echo "<h2>Add Phenotype Experiment Annotations</h2>"; 
+    echo "<h2>Add Phenotype Trial Annotations</h2>"; 
     $this->type_Annotation_Name();
     $footer_div = 1;
     include($config['root_dir'].'theme/footer.php');
@@ -52,7 +52,9 @@ class Annotations {
 
 <ul>
 <a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"><li><b>Upload an Excel (.xls) File</b></li></a><br>
-<a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><li><b>Upload a Tab Delimited(.txt) File</b></li></a><br>
+<a href="<?php echo $config['base_url']; ?>login/edit_trials.php"><li><b>Edit Trial Annotations</b></li></a><br>
+
+<!-- <a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><li><b>Upload a Tab Delimited(.txt) File</b></li></a><br> -->
 <!-- <a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php"><li><b>Delete an experiment</b></li></a> -->
 </ul>	
 		
