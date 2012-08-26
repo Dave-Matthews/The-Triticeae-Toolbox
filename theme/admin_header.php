@@ -16,14 +16,24 @@
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/new.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
-  <?php
-   // Create <title> for browser to show.
+<?php
    connect();
+   // clear session if it contains variables from another database
+   $database = mysql_grab("select value from settings where name='database'");
+   $temp = $_SESSION['database'];
+   if (empty($database)) {
+     //error, settings table should have this entry
+   } elseif ($temp != $database) {
+     session_unset();
+   }
+   $_SESSION['database'] = $database;
+   // Create <title> for browser to show.
    $title = mysql_grab("select value from settings where name='title'");
    if (empty($title))
      $title = "The Triticeae Toolbox";
    echo "<title>$title</title>";
-  global $usegbrowse;
+   global $usegbrowse;
+
 if (isset($usegbrowse) && $usegbrowse)
   require_once $config['root_dir'] . 'includes/gbrowse-deps.inc';
 ?>
@@ -151,10 +161,8 @@ EOD;
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
     <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Traits and units used">Trait Descriptions</a>
     <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">CAP Data Programs</a>
-<!--
     <li><a href="<?php echo $config['base_url']; ?>acknowledge.php" title="Contributions from other projects">Acknowledgments</a>
-    <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of T3 data">Terms of Use</a>
--->
+    <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of the data">Terms of Use</a>
   </ul>
 
   <?php 
@@ -171,14 +179,15 @@ EOD;
       Add/Edit Pedigree</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
       Add Phenotype Experiment Annotations</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data">
-      Add Phenotype Experiment Results</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
-      Delete a Phenotype Experiment</a></li>
+      <!-- <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data"> -->
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php" title="Phenotype data">
+      Add Phenotype Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
-      Add Genotype Annotations</a></li>
+      Add Genotype Experiment Annotations</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
       Add Genotype Results </a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
+      Delete Trials / Experiments</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
       Add Maps</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
@@ -260,7 +269,6 @@ EOD;
    echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits:</a> ". count($_SESSION['selected_traits']);
    echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Trials:</a> " . count($_SESSION['selected_trials']);
 ?>
-			
 			
   </ul>
   <div id="searchbox">
