@@ -98,6 +98,15 @@ function showLineForMarker($markername, $order="ORDER BY line_record_name") {
   if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
     $order = "ORDER BY " . $_GET['sortby'] . " " . $_GET['sorttype'];
   }
+  $query = "SELECT marker_type_name, A_allele, B_allele from markers, marker_types where markers.marker_type_uid = marker_types.marker_type_uid and marker_name = '$markername'";
+  $resource = mysql_query($query) or die(mysql_error());
+  if ($row = mysql_fetch_assoc($resource)) {
+    $marker_type = $row['marker_type_name'];
+    $allele = $row['A_allele'] . $row['B_allele'];
+  } else {
+    $marker_type = "SNP";
+  }
+  
   $query = "SELECT lr.line_record_name, a.allele_1, a.allele_2           
 	    FROM markers as m, line_records as lr, alleles as a,                                                      
 		 tht_base as tb, genotyping_data as gd
@@ -113,7 +122,17 @@ function showLineForMarker($markername, $order="ORDER BY line_record_name") {
     echo "No genotype data found<br />";
   }
   else {
-    echo displayTable($resource, TRUE);
+    if ($marker_type == "GBS") {
+      $lookup = array(
+        'A' => substr($allele,0,1),
+        'B' => substr($allele,1,1),
+        '-' => '-',
+        '' => 'N' 
+      );
+      echo displayTableConvert($resource, TRUE, $lookup);
+    } else {
+      echo displayTable($resource, TRUE);
+    }
     echo "<form action='dbtest/exportQueryResult.php' method='post'>
 		<input type='submit' value='Export to CSV' />
 		<input type='hidden' name='query_string' value='" . base64_encode($query) ."' />
