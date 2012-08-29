@@ -1,5 +1,7 @@
 <?php
 
+// 8/29/2012 CBirkett added displayTableConvert to display GBS data
+// DEM 20jun12: Added check_version().
 // DEM 17oct11: Added functions mysql_grab() and print_h().
 // 7/1/2011   JLee  Change to use excel reader in ../lib/Excel
 /* DEM 7dec10: Revised updateTable() to handle enum and longtext columns. */
@@ -7,6 +9,23 @@
 /*
  * Generic / Common functions are stored here. 
  */
+
+/* Check whether the curator is submitting data using the current version
+ * of the data input template, $file. */
+function check_version($submitted, $file) {
+  $latest = date("jMy", filemtime($file));
+  echo "User's submitted template version: $submitted<br>";
+  echo "Current version: $latest<br>";
+  $phpsubmitted =  date_create_from_format('jMy', $submitted);
+  $phplatest = date_create_from_format('jMy', $latest);
+  if ($phpsubmitted < $phplatest) 
+    return FALSE;
+  /* Allow a day of slack in the Too-new direction. */
+  /* if ($phpsubmitted > $phplatest) */
+  if ($phpsubmitted > date_add($phplatest, date_interval_create_from_date_string('1 day'))) 
+    echo "Template too new!<p>";
+  return TRUE;
+}
 
 /* Shorthand MySQL query for a single value. Returns the value.
    Dies if there's more than one result or a MySQL error. 
@@ -757,10 +776,13 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 		/*
 	 	 * Generate Edit Output
 		 */
+		// Enable the Delete option only for tables that have good foreign key constraints to prevent orphan data.
+		if ($table == 'CAPdata_programs')
+		  $deletebutton = "<button type='submit' name='Delete' value='$row[$pkey]' disabled>Delete</button>";
 		$line = "
 		<tr><form name=\"$table$count\" id=\"$table$count\" action=\"$return_page\" method=\"post\">
 			<td><input type=\"checkbox\" value=\"$count\" onclick=\"toggleRow('$table$count')\" />
-                        <input type=\"submit\" name=\"$row[$pkey]\" value=\"Update\" disabled>\n";
+                        <input type=\"submit\" name=\"$row[$pkey]\" value=\"Update\" disabled> $deletebutton";
 
 		//Show Foreign Key Options
 		foreach($ftables as $key) {
@@ -772,7 +794,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 		//Show column values, ensure that the column is not in the ignore array.
 		foreach($row as $k=>$v) {
 			if( !in_array($k, $ignore) && !in_array($k, $fpkeys) )
-				$line .= "\t\t\t<td><textarea name=\"$k\" rows=\"1\" cols=\"12\" disabled>".stripslashes($v)."</textarea></td>\n";
+				$line .= "\t\t\t<td><textarea name=\"$k\" rows=\"4\" cols=\"20\" disabled>".stripslashes($v)."</textarea></td>\n";
 		}
 
 		$line .= "</form></tr>";
@@ -925,13 +947,15 @@ function chk_tbl_dep ($nm1) {
 function get_ukey ($tblname) {
 	$ukeys=array();
 	$ukeyres = mysql_query("SHOW CREATE TABLE $tblname");
-
+	// Avoid PHP error if there are no Quick Search hits so $tblname is invalid.
+	if ($ukeyres !== FALSE ) {
 	while( $row = mysql_fetch_assoc($ukeyres) ) {
 		$cstr=$row['Create Table'];
 		preg_match_all('/UNIQUE\sKEY\s`(.*?)`\s*\(`(.*?)`\)/', $cstr, $mts);
 		for($i=0; $i<count($mts[1]); $i++) {
 			$ukeys = array_merge($ukeys, explode("`,`", $mts[2][$i]));
 		}
+	}
 	}
 	return $ukeys;
 }
@@ -980,6 +1004,8 @@ function get_table_info ($tablename) {
  * If you want it to be plural (with an s) then set $plural to 1
  */
 function beautifulTableName($tname, $plural=0) {
+  // dem jan2012
+  if ($tname == 'phenotypes') $tname = 'traits';
 
 	$list = array("a", "o", "u", "s", "");
 
@@ -996,7 +1022,6 @@ function beautifulTableName($tname, $plural=0) {
 	else {
 		$end = ($tname[strlen($tname)-1] == "s" && $tname[strlen($tname)-2] != "u") ? substr($tname, 0, -1) : $tname;
 	}
-
 	return ucwords(str_replace("_", " ", $end));
 
 }
@@ -1080,6 +1105,62 @@ function displayTable($query, $sortable=FALSE, $link="") {
 	return $ret;
 }
 
+/* Modified version of displayTable(), to output genotype values translated
+ * into ACTG
+ */
+function displayTableConvert($query, $sortable=FALSE, $lookup) {
+
+        $tables = array();
+        $ret = "\n<table class='tableclass1'>\n";
+
+        $first = TRUE;
+        while($row = mysql_fetch_assoc($query)) {
+
+                $ret .= "\n<tr>\n";
+
+                if($first) {
+                        $ret .= "<thead>\n";
+                        foreach($row as $k=>$v) {
+
+                                if(strpos($k, "_name") !== FALSE)
+                                        $tables[$k] = getTableByName($k);
+
+                                $ret .= "\t<td><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
+
+                                if($sortable) {
+                                        unset($_GET['sortby']);
+                                        unset($_GET['sorttype']);
+
+                                        $ret .= " <br />
+                                                  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=ASC'>Up</a> - 
+                                                  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=DESC'>Down</a>";
+
+                                }
+
+                                $ret .= "</td>\n";
+                        }
+                        $ret .= "</thead>\n</tr>\n<tbody>\n<tr>\n";
+                        $first = FALSE;
+                }
+
+                foreach($row as $k=>$v) {
+                        if(isset($tables[$k])) {
+                                $v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+                                $ret .= "\t<td>$v</td>\n";
+                        } else {
+                                $ret .= "\t<td>$lookup[$v]</td>\n";
+                        }
+                }
+
+                $ret .= "\n</tr>\n";
+
+        }
+
+        $ret .= "</tbody>\n</table>\n";
+
+        return $ret;
+}
+
 
 /* Modified version of displayTable(), to output phenotype values with
  * truncation according to units.sigdigits_display.  DEM 11aug10
@@ -1088,7 +1169,8 @@ function displayTable($query, $sortable=FALSE, $link="") {
 function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
 
 	$tables = array();
-	$ret = "\n<table class='tableclass1'>\n";
+	/* $ret = "\n<table class='tableclass1'>\n"; */
+	$ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n";
 
 	$first = TRUE;
 	while($row = mysql_fetch_assoc($query)) {
@@ -1135,7 +1217,7 @@ function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
 
 	}
 
-	$ret .= "</tbody>\n</table>\n";
+	$ret .= "</tbody>\n</table></div>\n";
 
 	return $ret;
 }
