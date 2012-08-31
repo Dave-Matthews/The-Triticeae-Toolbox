@@ -428,6 +428,7 @@ class Downloads
 	 if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
 	 $sql .= " and data_public_flag > 0";
 	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
+                $sel_list = array();
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
 		{
