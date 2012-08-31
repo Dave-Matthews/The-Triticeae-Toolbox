@@ -1280,8 +1280,11 @@ class Downloads
 	       echo "<br>Use existing selection to $message2<br>";
 	       ?>
 	       <input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" />
-	       <input type="button" value="Download for Tassel V4" onclick="javascript:use_session('v4');"  />
-	       <?php    
+	       <input type="button" value="Download for Tassel V4" onclick="javascript:use_session('v4');"  /><br><br>
+               Tassel V3 format has phenotype, genotype, and map data in separate files.<br>
+               Tassel V4 format combines map and genotype data into one file using the Hapmap format.<br>
+               <a href=\"http://www.maizegenetics.net/tassel\">www.maizegenetics.net/tassel</a>
+               <?php
 	     }
 	  }
 	}
