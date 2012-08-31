@@ -453,7 +453,8 @@ class Downloads
           echo "<form method=\"LINK\" action=\"$temp\">";
           echo "<input type=\"submit\" value=\"Open file with TASSEL\">";
           echo "</form><br>";
-          echo "TASSEL provided by Buckler Lab for Maize Genetics and Diversity<br>";
+          echo "TASSEL (Trait Analysis by Association, Evolution and Linkage)<br>";
+          echo "provided by Buckler Lab for Maize Genetics and Diversity<br>";
           echo "<a href=\"http://www.maizegenetics.net/tassel\">www.maizegenetics.net/tassel</a>";
         
 	}
