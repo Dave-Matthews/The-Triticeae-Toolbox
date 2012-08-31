@@ -292,7 +292,7 @@ class Downloads
                 }
                 ?>
                 </div>
-                
+                </div> 
                 <?php
         }
 
