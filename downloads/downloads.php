@@ -2659,8 +2659,8 @@ selected lines</a><br>
 		$delimiter = "\t";
 		$output = '';
 		$outputheader1 = '';
-		$outputheader2 = '';
-		$outputheader3 = '';
+		$outputheader2 = "<Trait>";
+		$outputheader3 = "<Trial>";
       
       //count number of traits and number of experiments
 	  $ntraits=substr_count($traits, ',')+1;
@@ -2691,8 +2691,8 @@ selected lines</a><br>
       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
       $ncols = mysql_num_rows($res);
       while($row = mysql_fetch_array($res)) {
-         $outputheader2 .= str_replace(" ","_",$row['phenotypes_name']).$delimiter;
-         $outputheader3 .= $row['trial_code'].$delimiter;
+         $outputheader2 .= $delimiter . str_replace(" ","_",$row['phenotypes_name']);
+         $outputheader3 .= $delimiter . $row['trial_code'];
          $keys[] = $row['phenotype_uid'].$row['experiment_uid'];
       }
       $nexp=$ncols;
@@ -2735,9 +2735,9 @@ selected lines</a><br>
       //if (DEBUG>1) echo $outputheader1."\n".$outputheader2."\n".$outputheader3."\n";
       // $firephp->log("number traits and lines ".$outputheader1);
 	  if ($nexp ===1){
-			$output = $outputheader1."\n".$outputheader2."\n";
+                        $output = $outputheader2."\n";
 		} else {
-			$output = $outputheader1."\n".$outputheader2."\n".$outputheader3."\n";
+                        $output = $outputheader2."\n".$outputheader3."\n";
 		}
 	  
 	  
