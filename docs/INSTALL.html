@@ -71,6 +71,16 @@ T3wheat_writeaccess.inc:
                      'db_host' => 'localhost');
 ?>
 
+<b>cron jobs</b>
+Some pages use "materialized view" tables of allele data rather than the
+source table 'alleles' itself.  Some of these view tables are created
+and updated from the source table with scripts in the cron/ directory.
+These scripts can be executed automatically using crontab entries like
+this:
+
+0 3 * * * &lt;root_dir>/cron/&lt;script>
+
+
 <b>Directories for uploaded and output files</b>
 Uploaded data files are stored in the curator_data/uploads/ directory,
 which must be writable by the Apache user, e.g. www-data.  
