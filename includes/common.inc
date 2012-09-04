@@ -1,5 +1,6 @@
 <?php
 
+// 8/29/2012 CBirkett added displayTableConvert to display GBS data
 // DEM 20jun12: Added check_version().
 // DEM 17oct11: Added functions mysql_grab() and print_h().
 // 7/1/2011   JLee  Change to use excel reader in ../lib/Excel
@@ -1102,6 +1103,62 @@ function displayTable($query, $sortable=FALSE, $link="") {
 	$ret .= "</tbody>\n</table>\n";
 
 	return $ret;
+}
+
+/* Modified version of displayTable(), to output genotype values translated
+ * into ACTG
+ */
+function displayTableConvert($query, $sortable=FALSE, $lookup) {
+
+        $tables = array();
+        $ret = "\n<table class='tableclass1'>\n";
+
+        $first = TRUE;
+        while($row = mysql_fetch_assoc($query)) {
+
+                $ret .= "\n<tr>\n";
+
+                if($first) {
+                        $ret .= "<thead>\n";
+                        foreach($row as $k=>$v) {
+
+                                if(strpos($k, "_name") !== FALSE)
+                                        $tables[$k] = getTableByName($k);
+
+                                $ret .= "\t<td><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
+
+                                if($sortable) {
+                                        unset($_GET['sortby']);
+                                        unset($_GET['sorttype']);
+
+                                        $ret .= " <br />
+                                                  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=ASC'>Up</a> - 
+                                                  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=DESC'>Down</a>";
+
+                                }
+
+                                $ret .= "</td>\n";
+                        }
+                        $ret .= "</thead>\n</tr>\n<tbody>\n<tr>\n";
+                        $first = FALSE;
+                }
+
+                foreach($row as $k=>$v) {
+                        if(isset($tables[$k])) {
+                                $v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+                                $ret .= "\t<td>$v</td>\n";
+                        } else {
+                                $ret .= "\t<td>$lookup[$v]</td>\n";
+                        }
+                }
+
+                $ret .= "\n</tr>\n";
+
+        }
+
+        $ret .= "</tbody>\n</table>\n";
+
+        return $ret;
 }
 
 

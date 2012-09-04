@@ -17,8 +17,17 @@
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
 <?php
-   // Create <title> for browser to show.
    connect();
+   // clear session if it contains variables from another database
+   $database = mysql_grab("select value from settings where name='database'");
+   $temp = $_SESSION['database'];
+   if (empty($database)) {
+     //error, settings table should have this entry
+   } elseif ($temp != $database) {
+     session_unset();
+   }
+   $_SESSION['database'] = $database;
+   // Create <title> for browser to show.
    $title = mysql_grab("select value from settings where name='title'");
    if (empty($title))
      $title = "The Triticeae Toolbox";
