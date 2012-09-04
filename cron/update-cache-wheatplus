@@ -1,0 +1,19 @@
+#!/bin/bash -e
+
+#allele_cache table needs to be updated whenever these tables change (alleles, genotyping_data, markers, line_records)
+#get user options from my.cnf
+db=T3wheatplus
+
+#force cache to reload for content status page
+url="http://malt.pw.usda.gov/t3/wheatplus/t3_report.php?query=cache"
+curl -s $url
+
+#update allele_cache table
+current=$(date)
+echo "Starting time: $current"
+mysql $db -e "CREATE TABLE temp (select * from allele_view)"
+mysql $db -e "DROP TABLE IF EXISTS allele_cache"
+mysql $db -e "RENAME TABLE temp TO allele_cache"
+mysql $db -e "ALTER TABLE allele_cache add index (experiment_uid), add index (line_record_uid), add index (marker_uid)"
+current=$(date)
+echo "Finish time: $current"
