@@ -72,7 +72,7 @@ while($row = mysql_fetch_assoc($r)) {
   <option selected value=''>Search by Year</option>
   <?php
   $sql = "select distinct experiment_year from experiments
-  order by experiment_year";
+  order by experiment_year desc";
 $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
 while($row = mysql_fetch_assoc($r)) {
   $year = $row['experiment_year'];
