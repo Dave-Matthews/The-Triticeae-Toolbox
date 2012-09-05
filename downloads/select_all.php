@@ -1544,7 +1544,7 @@ class Downloads
 	 AND e.experiment_type_uid = et.experiment_type_uid
 	 AND et.experiment_type_name = 'phenotype'
 	 AND p_e.location IN ($locations)
-	 GROUP BY e.experiment_year ASC";
+	 GROUP BY e.experiment_year DESC";
 	 $res = mysql_query($sql) or die(mysql_error());
 	 while ($row = mysql_fetch_assoc($res)) {
 	   ?>
