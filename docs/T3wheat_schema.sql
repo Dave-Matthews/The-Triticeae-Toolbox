@@ -37,7 +37,7 @@ CREATE TABLE `CAPdata_programs` (
   UNIQUE KEY `data_program_name` (`data_program_name`),
   KEY `institutions_uid` (`institutions_uid`),
   CONSTRAINT `fk_institutions` FOREIGN KEY (`institutions_uid`) REFERENCES `institutions` (`institutions_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1 COMMENT='Contains a list of all CAP data creation programs in the Bar';
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=latin1 COMMENT='Contains a list of all CAP data creation programs in the Bar';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,8 +50,9 @@ DROP TABLE IF EXISTS `allele_byline`;
 CREATE TABLE `allele_byline` (
   `line_record_uid` int(11) NOT NULL,
   `line_record_name` varchar(50) DEFAULT NULL,
-  `alleles` text,
-  PRIMARY KEY (`line_record_uid`)
+  `alleles` mediumtext,
+  PRIMARY KEY (`line_record_uid`),
+  KEY `line_record_uid` (`line_record_uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -65,7 +66,7 @@ DROP TABLE IF EXISTS `allele_byline_clust`;
 CREATE TABLE `allele_byline_clust` (
   `line_record_uid` int(11) NOT NULL,
   `line_record_name` varchar(50) DEFAULT NULL,
-  `alleles` text COMMENT 'Up to 2^16 (65K) characters. Use MEDIUMTEXT for 2^24.',
+  `alleles` mediumtext,
   `updated_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`line_record_uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='Cache created from table allele_byline.';
@@ -269,7 +270,7 @@ CREATE TABLE `barley_pedigree_catalog_ref` (
   UNIQUE KEY `refnumber` (`barley_ref_number`),
   KEY `fk_barley_pedigree_catalog_ref_barley_pedigree_catalog` (`barley_pedigree_catalog_uid`),
   CONSTRAINT `fk_barley_pedigree_catalog_ref_barley_pedigree_catalog` FOREIGN KEY (`barley_pedigree_catalog_uid`) REFERENCES `barley_pedigree_catalog` (`barley_pedigree_catalog_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4667 DEFAULT CHARSET=latin1 COMMENT='Links to GRIN and other pedigree data sources, ID number and';
+) ENGINE=InnoDB AUTO_INCREMENT=5053 DEFAULT CHARSET=latin1 COMMENT='Links to GRIN and other pedigree data sources, ID number and';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -315,7 +316,7 @@ CREATE TABLE `datasets` (
   UNIQUE KEY `datasets_index_name` (`dataset_name`),
   KEY `breeding_programs_uid` (`CAPdata_programs_uid`),
   CONSTRAINT `fk_datasets_CAPdata_programs` FOREIGN KEY (`CAPdata_programs_uid`) REFERENCES `CAPdata_programs` (`CAPdata_programs_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1 COMMENT='Defines a group of trials for 1 breeding program for 1 year.';
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=latin1 COMMENT='Defines a group of trials for 1 breeding program for 1 year.';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -336,7 +337,7 @@ CREATE TABLE `datasets_experiments` (
   KEY `experiment_uid` (`experiment_uid`),
   KEY `fk_experiments` (`experiment_uid`),
   KEY `fk_datasets` (`datasets_uid`)
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=latin1 COMMENT='Allow for a many-to-many relationship between ''experiments'' ';
+) ENGINE=InnoDB AUTO_INCREMENT=237 DEFAULT CHARSET=latin1 COMMENT='Allow for a many-to-many relationship between ''experiments'' ';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -349,10 +350,9 @@ DROP TABLE IF EXISTS `experiment_set`;
 CREATE TABLE `experiment_set` (
   `experiment_set_uid` int(11) NOT NULL AUTO_INCREMENT,
   `experiment_set_name` varchar(50) DEFAULT NULL,
-  `experiment_code` varchar(25) DEFAULT NULL,
-  `trial_code` varchar(25) DEFAULT NULL,
-  PRIMARY KEY (`experiment_set_uid`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`experiment_set_uid`),
+  UNIQUE KEY `experiment_set_name` (`experiment_set_name`)
+) ENGINE=MyISAM AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -384,6 +384,7 @@ DROP TABLE IF EXISTS `experiments`;
 CREATE TABLE `experiments` (
   `experiment_uid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `experiment_type_uid` int(10) unsigned NOT NULL,
+  `experiment_set_uid` int(11) DEFAULT NULL,
   `CAPdata_programs_uid` int(10) unsigned NOT NULL COMMENT 'ID of data producer for this experiment',
   `experiment_short_name` varchar(50) NOT NULL DEFAULT '',
   `experiment_desc_name` varchar(300) DEFAULT NULL,
@@ -392,11 +393,9 @@ CREATE TABLE `experiments` (
   `experiment_year` year(4) NOT NULL DEFAULT '0000',
   `data_public_flag` tinyint(1) NOT NULL DEFAULT '0' COMMENT '=1 yes, =0 no, CAPprivate',
   `input_data_file_name` varchar(255) DEFAULT NULL,
-  `raw_data_file_name` varchar(255) DEFAULT NULL,
   `comments` text,
   `updated_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `experiment_set_uid` int(11) DEFAULT NULL,
   PRIMARY KEY (`experiment_uid`),
   UNIQUE KEY `trial_code_index` (`experiment_uid`,`trial_code`),
   KEY `experiment_type_uid` (`experiment_type_uid`),
@@ -404,7 +403,7 @@ CREATE TABLE `experiments` (
   KEY `experiment_name` (`experiment_short_name`),
   KEY `CAPdata_programs_uid` (`CAPdata_programs_uid`),
   CONSTRAINT `experiments_ibfk_1` FOREIGN KEY (`CAPdata_programs_uid`) REFERENCES `CAPdata_programs` (`CAPdata_programs_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=latin1 COMMENT='Table gives annotation information about the experiment.';
+) ENGINE=InnoDB AUTO_INCREMENT=262 DEFAULT CHARSET=latin1 COMMENT='Table gives annotation information about the experiment.';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -529,9 +528,8 @@ CREATE TABLE `input_file_log` (
   `users_name` varchar(255) NOT NULL,
   `created_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`input_file_log_uid`),
-  UNIQUE KEY `file_name` (`file_name`),
   FULLTEXT KEY `file_name_2` (`file_name`)
-) ENGINE=MyISAM AUTO_INCREMENT=296 DEFAULT CHARSET=latin1 COMMENT='table is a log of data files submitted to THT';
+) ENGINE=MyISAM AUTO_INCREMENT=486 DEFAULT CHARSET=latin1 COMMENT='table is a log of data files submitted to THT';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -553,7 +551,7 @@ CREATE TABLE `institutions` (
   `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`institutions_uid`),
   UNIQUE KEY `institutions_name` (`institutions_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=latin1 COMMENT='List of all institutions involved with THT project. ';
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=latin1 COMMENT='List of all institutions involved with THT project. ';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -584,7 +582,7 @@ DROP TABLE IF EXISTS `line_records`;
 CREATE TABLE `line_records` (
   `line_record_uid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `line_record_name` varchar(255) NOT NULL,
-  `species` enum('barley','oats','aestivum','durum') DEFAULT NULL,
+  `species` enum('barley','aestivum','durum','other') DEFAULT NULL,
   `pedigree_string` longtext,
   `generation` smallint(5) unsigned DEFAULT NULL,
   `breeding_program_code` varchar(10) DEFAULT NULL,
@@ -599,7 +597,7 @@ CREATE TABLE `line_records` (
   `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`line_record_uid`),
   UNIQUE KEY `line_record_name` (`line_record_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5081 DEFAULT CHARSET=latin1 COMMENT='List of line records';
+) ENGINE=InnoDB AUTO_INCREMENT=5815 DEFAULT CHARSET=latin1 COMMENT='List of line records';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -619,7 +617,7 @@ CREATE TABLE `line_synonyms` (
   UNIQUE KEY `line_syn` (`line_synonyms_uid`,`line_synonym_name`),
   KEY `line_record_uid_index` (`line_record_uid`),
   CONSTRAINT `fk_line_record_uid12` FOREIGN KEY (`line_record_uid`) REFERENCES `line_records` (`line_record_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=13842 DEFAULT CHARSET=latin1 COMMENT='Central table linking the database together. What is the don';
+) ENGINE=InnoDB AUTO_INCREMENT=14839 DEFAULT CHARSET=latin1 COMMENT='Central table linking the database together. What is the don';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -631,10 +629,14 @@ DROP TABLE IF EXISTS `linepanels`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `linepanels` (
   `linepanels_uid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `users_uid` int(10) unsigned DEFAULT NULL,
   `name` varchar(64) NOT NULL,
+  `comment` varchar(255) DEFAULT NULL,
   `line_ids` text NOT NULL COMMENT 'Comma-delimited list of line_record_uids',
-  PRIMARY KEY (`linepanels_uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`linepanels_uid`),
+  UNIQUE KEY `users_uid` (`users_uid`,`name`),
+  CONSTRAINT `linepanels_ibfk_1` FOREIGN KEY (`users_uid`) REFERENCES `users` (`users_uid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -657,7 +659,7 @@ CREATE TABLE `map` (
   KEY `mapset_uid` (`mapset_uid`),
   KEY `fk_mapset` (`mapset_uid`),
   CONSTRAINT `fk_mapset` FOREIGN KEY (`mapset_uid`) REFERENCES `mapset` (`mapset_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -679,7 +681,7 @@ CREATE TABLE `mapset` (
   `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`mapset_uid`),
   UNIQUE KEY `mapset_index_name` (`mapset_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -721,7 +723,7 @@ CREATE TABLE `marker_annotations` (
   KEY `fk_marker_annotations_marker_annotation_types` (`marker_annotation_type_uid`),
   CONSTRAINT `fk_marker_annotations_marker_annotation_types` FOREIGN KEY (`marker_annotation_type_uid`) REFERENCES `marker_annotation_types` (`marker_annotation_type_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `marker_annotations_ibfk_1` FOREIGN KEY (`marker_uid`) REFERENCES `markers` (`marker_uid`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=49441 DEFAULT CHARSET=latin1 COMMENT='Links data on marker annotations from other data sources.';
+) ENGINE=InnoDB AUTO_INCREMENT=49565 DEFAULT CHARSET=latin1 COMMENT='Links data on marker annotations from other data sources.';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -758,7 +760,7 @@ CREATE TABLE `marker_synonyms` (
   KEY `fk_marker_synonym_types` (`marker_synonym_type_uid`),
   CONSTRAINT `fk_markers_uid1` FOREIGN KEY (`marker_uid`) REFERENCES `markers` (`marker_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_marker_synonym_types` FOREIGN KEY (`marker_synonym_type_uid`) REFERENCES `marker_synonym_types` (`marker_synonym_type_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=8633 DEFAULT CHARSET=latin1 COMMENT='All entries in markers.marker_name must also be here. Some c';
+) ENGINE=InnoDB AUTO_INCREMENT=9497 DEFAULT CHARSET=latin1 COMMENT='All entries in markers.marker_name must also be here. Some c';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -777,7 +779,7 @@ CREATE TABLE `marker_types` (
   PRIMARY KEY (`marker_type_uid`),
   UNIQUE KEY `marker_types_uidx` (`marker_type_name`),
   KEY `marker_types_index_name` (`marker_type_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 COMMENT='Denotes the types of markers. Currently all markers come fro';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1 COMMENT='Denotes the types of markers. Currently all markers come fro';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -801,7 +803,7 @@ CREATE TABLE `markers` (
   KEY `marker_type_uid` (`marker_type_uid`),
   KEY `fk_marker_type` (`marker_type_uid`),
   CONSTRAINT `fk_marker_type` FOREIGN KEY (`marker_type_uid`) REFERENCES `marker_types` (`marker_type_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=24627 DEFAULT CHARSET=latin1 COMMENT='Marker definition table with links to synonyms, types and st';
+) ENGINE=InnoDB AUTO_INCREMENT=25597 DEFAULT CHARSET=latin1 COMMENT='Marker definition table with links to synonyms, types and st';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -828,7 +830,30 @@ CREATE TABLE `markers_in_maps` (
   KEY `fk_map_uid` (`map_uid`),
   CONSTRAINT `fk_map` FOREIGN KEY (`map_uid`) REFERENCES `map` (`map_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_marker_uid` FOREIGN KEY (`marker_uid`) REFERENCES `markers` (`marker_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=875 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `markers_test`
+--
+
+DROP TABLE IF EXISTS `markers_test`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `markers_test` (
+  `marker_uid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `marker_type_uid` int(10) unsigned NOT NULL,
+  `marker_name` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `updated_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `A_allele` varchar(10) DEFAULT NULL,
+  `B_allele` varchar(10) DEFAULT NULL,
+  `sequence` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`marker_uid`),
+  UNIQUE KEY `markers_index_name` (`marker_name`),
+  KEY `marker_type_uid` (`marker_type_uid`),
+  KEY `fk_marker_type` (`marker_type_uid`)
+) ENGINE=InnoDB AUTO_INCREMENT=25597 DEFAULT CHARSET=latin1 COMMENT='Marker definition table with links to synonyms, types and st';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -867,7 +892,7 @@ CREATE TABLE `phenotype_category` (
   `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`phenotype_category_uid`),
   UNIQUE KEY `phenotype_category_name` (`phenotype_category_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1 COMMENT='Phenotypes are computed across different categories such as ';
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=latin1 COMMENT='Phenotypes are computed across different categories such as ';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -890,7 +915,7 @@ CREATE TABLE `phenotype_data` (
   KEY `fk_phenotype_uid` (`phenotype_uid`),
   KEY `fk_tht_base_uid` (`tht_base_uid`),
   KEY `phenotype_data_index_name` (`tht_base_uid`,`phenotype_uid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3953 DEFAULT CHARSET=latin1 COMMENT='Contains phenotype data with links to phenotype definitions,';
+) ENGINE=InnoDB AUTO_INCREMENT=172609 DEFAULT CHARSET=latin1 COMMENT='Contains phenotype data with links to phenotype definitions,';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -913,7 +938,7 @@ CREATE TABLE `phenotype_descstat` (
   PRIMARY KEY (`phenotype_descstat_uid`),
   KEY `phenotype_uid` (`phenotype_uid`),
   CONSTRAINT `fk_phenotype_uid1` FOREIGN KEY (`phenotype_uid`) REFERENCES `phenotypes` (`phenotype_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1 COMMENT='Phenotype descriptive statistics such as mean, standard devi';
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=latin1 COMMENT='Phenotype descriptive statistics such as mean, standard devi';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -926,28 +951,28 @@ DROP TABLE IF EXISTS `phenotype_experiment_info`;
 CREATE TABLE `phenotype_experiment_info` (
   `phenotype_experiment_info_uid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `experiment_uid` int(10) unsigned NOT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `latitude` varchar(25) DEFAULT NULL,
+  `longitude` varchar(25) DEFAULT NULL,
   `collaborator` varchar(50) DEFAULT NULL,
   `planting_date` date DEFAULT NULL,
+  `harvest_date` date DEFAULT NULL,
+  `begin_weather_date` date DEFAULT NULL,
+  `greenhouse_trial` enum('yes','no') DEFAULT NULL,
   `seeding_rate` varchar(255) DEFAULT NULL,
   `experiment_design` varchar(255) DEFAULT NULL,
   `number_entries` smallint(5) unsigned DEFAULT NULL,
   `plot_size` varchar(255) DEFAULT NULL,
   `harvest_area` varchar(255) DEFAULT NULL,
-  `harvest_date` date DEFAULT NULL,
   `irrigation` varchar(20) DEFAULT NULL,
-  `location` varchar(255) DEFAULT NULL,
   `latitude_longitude` varchar(255) DEFAULT NULL,
   `number_replications` smallint(5) unsigned DEFAULT NULL,
   `other_remarks` text,
   `updated_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `latitude` varchar(25) DEFAULT NULL,
-  `longitude` varchar(25) DEFAULT NULL,
-  `begin_weather_date` date DEFAULT NULL,
-  `greenhouse_trial` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`phenotype_experiment_info_uid`),
   KEY `fk_phenotype_experiment_info_experiments` (`experiment_uid`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 COMMENT='Table gives annotation information about an experiment for p';
+) ENGINE=InnoDB AUTO_INCREMENT=220 DEFAULT CHARSET=latin1 COMMENT='Table gives annotation information about an experiment for p';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -976,7 +1001,7 @@ CREATE TABLE `phenotype_mean_data` (
   KEY `fk_phenotype_mean_data_experiments` (`experiment_uid`),
   KEY `fk_phenotype_mean_data_phenotypes` (`phenotype_uid`),
   KEY `phenotype_data_index_name` (`phenotype_uid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1 COMMENT='Contains computed means from complete trials for phenotype d';
+) ENGINE=InnoDB AUTO_INCREMENT=439 DEFAULT CHARSET=latin1 COMMENT='Contains computed means from complete trials for phenotype d';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1005,7 +1030,7 @@ CREATE TABLE `phenotypes` (
   KEY `fk_phenotype_category` (`phenotype_category_uid`),
   CONSTRAINT `fk_phenotype_category` FOREIGN KEY (`phenotype_category_uid`) REFERENCES `phenotype_category` (`phenotype_category_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_unit` FOREIGN KEY (`unit_uid`) REFERENCES `units` (`unit_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=116 DEFAULT CHARSET=latin1 COMMENT='Defines phenotype names, short names and any text descriptio';
+) ENGINE=InnoDB AUTO_INCREMENT=160 DEFAULT CHARSET=latin1 COMMENT='Defines phenotype names, short names and any text descriptio';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1022,6 +1047,29 @@ CREATE TABLE `property` (
   PRIMARY KEY (`property_uid`),
   UNIQUE KEY `property` (`property`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Qualitative characters for germplasm lines';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `rawfiles`
+--
+
+DROP TABLE IF EXISTS `rawfiles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `rawfiles` (
+  `rawfile_uid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `experiment_uid` int(10) unsigned NOT NULL,
+  `users_uid` int(10) unsigned DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `directory` varchar(255) DEFAULT NULL,
+  `updated_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`rawfile_uid`),
+  UNIQUE KEY `experiment_uid` (`experiment_uid`,`name`),
+  KEY `users_uid` (`users_uid`),
+  CONSTRAINT `rawfiles_ibfk_1` FOREIGN KEY (`users_uid`) REFERENCES `users` (`users_uid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `rawfiles_ibfk_2` FOREIGN KEY (`experiment_uid`) REFERENCES `experiments` (`experiment_uid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1042,7 +1090,7 @@ CREATE TABLE `session_variables` (
   UNIQUE KEY `session_variable_uidx` (`users_uid`,`session_variables_name`),
   KEY `fk_users_uid3` (`users_uid`),
   CONSTRAINT `fk_users_uid3` FOREIGN KEY (`users_uid`) REFERENCES `users` (`users_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1119,7 +1167,7 @@ CREATE TABLE `tht_base` (
   KEY `fk_line_record_uid1` (`line_record_uid`),
   CONSTRAINT `fk_experiment_uid1` FOREIGN KEY (`experiment_uid`) REFERENCES `experiments` (`experiment_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_line_record_uid1` FOREIGN KEY (`line_record_uid`) REFERENCES `line_records` (`line_record_uid`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=6062 DEFAULT CHARSET=latin1 COMMENT='Central table linking the database together. What is the don';
+) ENGINE=InnoDB AUTO_INCREMENT=74029 DEFAULT CHARSET=latin1 COMMENT='Central table linking the database together. What is the don';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1161,7 +1209,7 @@ CREATE TABLE `units` (
   `created_on` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`unit_uid`),
   UNIQUE KEY `units_name` (`unit_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1237,4 +1285,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-03-13 10:43:06
+-- Dump completed on 2012-09-11 14:43:33
