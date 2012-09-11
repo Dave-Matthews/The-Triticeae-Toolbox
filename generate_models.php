@@ -18,8 +18,8 @@ define('INCLUDESDIR', dirname(__FILE__).'/includes/');
 
 // connect to mysql
 $db_host = 'lab.bcb.iastate.edu';
-$db_user = 'yhames04';
-$db_pass = 'gdcb07';
+$db_user = '...';
+$db_pass = '...';
 $db_name = 'sandbox_yhames04';
 $link = mysql_connect($db_host, $db_user, $db_pass);
 if (!$link)
