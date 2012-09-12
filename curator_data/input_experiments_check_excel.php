@@ -1038,17 +1038,17 @@ private function typeExperimentCheck()
 			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		
 			// Add rawdata name to the field for raw_data_file_name , append to existing list if different
-			
-            $sql = "SELECT raw_data_file_name
+	
+            /* this part id not necessary as we want to replace the raw data file name and append to the existing raw data file name */		
+            /* $sql = "SELECT raw_data_file_name
 					FROM experiments 
 					WHERE experiment_uid = '$experiment_uids[$i]'";
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
             $row = mysql_fetch_assoc($res);
             //$meansfile = basename($meansfile);
 			$infile_raw = $rawdatafile;
-            /* this part id not necessary as we want to replace the raw data file name and append to the existing raw data file name */	
 	
-         /*if ($row["raw_data_file_name"]===NULL) {
+            if ($row["raw_data_file_name"]===NULL) {
                 $infile_raw = $rawdatafile;
             } else {
                 $infile_raw = $row["raw_data_file_name"];
@@ -1056,15 +1056,14 @@ private function typeExperimentCheck()
             if (stripos($infile_raw,$rawdatafile)===FALSE) {
                 $infile_raw .= ", ".$rawdatafile;
             }   
-        */	
 		
-		/* this part id not necessary as we want to replace the raw data file name and append to the existing raw data file name */	
-			if ($rawdatafile) {
+            /* this part id not necessary as we want to replace the raw data file name and append to the existing raw data file name */	
+            /*  if ($rawdatafile) {
                 $sql = "UPDATE experiments SET raw_data_file_name = '$infile_raw', updated_on=NOW()
                     WHERE experiment_uid = '$experiment_uids[$i]'";
                 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 			}
-            if (DEBUG>2) echo $sql."\n";
+            */
         }
     //calling this function to calculate the statistics for phenotype data.
     // echo"statistics function call";
