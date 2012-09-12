@@ -3331,7 +3331,21 @@ selected lines</a><br>
 	  }
 	  $markers_str = implode(',',$markers);
 	 }
-	 
+
+         //generate an array of selected lines that can be used with isset statement
+         foreach ($lines as $temp) {
+           $line_lookup[$temp] = 1;
+         }
+
+         $sql = "select line_record_uid, line_record_name from allele_bymarker_idx order by line_record_uid";
+         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+         $i=0;
+         while ($row = mysql_fetch_array($res)) {
+            $line_list[$i] = $row[0];
+            $line_list_name[$i] = $row[1];
+            $i++;
+         }
+
 	 //order the markers by map location
 	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
@@ -3381,7 +3395,7 @@ selected lines</a><br>
            die("could not sort marker list\n");
          }
 
-	 foreach ($lines as $i => $line_record_uid) {
+	 foreach ($lines as $line_record_uid) {
 	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
 	  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	  if ($row = mysql_fetch_array($res)) {
@@ -3409,14 +3423,12 @@ selected lines</a><br>
 	 }
 	 
 	 //get header
-	 $empty = array();
 	 $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode";
 	 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
 	  $name = $row[0];
 	  $outputheader .= "\t$name";
-	  $empty[$name] = "NN";
 	 }
 	 
 	 $lookup_chrom = array(
@@ -3461,20 +3473,24 @@ selected lines</a><br>
 	        $pos = 0;
 	     }
 	     $output .= "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t";
-	     $allele_list = $empty;
-	     $sql = "select line_record_name, alleles from allele_cache where marker_uid = $marker_id and line_record_uid IN ($lines_str)";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	     while ($row = mysql_fetch_array($res)) {
-	       if (preg_match("/[A-Z]/",$row[1])) {
-	         $allele = $row[1];
-	         $allele = $lookup[$allele];
-	       } else {
-	         $allele = "NN";
-	       }
-	       $allele_list[$row[0]] = $allele;
-	     }
-	     $allele_str = implode("\t",$allele_list);
-	     $output .= "\t$allele_str\n";
+	     $outarray2 = array();
+             $sql = "select marker_name, alleles from allele_bymarker where marker_uid = $marker_id";
+             $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+             if ($row = mysql_fetch_array($res)) {
+               $alleles = $row[1];
+               $outarray = explode(',',$alleles);
+               $i=0;
+               foreach ($outarray as $allele) {
+                 $line_id = $line_list[$i];
+                 if (isset($line_lookup[$line_id])) {
+                   $outarray2[]=$lookup[$allele];
+                 }
+                 $i++;
+               }
+             }
+
+	     $allele_str = implode("\t",$outarray2);
+	     $output .= "\t$allele_str\n"; 
 	  } else {
 	   //echo "rejected marker $marker_id<br>\n";
 	  }
