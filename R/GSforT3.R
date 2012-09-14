@@ -12,9 +12,12 @@ mrkData <- as.matrix(snpData)
 
 # Read and parse traits file
 #phenoData <- as.matrix(read.table("$dir$filename2", header=TRUE, na.strings="-999", stringsAsFactors=FALSE, sep="\t", row.names=1))
-phenoData <- rowSums(phenoData, na.rm=TRUE)
-# There are no missing data here, so I am going to create some for testing purposes
-phenoData[350:length(phenoData)] <- NA
+#phenoData <- rowSums(phenoData, na.rm=TRUE)
+#ignore the experiment column for now
+phenoData <- phenoData[,1];
+#set 50 percent to missing and use this for prediction
+predSet <- (length(phenoData))/2
+phenoData[predSet:length(phenoData)] <- NA
 
 # tell the code whether or not to do cross validation
 #doCrossValidation <- 1

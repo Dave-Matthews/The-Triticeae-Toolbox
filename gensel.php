@@ -313,7 +313,7 @@ class Downloads
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       ?>
       <h2>Genomic Selection</h2>
-      <p>This program uses the current selection to calculate BLUPs based on kindship</p>
+      <p>This program uses the selection of lines and one trait to calculate BLUPs based on kindship</p>
       <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
       <?php 
       if ($command == "save") {
@@ -460,11 +460,15 @@ class Downloads
                     fwrite($h, "setwd(\"/tmp/tht/\")\n");
                     fclose($h);
                 }
-                print "<html>";
-                echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla<br>";
+                global $config;
+                include($config['root_dir'].'theme/normal_header.php');
                 exec("cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla");
-                /*print "<img src=\"/tmp/tht/selgen.png\">";*/
-                print "<img src=\"/tmp/tht/$filename4\" />";
+                if (file_exists("/tmp/tht/$filename4")) {
+                  print "<img src=\"/tmp/tht/$filename4\" />";
+                } else {
+                  echo "Error in R script<br>\n";
+                  echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla<br>";
+                }
 	}
 	
 	/**
@@ -1294,7 +1298,7 @@ class Downloads
 	       echo $config['base_url'];
 	       echo "pedigree/line_selection.php> Select lines</a><br>";
 	     } else {
-	       echo "<br>Create genotype and phenotype data files then analyze using kinship.BLUP<br>";
+	       echo "<br>Create data files then analyze using kinship.BLUP<br>";
 	       ?>
 	       <input type="button" value="Analyze" onclick="javascript:use_session('v4');"  /><br><br>
                <?php
@@ -2668,6 +2672,8 @@ selected lines</a><br>
      * @param unknown_type $datasets
      * @param unknown_type $subset
      * @return string
+     *
+     * modified to work with only one trait
      */
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
 	{
@@ -2678,12 +2684,18 @@ selected lines</a><br>
 		$outputheader2 = "line";
 		$outputheader3 = "<Trial>";
       
-      //count number of traits and number of experiments
-	  $ntraits=substr_count($traits, ',')+1;
+      //count number of experiments
+      $ntraits=substr_count($traits, ',')+1;
       $nexp=substr_count($experiments, ',')+1;
-      
-      //$traits = explode(',', $traits);
-      //$experiments = explode(',', $experiments);
+
+      //only use first trait
+      $pattern = "/([0-9]+)/";
+      if (preg_match($pattern,$traits,$match)) {
+        $traits = $match[1];
+      } else {
+        echo "error - can not identify trait $traits\n";
+        die();
+      }
       
       // figure out which traits are at which location
       if ($experiments=="") {
@@ -2702,18 +2714,17 @@ selected lines</a><br>
                   $sql_option
                   AND pd.tht_base_uid = tb.tht_base_uid
                   AND p.phenotype_uid = pd.phenotype_uid
-                  AND pd.phenotype_uid IN ($traits)  
+                  AND pd.phenotype_uid = $traits  
                ORDER BY p.phenotype_uid,e.experiment_uid";
       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
       $ncols = mysql_num_rows($res);
       while($row = mysql_fetch_array($res)) {
          $outputheader2 .= $delimiter . str_replace(" ","_",$row['phenotypes_name']);
          $outputheader3 .= $delimiter . $row['trial_code'];
-         $keys[] = $row['phenotype_uid'].$row['experiment_uid'];
+         $keys[] = $row['experiment_uid'];
       }
+      $outputheader2 .= $delimiter . "experiment";
       $nexp=$ncols;
-		//$firephp->log("trait_location information ".$outputheader2."  ".$outputheader3);
-		// $firephp->table('keys label ', $keys); 
 
 		// dem 5jan11: If $subset="yes", use $_SESSION['selected_lines'].
 		$sql_option = "";
@@ -2747,57 +2758,30 @@ selected lines</a><br>
 		} else {
 			$nheaderlines = 2;
 		}
-      $outputheader1 = "$nlines".$delimiter."$ncols".$delimiter.$nheaderlines;
-      //if (DEBUG>1) echo $outputheader1."\n".$outputheader2."\n".$outputheader3."\n";
-      // $firephp->log("number traits and lines ".$outputheader1);
-	  //if ($nexp ===1){
-                        $output = $outputheader2."\n";
-		//} else {
-                //        $output = $outputheader2."\n".$outputheader3."\n";
-		//}
+          $outputheader1 = "$nlines".$delimiter."$ncols".$delimiter.$nheaderlines;
+          $output = $outputheader2."\n";
 	  
 	  
 	  // loop through all the lines in the file
 		for ($i=0;$i<$nlines;$i++) {
             $outline = $lines[$i].$delimiter;
-			// get selected traits for this line in the selected experiments, change for multiple check lines
-           /* $sql = "SELECT pd.phenotype_uid, pd.value, tb.experiment_uid
-                     FROM tht_base as tb, phenotype_data as pd
-                     WHERE 
-                        tb.line_record_uid =  $line_uid[$i]
-                        AND tb.experiment_uid IN ($experiments)
-                        AND pd.tht_base_uid = tb.tht_base_uid
-                       AND pd.phenotype_uid IN ($traits)  
-                     ORDER BY pd.phenotype_uid,tb.experiment_uid";*/
-// dem 8oct10: Don't round the data.
-//			$sql = "SELECT avg(cast(pd.value AS DECIMAL(9,1))) as value,pd.phenotype_uid,tb.experiment_uid 
 			if (preg_match("/\d/",$experiments)) {
 			  $sql_option = " WHERE tb.experiment_uid IN ($experiments) AND ";
 			} else {
 			  $sql_option = " WHERE ";
 			}
-			$sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid 
+			$sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid as exper 
 					FROM tht_base as tb, phenotype_data as pd
 					$sql_option
 						tb.line_record_uid  = $line_uid[$i]
 						AND pd.tht_base_uid = tb.tht_base_uid
-						AND pd.phenotype_uid IN ($traits) 
+						AND pd.phenotype_uid = $traits 
 					GROUP BY tb.tht_base_uid, pd.phenotype_uid";
 			
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-           // // $firephp->log("sql ".$i." ".$sql);
-			$outarray = array_fill(0,$ncols,-999);
-			//// $firephp->table('outarray label values', $outarray); 
-			//$outarray = array_fill_keys( $keys  , -999);
-			$outarray = array_combine($keys  , $outarray);
-			//// $firephp->table('outarray label ', $outarray); 
             while ($row = mysql_fetch_array($res)) {
-               $keyval = $row['phenotype_uid'].$row['experiment_uid'];
-			   // $firephp->log("keyvals ".$keyval." ".$row['value']);
-               $outarray[$keyval]= $row['value'];
+               $outline = $lines[$i].$delimiter.$row['value'].$delimiter.$row['exper']."\n";
             }
-            $outline .= implode($delimiter,$outarray)."\n";
-			//// $firephp->log("outputline ".$i." ".$outline);
             $output .= $outline;
 
       }
