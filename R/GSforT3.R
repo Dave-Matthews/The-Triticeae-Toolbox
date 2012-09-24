@@ -14,10 +14,12 @@ mrkData <- as.matrix(snpData)
 #phenoData <- as.matrix(read.table("$dir$filename2", header=TRUE, na.strings="-999", stringsAsFactors=FALSE, sep="\t", row.names=1))
 #phenoData <- rowSums(phenoData, na.rm=TRUE)
 #ignore the experiment column for now
-phenoData <- phenoData[,1];
+experData <- phenoData[,2]
+phenoData <- phenoData[,1]
+phenoylab <- colnames(phenoData)[1]
 #set 50 percent to missing and use this for prediction
-predSet <- (length(phenoData))/2
-phenoData[predSet:length(phenoData)] <- NA
+#predSet <- (length(phenoData))/2
+#phenoData[predSet:length(phenoData)] <- NA
 
 # tell the code whether or not to do cross validation
 #doCrossValidation <- 1
@@ -109,6 +111,9 @@ if (any(linesFracNA > lineNACutoff)){
 	linesTooManyNA <- which(linesFracNA > lineNACutoff)
 	linesFracNA <- linesFracNA[linesTooManyNA]
 	# You can use write.table to save linesFracNA
+        write("<br>lines allowed to have up to 80% missing data",fileerr)
+        write(names(linesFracNA),fileerr, append = TRUE)
+        write("had too many missing markers to be clustered\n",fileerr, append = TRUE)
 	print(paste("Lines [fraction missing]", paste(paste(names(linesFracNA), " [", round(linesFracNA, 3), "]", sep=""), collapse=" "), "had too many missing markers to be clustered"))
 	mrkData <- mrkData[-linesTooManyNA,]
 }
@@ -138,11 +143,14 @@ mrkData <- apply(mrkData, 2, replNAbyMean)
 # Separate lines that have phenotypes from lines that do not
 hasPheno <- !is.na(phenoData)
 pheno <- phenoData[hasPheno]
+exper <- experData[hasPheno]
+phenoNo <- phenoData[!hasPheno]
 mrkTrain <- mrkData[hasPheno,]
 mrkPred <- mrkData[!hasPheno,]
 
 # Actually run the genomic prediction
 rrOut <- kinship.BLUP(pheno, mrkTrain, mrkPred)
+#rrOut <- kinship.BLUP(pheno, mrkTrain, mrkPred, exper)
 predForTrain <- rrOut$g.train # Predictions for lines that had phenotypes
 predForPred <- rrOut$g.pred # Predictions for lines that had NO phenotypes.  These are the important ones...
 
@@ -151,6 +159,13 @@ if (doCrossValidation){
 	repeatsForCrossVal <- 5 # Arbitrary.  I wouldn't do > 5.  If data big, wouldn't do > 1.
 	crossValOut <- runCrossVal(pheno, mrkTrain, foldsForCrossVal, repeatsForCrossVal)
 	accuracy <- crossValOut$meanAcc
-	plot(crossValOut$meanPred, pheno) # should give a nice visual of the accuracy
+        mainlabel <- paste("accuracy = ",accuracy);
+	plot(crossValOut$meanPred, pheno, ylab="pheno training set", main=mainlabel) # should give a nice visual of the accuracy
 	dev.off() # You might need this statement to get the plot saved properly
+        r1 <- cbind(c(predForTrain))
+        r2 <- cbind(c(predForPred))
+        result <- rbind(r1,r2)
+        write.csv(result,file=fileout)
+} else {
+  plot(predForPred)
 }
