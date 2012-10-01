@@ -79,7 +79,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	  $slines = array_keys($sorted_lines);
 	}
  
-        $name = "THT-HaplotypeData.txt";
+        $name = "THT-HaplotypeData.csv";
         header("Content-type: application/octet-stream");
         header("Content-Disposition: attachment; filename=$name");
         header("Pragma: no-cache");
@@ -192,14 +192,14 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 		if ($cntval == 0) { $trtval = ""; }
 		$dny=$y+7+$cht*($i);
                 //echo "$i $dispval\n";
-                $marker_value[$i] = $marker_value[$i] . "\t$dispval\n"; 
-	      }
+                $marker_value[$i] = $marker_value[$i] . "\t$dispval"; 
+              }
 	    }
 	  }
 	}
 
        for ($i=0; $i<count($slines); $i++) {
-          echo "$marker_value[$i]";
+          echo "$marker_value[$i]\n";
        }
 }
 else if(count($_SESSION['selected_lines']) < 1) {
