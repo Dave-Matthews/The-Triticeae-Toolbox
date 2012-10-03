@@ -143,6 +143,9 @@ class Downloads
                         case 'download_session_v5':
                             echo $this->type1_session(V5);
                             break;
+                        case 'download_session_v6':
+                            echo $this->type1_session(V6);
+                            break;
 			case 'type2_build_tassel_v2':
 			    echo $this->type2_build_tassel(V2);
 			    break;
@@ -425,7 +428,7 @@ class Downloads
           $zip->writeData($this->type1_build_annotated_align($experiments_g));
         } elseif ($version == "V3") {
           $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($lines,$markers));
+          $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
           $zip->newFile("snpfile.txt");
           $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
         } elseif ($version == "V4") {
@@ -434,7 +437,13 @@ class Downloads
         } elseif ($version == "V5") {
           $dtype = "qtlminer";
           $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($lines,$markers));
+          $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
+          $zip->newFile("snpfile.txt");
+          $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
+        } elseif ($version == "V6") {
+          $dtype = "AB";
+          $zip->newFile("geneticMap.txt");
+          $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
           $zip->newFile("snpfile.txt");
           $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
         }
@@ -925,9 +934,12 @@ class Downloads
                <td>genotype coded as {A,C,T,G,N} using the HapMap file format
                <tr><td><input type="button" value="Download for R" onclick="javascript:use_session('v5');" />
                <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}
+               <tr><td><input type="button" value="Download for FlapJack" onclick="javascript:use_session('v6');" />
+               <td>genotype coded as {AA, AB, BB}
                </table>
                <br><br>Links to documentation for analysis using <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
-               and <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
+               , <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
+               and <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>
                <?php
 	     }
 	  }
@@ -2745,7 +2757,7 @@ selected lines</a><br>
 		$output = '';
 		$doneheader = false;
 		$delimiter ="\t";
-                $outputheader = "line";
+                $outputheader = '';
 		
 		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
 			$max_missing = $_GET['mm'];
@@ -2837,7 +2849,11 @@ selected lines</a><br>
 		    }
 		    if (($maf[$i] >= $min_maf) AND ($miss[$i]<=$max_missing)) {
 				$marker_names[] = $marker_name;
-				$outputheader .= $delimiter.$marker_name;
+                                if ($outputheader == '') {
+                                  $outputheader .= $marker_name;
+                                } else {
+				  $outputheader .= $delimiter.$marker_name;
+                                }
 				$marker_uid[] = $marker_id;
 				//echo "accept $marker_id $marker_name $maf[$i] $miss[$i]<br>\n";
 		    } else {
@@ -2856,6 +2872,13 @@ selected lines</a><br>
 		   'AB' => '0',
 		   '' => 'NA'
 		 );
+                } elseif ($dtype=='AB') {
+                  $lookup = array(
+                  'AA' => 'AA',
+                  'BB' => 'BB',
+                  '--' => '-',
+                  'AB' => 'AB'
+                  );
 		} else {
 		 $lookup = array(
 		   'AA' => '1:1',
@@ -2924,6 +2947,8 @@ selected lines</a><br>
 		
 		if ($dtype =='qtlminer')  {
 			return $outputheader."\n".$output;
+                } elseif ($dtype == 'AB') {
+                        return $delimiter.$outputheader."\n".$output;
 		} else {
 			return $num_lines.$delimiter.$nelem.":2\n".$outputheader."\n".$output;
 		}
@@ -3368,7 +3393,7 @@ selected lines</a><br>
 	 * @param string $experiments
 	 * @return string
 	 */
-	function type1_build_geneticMap($lines,$markers)
+	function type1_build_geneticMap($lines,$markers,$dtype)
 	{
 		$delimiter ="\t";
 		$output = '';
@@ -3491,7 +3516,11 @@ selected lines</a><br>
                 // $firephp = log($nelem." ".$n_lines);
 
                 // write output file header
-                $outputheader = "<Map>\n";
+                if ($dtype == "AB") {
+                  $outputheader = "# fjFile = MAP";
+                } else {
+                  $outputheader = "<Map>\n";
+                }
             // $firephp = log($outputheader);
 
                 // get marker map data, line and marker names; use latest consensus map

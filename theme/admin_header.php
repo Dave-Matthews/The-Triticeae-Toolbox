@@ -146,8 +146,8 @@ EOD;
       <ul>
 	<li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
-	<li><a href="<?php echo $config['base_url']; ?>flapjack_download.php" title="Flapjack format">
-            Genotype Data</a>
+	<!-- <li><a href="<?php echo $config['base_url']; ?>flapjack_download.php" title="Flapjack format">
+            Genotype Data</a> -->
 	  <!-- dem 12jan12 Needs data correctness check. -->
 	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
 	    SNP Alleles and Sequences</a> 
