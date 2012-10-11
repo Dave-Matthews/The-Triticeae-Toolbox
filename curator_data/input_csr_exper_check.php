@@ -3,11 +3,9 @@
 error_reporting(E_ALL);
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-#require_once("../lib/Excel/reader.php"); // Microsoft Excel library
-#set_include_path('../lib/PHPExcel/');
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
-include '../lib/PHPExcel/Classes/PHPExcel/Writer/Excel2007.php';
+#include '../lib/PHPExcel/Classes/PHPExcel/Writer/Excel2007.php';
 
 connect();
 loginTest();
@@ -51,7 +49,7 @@ private function typeExperimentCheck()
         {
                 global $config;
                 include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>Phenotype Data Validation</h2>";
+                echo "<h2>CSR Phenotype Data Validation</h2>";
                 $this->type_Experiment_Name();
                 $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
@@ -112,8 +110,9 @@ private function typeExperimentCheck()
              $objPHPExcel = new PHPExcel();
              $objPHPExcel->setActiveSheetIndex(0);
              $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'test');
-             $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-             $objWriter->save('/tmp/tht/testfile.xlsx');
+             #$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+             $objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
+             $objWriter->save('/tmp/tht/testfile.xls');
          }
          umask(0);
   } else {
