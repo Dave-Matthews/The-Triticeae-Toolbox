@@ -33,7 +33,7 @@ ul ul ul {list-style-type: disc}
   <br>The data templates are .csv, .txt or  Excel worksheets with column headers for
     the data T3 can accept or requires, some example values to be
     replaced with yours, and notes about the restrictions for valid
-    data are included.
+    data are included. Within T-CAP the traits, protocols and units will be specified by the project. Contact the <a href="http://triticieaetoolbox.org/wheat/feedback.php">curators</a> to add new traits to T3.
 
 
 
@@ -58,8 +58,8 @@ ul ul ul {list-style-type: disc}
 		- Location, planting date, experimental design... [ <a href="curator_data/tutorial/T3_Lesson2_Phenotype.html"><b>Tutorial</b></a> ]
 	      <li><?php filelink("T3/PhenotypeSubmissionForm.xls", "Experiment results") ?>
 		- Values for all traits for test lines and checks, summary statistics
-	      <li><?php filelink("trait_template.xls", "Traits") ?>
-		- Within T-CAP the traits, protocols and units will be specified by the project.
+	      <li><?php filelink("trait_template.xls", "Traits") ?> - Only necessary for new traits.
+	        
 	    </ul>
 <p>
 	  <li><b>Genotyping</b> ... [ <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html"><b>Tutorial</b></a> ]
