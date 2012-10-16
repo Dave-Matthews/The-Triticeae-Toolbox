@@ -70,7 +70,7 @@ else {
   }
   if ($update) {
     echo "Updating table allele_byline_clust...<p>";
-    set_time_limit(300);  // Default 30sec runs out in ca. line 105.  
+    set_time_limit(3000);  // Default 30sec runs out in ca. line 105. So does 300.
     mysql_query("truncate table allele_byline_clust") or die(mysql_error());
     $lookup = array('AA' => '1',
 		    'BB' => '0',
