@@ -1,11 +1,9 @@
 <?php
 
-error_reporting(E_ALL);
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
-#include '../lib/PHPExcel/Classes/PHPExcel/Writer/Excel2007.php';
 
 connect();
 loginTest();
@@ -55,6 +53,10 @@ private function typeExperimentCheck()
         include($config['root_dir'].'theme/footer.php');
         }
 
+public function save_raw_file($header) {
+  echo "saving raw file<br>\n";
+}
+
 /**
  * check experiment data before loading into database
  */
@@ -67,12 +69,12 @@ private function typeExperimentCheck()
      window.open(url, "_self");
    }
    </script>
-   <style type="text/css">
+   <!-- style type="text/css">
      th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
      table {background: none; border-collapse: collapse}
      td {border: 0px solid #eee !important;}
      h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-   </style>
+   </style-->
 <?php
   global $config;
   $row = loadUser($_SESSION['username']);
@@ -105,8 +107,13 @@ private function typeExperimentCheck()
                }
                $i++;
              }
+             echo "$i lines of size $size in file<br>\n";
+          
+             //save to SQLite
+             $this->save_raw_file($reader);   
              fclose($reader);
-             echo "$i lines of size $size in file<br><br>\n";
+             echo "<br>\n";
+ 
              $objPHPExcel = new PHPExcel();
              $objPHPExcel->setActiveSheetIndex(0);
              $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'test');
@@ -143,21 +150,39 @@ private function typeExperimentCheck()
                /* Read the Means file */
                $objPHPExcel = PHPExcel_IOFactory::load($metafile);
                $sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
-               if ($sheetData[1]["A"] == "Parameter") {
-                 echo "header is okay<br>\n";
+               $i = 2;
+               $found = 1;
+               echo "<table border=1><tr><td>Paramater<td>Value";
+               while ($found) {
+                 $tmp1 = $sheetData[$i]["A"];
+                 $tmp2 = $sheetData[$i]["B"];
+                 if (preg_match("/[A-Za-z0-9]+/",$tmp1)) {
+                   $data[$i] = $tmp1;
+                   $value[$i] = $tmp2;
+                   echo "<tr><td>$tmp1<td>$tmp2\n";
+                   $i++;
+                 } else {
+                   $found = 0;
+                 }
                }
-               if ($sheetData[2]["A"] == "Trial Name") {
-                 $trial_name = $sheetData[2]["B"];
-               } else {
-                 $temp = $sheetData[2]["A"];
-                 echo "expected \"Trial Name\" found $temp<br>\n";
+               $i--;
+               echo "</table>\n";
+               echo "$i lines read from spreadsheet<br>\n";
+               if ($data[2] != "Trial Name") {
+                 echo "expected \"Trial Name\" found $data[2]<br>\n";
                }
-               if ($sheetData[3]["A"] == "Upwelling / Downwelling") {
-                 $trial_name = $sheetData[3]["B"];
-               } else {
-                 $temp = $sheetData[3]["A"];
-                 echo "expected \"Upwelling \/ Downwelling\" found $temp<br>\n";
+               if ($data[3] != "Upwelling / Downwelling") {
+                 echo "expected \"Upwelling \/ Downwelling\" found $data[3]<br>\n";
                }
+               if ($data[4] !== "Measurement date") {
+                 echo "expected \"Measurement date\" found $data[4]<br>";
+               }
+               if ($data[5] != "Growth Stage") {
+                 echo "expected \"Growth Stage\" found $data[5]<br>";
+               }
+               echo "saving trial file<br>\n";
+               $sql = "insert into csr_trial (trial, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, instruement, instruement_detail, spectrometer_serial, grating, collection_lens, longpass_filter, slit_aperature, cable_type, num_measurements, plot_size, latitude, longitude, height_from_canopy, reference, incident_adj, comments) values ('$value[2]','$value[3]',str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$value[16]','$value[17]',$value[18],$value[19],'$value[20]','$value[21]','$value[22]','$value[23]','$value[24]','$value[25]')";
+               $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
     }
   }
 

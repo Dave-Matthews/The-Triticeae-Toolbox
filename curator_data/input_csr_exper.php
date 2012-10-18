@@ -75,7 +75,7 @@ private function typeExperiments()
 
 <form action="curator_data/input_csr_exper_check.php" method="post" enctype="multipart/form-data">
   <input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
-  <p><strong>Trial File:</strong> <input id="file[]" type="file" name="file[]" size="50%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3.xlsx">Example Trial File</a></p>
+  <p><strong>Trial File:</strong> <input id="file[]" type="file" name="file[]" size="50%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3example.xlsx">Example Trial File</a></p>
   <p><strong>Raw Data File:</strong> <input id="file[]" type="file" name="file[]" size="50%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSR_SP0_processed.txt">Example Raw Data File</a></p>
   <p><input type="submit" value="Upload" /></p>
 </form>
