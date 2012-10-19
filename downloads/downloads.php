@@ -432,15 +432,17 @@ class Downloads
           $zip->newFile("snpfile.txt");
           $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
         } elseif ($version == "V4") {
-          $zip->newFile("genotype_hapmap.txt");
+          $zip->newFile("genotype.hmp.txt");
           $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
-        } elseif ($version == "V5") {
+        } elseif ($version == "V5") { //Download for R
           $dtype = "qtlminer";
           $zip->newFile("geneticMap.txt");
           $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
           $zip->newFile("snpfile.txt");
           $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
-        } elseif ($version == "V6") {
+          $zip->newFile("genotype.hmp.txt");
+          $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
+        } elseif ($version == "V6") {  //Download for Flapjack
           $dtype = "AB";
           $zip->newFile("geneticMap.txt");
           $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
@@ -939,7 +941,8 @@ class Downloads
                </table>
                <br><br>Links to documentation for analysis using <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
                , <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
-               and <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>
+               and <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>. 
+               For R use the function read.table("file",header=TRUE)
                <?php
 	     }
 	  }
@@ -2229,7 +2232,7 @@ selected lines</a><br>
 	    $zip->newFile("snpfile.txt");
 	    $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
 	  } elseif (($version == "V4")) {
-	    $zip->newFile("genotype_hapmap.txt");
+	    $zip->newFile("genotype.hmp.txt");
 	    $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
 	  }
 	  $zip->newFile("allele_conflict.txt");
@@ -2948,7 +2951,7 @@ selected lines</a><br>
 		if ($dtype =='qtlminer')  {
 			return $outputheader."\n".$output;
                 } elseif ($dtype == 'AB') {
-                        return $delimiter.$outputheader."\n".$output;
+                        return " #fjFile = GENOTYPE\n".$delimiter.$outputheader."\n".$output;
 		} else {
 			return $num_lines.$delimiter.$nelem.":2\n".$outputheader."\n".$output;
 		}
@@ -3099,8 +3102,12 @@ selected lines</a><br>
 	   $i++;
 	 }
 	 
-	 //get header
-	 $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode";
+	 //get header, tassel requires all fields even if they are empty
+         if ($dtype == "qtlminer") {
+           $outputheader = "rs\talleles\tchrom\tpos";
+         } else {
+	   $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode";
+         }
 	 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
@@ -3118,7 +3125,16 @@ selected lines</a><br>
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
 
-          $lookup = array(
+          if ($dtype == "qtlminer") {
+           $lookup = array(
+           'AA' => '1',
+           'BB' => '-1',
+           '--' => 'NA',
+           'AB' => '0',
+            '' => 'NA'
+           );
+          } else {
+           $lookup = array(
            'AA' => substr($allele,0,1) . substr($allele,0,1),
            'BB' => substr($allele,2,1) . substr($allele,2,1),
            '--' => 'NN',
@@ -3126,6 +3142,7 @@ selected lines</a><br>
            'BA' => substr($allele,2,1) . substr($allele,0,1),
            '' => 'NN'
           );
+           }
 
 	   $total = $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx] + $marker_bbcnt[$marker_idx] + $marker_misscnt[$marker_idx];
 	   if ($total>0) {
@@ -3149,7 +3166,11 @@ selected lines</a><br>
 	        $chrom = 0;
 	        $pos = 0;
 	     }
-	     $output .= "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t";
+             if ($dtype == "qtlminer") {
+               $output .= "$marker_name\t$allele\t$chrom\t$pos";
+             } else {
+	       $output .= "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t";
+             }
 	     $outarray2 = array();
              $sql = "select marker_name, alleles from allele_bymarker where marker_uid = $marker_id";
              $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -3517,7 +3538,9 @@ selected lines</a><br>
 
                 // write output file header
                 if ($dtype == "AB") {
-                  $outputheader = "# fjFile = MAP";
+                  $outputheader = "# fjFile = MAP\n";
+                } elseif ($dtype == "qtlminer") {
+                  $outputheader = "marker\tchrom\tloc\n";
                 } else {
                   $outputheader = "<Map>\n";
                 }
