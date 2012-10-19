@@ -3125,7 +3125,16 @@ selected lines</a><br>
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
 
-          $lookup = array(
+          if ($dtype == "qtlminer") {
+           $lookup = array(
+           'AA' => '1',
+           'BB' => '-1',
+           '--' => 'NA',
+           'AB' => '0',
+            '' => 'NA'
+           );
+          } else {
+           $lookup = array(
            'AA' => substr($allele,0,1) . substr($allele,0,1),
            'BB' => substr($allele,2,1) . substr($allele,2,1),
            '--' => 'NN',
@@ -3133,6 +3142,7 @@ selected lines</a><br>
            'BA' => substr($allele,2,1) . substr($allele,0,1),
            '' => 'NN'
           );
+           }
 
 	   $total = $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx] + $marker_bbcnt[$marker_idx] + $marker_misscnt[$marker_idx];
 	   if ($total>0) {
