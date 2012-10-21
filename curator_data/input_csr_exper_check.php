@@ -53,10 +53,11 @@ private function typeExperimentCheck()
         include($config['root_dir'].'theme/footer.php');
         }
 
-public function save_raw_file($header) {
+public function save_raw_file($wavelength) {
   try {
-      $dbh = new PDO('sqlite:/tmp/foo.db');
+      $dbh = new PDO('sqlite:foo.db');
       echo "saving raw file<br>\n";
+      $stmt = $dbh->prepare("INSERT INTO raw (line_name, value) VALUED (:name, : value)");
   } catch (PDOException $e) {
       print "Error!: " . $e->getMessage() . "<br/>";
   }
@@ -102,6 +103,7 @@ public function save_raw_file($header) {
              }
              while ($line = fgets($reader)) {
                $temp = str_getcsv($line,"\t");
+               $wavelength[$i] = $temp;
                if ($size == 0) {
                  $size = count($temp);
                } else {
@@ -116,8 +118,8 @@ public function save_raw_file($header) {
              echo "$i lines (Wavelengths), $size columns in file<br>\n";
           
              //save to SQLite
-             $this->save_raw_file($reader);   
-             fclose($reader);
+             $this->save_raw_file($raw_path);   
+             fclose($wavelength);
              echo "<br>\n";
  
              $objPHPExcel = new PHPExcel();
