@@ -79,6 +79,8 @@ private function typeExperiments()
   <p><strong>Raw Data File:</strong> <input id="file[]" type="file" name="file[]" size="50%" /> &nbsp;&nbsp;&nbsp;   <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSR_SP0_processed.txt">Example Raw Data File</a></p>
   <p><input type="submit" value="Upload" /></p>
 </form>
+
+<a href=login/edit_csr_trials.php>Edit Trial File</a>
 		
 <?php
 	} /* end of type_Experiment_Name function*/

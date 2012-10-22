@@ -55,7 +55,7 @@ private function typeExperimentCheck()
 
 public function save_raw_file($wavelength) {
   try {
-      $dbh = new PDO('sqlite:foo.db');
+      $dbh = new PDO('sqlite:../raw/phenotype/foo.db');
       echo "saving raw file<br>\n";
       $stmt = $dbh->prepare("INSERT INTO raw (line_name, value) VALUED (:name, : value)");
   } catch (PDOException $e) {
@@ -88,6 +88,15 @@ public function save_raw_file($wavelength) {
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
   $meta_paht= "uploads/".$_FILES['file']['name'][0];
   $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+  if (file_exists($raw_path)) {
+    $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
+    $tmp1 = $_FILES['file']['name'][1];
+    $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][1];
+    //echo "replace $tmp1 $tmp2 $raw_path<br>\n";
+    $raw_path = str_replace("$tmp1","$unq_file_name","$raw_path",$count);
+  } else {
+    $unq_file_name = $_FILES['file']['name'][1];
+  }
   if (!empty($_FILES['file']['name'][1])) {
          if (move_uploaded_file($_FILES['file']['tmp_name'][1], $raw_path) !== TRUE) {
              echo "<font color=red><b>Oops!</b></font> Your raw data file <b>"
@@ -118,8 +127,8 @@ public function save_raw_file($wavelength) {
              echo "$i lines (Wavelengths), $size columns in file<br>\n";
           
              //save to SQLite
-             $this->save_raw_file($raw_path);   
-             fclose($wavelength);
+             //$this->save_raw_file($raw_path);   
+             fclose($reader);
              echo "<br>\n";
  
              $objPHPExcel = new PHPExcel();
@@ -189,7 +198,7 @@ public function save_raw_file($wavelength) {
                  echo "expected \"Growth Stage\" found $data[5]<br>";
                }
                echo "saved to database<br>\n";
-               $sql = "insert into csr_trial (trial, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, instrument, instrument_detail, spectrometer_serial, grating, collection_lens, longpass_filter, slit_aperature, cable_type, num_measurements, height_from_canopy, reference, incident_adj, comments) values ('$value[2]','$value[3]',str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$value[16]','$value[17]',$value[18],$value[19],'$value[20]','$value[21]','$value[22]')";
+               $sql = "insert into csr_trial (trial, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, instrument, instrument_detail, spectrometer_serial, grating, collection_lens, longpass_filter, slit_aperature, cable_type, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ('$value[2]','$value[3]',str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$value[16]','$value[17]',$value[18],$value[19],'$value[20]','$value[21]','$value[22]','$unq_file_name')";
                $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
     }
   }
