@@ -53,8 +53,14 @@ private function typeExperimentCheck()
         include($config['root_dir'].'theme/footer.php');
         }
 
-public function save_raw_file($header) {
-  echo "saving raw file<br>\n";
+public function save_raw_file($wavelength) {
+  try {
+      $dbh = new PDO('sqlite:../raw/phenotype/foo.db');
+      echo "saving raw file<br>\n";
+      $stmt = $dbh->prepare("INSERT INTO raw (line_name, value) VALUED (:name, : value)");
+  } catch (PDOException $e) {
+      print "Error!: " . $e->getMessage() . "<br/>";
+  }
 }
 
 /**
@@ -82,6 +88,15 @@ public function save_raw_file($header) {
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
   $meta_paht= "uploads/".$_FILES['file']['name'][0];
   $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+  if (file_exists($raw_path)) {
+    $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
+    $tmp1 = $_FILES['file']['name'][1];
+    $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][1];
+    //echo "replace $tmp1 $tmp2 $raw_path<br>\n";
+    $raw_path = str_replace("$tmp1","$unq_file_name","$raw_path",$count);
+  } else {
+    $unq_file_name = $_FILES['file']['name'][1];
+  }
   if (!empty($_FILES['file']['name'][1])) {
          if (move_uploaded_file($_FILES['file']['tmp_name'][1], $raw_path) !== TRUE) {
              echo "<font color=red><b>Oops!</b></font> Your raw data file <b>"
@@ -89,7 +104,7 @@ public function save_raw_file($header) {
              will be lost.  Please <a href='".$config['base_url']."feedback.php'>contact the 
              programmers</a>.<p>";
          } else {
-             echo "uploaded file - " . $_FILES['file']['name'][1] . "<br/>";
+             echo $_FILES['file']['name'][1] . "<br/>";
              //check file for readability
              $i = 0;
              if (($reader = fopen($raw_path, "r")) == false) {
@@ -97,6 +112,7 @@ public function save_raw_file($header) {
              }
              while ($line = fgets($reader)) {
                $temp = str_getcsv($line,"\t");
+               $wavelength[$i] = $temp;
                if ($size == 0) {
                  $size = count($temp);
                } else {
@@ -107,10 +123,11 @@ public function save_raw_file($header) {
                }
                $i++;
              }
-             echo "$i lines of size $size in file<br>\n";
+             $i--;
+             echo "$i lines (Wavelengths), $size columns in file<br>\n";
           
              //save to SQLite
-             $this->save_raw_file($reader);   
+             //$this->save_raw_file($raw_path);   
              fclose($reader);
              echo "<br>\n";
  
@@ -167,7 +184,7 @@ public function save_raw_file($header) {
                }
                $i--;
                echo "</table>\n";
-               echo "$i lines read from spreadsheet<br>\n";
+               echo "$i lines read from spreadsheet, ";
                if ($data[2] != "Trial Name") {
                  echo "expected \"Trial Name\" found $data[2]<br>\n";
                }
@@ -180,8 +197,8 @@ public function save_raw_file($header) {
                if ($data[5] != "Growth Stage") {
                  echo "expected \"Growth Stage\" found $data[5]<br>";
                }
-               echo "saving trial file<br>\n";
-               $sql = "insert into csr_trial (trial, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, instruement, instruement_detail, spectrometer_serial, grating, collection_lens, longpass_filter, slit_aperature, cable_type, num_measurements, plot_size, latitude, longitude, height_from_canopy, reference, incident_adj, comments) values ('$value[2]','$value[3]',str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$value[16]','$value[17]',$value[18],$value[19],'$value[20]','$value[21]','$value[22]','$value[23]','$value[24]','$value[25]')";
+               echo "saved to database<br>\n";
+               $sql = "insert into csr_trial (trial, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, instrument, instrument_detail, spectrometer_serial, grating, collection_lens, longpass_filter, slit_aperature, cable_type, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ('$value[2]','$value[3]',str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$value[16]','$value[17]',$value[18],$value[19],'$value[20]','$value[21]','$value[22]','$unq_file_name')";
                $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
     }
   }
