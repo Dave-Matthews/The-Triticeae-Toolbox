@@ -5,8 +5,6 @@ include($config['root_dir'] . 'includes/bootstrap.inc');
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
-//require_once 'Spreadsheet/Excel/Writer.php';
-//include 'PHPExcel/IOFactory.php';
 connect();
 
 $method = $_SERVER['REQUEST_METHOD'];
