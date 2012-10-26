@@ -2951,7 +2951,7 @@ selected lines</a><br>
 		if ($dtype =='qtlminer')  {
 			return $outputheader."\n".$output;
                 } elseif ($dtype == 'AB') {
-                        return " #fjFile = GENOTYPE\n".$delimiter.$outputheader."\n".$output;
+                        return "# fjFile = GENOTYPE\n".$delimiter.$outputheader."\n".$output;
 		} else {
 			return $num_lines.$delimiter.$nelem.":2\n".$outputheader."\n".$output;
 		}
