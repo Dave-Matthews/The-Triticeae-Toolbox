@@ -2,7 +2,11 @@
 session_start();
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
-require_once 'Spreadsheet/Excel/Writer.php';
+set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
+include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
+
+//require_once 'Spreadsheet/Excel/Writer.php';
+//include 'PHPExcel/IOFactory.php';
 connect();
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -228,44 +232,50 @@ private function type_Line_Excel() {
     $sample = implode(",", $linelist);
   }
   $tok = strtok($sample, ",");
+
+    $objPHPExcel = new PHPExcel();
+    $objPHPExcel->setActiveSheetIndex(0); 
+
+    $style_header = array(
+        'font' => array(
+            'bold' => true,
+        ),
+    );
+    $objPHPExcel->getDefaultStyle()->getFont()->setSize(9);
+    $objPHPExcel->getActiveSheet()->freezePane('A2');
+    $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(7);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(7);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(7);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(7);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(7);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(7);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(7);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(20);
+    $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(20);
+    $objPHPExcel->getActiveSheet()->getStyle('A1:M1')->applyFromArray($style_header);
  
-    $workbook = new Spreadsheet_Excel_Writer();
-    $format_header =& $workbook->addFormat();
-    $format_header->setBold();
-    $format_header->setSize(9);
-    /* $format_header->setTextWrap(); */
-    /* $format_header->setAlign('center'); */
-    /* $format_header->setColor('red'); */
-    /* $format_header->setBgColor('blue'); */
-    /* $format_header->setItalic(); */
-    $format_row =& $workbook->addFormat();
-    $format_row->setSize(9);
-    /* $format_row->setAlign('center'); */
-    /* $format_pedigree_row =& $workbook->addFormat(); */
-    /* $format_pedigree_row->setAlign('left'); */
-
-    $worksheet =& $workbook->addWorksheet();
     // Freeze row 1 and column 1 from scrolling.
-    $worksheet->freezePanes(array(1, 1));
     // Set columns 0 to 3 wider.
-    $worksheet->setColumn(0,3,15);
-    $worksheet->write(0, 0, "Name", $format_header);
-    $worksheet->write(0, 1, "GRIN", $format_header);
-    $worksheet->write(0, 2, "Synonyms", $format_header);
-    $worksheet->write(0, 3, "Pedigree", $format_header);
-    $worksheet->setColumn(4,10,7);
-    $worksheet->write(0, 4, "Program", $format_header);
-    $worksheet->write(0, 5, "Hardness", $format_header);
-    $worksheet->write(0, 6, "Color", $format_header);
-    $worksheet->write(0, 7, "Growth Habit", $format_header);
-    $worksheet->write(0, 8, "Awned", $format_header);
-    $worksheet->write(0, 9, "Chaff", $format_header);
-    $worksheet->write(0, 10, "Height", $format_header);
-    $worksheet->setColumn(11,12,20);
-    $worksheet->write(0, 11, "Description", $format_header);
-    $worksheet->write(0, 12, "Data Available", $format_header);
-
-    $i = 1;
+ 
+    $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Name');
+    $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'GRIN');
+    $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Synonyms');
+    $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Pedigree');
+    $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Program');
+    $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Hardness');
+    $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Color');
+    $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Growth Habit');
+    $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Awned');
+    $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Chaff');
+    $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Height');
+    $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Description');
+    $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Data Available');
+    
+    $i = 2;
     # start by opening a query string
 
     while ($tok !== false) {
@@ -276,16 +286,16 @@ private function type_Line_Excel() {
         $tok = strtok(",");
 	
 	while ($row = mysql_fetch_assoc($result)) {
-            $worksheet->write($i, 0, "$row[line_record_name]",$format_row);
-            $worksheet->write($i, 3, "$row[pedigree_string]",$format_row);
-            $worksheet->write($i, 4, "$row[breeding_program_code]",$format_row);
-            $worksheet->write($i, 5, "$row[hardness]",$format_row);
-            $worksheet->write($i, 6, "$row[color]",$format_row);
-            $worksheet->write($i, 7, "$row[growth_habit]",$format_row);
-            $worksheet->write($i, 8, "$row[awned]",$format_row);
-            $worksheet->write($i, 9, "$row[chaff]",$format_row);
-            $worksheet->write($i, 10, "$row[height]",$format_row);
-            $worksheet->write($i, 11, "$row[description]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("A$i", "$row[line_record_name]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("D$i", "$row[pedigree_string]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("E$i", "$row[breeding_program_code]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("F$i", "$row[hardness]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("G$i", "$row[color]",format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("H$i", "$row[growth_habit]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("I$i", "$row[awned]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("J$i", "$row[chaff]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("K$i", "$row[height]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("L$i", "$row[description]",$format_row);
         }
 	$grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
            where line_record_uid=$lineuid") or die(mysql_error());
@@ -294,7 +304,7 @@ private function type_Line_Excel() {
 	  $grin_names[] = $grin_row['barley_ref_number'];
 	if (is_array($grin_names))
 	  $gr = implode(', ', $grin_names);
-	$worksheet->write($i, 1, "$gr",$format_row);
+          $objPHPExcel->getActiveSheet()->SetCellValue("B$i", "$gr",$format_row);
 
 	$syn_result=mysql_query("select line_synonym_name from line_synonyms 
             where line_record_uid=$lineuid") or die(mysql_error());
@@ -303,7 +313,7 @@ private function type_Line_Excel() {
 	  $syn_names[] = $syn_row['line_synonym_name'];
 	if (is_array($syn_names))
 	  $sn = implode(', ', $syn_names);
-	$worksheet->write($i, 2, "$sn",$format_row);
+          $objPHPExcel->getActiveSheet()->SetCellValue("C$i", "$sn",$format_row);
 	// Data Available:
 	$phenotype = lineHasPhenotypeData($lineuid);
 	$genotype = lineHasGenotypeData($lineuid);
@@ -311,12 +321,14 @@ private function type_Line_Excel() {
 	if($phenotype AND !$genotype) $hasdata = "Phenotype only";
 	if($genotype AND !$phenotype) $hasdata = "Genotype only";
 	if(!$phenotype AND !$genotype) $hasdata = "None";
-	$worksheet->write($i, 12, $hasdata,$format_row);
+        $objPHPExcel->getActiveSheet()->SetCellValue("M$i", "$hasdata",$format_row);
 
         $i++;
     }
-    $workbook->send('Line_Details.xls');
-    $workbook->close();
+    header('Content-type: application/vnd.ms-excel');
+    header('Content-Disposition: attachment; filename="Line_Details.xls"');
+    $objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
+    $objWriter->save('php://output');
     }
 } /* End of class Pedigree */
 ?>
