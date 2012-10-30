@@ -362,10 +362,10 @@ class Downloads
 			$lines = "";
 			$lines_str = "";
 		}
-		if (isset($_SESSION['clicked_buttons'])) {
-		    $selectcount = $_SESSION['clicked_buttons'];
-		    $markers = $_SESSION['clicked_buttons'];
-		    $markers_str = implode(",", $_SESSION['clicked_buttons']);
+		if (isset($_SESSION['filtered_markers'])) {
+		    $selectcount = $_SESSION['filtered_markers'];
+		    $markers = $_SESSION['filtered_markers'];
+		    $markers_str = implode(",", $markers);
 		} else {
 		    $markers = array();
                     $markers_str = "";
@@ -706,7 +706,8 @@ class Downloads
 	    <script type="text/javascript">
 	      var mm = 10;
 	      var mmaf = 5; 
-          window.onload = load_markers_lines( mm, mmaf);
+            window.addEventListener('load', load_markers_lines( mm, mmaf));
+            window.addEventListener('load', load_title());
 	    </script>
 	    </div>
 	     <?php 	
@@ -976,6 +977,7 @@ class Downloads
 	   $markers = $_SESSION['clicked_buttons'];
 	   $marker_str = implode(',',$markers);
 	 } else {
+           $markers_filtered = array();
 	   $markers = array();
 	   $marker_str = "";
 	 }
@@ -1043,7 +1045,11 @@ class Downloads
 	     $miss = round(100*$marker_misscnt[$i]/$total,1);
 	     if ($maf >= $min_maf) $num_maf++;
 	     if ($miss > $max_missing) $num_miss++;
-	     if (($miss > $max_missing) OR ($maf < $min_maf)) $num_removed++;
+	     if (($miss > $max_missing) OR ($maf < $min_maf)) {
+               $num_removed++;
+             } else {
+               $markers_filtered[] = $marker_uid;
+             }
 	     $num_mark++;
 	   } else {
 	     $num_removed++;
@@ -1051,6 +1057,7 @@ class Downloads
 	   }
            $i++; 
 	 }
+         $_SESSION['filtered_markers'] = $markers_filtered;
 	 
 	  ?>
 	<p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
@@ -1061,7 +1068,7 @@ class Downloads
 	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
 	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 	</i>
-	<br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
+	<br><input type="button" value="Refresh" onclick="javascript:mrefresh(); load_title()" /><br>
 	<?php
 	}
 	
@@ -2781,28 +2788,12 @@ selected lines</a><br>
 		if (count($markers)>0) {
 		  $markers_str = implode(",", $markers);
 		} else {
-		  $markers_str = "";
+		  die("error - markers should be selected before download!");
 		}
 		if (count($lines)>0) {
 		  $lines_str = implode(",", $lines);
 		} else {
 		  $lines_str = "";
-		}
-		//get lines and filter to get a list of markers which meet the criteria selected by the user
-		if (preg_match('/[0-9]/',$markers_str)) {
-		} else {
-		  //get genotype markers that correspond with the selected lines
-		  $sql_exp = "SELECT DISTINCT marker_uid
-		  FROM allele_cache
-		  WHERE
-		  allele_cache.line_record_uid in ($lines_str)";
-		  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-		  if (mysql_num_rows($res)>0) {
-		    while ($row = mysql_fetch_array($res)){
-		      $markers[] = $row["marker_uid"];
-		    }
-		  }
-		  $markers_str = implode(',',$markers);
 		}
 	
                 //generate an array of selected markers that can be used with isset statement
@@ -2818,52 +2809,16 @@ selected lines</a><br>
 		   $marker_list_name[$i] = $row[1];
 		   $i++;
 		}
-		foreach ($lines as $line_record_uid) {
-		  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		  if ($row = mysql_fetch_array($res)) {
-		    $alleles = $row[0];
-		    $outarray = explode(',',$alleles);
-		    $i=0;
-		    foreach ($outarray as $allele) {
-                      if ($allele=='AA') { $marker_aacnt[$i]++; }
-                      elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-                      elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-                      elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
-                      else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-                      $i++;
-                    }
-		  }
-		  //echo "$line_record_uid<br>\n";
-		}
-		
-		$num_maf = $num_miss = 0;
 
-        foreach ($marker_list as $i => $marker_id) {
+                foreach ($marker_list as $i => $marker_id) {
 		  $marker_name = $marker_list_name[$i];
 		  if (isset($marker_lookup[$marker_id])) {
-		    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-		    if ($total>0) {
-		      $maf[$i] = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
-		      $miss[$i] = round(100*$marker_misscnt[$i]/$total,1);
-		    } else {
-		      $maf[$i] = 0;
-		      $miss[$i] = 100;
-		    }
-		    if (($maf[$i] >= $min_maf) AND ($miss[$i]<=$max_missing)) {
-				$marker_names[] = $marker_name;
-                                if ($outputheader == '') {
-                                  $outputheader .= $marker_name;
-                                } else {
-				  $outputheader .= $delimiter.$marker_name;
-                                }
-				$marker_uid[] = $marker_id;
-				//echo "accept $marker_id $marker_name $maf[$i] $miss[$i]<br>\n";
-		    } else {
-		      //echo "reject $marker_id $marker_name $maf $miss<br>\n";
-		    }
-		  } else {
-		    //echo "rejected marker $marker_id<br>\n";
+		    $marker_names[] = $marker_name;
+                    if ($outputheader == '') {
+                       $outputheader .= $marker_name;
+                    } else {
+		       $outputheader .= $delimiter.$marker_name;
+                    }
 		  }
 		}
 		
@@ -2904,9 +2859,7 @@ selected lines</a><br>
 		    foreach ($outarray as $allele) {
 		  	$marker_id = $marker_list[$i];
 		  	if (isset($marker_lookup[$marker_id])) {
-		  	  if (($maf[$i] >= $min_maf) AND ($miss[$i]<=$max_missing)) {
-		  	 	$outarray2[]=$lookup[$allele];
-		  	  }
+		  	  $outarray2[]=$lookup[$allele];
 		  	}
 		        $i++;
 		    }
@@ -2919,9 +2872,7 @@ selected lines</a><br>
                       $i=0;
                       foreach ($marker_list as $marker_id) {
                         if (isset($marker_lookup[$marker_id])) {
-                           if (($maf[$i] >= $min_maf) AND ($miss[$i]<=$max_missing)) {
-                             $outarray2[]=$lookup[""];
-                           }
+                          $outarray2[]=$lookup[""];
                         }
                         $i++;
                       }
@@ -2987,7 +2938,7 @@ selected lines</a><br>
 	 if (count($markers)>0) {
 	  $markers_str = implode(",", $markers);
 	 } else {
-	  $markers_str = "";
+	  die("error - markers should be selected before download");
 	 }
 	 if (count($lines)>0) {
 	  $lines_str = implode(",", $lines);
@@ -2995,23 +2946,6 @@ selected lines</a><br>
 	  $lines_str = "";
 	 }
 	 
-	 //get lines and filter to get a list of markers which meet the criteria selected by the user
-	 if (preg_match('/[0-9]/',$markers_str)) {
-	 } else {
-	  //get genotype markers that correspond with the selected lines
-	  $sql_exp = "SELECT DISTINCT marker_uid
-	  FROM allele_cache
-	  WHERE
-	  allele_cache.line_record_uid in ($lines_str)";
-	  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-	  if (mysql_num_rows($res)>0) {
-	   while ($row = mysql_fetch_array($res)){
-	    $markers[] = $row["marker_uid"];
-	   }
-	  }
-	  $markers_str = implode(',',$markers);
-	 }
-
          //generate an array of selected lines that can be used with isset statement
          foreach ($lines as $temp) {
            $line_lookup[$temp] = 1;
@@ -3075,24 +3009,6 @@ selected lines</a><br>
            die("could not sort marker list\n");
          }
 
-	 foreach ($lines as $line_record_uid) {
-	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-	  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	  if ($row = mysql_fetch_array($res)) {
-	   $alleles = $row[0];
-	   $outarray = explode(',',$alleles);
-	   $i = 0;
-	   foreach ($outarray as $allele) {
-             if ($allele=='AA') { $marker_aacnt[$i]++; }
-            elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-            elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-            elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
-            else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-            $i++;
-	   }
-	  }
-	 }
-	 
 	 //get location in allele_byline for each marker
 	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -3144,15 +3060,6 @@ selected lines</a><br>
           );
            }
 
-	   $total = $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx] + $marker_bbcnt[$marker_idx] + $marker_misscnt[$marker_idx];
-	   if ($total>0) {
-	    $maf[$marker_idx] = round(100 * min((2 * $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx]) /$total, ($marker_abcnt[$marker_idx] + 2 * $marker_bbcnt[$marker_idx]) / $total),1);
-	    $miss[$marker_idx] = round(100*$marker_misscnt[$marker_idx]/$total,1);
-	   } else {
-	    $maf[$marker_idx] = 0;
-	    $miss[$marker_idx] = 100;
-	   }
-	   if (($maf[$marker_idx] >= $min_maf) AND ($miss[$marker_idx]<=$max_missing)) {
 	     $sql = "select A_allele, B_allele, mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset where markers.marker_uid = $marker_id
 	         AND mim.marker_uid = markers.marker_uid
 	         AND mim.map_uid = map.map_uid
@@ -3186,12 +3093,8 @@ selected lines</a><br>
                  $i++;
                }
              }
-
 	     $allele_str = implode("\t",$outarray2);
 	     $output .= "\t$allele_str\n"; 
-	  } else {
-	   //echo "rejected marker $marker_id<br>\n";
-	  }
 	 }
 	 return $outputheader."\n".$output;
 	}
@@ -3207,28 +3110,14 @@ selected lines</a><br>
 	  if (count($markers)>0) {
 	    $markers_str = implode(",",$markers);
 	  } else {
-	    $markers_str = "";
+	    die("error - markers should be selected before download");
 	  }
 	  if (count($lines)>0) {
 	    $lines_str = implode(",",$lines);
 	  } else {
 	    $lines_str = "";
 	  }
-	  //get lines and filter to get a list of markers which meet the criteria selected by the user
-	  if (preg_match('/[0-9]/',$markers_str)) {
-	  } else {
-	  //get genotype markers that correspond with the selected lines
-	    $sql_exp = "SELECT DISTINCT marker_uid FROM allele_cache
-	    WHERE
-	    allele_cache.line_record_uid in ($lines_str)";
-	    $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-	    if (mysql_num_rows($res)>0) {
-	      while ($row = mysql_fetch_array($res)){
-	        $markers[] = $row["marker_uid"];
-	      }
-	    }
-	    $markers_str = implode(',',$markers);
-	  }
+
 	  $output = "line name\tmarker name\talleles\texperiment\n";
 	  $query = "select l.line_record_name, m.marker_name, a.alleles, e.trial_code
 	  from allele_conflicts a, line_records l, markers m, experiments e
@@ -3507,20 +3396,10 @@ selected lines</a><br>
                 foreach ($marker_list as $i => $uid) {
                   $marker_name = $marker_list_name[$i];
                   if (isset($marker_lookup[$uid])) {
-                    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-                    if ($total>0) {
-                      $maf[$i] = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
-                      $miss[$i] = round(100*$marker_misscnt[$i]/$total,1);
-                    } else {
-                      $maf[$i] = 0;
-                      $miss[$i] = 100;
-                    }
-                    if (($maf[$i] >= $min_maf)AND ($miss[$i]<=$max_missing)) {
                       if (isset($marker_list_mapped[$uid])) {
                         $marker_list_all_name[$uid] = $marker_name;
                         $marker_list_all[$uid] = $marker_list_rank[$uid];
                       }
-                    }
                   }
                 }
                 if (count($marker_list_all) == 0) {

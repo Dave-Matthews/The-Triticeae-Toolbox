@@ -20,6 +20,8 @@ require $config['root_dir'].'includes/bootstrap.inc';
    echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers</a>: ";
    if (isset($_SESSION['clicked_buttons'])) {
      echo count($_SESSION['clicked_buttons']);
+   } elseif (isset($_SESSION['filtered_markers'])) {
+     echo count($_SESSION['filtered_markers']);
    } else {
      echo "All";
    }

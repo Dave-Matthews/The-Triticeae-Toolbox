@@ -170,7 +170,7 @@ EOD;
    <li> <a title="Curate the Database">Curation</a>
       <ul>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
-      Add/Edit Trait Definitions</a></li>
+      Add/Edit Traits</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
       Add/Edit Lines</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
