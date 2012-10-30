@@ -121,6 +121,7 @@ include($config['root_dir'] . 'theme/footer.php');
  */
 function editProgramRow($where, $page, $start="0") {
   $ignore = array("CAPdata_programs_uid");
+  // In includes/common.inc:
   editGeneral("CAPdata_programs", $where, $page, $ignore, "20", $start);
 }
 

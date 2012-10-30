@@ -20,21 +20,6 @@ if( ($id = array_search("Update", $_POST)) != NULL) {
     $_POST[$k] = addslashes($v);
   updateTable($_POST, "experiments", array("experiment_uid"=>$id));
 }
-elseif (!empty($_POST['Delete'])) {
-  // Delete this record.
-  $id = ($_POST['Delete']);
-  $code = mysql_grab("select name from experiments where experiment_uid=$id");
-  echo "Attempting to delete trial id = $id, name = $code...<p>";
-  $sql = "delete from experiments where experiment_uid = $id";
-  $res = mysql_query($sql);
-  $err = mysql_error();
-  if (!empty($err)) {
-    if (strpos($err, "a foreign key constraint fails"))
-      echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this trial. The error message is:<br>$err";
-  }
-  else 
-    echo "Success.  Trial <b>$code</b> deleted.<p>";
-}
 
 $searchstring = '';
 if(isset($_REQUEST['search']) && $_REQUEST['search'] != "") {
@@ -63,9 +48,7 @@ if(isset($_GET['start']))
 <div id="primaryContentContainer">
   <div id="primaryContent">
     <div class="box">
-
       <h2>Edit Trials</h2>
-
       <div class="boxContent">
 	<form action="<?php echo $config['base_url']; ?>login/edit_trials.php" method="post">
 	  <p>Show only items containing these words:<br>
