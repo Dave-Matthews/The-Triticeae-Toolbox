@@ -734,12 +734,13 @@ function update_phenotype_linesb(options) {
 			function load_markers_lines( mm, mmaf) {
 			    select1_str = "Lines";
                 markers_loading = true;
+                Element.show('spinner');
                 document.getElementById('step5').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
                 //changes are right here
-                var tmp = new Ajax.Updater($('step5'),url,
-                    {onCreate: function() { Element.show('spinner'); },
+                var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
+                    //onCreate: function() { Element.show('spinner'); },
                     onComplete: function() {
                          $('step5').show();
                         if (traits_loading === false) {
@@ -747,7 +748,7 @@ function update_phenotype_linesb(options) {
                         }
                         markers_loading = false;
                         markers_loaded = true;
-                        load_title2();
+                        //load_title2();
                     }}
                 );
             }
