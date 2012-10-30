@@ -706,7 +706,8 @@ class Downloads
 	    <script type="text/javascript">
 	      var mm = 10;
 	      var mmaf = 5; 
-          window.onload = load_markers_lines( mm, mmaf);
+            window.addEventListener('load', load_markers_lines( mm, mmaf));
+            window.addEventListener('load', load_title());
 	    </script>
 	    </div>
 	     <?php 	
@@ -1067,7 +1068,7 @@ class Downloads
 	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
 	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 	</i>
-	<br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
+	<br><input type="button" value="Refresh" onclick="javascript:mrefresh(); load_title()" /><br>
 	<?php
 	}
 	
