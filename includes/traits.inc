@@ -11,6 +11,7 @@
 function editPhenotypeRow($where, $page, $start="0") {
 
 	$ignore = array("phenotype_uid", "datatype");
+	// see includes/common.inc
 	editGeneral("phenotypes", $where, $page, $ignore, "20", $start);
 }
 
