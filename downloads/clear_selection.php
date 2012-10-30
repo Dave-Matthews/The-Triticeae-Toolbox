@@ -11,6 +11,9 @@ if (isset($_GET['clearSel'])) {
     unset($_SESSION['selected_traits']);
     unset($_SESSION['selected_trials']);
     unset($_SESSION['clicked_buttons']);
+    unset($_SESSION['filtered_markers']);
+    $_SESSION['training_traits'] = NULL; unset($_SESSION['training_traits']);
+    $_SESSION['training_trials'] = NULL; unset($_SESSION['training_trials']);
     ?>
     <script type="text/javascript">
       update_side_menu();
