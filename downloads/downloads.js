@@ -73,6 +73,23 @@ function load_title(command) {
     });
 }
 
+function load_title2(command) {
+    var url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&pi=' + phenotype_items_str + '&subset=' + subset + '&cmd=' + command;
+    var tmp = new Ajax.Updater($('title'), url, {
+        onComplete : function() {
+            $('title').show();
+            document.title = title;
+        }
+    });
+    url = "side_menu.php";
+    tmp = new Ajax.Updater($('quicklinks'), url, {
+    onComplete : function() {
+      $('quicklinks').show();
+      document.title = title;
+    }
+    });
+}
+
 function haplotype_step2(command) {
     var i = document.myForm.elements.length;
     var e = document.myForm.elements;
@@ -351,6 +368,17 @@ function load_traits()
             traits_loaded = true;
         }}
 	);
+}
+
+function selectedTraits() {
+        var ret = '';
+        $A($('traitsbx').options).each(function(trait){
+        if (trait.selected)
+          {
+           ret += (ret === '' ? '' : ',') + trait.value;
+          }
+        });
+        return ret;
 }
 
 function load_markers( mm, mmaf) {
@@ -706,7 +734,7 @@ function update_phenotype_linesb(options) {
 			function load_markers_lines( mm, mmaf) {
 			    select1_str = "Lines";
                 markers_loading = true;
-                $('step5').hide();
+                document.getElementById('step5').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
                 //changes are right here
@@ -719,22 +747,11 @@ function update_phenotype_linesb(options) {
                         }
                         markers_loading = false;
                         markers_loaded = true;
-                        load_title();
+                        load_title2();
                     }}
                 );
             }
 		
-			function selectedTraits() {
-				var ret = '';
-				$A($('traitsbx').options).each(function(trait){
-                                if (trait.selected)
-                                        {
-						ret += (ret === '' ? '' : ',') + trait.value;
-					}			 
-				});
-				return ret;
-			}
-			
 			function getdownload_qtlminer()
 			{
 				if (selectedTraits() === '') {
