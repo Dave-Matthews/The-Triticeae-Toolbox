@@ -80,9 +80,10 @@ function load_excel2() {
     myForm.action = '<?php $_SERVER[PHP_SELF];?>';
     for (var k in p) {
         var myInput = document.createElement("input") ;
-        myInput.setAttribute("name", k) ;
+        myInput.setAttribute("type", "hidden");
+        myInput.setAttribute("name", k);
         myInput.setAttribute("value", p[k]);
-        myForm.appendChild(myInput) ;
+        myForm.appendChild(myInput);
      }
      document.body.appendChild(myForm) ;
      myForm.submit() ;
@@ -135,7 +136,8 @@ function exclude_none() {
       <th class="marker" style="width: 80px; text-align: left"> &nbsp;&nbsp;Check <br/>
 	<input type="radio" name="btn1" value="" onclick="javascript:exclude_all();"/>All<br>
 	<input type="radio" name="btn1" value="" onclick="javascript:exclude_none();"/>None</th>
-      <th style="width: 380px;" class="marker"> Line Name </th>
+      <th style="width: 480px;" class="marker"> Line Name </th>
+      <th style="width: 100px;" class="marker"> Species </th>
       <th style="width: 100px;" class="marker"> Breeding Program </th>
       <th style="width: 90px;" class="marker"> Hard-<br>ness </th>
       <th style="width: 90px;" class="marker"> Color </th>
@@ -152,7 +154,7 @@ function exclude_none() {
 
 <?php
     foreach ($linelist as $lineuid) {
-      $result=mysql_query("select line_record_name, breeding_program_code, hardness, color, growth_habit, pedigree_string from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+      $result=mysql_query("select line_record_name, species, breeding_program_code, hardness, color, growth_habit, pedigree_string from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
       $syn_result=mysql_query("select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
       $syn_names=""; $sn = "";
       while ($syn_row = mysql_fetch_assoc($syn_result)) 
@@ -170,6 +172,9 @@ function exclude_none() {
         <?php $line_name = $row['line_record_name'];
 	echo "<a href='pedigree/show_pedigree.php?line=$line_name'>$line_name</a>" 
 	  ?>
+        </td>
+        <td style="width: 72px; text-align: center" class="marker">
+        <?php echo $row['species'] ?>
         </td>
         <td style="width: 72px; text-align: center" class="marker">
         <?php echo $row['breeding_program_code'] ?>
@@ -254,7 +259,7 @@ private function type_Line_Excel() {
     $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(7);
     $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(20);
     $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(20);
-    $objPHPExcel->getActiveSheet()->getStyle('A1:M1')->applyFromArray($style_header);
+    $objPHPExcel->getActiveSheet()->getStyle('A1:N1')->applyFromArray($style_header);
  
     // Freeze row 1 and column 1 from scrolling.
     // Set columns 0 to 3 wider.
@@ -272,6 +277,7 @@ private function type_Line_Excel() {
     $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Height');
     $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Description');
     $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Data Available');
+    $objPHPExcel->getActiveSheet()->SetCellValue('N1', 'Species');
     
     $i = 2;
     # start by opening a query string
@@ -279,7 +285,7 @@ private function type_Line_Excel() {
     while ($tok !== false) {
         $lineuid = (int)$tok;
         $result=mysql_query("select line_record_name, breeding_program_code, 
-           hardness, color, growth_habit, awned, chaff, height, description, pedigree_string
+           hardness, color, growth_habit, awned, chaff, height, description, pedigree_string, species
            from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
         $tok = strtok(",");
 	
@@ -294,6 +300,7 @@ private function type_Line_Excel() {
             $objPHPExcel->getActiveSheet()->SetCellValue("J$i", "$row[chaff]",$format_row);
             $objPHPExcel->getActiveSheet()->SetCellValue("K$i", "$row[height]",$format_row);
             $objPHPExcel->getActiveSheet()->SetCellValue("L$i", "$row[description]",$format_row);
+            $objPHPExcel->getActiveSheet()->SetCellValue("N$i", "$row[species]",$format_row);
         }
 	$grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
            where line_record_uid=$lineuid") or die(mysql_error());
@@ -324,9 +331,11 @@ private function type_Line_Excel() {
         $i++;
     }
     header('Content-type: application/vnd.ms-excel');
-    header('Content-Disposition: attachment; filename="Line_Details.xls"');
+    header('Content-Disposition: attachment;filename="Line_Details.xls"');
     $objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
     $objWriter->save('php://output');
+    $objPHPExcel->disconnectWorksheets();
+    unset($objPHPExcel);
     }
 } /* End of class Pedigree */
 ?>
