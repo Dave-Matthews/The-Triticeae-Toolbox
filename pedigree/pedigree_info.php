@@ -1,4 +1,19 @@
 <?php 
+/**
+ * Pedigree Info
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <cbirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/pedigree/pedigree_info.php
+ * 
+ */
+
 session_start();
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
@@ -130,27 +145,27 @@ function exclude_none() {
     td.marker {padding: 5px 0; border: 0 !important;}
 </style>
 
-<div style="width: 840px;">
+<div style="width: 940px;">
   <table >
     <tr> 
       <th class="marker" style="width: 80px; text-align: left"> &nbsp;&nbsp;Check <br/>
 	<input type="radio" name="btn1" value="" onclick="javascript:exclude_all();"/>All<br>
 	<input type="radio" name="btn1" value="" onclick="javascript:exclude_none();"/>None</th>
-      <th style="width: 480px;" class="marker"> Line Name </th>
-      <th style="width: 100px;" class="marker"> Species </th>
+      <th style="width: 380px;" class="marker"> Line Name </th>
+      <th style="width: 120px;" class="marker"> Species </th>
       <th style="width: 100px;" class="marker"> Breeding Program </th>
       <th style="width: 90px;" class="marker"> Hard-<br>ness </th>
       <th style="width: 90px;" class="marker"> Color </th>
       <th style="width: 90px;" class="marker"> Growth Habit </th>
       <th style="width: 240px;" class="marker"> Synonyms </th>
       <th style="width: 310px;" class="marker"> Pedigree </th>
-      <th style="width: 100px;" class="marker"> Data<br>Available </th>
+      <th style="width: 150px;" class="marker"> Data<br>Available </th>
     </tr>
   </table>
  </div>
 
-<div style="padding: 0; width: 838px; height: 400px; overflow: scroll; border: 1px solid #5b53a6; clear: both">
-<table style="table-layout:fixed; width: 830px">	
+<div style="padding: 0; width: 938px; height: 400px; overflow: scroll; border: 1px solid #5b53a6; clear: both">
+<table style="table-layout:fixed; width: 920px">	
 
 <?php
     foreach ($linelist as $lineuid) {
