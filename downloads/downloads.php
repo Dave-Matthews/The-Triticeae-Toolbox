@@ -3024,7 +3024,7 @@ selected lines</a><br>
          } else {
 	   $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode";
          }
-	 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
+	 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str) order by line_record_uid";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
 	  $name = $row[0];
@@ -3300,7 +3300,9 @@ selected lines</a><br>
 
 	/**
 	 * create map file for tassel V3
-	 * @param string $experiments
+	 * @param array $lines
+         * @param array $markers
+         * @param string $dtype
 	 * @return string
 	 */
 	function type1_build_geneticMap($lines,$markers,$dtype)
