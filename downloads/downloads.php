@@ -940,10 +940,9 @@ class Downloads
                <tr><td><input type="button" value="Download for FlapJack" onclick="javascript:use_session('v6');" />
                <td>genotype coded as {AA, AB, BB}
                </table>
-               <br><br>Links to documentation for analysis using <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
+               <br><br>The genotype file (snpfile.txt or genotype.hmp.txt) contains one measurement for each line and marker. If the line has more than one genotype measurement then a majority rule is used. When there is no majority the measurement is set to "missing". The allele_conflict.txt file list all cases where there is more than one genotype measurement for each line. Documentation for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
                , <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
                and <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>. 
-               For R use the function read.table("file",header=TRUE)
                <?php
 	     }
 	  }
