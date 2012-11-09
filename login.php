@@ -155,7 +155,8 @@ function HTMLLoginForm($msg = "") {
     <li>will be allowed to add their own private data to the database (feature to be added).
     <li>can test-load their data files in the Sandbox database before submitting them to the curator. 
       For this purpose please register at the <a href=http://malt.pw.usda.gov/t3/sandbox/$crop>Sandbox site</a>.
-  </ul>
+    <li>can create unique germplasm line panels (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>)
+ </ul>
 
   <b>All Registered Users</b>
   <ul>
