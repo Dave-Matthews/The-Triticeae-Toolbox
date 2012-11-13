@@ -969,30 +969,6 @@ class Downloads
 	   $marker_str = "";
 	 }
 	 
-	 if (!preg_match('/[0-9]/',$marker_str)) {
-	   //get genotype markers that correspond with the selected lines
-	   $selectedlines = implode(",",$lines);
-	   $sql_exp = "SELECT DISTINCT marker_uid
-	   FROM allele_cache
-	   WHERE
-	   allele_cache.line_record_uid in ($selectedlines)";
-	   $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-	   if (mysql_num_rows($res)>0) {
-	     while ($row = mysql_fetch_array($res)){
-	       $uid = $row["marker_uid"];
-	       $markers[] = $uid;
-	     }
-	    }
-	   $marker_str = implode(',',$markers);
-	   $num_mark = count($markers);
-	   //echo "$num_mark markers in selected lines<br>\n";
-	 }
-
-         //for use with isset
-         foreach ($markers as $marker_uid) {
-           $markers_lookup[$marker_uid] = 1;
-         }
-	 
 	 //get location information for markers
 	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -1019,16 +995,21 @@ class Downloads
               else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
               $i++;
 	    }
+          } else { 
+            foreach ($marker_misscnt as $i=>$value) {
+              $marker_misscnt[$i]++;
+            }
           }
 	 }
          $i=0;
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
 	 foreach ($marker_list as $marker_uid) {
-	   if (isset($markers_lookup[$marker_uid])) {
+	   //if (isset($markers_lookup[$marker_uid])) {
 	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-	   if ($total > 0) {
-	     $maf = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
+           $total_af = 2 * ($marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i]);
+	   if ($total_af > 0) {
+	     $maf = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total_af, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total_af),1);
 	     $miss = round(100*$marker_misscnt[$i]/$total,1);
 	     if ($maf >= $min_maf) $num_maf++;
 	     if ($miss > $max_missing) $num_miss++;
@@ -1037,11 +1018,15 @@ class Downloads
              } else {
                $markers_filtered[] = $marker_uid;
              }
+             //$tmp1 = (2 * $marker_aacnt[$i] + $marker_abcnt[$i]) ;
+             //$tmp2 = (2 * $marker_bbcnt[$i] + $marker_abcnt[$i]) ;
+             //echo "aa=$marker_aacnt[$i] ab=$marker_abcnt[$i] bb=$marker_bbcnt[$i] miss=$marker_misscnt[$i]<br>\n";
+             //echo "$marker_uid $total $maf $miss $tmp1 $tmp2<br>\n";
 	     $num_mark++;
 	   } else {
-	     $num_removed++;
+	     //$num_removed++;
 	   }
-	   }
+	   //}
            $i++; 
 	 }
          $_SESSION['filtered_markers'] = $markers_filtered;
@@ -2826,6 +2811,8 @@ class Downloads
                  }
                  $i++;
                }
+             } else {
+               die("Error - could not find $marker_id<br>\n");
              }
 	     $allele_str = implode("\t",$outarray2);
 	     $output .= "\t$allele_str\n"; 
