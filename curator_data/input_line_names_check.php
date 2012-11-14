@@ -212,7 +212,7 @@ class LineNames_Check
 			$replace = array(" ",'','');
 			$columnName = str_replace($order, $replace, $columnName);
 			// DEBUG
-			//if (DEBUG2) echo "\n\$columnOffset = ".$columnOffset." => \$columnName = ".$columnName;
+			//echo "<br>\$columnOffset = ".$columnOffset." => \$columnName = ".$columnName;
 
 			// Determine the column offset of "*Line Name"...
 			if (preg_match('/^\s*\*linename\s*$/is', trim($columnName)))
@@ -247,8 +247,8 @@ class LineNames_Check
 			if (preg_match('/^\s*spring\/winter\/facultative\s*$/is', trim($columnName)))
 				$columnOffsets['growth_habit'] = $columnOffset+1;
 		
-			// Determine the column offset of "*aestivum / durum"...
-			if (preg_match('/^\s*\*aestivum\/durum\s*$/is', trim($columnName)))
+			// Determine the column offset of "*aestivum / durum / other"...
+			if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
 				$columnOffsets['species'] = $columnOffset+1;
 		
 			// Determine the column offset of "Awned / Awnless"...
@@ -282,11 +282,11 @@ class LineNames_Check
 		/* Now check to see if any required columns weren't found */
 		if (in_array(-1, $columnOffsets)) {
 		  echo "Some required columns were not found, indicated as -1.<br/>";
-		  echo "Please don't change the column labels in the header row.<br/>";
+		  echo "Please don't change the column labels in the header row, row 4.<br/>";
 		  echo "<pre>"; print_r($columnOffsets); echo "</pre>";
 		  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
-	//	if (DEBUG||DEBUG2) echo "<div><pre>\$columnOffsets = ".print_r($columnOffsets, true)."</pre></div>";
+		/* echo "<div><pre>\$columnOffsets = ".print_r($columnOffsets, true)."</pre></div>"; */
 				
 	      /* my insert update script goes here */
 				
