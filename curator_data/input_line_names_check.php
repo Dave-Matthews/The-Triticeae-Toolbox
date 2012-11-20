@@ -851,8 +851,8 @@ $lud = count($line_update_data);
 	  if (preg_match('/^\s*spring\/winter\/facultative\s*$/is', trim($columnName)))
 	    $columnOffsets['growth_habit'] = $columnOffset+1;
 
-	  // Determine the column offset of "*aestivum / durum"...
-	  if (preg_match('/^\s*\*aestivum\/durum\s*$/is', trim($columnName)))
+	  // Determine the column offset of "*aestivum / durum / other"...
+	  if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
 	    $columnOffsets['species'] = $columnOffset+1;
 		
 	  // Determine the column offset of "Awned / Awnless"...
@@ -933,7 +933,7 @@ $lud = count($line_update_data);
 	    // Insert new line into database
 	    // Required fields: species
 	    if (empty($species)) {
-	      die_nice("Field <b>species</b> is required, values a or d.");
+	      die_nice("Field <b>species</b> is required, values a, d or other, in row $irow, Line Name = $line.");
 	    }
 	    //convert line name to upper case and replace spaces with an underscore
 	    $line = strtoupper(str_replace(" ","_",$line));
