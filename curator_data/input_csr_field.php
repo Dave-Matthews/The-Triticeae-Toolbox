@@ -60,6 +60,7 @@ private function typeExperiments()
 	
 	private function type_Experiment_Name()
 	{
+            global $config;
 	?>
 
 <style type="text/css">
@@ -81,9 +82,25 @@ private function typeExperiments()
   <p><input type="submit" value="Upload" /></p>
 </form>
 
-<a href=login/edit_csr_field.php>Edit Field Book Table</a>
+<!--a href=login/edit_csr_field.php>Edit Field Book Table</a><br-->
 		
 <?php
+
+//list links to saved Excel Files
+echo "<br>List of currently loaded Field Book files<br>\n";
+echo "<table border=1>\n";
+$sql = "select fieldbook_name, fieldbook_file_name, created_on from csr_fieldbook_info";
+$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+while ($row = mysql_fetch_assoc($res)) {
+  $name = $row['fieldbook_name'];
+  $file = $row['fieldbook_file_name'];
+  $date = $row['created_on'];
+  $tmp = $config['base_url'] . $file;
+  echo "<tr><td><a href=$tmp>$name</a><td>$date";
+}
+echo "</table>";
+  
+
 	} /* end of type_Experiment_Name function*/
 } /* end of class */
 
