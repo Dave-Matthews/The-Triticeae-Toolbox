@@ -80,42 +80,53 @@ private function typeExperimentCheck()
   $username=$row['name'];
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
   $fieldbookname = $_POST['fieldbook'];
-  $meta_path= "uploads/".$_FILES['file']['name'][0];
-  $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+  $replace_flag = $_POST['replace'];
+  $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
+  $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
   if (file_exists($raw_path)) {
     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
-    $tmp1 = $_FILES['file']['name'][1];
-    $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][1];
+    $tmp1 = $_FILES['file']['name'][0];
+    $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][0];
     //echo "replace $tmp1 $tmp2 $raw_path<br>\n";
+    $meta_path = str_replace("$tmp1","$unq_file_name","$meta_path",$count);
     $raw_path = str_replace("$tmp1","$unq_file_name","$raw_path",$count);
   } else {
-    $unq_file_name = $_FILES['file']['name'][1];
+    $unq_file_name = $_FILES['file']['name'][0];
   }
   if (empty($_FILES['file']['name'][0])) {
-    echo "missing Data file\n";
+    if (empty($_POST['filename'])) {
+      echo "missing Data file\n";
+    } else {
+      $metafile = $_POST['filename'];
+      $meta_path = $_POST['filename_meta'];
+      $raw_path = $_POST['filename'];
+    }
   }
   if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
       mkdir($tmp_dir, 0777);
   }
   $target_path=$tmp_dir."/";
-  if ($_FILES['file']['name'][0] == ""){
+  if (($_FILES['file']['name'][0] == "") && ($metafile == "")){
      error(1, "No File Uploaded");
      print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
   } else {
-    $uploadfile=$_FILES['file']['name'][0];
-    //$rawdatafile = $_FILES['file']['name'][1];
-
-    $uftype=$_FILES['file']['type'][0];
-    if (strpos($uploadfile, ".xlsx") === FALSE) {
+    if (!empty($_FILES['file']['name'][0])) {
+      $uploadfile=$_FILES['file']['name'][0];
+      $uftype=$_FILES['file']['type'][0];
+      if (strpos($uploadfile, ".xlsx") === FALSE) {
              error(1, "Expecting an Excel file. <br> The type of the uploaded file is ".$uftype);
              print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-    } else {
-      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $target_path.$uploadfile) !== TRUE) {
+             die();
+      }
+      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
           echo "error - could not upload file $uploadfile<br>\n";
       } else {
           echo $_FILES['file']['name'][0] . "<br>\n";
+          $metafile = $raw_path;
       }
-               $metafile = $target_path.$uploadfile;
+    } else {
+      echo "using $metafile<br>\n";
+    }
                /* Read the Means file */
                $objPHPExcel = PHPExcel_IOFactory::load($metafile);
                $sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
@@ -147,6 +158,7 @@ private function typeExperimentCheck()
                  echo "<font color=red>Error - missing Field Book Name</font><br>\n";
                  $error_flag = 1;
                }
+
                for ($i = 2; $i <= $lines_found; $i++) {
                  $tmp = $data[$i]["E"];
                  $sql = "select line_record_uid from line_records where line_record_name = '$tmp'";
@@ -157,7 +169,43 @@ private function typeExperimentCheck()
                  }
                }
 
+               $sql = "select fieldbook_info_uid from csr_fieldbook_info where fieldbook_name = '$fieldbookname'";
+               $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+               //echo "found mysql_num_rows($rew)<br>\n";
+               if (mysql_num_rows($res)==0) {
+                 $new_record = 1;
+                 //echo "new record<br>\n";
+               } else {
+                 if (!$replace_flag) {
+                   echo "<font color=red>Warning - record with fieldbook name = $fieldbookname already exist, do you want to overwrite?</font>";
+                   ?>
+                   <form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
+                   <input id="fieldbook" type="hidden" name="fieldbook" value="<?php echo $fieldbookname; ?>">
+                   <input id="replace" type="hidden" name="replace" value="Yes">
+                   <input id="filename" type="hidden" name="filename" value="<?php echo $raw_path; ?>">
+                   <input id="filename_meta" type="hidden" name="filename_meta" value="<?php echo $meta_path; ?>">
+                   <input type="submit" value="Yes">
+                   </form>
+                   <?php
+                   $error_flag = 1;
+                 }
+                 $new_record = 0;
+               }
+
            if ($error_flag == 0) {
+
+               if ($new_record) {
+                   $sql = "insert into csr_fieldbook_info (fieldbook_name, fieldbook_file_name, updated_on, created_on) values ('$fieldbookname', '$meta_path', NOW(), NOW())";
+                   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+                   echo "saved to file system<br>\n";
+               } else {
+                   $sql = "update csr_fieldbook_info set fieldbook_file_name = '$meta_path', updated_on = NOW() where fieldbook_name = '$fieldbookname'";
+                   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+                   $sql = "delete from csr_fieldbook where fieldbook_name = '$fieldbookname'";
+                   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+                   echo "deleted old entries from database where fieldbook_name = $fieldbookname<br>\n";
+               }
+
                for ($i=2; $i<=$lines_found; $i++) {
                  $tmpA = $data[$i]["A"];
                  $tmpB = $data[$i]["B"];
@@ -187,10 +235,11 @@ private function typeExperimentCheck()
                  if (!preg_match("/[0-9]/",$tmpK)) {
                    $tmpK = "NULL";
                  }
+
                  $sql = "insert into csr_fieldbook (fieldbook_name, range_id, plot, entry, plot_id, line_name, trial, field_id, note, replication, block, subblock, row_id, column_id, treatment, main_plot_tmt, subplot_tmt, check_id) values ('$fieldbookname',$tmpA,$tmpB,'$tmpC','$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN','$tmpO','$tmpP','$tmpQ')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
-               echo "saved to database and file system<br>\n";
+               echo "saved to database<br>\n";
            }   
            echo "<br><table>\n";
            for ($i=1; $i<=$lines_found; $i++) {
@@ -203,7 +252,7 @@ private function typeExperimentCheck()
            }
            echo "</table>"; 
     }
-  }
+  //}
 
 }
 
