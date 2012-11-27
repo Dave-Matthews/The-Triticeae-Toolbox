@@ -212,6 +212,12 @@ function connect() {
   return $linkID;
 }
 
+/*
+ * MySQL improved extension, it is strongly recommended that you use this extension.
+ * object-oriented, support for prepared statements, support for multiple statements, support for transactions, enhanced debugging
+ *
+ * @return $linkID
+ */
 function connecti() {
   global $dontconnect;
   $ini_path = dirname(__FILE__) . '/tht.ini';
