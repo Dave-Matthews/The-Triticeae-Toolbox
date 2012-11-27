@@ -9,6 +9,7 @@ $dontconnect = false;
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 session_start();
+
 /**
  * Site-wide maintenance switch
  *
@@ -211,6 +212,26 @@ function connect() {
   return $linkID;
 }
 
+function connecti() {
+  global $dontconnect;
+  $ini_path = dirname(__FILE__) . '/tht.ini';
+  $ini_config = is_readable($ini_path) ?
+    parse_ini_file($ini_path, false):array();
+  if ($dontconnect == true) return null;
+  // Get $db_config = array(db_name,db_user,db_pass,db_host).
+  include('/data/tht_data/mysql_connections/T3wheat+_writeaccess.inc');
+  $db_config = array_merge_recursive_unique($db_config,
+                                            $ini_config);
+  extract($db_config);
+  $mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
+  if ($mysqli->connect_errno) {
+    die($mysqli->connect_errno() . " " . $mysqli->connect_error);
+  } else {
+    $mysqli->query("set SESSION sql_mode='STRICT_ALL_TABLES'") or die(mysql_error());
+  }
+  return $mysqli;
+}
+
 /*
  * This function will test to ensure that a user has logged in before they access
  * the page. If the user is not logged in, then he/she is redirected to the forbidden page.
@@ -272,7 +293,7 @@ function censor() {
 	 * space behind each word so as not to replace words inside of words
 	 */
 	foreach($words as $k=>$v) {
-		$words[$k] = "/ " . $v . "/i";
+		$words[$k] = "/ " . $v . " /i";
 	}
 
 	$replace = array_fill(0, count($words), "[censored]");
