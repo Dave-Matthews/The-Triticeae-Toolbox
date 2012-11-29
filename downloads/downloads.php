@@ -857,13 +857,7 @@ class Downloads
              } else {
                $markers_filtered[] = $marker_uid;
              }
-             //$tmp1 = (2 * $marker_aacnt[$i] + $marker_abcnt[$i]) ;
-             //$tmp2 = (2 * $marker_bbcnt[$i] + $marker_abcnt[$i]) ;
-             //echo "aa=$marker_aacnt[$i] ab=$marker_abcnt[$i] bb=$marker_bbcnt[$i] miss=$marker_misscnt[$i]<br>\n";
-             //echo "$marker_uid $total $maf $miss $tmp1 $tmp2<br>\n";
 	     $num_mark++;
-	   } else {
-	     //$num_removed++;
 	   }
 	   //}
            $i++; 
