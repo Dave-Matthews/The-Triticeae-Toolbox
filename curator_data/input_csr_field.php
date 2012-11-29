@@ -48,8 +48,8 @@ private function typeExperiments()
 		global $config;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
-		echo "<h2>Add CSR Experiment Results</h2>"; 
-                echo "Note: Please load the corresponding Phenotype Experiment, Spectrometer System, and Field Book files before uploading the CSR Experiment Results<br>";
+		echo "<h2>Add CSR Field Book</h2>"; 
+		
 			
 		$this->type_Experiment_Name();
 
@@ -60,6 +60,7 @@ private function typeExperiments()
 	
 	private function type_Experiment_Name()
 	{
+            global $config;
 	?>
 
 <style type="text/css">
@@ -72,18 +73,34 @@ private function typeExperiments()
 <!-- <p><strong>Note: </strong><font size="2px">Please load the corresponding
     <a href="<?php echo $config['base_url'] ?>curator_data/input_annotations_upload_excel.php">Phenotype 
       Experiment Annotations</a> file before uploading the results files. </font></p> -->
-<br>
-<form action="curator_data/input_csr_exper_check.php" method="post" enctype="multipart/form-data">
+
+<form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
   <table>
-  <tr><td><strong>Trial File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3example.xlsx">Example Trial File</a>
-  <tr><td><strong>Raw Data File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSR_SP0_processed.txt">Example Raw Data File</a>
+  <tr><td><strong>Field Book Name:</strong><td><input id="fieldbook" type="text" name="fieldbook" size="50%" />
+  <tr><td><strong>Data File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/field_template.xlsx">Example Data File</a>
   </table>
   <p><input type="submit" value="Upload" /></p>
 </form>
 
-<a href=login/edit_csr_trials.php>Edit Trial Table</a>
+<!--a href=login/edit_csr_field.php>Edit Field Book Table</a><br-->
 		
 <?php
+
+//list links to saved Excel Files
+echo "<br>List of currently loaded Field Book files<br>\n";
+echo "<table border=1>\n";
+$sql = "select fieldbook_name, fieldbook_file_name, created_on from csr_fieldbook_info";
+$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+while ($row = mysql_fetch_assoc($res)) {
+  $name = $row['fieldbook_name'];
+  $file = $row['fieldbook_file_name'];
+  $date = $row['created_on'];
+  $tmp = $config['base_url'] . $file;
+  echo "<tr><td><a href=$tmp>$name</a><td>$date";
+}
+echo "</table>";
+  
+
 	} /* end of type_Experiment_Name function*/
 } /* end of class */
 

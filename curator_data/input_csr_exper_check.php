@@ -10,6 +10,9 @@ loginTest();
 
 $row = loadUser($_SESSION['username']);
 
+//needed for mac compatibility
+ini_set('auto_detect_line_endings',true);
+
 ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
@@ -124,7 +127,7 @@ public function save_raw_file($wavelength) {
                $i++;
              }
              $i--;
-             echo "$i lines (Wavelengths), $size columns in file<br>\n";
+             echo "$i rows (Wavelengths), $size columns (Plots) in file<br>\n";
           
              //save to SQLite
              //$this->save_raw_file($raw_path);   
@@ -161,33 +164,37 @@ public function save_raw_file($wavelength) {
       if (move_uploaded_file($_FILES['file']['tmp_name'][0], $target_path.$uploadfile) !== TRUE) {
           echo "error - could not upload file $uploadfile<br>\n";
       } else {
-          echo "uploaded file - " . $_FILES['file']['name'][0] . "<br>\n";
+          echo $_FILES['file']['name'][0] . "<br>\n";
       }
                $metafile = $target_path.$uploadfile;
                /* Read the Means file */
                $objPHPExcel = PHPExcel_IOFactory::load($metafile);
                $sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
-               $i = 2;
+               $i = 1;
                $found = 1;
-               echo "<table border=1><tr><td>Paramater<td>Value";
                while ($found) {
                  $tmp1 = $sheetData[$i]["A"];
                  $tmp2 = $sheetData[$i]["B"];
                  if (preg_match("/[A-Za-z0-9]+/",$tmp1)) {
                    $data[$i] = $tmp1;
                    $value[$i] = $tmp2;
-                   echo "<tr><td>$tmp1<td>$tmp2\n";
                    $i++;
                  } else {
                    $found = 0;
                  }
                }
-               $i--;
-               echo "</table>\n";
-               echo "$i lines read from spreadsheet, ";
+               $lines_found = $i - 1;
+
+               $error_flag = 0;
                if ($data[2] != "Trial Name") {
                  echo "expected \"Trial Name\" found $data[2]<br>\n";
                }
+               $sql = "select experiment_uid from experiments where trial_code = '$value[2]'";
+               $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+               if (mysql_num_rows($res)==0) { //no, experiment not found once  
+                 echo "<font color=red>Error: could not find Trial Name \"$value[2]\" in experiments table, please load this experiment first<br></font>\n";
+                 $error_flag = 1;
+               } 
                if ($data[3] != "Upwelling / Downwelling") {
                  echo "expected \"Upwelling \/ Downwelling\" found $data[3]<br>\n";
                }
@@ -197,9 +204,17 @@ public function save_raw_file($wavelength) {
                if ($data[5] != "Growth Stage") {
                  echo "expected \"Growth Stage\" found $data[5]<br>";
                }
-               echo "saved to database<br>\n";
-               $sql = "insert into csr_trial (trial, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, instrument, instrument_detail, spectrometer_serial, grating, collection_lens, longpass_filter, slit_aperature, cable_type, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ('$value[2]','$value[3]',str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$value[16]','$value[17]',$value[18],$value[19],'$value[20]','$value[21]','$value[22]','$unq_file_name')";
-               $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+
+               if ($error_flag == 0) {
+                 $sql = "insert into csr_trial (trial, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, system_name, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ('$value[2]','$value[3]',str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
+                 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+                 echo "saved to database<br>\n";
+               }
+               echo "<br><table>\n";
+               for ($i=1; $i<=$lines_found; $i++) {
+                 echo "<tr><td>$i<td>$data[$i]<td>$value[$i]\n";
+               }
+               echo "</table>";
     }
   }
 
