@@ -535,8 +535,7 @@ class Downloads
 	    <script type="text/javascript">
 	      var mm = 10;
 	      var mmaf = 5; 
-            window.addEventListener('load', load_markers_lines( mm, mmaf));
-            window.addEventListener('load', load_title());
+              window.onload = load_markers_lines( mm, mmaf);
 	    </script>
 	    </div>
 	     <?php 	
