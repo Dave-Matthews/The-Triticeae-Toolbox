@@ -447,6 +447,7 @@ function update_breeding_programs(options) {
     if (breeding_programs_str !== "" && years_str !== "") {
         load_experiments();
     }
+    load_yearprog();
     document.getElementById('step3').innerHTML = "";
     document.getElementById('step4').innerHTML = "";
     document.getElementById('step5').innerHTML = "";
@@ -636,20 +637,20 @@ function update_phenotype_linesb(options) {
 			}
 
 			function load_yearprog() {
-			    $('step11').hide();
+			    $('step2').hide();
                 var url=php_self + "?function=step1yearprog&bp=" + breeding_programs_str + "&yrs=" + years_str;
                 document.title='Loading Step1...';
-                var tmp = new Ajax.Updater($('step11'),url,
+                var tmp = new Ajax.Updater($('step2'),url,
                         { 
                                 onComplete: function() {
-                                    $('step11').show();
+                                    $('step2').show();
                                     document.title=title;
                                 }
                         }
                     );
-                                document.getElementById('step2').innerHTML = "";
                                 document.getElementById('step3').innerHTML = "";
                                 document.getElementById('step4').innerHTML = "";
+                                document.getElementById('step5').innerHTML = "";
                 }						
 			
 			function update_select1(options) {
@@ -739,16 +740,17 @@ function update_phenotype_linesb(options) {
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
                 //changes are right here
-                var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
+                var tmp = new Ajax.Updater($('step5'), url, {
                     //onCreate: function() { Element.show('spinner'); },
                     onComplete: function() {
                          $('step5').show();
                         if (traits_loading === false) {
                             document.title = title;
                         }
+                        Element.hide('spinner');
                         markers_loading = false;
                         markers_loaded = true;
-                        //load_title2();
+                        load_title();
                     }}
                 );
             }
