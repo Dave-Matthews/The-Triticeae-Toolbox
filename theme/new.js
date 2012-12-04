@@ -1,14 +1,18 @@
 /*global $,Ajax,window*/
 
-var isIE = /*@cc_on!@*/false;
 var title = document.title;
 
 function setup(){}
 
 function getElmt(id)
 {
-	if (isIE) { return (document.all[id]); }
-	else { return (document.getElementById(id)); }
+	//if (isIE) { return (document.all[id]); }
+	//else { return (document.getElementById(id)); }
+        if (document.getElementById) { //DOM
+          return (document.getElementById(id))
+        } else if (document.all) { //IE
+          return (document.all[id])
+        }
 }
 
 function moveQuickLinks()
