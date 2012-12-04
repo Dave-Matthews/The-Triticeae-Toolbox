@@ -182,8 +182,8 @@ EOD;
       <!-- <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data"> -->
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php" title="Phenotype data">
       Add Phenotype Results</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_exper.php" title="Phenotype CSR data">
-      Add CSR Phenotype Results</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_router.php" title="Phenotype CSR data">
+      Add CSR Data</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
       Add Genotype Experiment Annotations</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
