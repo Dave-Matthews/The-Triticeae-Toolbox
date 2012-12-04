@@ -6,6 +6,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes'
 include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 connect();
+$mysqli = connecti();
 loginTest();
 
 $row = loadUser($_SESSION['username']);
@@ -60,6 +61,7 @@ private function typeExperimentCheck()
  * check experiment data before loading into database
  */
  private function type_Experiment_Name() {
+   global $mysqli;
 ?>
    <script type="text/javascript">
      function update_database(filepath, filename, username, rawdatafile) {
@@ -154,8 +156,8 @@ private function typeExperimentCheck()
                  echo "<font color=red>Error in column header - expected \"range\" found $tmp</font><br>\n";
                  $error_flag = 1;
                }
-               if (!preg_match("/[A-Za-z]/",$fieldbookname)) {
-                 echo "<font color=red>Error - missing Field Book Name</font><br>\n";
+               if (!preg_match("/[0-9]/",$fieldbookname)) {
+                 echo "<font color=red>Error - missing Trial Name</font><br>\n";
                  $error_flag = 1;
                }
 
@@ -169,10 +171,10 @@ private function typeExperimentCheck()
                  }
                }
 
-               $sql = "select fieldbook_info_uid from csr_fieldbook_info where fieldbook_name = '$fieldbookname'";
-               $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+               $sql = "select fieldbook_info_uid from csr_fieldbook_info where experiment_uid = '$fieldbookname'";
+               $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                //echo "found mysql_num_rows($rew)<br>\n";
-               if (mysql_num_rows($res)==0) {
+               if (mysqli_num_rows($res)==0) {
                  $new_record = 1;
                  //echo "new record<br>\n";
                } else {
@@ -195,14 +197,14 @@ private function typeExperimentCheck()
            if ($error_flag == 0) {
 
                if ($new_record) {
-                   $sql = "insert into csr_fieldbook_info (fieldbook_name, fieldbook_file_name, updated_on, created_on) values ('$fieldbookname', '$meta_path', NOW(), NOW())";
-                   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+                   $sql = "insert into csr_fieldbook_info (experiment_uid, fieldbook_file_name, updated_on, created_on) values ($fieldbookname, '$meta_path', NOW(), NOW())";
+                   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to file system<br>\n";
                } else {
-                   $sql = "update csr_fieldbook_info set fieldbook_file_name = '$meta_path', updated_on = NOW() where fieldbook_name = '$fieldbookname'";
-                   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-                   $sql = "delete from csr_fieldbook where fieldbook_name = '$fieldbookname'";
-                   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+                   $sql = "update csr_fieldbook_info set fieldbook_file_name = '$meta_path', updated_on = NOW() where experiment_uid = $fieldbookname";
+                   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                   $sql = "delete from csr_fieldbook where experiment_uid = $fieldbookname";
+                   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "deleted old entries from database where fieldbook_name = $fieldbookname<br>\n";
                }
 
@@ -236,7 +238,7 @@ private function typeExperimentCheck()
                    $tmpK = "NULL";
                  }
 
-                 $sql = "insert into csr_fieldbook (fieldbook_name, range_id, plot, entry, plot_id, line_name, trial, field_id, note, replication, block, subblock, row_id, column_id, treatment, main_plot_tmt, subplot_tmt, check_id) values ('$fieldbookname',$tmpA,$tmpB,'$tmpC','$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN','$tmpO','$tmpP','$tmpQ')";
+                 $sql = "insert into csr_fieldbook (experiment_uid, range_id, plot, entry, plot_id, line_name, trial, field_id, note, replication, block, subblock, row_id, column_id, treatment, main_plot_tmt, subplot_tmt, check_id) values ($fieldbookname,$tmpA,$tmpB,'$tmpC','$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN','$tmpO','$tmpP','$tmpQ')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";

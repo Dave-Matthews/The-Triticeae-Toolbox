@@ -6,9 +6,12 @@ set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes'
 include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 connect();
+$mysqli = connecti();
 loginTest();
 
-$row = loadUser($_SESSION['username']);
+$user = loadUser($_SESSION['username']);
+$userid = $user['users_uid'];
+$username = $user['name'];
 
 //needed for mac compatibility
 ini_set('auto_detect_line_endings',true);
@@ -70,6 +73,8 @@ public function save_raw_file($wavelength) {
  * check experiment data before loading into database
  */
  private function type_Experiment_Name() {
+   global $mysqli;
+   global $userid;
 ?>
    <script type="text/javascript">
      function update_database(filepath, filename, username, rawdatafile) {
@@ -89,18 +94,46 @@ public function save_raw_file($wavelength) {
   $row = loadUser($_SESSION['username']);
   $username=$row['name'];
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
-  $meta_paht= "uploads/".$_FILES['file']['name'][0];
   $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+  $experiment_uid = $_POST['exper_uid'];
+  if (preg_match("/[0-9]/",$experiment_uid)) {
+  } else {
+    die("Error: Must select a trial name<br>\n");
+  }
+  $replace_flag = $_POST['replace'];
   if (file_exists($raw_path)) {
     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
     $tmp1 = $_FILES['file']['name'][1];
     $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][1];
-    //echo "replace $tmp1 $tmp2 $raw_path<br>\n";
     $raw_path = str_replace("$tmp1","$unq_file_name","$raw_path",$count);
   } else {
     $unq_file_name = $_FILES['file']['name'][1];
   }
-  if (!empty($_FILES['file']['name'][1])) {
+  if (empty($_FILES['file']['name'][0])) {
+    if (empty($_POST['filename0'])) {
+      echo "missing Annotation file\n";
+    } else {
+      $metafile0 = $_POST['filename0'];
+    }
+  } else {
+    $filename0 = $_FILES['file']['name'][0];
+  }
+  if (empty($_FILES['file']['name'][1])) {
+    if (empty($_POST['filename1'])) {
+      echo "missing Raw file\n";
+    } else {
+      $metafile1 = $_POST['filename1'];
+      $unq_file_name = $_POST['filename1'];
+    }
+  } else {
+    $filename1 = $_FILES['file']['name'][1];
+  }
+
+  if (empty($_FILES['file']['name'][1]) && ($metafile1 == "")) {
+    error(1, "No File Upoaded");
+    print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+  } else {
+    if (!empty($_FILES['file']['name'][1])) {
          if (move_uploaded_file($_FILES['file']['tmp_name'][1], $raw_path) !== TRUE) {
              echo "<font color=red><b>Oops!</b></font> Your raw data file <b>"
              .$_FILES['file']['name'][1]."</b> was not saved in directory ".$config['root_dir']."raw/ and
@@ -113,6 +146,7 @@ public function save_raw_file($wavelength) {
              if (($reader = fopen($raw_path, "r")) == false) {
                die("error - can not read file $raw_path<br>\n");
              }
+             $size = 0;
              while ($line = fgets($reader)) {
                $temp = str_getcsv($line,"\t");
                $wavelength[$i] = $temp;
@@ -142,31 +176,40 @@ public function save_raw_file($wavelength) {
              $objWriter->save('/tmp/tht/testfile.xls');
          }
          umask(0);
-  } else {
-    echo "missing Meta file\n";
+    } else {
+      print "using $metafile1<br>\n";
+    }
   }
   if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
       mkdir($tmp_dir, 0777);
   }
   $target_path=$tmp_dir."/";
-  if ($_FILES['file']['name'][0] == ""){
+  if (($_FILES['file']['name'][0] == "") && ($metafile0 == "")) {
      error(1, "No File Uploaded");
      print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
   } else {
-    $uploadfile=$_FILES['file']['name'][0];
-    $rawdatafile = $_FILES['file']['name'][1];
-
-    $uftype=$_FILES['file']['type'][0];
-    if (strpos($uploadfile, ".xlsx") === FALSE) {
+    if (!empty($_FILES['file']['name'][0])) {
+      $uploadfile=$_FILES['file']['name'][0];
+      $rawdatafile = $_FILES['file']['name'][1];
+      $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
+      $uftype=$_FILES['file']['type'][0];
+      if (strpos($uploadfile, ".xlsx") === FALSE) {
              error(1, "Expecting an Excel file. <br> The type of the uploaded file is ".$uftype);
              print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-    } else {
-      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $target_path.$uploadfile) !== TRUE) {
-          echo "error - could not upload file $uploadfile<br>\n";
-      } else {
-          echo $_FILES['file']['name'][0] . "<br>\n";
+             die();
       }
-               $metafile = $target_path.$uploadfile;
+      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
+        echo "error - could not upload file $uploadfile<br>\n";
+      } else {
+        echo $_FILES['file']['name'][0] . "<br>\n";
+      }
+      $metafile = $raw_path;
+      echo "using $metafile<br>\n";
+    } else {
+      echo "using $metafile0<br>\n";
+      $metafile = $raw_path.$metafile0;
+      echo "using $metafile<br>\n";
+    }
                /* Read the Means file */
                $objPHPExcel = PHPExcel_IOFactory::load($metafile);
                $sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
@@ -186,29 +229,72 @@ public function save_raw_file($wavelength) {
                $lines_found = $i - 1;
 
                $error_flag = 0;
-               if ($data[2] != "Trial Name") {
-                 echo "expected \"Trial Name\" found $data[2]<br>\n";
-               }
-               $sql = "select experiment_uid from experiments where trial_code = '$value[2]'";
-               $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-               if (mysql_num_rows($res)==0) { //no, experiment not found once  
+               $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
+               $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+               $row = mysqli_fetch_array($res);
+               if (mysqli_num_rows($res)==0) { //no, experiment not found once  
                  echo "<font color=red>Error: could not find Trial Name \"$value[2]\" in experiments table, please load this experiment first<br></font>\n";
                  $error_flag = 1;
-               } 
+                 die();
+               }
                if ($data[3] != "Upwelling / Downwelling") {
                  echo "expected \"Upwelling \/ Downwelling\" found $data[3]<br>\n";
+                 $error_flag = 1;
                }
-               if ($data[4] !== "Measurement date") {
+               if ($data[4] !== "Measurement date time") {
                  echo "expected \"Measurement date\" found $data[4]<br>";
+                 $error_flag = 1;
                }
                if ($data[5] != "Growth Stage") {
                  echo "expected \"Growth Stage\" found $data[5]<br>";
+                 $error_flag = 1;
+               }
+
+               //check for unique record
+               //multiple raw files are allowed if they use a different time
+
+               $sql = "select measurement_uid from csr_measurement where experiment_uid = $experiment_uid and radiation_direction = '$value[3]' and measure_date = str_to_date('$value[4]','%m/%d/%Y %H:%i')";
+               $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+               $row = mysqli_fetch_array($res);
+               if (mysqli_num_rows($res) == 0) {
+                 $new_record = 1;
+                 $measurement_uid = NULL;
+               } else {
+                 $measurement_uid = $row[0];
+                 if (!$replace_flag) {
+                   echo "<font color=red>Warning - record with trial name = $value[2], Upwelling/Downwelling = $value[3], and Measurement data time = $value[4]  already exist. ";
+                   echo "Do you want to overwrite?</font>";
+                   ?>
+                   <form action="curator_data/input_csr_exper_check.php" method="post" enctype="multipart/form-data">
+                   <input id="exper_uid" type="hidden" name="exper_uid" value="<?php echo $experiment_uid; ?>">
+                   <input id="replace" type="hidden" name="replace" value="Yes">
+                   <input id="filename0" type="hidden" name="filename0" value="<?php echo $filename0; ?>">
+                   <input id="filename1" type="hidden" name="filename1" value="<?php echo $filename1; ?>">
+                   <input type="submit" value="Yes">
+                   </form>
+                   <?php
+                   $error_flag = 1;
+                 }
+                 $new_record = 0;
                }
 
                if ($error_flag == 0) {
-                 $sql = "insert into csr_trial (trial, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, system_name, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ('$value[2]','$value[3]',str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
-                 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-                 echo "saved to database<br>\n";
+                 if ($new_record) {
+                   $sql = "insert into csr_measurement (experiment_uid, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, system_name, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ($experiment_uid,'$value[3]',str_to_date('$value[4]','%m/%d/%Y %H:%i'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
+                   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                   echo "saved to database<br>\n";
+                   //$sql = "insert into csr_rawfiles (experiment_uid, measurement_uid, users_uid, name) values ($experiment_uid, $measurement_uid, $userid, '$unq_file_name')";
+                   //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql"); 
+                 } else {
+                   $sql = "delete from csr_measurement where measurement_uid  = $measurement_uid";
+                   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                   echo "deleted old entries from database where measurement_uid = $measurement_uid<br>\n";
+                   $sql = "insert into csr_measurement (experiment_uid, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, system_name, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ($experiment_uid,'$value[3]',str_to_date('$value[4]','%m/%d/%Y %H:%i'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
+                   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                   echo "saved to database<br>\n";
+                   //$sql = "insert into csr_rawfiles (experiment_uid, measurement_uid, users_uid, name) values ($experiment_uid, $measurement_uid, $userid, '$unq_file_name')";
+                   //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                 }
                }
                echo "<br><table>\n";
                for ($i=1; $i<=$lines_found; $i++) {
@@ -216,7 +302,7 @@ public function save_raw_file($wavelength) {
                }
                echo "</table>";
     }
-  }
+  //}
 
 }
 
