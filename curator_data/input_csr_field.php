@@ -47,10 +47,11 @@ class Experiments
 private function typeExperiments()
 	{
 		global $config;
+                global $mysqli;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
-		echo "<h2>Add CSR Experiment Results</h2>"; 
-                echo "Note: Please load the corresponding Phenotype Experiment, Spectrometer System, and Field Book files before uploading the CSR Experiment Results<br>";
+		echo "<h2>Add CSR Field Book</h2>"; 
+		
 			
 		$this->type_Experiment_Name();
 
@@ -61,7 +62,8 @@ private function typeExperiments()
 	
 	private function type_Experiment_Name()
 	{
-          global $mysqli;
+            global $config;
+            global $mysqli;
 	?>
 
 <style type="text/css">
@@ -74,11 +76,11 @@ private function typeExperiments()
 <!-- <p><strong>Note: </strong><font size="2px">Please load the corresponding
     <a href="<?php echo $config['base_url'] ?>curator_data/input_annotations_upload_excel.php">Phenotype 
       Experiment Annotations</a> file before uploading the results files. </font></p> -->
-<br>
-<form action="curator_data/input_csr_exper_check.php" method="post" enctype="multipart/form-data">
+
+<form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
   <table>
   <tr><td><strong>Trial Name:</strong><td>
-  <select name="exper_uid">
+  <select name="fieldbook">
 <?php
 echo "<option>select a trial</option>\n";
 $sql = "select trial_code, experiment_uid, experiment_year from experiments where experiment_type_uid = 1 order by experiment_year desc";
@@ -91,15 +93,30 @@ while ($row = mysqli_fetch_assoc($res)) {
 }
 echo "</select>\n";
 ?>
-  <tr><td><strong>Trial Annotation File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3example.xlsx">Example Trial File</a>
-  <tr><td><strong>CSR Data File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSR_SP0_processed.txt">Example Raw Data File</a>
+  <tr><td><strong>Field Book File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/field_template.xlsx">Example Data File</a>
   </table>
   <p><input type="submit" value="Upload" /></p>
 </form>
 
-<a href=login/edit_csr_trials.php>Edit Trial Table</a>
+<!--a href=login/edit_csr_field.php>Edit Field Book Table</a><br-->
 		
 <?php
+
+//list links to saved Excel Files
+echo "<br>List of currently loaded Field Book files<br>\n";
+echo "<table border=1>\n";
+$sql = "select experiment_uid, fieldbook_file_name, created_on from csr_fieldbook_info";
+$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+while ($row = mysqli_fetch_assoc($res)) {
+  $name = $row['experiment_uid'];
+  $file = $row['fieldbook_file_name'];
+  $date = $row['created_on'];
+  $tmp = $config['base_url'] . $file;
+  echo "<tr><td><a href=$tmp>$trial_list[$name]</a><td>$date";
+}
+echo "</table>";
+  
+
 	} /* end of type_Experiment_Name function*/
 } /* end of class */
 

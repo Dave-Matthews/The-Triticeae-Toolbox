@@ -409,32 +409,32 @@ private function typeAnnotationCheck()
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
 	
-	// Harvest Date
+	// Harvest Date.  Making it optional, dec2012.
 	$teststr= addcslashes(trim($harvestdate_row[$i]),"\0..\37!@\177..\377");
-	$phpdate = date_create_from_format('n/j/Y', $teststr);
-	if ($phpdate === FALSE) {
-	  echo "Couldn't parse Harvest Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
-	  //print_h(date_get_last_errors());  // debug
-	}
-	else {
-	  $fdate = date_format($phpdate, 'n/j/Y');
-	  if ($fdate == $teststr) 
-	    $experiments[$index]->harvestdate = $teststr;
-	}
-	if ($phpdate === FALSE OR $fdate != $teststr) {
-	  $experiments[$index]->harvestdate = '';
-	  echo "<b>Error</b>: Please use <i>m/d/yyyy</i> format for Harvest date, e.g. \"8/9/2012\"<br>
+	if ($teststr) {
+	  $phpdate = date_create_from_format('n/j/Y', $teststr);
+	  if ($phpdate === FALSE) {
+	    echo "Couldn't parse Harvest Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
+	  }
+	  else {
+	    $fdate = date_format($phpdate, 'n/j/Y');
+	    if ($fdate == $teststr) 
+	      $experiments[$index]->harvestdate = $teststr;
+	  }
+	  if ($phpdate === FALSE OR $fdate != $teststr) {
+	    $experiments[$index]->harvestdate = '';
+	    echo "<b>Error</b>: Please use <i>m/d/yyyy</i> format for Harvest date, e.g. \"8/9/2012\"<br>
                   instead of <font color=red>\"$teststr\"</font>.<br>";
-	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+	    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+	  }
 	}
 	
 	// Weather Date, optional
-	$teststr= addcslashes(($beginweatherdate_row[$i]),"\0..\37!@\177..\377");
+	$teststr= addcslashes(trim($beginweatherdate_row[$i]),"\0..\37!@\177..\377");
 	if ($teststr) {
 	  $phpdate = date_create_from_format('n/j/Y', $teststr);
 	  if ($phpdate === FALSE) {
 	    echo "Couldn't parse Begin Weather Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
-	    //print_h(date_get_last_errors());  // debug
 	  }
 	  else {
 	    $fdate = date_format($phpdate, 'n/j/Y');
