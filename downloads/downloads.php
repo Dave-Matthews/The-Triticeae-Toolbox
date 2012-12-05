@@ -349,7 +349,16 @@ class Downloads
 		}
 		
 		$dir = '/tmp/tht/';
-                $filename = 'THTdownload_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
+                if (($version == "V2") || ($version == "V3") || ($version == "V4")) {
+                  $filename = "T3download_tassel_";
+                } elseif ($version == "V5") {
+                  $filename = "T3download_R_";
+                } elseif ($version == "V6") {
+                  $filename = "T3download_FJ_";
+                } else {
+                  $filename = "T3download_";
+                }
+                $filename .= chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 
 	        // File_Archive doesn't do a good job of creating files, so we'll create it first
                 if(!file_exists($dir.$filename)){
@@ -1424,7 +1433,7 @@ class Downloads
 		//$firephp->error("Curent location: ". getcwd());
 		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
 		$dir = '/tmp/tht/';
-		$filename = 'THTdownload_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
+		$filename = 'T3download_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 		
         // File_Archive doesn't do a good job of creating files, so we'll create it first
 		if(!file_exists($dir.$filename)){
@@ -1501,7 +1510,7 @@ class Downloads
 		//$firephp->error("Curent location: ". getcwd());
 		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
 		$dir = '/tmp/tht/';
-		$filename = 'THTdownload_tasselV3_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
+		$filename = 'T3download_tasselV3_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 		
         // File_Archive doesn't do a good job of creating files, so we'll create it first
 		if(!file_exists($dir.$filename)){
@@ -1650,7 +1659,7 @@ class Downloads
 	  }
 	  
 	  $dir = '/tmp/tht/';
-	  $filename = 'THTdownload_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
+	  $filename = 'T3download_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 	  
 	  // File_Archive doesn't do a good job of creating files, so we'll create it first
 	  if(!file_exists($dir.$filename)){
