@@ -278,10 +278,9 @@ EOD;
   <input style="width:170px" type="text" name="keywords" value="Quick search..." onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
   </div>
   </form>
-  <br>
-<!--  <a href="<?php echo $config['base_url']; ?>advanced_search.php">Advanced Search</a> -->
-  </div>
-<div id="quicklinks"  style="top:230px;left:0px; width: 170px; padding: 10px 15px;">
+  <br></div>
+
+<div  style="margin-left: -25px; width: 170px; padding: 10px 15px;">
 <?php include($config['root_dir'].'whatsnew.html'); ?>
 </div>
 
