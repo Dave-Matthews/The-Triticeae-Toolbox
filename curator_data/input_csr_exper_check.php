@@ -147,21 +147,30 @@ public function save_raw_file($wavelength) {
                die("error - can not read file $raw_path<br>\n");
              }
              $size = 0;
+             $count_plot = 0;
              while ($line = fgets($reader)) {
                $temp = str_getcsv($line,"\t");
                $wavelength[$i] = $temp;
                if ($size == 0) {
                  $size = count($temp);
+                 for ($j=0; $j<=$size; $j++) {
+                   if (preg_match("/[0-9]/",$temp[$j])) {
+                     $count_plot++;
+                   }
+                 }
                } else {
                  $size_t = count($temp);
-                 if ($size != $size_t) {
-                   echo "error $size $size_t<br>\n";
+                 if (!preg_match("/[A-Za-z0-9]/",$temp[0])) { 	#blank line
+                   echo "blank line at line $i<br>\n";
+                 } elseif (preg_match("/Start time/",$temp[0])) {	#allow blank line for Start time
+                 } elseif ($size != $size_t) {
+                   echo "error line $i size=$size_t expected=$size<br>\n";
                  }
                }
                $i++;
              }
-             $i--;
-             echo "$i rows (Wavelengths), $size columns (Plots) in file<br>\n";
+             $count_wavl = $i - 5;
+             echo "$count_wavl (Wavelengths), $count_plot (Plots)<br>\n";
           
              //save to SQLite
              //$this->save_raw_file($raw_path);   
