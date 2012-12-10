@@ -7,7 +7,7 @@ connect();
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h1>Cluster Lines by Genotype, SVD</h1>
+  <h1>Cluster Lines 3D, Hierarchical</h1>
   <div class="section">
 
 <?php
@@ -16,29 +16,55 @@ $nclusters = $_GET['clusters'];
 $time = $_GET['time'];
 $querytime = date("U") - $time;
 
+if(isset($_SESSION['selected_lines'])) {
+  $lines = $_SESSION['selected_lines'];
+  $lines_str = implode(",",$lines);
+  $line_name_str = "";
+  foreach ($lines as $uid) {
+    $sql = "select line_record_name from line_records where line_record_uid = $uid";
+    $res = mysql_query($sql) or die(mysql_error());
+    $row = mysql_fetch_assoc($res);
+    $name = $row['line_record_name'];
+    if ($line_name_str == "") {
+      $line_name_str = $name;
+    } else {
+      $line_name_str = $line_name_str . ",$name";
+    }
+  }
+}
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
-fwrite($setup, "lineNames <-c('')\n");
+$cmd = "lineNames <-c('')\n";
+fwrite($setup, $cmd);
 fwrite($setup, "nClust <- $nclusters\n");
 fwrite($setup, "setwd(\"/tmp/tht/\")\n");
 fwrite($setup, "mrkDataFile <-c('mrkData.csv".$time."')\n");
 fwrite($setup, "phenoDataFile <-c('phenoData.csv".$time."')\n");
 fwrite($setup, "clustInfoFile<-c('clustInfo.txt".$time."')\n");
-fwrite($setup, "clustertableFile <-c('clustertable.txt".$time."')\n");
-fwrite($setup, "clust3dCoords<-c('clust3dCoords.csv".$time."')\n");
+fwrite($setup, "clustertableFile <-c('/tmp/tht/clustertable.txt".$time."')\n");
+fwrite($setup, "clust3dCoords<-c('/tmp/tht/clust3dCoords.csv".$time."')\n");
 fclose($setup);
 
 $starttime = time();
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
-exec("cat /tmp/tht/setupclust3d.txt$time R/Clust4D.R | R --vanilla");
+exec("cat /tmp/tht/setupclust3d.txt$time R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time");
 $elapsed = time() - $starttime;
 
 /*
  * Show the graphic.
  */
+if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
+  echo "Error - R script failed<br>\n";
+  $h = fopen("/tmp/tht/cluster4d.txt".$time,"r");
+  while ($line=fgets($h)) {
+    echo "$line<br>\n";
+  }
+  fclose($h);
+  die();
+}
 ?>
     <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
     <link rel="stylesheet" type="text/css" href="X3DOM/x3dom.css" />

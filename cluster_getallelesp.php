@@ -133,29 +133,77 @@ else {
   // Get phenotype data
   $outfile = "/tmp/tht/phenoData.csv".$time;
   $outputheader = "value\n";
-  file_put_contents($outfile, $outputheader);
   $trait = $_SESSION['selected_traits'];
   $trait = $trait[0];
-  $experiments = implode(",",$_SESSION['selected_trials']);
-
+  if (isset($_SESSION['selected_trials'])) {
+    $tmp = $_SESSION['selected_trials'];
+    $experiments = implode(",",$tmp);
+    file_put_contents($outfile, $experiments."\n");
+  } elseif (isset($_SESEION['selected_traits'])) {
+    $trait = $_SESSION['selected_traits'];
+    $trait = $trait[0];
+    $tmp = array();
+    $sql = "SELECT distinct tb.experiment_uid
+    FROM tht_base as tb, phenotype_data as pd, line_records as lr
+    WHERE pd.tht_base_uid = tb.tht_base_uid
+    AND lr.line_record_uid = tb.line_record_uid
+    AND pd.phenotype_uid IN ($trait)
+    AND lr.line_record_uid IN ($sel_lines)";
+    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+    while ($row = mysql_fetch_array($res)) {
+      $exper = $row[0];
+      $tmp[] = $exper;
+    }
+    $experiments = implode(",",$tmp);
+    file_put_contents($outfile, $experiments."\n");
+  } else {
+    file_put_contents($outfile, "empty\n");
+  }
+  $empty = array();
+  foreach ($tmp as $id) {
+    $empty[$id] = NA;
+  }
+  
   //foreach ($_SESSION['selected_lines'] as $lineuid) {
+    if (isset($_SESSION['selected_trials'])) {
+      $sql_opt = "AND tb.experiment_uid IN ($experiments)";
+    } else {
+      $sql_opt = "";
+    }
     $sql = "SELECT pd.value as value, pd.phenotype_uid FROM tht_base as tb, phenotype_data as pd
     WHERE tb.line_record_uid = $lineuid
     AND pd.tht_base_uid = tb.tht_base_uid
     AND pd.phenotype_uid IN ($trait)";
-    $sql = "SELECT lr.line_record_name as name, pd.value as value
+    $sql = "SELECT lr.line_record_name as name, pd.value as value, tb.experiment_uid
     FROM tht_base as tb, phenotype_data as pd, line_records as lr
     WHERE pd.tht_base_uid = tb.tht_base_uid
     AND lr.line_record_uid = tb.line_record_uid
     AND pd.phenotype_uid IN ($trait)
     AND lr.line_record_uid IN ($sel_lines)
-    AND tb.experiment_uid IN ($experiments)
+    $sql_opt
     order by line_record_name";
     //file_put_contents($outfile, $sql."\n", FILE_APPEND);
+    $new_name = "";
+    $delimiter = ",";
+    $pheno_array = $empty;
     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
     while ($row = mysql_fetch_array($res)) {
-      file_put_contents($outfile, $row[0].$delimiter.$row[1]."\n", FILE_APPEND);
+      $line_name = $row[0];
+      $exper = $row[2];
+      if ($new_name == "") {
+        $new_name = $line_name;
+        $pheno_array[$exper] = $row[1];
+      } elseif ($new_name == $line_name){
+        $pheno_array[$exper] = $row[1];
+      } else {
+        $pheno_str = implode(",",$pheno_array);
+        file_put_contents($outfile, $new_name.$delimiter.$pheno_str."\n", FILE_APPEND);
+        $pheno_array = $empty;
+        $pheno_array[$exper] = $row[1];
+        $new_name = $line_name;
+      }
     }
+    file_put_contents($outfile, $new_name.$delimiter.$pheno_str."\n", FILE_APPEND);
   //}
 }
 
