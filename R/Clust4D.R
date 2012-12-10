@@ -1,41 +1,43 @@
-# t3/.../R/Clust3D.R
-# called by cluster3d.php, which prepends several commands in setupclust3d.txt
+# t3/.../R/Clust4D.R
+# called by cluster4d.php, which prepends several commands in setupclust3d.txt
 
 # from Jean-Luc Jannink 9feb11, ./VisualCluster.R.orig
 # Clusters the input lines and marker alleles for the user to select cluster of interest.
 # The marker data represents the full set of lines that a user has selected.
 
-# Delete the prepended command file.
-#system("rm setupclust3d.txt*")
-
 mrkData <- read.csv(mrkDataFile)
+lineNames2 <- as.matrix(rownames(mrkData))
 
 mrkData<-as.matrix(mrkData,nrow=dim(mrkData)[1])
 
 phenoData<-read.csv(phenoDataFile)
-
+phenoData <- rowSums(phenoData, na.rm=TRUE)
 
 ##########################################################
 
 
 ####################################################
 
-nulpheno=is.null(phenoData)
+if (length(phenoData) < 1) {
+nulpheno=TRUE
+} else {
+nulpheno=FALSE
+}
 phenoData<-as.matrix(phenoData, nrow=dim(mrkData)[1])
 
 
 n<-dim(mrkData)[1]
 m=1000
-numberofnodesincluster<-nClust
+numberofnodesincluster<-4
 phenoData<-scale(phenoData)
-# DEM oct11: Now this line is breaking the script. Wonder why.
-#system2("rm", mrkDataFile)
 
 # DEM 6mar12: Allow up to 10% missing data.
 fracNA <- apply(mrkData, 2, function(vec) return(sum(is.na(vec)))) / nrow(mrkData)
 mrkData <- mrkData[, fracNA <= 0.1]
 
 library(cluster)
+library(doSNOW)
+library(doParallel)
 scaledMrk <- scale(mrkData, TRUE, FALSE)
 # Replace remaining NAs with 0, the mean.
 scaledMrk[is.na(scaledMrk)] <- 0
@@ -50,9 +52,7 @@ registerDoParallel(cl)
 
 
 #############################DENIZ ISCA Clustering Programs
-if (nulpheno){
-library("rpart")
-library("corpcor")
+if (nulpheno) {
 
 ################################################################################################################################################
 ################################################################################################################################################
@@ -60,6 +60,9 @@ library("corpcor")
 ######ONE RANDOM TREE
 
 oneclustering<-function(mciterator){
+library("rpart")
+library("corpcor")
+
 p<-dim(X)[2]
 n<-dim(X)[1]
 	
@@ -118,14 +121,13 @@ if (!nulpheno){
 
 
 
-library("rpart")
-library("corpcor")
-
 ##########################################################
 
 ######ONE RANDOM TREE
 
-oneclusteringSS<-function(mciterator){
+oneclusteringSS<-function(mciterator,Y){
+library("rpart")
+library("corpcor")
 p<-dim(X)[2]
 n<-dim(X)[1]
 Y<-scale(Y, TRUE,TRUE)
@@ -153,7 +155,7 @@ return(featuretrain)
 	proprow=.3
 	propcol=.1
 	maxdepth=2
-	mtr<- foreach(i=1:m, .combine='cbind') %dopar% oneclusteringSS(i)
+	mtr<- foreach(i=1:m, .combine='cbind') %dopar% oneclusteringSS(i,Y)
 	
 ##Run Onetree m times to obtain Ftrain1,...FtrainM, Ftest1,...,Ftestm
 	
@@ -185,11 +187,22 @@ whichClust2 <- cutree(fit2, k=nClust)
 
 
 ftrainmatrix<-matrix(unlist(mtr), nrow=dim(mtr)[1])
-threePCs <- svd(ftrainmatrix, 3, 3)
-eigVec1 <- threePCs$u[,1]
-eigVec2 <- threePCs$u[,2]
-eigVec3 <- threePCs$u[,3]
 
+gotit <- F
+try ({threePCs <- svd(ftrainmatrix, 3, 3); gotit<-T}, silent = FALSE )
+if(gotit) {
+  eigVec1 <- scale(threePCs$u[,1])
+  eigVec2 <- scale(threePCs$u[,2])
+  eigVec3 <- scale(threePCs$u[,3]) 
+}
+try ({threePCs <- svd(t(ftrainmatrix), 3, 3); gotit<-T}, silent = FALSE )
+if(gotit) {
+  eigVec1 <- scale(threePCs$v[,1])
+  eigVec2 <- scale(threePCs$v[,2])
+  eigVec3 <- scale(threePCs$v[,3]) 
+} else {
+  stop("svd(x) and svd(t(x)) both failed.")
+}
 
 # The user would specify a limited number of lines to see into what cluster they fall
 #lineNames <- c("06MN-02", "06AB-49", "08UT-15", "08BA-36", "08N6-39")
@@ -230,6 +243,8 @@ for (i in 1:4){
 }
 
 # Output coordinates and cluster number for X3DOM.
+whichClust <- as.matrix(whichClust)
+rownames(whichClust) <- lineNames2
 write.table(cbind(whichClust, eigVec1, eigVec2, eigVec3), file = clust3dCoords, col.names = FALSE, sep = "\t")
 
 # The legend says where those lines are that the user is interested

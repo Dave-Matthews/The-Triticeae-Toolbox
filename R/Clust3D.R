@@ -25,10 +25,24 @@ scaledMrk[is.na(scaledMrk)] <- 0
 # R runs a cluster analysis and a principal components analysis for display
 whichClust <- pam(scaledMrk, nClust, metric="manhattan", cluster.only=TRUE)
 write.table(whichClust, clustertableFile, sep="\t", quote=FALSE)
-threePCs <- svd(scaledMrk, 3, 3)
-eigVec1 <- threePCs$u[,1]
-eigVec2 <- threePCs$u[,2]
-eigVec3 <- threePCs$u[,3]
+
+gotit <- F
+try ({threePCs <- svd(scaledMrk, 3, 3); gotit<-T}, silent = FALSE )
+if(gotit) {
+  print("using svd(x)")
+  eigVec1 <- threePCs$u[,1]
+  eigVec2 <- threePCs$u[,2]
+  eigVec3 <- threePCs$u[,3]
+}
+try ({threePCs <- svd(t(scaledMrk), 3, 3); gotit<-T}, silent = FALSE )
+if(gotit) {
+  print("using svd(t(x))")
+  eigVec1 <- threePCs$v[,1]
+  eigVec2 <- threePCs$v[,2]
+  eigVec3 <- threePCs$v[,3]
+} else {
+  stop("svd(x) and svd(t(x)) both failed.")
+}
 
 # The user would specify a limited number of lines to see into what cluster they fall
 #lineNames <- c("06MN-02", "06AB-49", "08UT-15", "08BA-36", "08N6-39")
