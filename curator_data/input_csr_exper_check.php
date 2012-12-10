@@ -246,6 +246,14 @@ public function save_raw_file($wavelength) {
                  $error_flag = 1;
                  die();
                }
+               $sql = "select id from csr_measurement_rd where direction = '$value[3]'";
+               $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+               if ($row = mysqli_fetch_array($res)) {
+                 $dir_uid = $row[0];
+               } else {
+                 echo "<font color=red>Error - Upwelling / Downwelling not valid $value[3]</font><br>\n";
+                 $error_flag = 1;
+               } 
                if ($data[3] != "Upwelling / Downwelling") {
                  echo "expected \"Upwelling \/ Downwelling\" found $data[3]<br>\n";
                  $error_flag = 1;
@@ -258,11 +266,25 @@ public function save_raw_file($wavelength) {
                  echo "expected \"Growth Stage\" found $data[5]<br>";
                  $error_flag = 1;
                }
+               if ($data[10] != "Spectrometer System") {
+                 echo "expected \"Spectormeter System\" found $data[10]<br>";
+                 $error_flag = 1;
+               } else {
+                 $sql = "select system_uid from csr_system where system_name = '$value[10]'";
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                 if ($row = mysqli_fetch_array($res)) {
+                   $spect_sys_uid = $row[0];
+                 } else {
+                   $spect_sys_uid = 99999999;
+                   echo "<font color=red>Error - Spectrometer System record $value[10] not found<br></font>\n";
+                   $error_flag = 1;
+                 }
+               }
 
                //check for unique record
                //multiple raw files are allowed if they use a different time
 
-               $sql = "select measurement_uid from csr_measurement where experiment_uid = $experiment_uid and radiation_direction = '$value[3]' and measure_date = str_to_date('$value[4]','%m/%d/%Y %H:%i')";
+               $sql = "select measurement_uid from csr_measurement where experiment_uid = $experiment_uid and spect_sys_uid  = $spect_sys_uid and measure_date = str_to_date('$value[4]','%m/%d/%Y %H:%i')";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                $row = mysqli_fetch_array($res);
                if (mysqli_num_rows($res) == 0) {
@@ -289,7 +311,7 @@ public function save_raw_file($wavelength) {
 
                if ($error_flag == 0) {
                  if ($new_record) {
-                   $sql = "insert into csr_measurement (experiment_uid, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, system_name, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ($experiment_uid,'$value[3]',str_to_date('$value[4]','%m/%d/%Y %H:%i'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
+                   $sql = "insert into csr_measurement (experiment_uid, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y %H:%i'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]',$spect_sys_uid,'$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
                    //$sql = "insert into csr_rawfiles (experiment_uid, measurement_uid, users_uid, name) values ($experiment_uid, $measurement_uid, $userid, '$unq_file_name')";
@@ -298,7 +320,7 @@ public function save_raw_file($wavelength) {
                    $sql = "delete from csr_measurement where measurement_uid  = $measurement_uid";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "deleted old entries from database where measurement_uid = $measurement_uid<br>\n";
-                   $sql = "insert into csr_measurement (experiment_uid, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, system_name, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ($experiment_uid,'$value[3]',str_to_date('$value[4]','%m/%d/%Y %H:%i'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]','$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
+                   $sql = "insert into csr_measurement (experiment_uid, radiation_direction, measure_date, growth_stage, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, reference, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y %H:%i'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]',$spect_sys_uid,'$value[11]','$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
                    //$sql = "insert into csr_rawfiles (experiment_uid, measurement_uid, users_uid, name) values ($experiment_uid, $measurement_uid, $userid, '$unq_file_name')";
