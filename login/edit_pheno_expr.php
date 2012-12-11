@@ -50,7 +50,7 @@ if(isset($_GET['start']))
     <div class="box">
       <h2>Edit Trials</h2>
       <div class="boxContent">
-	<form action="<?php echo $config['base_url']; ?>login/edit_trials.php" method="post">
+	<form action="<?php echo $config['base_url']; ?>login/edit_pheno_expr.php" method="post">
 	  <p>Show only items containing these words:<br>
 	    <input type="text" name="search" value="<?php echo $searchstring ?>" size="30" /> 
 	    <input type="submit" value="Search" /></p>
