@@ -51,12 +51,12 @@ if (isset($_SESSION['selected_lines'])) {
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h1>Cluster Lines by Genotype, SVD</h1>
+  <h1>Cluster Lines 3D, Hierarchical</h1>
   <div class="section">
 
   <p>The 
-  <font color=blue>Currently selected lines</font> will be clustered according to their 
-  alleles for all markers, using the R procedure <b>pam()</b> (Partitioning Around Medoids).  
+  <font color=blue>Currently selected lines and traits</font> will be clustered according to their 
+  distance computed from markers and trait values, using the R procedure <b>hclust()</b> (Hierarchical cluster analysis on a set of dissimilarities).  
   The clusters will be displayed in three dimensions calculated by <b>Singular
   Value Decomposition</b>, R procedure <b>svd()</b>.<p>
   When you have examined the results you can select the clusters you want to use
@@ -67,9 +67,12 @@ $selectedcount = count($_SESSION['selected_lines']);
 echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
 if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
   // No lines selected so prompt to get some.
-  echo "<a href=".$config['base_url']."pedigree/line_selection.php>Select lines.</a> ";
+  echo "<a href=".$config['base_url']."pedigree/line_selection.php>Select lines</a> or ";
+  echo "<a href=".$config['base_url']."downloads/select_all.php>lines and trait</a>. ";
   echo "(Patience required for more than a few hundred lines.)";
- }
+// } elseif (!isset ($_SESSION['selected_traits'])) {
+//  echo "Error - must select traits before using this function<br>\n";
+}
 else {
   print "<textarea rows = 9>";
   foreach ($_SESSION['selected_lines'] as $lineuid) {
