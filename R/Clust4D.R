@@ -28,16 +28,18 @@ phenoData<-as.matrix(phenoData, nrow=dim(mrkData)[1])
 
 n<-dim(mrkData)[1]
 m=1000
-numberofnodesincluster<-4
 phenoData<-scale(phenoData)
 
 # DEM 6mar12: Allow up to 10% missing data.
 fracNA <- apply(mrkData, 2, function(vec) return(sum(is.na(vec)))) / nrow(mrkData)
 mrkData <- mrkData[, fracNA <= 0.1]
 
-library(cluster)
+#library(cluster)
 library(doSNOW)
 library(doParallel)
+
+numOfCores <- parallel:::detectCores()/2
+
 scaledMrk <- scale(mrkData, TRUE, FALSE)
 # Replace remaining NAs with 0, the mean.
 scaledMrk[is.na(scaledMrk)] <- 0
@@ -47,7 +49,7 @@ scaledMrk[is.na(scaledMrk)] <- 0
 library("foreach")
 
 
-cl <- makeCluster(numberofnodesincluster)
+cl <- makeCluster(numOfCores)
 registerDoParallel(cl)
 
 
