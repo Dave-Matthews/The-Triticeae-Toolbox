@@ -18,7 +18,7 @@
 # The multicore package enables parallelization
 library("multicore")
 nCores <- multicore:::detectCores() / 2 # Use half the available cores
-nCores <- min(nCores, 12) # But no more than 12 cores
+nCores <- min(nCores, 16) # But no more than 16 cores
 options(cores=nCores)
 # The rpart package makes tree predictors for clustering
 library("rpart")
@@ -54,21 +54,21 @@ maxdepth <- 2
 # Make random projections.  If there are phenotypes, these
 # projections are of the phenotypes. If not, they are of the
 # predictors (markers)
-if (nullPheno){
+#if (nullPheno){
 	projectGeno <- function(i){
 		rcoef <- runif(nPred)
 		rcoef <- rcoef/sqrt(crossprod(rcoef))
 		return(mrkData %*% rcoef)
 	}
 	projections <- mclapply(1:nProjections, projectGeno)
-} else{
-	projectPheno <- function(i){
-		rcoef <- runif(nPheno)
-		rcoef <- rcoef/sqrt(crossprod(rcoef))
-		return(phenoData %*% rcoef)
-	}
-	projections <- mclapply(1:nProjections, projectPheno)
-}
+#} else{
+#	projectPheno <- function(i){
+#		rcoef <- runif(nPheno)
+#		rcoef <- rcoef/sqrt(crossprod(rcoef))
+#		return(phenoData %*% rcoef)
+#	}
+#	projections <- mclapply(1:nProjections, projectPheno)
+#}
 
 # Function to make a tree to predict a projection then extract rules from prediction
 rulesFromProjection <- function(projection){
