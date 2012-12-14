@@ -127,10 +127,8 @@ EOD;
     <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analyze</a>
       <ul>
 	<li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
-	<li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines by Genotype, 3D</a>
-	  <!-- Waiting for Jean-Luc's input:
-	       <li><a href="<?php echo $config['base_url']; ?>cluster_lines3dpco.php" title="Genetic structure">Cluster Lines by Genotype, 3D, PCO</a>
-		 -->
+        <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (Partitioning)</a>
+ 	<li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (Hierarchical)</a>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
 	    Track Alleles through Pedigree</a>
