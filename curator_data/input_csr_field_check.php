@@ -85,6 +85,14 @@ private function typeExperimentCheck()
   $replace_flag = $_POST['replace'];
   $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
   $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
+  $sql = "select trial_code from experiments where experiment_uid = $fieldbookname";
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+  if ($row = mysqli_fetch_assoc($res)) {
+    $trial_code = $row['trial_code'];
+  } else {
+    echo "$sql<br>\n";
+    die("Error: could not find trial code in database $fieldbookname<br>\n");
+  }
   if (file_exists($raw_path)) {
     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
     $tmp1 = $_FILES['file']['name'][0];
@@ -151,22 +159,32 @@ private function typeExperimentCheck()
                $lines_found = $i - 1;
 
                //check data format
-               if ($data[1]["A"] != "range") {
+               if ($data[1]["A"] != "Trial:") {
                  $tmp = $data[1]["A"];
-                 echo "<font color=red>Error in column header - expected \"range\" found $tmp</font><br>\n";
+                 echo "<font color=red>Error in column header - expected \"Trial:\" found $tmp</font><br>\n";
                  $error_flag = 1;
                }
+               if ($data[2]["A"] != "plot") {
+                 $tmp = $data[2]["A"];
+                 echo "<font color=red>Error in column header - expected \"plot\" found $tmp</font><br>\n";
+                 $error_flag = 1;
+               }
+
                if (!preg_match("/[0-9]/",$fieldbookname)) {
                  echo "<font color=red>Error - missing Trial Name</font><br>\n";
                  $error_flag = 1;
                }
 
-               for ($i = 2; $i <= $lines_found; $i++) {
-                 $tmp = $data[$i]["E"];
+               for ($i = 3; $i <= $lines_found; $i++) {
+                 $tmp = $data[$i]["B"];
                  $sql = "select line_record_uid from line_records where line_record_name = '$tmp'";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                  if (mysql_num_rows($res)==0) {
-                    echo "Error: could not find Line Name $tmp in line_records table, please load this line name first<br>\n"; 
+                    if (isset($unique_line[$tmp])) {
+                    } else {
+                      $unique_line[$tmp] = 1;
+                      echo "Error: could not find Line Name $tmp in line_records table, please load this line name first<br>\n"; 
+                    }
                     $error_flag = 1;
                  }
                }
@@ -179,7 +197,7 @@ private function typeExperimentCheck()
                  //echo "new record<br>\n";
                } else {
                  if (!$replace_flag) {
-                   echo "<font color=red>Warning - record with fieldbook name = $fieldbookname already exist, do you want to overwrite?</font>";
+                   echo "<font color=red>Warning - record with Trial Name = $trial_code already exist, do you want to overwrite?</font>";
                    ?>
                    <form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
                    <input id="fieldbook" type="hidden" name="fieldbook" value="<?php echo $fieldbookname; ?>">
@@ -208,7 +226,7 @@ private function typeExperimentCheck()
                    echo "deleted old entries from database where fieldbook_name = $fieldbookname<br>\n";
                }
 
-               for ($i=2; $i<=$lines_found; $i++) {
+               for ($i=3; $i<=$lines_found; $i++) {
                  $tmpA = $data[$i]["A"];
                  $tmpB = $data[$i]["B"];
                  $tmpC = $data[$i]["C"];
@@ -225,7 +243,6 @@ private function typeExperimentCheck()
                  $tmpN = $data[$i]["N"];
                  $tmpO = $data[$i]["O"];
                  $tmpP = $data[$i]["P"];
-                 $tmpQ = $data[$i]["Q"];
 
                  //correct missing data to avoid sql error
                  if (!preg_match("/[0-9]/",$tmpI)) {
@@ -238,7 +255,7 @@ private function typeExperimentCheck()
                    $tmpK = "NULL";
                  }
 
-                 $sql = "insert into csr_fieldbook (experiment_uid, range_id, plot, entry, plot_id, line_name, trial, field_id, note, replication, block, subblock, row_id, column_id, treatment, main_plot_tmt, subplot_tmt, check_id) values ($fieldbookname,$tmpA,$tmpB,'$tmpC','$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN','$tmpO','$tmpP','$tmpQ')";
+                 $sql = "insert into csr_fieldbook (experiment_uid, plot, line_name, row_id, column_id, entry, replication, block, subblock, treatment, main_plot_tmt, subplot_tmt, check_id, field_id, note ) values ($fieldbookname,$tmpA,'$tmpB',$tmpC,'$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";
