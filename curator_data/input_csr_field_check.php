@@ -151,22 +151,32 @@ private function typeExperimentCheck()
                $lines_found = $i - 1;
 
                //check data format
-               if ($data[1]["A"] != "range") {
+               if ($data[1]["A"] != "Trial:") {
                  $tmp = $data[1]["A"];
-                 echo "<font color=red>Error in column header - expected \"range\" found $tmp</font><br>\n";
+                 echo "<font color=red>Error in column header - expected \"Trial:\" found $tmp</font><br>\n";
                  $error_flag = 1;
                }
+               if ($data[2]["A"] != "plot") {
+                 $tmp = $data[2]["A"];
+                 echo "<font color=red>Error in column header - expected \"plot\" found $tmp</font><br>\n";
+                 $error_flag = 1;
+               }
+
                if (!preg_match("/[0-9]/",$fieldbookname)) {
                  echo "<font color=red>Error - missing Trial Name</font><br>\n";
                  $error_flag = 1;
                }
 
-               for ($i = 2; $i <= $lines_found; $i++) {
-                 $tmp = $data[$i]["E"];
+               for ($i = 3; $i <= $lines_found; $i++) {
+                 $tmp = $data[$i]["B"];
                  $sql = "select line_record_uid from line_records where line_record_name = '$tmp'";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                  if (mysql_num_rows($res)==0) {
-                    echo "Error: could not find Line Name $tmp in line_records table, please load this line name first<br>\n"; 
+                    if (isset($unique_line[$tmp])) {
+                    } else {
+                      $unique_line[$tmp] = 1;
+                      echo "Error: could not find Line Name $tmp in line_records table, please load this line name first<br>\n"; 
+                    }
                     $error_flag = 1;
                  }
                }
