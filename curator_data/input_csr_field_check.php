@@ -255,7 +255,7 @@ private function typeExperimentCheck()
                    $tmpK = "NULL";
                  }
 
-                 $sql = "insert into csr_fieldbook (experiment_uid, plot, line_name, row_id, column_id, entry, replication, block, subblock, treatment, main_plot_tmt, subplot_tmt, check, field_id, note ) values ($fieldbookname,$tmpA,'$tmpB',$tmpC,'$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN')";
+                 $sql = "insert into csr_fieldbook (experiment_uid, plot, line_name, row_id, column_id, entry, replication, block, subblock, treatment, main_plot_tmt, subplot_tmt, check_id, field_id, note ) values ($fieldbookname,$tmpA,'$tmpB',$tmpC,'$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";
