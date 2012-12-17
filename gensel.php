@@ -3446,8 +3446,6 @@ selected lines</a><br>
 	 }
 	
 	 //generate an array of selected markers and add map position if available
-         //if no map then assign to chromosome 0 and increment position
-         $index = 0;
          $sql = "select marker_uid, marker_name, A_allele, B_allele from markers
          where marker_uid IN ($markers_str)";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -3457,8 +3455,7 @@ selected lines</a><br>
            if (isset($marker_list_mapped[$marker_uid])) {
              $marker_list_all[$marker_uid] = $marker_list_mapped[$marker_uid];
            } else {
-             $marker_list_all[$marker_uid] = $index;
-             $index++;
+             $marker_list_all[$marker_uid] = 0;
            }
            if (preg_match("/[A-Z]/",$row[2]) && preg_match("/[A-Z]/",$row[3])) {
                 $allele = $row[2] . "/" . $row[3];
@@ -3500,6 +3497,8 @@ selected lines</a><br>
 	   '6H' => '6','7H' => '7','UNK'  => '10');
 	
 	 //using a subset of markers so we have to translate into correct index
+         //if there is no map then use chromosome 0 and index for position
+         $index = 0;
 	 foreach ($marker_list_all as $marker_id => $rank) {
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
@@ -3525,7 +3524,8 @@ selected lines</a><br>
 	        $pos = 100 * $row[3];
 	     } else {
 	        $chrom = 0;
-	        $pos = 0;
+	        $pos = $index/10;
+                $index++;
 	     }
 	     $output .= "$marker_name\t$allele\t$chrom\t$pos";
              $outarray2 = array();
