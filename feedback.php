@@ -71,9 +71,10 @@ $footer_div = 1;
 $securimage = new Securimage();
 $capcha_pass = $securimage->check($_POST['captcha_code']);
 if ($us_feedback && $capcha_pass) {
-  send_email(setting('feedbackmail'), 'T3 Feedback',
+  send_email_from(setting('feedbackmail'), 'T3 Feedback', $us_email, 
 "User's reported name: $us_name
 User's reported email: $us_email
+
 Feedback:
 $us_feedback");
 
