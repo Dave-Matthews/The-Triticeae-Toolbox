@@ -11,9 +11,8 @@ require_once $config['root_dir'] . 'securimage/securimage.php';
 
 <h1>Feedback</h1>
 
-Please send your questions or suggestions or complaints to the 
-T3 curators.  We'll get back to you if you<br>
-include your email address.
+Please send your questions, suggestions, or complaints to the 
+T3 curators.
 <p>
 
 <?php
@@ -38,10 +37,10 @@ function feedbackForm($name='', $email='', $feedback='') {
 
   $rv = <<< HTML
 <form action="" method="post">
+<label for="email">Your email (required) </label>
+<input name="email" value="$html_email" /><br>
 <label for="name">Your name (optional) </label>
 <input name="name" value="$html_name" /><br>
-<label for="email">Your email (optional) </label>
-<input name="email" value="$html_email" />
 <p>Message:
 <p><textarea name="feedback" cols="80" rows="20" >$html_feedback</textarea>
 <br />
@@ -70,7 +69,8 @@ $us_feedback = str_replace('\r\n', "\n", $us_feedback);
 $footer_div = 1;
 $securimage = new Securimage();
 $capcha_pass = $securimage->check($_POST['captcha_code']);
-if ($us_feedback && $capcha_pass) {
+//if ($us_feedback && $capcha_pass) {
+if ($us_feedback && $us_email && $capcha_pass) {
   send_email_from(setting('feedbackmail'), 'T3 Feedback', $us_email, 
 "User's reported name: $us_name
 User's reported email: $us_email
@@ -79,12 +79,19 @@ Feedback:
 $us_feedback");
 
   echo "<h3>Thank you for your feedback. It has been sent to the T3 curators.</h3>";
- }
- else {
-   if ($us_feedback && !$capcha_pass)
-     echo "<h3 style='color: red'>Please enter the CAPTCHA code</h3>";
-   echo feedbackForm($us_name, $us_email, $us_feedback);
- }
+}
+else {
+  if (!$capcha_pass)  {
+    echo "<h3 style='color: red'>Please enter the CAPTCHA code</h3>";
+  }
+  if (!$us_email)  {
+    echo "<h3 style='color: red'>Your email address is required.</h3>";
+  }
+  if (!$us_feedback)  {
+    echo "<h3 style='color: red'>No message entered.</h3>";
+  }
+  echo feedbackForm($us_name, $us_email, $us_feedback);
+}
 
 require_once($config['root_dir'] . 'theme/footer.php');
 ?>
