@@ -1466,6 +1466,7 @@ class Downloads
 	 }
 	
 	 //calculate allele frequence and missing
+         $marker_misscnt = array();
 	 foreach ($lines as $line_record_uid) {
 	   $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
 	   $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -3445,6 +3446,8 @@ selected lines</a><br>
 	 }
 	
 	 //generate an array of selected markers and add map position if available
+         //if no map then assign to chromosome 0 and increment position
+         $index = 0;
          $sql = "select marker_uid, marker_name, A_allele, B_allele from markers
          where marker_uid IN ($markers_str)";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -3454,7 +3457,8 @@ selected lines</a><br>
            if (isset($marker_list_mapped[$marker_uid])) {
              $marker_list_all[$marker_uid] = $marker_list_mapped[$marker_uid];
            } else {
-             $marker_list_all[$marker_uid] = 0;
+             $marker_list_all[$marker_uid] = $index;
+             $index++;
            }
            if (preg_match("/[A-Z]/",$row[2]) && preg_match("/[A-Z]/",$row[3])) {
                 $allele = $row[2] . "/" . $row[3];
