@@ -85,6 +85,14 @@ private function typeExperimentCheck()
   $replace_flag = $_POST['replace'];
   $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
   $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
+  $sql = "select trial_code from experiments where experiment_uid = $fieldbookname";
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+  if ($row = mysqli_fetch_assoc($res)) {
+    $trial_code = $row['trial_code'];
+  } else {
+    echo "$sql<br>\n";
+    die("Error: could not find trial code in database $fieldbookname<br>\n");
+  }
   if (file_exists($raw_path)) {
     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
     $tmp1 = $_FILES['file']['name'][0];
@@ -189,7 +197,7 @@ private function typeExperimentCheck()
                  //echo "new record<br>\n";
                } else {
                  if (!$replace_flag) {
-                   echo "<font color=red>Warning - record with fieldbook name = $fieldbookname already exist, do you want to overwrite?</font>";
+                   echo "<font color=red>Warning - record with Trial Name = $trial_code already exist, do you want to overwrite?</font>";
                    ?>
                    <form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
                    <input id="fieldbook" type="hidden" name="fieldbook" value="<?php echo $fieldbookname; ?>">
@@ -218,7 +226,7 @@ private function typeExperimentCheck()
                    echo "deleted old entries from database where fieldbook_name = $fieldbookname<br>\n";
                }
 
-               for ($i=2; $i<=$lines_found; $i++) {
+               for ($i=3; $i<=$lines_found; $i++) {
                  $tmpA = $data[$i]["A"];
                  $tmpB = $data[$i]["B"];
                  $tmpC = $data[$i]["C"];
@@ -248,7 +256,7 @@ private function typeExperimentCheck()
                    $tmpK = "NULL";
                  }
 
-                 $sql = "insert into csr_fieldbook (experiment_uid, range_id, plot, entry, plot_id, line_name, trial, field_id, note, replication, block, subblock, row_id, column_id, treatment, main_plot_tmt, subplot_tmt, check_id) values ($fieldbookname,$tmpA,$tmpB,'$tmpC','$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN','$tmpO','$tmpP','$tmpQ')";
+                 $sql = "insert into csr_fieldbook (experiment_uid, plot, line_name, row_id, column_id, entry, replication, block, subblock, main_plot_tmt, subplot_tmt, check, field_id, note ) values ($fieldbookname,$tmpA,$tmpB,'$tmpC','$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN','$tmpO','$tmpP','$tmpQ')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";
