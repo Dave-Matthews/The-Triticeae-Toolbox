@@ -277,6 +277,7 @@ public function save_raw_file($wavelength) {
                  } else {
                    $spect_sys_uid = 99999999;
                    echo "<font color=red>Error - Spectrometer System record $value[10] not found<br></font>\n";
+                   echo "$sql<br>\n";
                    $error_flag = 1;
                  }
                }
