@@ -3,12 +3,6 @@
 ##########################################################################
 source(common_code)
 
-yesPredPheno <- FALSE
-yesPredPheno <- sum(is.na(phenoData[,2])) > 2
-
-#predLines <- rownames(snpData)
-#predTrials <- unique(phenoData$trial[phenoData$gid %in% predLines])
-
 hasPheno <- !is.na(phenoData$pheno)
 trainLines <- phenoData$gid[hasPheno]
 trainTrials <- unique(phenoData$trial[phenoData$gid %in% trainLines])
@@ -40,9 +34,9 @@ if (yesPredPheno) {
 		allMeans <- c(allMeans, list(meanPheno))
 	}
         if (moreThan1Trial) {
-	  mainTitle <- paste("Accuracy (StdDev) = ", round(mean(allCor, na.rm=TRUE), 2), " (", round(sd(allCor,na.rm=TRUE), 2), ")", sep="")
+	  mainTitle <- paste("Prediction of ", phenolabel, " , accuracy (StdDev) = ", round(mean(allCor, na.rm=TRUE), 2), " (", round(sd(allCor,na.rm=TRUE), 2), ")", sep="")
         } else {
-          mainTitle <- paste("Accuracy = ", round(mean(allCor, na.rm=TRUE), 2), sep="")
+          mainTitle <- paste("Prediction of ", phenolabel, " , accuracy = ", round(mean(allCor, na.rm=TRUE), 2), sep="")
         }
 # Second, plot by trial
         for (trial in 1:length(trainTrials)){

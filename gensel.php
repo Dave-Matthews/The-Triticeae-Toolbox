@@ -404,6 +404,7 @@ class Downloads
            unset($_SESSION['training_traits']);
            unset($_SESSION['training_trials']);
            unset($_SESSION['training_lines']);
+           unset($_SESSION['filtered_lines']);
       }
       if (empty($_SESSION['selected_lines']) || empty($_SESSION['training_lines'])) {
         ?>
@@ -906,10 +907,10 @@ class Downloads
                     $cmd1 = "snpData_p <- read.table(\"$dir$filename1\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd2 = "snpData_t <- read.table(\"$dir$filename8\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
-                    if ($count_training > 50) {
-                      $cmd4 = "doCrossValidation <- 1\n";
+                    if ($training_lines == "") {
+                      $cmd4 = "yesPredPheno <- 0\n"; #no prediction set, do cross validation
                     } else {
-                      $cmd4 = "doCrossValidation <- 0\n";
+                      $cmd4 = "yesPredPheno <- 1\n"; #yes prediction set, calculate prediction
                     }
                     $cmd5 = "fileerr <- \"$filename6\"\n";
                     $cmd6 = "fileout <- \"$filename7\"\n";
@@ -3491,14 +3492,9 @@ selected lines</a><br>
 	  $outputheader .= "\t$name";
 	  $empty[$name] = "NN";
 	 }
-	 
-	 $lookup_chrom = array(
-	   '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
-	   '6H' => '6','7H' => '7','UNK'  => '10');
 	
 	 //using a subset of markers so we have to translate into correct index
          //if there is no map then use chromosome 0 and index for position
-         $chr_index = 0;
          $pos_index = 0;
 	 foreach ($marker_list_all as $marker_id => $rank) {
 	  $marker_idx = $marker_idx_list[$marker_id];
@@ -3521,16 +3517,19 @@ selected lines</a><br>
 	         AND mapset.mapset_uid = 1";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	     if ($row = mysql_fetch_array($res)) {
-	        $chrom = $lookup_chrom[$row[2]];
-	        $pos = 100 * $row[3];
-	     } else {
-	        $chrom = $chr_index;
-	        $pos = $pos_index/10;
-                $pos_index++;
-                if ($pos_index > 1000) {
-                  $chr_index = $chr_index + 0.1;
-                  $pos_index = 0;
+                $chrom = $row[2];
+                if (preg_match('/[0-9]+/',$chrom, $match)) {
+                  $chrom = $match[0];
+                  $pos = 100 * $row[3];
+                } else {
+                  $chrom = 0;
+                  $pos = $pos_index;
+                  $pos_index += 10;
                 }
+	     } else {
+	        $chrom = 0;
+	        $pos = $pos_index;
+                $pos_index += 10;
 	     }
 	     $output .= "$marker_name\t$allele\t$chrom\t$pos";
              $outarray2 = array();
@@ -3552,9 +3551,6 @@ selected lines</a><br>
              }
 	     $allele_str = implode("\t",$outarray2);
 	     $output .= "\t$allele_str\n";
-	  //} else {
-	   //echo "rejected marker $marker_id<br>\n";
-	  //}
 	 }
 	 return $outputheader."\n".$output;
 	}
