@@ -7,11 +7,13 @@ include($config['root_dir'].'theme/normal_header.php');
 <?php
 if (isset($_GET['clearSel'])) {
     unset($_SESSION['selected_lines']);
+    unset($_SESSION['training_lines']);
     unset($_SESSION['phenotype']);
     unset($_SESSION['selected_traits']);
     unset($_SESSION['selected_trials']);
     unset($_SESSION['clicked_buttons']);
     unset($_SESSION['filtered_markers']);
+    unset($_SESSION['filtered_lines']);
     $_SESSION['training_traits'] = NULL; unset($_SESSION['training_traits']);
     $_SESSION['training_trials'] = NULL; unset($_SESSION['training_trials']);
     ?>
