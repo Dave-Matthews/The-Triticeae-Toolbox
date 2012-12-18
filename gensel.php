@@ -3498,7 +3498,6 @@ selected lines</a><br>
 	
 	 //using a subset of markers so we have to translate into correct index
          //if there is no map then use chromosome 0 and index for position
-         $chr_index = 0;
          $pos_index = 0;
 	 foreach ($marker_list_all as $marker_id => $rank) {
 	  $marker_idx = $marker_idx_list[$marker_id];
@@ -3524,13 +3523,9 @@ selected lines</a><br>
 	        $chrom = $lookup_chrom[$row[2]];
 	        $pos = 100 * $row[3];
 	     } else {
-	        $chrom = $chr_index;
+	        $chrom = 0;
 	        $pos = $pos_index/10;
                 $pos_index++;
-                if ($pos_index > 1000) {
-                  $chr_index = $chr_index + 0.1;
-                  $pos_index = 0;
-                }
 	     }
 	     $output .= "$marker_name\t$allele\t$chrom\t$pos";
              $outarray2 = array();
