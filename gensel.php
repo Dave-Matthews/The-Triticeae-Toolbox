@@ -3522,7 +3522,7 @@ selected lines</a><br>
                   $pos = 100 * $row[3];
                 } else {
                   $chrom = 0;
-                  $pos = $pos_index/10;
+                  $pos = $pos_index;
                   $pos_index++;
                 }
 	     } else {
