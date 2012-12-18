@@ -3491,7 +3491,7 @@ selected lines</a><br>
 	  $outputheader .= "\t$name";
 	  $empty[$name] = "NN";
 	 }
-	 
+	
 	 $lookup_chrom = array(
 	   '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
 	   '6H' => '6','7H' => '7','UNK'  => '10');
@@ -3520,8 +3520,15 @@ selected lines</a><br>
 	         AND mapset.mapset_uid = 1";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	     if ($row = mysql_fetch_array($res)) {
-	        $chrom = $lookup_chrom[$row[2]];
-	        $pos = 100 * $row[3];
+                $chrom = $row[2];
+                if (preg_match('/[0-9]+/',$chrom, $match)) {
+                  $chrom = $match[0];
+                  $pos = 100 * $row[3];
+                } else {
+                  $chrom = 0;
+                  $pos = $pos_index/10;
+                  $pos_index++;
+                }
 	     } else {
 	        $chrom = 0;
 	        $pos = $pos_index/10;
