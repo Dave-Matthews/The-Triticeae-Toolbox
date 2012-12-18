@@ -80,7 +80,7 @@ $us_feedback");
 
   echo "<h3>Thank you for your feedback. It has been sent to the T3 curators.</h3>";
 }
-else {
+elseif ($_POST) {
   if (!$capcha_pass)  {
     echo "<h3 style='color: red'>Please enter the CAPTCHA code</h3>";
   }
@@ -90,8 +90,8 @@ else {
   if (!$us_feedback)  {
     echo "<h3 style='color: red'>No message entered.</h3>";
   }
-  echo feedbackForm($us_name, $us_email, $us_feedback);
 }
+echo feedbackForm($us_name, $us_email, $us_feedback);
 
 require_once($config['root_dir'] . 'theme/footer.php');
 ?>
