@@ -3,12 +3,6 @@
 ##########################################################################
 source(common_code)
 
-yesPredPheno <- FALSE
-yesPredPheno <- sum(is.na(phenoData[,2])) > 2
-
-#predLines <- rownames(snpData)
-#predTrials <- unique(phenoData$trial[phenoData$gid %in% predLines])
-
 hasPheno <- !is.na(phenoData$pheno)
 trainLines <- phenoData$gid[hasPheno]
 trainTrials <- unique(phenoData$trial[phenoData$gid %in% trainLines])
