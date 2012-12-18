@@ -404,6 +404,7 @@ class Downloads
            unset($_SESSION['training_traits']);
            unset($_SESSION['training_trials']);
            unset($_SESSION['training_lines']);
+           unset($_SESSION['filtered_lines']);
       }
       if (empty($_SESSION['selected_lines']) || empty($_SESSION['training_lines'])) {
         ?>
