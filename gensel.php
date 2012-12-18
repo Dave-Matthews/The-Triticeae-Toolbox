@@ -906,10 +906,10 @@ class Downloads
                     $cmd1 = "snpData_p <- read.table(\"$dir$filename1\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd2 = "snpData_t <- read.table(\"$dir$filename8\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
-                    if ($count_training > 50) {
-                      $cmd4 = "doCrossValidation <- 1\n";
+                    if ($training_lines == "") {
+                      $cmd4 = "yesPredPheno <- 0\n"; #no prediction set, do cross validation
                     } else {
-                      $cmd4 = "doCrossValidation <- 0\n";
+                      $cmd4 = "yesPredPheno <- 1\n"; #yes prediction set, calculate prediction
                     }
                     $cmd5 = "fileerr <- \"$filename6\"\n";
                     $cmd6 = "fileout <- \"$filename7\"\n";
@@ -3492,10 +3492,6 @@ selected lines</a><br>
 	  $empty[$name] = "NN";
 	 }
 	
-	 $lookup_chrom = array(
-	   '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
-	   '6H' => '6','7H' => '7','UNK'  => '10');
-	
 	 //using a subset of markers so we have to translate into correct index
          //if there is no map then use chromosome 0 and index for position
          $pos_index = 0;
@@ -3554,9 +3550,6 @@ selected lines</a><br>
              }
 	     $allele_str = implode("\t",$outarray2);
 	     $output .= "\t$allele_str\n";
-	  //} else {
-	   //echo "rejected marker $marker_id<br>\n";
-	  //}
 	 }
 	 return $outputheader."\n".$output;
 	}
