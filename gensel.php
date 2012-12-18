@@ -3527,7 +3527,7 @@ selected lines</a><br>
                 }
 	     } else {
 	        $chrom = 0;
-	        $pos = $pos_index/10;
+	        $pos = $pos_index;
                 $pos_index++;
 	     }
 	     $output .= "$marker_name\t$allele\t$chrom\t$pos";
