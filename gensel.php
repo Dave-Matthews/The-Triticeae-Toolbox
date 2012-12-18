@@ -3523,12 +3523,12 @@ selected lines</a><br>
                 } else {
                   $chrom = 0;
                   $pos = $pos_index;
-                  $pos_index++;
+                  $pos_index += 10;
                 }
 	     } else {
 	        $chrom = 0;
 	        $pos = $pos_index;
-                $pos_index++;
+                $pos_index += 10;
 	     }
 	     $output .= "$marker_name\t$allele\t$chrom\t$pos";
              $outarray2 = array();
