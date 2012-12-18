@@ -404,6 +404,7 @@ class Downloads
            unset($_SESSION['training_traits']);
            unset($_SESSION['training_trials']);
            unset($_SESSION['training_lines']);
+           unset($_SESSION['filtered_lines']);
       }
       if (empty($_SESSION['selected_lines']) || empty($_SESSION['training_lines'])) {
         ?>
@@ -3522,13 +3523,13 @@ selected lines</a><br>
                   $pos = 100 * $row[3];
                 } else {
                   $chrom = 0;
-                  $pos = $pos_index/10;
-                  $pos_index++;
+                  $pos = $pos_index;
+                  $pos_index += 10;
                 }
 	     } else {
 	        $chrom = 0;
-	        $pos = $pos_index/10;
-                $pos_index++;
+	        $pos = $pos_index;
+                $pos_index += 10;
 	     }
 	     $output .= "$marker_name\t$allele\t$chrom\t$pos";
              $outarray2 = array();

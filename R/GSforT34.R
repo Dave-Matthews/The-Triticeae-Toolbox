@@ -34,9 +34,9 @@ if (yesPredPheno) {
 		allMeans <- c(allMeans, list(meanPheno))
 	}
         if (moreThan1Trial) {
-	  mainTitle <- paste("Accuracy (StdDev) = ", round(mean(allCor, na.rm=TRUE), 2), " (", round(sd(allCor,na.rm=TRUE), 2), ")", sep="")
+	  mainTitle <- paste("Prediction of ", phenolabel, " , accuracy (StdDev) = ", round(mean(allCor, na.rm=TRUE), 2), " (", round(sd(allCor,na.rm=TRUE), 2), ")", sep="")
         } else {
-          mainTitle <- paste("Accuracy = ", round(mean(allCor, na.rm=TRUE), 2), sep="")
+          mainTitle <- paste("Prediction of ", phenolabel, " , accuracy = ", round(mean(allCor, na.rm=TRUE), 2), sep="")
         }
 # Second, plot by trial
         for (trial in 1:length(trainTrials)){
