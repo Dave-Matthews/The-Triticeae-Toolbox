@@ -106,12 +106,14 @@ if (mysql_num_rows($r) > 0) {
   print "</div><div class='section'><h1>Delete Panels</h1>";
   print "<form id=\"deselPanelForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\">";
   print "<select name=\"deselPanel[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
-  while ($row = mysql_fetch_row($r)) {
-    if (empty($row[2]))
+  while ($row = mysql_fetch_assoc($r)) {
+    if (empty($row['line_ids']))
       $count = 0;
     else 
-      $count = count(explode(',', $row[2]));
-    print "<option value=\"$row[0]\">$row[1] ($count)</option>\n";
+      $count = count(explode(',', $row['line_ids']));
+    $lpid = $row['linepanels_uid'];
+    $lpname = $row['name'];
+    print "<option value=\"$lpid\">$lpname ($count)</option>\n";
   }
   print "</select>";
   print "&nbsp;&nbsp;&nbsp;<br><input type=\"submit\" value=\"Delete highlighted panels\" /></p>";
