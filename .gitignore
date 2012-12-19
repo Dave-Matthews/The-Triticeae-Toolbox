@@ -6,5 +6,6 @@ includes/bootstrap_curator.inc
 #
 # ViroBLAST 
 viroblast/*
+viroblast/blastresult.php
 # Other:
 downloads/old
