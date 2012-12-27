@@ -76,17 +76,11 @@ class Downloads
             case 'type1':
                 $this->type1();
                 break;
-            case 'type1preselect':
-                $this->type1_preselect();
-                break;
             case 'type1experiments':
                 $this->type1_experiments();
                 break;
             case 'step1dataprog':
                 $this->step1_dataprog();
-                break;
-            case 'enterlines':
-                $this->enter_lines();
                 break;
             case 'step1lines':
                 $this->step1_lines();
@@ -1034,6 +1028,9 @@ class Downloads
                 <?php
          }
 
+     /**
+     * starting with breeding program display year
+     */
          private function step2_breedprog()
          {
                ?>
@@ -1378,109 +1375,6 @@ class Downloads
 	       <?php    
 	     }
 	  }
-	}
-	
-	/**
-	 * display minor allele frequence and missing data using selected lines
-	 * @param array $lines
-	 * @param floats $min_maf
-	 * @param floats $max_missing
-	 */
-	private function calculate_af(&$lines, $min_maf, $max_missing) {
-	 //calculate allele frequencies using 2D table
-	
-	 if (isset($_SESSION['clicked_buttons'])) {
-	   $tmp = count($_SESSION['clicked_buttons']);
-	   $saved_session = $saved_session . ", $tmp markers";
-	   $markers = $_SESSION['clicked_buttons'];
-	   $marker_str = implode(',',$markers);
-	 } else {
-	   $markers = array();
-	   $marker_str = "";
-	 }
-	 
-	 if (!preg_match('/[0-9]/',$marker_str)) {
-	   //get genotype markers that correspond with the selected lines
-	   $selectedlines = implode(",",$lines);
-	   $sql_exp = "SELECT DISTINCT marker_uid
-	   FROM allele_cache
-	   WHERE
-	   allele_cache.line_record_uid in ($selectedlines)";
-	   $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-	   if (mysql_num_rows($res)>0) {
-	     while ($row = mysql_fetch_array($res)){
-	       $markers[] = $row["marker_uid"];
-	     }
-	    }
-	   $marker_str = implode(',',$markers);
-	   $num_mark = mysql_num_rows($res);
-	   //echo "$num_mark markers in selected lines<br>\n";
-	 }
-       
-         $count = count($markers);
-         echo ", $count markers";
-	 
-	 //generate an array of selected markers that can be used with isset statement
-	 foreach ($markers as $temp) {
-	   $marker_lookup[$temp] = 1;
-	 }
-	
-         return; /* skip rest of calculation, this will be done at download */ 
-	 //get location information for markers
-	 $sql = "select marker_uid from allele_byline_idx order by marker_uid";
-	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	 $i=0;
-	 while ($row = mysql_fetch_array($res)) {
-	  $marker_list[$i] = $row[0];
-	  $i++;
-	 }
-	
-	 //calculate allele frequence and missing
-	 foreach ($lines as $line_record_uid) {
-	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-	  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	  if ($row = mysql_fetch_array($res)) {
-	    $alleles = $row[0];
-	    $outarray = explode(',',$alleles);
-	    $i=0;
-	    foreach ($outarray as $allele) {
-	      if ($allele=='AA') $marker_aacnt[$i]++;
-	      if (($allele=='AB') or ($allele=='BA')) $marker_abcnt[$i]++;
-	      if ($allele=='BB') $marker_bbcnt[$i]++;
-	      if ($allele=='--') $marker_misscnt[$i]++;
-	      $i++;
-	    }
-          }
-	 }
-	 $i=0;
-	 $num_mark = 0;
-	 $num_maf = $num_miss = $num_removed = 0;
-	 foreach ($marker_list as $marker_uid) {
-	   if (isset($marker_lookup[$marker_uid])) {
-	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-	   if ($total > 0) {
-	     $maf = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
-	     $miss = round(100*$marker_misscnt[$i]/$total,1);
-	     if ($maf >= $min_maf) $num_maf++;
-	     if ($miss > $max_missing) $num_miss++;
-	     if (($miss > $max_missing) OR ($maf < $min_maf)) $num_removed++;
-	     $num_mark++;
-	   }
-	   }
-	  $i++;
-	 }
-	 
-	  ?>
-	<p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
-	&nbsp;&nbsp;&nbsp;&nbsp;
-	Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
-	<i>
-	<br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
-	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
-	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
-	</i>
-	<br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
-	<?php
 	}
 	
 	/**

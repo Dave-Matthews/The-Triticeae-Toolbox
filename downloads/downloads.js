@@ -370,6 +370,23 @@ function load_traits()
 	);
 }
 
+function load_yearprog() {
+  $('step2').hide();
+  var url=php_self + "?function=step1yearprog&bp=" + breeding_programs_str + "&yrs=" + years_str;
+  document.title='Loading Step1...';
+  var tmp = new Ajax.Updater($('step2'),url,
+  {
+      onComplete: function() {
+        $('step2').show();
+        document.title=title;
+  }
+      }
+      );
+      document.getElementById('step3').innerHTML = "";
+      document.getElementById('step4').innerHTML = "";
+      document.getElementById('step5').innerHTML = "";
+}
+
 function selectedTraits() {
         var ret = '';
         $A($('traitsbx').options).each(function(trait){
@@ -636,23 +653,6 @@ function update_phenotype_linesb(options) {
 			    document.getElementById('step4').innerHTML = "";
 			}
 
-			function load_yearprog() {
-			    $('step2').hide();
-                var url=php_self + "?function=step1yearprog&bp=" + breeding_programs_str + "&yrs=" + years_str;
-                document.title='Loading Step1...';
-                var tmp = new Ajax.Updater($('step2'),url,
-                        { 
-                                onComplete: function() {
-                                    $('step2').show();
-                                    document.title=title;
-                                }
-                        }
-                    );
-                                document.getElementById('step3').innerHTML = "";
-                                document.getElementById('step4').innerHTML = "";
-                                document.getElementById('step5').innerHTML = "";
-                }						
-			
 			function update_select1(options) {
 			    select1_str = "";
 			    breeding_programs_str = "";
