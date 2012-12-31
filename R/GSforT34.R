@@ -3,14 +3,20 @@
 ##########################################################################
 source(common_code)
 
-hasPheno <- !is.na(phenoData$pheno)
-trainLines <- phenoData$gid[hasPheno]
-trainTrials <- unique(phenoData$trial[phenoData$gid %in% trainLines])
-
-if (yesPredPheno) {
-        predLines <- phenoData$gid
+yesPredPheno <- FALSE
+predTrials <- NULL
+predSetExists <- exists("snpData_p")
+if (predSetExists) {
+# Figure out if all pred pheno is missing
+        predLines <- rownames(snpData_p)
         predTrials <- unique(phenoData$trial[phenoData$gid %in% predLines])
+        predPheno <- phenoData$pheno[phenoData$trial %in% predTrials]
+	yesPredPheno <- sum(!is.na(predPheno)) > 2
+}
+if (yesPredPheno) {
+# Assume that any trial that has lines in the prediction set is a prediction trial
         phenoData$phenoTrain <- phenoData$pheno
+        phenoData$phenoTrain[phenoData$trial %in% predTrials] <- NA
         moreThan1Trial <- sum(!(unique(phenoData$trial) %in% predTrials)) > 1
         if (moreThan1Trial){
                 addBlups <- kin.blup(phenoData, "gid", "phenoTrain", K=mrkRelMat, fixed="trial")
@@ -18,34 +24,39 @@ if (yesPredPheno) {
                 addBlups <- kin.blup(phenoData, "gid", "phenoTrain", K=mrkRelMat)
         }
 
+        meanTrial <- mean(phenoData$phenoTrain, na.rm=TRUE)
+        adjusted <- addBlups$g + meanTrial
         whichSet <- ifelse(names(addBlups$g) %in% predLines, "Pred", "Train")
-        result <- data.frame(prediction=addBlups$g, set=whichSet, stringsAsFactors=FALSE)
+        result <- data.frame(prediction=adjusted, set=whichSet, stringsAsFactors=FALSE)
         write.csv(result, file=fileout, quote=FALSE)
 
 # Make a plot of predictions against observations
 # First, get correlations between predicted and observed
         allCor <- NULL
         allMeans <- list()
-        for (trial in 1:length(trainTrials)){
-		trialLines <- unique(phenoData$gid[phenoData$trial == trainTrials[trial]])
+        for (trial in 1:length(predTrials)){
+		trialLines <- unique(phenoData$gid[phenoData$trial == predTrials[trial]])
 		# In case there are > 1 pheno for a line in a trial, which shouldn't happen (yet)
-		meanPheno <- tapply(phenoData$pheno[phenoData$trial == trainTrials[trial]], as.factor(phenoData$gid[phenoData$trial == trainTrials[trial]]), mean, na.rm=TRUE)[trialLines]
+		meanPheno <- tapply(phenoData$pheno[phenoData$trial == predTrials[trial]], as.factor(phenoData$gid[phenoData$trial == predTrials[trial]]), mean, na.rm=TRUE)[trialLines]
 		allCor <- c(allCor, cor(addBlups$g[trialLines], meanPheno, use="complete.obs"))
 		allMeans <- c(allMeans, list(meanPheno))
 	}
         if (moreThan1Trial) {
-	  mainTitle <- paste("Prediction of ", phenolabel, " , accuracy (StdDev) = ", round(mean(allCor, na.rm=TRUE), 2), " (", round(sd(allCor,na.rm=TRUE), 2), ")", sep="")
+	  mainTitle <- paste("Prediction of ", phenolabel, ", accuracy (StdDev) = ", round(mean(allCor, na.rm=TRUE), 2), " (", round(sd(allCor,na.rm=TRUE), 2), ")", sep="")
         } else {
-          mainTitle <- paste("Prediction of ", phenolabel, " , accuracy = ", round(mean(allCor, na.rm=TRUE), 2), sep="")
+          mainTitle <- paste("Prediction of ", phenolabel, ", accuracy = ", round(mean(allCor, na.rm=TRUE), 2), sep="")
         }
 # Second, plot by trial
-        for (trial in 1:length(trainTrials)){
-		trialLines <- unique(phenoData$gid[phenoData$trial == trainTrials[trial]])
+        for (trial in 1:length(predTrials)){
+		trialLines <- unique(phenoData$gid[phenoData$trial == predTrials[trial]])
 		# Get correlations between predicted
+                meanTrial <- mean(phenoData$pheno)
+                meanTrial <- mean(phenoData$phenoTrain, na.rm=TRUE)
+                adjusted <- addBlups$g[trialLines] + meanTrial
 		if (trial == 1){
-			plot(addBlups$g[trialLines], allMeans[[trial]], pch=16, xlim=range(addBlups$g), ylim=range(unlist(allMeans),na.rm=TRUE), main=mainTitle, xlab="Prediction", ylab="Observed Phenotype")
+			plot(adjusted, allMeans[[trial]], pch=16, xlim=range(adjusted), ylim=range(unlist(allMeans),na.rm=TRUE), main=mainTitle, xlab="Prediction", ylab="Observed Phenotype")
 		} else{
-			points(addBlups$g[trialLines], allMeans[[trial]], pch=16, col=trial)
+			points(adjusted, allMeans[[trial]], pch=16, col=trial)
 		}
 	}
 } else {
@@ -96,6 +107,7 @@ if (yesPredPheno) {
 	}#END runCrossVal
 
 # Are there >1 trials?
+        trainTrials <- setdiff(unique(phenoData$trial), predTrials)
 	moreThan1Trial <- length(trainTrials) > 1
 	if (moreThan1Trial){
 		# Do a non-crossvalidated prediction for the results
@@ -106,7 +118,14 @@ if (yesPredPheno) {
 		addBlups <- kin.blup(phenoData, "gid", "pheno", K=mrkRelMat)
 		cvPred <- runCrossValidation(phenoData, "gid", "pheno", mrkRelMat)
 	}
-	result <- data.frame(prediction=addBlups$g, set="Train", stringsAsFactors=FALSE)
+        meanTrial <- mean(phenoData$pheno, na.rm=TRUE)
+        adjusted <- addBlups$g + meanTrial
+        if (predSetExists) {
+          whichSet <- ifelse(names(addBlups$g) %in% predLines, "Pred", "Train")
+          result <- data.frame(prediction=adjusted, set=whichSet, stringsAsFactors=FALSE)
+        } else {
+	  result <- data.frame(prediction=adjusted, set="Train", stringsAsFactors=FALSE)
+        }
 	write.csv(result, file=fileout, quote=FALSE)
 	meanPred <- rowMeans(cvPred)
 
@@ -130,10 +149,12 @@ if (yesPredPheno) {
 	for (trial in 1:length(trainTrials)){
 		trialLines <- unique(phenoData$gid[phenoData$trial == trainTrials[trial]])
 		# Get correlations between predicted
+                meanTrial <- mean(phenoData$pheno, na.rm=TRUE)
+                adjusted <- meanPred[trialLines] + meanTrial
 		if (trial == 1){
-			plot(meanPred[trialLines], allMeans[[trial]], pch=16, xlim=range(meanPred), ylim=range(unlist(allMeans),na.rm=TRUE), main=mainTitle, xlab="Cross-validated Prediction", ylab="Observed Phenotype")
+			plot(adjusted, allMeans[[trial]], pch=16, xlim=range(adjusted), ylim=range(unlist(allMeans),na.rm=TRUE), main=mainTitle, xlab="Cross-validated Prediction", ylab="Observed Phenotype")
 		} else{
-			points(meanPred[trialLines], allMeans[[trial]], pch=16, col=trial)
+			points(adjusted, allMeans[[trial]], pch=16, col=trial)
 		}
 	}
 }#END no prediction set
