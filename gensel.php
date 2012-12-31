@@ -283,13 +283,14 @@ class Downloads
                      echo "downloads/select_all.php>Wizard</a>.<br><br>";
                    }
                 } elseif (empty($_SESSION['selected_lines'])) {
-                    echo "<br>Select prediction set using ";
+                    echo "<br>Select prediction set containing trait measurements to plot prediction vs observed. ";
                     echo "<a href=";
                     echo $config['base_url'];
-                    echo "pedigree/line_selection.php>Lines by Properties</a> or ";
+                    echo "downloads/select_all.php>Wizard</a><br>";
+                    echo "Select prediction set without trait measurements to predict the traits. ";
                     echo "<a href=";
                     echo $config['base_url'];
-                    echo "downloads/select_all.php>Wizard</a>.<br><br>";
+                    echo "pedigree/line_selection.php>Lines by Properties</a><br>";
                 } elseif (empty($_SESSION['selected_traits'])) {
                     echo "Please select traits before using this feature.<br><br>";
                     echo "<a href=";
@@ -315,6 +316,14 @@ class Downloads
              
                    $count = count($_SESSION['selected_lines']);
                    echo "<td>$count";
+                   ?>
+                   <td>
+                   <form method="LINK" action="gensel.php">
+                   <input type="hidden" value="step1gensel" name="function">
+                   <input type="hidden" value="clear_p" name="cmd">
+                   <input type="submit" value="Clear Selection">
+                   </form>
+                   <?php
                    //check if these are unique
                    $count = 0;
                    $count_dup = 0;
@@ -328,42 +337,44 @@ class Downloads
                        $count++;
                      }
                    }
-                   if ($count_dup > 0) {
-                     echo " (Warning - $count_dup lines duplicated in training set)";
-                   }
                    if ($count < 5) {
                      echo " <font color=red>(Error - $count unique lines in prediction set)";
                    }
                 }
-                if (!empty($_SESSION['training_lines'])) {
-                   ?>
-                   </table>
-                  <form method="LINK" action="gensel.php">
-         <input type="hidden" value="step1gensel" name="function">
-         <input type="hidden" value="clear" name="cmd">
-         <input type="submit" value="Clear Selection">
-         </form>
-                  <?php
+                echo "</table>";
+                if ($count_dup > 0) {
+                     echo " Warning - $count_dup lines removed from prediction set because they are in training set";
                 }
+                $min_maf = 5;
+                $max_missing = 10;
+                $max_miss_line = 10;
+                $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
                 ?>
-                </div>
-                <div id="step1" style="float: left; margin-bottom: 1.5em;">
-                <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-                </div>
                 <?php
                 if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
+                  $min_maf = 5;
+                  $max_missing = 10;
+                  $max_miss_line = 10;
+                  $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
                   ?>
+                  <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Max missing markers &le; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />%
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Max missing lines &le; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />%
+                  </div>
+                  <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+                  <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
                   <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
                   <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
                   <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <?php
-                  $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
-                  echo "<br>Estimate phenotypes for Prediction set<br>";
+                  echo "Estimate phenotypes for Prediction set<br>";
                   echo "<input type=\"button\" value=\"Analyze\" onclick=\"javascript:load_genomic_prediction('$unique_str')\"><br><br>";
                   echo "</div>";
                 }
-                echo "</div>";
+                echo "</div></div>";
         }
 
     /**
@@ -390,6 +401,9 @@ class Downloads
            $_SESSION['training_lines'] = $_SESSION['selected_lines'];
            unset($_SESSION['selected_trials']);
            unset($_SESSION['selected_lines']);
+           unset($_SESSION['filtered_lines']);
+           unset($_SESSION['filtered_markers']);
+           unset($_SESSION['clicked_buttons']);
         } else {
           echo "error - no selection found";
         }
@@ -405,6 +419,10 @@ class Downloads
            unset($_SESSION['training_trials']);
            unset($_SESSION['training_lines']);
            unset($_SESSION['filtered_lines']);
+      } elseif ($command== "clear_p") {
+          unset($_SESSION['selected_traits']);
+          unset($_SESSION['selected_trials']);
+          unset($_SESSION['selected_lines']);
       }
       if (empty($_SESSION['selected_lines']) || empty($_SESSION['training_lines'])) {
         ?>
@@ -414,7 +432,7 @@ class Downloads
 
         <p><b>Genomic Prediction</b><br>
         1. Select a training set that contains phenotype measurements for one trait.<br>2. Return to this page and save the training set.
-        <br>3. Select a set of lines to be used for prediction.<br>4. Return to this page and start analysis.<br>
+        <br>3. Select a set of lines for a different trial to be used for prediction.<br>4. Return to this page and start analysis.<br>
         R program kin.blup(data, geno, pheno, K=A, fixed="trial").<br>
         An additive relationship matrix for K creates the model (G = K V<sub>g</sub>).<br>
         
@@ -422,7 +440,7 @@ class Downloads
       }
       if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
         echo "<table>";
-        echo "<tr><td>Set<td>Trials<td>Lines";
+        echo "<tr><td>Set<td>Trials<td>Lines<td>";
         $p_uid = $_SESSION['training_traits'];
         $p_uid = $p_uid[0];
         $sql = "select phenotypes_name from phenotypes where phenotype_uid = $p_uid";
@@ -456,6 +474,14 @@ class Downloads
         $res = mysql_query($sql) or die(mysql_error() . $sql);
         $row = mysql_fetch_array($res);
         echo "$row[0]";
+        ?>
+        <td>
+        <form method="LINK" action="gensel.php">
+        <input type="hidden" value="step1gensel" name="function">
+        <input type="hidden" value="clear" name="cmd">
+        <input type="submit" value="Clear Selection">
+        </form>
+        <?php
         if (empty($_SESSION['selected_lines'])) {
             echo "</table>";
         }
@@ -495,11 +521,20 @@ class Downloads
         $res = mysql_query($sql) or die(mysql_error() . $sql);
         $row = mysql_fetch_array($res);
         $count = $row[0];
-        echo "$count";
+        echo "$count</table>";
         if ($count > 0) {
-          $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+           $min_maf = 5;
+           $max_missing = 10;
+           $max_miss_line = 10;
+           $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
           ?>
-          </table>
+          <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Max missing markers &le; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />%
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Max missing lines &le; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />%
+
+          </div>
           <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
           <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
           <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
@@ -561,30 +596,46 @@ class Downloads
             $phenolabel = $row[0];
             $phenounit = $row[1]; 
         
-        if (isset($_SESSION['training_trials'])) {
-            $trials = $_SESSION['training_trials'];
-        } elseif (isset($_SESSION['selected_trials'])) {
-            $trials = $_SESSION['selected_trials'];
-        } else {
-            $trials = "";
-        }
-        $histo_width = 800;
-        $ntrials = count($trials);
-          if ($ntrials > 3) {
-            $histo_width = 800 + ($ntrials - 3) * 200;
-          }
-
-            $triallabel = "";
-            foreach ($trials as $uid) {
-              $sql = "select trial_code from experiments where experiment_uid = $uid";
-              $res = mysql_query($sql) or die(mysql_error());
-              $row = mysql_fetch_array($res);
-              if ($triallabel == "") {
-                $triallabel = "'$row[0]'";
-              } else {
-                $triallabel .= ",'$row[0]'";
-              }
+        $ntrials = 0;
+        $triallabel = "";
+        if (isset($_SESSION['selected_trials'])) {
+          $trials = $_SESSION['selected_trials'];
+          foreach ($trials as $uid) {
+            $sql = "select trial_code from experiments where experiment_uid = $uid";
+            $res = mysql_query($sql) or die(mysql_error());
+            if ($row = mysql_fetch_array($res)) {
+                $trial = $row[0];
             }
+            if ($triallabel == "") {
+              $triallabel = "'$trial'";
+            } else {
+              $triallabel .= ",'$trial'";
+            }
+            $ntrials++;
+          }
+        }
+
+        if (isset($_SESSION['training_trials'])) {
+          $trials = $_SESSION['training_trials'];
+          foreach ($trials as $uid) {
+            $sql = "select trial_code from experiments where experiment_uid = $uid";
+            $res = mysql_query($sql) or die(mysql_error());
+            if ($row = mysql_fetch_array($res)) {
+              $trial = $row[0];
+            }
+            if ($triallabel == "") {
+              $triallabel = "'$trial'";
+            } else {
+              $triallabel .= ",'$row[0]'";
+            }
+            $ntrials++;
+          }
+        }
+
+        $histo_width = 800;
+        if ($ntrials > 3) {
+          $histo_width = 800 + ($ntrials - 3) * 200;
+        }
         
         if(!file_exists($dir.$filename3)){
             $h = fopen($dir.$filename3, "w+");
@@ -768,6 +819,9 @@ class Downloads
             global $config;
 	    $datasets_exp = "";
             $unique_str = $_GET['unq'];
+            $max_missing = $_GET['mmm'];
+            $max_miss_line = $_GET['mml'];
+            $min_maf = $_GET['mmaf'];
                 if (isset($_SESSION['training_trials'])) {
                         $experiments_t = $_SESSION['training_trials'];
                         $experiments_t = implode(",",$experiments_t);
@@ -817,13 +871,11 @@ class Downloads
                 <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
                 <?php
               
-                $min_maf = 5;
-                $max_missing = 10; 
                 if ($training_lines == "") {
-                  $this->calculate_af($lines, $min_maf, $max_missing);
+                  $this->calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
                   $lines = $_SESSION['filtered_lines'];
                 } else {
-                  $this->calculate_af($training_lines, $min_maf, $max_missing);
+                  $this->calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
                   $training_lines = $_SESSION['filtered_lines'];
                 }
                 $markers = $_SESSION['filtered_markers'];
@@ -863,6 +915,12 @@ class Downloads
                       fclose($h);
                     }
                   } else {
+                    //remove duplicate lines from prediction
+                    foreach ($lines as $key => $value) {
+                      if(in_array($value, $training_lines)){
+                        unset($lines[$key]);
+                      }
+                    }
                     if(!file_exists($dir.$filename8)) {
                       $dtype = "qtlminer";
                       $h = fopen($dir.$filename8, "w+");
@@ -1440,7 +1498,7 @@ class Downloads
 	 * @param floats $min_maf
 	 * @param floats $max_missing
 	 */
-	function calculate_af(&$lines, $min_maf, $max_missing) {
+	function calculate_af(&$lines, $min_maf, $max_missing, $max_miss_line) {
 	 //calculate allele frequencies using 2D table
 
 	 if (isset($_SESSION['clicked_buttons'])) {
@@ -1494,12 +1552,11 @@ class Downloads
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
 	 foreach ($marker_list as $marker_uid) {
-	   //if (isset($markers_lookup[$marker_uid])) {
 	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
            $total_af = 2 * ($marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i]);
 	   if ($total_af > 0) {
-	     $maf = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
-	     $miss = round(100*$marker_misscnt[$i]/$total,1);
+	     $maf = 100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total);
+	     $miss = 100 * $marker_misscnt[$i]/$total;
 	     if ($maf >= $min_maf) $num_maf++;
 	     if ($miss > $max_missing) $num_miss++;
 	     if (($miss > $max_missing) OR ($maf < $min_maf)) {
@@ -1527,34 +1584,25 @@ class Downloads
            }
          }
          $lines_removed = 0; 
+         $num_line = 0;
          foreach ($lines as $line_record_uid) {
-           #$total = $line_sum[$line_record_uid];
            $total = count($markers_filtered);
            $miss = 100*$line_misscnt[$line_record_uid]/$total;
-           if ($miss > $max_missing) {
+           if ($miss > $max_miss_line) {
              $lines_removed++;
            } else {
              $lines_filtered[] = $line_record_uid;
            }
-         }
-         if ($lines_removed == 1) {
-           $txt = "$lines_removed line</b><i> is";
-         } else {
-           $txt = "$lines_removed lines</b><i> are";
+           $num_line++;
          }
          $_SESSION['filtered_lines'] = $lines_filtered;
 	 
 	  ?>
-	<p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
-	&nbsp;&nbsp;&nbsp;&nbsp;
-	Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
 	<i>
 	<br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
 	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
-        <br></i><b><?php echo ($txt) ?> missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
-	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
-	</i>
-	<!--br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /--><br>
+        <br></i><b><?php echo ($lines_removed) ?></b><i> of </i><b><?php echo ($num_line) ?></b><i> lines will be removed </b></i>.
+	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> markers will be removed.</i>
 	<?php
 	}
 	
@@ -2220,7 +2268,7 @@ selected lines</a><br>
 		elseif ($min_maf<0)
 			$min_maf = 0;
 		
-		$this->calculate_af($lines, $min_maf, $max_missing);
+		$this->calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
 		
 		?>
 		<table> <tr> <td COLSPAN="3">
@@ -2337,7 +2385,7 @@ selected lines</a><br>
 	 elseif ($min_maf<0)
 	   $min_maf = 0;
 	
-	$this->calculate_af($lines, $min_maf, $max_missing);
+	$this->calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
 	
 	?>
 	<table> <tr> <td COLSPAN="3">
@@ -2810,18 +2858,12 @@ selected lines</a><br>
      *
      * modified to work with only one trait
      */
-    function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
-	{
-     	//$firephp = FirePHP::getInstance(true);
-		$delimiter = "\t";
-		$output = '';
-		$outputheader1 = '';
-		$outputheader3 = "<Trial>";
+    function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset) {
+      $delimiter = "\t";
+      $output = '';
+      $outputheader1 = '';
+      $outputheader3 = "<Trial>";
       
-      //count number of experiments
-      $ntraits=substr_count($traits, ',')+1;
-      $nexp=substr_count($experiments, ',')+1;
-
       //only use first trait
       $pattern = "/([0-9]+)/";
       if (preg_match($pattern,$traits,$match)) {
@@ -2831,12 +2873,6 @@ selected lines</a><br>
         die();
       }
       
-      // figure out which traits are at which location
-      if ($experiments=="") {
-        $sql_option = "";
-      } else {
-        $sql_option = "AND tb.experiment_uid IN ($experiments)";
-      }
       if (isset($_SESSION['filtered_lines'])) {
         $lines = $_SESSION['filtered_lines'];
       } else {
@@ -2845,7 +2881,6 @@ selected lines</a><br>
       $selectedlines = implode(",", $lines);
       $outputheader2 = "gid" . $delimiter . "pheno" . $delimiter . "trial";
 
-		// dem 5jan11: If $subset="yes", use $_SESSION['selected_lines'].
 		$sql_option = "";
 		if ($subset == "yes" && count($_SESSION['filtered_lines']) > 0) {
 		  $selectedlines = implode(",", $_SESSION['filtered_lines']);
@@ -2880,22 +2915,75 @@ selected lines</a><br>
           $output = $outputheader2."\n";
 	  
           //add lines from pred set
-        $selectedlines = $_SESSION['selected_lines'];
+        if(isset($_SESSION['training_lines'])) {
+          if (isset($_SESSION['selected_lines'])){
+            $selectedlines = $_SESSION['selected_lines'];
+          }
+          if (isset($_SESSION['selected_trials'])) {
+            $selectedtrials = $_SESSION['selected_trials'];
+            $selectedtrials = implode(",",$selectedtrials);
+          }
+        } else {
+          $selectedlines = array();
+          $selectedtrials = "";
+        }
+        if (preg_match("/\d/",$selectedtrials)) {
+          $sql_option = " WHERE tb.experiment_uid IN ($selectedtrials) AND ";
+        } else{
+          $sql_option = " WHERE ";
+        }
         foreach ($selectedlines as $uid) {
           if (!in_array($uid,$line_uid)) {
-            $sql = "SELECT line_record_name from line_records where line_records.line_record_uid = $uid";
+            $sql = "SELECT line_record_name, tb.experiment_uid as exper
+                    from line_records as lr, tht_base as tb
+                    $sql_option
+                    lr.line_record_uid=tb.line_record_uid
+                    and lr.line_record_uid = $uid";
+            //echo "$sql<br>\n";
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            $found = 0;
-            if ($row = mysql_fetch_array($res)) {
-              $found = 1;
+            if (preg_match("/\d/",$selectedtrials)) {	//for case where there are phenotype measurements
+            while ($row = mysql_fetch_array($res)) {
               $line_name = $row[0];
-              $outline = $line_name.$delimiter."-999".$delimiter."0\n";
-              $output .= $outline;
-            } else {
-              $line_name = "unknown";
-              $outline = $line_name.$delimiter."-999".$delimiter."0\n";
+              $exper = $row[1];
+              $sql = "select pd.value as value
+                     from tht_base as tb, phenotype_data as pd
+                     $sql_option
+                     tb.line_record_uid  = $uid
+                     AND pd.tht_base_uid = tb.tht_base_uid
+                     AND pd.phenotype_uid = $traits";
+              $res2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+              if ($row2 = mysql_fetch_array($res2)) {
+                $value = $row2['value'];
+              } else {
+                $value = "-999";
+              }
+
+              $outline = $line_name.$delimiter.$value.$delimiter.$exper."\n";
               $output .= $outline;
             }
+            } else {	//for case where there are no phenotype measurements
+            if ($row = mysql_fetch_array($res)) {
+              $line_name = $row[0];
+              $exper = 0;    //use 0 to indicate the prediction set
+              $sql = "select pd.value as value
+                     from tht_base as tb, phenotype_data as pd
+                     $sql_option
+                     tb.line_record_uid  = $uid
+                     AND pd.tht_base_uid = tb.tht_base_uid
+                     AND pd.phenotype_uid = $traits";
+              $res2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+              if ($row2 = mysql_fetch_array($res2)) {
+                $value = $row2['value'];
+              } else {
+                $value = "-999";
+              }
+
+              $outline = $line_name.$delimiter.$value.$delimiter.$exper."\n";
+              $output .= $outline;
+            }
+            }
+          } else {
+            //echo "dropped from prediction $uid<br>\n";
           }
         }
  
@@ -2913,7 +3001,7 @@ selected lines</a><br>
 						AND pd.tht_base_uid = tb.tht_base_uid
 						AND pd.phenotype_uid = $traits 
 					GROUP BY tb.tht_base_uid, pd.phenotype_uid";
-			
+		//echo "$sql<br>\n";	
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
             $found = 0;
             while ($row = mysql_fetch_array($res)) {
