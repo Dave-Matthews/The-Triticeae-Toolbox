@@ -33,11 +33,19 @@ ul ul ul {list-style-type: disc}
       <p>
 
 <b>T3 Tutorials</b><br>
-<a href="curator_data/tutorial/T3_Lesson1_LineUpload.html" target="_blank">Lesson One.</a> Germplasm file creation and upload<br>
-<a href="curator_data/tutorial/T3_Lesson2_Phenotype2012.html" target="_blank">Lesson Two.</a> (<a href="curator_data/tutorial/T3_Lesson2_Phenotype2012.pdf">.pdf</a>) Phenotype trial annotation and data.  <font size= -2 color=red>(new 27Dec2012)</font></b> <br>
-<a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html" target="_blank">Lesson Three.</a> Genotype trial annotation and data<br>
-<a href="curator_data/tutorial/T3_Line_Panels.pdf" target="_blank">Lesson Four.</a> How to create germplasm line panels in T3<br>
+<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson1_LineUpload.html" target="_blank">Lesson One.</a> Germplasm file creation and upload<br>
+<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson2_Phenotype2012.html" target="_blank">Lesson Two.</a> (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson2_Phenotype.pdf">.pdf</a>) Phenotype trial annotation and data.  <font size= -2 color=red>(new 27Dec2012)</font></b> <br>
+<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson3_GenotypeUpload.html" target="_blank">Lesson Three.</a> Genotype trial annotation and data<br>
+<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Line_Panels.pdf" target="_blank">Lesson Four.</a> How to create germplasm line panels in T3<br>
 <p></p>
+    
+  <p>The Sandbox databases, <a href="http://malt.pw.usda.gov/t3/sandbox/wheat">wheat</a> 
+    and <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a>, 
+    are available for test-loading your data files.  Once they're ready,
+    click below to submit them officially.<br>    
+    <input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
+
+
 <p></p>
 <b>T3 Data Templates</b><br>
 
@@ -249,12 +257,7 @@ ul ul ul {list-style-type: disc}
 end old code -->
 
 
-    
-  <p>The Sandbox databases, <a href="http://malt.pw.usda.gov/t3/sandbox/wheat">wheat</a> 
-    and <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a>, 
-    are available for test-loading your data files.  Once they're ready,
-    click below to submit them officially.<br>    
-    <input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
+
 </div>
 
 <?php
