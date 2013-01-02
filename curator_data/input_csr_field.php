@@ -80,7 +80,7 @@ private function typeExperiments()
 <form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
   <table>
   <tr><td><strong>Trial Name:</strong><td>
-  <select name="fieldbook">
+  <select name="exper_uid">
 <?php
 echo "<option>select a trial</option>\n";
 $sql = "select trial_code, experiment_uid, experiment_year from experiments where experiment_type_uid = 1 order by experiment_year desc";
