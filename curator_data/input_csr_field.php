@@ -93,7 +93,8 @@ while ($row = mysqli_fetch_assoc($res)) {
 }
 echo "</select>\n";
 ?>
-  <tr><td><strong>Field Book File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/field_template.xlsx">Example Data File</a>
+  <tr><td><strong>Field Book File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/fieldbook_template.xlsx">Field Book Template</a>
   </table>
   <p><input type="submit" value="Upload" /></p>
 </form>

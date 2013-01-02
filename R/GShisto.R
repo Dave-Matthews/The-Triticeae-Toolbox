@@ -17,7 +17,7 @@ if (length(unq.trial) > 1) {
         phenos <- c(phenos, pheno[j])
       } 
     }
-    trialname <- triallabel[i]
+    trialname <- triallabel[exper]
     mainlabel <- paste("Histogram of ",trialname)
     hist(phenos, main=mainlabel, xlab=phenounit)
   }
