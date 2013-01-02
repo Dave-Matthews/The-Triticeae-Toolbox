@@ -105,14 +105,16 @@ echo "</select>\n";
 //list links to saved Excel Files
 echo "<br>List of currently loaded Field Book files<br>\n";
 echo "<table border=1>\n";
-$sql = "select experiment_uid, fieldbook_file_name, created_on from csr_fieldbook_info";
+echo "<tr><td>experiment<td>created on<td>updated on\n";
+$sql = "select experiment_uid, fieldbook_file_name, created_on, updated_on from csr_fieldbook_info";
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
 while ($row = mysqli_fetch_assoc($res)) {
   $name = $row['experiment_uid'];
   $file = $row['fieldbook_file_name'];
-  $date = $row['created_on'];
+  $date1 = $row['created_on'];
+  $date2 = $row['updated_on'];
   $tmp = $config['base_url'] . $file;
-  echo "<tr><td><a href=$tmp>$trial_list[$name]</a><td>$date";
+  echo "<tr><td><a href=$tmp>$trial_list[$name]</a><td>$date1<td>$date2";
 }
 echo "</table>";
   

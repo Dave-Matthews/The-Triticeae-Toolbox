@@ -233,7 +233,7 @@ private function typeExperimentCheck()
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    $sql = "delete from csr_fieldbook where experiment_uid = $experiment_uid";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                   echo "deleted old entries from database where fieldbook_name = $experiment_uid<br>\n";
+                   echo "deleted old entries from database where experiment_uid = $experiment_uid<br>\n";
                }
 
                for ($i=3; $i<=$lines_found; $i++) {
