@@ -180,7 +180,7 @@ private function typeExperimentCheck()
                  die();
                }
 
-               if (!preg_match("/[0-9]/",$fieldbookname)) {
+               if (!preg_match("/[0-9]/",$experiment_uid)) {
                  echo "<font color=red>Error - missing Trial Name</font><br>\n";
                  $error_flag = 1;
                }
@@ -199,7 +199,7 @@ private function typeExperimentCheck()
                  }
                }
 
-               $sql = "select fieldbook_info_uid from csr_fieldbook_info where experiment_uid = '$fieldbookname'";
+               $sql = "select fieldbook_info_uid from csr_fieldbook_info where experiment_uid = '$experiment_uid'";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                //echo "found mysql_num_rows($rew)<br>\n";
                if (mysqli_num_rows($res)==0) {
@@ -210,7 +210,7 @@ private function typeExperimentCheck()
                    echo "<font color=red>Warning - record with Trial Name = $trial_code already exist, do you want to overwrite?</font>";
                    ?>
                    <form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
-                   <input id="fieldbook" type="hidden" name="fieldbook" value="<?php echo $fieldbookname; ?>">
+                   <input id="fieldbook" type="hidden" name="exper_uid" value="<?php echo $experiment_uid; ?>">
                    <input id="replace" type="hidden" name="replace" value="Yes">
                    <input id="filename" type="hidden" name="filename" value="<?php echo $raw_path; ?>">
                    <input id="filename_meta" type="hidden" name="filename_meta" value="<?php echo $meta_path; ?>">
@@ -225,15 +225,15 @@ private function typeExperimentCheck()
            if ($error_flag == 0) {
 
                if ($new_record) {
-                   $sql = "insert into csr_fieldbook_info (experiment_uid, fieldbook_file_name, updated_on, created_on) values ($fieldbookname, '$meta_path', NOW(), NOW())";
+                   $sql = "insert into csr_fieldbook_info (experiment_uid, fieldbook_file_name, updated_on, created_on) values ($experiment_uid, '$meta_path', NOW(), NOW())";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to file system<br>\n";
                } else {
-                   $sql = "update csr_fieldbook_info set fieldbook_file_name = '$meta_path', updated_on = NOW() where experiment_uid = $fieldbookname";
+                   $sql = "update csr_fieldbook_info set fieldbook_file_name = '$meta_path', updated_on = NOW() where experiment_uid = $experiment_uid";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                   $sql = "delete from csr_fieldbook where experiment_uid = $fieldbookname";
+                   $sql = "delete from csr_fieldbook where experiment_uid = $experiment_uid";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                   echo "deleted old entries from database where fieldbook_name = $fieldbookname<br>\n";
+                   echo "deleted old entries from database where fieldbook_name = $experiment_uid<br>\n";
                }
 
                for ($i=3; $i<=$lines_found; $i++) {
@@ -265,7 +265,7 @@ private function typeExperimentCheck()
                    $tmpK = "NULL";
                  }
 
-                 $sql = "insert into csr_fieldbook (experiment_uid, plot, line_name, row_id, column_id, entry, replication, block, subblock, treatment, main_plot_tmt, subplot_tmt, check_id, field_id, note ) values ($fieldbookname,$tmpA,'$tmpB',$tmpC,'$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN')";
+                 $sql = "insert into csr_fieldbook (experiment_uid, plot, line_name, row_id, column_id, entry, replication, block, subblock, treatment, main_plot_tmt, subplot_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,'$tmpB',$tmpC,'$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";
