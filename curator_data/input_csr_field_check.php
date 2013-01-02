@@ -81,17 +81,17 @@ private function typeExperimentCheck()
   $row = loadUser($_SESSION['username']);
   $username=$row['name'];
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
-  $fieldbookname = $_POST['fieldbook'];
+  $experiment_uid = $_POST['exper_uid'];
   $replace_flag = $_POST['replace'];
   $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
   $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
-  $sql = "select trial_code from experiments where experiment_uid = $fieldbookname";
+  $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
   if ($row = mysqli_fetch_assoc($res)) {
     $trial_code = $row['trial_code'];
   } else {
     echo "$sql<br>\n";
-    die("Error: could not find trial code in database $fieldbookname<br>\n");
+    die("Error: could not find trial code in database $experiment_uid<br>\n");
   }
   if (file_exists($raw_path)) {
     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
@@ -168,6 +168,16 @@ private function typeExperimentCheck()
                  $tmp = $data[2]["A"];
                  echo "<font color=red>Error in column header - expected \"plot\" found $tmp</font><br>\n";
                  $error_flag = 1;
+               }
+
+               $tmp = $data[1]["B"];
+               $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
+               $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+               $row = mysqli_fetch_array($res);
+               if ($row[0] != $tmp) {
+                 echo "<font color=red>Error: Trial Name in the Field Book File \"$tmp\" does not match the Trial Name selected in the drop-down list<br></font>\n";
+                 $error_flag = 1;
+                 die();
                }
 
                if (!preg_match("/[0-9]/",$fieldbookname)) {

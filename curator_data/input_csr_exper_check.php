@@ -148,6 +148,22 @@ public function save_raw_file($wavelength) {
              }
              $size = 0;
              $count_plot = 0;
+
+             //first line should be trial
+             $line= fgets($reader);
+             $temp = str_getcsv($line,"\t");
+             if ($temp[0] != "Trial") {
+               echo "Error - Expceted \"Trial\" found \"$temp[0]\"<br>\n";
+             }
+             $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
+             $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+             $row = mysqli_fetch_array($res);
+             if ($row[0] != $temp[0]) {
+                 echo "<font color=red>Error: Trial Name in the Annotation File \"$temp[1]\" does not match the Trial Name selected from the drop-down list<br></font>\n";
+                 $error_flag = 1;
+                 die();
+             }
+
              while ($line = fgets($reader)) {
                $temp = str_getcsv($line,"\t");
                $wavelength[$i] = $temp;
