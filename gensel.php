@@ -489,13 +489,16 @@ class Downloads
         ?>
         <table>
         <tr><td>Traits<td>Trials<td>Lines
+        <tr><td>
         <?php
-        $p_uid = $_SESSION['selected_traits'];
-        $p_uid = $p_uid[0];
-        $sql = "select phenotypes_name from phenotypes where phenotype_uid = $p_uid";
+        $tmp = $_SESSION['selected_traits'];
+        $traits= implode(",",$tmp);
+        $sql = "select phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
         $res = mysql_query($sql) or die(mysql_error());
-        $row = mysql_fetch_array($res);
-        echo "<tr><td>$row[0]<td>";
+        while ($row = mysql_fetch_array($res)) {
+          echo "$row[0]<br>";
+        }
+        echo "<td>";
         $tmp = $_SESSION['selected_trials'];
         $e_uid = implode(",",$tmp);
         $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
@@ -516,7 +519,7 @@ class Downloads
                 $sql_option
                 AND p.phenotype_uid = pd.phenotype_uid
                 AND lr.line_record_uid = tb.line_record_uid
-                AND pd.phenotype_uid = $p_uid
+                AND pd.phenotype_uid IN ($traits) 
                 AND tb.experiment_uid IN  ($e_uid)";
         $res = mysql_query($sql) or die(mysql_error() . $sql);
         $row = mysql_fetch_array($res);
@@ -607,10 +610,9 @@ class Downloads
                 $trial = $row[0];
             }
             if ($triallabel == "") {
-              $triallabel = "'$trial'";
-            } else {
-              $triallabel .= ",'$trial'";
+              $triallabel = "triallabel <- list()\n";
             }
+            $triallabel .= "triallabel[$uid] <- \"$trial\"\n";
             $ntrials++;
           }
         }
@@ -624,10 +626,9 @@ class Downloads
               $trial = $row[0];
             }
             if ($triallabel == "") {
-              $triallabel = "'$trial'";
-            } else {
-              $triallabel .= ",'$row[0]'";
+              $triallabel= "triallabel <- list()\n";
             }
+            $triallabel .= "triallabel[$uid] <- \"$trial\"\n";
             $ntrials++;
           }
         }
@@ -644,7 +645,7 @@ class Downloads
             $cmd1 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd2 = "phenolabel <- \"$phenolabel\"\n";
             $cmd3 = "phenounit <- \"$phenounit\"\n";
-            $cmd4 = "triallabel <- c($triallabel)\n";
+            $cmd4 = $triallabel;
             fwrite($h, $png);
             fwrite($h, $cmd1);
             fwrite($h, $cmd2);
@@ -993,13 +994,6 @@ class Downloads
                   if (count($_SESSION['training_lines']) < 50) {
                   echo "skip CrossValidation because traing set has less than 50 lines<br>\n";
                   }
-                }
- 
-                //if ($selectedlinescount < 50) {
-                //  echo "skip CrossValidation because prediction set has less than 50 lines<br>\n";
-                //}
-                if (count($_SESSION['selected_traits']) > 1) {
-                  echo "Error - please select only one Trait<br>\n";
                 }
 	}
 	
