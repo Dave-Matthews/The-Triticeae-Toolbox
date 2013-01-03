@@ -80,7 +80,7 @@ private function typeExperiments()
 <form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
   <table>
   <tr><td><strong>Trial Name:</strong><td>
-  <select name="fieldbook">
+  <select name="exper_uid">
 <?php
 echo "<option>select a trial</option>\n";
 $sql = "select trial_code, experiment_uid, experiment_year from experiments where experiment_type_uid = 1 order by experiment_year desc";
@@ -93,7 +93,8 @@ while ($row = mysqli_fetch_assoc($res)) {
 }
 echo "</select>\n";
 ?>
-  <tr><td><strong>Field Book File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/field_template.xlsx">Example Data File</a>
+  <tr><td><strong>Field Book File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/fieldbook_template.xlsx">Field Book Template</a>
   </table>
   <p><input type="submit" value="Upload" /></p>
 </form>
@@ -105,14 +106,16 @@ echo "</select>\n";
 //list links to saved Excel Files
 echo "<br>List of currently loaded Field Book files<br>\n";
 echo "<table border=1>\n";
-$sql = "select experiment_uid, fieldbook_file_name, created_on from csr_fieldbook_info";
+echo "<tr><td>experiment<td>created on<td>updated on\n";
+$sql = "select experiment_uid, fieldbook_file_name, created_on, updated_on from csr_fieldbook_info";
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
 while ($row = mysqli_fetch_assoc($res)) {
   $name = $row['experiment_uid'];
   $file = $row['fieldbook_file_name'];
-  $date = $row['created_on'];
+  $date1 = $row['created_on'];
+  $date2 = $row['updated_on'];
   $tmp = $config['base_url'] . $file;
-  echo "<tr><td><a href=$tmp>$trial_list[$name]</a><td>$date";
+  echo "<tr><td><a href=$tmp>$trial_list[$name]</a><td>$date1<td>$date2";
 }
 echo "</table>";
   
