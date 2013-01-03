@@ -450,11 +450,55 @@ if ($query == 'geno') {
     print "</table><br>\n";
   }
 
+  $index= 12;
+  //* Phenotype data */
+  $sql = "select count(phenotype_uid) from phenotypes";
+  $res = mysql_query($sql) or die(mysql_error());
+  if ($row=mysql_fetch_row($res)) {
+    $count = $row[0];
+  }
+  if ($output == "excel") {
+    $worksheet->write($index, 0, "Phenotype Data", $format_header);
+    $index++;
+    $worksheet->write($index, 0, "Traits");
+    $worksheet->write($index, 1, $count);
+    $index++;
+  } else {
+    print "<b>Phenotype Data</b>\n";
+    print "<table>\n";
+    print "<tr><td>Traits<td>$count<td><a href=traits.php>Trait descriptions and units</a>\n";
+  }
+  $sql = "select count(phenotype_uid) from phenotype_data";
+  $res = mysql_query($sql) or die(mysql_error());
+  if ($row=mysql_fetch_row($res)) {
+    $count = $row[0];
+  }
+    if ($output == "excel") {
+      $worksheet->write($index, 0, "Total phenotype data");
+      $worksheet->write($index, 1, $count);
+      $index++;
+    } else {
+        print "<tr><td>Total phenotype data<td>$count<td><a href=phenotype_report.php>List phenotype data by year and trait</a>\n";
+  }
+  $sql = "select date_format(max(created_on),'%m-%d-%Y') from phenotype_data";
+  $res = mysql_query($sql) or die(mysql_error());
+  if ($row = mysql_fetch_row($res)) {
+      $count = $row[0];
+  }
+  if ($output == "excel") {
+      $worksheet->write($index, 0, "last addition");
+      $worksheet->write($index, 1, $count);
+      $index++;
+  } else {
+      print "<tr><td>last addition<td>$count\n";
+      print "</table><br>\n";
+  }
+
   $count = "";
   $name = "";
   if ($output == "excel") {
-    $worksheet->write(12, 0, "Genotype Data", $format_header);
-    $index = 13;
+    $worksheet->write($index, 0, "Genotype Data", $format_header);
+    $index++;
   } else {
     print "<b>Genotype Data</b>\n";
     print "<table>\n";
@@ -519,47 +563,6 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>last addition<td>$allele_update\n";
     print "</table><br>\n";
-  }
-
-  $sql = "select count(phenotype_uid) from phenotypes";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row=mysql_fetch_row($res)) {
-    $count = $row[0];
-  }
-  if ($output == "excel") {
-    $worksheet->write($index, 0, "Phenotype Data", $format_header);
-    $index++;
-    $worksheet->write($index, 0, "Traits");
-    $worksheet->write($index, 1, $count);
-    $index++;
-  } else {
-    print "<b>Phenotype Data</b>\n";
-    print "<table>\n";
-    print "<tr><td>Traits<td>$count<td><a href=traits.php>Trait descriptions and units</a>\n";
-  }
-  $sql = "select count(phenotype_uid) from phenotype_data";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row=mysql_fetch_row($res)) {
-    $count = $row[0];
-  }
-    if ($output == "excel") {
-      $worksheet->write($index, 0, "Total phenotype data");
-      $worksheet->write($index, 1, $count);
-      $index++;
-    } else {
-        print "<tr><td>Total phenotype data<td>$count<td><a href=phenotype_report.php>List phenotype data by year and experiment</a>\n";
-  }
-  $sql = "select date_format(max(created_on),'%m-%d-%Y') from phenotype_data";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_row($res)) {
-      $count = $row[0];
-  }
-  if ($output == "excel") {
-      $worksheet->write($index, 0, "last addition");
-      $worksheet->write($index, 1, $count);
-  } else {
-      print "<tr><td>last addition<td>$count\n";
-      print "</table><br>\n";
   }
 
 if ($output == "excel") {
