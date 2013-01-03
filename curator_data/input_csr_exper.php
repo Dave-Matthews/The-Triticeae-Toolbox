@@ -91,8 +91,10 @@ while ($row = mysqli_fetch_assoc($res)) {
 }
 echo "</select>\n";
 ?>
-  <tr><td><strong>CSR Annotation File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3_Sp1_Annotation.xlsx">Example Trial File</a>
-  <tr><td><strong>CSR Data File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3_Sp1_Data.txt">Example Raw Data File</a>
+  <tr><td><strong>CSR Annotation File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3_Sp1_Annotation.xlsx">CSR Annotation Template</a>
+  <tr><td><strong>CSR Data File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSR_Data_template.txt">CSR Data Template</a>
   </table>
   <p><input type="submit" value="Upload" /></p>
 </form>
