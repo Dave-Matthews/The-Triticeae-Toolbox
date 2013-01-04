@@ -1,4 +1,4 @@
-# t3/.../R/Clust3D.R
+# t3/.../R/Clust4D.R
 # called by cluster4d.php, which prepends several commands in setupclust3d.txt
 
 # from Jean-Luc Jannink 9feb11, ./VisualCluster.R.orig
