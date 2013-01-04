@@ -94,7 +94,7 @@ else {
 	}
 	resp.innerHTML = "<img src='./images/progress.gif' alt='Working...'><br>\
 Analyzing marker alleles for <b><?php echo $linecount ?><\/b> lines.<br>\
-Analysis time is ca. one minute for 1000 lines (3 million alleles).";
+Analysis time is ca. one minute for 500 lines (1 million alleles).";
   	req.onreadystatechange = function(){
 	  if(req.readyState === 4){
 	    //var button = "<p><input type='submit' value='Analyze'><\/form>";
