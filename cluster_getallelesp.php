@@ -158,6 +158,7 @@ else {
     file_put_contents($outfile, $experiments."\n");
   } else {
     file_put_contents($outfile, "empty\n");
+    $tmp = array();
   }
   $empty = array();
   foreach ($tmp as $id) {
