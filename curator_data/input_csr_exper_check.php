@@ -258,7 +258,7 @@ public function save_raw_file($wavelength) {
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                $row = mysqli_fetch_array($res);
                if ($row[0] != $value[2]) {
-                 echo "<font color=red>Error: Trial Name in the Annotation File \"$temp[1]\" does not match the Trial Name selected from the drop-down list<br></font>\n";
+                 echo "<font color=red>Error: Trial Name in the Annotation File \"$value[2]\" does not match the Trial Name selected from the drop-down list<br></font>\n";
                  $error_flag = 1;
                  die();
                }
