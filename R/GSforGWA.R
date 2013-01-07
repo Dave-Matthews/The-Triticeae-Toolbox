@@ -39,3 +39,4 @@ if (moreThan1Trial) {
 } else {
   results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE)
 }
+write.csv(results, file=fileout, quote=FALSE)
