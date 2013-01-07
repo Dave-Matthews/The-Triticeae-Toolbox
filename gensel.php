@@ -350,6 +350,7 @@ class Downloads
                 $max_miss_line = 10;
                 $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
                 ?>
+                </div>
                 <?php
                 if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
                   $min_maf = 5;
@@ -362,7 +363,6 @@ class Downloads
         Max missing markers &le; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Max missing lines &le; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />%
-                  </div>
                   <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
@@ -374,7 +374,7 @@ class Downloads
                   echo "<input type=\"button\" value=\"Analyze\" onclick=\"javascript:load_genomic_prediction('$unique_str')\"><br><br>";
                   echo "</div>";
                 }
-                echo "</div></div>";
+                echo "</div>";
         }
 
     /**
@@ -435,7 +435,7 @@ class Downloads
         <br>3. Select a set of lines for a different trial to be used for prediction.<br>4. Return to this page and start analysis.<br>
         R program kin.blup(data, geno, pheno, K=A, fixed="trial").<br>
         An additive relationship matrix for K creates the model (G = K V<sub>g</sub>).<br>
-        
+         
         <?php
       }
       if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
@@ -556,7 +556,7 @@ class Downloads
           <input type="hidden" value="save_t" name="cmd">
           <input type="submit" value="Save Training Set">
           <td>then continue to select prediction set
-          </form></table></div> 
+          </form></table>
           <?php
         } else {
           echo "<font color=red>Warning, not a valid combination of traits, trials, and lines</font>";
@@ -678,6 +678,7 @@ class Downloads
         $filename7 = 'THTdownload_gwa2_' . $unique_str . '.png';
         $filename5 = 'process_error_gwa_' . $unique_str . '.txt';
         $filename6 = 'R_error_gwa_' . $unique_str . '.txt';
+        $filename1 = 'THT_result_' . $unique_str . '.csv';
         if(!file_exists($dir.$filename3)){
             $h = fopen($dir.$filename3, "w+");
             $png1 = "png(\"$dir$filename4\", width=800, height=400)\n";
@@ -686,12 +687,15 @@ class Downloads
             $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
             $cmd5 = "fileerr <- \"$dir$filename6\"\n";
+            $cmd7 = "fileout <- \"$filename1\"\n";
             fwrite($h, $png1);
             fwrite($h, $png2);
             fwrite($h, $png3);
             fwrite($h, $cmd3);
             fwrite($h, $cmd4);
             fwrite($h, $cmd6);
+            fwrite($h, $cmd7);
+            fwrite($h, "setwd(\"/tmp/tht/\")\n");
             fclose($h);
         }
         exec("cat /tmp/tht/$filename3 R/GSforGWA.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
@@ -703,6 +707,8 @@ class Downloads
         }
         if (file_exists("/tmp/tht/$filename7")) {
                   print "<img src=\"/tmp/tht/$filename7\" /><br>";
+                  print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
+                  print "with columns for marker name, chromosome, position, marker score<br><br>";
         }
         if (file_exists("/tmp/tht/$filename5")) {
            $h = fopen("/tmp/tht/$filename5", "r");
@@ -782,18 +788,27 @@ class Downloads
         $filename1 = 'THTdownload_hapmap_' . $unique_str . '.txt';
         $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
         $filename3 = 'THTdownload_gensel_' . $unique_str . '.R';
+        $filename10 = 'THTdownload_gensel2_' . $unique_str . '.png';
         $filename4 = 'THTdownload_gensel_' . $unique_str . '.png';
         $filename5 = 'THT_process_error_' . $unique_str . '.txt';
         $filename6 = 'THT_R_error_' . $unique_str . '.txt';
         $filename7 = 'THT_result_' . $unique_str . '.csv';
         exec("cat /tmp/tht/$filename3 R/GSforT34.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
-        if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
-                  print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export to CSV file</a><br><br>";
+        if (file_exists("/tmp/tht/$filename10")) {
+                  print "<img src=\"/tmp/tht/$filename10\" /><br>";
         } else {
                   echo "Error in R script<br>\n";
                   echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla <br>";
         }
+        if (file_exists("/tmp/tht/$filename4")) {
+                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
+                  print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
+                  print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export Cross-validated prediction to CSV file</a><br><br>";
+        } else {
+                  echo "Error in R script<br>\n";
+                  echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla <br>";
+        }
+
         if (file_exists("/tmp/tht/$filename5")) {
                   $h = fopen("/tmp/tht/$filename5", "r");
                   while ($line=fgets($h)) {
@@ -902,6 +917,7 @@ class Downloads
                 $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
                 $filename3 = 'THTdownload_gensel_' . $unique_str . '.R';
                 $filename4 = 'THTdownload_gensel_' . $unique_str . '.png';
+                $filename10 = 'THTdownload_gensel2_' . $unique_str . '.png';
                 $filename5 = 'THT_process_error_' . $unique_str . '.txt';
                 $filename6 = 'THT_R_error_' . $unique_str . '.txt';
                 $filename7 = 'THT_result_' . $unique_str . '.csv';
@@ -963,6 +979,7 @@ class Downloads
                 if(!file_exists($dir.$filename3)){
                     $h = fopen($dir.$filename3, "w+");
                     $png = "png(\"$dir$filename4\", width=600, height=500)\n";
+                    $png2 = "png(\"$dir$filename10\", width=600, height=500)\n";
                     $cmd1 = "snpData_p <- read.table(\"$dir$filename1\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd2 = "snpData_t <- read.table(\"$dir$filename8\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
@@ -976,6 +993,7 @@ class Downloads
                     $cmd7 = "phenolabel <- \"$phenolabel\"\n";
                     $cmd8 = "common_code <- \"" . $config['root_dir'] . "R/AmatrixStructure.R\"\n";
                     fwrite($h, $png);
+                    fwrite($h, $png2);
                     if ($training_lines != "") {
                       fwrite($h, $cmd1);
                     }
