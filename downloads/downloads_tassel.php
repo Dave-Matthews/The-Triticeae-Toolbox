@@ -2417,26 +2417,9 @@ class Downloads
 	   'BB' => 'CC',
 	   '--' => 'NN',
 	   'AB' => 'AC',
+           'BA' => 'CA',
 	   '' => 'NN'
 	 );
-	 
-	 foreach ($lines as $i => $line_record_uid) {
-	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-	  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	  if ($row = mysql_fetch_array($res)) {
-	   $alleles = $row[0];
-	   $outarray = explode(',',$alleles);
-	   $i = 0;
-	   foreach ($outarray as $allele) {
-             if ($allele=='AA') { $marker_aacnt[$i]++; }
-            elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-            elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-            elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
-            else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-            $i++;
-	   }
-	  }
-	 }
 	 
 	 //get location in allele_byline for each marker
 	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
@@ -2458,11 +2441,9 @@ class Downloads
 	  $empty[$name] = "NN";
 	 }
 	 
-	 $lookup_chrom = array(
-	   '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
-	   '6H' => '6','7H' => '7','UNK'  => '10');
-	
 	 //using a subset of markers so we have to translate into correct index
+         //if there is no map then use chromosome 0 and index for position
+         $pos_index = 0;
 	 foreach ($marker_list_all as $marker_id => $rank) {
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
@@ -2484,12 +2465,20 @@ class Downloads
 	         AND mapset.mapset_uid = 1";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	     if ($row = mysql_fetch_array($res)) {
-	        $chrom = $lookup_chrom[$row[2]];
-	        $pos = 100 * $row[3];
+                $chrom = $row[2];
+                if (preg_match('/[0-9]+/',$chrom, $match)) {
+                  $chrom = $match[0];
+                  $pos = 100 * $row[3];
+                } else {
+                  $chrom = 0;
+                  $pos = $pos_index;
+                  $pos_index += 10;
+                }
 	     } else {
-	        $chrom = 0;
-	        $pos = 0;
-	     }
+                $chrom = 0;
+                $pos = $pos_index;
+                $pos_index += 10;
+             }
              if ($dtype == "qtlminer") {
                $output .= "$marker_name\t$allele\t$chrom\t$pos";
              } else {
