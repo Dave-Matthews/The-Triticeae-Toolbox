@@ -2403,15 +2403,6 @@ class Downloads
            die("could not sort marker list\n");
          }
 
-         //get location in allele_byline for each marker
-         $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-         $i=0;
-         while ($row = mysql_fetch_array($res)) {
-           $marker_idx_list[$row[0]] = $i;
-           $i++;
-         }
-
 	 $lookup = array(
 	   'AA' => 'AA',
 	   'BB' => 'CC',
