@@ -51,7 +51,7 @@ if (isset($_SESSION['selected_lines'])) {
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h1>Cluster Lines by Genotype, SVD</h1>
+  <h1>Cluster Lines 3D, pam()</h1>
   <div class="section">
 
   <p>The 

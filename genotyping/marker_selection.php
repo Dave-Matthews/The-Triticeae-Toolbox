@@ -10,7 +10,7 @@
  * 9/2/2010   J.Lee modify to add new snippet Gbrowse tracks
  * 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse   
  */
-$usegbrowse = True;
+$usegbrowse = False;
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 connect();
@@ -178,17 +178,15 @@ if (isset($_SESSION['clicked_buttons']) && count($_SESSION['clicked_buttons']) >
     }
   }
   $chrlist = array_unique($chrlist);
-  $chrlist.sort();
  print "</select>";
  print "</td><td>\n";
- echo "<script type='text/javascript'>
-var mlist = \$j('#mlist option').map(function () { return \$j(this).text(); });
-</script>";
 
  // Show GBrowse maps.
- if ($count_markers > 500) {
-    echo "too many markers to display in Gbrowse<br>\n";
- } else {
+ if ($usegbrowse) {
+   sort($chrlist);
+   echo "<script type='text/javascript'>
+   var mlist = \$j('#mlist option').map(function () { return \$j(this).text(); });
+   </script>";
  foreach ($chrlist as $chr) {
    echo "<div id='gbrowse_$chr'></div>\n";
    echo <<<EOD

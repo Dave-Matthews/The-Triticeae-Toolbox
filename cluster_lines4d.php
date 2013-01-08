@@ -51,7 +51,7 @@ if (isset($_SESSION['selected_lines'])) {
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h1>Cluster Lines 3D, Hierarchical</h1>
+  <h1>Cluster Lines 3D, hclust()</h1>
   <div class="section">
 
   <p>The 
@@ -70,8 +70,6 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
   echo "<a href=".$config['base_url']."pedigree/line_selection.php>Select lines</a> or ";
   echo "<a href=".$config['base_url']."downloads/select_all.php>lines and trait</a>. ";
   echo "(Patience required for more than a few hundred lines.)";
-// } elseif (!isset ($_SESSION['selected_traits'])) {
-//  echo "Error - must select traits before using this function<br>\n";
 }
 else {
   print "<textarea rows = 9>";
@@ -96,7 +94,7 @@ else {
 	}
 	resp.innerHTML = "<img src='./images/progress.gif' alt='Working...'><br>\
 Analyzing marker alleles for <b><?php echo $linecount ?><\/b> lines.<br>\
-Analysis time is ca. one minute for 1000 lines (3 million alleles).";
+Analysis time is ca. one minute for 500 lines (1 million alleles).";
   	req.onreadystatechange = function(){
 	  if(req.readyState === 4){
 	    //var button = "<p><input type='submit' value='Analyze'><\/form>";

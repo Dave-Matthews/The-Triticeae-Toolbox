@@ -153,13 +153,13 @@ public function save_raw_file($wavelength) {
              $line= fgets($reader);
              $temp = str_getcsv($line,"\t");
              if ($temp[0] != "Trial") {
-               echo "Error - Expceted \"Trial\" found \"$temp[0]\"<br>\n";
+               echo "Error - Expected \"Trial\" found \"$temp[0]\"<br>\n";
              }
              $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
              $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
              $row = mysqli_fetch_array($res);
-             if ($row[0] != $temp[0]) {
-                 echo "<font color=red>Error: Trial Name in the Annotation File \"$temp[1]\" does not match the Trial Name selected from the drop-down list<br></font>\n";
+             if ($row[0] != $temp[1]) {
+                 echo "<font color=red>Error: Trial Name in the Data File \"$temp[1]\" does not match the Trial Name selected from the drop-down list<br></font>\n";
                  $error_flag = 1;
                  die();
              }
@@ -257,11 +257,12 @@ public function save_raw_file($wavelength) {
                $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                $row = mysqli_fetch_array($res);
-               if (mysqli_num_rows($res)==0) { //no, experiment not found once  
-                 echo "<font color=red>Error: could not find Trial Name \"$value[2]\" in experiments table, please load this experiment first<br></font>\n";
+               if ($row[0] != $value[2]) {
+                 echo "<font color=red>Error: Trial Name in the Annotation File \"$value[2]\" does not match the Trial Name selected from the drop-down list<br></font>\n";
                  $error_flag = 1;
                  die();
                }
+
                $sql = "select radiation_dir_uid from csr_measurement_rd where direction = '$value[3]'";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                if ($row = mysqli_fetch_array($res)) {
