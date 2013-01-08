@@ -2339,24 +2339,21 @@ class Downloads
 	 } else {
 	  $lines_str = "";
 	 }
-	 
-	 //get lines and filter to get a list of markers which meet the criteria selected by the user
-	 if (preg_match('/[0-9]/',$markers_str)) {
-	 } else {
-	  //get genotype markers that correspond with the selected lines
-	  $sql_exp = "SELECT DISTINCT marker_uid
-	  FROM allele_cache
-	  WHERE
-	  allele_cache.line_record_uid in ($lines_str)";
-	  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-	  if (mysql_num_rows($res)>0) {
-	   while ($row = mysql_fetch_array($res)){
-	    $markers[] = $row["marker_uid"];
-	   }
-	  }
-	  $markers_str = implode(',',$markers);
-	 }
-	 
+	
+         //generate an array of selected lines that can be used with isset statement
+         foreach ($lines as $temp) {
+           $line_lookup[$temp] = 1;
+         }
+
+         $sql = "select line_record_uid, line_record_name from allele_bymarker_idx order by line_record_uid";
+         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+         $i=0;
+         while ($row = mysql_fetch_array($res)) {
+            $line_list[$i] = $row[0];
+            $line_list_name[$i] = $row[1];
+            $i++;
+         }
+ 
 	 //order the markers by map location
 	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
@@ -2404,6 +2401,15 @@ class Downloads
          if (uasort($marker_list_all, array($this,'cmp'))) {
          } else {
            die("could not sort marker list\n");
+         }
+
+         //get location in allele_byline for each marker
+         $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
+         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+         $i=0;
+         while ($row = mysql_fetch_array($res)) {
+           $marker_idx_list[$row[0]] = $i;
+           $i++;
          }
 
 	 $lookup = array(
@@ -2471,15 +2477,6 @@ class Downloads
            '' => 'NN'
           );
 
-	   $total = $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx] + $marker_bbcnt[$marker_idx] + $marker_misscnt[$marker_idx];
-	   if ($total>0) {
-	    $maf[$marker_idx] = round(100 * min((2 * $marker_aacnt[$marker_idx] + $marker_abcnt[$marker_idx]) /$total, ($marker_abcnt[$marker_idx] + 2 * $marker_bbcnt[$marker_idx]) / $total),1);
-	    $miss[$marker_idx] = round(100*$marker_misscnt[$marker_idx]/$total,1);
-	   } else {
-	    $maf[$marker_idx] = 0;
-	    $miss[$marker_idx] = 100;
-	   }
-	   if (($maf[$marker_idx] >= $min_maf) AND ($miss[$marker_idx]<=$max_missing)) {
 	     $sql = "select A_allele, B_allele, mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset where markers.marker_uid = $marker_id
 	         AND mim.marker_uid = markers.marker_uid
 	         AND mim.map_uid = map.map_uid
@@ -2493,25 +2490,31 @@ class Downloads
 	        $chrom = 0;
 	        $pos = 0;
 	     }
-	     $output .= "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t";
-	     $allele_list = $empty;
-	     $sql = "select line_record_name, alleles from allele_cache where marker_uid = $marker_id and line_record_uid IN ($lines_str)";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	     while ($row = mysql_fetch_array($res)) {
-	       if (preg_match("/[A-Z]/",$row[1])) {
-	         $allele = $row[1];
-	         $allele = $lookup[$allele];
-	       } else {
-	         $allele = "NN";
-	       }
-	       $allele_list[$row[0]] = $allele;
-	     }
-	     $allele_str = implode("\t",$allele_list);
-	     $output .= "\t$allele_str\n";
-	  } else {
-	   //echo "rejected marker $marker_id<br>\n";
+             if ($dtype == "qtlminer") {
+               $output .= "$marker_name\t$allele\t$chrom\t$pos";
+             } else {
+               $output .= "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t";
+             }
+             $outarray2 = array();
+             $sql = "select marker_name, alleles from allele_bymarker where marker_uid = $marker_id";
+             $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+             if ($row = mysql_fetch_array($res)) {
+               $alleles = $row[1];
+               $outarray = explode(',',$alleles);
+               $i=0;
+               foreach ($outarray as $allele) {
+                 $line_id = $line_list[$i];
+                 if (isset($line_lookup[$line_id])) {
+                   $outarray2[]=$lookup[$allele];
+                 }
+                 $i++;
+               }
+             } else {
+               die("Error - could not find $marker_id<br>\n");
+             }
+             $allele_str = implode("\t",$outarray2);
+             $output .= "\t$allele_str\n";
 	  }
-	 }
 	 return $outputheader."\n".$output;
 	}
 	
@@ -2730,7 +2733,8 @@ class Downloads
 
 	/**
 	 * create map file for tassel V3
-	 * @param string $experiments
+         * @param array $lines
+         * @param array $markers
 	 * @return string
 	 */
 	function type1_build_geneticMap($lines,$markers)

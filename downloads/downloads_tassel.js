@@ -89,7 +89,7 @@ function haplotype_step2(command) {
     }
     //*form.submit(); */
     var url = php_self;
-    var tmp = new Ajax.Updater($('step1'), url, {method: 'post', postBody: param, asnchronous:false}, { 
+    var tmp = new Ajax.Updater($('step1'), url, {method: 'post', postBody: param, asynchronous:false}, { 
         onComplete : function() {
             $('step1').show();
             document.title = title;
@@ -104,7 +104,7 @@ function haplotype_step2(command) {
     });
     param = 'function=step1';
     url = php_self;
-    tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param, asnchronous:true}, {
+    tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
         onComplete : function() {
             $('step1').show();
             document.title = title;
@@ -129,7 +129,7 @@ function haplotype_step2_combine() {
     }
 
     var url = php_self;
-    var tmp = new Ajax.Updater($('step1'), url, {method: 'post', postBody: param, asnchronous:false}, {
+    var tmp = new Ajax.Updater($('step1'), url, {method: 'post', postBody: param, asynchronous:false}, {
         onComplete : function() {
             $('step1').show();
             document.title = title;
@@ -144,7 +144,7 @@ function haplotype_step2_combine() {
     });
     param = 'function=step1';
     url = php_self;
-    tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param, asnchronous:true}, {
+    tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
         onComplete : function() {
             $('step1').show();
             document.title = title;
