@@ -2733,7 +2733,8 @@ class Downloads
 
 	/**
 	 * create map file for tassel V3
-	 * @param string $experiments
+         * @param array $lines
+         * @param array $markers
 	 * @return string
 	 */
 	function type1_build_geneticMap($lines,$markers)
