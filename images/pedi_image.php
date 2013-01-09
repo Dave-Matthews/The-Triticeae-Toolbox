@@ -28,6 +28,7 @@ function draw_matrix (array $mx, $maxcol, array $leaves, array $mxnm) {
     $im_royalblue=imagecolorallocate($im, 0x41, 0x69, 0xE1);
     $im_salmon=imagecolorallocate($im, 0xFA, 0x80, 0x72);
     $im_seagreen=imagecolorallocate($im, 0x2E, 0x8B, 0x57);
+    $im_purple=imagecolorallocate($im, 0xFF, 0x33, 0xFF);
     imagefill($im, 0, 0, $im_white);
     for ($i=$maxcol-1; $i>=0; $i--) {
     		for ($j=0; $j<$maxlv; $j++) {
@@ -89,6 +90,7 @@ function draw_sequence($im, $seq, $nx, $ny, $nwidth, $nheight, $bmg, $cmg, $im_t
 function draw_character($im, $fontsize, $chr, $dx1, $dy1, $dx2, $dy2, $im_tomato, $im_seagreen, $im_royalblue, $im_salmon, $im_gray, $im_black) {
 	global $im;
 	$chrval=$chr;
+	$im_purple=imagecolorallocate($im, 0xFF, 0x33, 0xFF);
 	$cls=array('AA'=>'im_tomato', 'BB'=>'im_royalblue', 'AB'=>'im_purple', '--'=>'im_gray', 'N'=>'im_gray');
 	//		$cls=array('A'=>'im_tomato', 'B'=>'im_royalblue', '-'=>'im_seagreen', 'N'=>'im_gray');
 	if (!isset($chr) || $chr=="" || ! array_key_exists($chr, $cls)) {
@@ -249,7 +251,6 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
     $im_grayblue=imagecolorallocate($im, 0x99, 0xCC, 0xFF);
     $im_graydeepblue=imagecolorallocate($im, 0x33, 0x66, 0xCC);
     $im_bgblue=imagecolorallocate($im, 0xE9, 0xF1, 0xFF);
-    $im_purple=imagecolorallocate($im, 0xFF, 0x33, 0xFF);
     $style = array($im_blue, $im_blue, $im_blue, $im_blue, $im_blue, $im_bgblue, $im_bgblue, $im_bgblue, $im_bgblue, $im_bgblue);
     imagesetstyle($im, $style);
     $im_whitesmoke=imagecolorallocate($im, 0xF5, 0xF5, 0xF5);
@@ -257,6 +258,7 @@ function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
     $im_royalblue=imagecolorallocate($im, 0x41, 0x69, 0xE1);
     $im_salmon=imagecolorallocate($im, 0xFA, 0x80, 0x72);
     $im_seagreen=imagecolorallocate($im, 0x2E, 0x8B, 0x57);
+    $im_purple=imagecolorallocate($im, 0xFF, 0x33, 0xFF);
     $im_mediumseagreen=imagecolorallocate($im, 0x3C, 0xB3, 0x71);
     $im_skyblue=imagecolorallocate($im, 0x87, 0xCE, 0xEB);
     $im_darkyellow=imagecolorallocate($im, 0xFF, 0x99, 0x00);
