@@ -54,6 +54,8 @@ class Instrument {
   </table>
   <p><input type="submit" value="Upload" /></p>
 </form>
+
+<a href=login/edit_csr_system.php>Edit CSR System Table</a>
 		
 <?php
        } /* end of type_Instrument_Name function*/
