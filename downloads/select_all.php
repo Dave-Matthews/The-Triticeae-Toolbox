@@ -578,7 +578,7 @@ class Downloads
 	private function step1_phenotype()
 	{
 		?>
-		<div id="step11" style="float: left; margin-bottom: 1.5em;">
+		<div id="step11">
         <table id="phenotypeSelTab" class="tableclass1">
 		<tr>
 			<th>Category</th>
@@ -957,7 +957,7 @@ class Downloads
     {
     $CAPdata_programs = $_GET['bp'];
      ?>
-    <div id="step2" style="float: left; margin-bottom: 1.5em;">
+    <div id="step21">
                         <p>2.
                 <select name="select2">
                   <option value="BreedingProgram">Year</option>
@@ -1001,7 +1001,7 @@ class Downloads
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
                 $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
                 ?>
-                <div id="step11" style="float: left; margin-bottom: 1.5em;">
+                <div id="step11">
                 <table>
                 <tr>
                         <th>Breeding Program</th>
