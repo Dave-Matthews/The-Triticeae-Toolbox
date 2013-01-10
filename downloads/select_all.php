@@ -512,9 +512,13 @@ class Downloads
 		<?php
 
 		// Select breeding programs for the drop down menu
-		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-				FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
-
+                $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
+                  FROM experiments AS e, experiment_types AS et, datasets AS ds, datasets_experiments AS d_e, CAPdata_programs AS dp
+                  WHERE e.experiment_type_uid = et.experiment_type_uid
+                  AND e.experiment_uid = d_e.experiment_uid
+                  AND d_e.datasets_uid = ds.datasets_uid
+                  AND dp.CAPdata_programs_uid = e.CAPdata_programs_uid
+                  AND et.experiment_type_name = 'phenotype'";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
 		{
@@ -1012,9 +1016,13 @@ class Downloads
                 <?php
 
                 // Select breeding programs for the drop down menu
-                $sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-                                FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
-
+                $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
+                  FROM experiments AS e, experiment_types AS et, datasets AS ds, datasets_experiments AS d_e, CAPdata_programs AS dp
+                  WHERE e.experiment_type_uid = et.experiment_type_uid
+                  AND e.experiment_uid = d_e.experiment_uid
+                  AND d_e.datasets_uid = ds.datasets_uid
+                  AND dp.CAPdata_programs_uid = e.CAPdata_programs_uid
+                  AND et.experiment_type_name = 'phenotype'";
                 $res = mysql_query($sql) or die(mysql_error());
                 while ($row = mysql_fetch_assoc($res))
                 {
