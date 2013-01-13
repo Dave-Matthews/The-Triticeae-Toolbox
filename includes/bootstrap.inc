@@ -62,7 +62,7 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
     require('marker.inc');
 	require('search.inc');
 	require('globals.inc');
-
+        include_once("analyticstracking.php");
 
 
 /*
@@ -216,7 +216,7 @@ function connect() {
  * MySQL improved extension, it is strongly recommended that you use this extension.
  * object-oriented, support for prepared statements, support for multiple statements, support for transactions, enhanced debugging
  *
- * @return $linkID
+ * @return $mysqli
  */
 function connecti() {
   global $dontconnect;
@@ -225,7 +225,7 @@ function connecti() {
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat+_writeaccess.inc');
+  include('/data/tht_data/mysql_connections/T3wheat+_readonly.inc');
   $db_config = array_merge_recursive_unique($db_config,
                                             $ini_config);
   extract($db_config);
@@ -233,7 +233,7 @@ function connecti() {
   if ($mysqli->connect_errno) {
     die($mysqli->connect_errno() . " " . $mysqli->connect_error);
   } else {
-    $mysqli->query("set SESSION sql_mode='STRICT_ALL_TABLES'") or die(mysql_error());
+    mysqli_select_db($mysqli, $db_name);
   }
   return $mysqli;
 }
