@@ -66,6 +66,10 @@ connect();
     return dm[email.split('@')[1]] || '';
   }
 </script>
+
+<style type="text/css">
+  table td {padding: 2px;}
+</style>
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post"
       onsubmit="return validatePassword(document.getElementById('password').value);">
   <h3>Name</h3>
