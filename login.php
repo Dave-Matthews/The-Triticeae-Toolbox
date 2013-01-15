@@ -70,8 +70,14 @@ connect();
       onsubmit="return validatePassword(document.getElementById('password').value);">
   <h3>Name</h3>
   &nbsp;&nbsp;<label for="name">My name is:</label>&nbsp;
-  <input type="text" name="name" id="name" value="$name" /> Triticeae CAP participants <b>must</b> give a full name to be approved.
-  <h3>Email address			</h3>
+  <input type="text" name="name" id="name" value="$name" /><br>
+  &nbsp;&nbsp;For <i>Participant</i> or <i>Curator</i> status, please give your full name.
+  <h3>Email address</h3>
+
+  <style type="text/css">
+    table td {padding: 2px;}
+  </style>
+
   <table border="0" cellspacing="0" cellpadding="0"
 	 style="border: none; background: none">
     <tr><td style="border: none; text-align: right;">
@@ -97,9 +103,9 @@ connect();
 	<label for="institution">My institution is:<label></td>
 	<td style="border:none;">
 	<input type="text" name="institution" id="institution"
-	       value="$institution" size="30" /> Required for Triticeae CAP participants.
+	       value="$institution" size="30" /> Required for TBD Participants.
         </td></tr></table>
-  <h3>Are you a Triticeae CAP participant?</h3>
+  <h3>I wish to be a TBD Participant.</h3>
   <input $c_no type="radio" value="no" name="answer" id="answer_no" />
   <label for="answer_no">No</label>
   <br />
@@ -149,18 +155,22 @@ function HTMLLoginForm($msg = "") {
   $retval .= <<<HTML
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
-  <b>Triticeae CAP Participants</b>
-  <ul>
-    <li>have pre-release access to all phenotype and genotype data from the project.
-    <li>will be allowed to add their own private data to the database (feature to be added).
-    <li>can test-load their data files in the Sandbox database before submitting them to the curator. 
-      For this purpose please register at the <a href=http://malt.pw.usda.gov/t3/sandbox/$crop>Sandbox site</a>.
-    <li>can create unique germplasm line panels (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>)
- </ul>
-
-  <b>All Registered Users</b>
+  <b>All registered users</b>
   <ul>
     <li> Selections made during searches are saved from session to session.
+  </ul>
+  <b>Breeders Database Participants</b>
+  <ul>
+    <li>can create their own sets ("panels") of germplasm lines (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>).
+    <li>have pre-release access to all shared data.
+    <li>can test-load their data files in the Sandbox database before submitting them to the curator. 
+      For this purpose please register at the <a href=http://malt.pw.usda.gov/t3/sandbox/$crop>Sandbox site</a>.
+    <li>will be allowed to add their own private data to the database (<i>soon!</i>).
+ </ul>
+  <b>Breeders Database Curators</b>
+  <ul>
+    <li>can add data to the database.
+    <li>can correct or remove any data.
   </ul>
 
     <h3>What is your email address?</h3>
@@ -339,7 +349,7 @@ function HTMLProcessForgot() {
   else {
     $key = setting('passresetkey');
     $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-    send_email($email, "Triticeae Toolbox : Reset Your Password",
+    send_email($email, "Breeders Database : Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
 {$root}resetpass.php?token=$urltoken");
@@ -479,16 +489,16 @@ $safe_institution)";
        // Pop twice.
        $crop = array_pop($dir);
        $crop = array_pop($dir);
-       $sbmsg = "\nIf you will be submitting data to be loaded in T3, 
+       $sbmsg = "\nIf you will be submitting data to be loaded in TBD, 
 please register also in the Sandbox, 
 http://malt.pw.usda.gov/t3/sandbox/$crop
 There you can load your own files directly to see the results 
 and verify them before sending the files to the curator.\n";
      }
-     send_email($email, "Triticeae Toolbox registration in progress",
+     send_email($email, "Breeders Database registration in progress",
 "<pre>Dear $name,
 
-Thank you for requesting an account on The Triticeae Toolbox.
+Thank you for requesting an account on The Breeders Database.
 
 To complete your registration, please confirm that you requested it 
 by visiting the following URL:
@@ -497,14 +507,14 @@ by visiting the following URL:
 Your registration will be complete when you have performed this step.
 $sbmsg
 Sincerely,
-The Triticeae Toolbox Team
+The Breeders Database Team
 ");
 
      if ($desired_usertype == USER_TYPE_PARTICIPANT) {
        $capkey = setting('capencryptionkey');
        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
        send_email(setting('capmail'),
-		  "[THT] Validate CAP Participant $email",
+		  "Validate TBD Participant $email",
 "Email: $email
 Name: $name
 Institution: $institution
