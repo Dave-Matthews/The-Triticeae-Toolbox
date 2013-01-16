@@ -131,6 +131,9 @@ class Maps {
     echo "</form>";
   }
 
+  /**
+   * save map in session variable
+   */
   private function typeMapSave() {
     $map = $_GET['map'];
     $_SESSION['selected_map'] = $map;
