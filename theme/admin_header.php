@@ -17,6 +17,20 @@
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
 <?php
+/**
+ * Header and Menu
+ *
+ * PHP version 5.3
+ *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/theme/admin_header.php
+ *
+ */
+
    connect();
    // clear session if it contains variables from another database
    $database = mysql_grab("select value from settings where name='database'");
@@ -42,6 +56,7 @@ if (isset($usegbrowse) && $usegbrowse)
 if (isset($usegbrowse) && $usegbrowse)
   echo " Overview.prototype.initialize(); Details.prototype.initialize()"; ?>">
   <?php 
+  require_once $config['root_dir'].'includes/analyticstracking.php';
   if (isset($usegbrowse) && $usegbrowse)
     echo <<<EOD
       <script>
@@ -99,7 +114,7 @@ EOD;
   <ul>
     <li>
       <a href="">Home</a>
-    <li><a title="">Select</a>
+    <li><a href="" title="Lines and Phenotypes">Select</a>
       <ul>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters">
@@ -118,13 +133,15 @@ EOD;
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select by name or map position">
 	    Markers</a>
+        <li>
+          <a href="<?php echo $config['base_url']; ?>maps/select_map.php" title="Select genetic map">Genetic Map</a>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
 	    Wizard (Lines, Traits, Trials) </a>
         <li>
           <a href="<?php echo $config['base_url']; ?>downloads/clear_selection.php" title="Clear selection">Clear selection</a>
       </ul>
-    <li><a title="<?php echo $lang["desc_sc6"]; ?>">Analyze</a>
+    <li><a href="" title="<?php echo $lang["desc_sc6"]; ?>">Analyze</a>
       <ul>
 	<li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
         <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
@@ -141,7 +158,7 @@ EOD;
         <li><a href="<?php echo $config['base_url']; ?>downloads/downloads_tassel.php" title="Open TASSEL with selected data">Open TASSEL</a>
 	  <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
       </ul>
-    <li><a title="">Download</a>
+    <li><a href="" title="">Download</a>
       <ul>
 	<li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
@@ -154,7 +171,7 @@ EOD;
       </ul>
 
   <li>
-  <a title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
+  <a href="" title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
   <ul>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
