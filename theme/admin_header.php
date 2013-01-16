@@ -17,6 +17,20 @@
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
 <?php
+/**
+ * Header and Menu
+ *
+ * PHP version 5.3
+ *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/theme/admin_header.php
+ *
+ */
+
    connect();
    // clear session if it contains variables from another database
    $database = mysql_grab("select value from settings where name='database'");
