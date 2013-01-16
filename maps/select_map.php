@@ -1,7 +1,18 @@
 <?php
 /**
  * Display Map information and save selection in session variable
-*/
+ *
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/maps/select_map.php
+ * 
+ */
 
 require_once('config.php');
 include_once($config['root_dir'].'includes/bootstrap.inc');
@@ -9,6 +20,14 @@ connect();
 
 new Maps($_GET['function']);
 
+/** Using a PHP class to implement the "Select Map" feature
+ *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/maps/select_map.php
+ **/
 class Maps {
 
   public function __construct($function = null) {
