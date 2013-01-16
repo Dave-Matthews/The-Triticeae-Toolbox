@@ -30,6 +30,10 @@ new Maps($_GET['function']);
  **/
 class Maps {
 
+  /**
+   * Using the class's constructor to decide which action to perform
+   * @param string $function action to perform
+   */
   public function __construct($function = null) {
     switch($function) {
     case 'Save':
@@ -42,8 +46,10 @@ class Maps {
     }
   }
 
-  // The wrapper action for the typeMapset . Handles outputting the header
-  // and footer and calls the first real action of the typeMapset .
+  /**
+   * The wrapper action for the typeMapset . Handles outputting the header
+   * and footer and calls the first real action of the typeMapset .
+   */
   private function typeMapSet()
   {
     global $config;
@@ -55,6 +61,9 @@ class Maps {
     include($config['root_dir'].'theme/footer.php');
   }
 
+  /**
+   * Display a table of available maps
+   */
   private function type_MapSet_Display()
   {
   ?>
