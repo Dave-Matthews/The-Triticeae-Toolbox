@@ -283,7 +283,7 @@ class Downloads
                      echo "downloads/select_all.php>Wizard</a>.<br><br>";
                    }
                 } elseif (empty($_SESSION['selected_lines'])) {
-                    echo "<br>Select prediction set containing trait measurements to plot prediction vs observed. ";
+                    echo "<br>Select validation set containing trait measurements to plot prediction vs observed. ";
                     echo "<a href=";
                     echo $config['base_url'];
                     echo "downloads/select_all.php>Wizard</a><br>";
@@ -291,7 +291,7 @@ class Downloads
                     echo "<a href=";
                     echo $config['base_url'];
                     echo "pedigree/line_selection.php>Lines by Properties</a><br>";
-                } elseif (empty($_SESSION['selected_traits'])) {
+                } elseif (empty($_SESSION['selected_traits']) && empty($_SESSION['training_traits'])) {
                     echo "Please select traits before using this feature.<br><br>";
                     echo "<a href=";
                     echo $config['base_url'];
@@ -301,10 +301,10 @@ class Downloads
                     echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
                 } 
                 if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
-                   echo "<tr><td>Prediction<td>";
                    if (empty($_SESSION['selected_trials'])) {
-                     //** could query for list **//
+                     echo "<tr><td>Prediction<td>";
                    } else {
+                     echo "<tr><td>Validation<td>";
                      $tmp = $_SESSION['selected_trials'];
                      $e_uid = implode(",",$tmp);
         $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
@@ -369,9 +369,14 @@ class Downloads
                   <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
                   <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
                   <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+                  <table>
+                  <tr><td><td>fixed effect
+                  <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('$unique_str')">
+                  <td>
+                  <input type="radio" name="model2" value="trial" checked="checked" onchange="javascript: update_model(this.value)">trial<br>
+                  <input type="radio" name="model2" value="year" onchange="javascript: update_model(this.value)">year and trial
+                  </table><br>
                   <?php
-                  echo "Estimate phenotypes for Prediction set<br>";
-                  echo "<input type=\"button\" value=\"Analyze\" onclick=\"javascript:load_genomic_prediction('$unique_str')\"><br><br>";
                   echo "</div>";
                 }
                 echo "</div>";
@@ -427,13 +432,16 @@ class Downloads
       if (empty($_SESSION['selected_lines']) || empty($_SESSION['training_lines'])) {
         ?>
         <p><b>Genome Wide Association</b><br>
-        1. Select a set that contains phenotype measurements for one or more traits.<br>2. Return to this page and select Analyze. <br>
-        R program GWAS(pheno, geno, fixed="trial")
+        1. Select a <a href="downloads/select_all.php">set of lines</a> for one or more trials and one trait.<br>
+        2. Select the <a href="maps/select_map.php">genetic map</a> which has the best coverage for this set.<br>
+        3. Return to this page and select model options then GWAS Analysis<br>
 
         <p><b>Genomic Prediction</b><br>
-        1. Select a training set that contains phenotype measurements for one trait.<br>2. Return to this page and save the training set.
-        <br>3. Select a set of lines for a different trial to be used for prediction.<br>4. Return to this page and start analysis.<br>
-        R program kin.blup(data, geno, pheno, K=A, fixed="trial").<br>
+        1. Select a <a href="downloads/select_all.php">set of lines</a> for one or more trials and one trait.<br>
+        2. Select the <a href="maps/select_map.php">genetic map</a> which has the best coverage for this set.<br>
+        3. Return to this page and select rrBLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
+        4. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
+        5. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
         An additive relationship matrix for K creates the model (G = K V<sub>g</sub>).<br>
          
         <?php
@@ -540,23 +548,32 @@ class Downloads
           </div>
           <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
           <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
-          <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+          <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+
+          <table border=0>
+          <tr><td><td>fixed effect
+          <tr><td><input type="button" value="GWAS Analysis" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> 
+          <td>
+          <input type="radio" name="model1" value="K" checked="checked" onchange="javascript: update_model(this.value)">trial<br>
+          <input type="radio" name="model1" value="P" onchange="javascript: update_model(this.value)">1st two principal components<br>
+          <input type="radio" name="model1" value="PK" onchange="javascript: update_model(this.value)">1st two principal components and trial
+          <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('<?php echo $unique_str; ?>')">
+          <td>
+          <input type="radio" name="model2" value="trial" checked="checked" onchange="javascript: update_model(this.value)">trial<br>
+          <input type="radio" name="model2" value="year" onchange="javascript: update_model(this.value)">year and trial
+          </table><br>
+          <form action="gensel.php">
+          <input type="hidden" value="step1gensel" name="function">
+          <input type="hidden" value="save_t" name="cmd">
+          <input type="submit" value="Save Training Set">
+          then continue to select prediction set
+          </form>
+
+          </div>
           <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
           <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
           <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 
-          <table border=0>
-          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> 
-          <!--td>current selection (Histogram, Q-Q plot, GWAS, Cross-validation)<bri-->
-          <td>Histogram, Q-Q plot, GWAS<br>
-          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $unique_str; ?>')">
-          <td>Cross validation on a training population<br>
-          <tr><td><form action="gensel.php">
-          <input type="hidden" value="step1gensel" name="function">
-          <input type="hidden" value="save_t" name="cmd">
-          <input type="submit" value="Save Training Set">
-          <td>then continue to select prediction set
-          </form></table>
           <?php
         } else {
           echo "<font color=red>Warning, not a valid combination of traits, trials, and lines</font>";
@@ -670,6 +687,7 @@ class Downloads
   
     private function run_gwa() {
         $unique_str = $_GET['unq'];
+        $model_opt = $_GET['model'];
         $dir = '/tmp/tht/';
         $filename9 = 'THTdownload_hmp_' . $unique_str. '.txt';
         $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
@@ -688,6 +706,7 @@ class Downloads
             $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
             $cmd5 = "fileerr <- \"$dir$filename6\"\n";
             $cmd7 = "fileout <- \"$filename1\"\n";
+            $cmd8 = "model_opt <- \"$model_opt\"\n";
             fwrite($h, $png1);
             fwrite($h, $png2);
             fwrite($h, $png3);
@@ -695,6 +714,7 @@ class Downloads
             fwrite($h, $cmd4);
             fwrite($h, $cmd6);
             fwrite($h, $cmd7);
+            fwrite($h, $cmd8);
             fwrite($h, "setwd(\"/tmp/tht/\")\n");
             fclose($h);
         }
@@ -838,6 +858,7 @@ class Downloads
             $max_missing = $_GET['mmm'];
             $max_miss_line = $_GET['mml'];
             $min_maf = $_GET['mmaf'];
+            $model_opt = $_GET['model'];
                 if (isset($_SESSION['training_trials'])) {
                         $experiments_t = $_SESSION['training_trials'];
                         $experiments_t = implode(",",$experiments_t);
@@ -1004,6 +1025,7 @@ class Downloads
                     fwrite($h, $cmd6);
                     fwrite($h, $cmd7);
                     fwrite($h, $cmd8);
+                    fwrite($h, "model <- \"$model_opt\"\n");
                     fwrite($h, "setwd(\"/tmp/tht/\")\n");
                     fclose($h);
                 }
@@ -2891,7 +2913,7 @@ selected lines</a><br>
         die("Error: should have lines selected<br>\n");
       }
       $selectedlines = implode(",", $lines);
-      $outputheader2 = "gid" . $delimiter . "pheno" . $delimiter . "trial";
+      $outputheader2 = "gid" . $delimiter . "pheno" . $delimiter . "trial" . $delimiter . "year";
 
 		$sql_option = "";
 		if ($subset == "yes" && count($_SESSION['filtered_lines']) > 0) {
@@ -2946,10 +2968,11 @@ selected lines</a><br>
         }
         foreach ($selectedlines as $uid) {
           if (!in_array($uid,$line_uid)) {
-            $sql = "SELECT line_record_name, tb.experiment_uid as exper
-                    from line_records as lr, tht_base as tb
+            $sql = "SELECT line_record_name, tb.experiment_uid, experiment_year as exper 
+                    from line_records as lr, tht_base as tb, experiments as exp
                     $sql_option
                     lr.line_record_uid=tb.line_record_uid
+                    and tb.experiment_uid = exp.experiment_uid
                     and lr.line_record_uid = $uid";
             //echo "$sql<br>\n";
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
@@ -2957,6 +2980,7 @@ selected lines</a><br>
             while ($row = mysql_fetch_array($res)) {
               $line_name = $row[0];
               $exper = $row[1];
+              $year = $row[2];
               $sql = "select pd.value as value
                      from tht_base as tb, phenotype_data as pd
                      $sql_option
@@ -2970,27 +2994,16 @@ selected lines</a><br>
                 $value = "-999";
               }
 
-              $outline = $line_name.$delimiter.$value.$delimiter.$exper."\n";
+              $outline = $line_name.$delimiter.$value.$delimiter.$exper.$delimiter.$year."\n";
               $output .= $outline;
             }
             } else {	//for case where there are no phenotype measurements
             if ($row = mysql_fetch_array($res)) {
               $line_name = $row[0];
+              $year = $row[2];
               $exper = 0;    //use 0 to indicate the prediction set
-              $sql = "select pd.value as value
-                     from tht_base as tb, phenotype_data as pd
-                     $sql_option
-                     tb.line_record_uid  = $uid
-                     AND pd.tht_base_uid = tb.tht_base_uid
-                     AND pd.phenotype_uid = $traits";
-              $res2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-              if ($row2 = mysql_fetch_array($res2)) {
-                $value = $row2['value'];
-              } else {
-                $value = "-999";
-              }
-
-              $outline = $line_name.$delimiter.$value.$delimiter.$exper."\n";
+              $value = "-999";
+              $outline = $line_name.$delimiter.$value.$delimiter.$exper.$delimiter.$year."\n";
               $output .= $outline;
             }
             }
@@ -3006,11 +3019,12 @@ selected lines</a><br>
 			} else {
 			  $sql_option = " WHERE ";
 			}
-			$sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid as exper 
-					FROM tht_base as tb, phenotype_data as pd
+			$sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid as exper, experiment_year
+					FROM tht_base as tb, phenotype_data as pd, experiments as exp
 					$sql_option
 						tb.line_record_uid  = $line_uid[$i]
 						AND pd.tht_base_uid = tb.tht_base_uid
+                                                AND tb.experiment_uid = exp.experiment_uid
 						AND pd.phenotype_uid = $traits 
 					GROUP BY tb.tht_base_uid, pd.phenotype_uid";
 		//echo "$sql<br>\n";	
@@ -3018,11 +3032,11 @@ selected lines</a><br>
             $found = 0;
             while ($row = mysql_fetch_array($res)) {
                $found = 1;
-               $outline = $lines_names[$i].$delimiter.$row['value'].$delimiter.$row['exper']."\n";
+               $outline = $lines_names[$i].$delimiter.$row['value'].$delimiter.$row['exper'].$delimiter.$row['experiment_year']."\n";
                $output .= $outline;
             }
             if ($found == 0) {
-               $outline = $lines_names[$i].$delimiter."999".$delimiter."999"."\n";
+               $outline = $lines_names[$i].$delimiter."999".$delimiter."999".$delimiter."999\n";
                $output .= $outline;
             }
 
