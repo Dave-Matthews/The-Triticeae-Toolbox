@@ -68,22 +68,24 @@ class Maps {
             }
            $marker_str = implode(',',$markers);
            $num_mark = count($markers);
-           echo "$num_mark markers in selected lines<br>\n";
        $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
        WHERE mim.marker_uid = markers.marker_uid
        AND mim.map_uid = map.map_uid
        AND map.mapset_uid = mapset.mapset_uid
        AND markers.marker_uid IN ($marker_str) 
        GROUP BY mapset.mapset_uid"; 
+       echo "Markers in map out of $num_mark markers in selected lines<br>\n";
     } else {
        $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
        WHERE mim.marker_uid = markers.marker_uid
        AND mim.map_uid = map.map_uid
        AND map.mapset_uid = mapset.mapset_uid
        GROUP BY mapset.mapset_uid";
+       echo "Markers in map<br>\n";
     }
     $res = mysql_query($sql) or die (mysql_error());
     echo "<table>\n";
+    echo "<tr><td>select<td>count<td>name<td>comment\n";
     while ($row = mysql_fetch_assoc($res)) {
       $count = $row["countm"];
       $val = $row["mapset_name"];
