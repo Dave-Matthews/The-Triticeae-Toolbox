@@ -1,7 +1,18 @@
 <?php
 /**
  * Display Map information and save selection in session variable
-*/
+ *
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/maps/select_map.php
+ * 
+ */
 
 require_once('config.php');
 include_once($config['root_dir'].'includes/bootstrap.inc');
@@ -9,8 +20,20 @@ connect();
 
 new Maps($_GET['function']);
 
+/** Using a PHP class to implement the "Select Map" feature
+ *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/maps/select_map.php
+ **/
 class Maps {
 
+  /**
+   * Using the class's constructor to decide which action to perform
+   * @param string $function action to perform
+   */
   public function __construct($function = null) {
     switch($function) {
     case 'Save':
@@ -23,8 +46,10 @@ class Maps {
     }
   }
 
-  // The wrapper action for the typeMapset . Handles outputting the header
-  // and footer and calls the first real action of the typeMapset .
+  /**
+   * The wrapper action for the typeMapset . Handles outputting the header
+   * and footer and calls the first real action of the typeMapset .
+   */
   private function typeMapSet()
   {
     global $config;
@@ -36,6 +61,9 @@ class Maps {
     include($config['root_dir'].'theme/footer.php');
   }
 
+  /**
+   * Display a table of available maps
+   */
   private function type_MapSet_Display()
   {
   ?>
@@ -68,22 +96,24 @@ class Maps {
             }
            $marker_str = implode(',',$markers);
            $num_mark = count($markers);
-           echo "$num_mark markers in selected lines<br>\n";
        $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
        WHERE mim.marker_uid = markers.marker_uid
        AND mim.map_uid = map.map_uid
        AND map.mapset_uid = mapset.mapset_uid
        AND markers.marker_uid IN ($marker_str) 
        GROUP BY mapset.mapset_uid"; 
+       echo "Markers in map out of $num_mark markers in selected lines<br>\n";
     } else {
        $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
        WHERE mim.marker_uid = markers.marker_uid
        AND mim.map_uid = map.map_uid
        AND map.mapset_uid = mapset.mapset_uid
        GROUP BY mapset.mapset_uid";
+       echo "Markers in map<br>\n";
     }
     $res = mysql_query($sql) or die (mysql_error());
     echo "<table>\n";
+    echo "<tr><td>select<td>count<td>name<td>comment\n";
     while ($row = mysql_fetch_assoc($res)) {
       $count = $row["countm"];
       $val = $row["mapset_name"];
