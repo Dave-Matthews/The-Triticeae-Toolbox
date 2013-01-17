@@ -435,6 +435,8 @@ class Downloads
         1. Select a <a href="downloads/select_all.php">set of lines</a> for one or more trials and one trait.<br>
         2. Select the <a href="maps/select_map.php">genetic map</a> which has the best coverage for this set.<br>
         3. Return to this page and select model options then GWAS Analysis<br>
+        Note: For analysis of single trial P3D=FALSE (variance components are estimated by REML for each marker separately).
+        For more than one trial P3D=TRUE (variance components are estimated by REML only once, without any markers in the model).
 
         <p><b>Genomic Prediction</b><br>
         1. Select a <a href="downloads/select_all.php">set of lines</a> for one or more trials and one trait.<br>
@@ -442,7 +444,7 @@ class Downloads
         3. Return to this page and select rrBLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
         4. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
         5. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
-        An additive relationship matrix for K creates the model (G = K V<sub>g</sub>).<br>
+        Note: An additive relationship matrix for K creates the model (G = K V<sub>g</sub>).<br>
          
         <?php
       }
