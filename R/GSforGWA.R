@@ -20,12 +20,16 @@ experData <- as.matrix(phenoData$trial)
 pheno <- as.matrix(phenoData$pheno)
 rowNames <- as.matrix(phenoData$gid)
 unqExper <- length(unique(experData))
-if (model_opt == "K") {
-  pheno <- data.frame(gid=rowNames, y=pheno, trial=experData, stringsAsFactors = FALSE)
-} else if (model_opt == "P") {
-  pheno <- data.frame(gid=rowNames, y=pheno, stringsAsFactors = FALSE)
+if (unqExper > 1) {
+  if (model_opt == "K") {
+    pheno <- data.frame(gid=rowNames, y=pheno, trial=experData, stringsAsFactors = FALSE)
+  } else if (model_opt == "P") {
+    pheno <- data.frame(gid=rowNames, y=pheno, stringsAsFactors = FALSE)
+  } else {
+    pheno <- data.frame(gid=rowNames, y=pheno, trial=experData, stringsAsFactors = FALSE)
+  }  
 } else {
-  pheno <- data.frame(gid=rowNames, y=pheno, trial=experData, stringsAsFactors = FALSE)
+  pheno <- data.frame(gid=rowNames, y=pheno, stringsAsFactors = FALSE)
 }
 
 rowNames <- rownames(hmpData)
@@ -36,13 +40,23 @@ geno <- data.frame(gid=rowNames, chrom=hmpData[,2], pos=hmpData[,3], mrkData, ch
 
 # Are there > 1 trials?
 moreThan1Trial <- length(unique(phenoData$trial)) > 1
-if (model_opt == "K") {
-  results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial", P3D=FALSE)
-} else if (model_opt == "P") {
-  results <- GWAS(pheno, mrkData, n.core=nCores, n.PC=2, P3D=FALSE)
-} else if (model_opt == "PK") {
-  results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial", n.PC=2, P3D=FALSE)
+if (moreThan1Trial) {
+  if (model_opt == "K") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial")
+  } else if (model_opt == "P") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, n.PC=2)
+  } else if (model_opt == "PK") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial", n.PC=2)
+  } else {
+    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial")
+  }
 } else {
-  results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial", P3D=FALSE)
+  if (model_opt == "K") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE)
+  } else if (model_opt == "P") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=2)
+  } else {
+    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE)
+  }
 }
 write.csv(results, file=fileout, quote=FALSE)
