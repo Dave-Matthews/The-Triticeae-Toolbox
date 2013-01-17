@@ -1,5 +1,5 @@
 # These are the two packages I want.  The multicore package makes crossvalidation run faster
-library(rrBLUP, lib.loc="/home/cbirkett/lib")
+library(rrBLUP)
 library(multicore) # Installing multicore will make replicated crossvalidations go faster
 nCores <- multicore:::detectCores()
 if (nCores > 12) {
