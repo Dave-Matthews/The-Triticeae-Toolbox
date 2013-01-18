@@ -13,7 +13,16 @@ options(cores=nCores)
 #hmpData <- read.table("/tmp/tht/THTdownload_hmp_MGLI.txt", header=TRUE, stringsAsFactors=FALSE, sep="\t", check.names = FALSE)
 
 # Read and parse snp file
-mrkData <- hmpData[,-2]
+mrkData <- hmpData[,-(1:4)]
+mrkRelMat <- A.mat(t(mrkData), return.imputed=TRUE)
+if (class(mrkRelMat) == "list"){ # Do this if you have missing marker data
+        mrkData.imputed <- mrkRelMat$imputed # We will use the imputed markers later on
+        mrkRelMat <- mrkRelMat$A
+}
+eig.result <- eigen(mrkRelMat)
+lambda <- eig.result$values
+plot(lambda/sum(lambda), ylab="Fraction Explained")
+dev.set(dev.next())
 
 # Read and parse traits file
 experData <- as.matrix(phenoData$trial)
@@ -35,10 +44,11 @@ if (unqExper > 1) {
 rowNames <- rownames(hmpData)
 numMarkers <- ncol(mrkData)
 
-rowNames <- as.matrix(rownames(hmpData))
-geno <- data.frame(gid=rowNames, chrom=hmpData[,2], pos=hmpData[,3], mrkData, check.names = FALSE)
+#rowNames <- as.matrix(rownames(hmpData))
+#geno <- data.frame(gid=rowNames, chrom=hmpData[,3], pos=hmpData[,4], mrkData, check.names = FALSE)
 
 # Are there > 1 trials?
+mrkData <- hmpData[,-2]
 moreThan1Trial <- length(unique(phenoData$trial)) > 1
 if (moreThan1Trial) {
   if (model_opt == "K") {
