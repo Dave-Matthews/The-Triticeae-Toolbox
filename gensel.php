@@ -365,10 +365,7 @@ class Downloads
         Max missing lines &le; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />%
                   <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
-                  <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-                  <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-                  <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-                  <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+                  <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <table>
                   <tr><td><td>fixed effect
                   <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('$unique_str')">
@@ -376,6 +373,11 @@ class Downloads
                   <input type="radio" name="model2" value="trial" checked="checked" onchange="javascript: update_model(this.value)">trial<br>
                   <input type="radio" name="model2" value="year" onchange="javascript: update_model(this.value)">year and trial
                   </table><br>
+                  </div>
+                  <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+                  <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+                  <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+
                   <?php
                   echo "</div>";
                 }
@@ -696,6 +698,7 @@ class Downloads
         $filename3 = 'THTdownload_gwa_' . $unique_str . '.R';
         $filename4 = 'THTdownload_gwa1_' . $unique_str . '.png';
         $filename7 = 'THTdownload_gwa2_' . $unique_str . '.png';
+        $filename10 = 'THTdownload_gwa3_' . $unique_str . '.png';
         $filename5 = 'process_error_gwa_' . $unique_str . '.txt';
         $filename6 = 'R_error_gwa_' . $unique_str . '.txt';
         $filename1 = 'THT_result_' . $unique_str . '.csv';
@@ -703,7 +706,8 @@ class Downloads
             $h = fopen($dir.$filename3, "w+");
             $png1 = "png(\"$dir$filename4\", width=800, height=400)\n";
             $png2 = "png(\"$dir$filename7\", width=800, height=400)\n";
-            $png3 = "dev.set(2)\n";
+            $png3 = "png(\"$dir$filename10\", width=800, height=400)\n"; 
+            $png4 = "dev.set(3)\n";
             $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
             $cmd5 = "fileerr <- \"$dir$filename6\"\n";
@@ -712,6 +716,7 @@ class Downloads
             fwrite($h, $png1);
             fwrite($h, $png2);
             fwrite($h, $png3);
+            fwrite($h, $png4);
             fwrite($h, $cmd3);
             fwrite($h, $cmd4);
             fwrite($h, $cmd6);
@@ -721,14 +726,17 @@ class Downloads
             fclose($h);
         }
         exec("cat /tmp/tht/$filename3 R/GSforGWA.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
-        if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
+        if (file_exists("/tmp/tht/$filename7")) {
+                  print "<img src=\"/tmp/tht/$filename7\" /><br>";
         } else {
                   echo "Error in R script<br>\n";
                   echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla <br>";
         }
-        if (file_exists("/tmp/tht/$filename7")) {
-                  print "<img src=\"/tmp/tht/$filename7\" /><br>";
+        if (file_exists("/tmp/tht/$filename10")) {
+                  print "<img src=\"/tmp/tht/$filename10\" /><br>";
+        }
+        if (file_exists("/tmp/tht/$filename4")) {
+                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
                   print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
                   print "with columns for marker name, chromosome, position, marker score<br><br>";
         }
