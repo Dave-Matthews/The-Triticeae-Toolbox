@@ -19,13 +19,9 @@ if (yesPredPheno) {
         phenoData$phenoTrain[phenoData$trial %in% predTrials] <- NA
         moreThan1Trial <- sum(!(unique(phenoData$trial) %in% predTrials)) > 1
         if (moreThan1Trial){
-           if (model == "year") {
-                addBlups <- kin.blup(phenoData, "gid", "phenoTrain", K=mrkRelMat, fixed=c("trial","year"))
-           } else {
-                addBlups <- kin.blup(phenoData, "gid", "phenoTrain", K=mrkRelMat, fixed="trial")
-           }
+            addBlups <- kin.blup(phenoData, "gid", "phenoTrain", K=mrkRelMat, fixed="trial")
         } else{
-                addBlups <- kin.blup(phenoData, "gid", "phenoTrain", K=mrkRelMat)
+            addBlups <- kin.blup(phenoData, "gid", "phenoTrain", K=mrkRelMat)
         }
 
         meanTrial <- mean(phenoData$phenoTrain, na.rm=TRUE)
@@ -117,13 +113,8 @@ if (yesPredPheno) {
 		# Do a non-crossvalidated prediction for the results
 		# addBlups <- kin.blup(phenoData, "gid", "pheno", K=mrkRelMat, fixed="trial")
 		# Run cross validation to get a true sense of the accuracy
-                if (model == "year") {
-                  addBlups <- kin.blup(phenoData, "gid", "pheno", K=mrkRelMat, fixed=c("trial","year"))
-		  cvPred <- runCrossValidation(phenoData, "gid", "pheno", mrkRelMat, fixed=c("trial","year"))
-                } else {
-                  addBlups <- kin.blup(phenoData, "gid", "pheno", K=mrkRelMat, fixed="trial")
-                  cvPred <- runCrossValidation(phenoData, "gid", "pheno", mrkRelMat, fixed="trial")
-                }
+                addBlups <- kin.blup(phenoData, "gid", "pheno", K=mrkRelMat, fixed="trial")
+                cvPred <- runCrossValidation(phenoData, "gid", "pheno", mrkRelMat, fixed="trial")
 	} else{
 		addBlups <- kin.blup(phenoData, "gid", "pheno", K=mrkRelMat)
 		cvPred <- runCrossValidation(phenoData, "gid", "pheno", mrkRelMat)
