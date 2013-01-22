@@ -442,7 +442,7 @@ class Downloads
         4. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
         5. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
         
-        <p><a href="downloads/genomic-tools.php">Additional notes on the rrBLUP and methods</a><br>
+        <p><a href="downloads/genomic-tools.php">Additional notes on rrBLUP and methods</a><br>
         <?php
       }
       if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
@@ -848,12 +848,8 @@ class Downloads
         }
         if (file_exists("/tmp/tht/$filename4")) {
                   print "<img src=\"/tmp/tht/$filename4\" /><br>";
-            if (isset($_SESSION['selected_trials'])) {
-                  print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export prediction to CSV file</a><br><br>";
-            } else {
                   print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
                   print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export Cross-validated prediction to CSV file</a><br><br>";
-            }
         } else {
                   echo "Error in R script<br>\n";
                   echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla <br>";
