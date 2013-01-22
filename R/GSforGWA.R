@@ -46,25 +46,20 @@ numMarkers <- ncol(mrkData)
 mrkData <- hmpData[,-2]
 moreThan1Trial <- length(unique(phenoData$trial)) > 1
 if (moreThan1Trial) {
-  if (model_opt == "0") {
+  if (model_opt == "") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial")
+  } else if (model_opt == "0") {
     results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial")
   } else {
-    print("using pc=model_opt")
     results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial", n.PC=model_opt)
   }
 } else {
-  if (model_opt == "0") {
+  if (model_opt == "") {
     results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE)
-  } else if (model_opt == "1") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=1)
-  } else if (model_opt == "2") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=2)
-  } else if (model_opt == "3") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=3)
-  } else if (model_opt == "4") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=4)
-  } else if (model_opt == "5") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=5)
+  } else if (model_opt == "0") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE)
+  } else {
+    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=model_opt)
   }
 }
 write.csv(results, file=fileout, quote=FALSE)
