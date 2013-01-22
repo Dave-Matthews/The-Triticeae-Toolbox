@@ -847,9 +847,13 @@ class Downloads
                   echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla <br>";
         }
         if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
+             print "<img src=\"/tmp/tht/$filename4\" /><br>";
+             if (isset($_SESSION['selected_traits'])) {
+                  print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export prediction to CSV file</a><br><br>";
+             } else { 
                   print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
                   print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export Cross-validated prediction to CSV file</a><br><br>";
+             }
         } else {
                   echo "Error in R script<br>\n";
                   echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla <br>";
