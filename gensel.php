@@ -367,11 +367,17 @@ class Downloads
                   <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <table>
-                  <tr><td><td>fixed effect
+                  <tr><td><td>fixed effect (trial is always included)
                   <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('$unique_str')">
                   <td>
-                  <input type="radio" name="model2" value="trial" checked="checked" onchange="javascript: update_model(this.value)">trial<br>
-                  <input type="radio" name="model2" value="year" onchange="javascript: update_model(this.value)">year and trial
+                  <select name="model2" onchange="javascript: update_fixed(this.value)">
+          <option>0</option>
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+          </select>principal components
                   </table><br>
                   </div>
                   <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
@@ -392,7 +398,6 @@ class Downloads
     private function refresh_title() {
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       echo "<h2>Genomic Association and Prediction</h2>";
-      echo "y = X &beta; + &Zeta; g + &epsilon;<br>";
       if (!empty($_SESSION['training_traits'])) {
         $tmp = $_SESSION['training_traits'];
         $tmp = $tmp[0];
@@ -437,8 +442,6 @@ class Downloads
         1. Select a <a href="downloads/select_all.php">set of lines</a> for one or more trials and one trait.<br>
         2. Select the <a href="maps/select_map.php">genetic map</a> which has the best coverage for this set.<br>
         3. Return to this page and select model options then GWAS Analysis<br>
-        Note: For analysis of single trial P3D=FALSE (variance components are estimated by REML for each marker separately).
-        For more than one trial P3D=TRUE (variance components are estimated by REML only once, without any markers in the model).
 
         <p><b>Genomic Prediction</b><br>
         1. Select a <a href="downloads/select_all.php">set of lines</a> for one or more trials and one trait.<br>
@@ -446,8 +449,8 @@ class Downloads
         3. Return to this page and select rrBLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
         4. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
         5. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
-        Note: An additive relationship matrix for K creates the model (G = K V<sub>g</sub>).<br>
-         
+        
+        <p><a href="downloads/genomic-tools.php">Additional notes on the analysis tools methods</a><br>
         <?php
       }
       if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
@@ -555,16 +558,22 @@ class Downloads
           <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 
           <table border=0>
-          <tr><td><td>fixed effect
-          <tr><td><input type="button" value="GWAS Analysis" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> 
+          <tr><td><td>fixed effect (trial is always included)
+          <tr><td>
+          <input type="button" value="GWAS Analysis" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> 
           <td>
-          <input type="radio" name="model1" value="K" checked="checked" onchange="javascript: update_model(this.value)">trial<br>
-          <input type="radio" name="model1" value="P" onchange="javascript: update_model(this.value)">1st two principal components<br>
-          <input type="radio" name="model1" value="PK" onchange="javascript: update_model(this.value)">1st two principal components and trial
+          <select name="model2" onchange="javascript: update_fixed(this.value)">
+          <option>0</option>
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+          </select>principal components
+          <!--td><input type="checkbox" value="PC3D">PC3D -->
           <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('<?php echo $unique_str; ?>')">
           <td>
-          <input type="radio" name="model2" value="trial" checked="checked" onchange="javascript: update_model(this.value)">trial<br>
-          <input type="radio" name="model2" value="year" onchange="javascript: update_model(this.value)">year and trial
+          <!--td><input type="checkbox" name="model3" value="reduce">reduce -->
           </table><br>
           <form action="gensel.php">
           <input type="hidden" value="step1gensel" name="function">
@@ -691,7 +700,20 @@ class Downloads
   
     private function run_gwa() {
         $unique_str = $_GET['unq'];
-        $model_opt = $_GET['model'];
+        $model_opt = $_GET['fixed2'];
+        if (isset($_SESSION['training_traits'])) {
+            $phenotype = $_SESSION['training_traits'];
+            $phenotype = $phenotype[0];
+        } elseif (isset($_SESSION['selected_traits'])) {
+            $phenotype = $_SESSION['selected_traits'];
+            $phenotype = $phenotype[0];
+        }
+        $sql = "select phenotypes_name, unit_name from phenotypes, units
+               where phenotypes.unit_uid = units.unit_uid
+               and phenotype_uid = $phenotype";
+        $res = mysql_query($sql) or die(mysql_error());
+        $row = mysql_fetch_array($res);
+        $phenolabel = $row[0];
         $dir = '/tmp/tht/';
         $filename9 = 'THTdownload_hmp_' . $unique_str. '.txt';
         $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
@@ -710,7 +732,8 @@ class Downloads
             $png4 = "dev.set(3)\n";
             $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
-            $cmd5 = "fileerr <- \"$dir$filename6\"\n";
+            $cmd5 = "phenolabel <- \"$phenolabel\"\n";
+            $cmd6 = "fileerr <- \"$dir$filename6\"\n";
             $cmd7 = "fileout <- \"$filename1\"\n";
             $cmd8 = "model_opt <- \"$model_opt\"\n";
             fwrite($h, $png1);
@@ -719,6 +742,7 @@ class Downloads
             fwrite($h, $png4);
             fwrite($h, $cmd3);
             fwrite($h, $cmd4);
+            fwrite($h, $cmd5);
             fwrite($h, $cmd6);
             fwrite($h, $cmd7);
             fwrite($h, $cmd8);
@@ -868,7 +892,7 @@ class Downloads
             $max_missing = $_GET['mmm'];
             $max_miss_line = $_GET['mml'];
             $min_maf = $_GET['mmaf'];
-            $model_opt = $_GET['model'];
+            $model_opt = $_GET['fixed1'];
                 if (isset($_SESSION['training_trials'])) {
                         $experiments_t = $_SESSION['training_trials'];
                         $experiments_t = implode(",",$experiments_t);

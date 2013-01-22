@@ -21,7 +21,8 @@ if (class(mrkRelMat) == "list"){ # Do this if you have missing marker data
 }
 eig.result <- eigen(mrkRelMat)
 lambda <- eig.result$values
-plot(lambda/sum(lambda), ylab="Fraction Explained")
+mainTitle <- paste("Principal Component analysis of ", phenolabel)
+plot(lambda/sum(lambda), ylab="Fraction Explained", main=mainTitle)
 dev.set(dev.next())
 
 # Read and parse traits file
@@ -30,13 +31,7 @@ pheno <- as.matrix(phenoData$pheno)
 rowNames <- as.matrix(phenoData$gid)
 unqExper <- length(unique(experData))
 if (unqExper > 1) {
-  if (model_opt == "K") {
-    pheno <- data.frame(gid=rowNames, y=pheno, trial=experData, stringsAsFactors = FALSE)
-  } else if (model_opt == "P") {
-    pheno <- data.frame(gid=rowNames, y=pheno, stringsAsFactors = FALSE)
-  } else {
-    pheno <- data.frame(gid=rowNames, y=pheno, trial=experData, stringsAsFactors = FALSE)
-  }  
+  pheno <- data.frame(gid=rowNames, y=pheno, trial=experData, stringsAsFactors = FALSE)
 } else {
   pheno <- data.frame(gid=rowNames, y=pheno, stringsAsFactors = FALSE)
 }
@@ -51,22 +46,25 @@ numMarkers <- ncol(mrkData)
 mrkData <- hmpData[,-2]
 moreThan1Trial <- length(unique(phenoData$trial)) > 1
 if (moreThan1Trial) {
-  if (model_opt == "K") {
+  if (model_opt == "0") {
     results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial")
-  } else if (model_opt == "P") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, n.PC=2)
-  } else if (model_opt == "PK") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial", n.PC=2)
   } else {
-    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial")
+    print("using pc=model_opt")
+    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial", n.PC=model_opt)
   }
 } else {
-  if (model_opt == "K") {
+  if (model_opt == "0") {
     results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE)
-  } else if (model_opt == "P") {
+  } else if (model_opt == "1") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=1)
+  } else if (model_opt == "2") {
     results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=2)
-  } else {
-    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE)
+  } else if (model_opt == "3") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=3)
+  } else if (model_opt == "4") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=4)
+  } else if (model_opt == "5") {
+    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=5)
   }
 }
 write.csv(results, file=fileout, quote=FALSE)
