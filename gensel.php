@@ -370,14 +370,6 @@ class Downloads
                   <tr><td><td>fixed effect (trial is always included)
                   <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('$unique_str')">
                   <td>
-                  <select name="model2" onchange="javascript: update_fixed(this.value)">
-          <option>0</option>
-          <option>1</option>
-          <option>2</option>
-          <option>3</option>
-          <option>4</option>
-          <option>5</option>
-          </select>principal components
                   </table><br>
                   </div>
                   <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
@@ -856,8 +848,12 @@ class Downloads
         }
         if (file_exists("/tmp/tht/$filename4")) {
                   print "<img src=\"/tmp/tht/$filename4\" /><br>";
+            if (isset($_SESSION['selected_trials'])) {
+                  print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export prediction to CSV file</a><br><br>";
+            } else {
                   print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
                   print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export Cross-validated prediction to CSV file</a><br><br>";
+            }
         } else {
                   echo "Error in R script<br>\n";
                   echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla <br>";
