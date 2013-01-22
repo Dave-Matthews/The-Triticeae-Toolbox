@@ -370,14 +370,6 @@ class Downloads
                   <tr><td><td>fixed effect (trial is always included)
                   <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('$unique_str')">
                   <td>
-                  <select name="model2" onchange="javascript: update_fixed(this.value)">
-          <option>0</option>
-          <option>1</option>
-          <option>2</option>
-          <option>3</option>
-          <option>4</option>
-          <option>5</option>
-          </select>principal components
                   </table><br>
                   </div>
                   <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
@@ -450,7 +442,7 @@ class Downloads
         4. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
         5. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
         
-        <p><a href="downloads/genomic-tools.php">Additional notes on the analysis tools methods</a><br>
+        <p><a href="downloads/genomic-tools.php">Additional notes on rrBLUP and methods</a><br>
         <?php
       }
       if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
