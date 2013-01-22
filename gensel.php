@@ -450,7 +450,7 @@ class Downloads
         4. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
         5. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
         
-        <p><a href="downloads/genomic-tools.php">Additional notes on the analysis tools methods</a><br>
+        <p><a href="downloads/genomic-tools.php">Additional notes on the rrBLUP and methods</a><br>
         <?php
       }
       if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
