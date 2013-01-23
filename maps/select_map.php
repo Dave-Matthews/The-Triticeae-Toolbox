@@ -40,6 +40,9 @@ class Maps {
       $this->typeMapSave();
       $this->typeMapSet();
       break;
+    case 'Markers':
+      $this->typeMapMarker();
+      break;
     default:
       $this->typeMapSet(); /* initial case */
       break;
@@ -56,7 +59,18 @@ class Maps {
     include($config['root_dir'].'theme/normal_header.php');
 
     echo "<h2>Map Sets</h2>";
+    echo "The selected map is used in \"Genomic Association and Prediction\". If a selected marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
+    echo "<div id=\"step1\">";
     $this->type_MapSet_Display();
+    echo "</div>";
+    echo "<div id=\"step2\"></div>";
+    if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) {
+    ?>
+    <script type="text/javascript">
+      window.onload = load_markersInMap();
+    </script>
+    <?php
+    }
     $footer_div = 1;
     include($config['root_dir'].'theme/footer.php');
   }
@@ -69,10 +83,12 @@ class Maps {
   ?>
   <style type="text/css">
          th {background: #5B53A6 !important; color: white !important; }
-         table {background: none; border-collapse: collapse}
+         table {background: none; border-collapse: collapse; }
          td {border: 1px solid #eee !important;}
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
   </style>
+  <script type="text/javascript" src="maps/select_map.js">
+  </script>
   <form action="maps/select_map.php">
   <?php
     if (isset($_SESSION['selected_map'])) {
@@ -80,8 +96,46 @@ class Maps {
     } else {
       $selected_map = 1;
     }
-    if (isset($_SESSION['selected_lines'])) {
+    $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
+      WHERE mim.marker_uid = markers.marker_uid
+      AND mim.map_uid = map.map_uid
+      AND map.mapset_uid = mapset.mapset_uid
+      GROUP BY mapset.mapset_uid";
+      echo "This table list the total markers in each map<br>\n";
+    $res = mysql_query($sql) or die (mysql_error());
+    echo "<table>\n";
+    echo "<tr><td>select<td>count<td>name<td>comment\n";
+    while ($row = mysql_fetch_assoc($res)) {
+      $count = $row["countm"];
+      $val = $row["mapset_name"];
+      $uid = $row["mapuid"];
+      $comment = $row["mapcmt"];
+      $comm = substr($comment, 0, 100);
+      if ($uid == $selected_map) {
+        $checked = "checked=\"checked\"";
+      } else {
+        $checked = "";
+      }
+      echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked><td>$count<td>$val<td><a title=\"$comment\">$comm</a>\n";
+    }
+    echo "</table>";
+    echo "<input type=\"submit\" name=\"function\" value=\"Save\">";
+    echo "</form>";
+  }
+
+  /**
+   * called through ajax to display how many of the selected markers are in each map set
+   */
+  private function typeMapMarker()
+  {
+    if (isset($_SESSION['clicked_buttons'])) {
+      $markers = $_SESSION['clicked_buttons'];
+      $marker_str = implode(',',$markers);
+      $num_mark = count($markers);
+      $msg = "This table list the portion of the $num_mark markers included in each map";
+    } elseif (isset($_SESSION['selected_lines'])) {
       $selected_lines = $_SESSION['selected_lines'];
+      $num_line = count($selected_lines);
       $selected_lines = implode(",",$selected_lines);
       $sql_exp = "SELECT DISTINCT marker_uid
            FROM allele_cache
@@ -96,39 +150,26 @@ class Maps {
             }
            $marker_str = implode(',',$markers);
            $num_mark = count($markers);
-       $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
+      $msg = "There  are $num_mark markers that have genotype data for the selected $num_line lines. This table list the portion of the $num_mark markers included in each map";
+    } else {
+      die("Error - must select lines or markers<br>\n");
+    }
+    $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
        WHERE mim.marker_uid = markers.marker_uid
        AND mim.map_uid = map.map_uid
        AND map.mapset_uid = mapset.mapset_uid
        AND markers.marker_uid IN ($marker_str) 
-       GROUP BY mapset.mapset_uid"; 
-       echo "Markers in map out of $num_mark markers in selected lines<br>\n";
-    } else {
-       $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
-       WHERE mim.marker_uid = markers.marker_uid
-       AND mim.map_uid = map.map_uid
-       AND map.mapset_uid = mapset.mapset_uid
        GROUP BY mapset.mapset_uid";
-       echo "Markers in map<br>\n";
-    }
-    $res = mysql_query($sql) or die (mysql_error());
-    echo "<table>\n";
-    echo "<tr><td>select<td>count<td>name<td>comment\n";
+       $res = mysql_query($sql) or die (mysql_error());
+    echo "<br><br>$msg\n";
+    echo "<table><tr><td>count<td>name\n";
     while ($row = mysql_fetch_assoc($res)) {
       $count = $row["countm"];
       $val = $row["mapset_name"];
       $uid = $row["mapuid"];
-      $comment = $row["mapcmt"];
-      if ($uid == $selected_map) {
-        $checked = "checked=\"checked\"";
-      } else {
-        $checked = "";
-      }
-      echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked><td>$count<td>$val<td nowrap>$comment\n";
+      echo "<tr><td>$count<td>$val\n";
     }
     echo "</table>";
-    echo "<input type=\"submit\" name=\"function\" value=\"Save\">";
-    echo "</form>";
   }
 
   /**
