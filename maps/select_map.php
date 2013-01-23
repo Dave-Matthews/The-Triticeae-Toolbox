@@ -38,7 +38,6 @@ class Maps {
     switch($function) {
     case 'Save':
       $this->typeMapSave();
-      $this->typeMapSet();
       break;
     case 'Markers':
       $this->typeMapMarker();
@@ -63,7 +62,9 @@ class Maps {
     echo "<div id=\"step1\">";
     $this->type_MapSet_Display();
     echo "</div>";
-    echo "<div id=\"step2\"></div>";
+    echo "<div id=\"step2\">";
+    echo "</div>";
+    echo "<div id=\"step3\"></div>";
     if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) {
     ?>
     <script type="text/javascript">
@@ -116,10 +117,11 @@ class Maps {
       } else {
         $checked = "";
       }
-      echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked><td>$count<td>$val<td><a title=\"$comment\">$comm</a>\n";
+      echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: update_map(this.value)\"><td>$count<td>$val<td><a title=\"$comment\">$comm</a>\n";
     }
     echo "</table>";
-    echo "<input type=\"submit\" name=\"function\" value=\"Save\">";
+    #echo "<input type=\"submit\" name=\"function\" value=\"Save\">";
+    #echo "<input type=\"button\" value=\"Save\" onclick=\"javascript:save_map()\">";
     echo "</form>";
   }
 
