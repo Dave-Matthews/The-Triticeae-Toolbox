@@ -2,6 +2,9 @@
 var php_self = document.location.href;
 var title = document.title;
 var select_str = "";
+var fixed1 = "trial";
+var fixed2 = "0";
+var pc = "";
 
 function load_title(command) {
     var url = php_self + "?function=refreshtitle" + '&cmd=' + command;
@@ -44,11 +47,14 @@ function run_cluster(unq_file) {
 }
 
 function run_gwa(unq_file) {
-    var url = php_self + "?function=run_gwa" + "&unq=" + unq_file;
-    var tmp = new Ajax.Updater($('step4'), url, {
+    var url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2;
+    document.getElementById('step3').innerHTML = "";
+    document.getElementById('step4').innerHTML = "";
+    document.getElementById('step5').innerHTML = "Running R script";
+    var tmp = new Ajax.Updater($('step5'), url, {
         onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
-            $('step4').show();
+            $('step5').show();
             document.title = title;
             Element.hide('spinner');
         }
@@ -56,8 +62,10 @@ function run_gwa(unq_file) {
 }
 
 function run_rscript(unq_file) {
-    document.getElementById('step5').innerHTML = "Running R script";
     var url = php_self + "?function=run_rscript" + "&unq=" + unq_file;
+    document.getElementById('step3').innerHTML = "";
+    document.getElementById('step4').innerHTML = "";
+    document.getElementById('step5').innerHTML = "Running R script";
     var tmp = new Ajax.Updater($('step5'), url, {
         onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
@@ -69,13 +77,14 @@ function run_rscript(unq_file) {
 }
 
 function load_genomic_prediction(unq_file) {
+    var unq_file = Date.now();
     document.getElementById('step5').innerHTML = "";
     Element.show('spinner'); 
     document.getElementById('step3').innerHTML = "Creating Data Files";
     var mmm = $('mmm').getValue();
     var mml = $('mml').getValue();
     var mmaf = $('mmaf').getValue();
-    var url = php_self + "?function=download_session_v4" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf;
+    var url = php_self + "?function=download_session_v4" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf + "&fixed1=" + fixed1;
     var tmp = new Ajax.Updater($('step1'), url, {
         onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
@@ -90,6 +99,7 @@ function load_genomic_prediction(unq_file) {
 
 // use this function to run GWA on training set 
 function load_genomic_gwas(unq_file) {
+    var unq_file = Date.now();
     document.getElementById('step5').innerHTML = "";
     Element.show('spinner');
     document.getElementById('step3').innerHTML = "Creating Data Files";
@@ -107,4 +117,9 @@ function load_genomic_gwas(unq_file) {
             run_gwa(unq_file);
         }
     });
+}
+
+// use this function to save trial fixed effects options
+function update_fixed(option) {
+  fixed2 = option;
 }
