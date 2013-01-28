@@ -2,7 +2,9 @@
 var php_self = document.location.href;
 var title = document.title;
 var select_str = "";
-var model_opt = "";
+var fixed1 = "trial";
+var fixed2 = "0";
+var pc = "";
 
 function load_title(command) {
     var url = php_self + "?function=refreshtitle" + '&cmd=' + command;
@@ -45,7 +47,7 @@ function run_cluster(unq_file) {
 }
 
 function run_gwa(unq_file) {
-    var url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&model=" + model_opt;
+    var url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2;
     document.getElementById('step3').innerHTML = "";
     document.getElementById('step4').innerHTML = "";
     document.getElementById('step5').innerHTML = "Running R script";
@@ -82,7 +84,7 @@ function load_genomic_prediction(unq_file) {
     var mmm = $('mmm').getValue();
     var mml = $('mml').getValue();
     var mmaf = $('mmaf').getValue();
-    var url = php_self + "?function=download_session_v4" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf + "&model=" + model_opt;
+    var url = php_self + "?function=download_session_v4" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf + "&fixed1=" + fixed1;
     var tmp = new Ajax.Updater($('step1'), url, {
         onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
@@ -117,7 +119,7 @@ function load_genomic_gwas(unq_file) {
     });
 }
 
-// use this function to save model options
-function update_model(options) {
-  model_opt = options;
+// use this function to save trial fixed effects options
+function update_fixed(option) {
+  fixed2 = option;
 }

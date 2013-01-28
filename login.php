@@ -66,12 +66,17 @@ connect();
     return dm[email.split('@')[1]] || '';
   }
 </script>
+
+<style type="text/css">
+  table td {padding: 2px;}
+</style>
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post"
       onsubmit="return validatePassword(document.getElementById('password').value);">
   <h3>Name</h3>
   &nbsp;&nbsp;<label for="name">My name is:</label>&nbsp;
-  <input type="text" name="name" id="name" value="$name" /> Triticeae CAP participants <b>must</b> give a full name to be approved.
-  <h3>Email address			</h3>
+  <input type="text" name="name" id="name" value="$name" /><br>
+  &nbsp;&nbsp;Triticeae CAP participants <b>must</b> give a full name to be approved.
+  <h3>Email address</h3>
   <table border="0" cellspacing="0" cellpadding="0"
 	 style="border: none; background: none">
     <tr><td style="border: none; text-align: right;">
@@ -504,7 +509,7 @@ The Triticeae Toolbox Team
        $capkey = setting('capencryptionkey');
        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
        send_email(setting('capmail'),
-		  "[THT] Validate CAP Participant $email",
+		  "[T3] Validate CAP Participant $email",
 "Email: $email
 Name: $name
 Institution: $institution
