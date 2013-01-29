@@ -89,14 +89,13 @@ EOD;
 <div id="container">
   <div id="barleyimg">
   </div>
-  <h1 id="logo">
-  Breeders Database
-  </h1>
+  <!-- <h1 id="logo"> -->
   <div id="util">
   <div id="utilright">
   </div>
   <a href="./feedback.php">Contact Us</a>
   </div>
+ <br><font color=white size=+1><h1>&nbsp;&nbsp;Breeders Datafarm</h1></font>
 
 <?php
   //The navigation tab menus 
@@ -158,7 +157,7 @@ EOD;
         <li><a href="<?php echo $config['base_url']; ?>downloads/downloads_tassel.php" title="Open TASSEL with selected data">Open TASSEL</a>
 	  <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
       </ul>
-    <li><a href="" title="">Download</a>
+    <li><a href="" title="">Export</a>
       <ul>
 	<li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
@@ -171,7 +170,7 @@ EOD;
       </ul>
 
   <li>
-  <a title="<?php echo $lang["desc_sc2"]; ?>">About TBD</a>
+  <a title="<?php echo $lang["desc_sc2"]; ?>">About..</a>
   <ul>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">About T3</a>
     <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">Data Programs</a>

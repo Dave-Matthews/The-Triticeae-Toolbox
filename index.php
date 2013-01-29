@@ -6,13 +6,11 @@ connect();
 ?>
 
 
-<div id="primaryContentContainer">
-  <div id="primaryContent">
-    <h2>Breeders Database, Wheat</h2>
+    <h2>Breeders Datafarm, Wheat</h2>
     <div class="section">
-      <h3>Welcome to the Breeders Database!</h3>
+      <h3>Welcome to the Breeders Datafarm!</h3>
 
-      <p>TBD is the web portal for data from US Uniform Regional 
+      <p>BDF is the web portal for data from US Uniform Regional 
 	Nurseries.  Supported by the <a href="http://scabusa.org">US Wheat and Barley Scab 
 	Initiative</a>, it is derived from The Triticeae Toolbox (T3),
 	the database of the <a href="http://triticeaecap.org/">Triticeae Coordinated
@@ -24,18 +22,18 @@ connect();
     <input type="Button" value="Data submission" onclick="window.open('curator_data/instructions.php','_self')">
 
   </div>
-  <div class="section">
 		
   <p>
   <table cellpadding="0" cellspacing="0"><tbody>
   <tr>
-  <th>Search Type</th>
+  <th>Browse phenotype experiments</th>
   <th>&nbsp;</th>
   </tr>
 	
   <tr><td>
   <select onchange="window.open('<?php echo $config['base_url']; ?>search_bp.php?table=CAPdata_programs&uid='+this.options[this.selectedIndex].value,'_top')">
-  <option value='' disabled>Search by Breeding Program</option>
+  <!-- <option value='' disabled>Search by Breeding Program</option> -->
+  <option selected value=''>Search by Breeding Program</option>
    <?php
   $sql = "select distinct data_program_name, data_program_code, CAPdata_programs_uid as uid
 		  FROM CAPdata_programs
@@ -49,7 +47,7 @@ while($row = mysql_fetch_assoc($r)) {
  }
 ?>
   </select></td>
-  <td>All experiments containing data from the program&#39;s lines</td>
+  <td>Experiments whose entries include the program&apos;s lines</td>
   </tr>
 
   <tr><td>
@@ -65,7 +63,7 @@ while($row = mysql_fetch_assoc($r)) {
  }
 ?>
 </select></td>
-<td>All experiments that measure the trait</td></tr>
+<td></tr>
 
   <tr><td>
   <select onchange="window.open('<?php echo $config['base_url']; ?>view_search_yr2.php?table=experiments&year='+this.options[this.selectedIndex].value,'_top')">
@@ -80,9 +78,9 @@ while($row = mysql_fetch_assoc($r)) {
  }
 ?>
 </select></td>
-<td>All experiment data from the selected year</td></tr>
+<td>Year of harvest</tr>
 
-</tbody></table></div></div></div>
+</tbody></table>
 
 <?php 
   $footer_div=1;
