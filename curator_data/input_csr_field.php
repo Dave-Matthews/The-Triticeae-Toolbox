@@ -107,7 +107,7 @@ echo "</select>\n";
 echo "<br>List of currently loaded Field Book files<br>\n";
 echo "<table border=1>\n";
 echo "<tr><td>experiment<td>created on<td>updated on\n";
-$sql = "select experiment_uid, fieldbook_file_name, created_on, updated_on from csr_fieldbook_info";
+$sql = "select experiment_uid, fieldbook_file_name, created_on, updated_on from fieldbook_info";
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
 while ($row = mysqli_fetch_assoc($res)) {
   $name = $row['experiment_uid'];
