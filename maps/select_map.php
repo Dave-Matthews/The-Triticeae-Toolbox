@@ -156,16 +156,20 @@ class Maps {
     } else {
       die("Error - must select lines or markers<br>\n");
     }
+    $found = 0;
     $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
        WHERE mim.marker_uid = markers.marker_uid
        AND mim.map_uid = map.map_uid
        AND map.mapset_uid = mapset.mapset_uid
        AND markers.marker_uid IN ($marker_str) 
        GROUP BY mapset.mapset_uid";
-       $res = mysql_query($sql) or die (mysql_error());
-    echo "<br><br>$msg\n";
-    echo "<table><tr><td>count<td>name\n";
+    $res = mysql_query($sql) or die (mysql_error());
     while ($row = mysql_fetch_assoc($res)) {
+      if ($found == 0 ) {
+        echo "<br><br>$msg\n";
+        echo "<table><tr><td>count<td>name\n";
+        $found = 1;
+      }
       $count = $row["countm"];
       $val = $row["mapset_name"];
       $uid = $row["mapuid"];
