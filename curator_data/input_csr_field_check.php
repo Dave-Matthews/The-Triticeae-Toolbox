@@ -185,11 +185,14 @@ private function typeExperimentCheck()
                  $error_flag = 1;
                }
 
+               //check line names
                for ($i = 3; $i <= $lines_found; $i++) {
                  $tmp = $data[$i]["B"];
                  $sql = "select line_record_uid from line_records where line_record_name = '$tmp'";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-                 if (mysql_num_rows($res)==0) {
+                 if ($row = mysqli_fetch_assoc($res)) {
+                    $data[$i]["Q"] = $row['line_record_uid'];
+                 } else {
                     if (isset($unique_line[$tmp])) {
                     } else {
                       $unique_line[$tmp] = 1;
@@ -199,7 +202,18 @@ private function typeExperimentCheck()
                  }
                }
 
-               $sql = "select fieldbook_info_uid from csr_fieldbook_info where experiment_uid = '$experiment_uid'";
+               //check unique plot#
+               for ($i = 3; $i <= $lines_found; $i++) {
+                 $tmp = $data[$i]["A"];
+                    if (isset($unique_plot[$tmp])) {
+                      echo "Error: duplicate plot number $tmp<br>\n";
+                      $error_flag = 1;
+                    } else {
+                      $unique_plot{$tmp} = 1;
+                    }
+               }
+
+               $sql = "select fieldbook_info_uid from fieldbook_info where experiment_uid = '$experiment_uid'";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                //echo "found mysql_num_rows($rew)<br>\n";
                if (mysqli_num_rows($res)==0) {
@@ -225,13 +239,13 @@ private function typeExperimentCheck()
            if ($error_flag == 0) {
 
                if ($new_record) {
-                   $sql = "insert into csr_fieldbook_info (experiment_uid, fieldbook_file_name, updated_on, created_on) values ($experiment_uid, '$meta_path', NOW(), NOW())";
+                   $sql = "insert into fieldbook_info (experiment_uid, fieldbook_file_name, updated_on, created_on) values ($experiment_uid, '$meta_path', NOW(), NOW())";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to file system<br>\n";
                } else {
-                   $sql = "update csr_fieldbook_info set fieldbook_file_name = '$meta_path', updated_on = NOW() where experiment_uid = $experiment_uid";
+                   $sql = "update fieldbook_info set fieldbook_file_name = '$meta_path', updated_on = NOW() where experiment_uid = $experiment_uid";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                   $sql = "delete from csr_fieldbook where experiment_uid = $experiment_uid";
+                   $sql = "delete from fieldbook where experiment_uid = $experiment_uid";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "deleted old entries from database where experiment_uid = $experiment_uid<br>\n";
                }
@@ -253,6 +267,7 @@ private function typeExperimentCheck()
                  $tmpN = $data[$i]["N"];
                  $tmpO = $data[$i]["O"];
                  $tmpP = $data[$i]["P"];
+                 $tmpQ = $data[$i]["Q"];   //*line_uid from database*//
 
                  //correct missing data to avoid sql error
                  if (!preg_match("/[0-9]/",$tmpI)) {
@@ -265,7 +280,7 @@ private function typeExperimentCheck()
                    $tmpK = "NULL";
                  }
 
-                 $sql = "insert into csr_fieldbook (experiment_uid, plot, line_name, row_id, column_id, entry, replication, block, subblock, treatment, main_plot_tmt, subplot_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,'$tmpB',$tmpC,'$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN')";
+                 $sql = "insert into fieldbook (experiment_uid, plot, line_uid, row_id, column_id, entry, replication, block, subblock, treatment, main_plot_tmt, subplot_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,$tmpQ,$tmpC,'$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";
