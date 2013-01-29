@@ -102,7 +102,7 @@ class Maps {
       AND mim.map_uid = map.map_uid
       AND map.mapset_uid = mapset.mapset_uid
       GROUP BY mapset.mapset_uid";
-      echo "This table list the total markers in each map<br>\n";
+      echo "This table lists the total markers in each map<br>\n";
     $res = mysql_query($sql) or die (mysql_error());
     echo "<table>\n";
     echo "<tr><td>select<td>count<td>name<td>comment\n";
@@ -134,7 +134,7 @@ class Maps {
       $markers = $_SESSION['clicked_buttons'];
       $marker_str = implode(',',$markers);
       $num_mark = count($markers);
-      $msg = "This table list the portion of the $num_mark markers included in each map";
+      $msg = "This table lists the portion of the $num_mark markers included in each map";
     } elseif (isset($_SESSION['selected_lines'])) {
       $selected_lines = $_SESSION['selected_lines'];
       $num_line = count($selected_lines);
@@ -152,7 +152,7 @@ class Maps {
             }
            $marker_str = implode(',',$markers);
            $num_mark = count($markers);
-      $msg = "There  are $num_mark markers that have genotype data for the selected $num_line lines. This table list the portion of the $num_mark markers included in each map";
+      $msg = "There  are $num_mark markers that have genotype data for the selected $num_line lines. This table lists the portion of the $num_mark markers included in each map";
     } else {
       die("Error - must select lines or markers<br>\n");
     }
