@@ -252,11 +252,16 @@ EOD;
 	</a>
       <li>
 	<a href="<?php echo $config['base_url']; ?>login/cleanup_temporary_dir.php" title="Clean up temporary files">
-	  Clean up temporary files
-	</a>
-	<a href="http://thehordeumtoolbox.org/webalizer/" title="Webalizer">
-	  Usage Statistics
-	</a>
+	  Clean up temporary files</a>
+      <li>
+	<a href="http://thehordeumtoolbox.org/webalizer/" title="Webalizer old" target="_blank">
+	  Usage, wheat.pw.usda.gov</a>
+      <li>
+	<a href="http://triticeaetoolbox.org/webalizer/" title="Webalizer new" target="_blank">
+	  Usage, tcap</a>
+      <li>
+	<a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">
+	  Usage Analytics</a>
     </ul>
   </li>
 <?php endif; ?>
