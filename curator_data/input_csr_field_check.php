@@ -189,7 +189,7 @@ private function typeExperimentCheck()
                for ($i = 3; $i <= $lines_found; $i++) {
                  $tmp = $data[$i]["B"];
                  $sql = "select line_record_uid from line_records where line_record_name = '$tmp'";
-                 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+                 $res = mysqli_query($mysqli,$sql) or die(mysql_error() . "<br>$sql");
                  if ($row = mysqli_fetch_assoc($res)) {
                     $data[$i]["Q"] = $row['line_record_uid'];
                  } else {
