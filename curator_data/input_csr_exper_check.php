@@ -193,12 +193,12 @@ public function save_raw_file($wavelength) {
              fclose($reader);
              echo "<br>\n";
  
-             $objPHPExcel = new PHPExcel();
-             $objPHPExcel->setActiveSheetIndex(0);
-             $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'test');
+             #$objPHPExcel = new PHPExcel();
+             #$objPHPExcel->setActiveSheetIndex(0);
+             #$objPHPExcel->getActiveSheet()->SetCellValue('A1', 'test');
              #$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-             $objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
-             $objWriter->save('/tmp/tht/testfile.xls');
+             #$objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
+             #$objWriter->save('/tmp/tht/testfile.xls');
          }
          umask(0);
     } else {
@@ -218,15 +218,23 @@ public function save_raw_file($wavelength) {
       $rawdatafile = $_FILES['file']['name'][1];
       $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
-      if (strpos($uploadfile, ".xlsx") === FALSE) {
-             error(1, "Expecting an Excel file. <br> The type of the uploaded file is ".$uftype);
-             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-             die();
+      $FileType = PHPExcel_IOFactory::identify($raw_path);
+      switch ($FileType) {
+        case 'Excel2007':
+          break;
+        case 'Excel5':
+          break;
+        case 'CSV':
+          break;
+        default:
+          error(1, "Expecting an Excel file. <br> The type of the uploaded file is ".$FileType);
+          print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+          die();
       }
       if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
         echo "error - could not upload file $uploadfile<br>\n";
       } else {
-        echo $_FILES['file']['name'][0] . "<br>\n";
+        echo $_FILES['file']['name'][0] . "  $FileType<br>\n";
       }
       $metafile = $raw_path;
       echo "using $metafile<br>\n";
