@@ -95,7 +95,8 @@ EOD;
   </div>
   <a href="./feedback.php">Contact Us</a>
   </div>
- <br><font color=white size=+1><h1>&nbsp;&nbsp;Breeders Datafarm</h1></font>
+ <!-- <br><font color=white size=+1><h1>&nbsp;&nbsp;Breeders Datafarm</h1></font> -->
+ <br><font color=white size=+1><h1 style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;Breeders Datafarm</h1></font>
 
 <?php
   //The navigation tab menus 
