@@ -197,7 +197,7 @@ public function save_raw_file($wavelength) {
                    $count_plot++;
                    if (isset($plot_list[$temp[$i]])) {
                    } else {
-                     echo "plot $temp[$i] not defined in fieldbook<br>\n";
+                     echo "Error - plot $temp[$i] not defined in fieldbook for experiment $trial_code<br>\n";
                      $error_flag = 1;
                    }
                  } elseif ($temp[$i] == "") {
