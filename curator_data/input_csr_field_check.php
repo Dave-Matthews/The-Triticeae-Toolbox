@@ -123,6 +123,15 @@ private function typeExperimentCheck()
     if (!empty($_FILES['file']['name'][0])) {
       $uploadfile=$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
+      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
+          echo "error - could not upload file $uploadfile<br>\n";
+      } else {
+          echo $_FILES['file']['name'][0] . " $FileType<br>\n";
+          $metafile = $raw_path;
+      }
+    } else {
+      echo "using $metafile<br>\n";
+    }
       $FileType = PHPExcel_IOFactory::identify($raw_path);
       switch ($FileType) {
         case 'Excel2007':
@@ -136,15 +145,7 @@ private function typeExperimentCheck()
           print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
           die();
       }
-      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
-          echo "error - could not upload file $uploadfile<br>\n";
-      } else {
-          echo $_FILES['file']['name'][0] . " $FileType<br>\n";
-          $metafile = $raw_path;
-      }
-    } else {
-      echo "using $metafile<br>\n";
-    }
+
                /* Read the Means file */
                $objPHPExcel = PHPExcel_IOFactory::load($metafile);
                $sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
@@ -228,7 +229,7 @@ private function typeExperimentCheck()
                  $new_record = 1;
                  //echo "new record<br>\n";
                } else {
-                 if (!$replace_flag) {
+                 if (!$replace_flag && ($error_flag == 0)) {
                    echo "<font color=red>Warning - record with Trial Name = $trial_code already exist, do you want to overwrite?</font>";
                    ?>
                    <form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
