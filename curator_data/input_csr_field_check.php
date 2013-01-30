@@ -297,7 +297,7 @@ private function typeExperimentCheck()
            echo "<br><table>\n";
            for ($i=1; $i<=$lines_found; $i++) {
                  echo "<tr><td>$i";
-                 for ($j="A"; $j <= "Q"; $j++) {
+                 for ($j="A"; $j <= "P"; $j++) {
                    $tmp = $data[$i]["$j"];
                    echo "<td>$tmp";
                  }
