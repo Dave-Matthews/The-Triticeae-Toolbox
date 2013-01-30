@@ -218,6 +218,18 @@ public function save_raw_file($wavelength) {
       $rawdatafile = $_FILES['file']['name'][1];
       $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
+      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
+        echo "error - could not upload file $uploadfile<br>\n";
+      } else {
+        echo $_FILES['file']['name'][0] . "  $FileType<br>\n";
+      }
+      $metafile = $raw_path;
+      echo "using $metafile<br>\n";
+    } else {
+      echo "using $metafile0<br>\n";
+      $metafile = $raw_path.$metafile0;
+      echo "using $metafile<br>\n";
+    }
       $FileType = PHPExcel_IOFactory::identify($raw_path);
       switch ($FileType) {
         case 'Excel2007':
@@ -231,18 +243,7 @@ public function save_raw_file($wavelength) {
           print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
           die();
       }
-      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
-        echo "error - could not upload file $uploadfile<br>\n";
-      } else {
-        echo $_FILES['file']['name'][0] . "  $FileType<br>\n";
-      }
-      $metafile = $raw_path;
-      echo "using $metafile<br>\n";
-    } else {
-      echo "using $metafile0<br>\n";
-      $metafile = $raw_path.$metafile0;
-      echo "using $metafile<br>\n";
-    }
+
                /* Read the Means file */
                $objPHPExcel = PHPExcel_IOFactory::load($metafile);
                $sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
