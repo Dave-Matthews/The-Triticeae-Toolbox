@@ -141,6 +141,13 @@ public function save_raw_file($wavelength) {
              programmers</a>.<p>";
          } else {
              echo $_FILES['file']['name'][1] . "<br/>";
+
+             //file should be tab separated text file
+             if (!preg_match("/\.txt/",$raw_path)) {
+               echo "<font color=red>Error: CSR Data File should be a text file with .txt extension<br></font>\n";
+               die();
+             }
+
              //check file for readability
              $i = 0;
              if (($reader = fopen($raw_path, "r")) == false) {
@@ -148,6 +155,7 @@ public function save_raw_file($wavelength) {
              }
              $size = 0;
              $count_plot = 0;
+             $error_flag = 0;
 
              //first line should be trial
              $line= fgets($reader);
@@ -158,34 +166,128 @@ public function save_raw_file($wavelength) {
              $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
              $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
              $row = mysqli_fetch_array($res);
-             if ($row[0] != $temp[1]) {
+             $trial_code = $row[0]; 
+             if ($trial_code != $temp[1]) {
                  echo "<font color=red>Error: Trial Name in the Data File \"$temp[1]\" does not match the Trial Name selected from the drop-down list<br></font>\n";
                  $error_flag = 1;
                  die();
              }
+             //get list of valid plot numbers
+             $sql = "select plot from fieldbook where experiment_uid = $experiment_uid";
+             $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+             while ($row = mysqli_fetch_array($res)) {
+               $plot = $row[0];
+               $plot_list[$plot] = 1;
+             }
+             $count = count($plot_list);
+             echo "found $count plots in fieldbook for experiment $trial_code<br>\n";
 
-             while ($line = fgets($reader)) {
+             if ($temp[2] != "Date") {
+               echo "Error - Expected \"Date\" found \"$temp[2]\"<br>\n";
+             }
+             $date_pattern = '/\d+\/\d+\/\d+/';
+             if (!preg_match($date_pattern, $temp[3])) {
+               echo "Error - Bad date format, found $temp[3] should be mm/dd/yy<br>\n";
+               $error_flag = 1;
+             }
+
+             //read in plot and check
+             $error = 0;
+             if ($line = fgets($reader)) {
                $temp = str_getcsv($line,"\t");
-               $wavelength[$i] = $temp;
-               if ($size == 0) {
-                 $size = count($temp);
-                 for ($j=0; $j<=$size; $j++) {
-                   if (preg_match("/[0-9]/",$temp[$j])) {
-                     $count_plot++;
+               $count = count($temp);
+               if ($temp[0] != "Plot") {
+                 echo "Error - could not find Plot line<br>\n";
+               }
+               for ($i=1; $i<=$count; $i++) {
+                 if(is_numeric($temp[$i])) {
+                   $count_plot++;
+                   if (isset($plot_list[$temp[$i]])) {
+                   } else {
+                     echo "Error - plot $temp[$i] not defined in fieldbook for experiment $trial_code<br>\n";
+                     $error_flag = 1;
                    }
-                 }
-               } else {
-                 $size_t = count($temp);
-                 if (!preg_match("/[A-Za-z0-9]/",$temp[0])) { 	#blank line
-                   echo "blank line at line $i<br>\n";
-                 } elseif (preg_match("/Start time/",$temp[0])) {	#allow blank line for Start time
-                 } elseif ($size != $size_t) {
-                   echo "error line $i size=$size_t expected=$size<br>\n";
+                 } elseif ($temp[$i] == "") {
+                 } else {
+                   $error = 1;
+                   echo "Error - The value of \"$temp[$i]\" is not numeric in Plot line<br>\n";
                  }
                }
-               $i++;
              }
-             $count_wavl = $i - 5;
+             if ($error) {
+               echo "Error - Plot line had illegal value<br>\n";
+             }
+             //read in Start time / Stop time and check
+             for ($j=1; $j<=2; $j++){
+               if ($line = fgets($reader)) {
+                 $error = 0;
+                 $temp = str_getcsv($line,"\t");
+                 $size = count($temp);
+                 if (($temp[0] != "Start time") && ($temp[0] != "Stop time")) {
+                   echo "Error - could not find Start time line<br>\n";
+                 }
+                 $time_pattern = '/\d+:\d+:\d+/';
+                 $i = 1;
+                 while ($i<$size) {
+                   if (preg_match($time_pattern, $temp[$i])) {
+                   } elseif ($temp[$i] == "") {
+                   } else {
+                     $error = 1;
+                     echo "Error - $temp[0] line had illegal value of \"$temp[$i]\"<br>";
+                   }
+                   $i++;
+                 }
+               }
+             }
+
+             //read in Integration Time and check
+             $error = 0;
+             if ($line = fgets($reader)) {
+               $temp = str_getcsv($line,"\t");
+               if ($temp[0] != "Integration Time (ms)") {
+                 echo "Error - could not find \"Integration Time (ms)\" line<br>\n";
+               }
+               for ($i=1; $i<=$count_plot; $i++) {
+                 if(is_numeric($temp[$i])) {
+                 } elseif ($temp[$i] == "") {
+                 } else {
+                   $error = 1;
+                   echo "Error - Integration Time line had illegal value of \"$temp[$i]\"<br>\n";
+                 }
+               }
+             }
+
+             $i = 1;
+             while ($line = fgets($reader)) {
+               $error = 0;
+               $size_t = 0;
+               $temp = str_getcsv($line,"\t");
+               $wavelength[$i] = $temp;
+               $count = count($temp);
+               if (preg_match("/[0-9]/",$line)) {
+                 if(is_numeric($temp[0])) {
+                 } else {
+                   $error = 1;
+                   echo "Error - expecting frequency in first column, found \"$temp[$i]\" in line $i<br>\n";
+                 }
+                 for ($j=1; $j<=$count; $j++) {
+                   if(is_numeric($temp[$j])) {
+                     $size_t++;
+                   } elseif ($temp[$j] == "") {
+                   } else {
+                     $error = 1;
+                     $size_t++;
+                     echo "Error - data line $i had illegal value of $temp[$j]<br>\n";
+                   }
+                 }
+                 if ($size_t != $count_plot) {
+                   echo "Error - line $i size = $size_t expected = $count_plot<br>\n";
+                 } else {
+                   $i++;
+                 }
+               }
+             }
+             $count_wavl = $i - 1;
              echo "$count_wavl (Wavelengths), $count_plot (Plots)<br>\n";
           
              //save to SQLite
@@ -218,6 +320,18 @@ public function save_raw_file($wavelength) {
       $rawdatafile = $_FILES['file']['name'][1];
       $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
+      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
+        echo "error - could not upload file $uploadfile<br>\n";
+      } else {
+        echo $_FILES['file']['name'][0] . "  $FileType<br>\n";
+      }
+      $metafile = $raw_path;
+      echo "using $metafile<br>\n";
+    } else {
+      echo "using $metafile0<br>\n";
+      $metafile = $raw_path.$metafile0;
+      echo "using $metafile<br>\n";
+    }
       $FileType = PHPExcel_IOFactory::identify($raw_path);
       switch ($FileType) {
         case 'Excel2007':
@@ -231,18 +345,7 @@ public function save_raw_file($wavelength) {
           print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
           die();
       }
-      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
-        echo "error - could not upload file $uploadfile<br>\n";
-      } else {
-        echo $_FILES['file']['name'][0] . "  $FileType<br>\n";
-      }
-      $metafile = $raw_path;
-      echo "using $metafile<br>\n";
-    } else {
-      echo "using $metafile0<br>\n";
-      $metafile = $raw_path.$metafile0;
-      echo "using $metafile<br>\n";
-    }
+
                /* Read the Means file */
                $objPHPExcel = PHPExcel_IOFactory::load($metafile);
                $sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
@@ -261,7 +364,6 @@ public function save_raw_file($wavelength) {
                }
                $lines_found = $i - 1;
 
-               $error_flag = 0;
                $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                $row = mysqli_fetch_array($res);
@@ -318,7 +420,7 @@ public function save_raw_file($wavelength) {
                  $measurement_uid = NULL;
                } else {
                  $measurement_uid = $row[0];
-                 if (!$replace_flag) {
+                 if (!$replace_flag && ($error_flag == 0)) {
                    echo "<font color=red>Warning - record with trial name = $value[2], Upwelling/Downwelling = $value[3], and Measurement data time = $value[4]  already exist. ";
                    echo "Do you want to overwrite?</font>";
                    ?>

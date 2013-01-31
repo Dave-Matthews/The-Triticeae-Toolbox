@@ -35,10 +35,13 @@ connect();
   <!-- <option value='' disabled>Search by Breeding Program</option> -->
   <option selected value=''>Search by Breeding Program</option>
    <?php
-  $sql = "select distinct data_program_name, data_program_code, CAPdata_programs_uid as uid
-		  FROM CAPdata_programs
-		  WHERE program_type = 'breeding'
-		  order by data_program_name asc";
+  // dem jan13: Only include programs that have phenotype experiment trials.
+  $sql = "select distinct
+     data_program_name, data_program_code, cp.CAPdata_programs_uid as uid
+     FROM CAPdata_programs cp, experiments e
+     WHERE program_type = 'breeding'
+     AND cp.CAPdata_programs_uid = e.CAPdata_programs_uid
+     order by data_program_name asc;";
 $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
 while($row = mysql_fetch_assoc($r)) {
   $progname = $row['data_program_name']." - ".$row['data_program_code'];
