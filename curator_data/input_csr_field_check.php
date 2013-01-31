@@ -202,12 +202,18 @@ private function typeExperimentCheck()
                  if ($row = mysqli_fetch_assoc($res)) {
                     $data[$i]["Q"] = $row['line_record_uid'];
                  } else {
-                    if (isset($unique_line[$tmp])) {
+                    $sql = "select line_record_uid from line_synonyms where line_synonym_name= '$tmp'";
+                    $res = mysqli_query($mysqli,$sql) or die(mysql_error() . "<br>$sql");
+                    if ($row = mysqli_fetch_assoc($res)) {
+                      $data[$i]["Q"] = $row['line_record_uid'];
                     } else {
-                      $unique_line[$tmp] = 1;
-                      echo "Error: could not find Line Name $tmp in line_records table, please load this line name first<br>\n"; 
+                      if (isset($unique_line[$tmp])) {
+                      } else {
+                        $unique_line[$tmp] = 1;
+                        echo "Error: could not find Line Name $tmp in line_records table, please load this line name first<br>\n"; 
+                      }
+                      $error_flag = 1;
                     }
-                    $error_flag = 1;
                  }
                }
 
