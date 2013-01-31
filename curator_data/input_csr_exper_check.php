@@ -141,6 +141,13 @@ public function save_raw_file($wavelength) {
              programmers</a>.<p>";
          } else {
              echo $_FILES['file']['name'][1] . "<br/>";
+
+             //file should be tab separated text file
+             if (!preg_match("/\.txt/",$raw_path)) {
+               echo "<font color=red>Error: CSR Data File should be a text file with .txt extension<br></font>\n";
+               die();
+             }
+
              //check file for readability
              $i = 0;
              if (($reader = fopen($raw_path, "r")) == false) {
