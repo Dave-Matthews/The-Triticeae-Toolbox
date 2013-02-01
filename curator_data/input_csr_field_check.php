@@ -82,6 +82,9 @@ private function typeExperimentCheck()
   $username=$row['name'];
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
   $experiment_uid = $_POST['exper_uid'];
+  if (!preg_match("/[0-9]/",$experiment_uid)) {
+    die("Error: Must select a trial name<br>\n");
+  }
   $replace_flag = $_POST['replace'];
   $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
   $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
