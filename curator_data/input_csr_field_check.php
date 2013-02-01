@@ -306,6 +306,26 @@ private function typeExperimentCheck()
                  } else {
                    die("Error - entry field should be integer, found $tmpE in line $i<br>");
                  }
+                 if ($tmpF == "") {
+                   $tmpF = "NULL";
+                 } elseif (preg_match("/[0-9]/",$tmpF,$match)) {
+                 } else {
+                   die("Error - replication field should be integer, found $tmpF in line $i<br>");
+                 }
+                 if ($tmpG == "") {
+                   $tmpG = "NULL";
+                 } elseif (preg_match("/[0-9]/",$tmpG,$match)) {
+                 } else {
+                   die("Error - replication field should be integer, found $tmpG in line $i<br>");
+                 }
+                 if ($tmpH == "") {
+                   $tmpH = "NULL";
+                 } elseif (preg_match("/[0-9]/",$tmpH,$match)) {
+                 } else {
+                   die("Error - replication field should be integer, found $tmpH in line $i<br>");
+                 }
+
+
                  if ($tmpL == "") {
                    $tmpL = "NULL";
                  } elseif (!preg_match("/[01]/",$tmpL)) {
