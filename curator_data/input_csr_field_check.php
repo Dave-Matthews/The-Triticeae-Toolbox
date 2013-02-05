@@ -82,7 +82,8 @@ private function typeExperimentCheck()
   $username=$row['name'];
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
   $experiment_uid = $_POST['exper_uid'];
-  if (!preg_match("/[0-9]/",$experiment_uid)) {
+  if (preg_match("/[0-9]/",$experiment_uid)) {
+  } else {
     die("Error: Must select a trial name<br>\n");
   }
   $replace_flag = $_POST['replace'];
@@ -192,7 +193,8 @@ private function typeExperimentCheck()
                  die();
                }
 
-               if (!preg_match("/[0-9]/",$experiment_uid)) {
+               if (preg_match("/[0-9]/",$experiment_uid)) {
+               } else {
                  echo "<font color=red>Error - missing Trial Name</font><br>\n";
                  $error_flag = 1;
                }
@@ -288,7 +290,7 @@ private function typeExperimentCheck()
                  $tmpQ = $data[$i]["Q"];   //*line_uid from database*//
 
                  //correct missing data to avoid sql error
-                 if ($tempC == "") {
+                 if ($tmpC == "") {
                    $tmpC = "NULL";
                  } elseif (preg_match("/\d+/",$tmpC,$match)) {
                  } else {
@@ -328,11 +330,12 @@ private function typeExperimentCheck()
 
                  if ($tmpL == "") {
                    $tmpL = "NULL";
-                 } elseif (!preg_match("/[01]/",$tmpL)) {
+                 } elseif (preg_match("/[01]/",$tmpL)) {
+                 } else {
                    die("Error - check field should be 0 or 1, found $tmpL in line $i<br>");
                  }
 
-                 $sql = "insert into fieldbook (experiment_uid, plot, line_uid, row_id, column_id, entry, replication, block, subblock, treatment, main_plot_tmt, subplot_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,$tmpQ,$tmpC,$tmpD,$tmpE,$tmpF,$tmpG,$tmpH,'$tmpI','$tmpJ','$tmpK',$tmpL,'$tmpM','$tmpN')";
+                 $sql = "insert into fieldbook (experiment_uid, plot, line_uid, row_id, column_id, entry, replication, block, subblock, treatment, block_tmt, subblock_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,$tmpQ,$tmpC,$tmpD,$tmpE,$tmpF,$tmpG,$tmpH,'$tmpI','$tmpJ','$tmpK',$tmpL,'$tmpM','$tmpN')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";
