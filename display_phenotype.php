@@ -7,10 +7,12 @@
 
 //Author: Kartic Ramesh; drastically rewritten by Julie Dickerson, 2009 to make usable and use sessions
 
-// 03/25/2011 DEM   Oops, the Collaborator should be the one in table phenotype_experiment_info.
-// 02/07/2011 DEM   Add CAPdata_program and Collaborator to the first table.
-// 01/12/2011 JLee  Add so experiment download data displays on separate page
-// 01/12/2011 JLee  Mod so mean and std.err values in experiment datafile do have signif digit applied to them   
+// 08/22/2012 DEM  Display multiple raw files, table rawfiles. 
+// 08/17/2012 DEM  Display GRIN Accession instead of Line Synonym, for Jorge Dubcovsky.
+// 03/25/2011 DEM  Oops, the Collaborator should be the one in table phenotype_experiment_info.
+// 02/07/2011 DEM  Add CAPdata_program and Collaborator to the first table.
+// 01/12/2011 JLee Add so experiment download data displays on separate page
+// 01/12/2011 JLee Mod so mean and std.err values in experiment datafile do have signif digit applied to them   
 // 10/07/2010 DEM Stop rounding-off values when exported via "Download Experiment Data".
 // 9/30/2010 DEM Fixed comma-separated header line in tab-delimited "Download Experiment Data" output.
 // 9/30/2010 DEM Add "Experiment" to display list. 
@@ -29,63 +31,69 @@ include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'theme/normal_header.php');
 $delimiter = "\t";
 connect();
-//-----------------------------------------------------------------------------------
+
     $trial_code=$_GET['trial_code'];
-    //echo $trial_code."<br>";
     $sql_auth="SELECT data_public_flag FROM experiments WHERE trial_code='$trial_code'";
     $res_auth=mysql_query($sql_auth) or die(mysql_error());
     $row_auth=mysql_fetch_array($res_auth);
     
     // if data is public or if the user is CAP certified, then show data
     $data_public_flag=$row_auth['data_public_flag'];
-    if (($data_public_flag ==1)|| ((authenticate(array(USER_TYPE_PARTICIPANT,
-			USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))&&($data_public_flag ==0)))
-    {
-        $sql="SELECT experiment_uid FROM experiments WHERE trial_code='$trial_code'";
-        $result=mysql_query($sql);
-        $row=mysql_fetch_array($result);
-        $experiment_uid=$row['experiment_uid'];
-        $datasets_exp_uid=$experiment_uid;
-        //echo $experiment_uid."<br>";
-        
-        // Display Header information about the experiment
-        $display_name=ucwords($trial_code); //used to display a beautiful name as the page header
-        echo "<h1>".$display_name."</h1>";
-        
-        $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'"; //used to display the annotation details 
-        $result_pei=mysql_query($query) or die(mysql_error());
-        $row_pei=mysql_fetch_array($result_pei);
+    if ( ($data_public_flag == 1) OR (authenticate(array(USER_TYPE_PARTICIPANT,
+	USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) )  {
 
-	// Get experiment name too.
-	$query="SELECT experiment_desc_name from experiments WHERE experiment_uid='$experiment_uid'";
-	$result_exp=mysql_query($query) or die(mysql_error()); 
-        $row_exp=mysql_fetch_array($result_exp); 
-	$exptname=$row_exp['experiment_desc_name']; 
+      $sql="SELECT experiment_uid, experiment_set_uid, experiment_desc_name, experiment_year
+            FROM experiments WHERE trial_code='$trial_code'";
+      $result=mysql_query($sql);
+      $row=mysql_fetch_array($result);
+      $experiment_uid=$row['experiment_uid'];
+      $set_uid=$row['experiment_set_uid'];
+      $datasets_exp_uid=$experiment_uid;
+      $exptname=$row['experiment_desc_name'];
+      $year=$row['experiment_year'];
 
-	// Get CAPdata_program too.
-	$query="SELECT data_program_name, collaborator_name 
+        
+      // Display Header information about the experiment
+      $display_name=ucwords($trial_code); //used to display a beautiful name as the page header
+      echo "<h1>Trial ".$display_name."</h1>";
+        
+      $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'"; 
+      $result_pei=mysql_query($query) or die(mysql_error());
+      $row_pei=mysql_fetch_array($result_pei);
+
+      // Get Experiment (experiment_set) too.   
+      if ($set_uid)
+	$exptset = mysql_grab("SELECT experiment_set_name from experiment_set where experiment_set_uid=$set_uid");
+
+      // Get CAPdata_program too.
+      $query="SELECT data_program_name, collaborator_name 
 	  from CAPdata_programs, experiments
 	  where experiment_uid = $experiment_uid
 	  and experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid";
-	$result_cdp=mysql_query($query) or die(mysql_error());
-	$row_cdp=mysql_fetch_array($result_cdp);
-	$dataprogram = $row_cdp['data_program_name'];
+      $result_cdp=mysql_query($query) or die(mysql_error());
+      $row_cdp=mysql_fetch_array($result_cdp);
+      $dataprogram = $row_cdp['data_program_name'];
 
         echo "<table>";
-	if ($exptname) {echo "<tr> <td>Experiment</td><td>".$exptname."</td></tr>";}
-        echo "<tr> <td>Location (Latitude/Longitude)</td><td>".$row_pei['location']."  ".$row_pei['latitude_longitude']."</td></tr>";
+	if ($exptset) echo "<tr> <td>Experiment</td><td>".$exptset."</td></tr>";
+	echo "<tr> <td>Trial Year</td><td>$year</td></tr>";
+	if ($exptname) echo "<tr> <td>Description</td><td>$exptname</td></tr>";
+        echo "<tr> <td>Location (Latitude/Longitude)</td><td>".$row_pei['location']." ("
+              .$row_pei['latitude']." / ".$row_pei['longitude'].")</td></tr>";
+	echo "<tr> <td>Collaborator</td><td>".$row_pei['collaborator']."</td></tr>";
         echo "<tr> <td>Planting Date</td><td>".$row_pei['planting_date']."</td></tr>";
         echo "<tr> <td>Harvest Date</td><td>".$row_pei['harvest_date']."</td></tr>";
+        echo "<tr> <td>Begin Weather Date</td><td>".$row_pei['begin_weather_date']."</td></tr>";
+        echo "<tr> <td>Greenhouse?</td><td>".$row_pei['greenhouse_trial']."</td></tr>";
         echo "<tr> <td>Seeding Rate (plants/m<sup>2</sup>)</td><td>".$row_pei['seeding_rate']."</td></tr>";
         echo "<tr> <td>Experiment Design</td><td>".$row_pei['experiment_design']."</td></tr>";
         echo "<tr> <td>Plot Size (m<sup>2</sup>)</td><td>".$row_pei['plot_size']."</td></tr>";
         echo "<tr> <td>Harvest Area (m<sup>2</sup>)</td><td>".$row_pei['harvest_area']."</td></tr>";
         echo "<tr> <td>Irrigation</td><td>".$row_pei['irrigation']."</td></tr>";
+	echo "<tr> <td>Number of Entries</td><td>".$row_pei['number_entries']."</td></tr>";
         echo "<tr> <td>Number of Replications</td><td>".$row_pei['number_replications']."</td></tr>";
-		echo "<tr> <td>Number of Entries</td><td>".$row_pei['number_entries']."</td></tr>";
         echo "<tr> <td>Comments</td><td>".$row_pei['other_remarks']."</td></tr>";
 	echo "<tr> <td>Data Program</td><td>".$dataprogram."</td></tr>";
-	echo "<tr> <td>Collaborator</td><td>".$row_pei['collaborator']."</td></tr>";
         echo "</table><p>";
 
         // get all line data for this experiment
@@ -102,10 +110,10 @@ connect();
         $num_lines = count($linerecord_uid);
         //echo $num_lines."<br>";
         $titles=array('Line Name'); //stores the titles for the display table with units
-	$titles[]="Line Synonym";//add CAP Code column to titles
-        
+	$titles[]="GRIN Accession";//add CAP Code column to titles
+
+	if (!empty($thtbase_uid)) {
         $thtbasestring = implode(",",$thtbase_uid);
-        
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
                 FROM phenotype_data as pd, phenotypes as p, units
                 WHERE p.phenotype_uid = pd.phenotype_uid
@@ -138,6 +146,10 @@ connect();
         /* $dir ='./downloads/temp/';				 */
         $dir ='/tmp/tht/';	
 	if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
+
+	// Clean up old files, older than 1 day.
+	system("find $dir -mtime +1 -name 'THT_Phenotypes_*.txt' -delete");
+
         // create a download file
         $downloadFile = $dir.$myFile;
 		$fh = fopen($downloadFile, "w");
@@ -162,15 +174,24 @@ connect();
             $single_row[0]=$lnrname;
             $single_row_long[0]=$lnrname;
 
-// get the CAP code
-
-$sql_cc="SELECT line_synonym_name
-FROM line_synonyms
-WHERE line_synonyms.line_record_uid = '$linerecorduid'";
-	    $result_cc=mysql_query($sql_cc) or die(mysql_error());
-	    $row_cc=mysql_fetch_assoc($result_cc);
-	    $single_row[1]=$row_cc['line_synonym_name'];
-	    $single_row_long[1]=$row_cc['line_synonym_name'];
+/* Use GRIN accession instead of Synonym */
+/* // get the CAP code */
+/* $sql_cc="SELECT line_synonym_name */
+/* FROM line_synonyms */
+/* WHERE line_synonyms.line_record_uid = '$linerecorduid'"; */
+/* 	    $result_cc=mysql_query($sql_cc) or die(mysql_error()); */
+/* 	    $row_cc=mysql_fetch_assoc($result_cc); */
+/* 	    $single_row[1]=$row_cc['line_synonym_name']; */
+/* 	    $single_row_long[1]=$row_cc['line_synonym_name']; */
+$sql_gr="select barley_ref_number
+from barley_pedigree_catalog bc, barley_pedigree_catalog_ref bcr
+where barley_pedigree_catalog_name = 'GRIN'
+and bc.barley_pedigree_catalog_uid = bcr.barley_pedigree_catalog_uid
+and bcr.line_record_uid = '$linerecorduid'";
+	    $result_gr=mysql_query($sql_gr) or die(mysql_error());
+	    $row_gr=mysql_fetch_assoc($result_gr);
+	    $single_row[1]=$row_gr['barley_ref_number'];
+	    $single_row_long[1]=$row_gr['barley_ref_number'];
 
 /* We don't need the bp code if we have the CAP code.
             //get the bp code
@@ -368,7 +389,8 @@ function output_file(url) {
 				for ($j = 0; $j < count($single_row); $j++)
 				{
 			?>
-			<td><div style="width: 75px" >     
+			<!-- <td><div style="width: 75px; overflow-x: hidden;"> -->
+			<td><div style="width: 75px; word-wrap: break-word">
 			<?php echo $all_rows[$i][$j] ?>
 			</div></td> 
 			<?php
@@ -388,37 +410,38 @@ function output_file(url) {
     echo "</form><p>";
 	// header("Location: ".$dir.$myFile);
    
-    } else {
-        	?>	
+	} 
 
- <div class="section">
-<p> There are no publicly available datasets for this program and year in THT at this time. Participants in the BarleyCAP project will need to login to see additional datasets.</p>
- </div>
+$sourcesql="SELECT input_data_file_name FROM experiments WHERE trial_code='$trial_code'";
+$sourceres=mysql_query($sourcesql) or die(mysql_error());
+$sourcerow=mysql_fetch_array($sourceres);
+$sources=$sourcerow['input_data_file_name'];
+if ($sources)
+  echo "<p><b>Means file:</b> $sources";
 
-<p>
-            <?php
-    }
-        $rawsql="SELECT raw_data_file_name FROM experiments WHERE trial_code='$trial_code'";
-        $rawres=mysql_query($rawsql) or die(mysql_error());
-        $rawrow=mysql_fetch_array($rawres);
-        $rawfilename=$rawrow['raw_data_file_name'];
-		$rawfile="raw/phenotype/".$rawfilename;
+echo "<p><b>Raw data files:</b><br>";
+$rawsql="SELECT name, directory from rawfiles where experiment_uid = $experiment_uid";
+$rawres=mysql_query($rawsql) or die(mysql_error());
+while ($rawrow = mysql_fetch_assoc($rawres)) {
+  $rawfilename=$rawrow['name'];
+  $rawdir = $rawrow['directory'];
+  if ($rawdir)
+    $rawfilename=$rawrow['directory']."/".$rawfilename;
+  $rawfile="raw/phenotype/".$rawfilename;
+  echo "<a href=".$config['base_url'].$rawfile.">".$rawrow['name']."</a><br>";
+}
+$rawsql="SELECT experiment_uid from fieldbook where experiment_uid = $experiment_uid";
+$rawres=mysql_query($rawsql) or die(mysql_error());
+if ($rawrow = mysql_fetch_assoc($rawres)) {
+  $rawfile="curator_data/input_csr_field.php?function=display&uid=$experiment_uid";
+  echo "<a href=".$config['base_url'].$rawfile.">Field Book</a>";
+}
+  
+
 		
-		if (empty($rawfilename)) {
-			echo "<h3><b>NOTE: Sorry raw data file not available.</b> </h3>"; 
-        } else {
-        	echo "<form action='$rawfile'>";
-        	echo "<input type='submit' value='Download Raw File'>";
-       		echo "</form>";
-		}
+if (empty($rawfilename))  echo "none"; 
 
-			    $sourcesql="SELECT input_data_file_name FROM experiments WHERE trial_code='$trial_code'";
-			    $sourceres=mysql_query($sourcesql) or die(mysql_error());
-			    $sourcerow=mysql_fetch_array($sourceres);
-			    $sources=$sourcerow['input_data_file_name'];
-			    echo "<p>Source files loaded: $sources";
-			    //echo "<br>";
-			    //echo "<p>data files loaded: $downloadFile";
+}
   
     //-----------------------------------------------------------------------------------
     $footer_div = 1;
