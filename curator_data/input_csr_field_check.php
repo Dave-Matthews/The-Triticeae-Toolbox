@@ -328,7 +328,8 @@ private function typeExperimentCheck()
 
                  if ($tmpL == "") {
                    $tmpL = "NULL";
-                 } elseif (!preg_match("/[01]/",$tmpL)) {
+                 } elseif (preg_match("/[01]/",$tmpL)) {
+                 } else {
                    die("Error - check field should be 0 or 1, found $tmpL in line $i<br>");
                  }
 
