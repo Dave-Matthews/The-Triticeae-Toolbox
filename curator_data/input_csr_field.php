@@ -88,10 +88,10 @@ private function typeDisplay() {
     $rep = $row["replication"];
     $block = $row["block"];
     $subblock = $row["subblock"];
-    $row = $row["row_id"];
-    $col = $row["column_id"];
+    $row_id = $row["row_id"];
+    $col_id = $row["column_id"];
     $treatment = $row["treatment"];
-    echo "<tr><td>$plot<td>$line_list[$line_uid]<td>$row<td>$col<td>$entry<td>$rep<td>$block<td>$subblock<td>$treatment<td>$block_tmt<td>$check<td>$field_id<td>$note\n";
+    echo "<tr><td>$plot<td>$line_list[$line_uid]<td>$row_id<td>$col_id<td>$entry<td>$rep<td>$block<td>$subblock<td>$treatment<td>$block_tmt<td>$check<td>$field_id<td>$note\n";
     $count++;
   }
   echo "</table>";
