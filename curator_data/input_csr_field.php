@@ -94,7 +94,7 @@ private function typeDisplay() {
     $main_plot_tmt = $row["block_tmt"];
     $subblock_tmt = $row["subblock_tmt"];
     $check = $row["check_id"];
-    echo "<tr><td>$plot<td>$line_list[$line_uid]<td>$row_id<td>$col_id<td>$entry<td>$rep<td>$block<td>$subblock<td>$treatment<td>$block_tmt<td>$main_plot_tmt<td>$subblock_tmt<td>$check<td>$field_id<td>$note\n";
+    echo "<tr><td>$plot<td>$line_list[$line_uid]<td>$row_id<td>$col_id<td>$entry<td>$rep<td>$block<td>$subblock<td>$treatment<td>$main_plot_tmt<td>$subblock_tmt<td>$check<td>$field_id<td>$note\n";
     $count++;
   }
   echo "</table>";
