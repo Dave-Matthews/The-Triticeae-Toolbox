@@ -75,7 +75,7 @@ private function typeDisplay() {
   $sql = "select * from fieldbook order by plot";
   $res = mysql_query($sql) or die (mysql_error());
   echo "<h2>Field Book for $trial_code</h2>\n";
-  echo "<table border=1>";
+  echo "<table>";
   echo "<tr><td>plot<td>line_name<td>row<td>column<td>entry<td>replication<td>block<td>subblock<td>treatment<td>block_tmt<td>subblock_tmt<td>check<td>Field_ID<td>note";
   while ($row = mysql_fetch_assoc($res)) {
     $expr = $row["experiment_uid"];
@@ -163,7 +163,7 @@ echo "</select>\n";
 //list links to saved Excel Files
 echo "<br>List of currently loaded Field Book files<br>\n";
 echo "<table border=1>\n";
-echo "<tr><td>experiment<td>Database<td>Excel File<td>created on<td>updated on\n";
+echo "<tr><td>experiment<td>Database<td>Input File<td>created on<td>updated on\n";
 $sql = "select experiment_uid, fieldbook_file_name, created_on, updated_on from fieldbook_info where experiment_uid IN (select distinct experiment_uid from fieldbook)";
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
 while ($row = mysqli_fetch_assoc($res)) {
