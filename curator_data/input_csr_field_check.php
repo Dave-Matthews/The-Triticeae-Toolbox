@@ -288,7 +288,7 @@ private function typeExperimentCheck()
                  $tmpQ = $data[$i]["Q"];   //*line_uid from database*//
 
                  //correct missing data to avoid sql error
-                 if ($tempC == "") {
+                 if ($tmpC == "") {
                    $tmpC = "NULL";
                  } elseif (preg_match("/\d+/",$tmpC,$match)) {
                  } else {
