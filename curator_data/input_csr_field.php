@@ -76,7 +76,7 @@ private function typeDisplay() {
   $res = mysql_query($sql) or die (mysql_error());
   echo "<h2>Field Book for $trial_code</h2>\n";
   echo "<table border=1>";
-  echo "<tr><td>plot<td>line_name<td>row<td>column<td>entry<td>replication<td>block<td>subblock<td>treatment<td>block_tmt<td>check<td>Field_ID<td>note";
+  echo "<tr><td>plot<td>line_name<td>row<td>column<td>entry<td>replication<td>block<td>subblock<td>treatment<td>block_tmt<td>subblock_tmt<td>check<td>Field_ID<td>note";
   while ($row = mysql_fetch_assoc($res)) {
     $expr = $row["experiment_uid"];
     $range = $row["range_id"];
@@ -91,7 +91,9 @@ private function typeDisplay() {
     $row_id = $row["row_id"];
     $col_id = $row["column_id"];
     $treatment = $row["treatment"];
-    echo "<tr><td>$plot<td>$line_list[$line_uid]<td>$row_id<td>$col_id<td>$entry<td>$rep<td>$block<td>$subblock<td>$treatment<td>$block_tmt<td>$check<td>$field_id<td>$note\n";
+    $main_plot_tmt = $row["main_plot_tmt"];
+    $subblock_tmt = $row["subplot_tmt"];
+    echo "<tr><td>$plot<td>$line_list[$line_uid]<td>$row_id<td>$col_id<td>$entry<td>$rep<td>$block<td>$subblock<td>$treatment<td>$block_tmt<td>$main_plot_tmt<td>$subblock_tmt<td>$check<td>$field_id<td>$note\n";
     $count++;
   }
   echo "</table>";
