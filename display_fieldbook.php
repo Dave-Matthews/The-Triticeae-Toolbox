@@ -31,7 +31,7 @@ connect();
 
 
   $count = 0;
-  $sql = "select * from fieldbook order by plot";
+  $sql = "select * from fieldbook where experiment_uid = $experiment_uid order by plot";
   $res = mysql_query($sql) or die (mysql_error());
   echo "<h2>Field Book for $trial_code</h2>\n";
   echo "<table>";
