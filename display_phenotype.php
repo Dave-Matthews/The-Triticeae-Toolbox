@@ -436,7 +436,7 @@ echo "<p><b>Field Book:</b> ";
 $rawsql="SELECT experiment_uid from fieldbook where experiment_uid = $experiment_uid";
 $rawres=mysql_query($rawsql) or die(mysql_error());
 if ($rawrow = mysql_fetch_assoc($rawres)) {
-  $fieldbook="curator_data/input_csr_field.php?function=display&uid=$experiment_uid";
+  $fieldbook="display_fieldbook.php?function=display&uid=$experiment_uid";
   echo "<a href=".$config['base_url'].$fieldbook.">$trial_code</a>";
 }
 if (empty($fieldbook)) echo "none";  
