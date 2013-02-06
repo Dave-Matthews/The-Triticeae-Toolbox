@@ -431,6 +431,8 @@ while ($rawrow = mysql_fetch_assoc($rawres)) {
   echo "<a href=".$config['base_url'].$rawfile.">".$rawrow['name']."</a><br>";
 }
 if (empty($rawfilename))  echo "none<br>";
+
+echo "<p><b>Field Book:</b> ";
 $rawsql="SELECT experiment_uid from fieldbook where experiment_uid = $experiment_uid";
 $rawres=mysql_query($rawsql) or die(mysql_error());
 if ($rawrow = mysql_fetch_assoc($rawres)) {
