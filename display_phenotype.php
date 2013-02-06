@@ -430,17 +430,16 @@ while ($rawrow = mysql_fetch_assoc($rawres)) {
   $rawfile="raw/phenotype/".$rawfilename;
   echo "<a href=".$config['base_url'].$rawfile.">".$rawrow['name']."</a><br>";
 }
+if (empty($rawfilename))  echo "none";
 $rawsql="SELECT experiment_uid from fieldbook where experiment_uid = $experiment_uid";
 $rawres=mysql_query($rawsql) or die(mysql_error());
 if ($rawrow = mysql_fetch_assoc($rawres)) {
-  $rawfile="curator_data/input_csr_field.php?function=display&uid=$experiment_uid";
-  echo "<a href=".$config['base_url'].$rawfile.">Field Book</a>";
+  $fieldbook="curator_data/input_csr_field.php?function=display&uid=$experiment_uid";
+  echo "<a href=".$config['base_url'].$fieldbook.">Field Book</a>";
 }
-  
+if (empty($fieldbook)) echo "none";  
 
 		
-if (empty($rawfilename))  echo "none"; 
-
 }
   
     //-----------------------------------------------------------------------------------
