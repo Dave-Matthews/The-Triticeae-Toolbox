@@ -82,6 +82,10 @@ private function typeExperimentCheck()
   $username=$row['name'];
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
   $experiment_uid = $_POST['exper_uid'];
+  if (preg_match("/[0-9]/",$experiment_uid)) {
+  } else {
+    die("Error: Must select a trial name<br>\n");
+  }
   $replace_flag = $_POST['replace'];
   $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
   $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
@@ -189,7 +193,8 @@ private function typeExperimentCheck()
                  die();
                }
 
-               if (!preg_match("/[0-9]/",$experiment_uid)) {
+               if (preg_match("/[0-9]/",$experiment_uid)) {
+               } else {
                  echo "<font color=red>Error - missing Trial Name</font><br>\n";
                  $error_flag = 1;
                }
@@ -285,17 +290,53 @@ private function typeExperimentCheck()
                  $tmpQ = $data[$i]["Q"];   //*line_uid from database*//
 
                  //correct missing data to avoid sql error
-                 if (!preg_match("/[0-9]/",$tmpI)) {
-                   $tmpI = "NULL";
+                 if ($tmpC == "") {
+                   $tmpC = "NULL";
+                 } elseif (preg_match("/\d+/",$tmpC,$match)) {
+                 } else {
+                   die("Error - row field should be integer, found $tmpC in line $i<br>");
                  }
-                 if (!preg_match("/[0-9]/",$tmpJ)) {
-                   $tmpJ = "NULL";
+                 if ($tmpD == "") {
+                   $tmpD = "NULL";
+                 } elseif (preg_match("/[0-9]/",$tmpD,$match)) {
+                 } else {
+                   die("Error - column field should be integer, found $tmpD in line $i<br>");
                  }
-                 if (!preg_match("/[0-9]/",$tmpK)) {
-                   $tmpK = "NULL";
+                 if ($tmpE == "") {
+                   $tmpE = "NULL";
+                 } elseif (preg_match("/[0-9]/",$tmpE,$match)) {
+                 } else {
+                   die("Error - entry field should be integer, found $tmpE in line $i<br>");
+                 }
+                 if ($tmpF == "") {
+                   $tmpF = "NULL";
+                 } elseif (preg_match("/[0-9]/",$tmpF,$match)) {
+                 } else {
+                   die("Error - replication field should be integer, found $tmpF in line $i<br>");
+                 }
+                 if ($tmpG == "") {
+                   $tmpG = "NULL";
+                 } elseif (preg_match("/[0-9]/",$tmpG,$match)) {
+                 } else {
+                   die("Error - replication field should be integer, found $tmpG in line $i<br>");
+                 }
+                 if ($tmpH == "") {
+                   $tmpH = "NULL";
+                 } elseif (preg_match("/[0-9]/",$tmpH,$match)) {
+                 } else {
+                   die("Error - replication field should be integer, found $tmpH in line $i<br>");
                  }
 
-                 $sql = "insert into fieldbook (experiment_uid, plot, line_uid, row_id, column_id, entry, replication, block, subblock, treatment, main_plot_tmt, subplot_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,$tmpQ,$tmpC,'$tmpD','$tmpE','$tmpF','$tmpG','$tmpH',$tmpI,$tmpJ,$tmpK,'$tmpL','$tmpM','$tmpN')";
+
+                 if (preg_match("/([01])/",$tmpL,$match)) {
+                   $tmpL = $match[1];
+                 } elseif ($tmpL == "") {
+                   $tmpL = "NULL";
+                 } else {
+                   die("Error - check field should be 0 or 1, found $tmpL in line $i<br>");
+                 }
+
+                 $sql = "insert into fieldbook (experiment_uid, plot, line_uid, row_id, column_id, entry, replication, block, subblock, treatment, block_tmt, subblock_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,$tmpQ,$tmpC,$tmpD,$tmpE,$tmpF,$tmpG,$tmpH,'$tmpI','$tmpJ','$tmpK',$tmpL,'$tmpM','$tmpN')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";
