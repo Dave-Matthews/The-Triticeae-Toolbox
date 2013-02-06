@@ -386,7 +386,9 @@ while (!feof($reader))  {
       $a_allele = substr($marker_ab,0,1);
       $b_allele = substr($marker_ab,1,1);
     } else {
-      echo "Warning: no marker sequence found for $marker\n";
+      $msg = 'ERROR:  marker sequene and allele information not found '.$marker.'\n';
+      fwrite($errFile, $msg);
+      die ("Error: no marker sequence or allele information found for $marker\n");
       $seq = "unknown";
     }
     

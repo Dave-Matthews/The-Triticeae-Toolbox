@@ -419,7 +419,7 @@ $sources=$sourcerow['input_data_file_name'];
 if ($sources)
   echo "<p><b>Means file:</b> $sources";
 
-echo "<p><b>Raw data files:</b><br>";
+echo "<p><b>Raw data files:</b> ";
 $rawsql="SELECT name, directory from rawfiles where experiment_uid = $experiment_uid";
 $rawres=mysql_query($rawsql) or die(mysql_error());
 while ($rawrow = mysql_fetch_assoc($rawres)) {
@@ -430,9 +430,24 @@ while ($rawrow = mysql_fetch_assoc($rawres)) {
   $rawfile="raw/phenotype/".$rawfilename;
   echo "<a href=".$config['base_url'].$rawfile.">".$rawrow['name']."</a><br>";
 }
+if (empty($rawfilename))  echo "none<br>";
 
-		
-if (empty($rawfilename))  echo "none"; 
+echo "<p><b>Field Book:</b> ";
+$rawsql="SELECT experiment_uid from fieldbook where experiment_uid = $experiment_uid";
+$rawres=mysql_query($rawsql) or die(mysql_error());
+if ($rawrow = mysql_fetch_assoc($rawres)) {
+  $fieldbook="display_fieldbook.php?function=display&uid=$experiment_uid";
+  echo "<a href=".$config['base_url'].$fieldbook.">$trial_code</a>";
+}
+if (empty($fieldbook)) echo "none";  
+
+$sql="SELECT * from csr_measurement where experiment_uid = $experiment_uid";
+$res = mysql_query($sql) or die(mysql_error());
+if ($rawrow = mysql_fetch_assoc($res)) {
+  echo "<p><b>CSR Annotation</b> ";
+  $trial="display_csr_exp.php?function=display&uid=$experiment_uid";
+  echo "<a href=".$config['base_url'].$trial.">$trial_code</a>";		
+}
 
 }
   
