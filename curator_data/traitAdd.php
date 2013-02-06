@@ -1,32 +1,22 @@
 <?php
 
 // 6/29/2011  JLee  Fixed to current THT schema, support 
-//					app moved into curator_data
+//	  	    app moved into curator_data
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
+include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+include($config['root_dir'] . 'theme/admin_header.php');
+
 /*
  * Logged in page initialization
  */
-
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-
-//include($config['root_dir'] . 'includes/bootstrap.inc');
-//include($config['root_dir'] . 'curator_data/boot_test.php');
-
 connect();
 loginTest();
-
-/* ******************************* */
 $row = loadUser($_SESSION['username']);
-
-////////////////////////////////////////////////////////////////////////////////
 ob_start();
-include($config['root_dir'] . 'theme/admin_header.php');
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
-//connect_dev();  /* Connect with write-access. */
-////////////////////////////////////////////////////////////////////////////////
 
 /*
  * The following if statements handle the submission actions when the bottom 3 forms are filled out.
@@ -123,9 +113,7 @@ if(isset($_POST['unit_name'])) {		//add new unit has been submitted
 }
 
 ?>
-<div id="primaryContentContainer">
-	<div id="primaryContent">
-		<div class="box">
+  <div class="box">
 
 <?php
 
@@ -217,7 +205,12 @@ switch($_GET['add']) {
 <h2>Add Multiple New Traits</h2>
 <div class="boxContent">
 
-<p>Upload an <em>Excel</em> file with the format suggested by the <a href="<?php echo $config['base_url']; ?>curator_data/examples/trait_template.xls"><em> Trait Import Template</em></a></p>
+<!-- <p>Upload an <em>Excel</em> file with the format suggested by -->
+<!-- the <a href="<?php echo $config['base_url']; ?>curator_data/examples/trait_template.xls"> -->
+<!-- <em>Trait Import Template</em></a></p> -->
+
+<p>Upload an <em>Excel</em> file with the format suggested by
+the <em><?php filelink('trait_template.xls', 'Trait Import Template') ?></em>.
 
 <form action="<?php echo $config['base_url']; ?>curator_data/uploader.php?type=traits" method="post" enctype="multipart/form-data">
 
@@ -229,6 +222,14 @@ switch($_GET['add']) {
    <?php
    break;
 }
+
+/* Add "(new <date>)" if newer than 30 days. */
+function filelink($path, $label) {
+  echo "<a href='curator_data/examples/$path'>$label</a>";
+  if (time() - filemtime("examples/$path") < 2592000)
+    echo " <font size= -2 color=red>(new ". date("dMY", filemtime("examples/$path")) . ")</font>";
+}
+
 ?>
 
 <p><a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php">Add Multiple Traits</a><br />
@@ -236,10 +237,6 @@ switch($_GET['add']) {
 <a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=category">Add a New Category</a><br />
 <a href="<?php echo $config['base_url']; ?>curator_data/traitAdd.php?add=unit">Add a New Unit</a><br />
 </p>
-		</div>
-
-<p><?php echo $row['name']; ?> you last accessed the system on <?php echo $row['lastaccess']; ?></p>
-	</div>
 </div>
 </div>
 
