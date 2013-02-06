@@ -263,6 +263,21 @@ echo "</table>";
 			  }
 			}
 
+                //get a list of GBS markers used to convert format
+                $query = "SELECT marker_uid, marker_type_name, A_allele, B_allele from markers, marker_types 
+                  where markers.marker_type_uid = marker_types.marker_type_uid and marker_type_name = 'GBS'";
+                $resource = mysql_query($query) or die(mysql_error());
+                while ($row = mysql_fetch_assoc($resource)) {
+                  $uid = $row['marker_uid'];
+                  $a_allele = $row['A_allele'];
+                  $b_allele = $row['B_allele'];
+                  $lookupGBS[$uid] = array(
+                        'AA' => $a_allele, 
+                        'BB' => $b_allele,
+                        '--' => 'N',
+                        );
+                }
+          
 		// Begin output to file.
 		// Prepend HTML header to trigger browser's "Open or Save?" dialog. 
 		$date = date("m-d-Y-His");
@@ -313,7 +328,7 @@ echo "</table>";
 	 /* 			AND gd.tht_base_uid = tb.tht_base_uid */
 	 /* 			AND tb.experiment_uid ='".$experiment_uid."' */
 	 /* 	  ORDER BY lr.line_record_name, m.marker_uid"; */
-$sql = "SELECT line_record_name, marker_name AS name, alleles AS value
+$sql = "SELECT line_record_name, marker_name AS name, alleles AS value, marker_uid
         FROM allele_cache
         WHERE marker_uid IN ($marker_uid)
         AND experiment_uid =$experiment_uid
@@ -325,6 +340,7 @@ $sql = "SELECT line_record_name, marker_name AS name, alleles AS value
 		$cnt = $num_lines = 0;
 		while ($row = mysql_fetch_array($res)){
 		  //first time through loop
+                  $uid = $row['marker_uid'];
 		  if ($cnt == 0) {
 		    $last_line = $row['line_record_name'];
 		  }
@@ -337,13 +353,21 @@ $sql = "SELECT line_record_name, marker_name AS name, alleles AS value
 		    $output = "";
 		    //reset output arrays for the next line
 		    $outarray = $empty;
-		    $mname = $row['name'];				
-		    $outarray[$mname] = $lookup[$row['value']];
+		    $mname = $row['name'];
+                    if (isset($lookupGBS[$uid])) {
+                      $outarray[$mname] = $lookupGBS[$uid][$row['value']]; 
+                    } else {				
+		      $outarray[$mname] = $lookup[$row['value']];
+                    }
 		    $last_line = $row['line_record_name'];
 		    $num_lines++;
 		  } else {
-		    $mname = $row['name'];				
-		    $outarray[$mname] = $lookup[$row['value']];
+		    $mname = $row['name'];	
+                    if (isset($lookupGBS[$uid])) {
+                      $outarray[$mname] = $lookupGBS[$uid][$row['value']];
+                    } else {			
+		      $outarray[$mname] = $lookup[$row['value']];
+                    }
 		  }
 		  $cnt++;
 		}

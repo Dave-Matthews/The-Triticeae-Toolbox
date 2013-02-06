@@ -197,7 +197,7 @@ public function save_raw_file($wavelength) {
                $temp = str_getcsv($line,"\t");
                $count = count($temp);
                if ($temp[0] != "Plot") {
-                 echo "Error - could not find Plot line<br>\n";
+                 echo "Error - Found \"$temp[0]\", expected \"Plot\" in Data File<br>\n";
                }
                for ($i=1; $i<=$count; $i++) {
                  if(is_numeric($temp[$i])) {
@@ -209,7 +209,7 @@ public function save_raw_file($wavelength) {
                    }
                  } elseif ($temp[$i] == "") {
                  } else {
-                   $error = 1;
+                   $error_flag = 1;
                    echo "Error - The value of \"$temp[$i]\" is not numeric in Plot line<br>\n";
                  }
                }
@@ -220,11 +220,14 @@ public function save_raw_file($wavelength) {
              //read in Start time / Stop time and check
              for ($j=1; $j<=2; $j++){
                if ($line = fgets($reader)) {
-                 $error = 0;
                  $temp = str_getcsv($line,"\t");
                  $size = count($temp);
-                 if (($temp[0] != "Start time") && ($temp[0] != "Stop time")) {
-                   echo "Error - could not find Start time line<br>\n";
+                 if (($j == 1) && ($temp[0] !="Start time")) {
+                   $error_flag = 1;
+                   echo "Error - Found \"$temp[0]\", expected \"Start time\" in Data File<br>\n";
+                 } elseif (($j == 2) && ($temp[0] != "Stop time")) {
+                   $error_flag = 1;
+                   echo "Error - Found \"$temp[0]\", expected \"Stop time\" in Data File<br>\n";
                  }
                  $time_pattern = '/\d+:\d+:\d+/';
                  $i = 1;
@@ -232,7 +235,7 @@ public function save_raw_file($wavelength) {
                    if (preg_match($time_pattern, $temp[$i])) {
                    } elseif ($temp[$i] == "") {
                    } else {
-                     $error = 1;
+                     $error_flag = 1;
                      echo "Error - $temp[0] line had illegal value of \"$temp[$i]\"<br>";
                    }
                    $i++;
@@ -241,17 +244,16 @@ public function save_raw_file($wavelength) {
              }
 
              //read in Integration Time and check
-             $error = 0;
              if ($line = fgets($reader)) {
                $temp = str_getcsv($line,"\t");
                if ($temp[0] != "Integration Time (ms)") {
-                 echo "Error - could not find \"Integration Time (ms)\" line<br>\n";
+                 echo "Error - Found \"$temp[0]\", expected \"Integration Time (ms)\" in Data File<br>\n";
                }
                for ($i=1; $i<=$count_plot; $i++) {
                  if(is_numeric($temp[$i])) {
                  } elseif ($temp[$i] == "") {
                  } else {
-                   $error = 1;
+                   $error_flag = 1;
                    echo "Error - Integration Time line had illegal value of \"$temp[$i]\"<br>\n";
                  }
                }
@@ -259,7 +261,6 @@ public function save_raw_file($wavelength) {
 
              $i = 1;
              while ($line = fgets($reader)) {
-               $error = 0;
                $size_t = 0;
                $temp = str_getcsv($line,"\t");
                $wavelength[$i] = $temp;
@@ -267,7 +268,7 @@ public function save_raw_file($wavelength) {
                if (preg_match("/[0-9]/",$line)) {
                  if(is_numeric($temp[0])) {
                  } else {
-                   $error = 1;
+                   $error_flag = 1;
                    echo "Error - expecting frequency in first column, found \"$temp[$i]\" in line $i<br>\n";
                  }
                  for ($j=1; $j<=$count; $j++) {
@@ -275,7 +276,7 @@ public function save_raw_file($wavelength) {
                      $size_t++;
                    } elseif ($temp[$j] == "") {
                    } else {
-                     $error = 1;
+                     $error_flag = 1;
                      $size_t++;
                      echo "Error - data line $i had illegal value of $temp[$j]<br>\n";
                    }
@@ -433,6 +434,8 @@ public function save_raw_file($wavelength) {
                    </form>
                    <?php
                    $error_flag = 1;
+                 } elseif ($error_flag > 0) {
+                   echo "<font color=red>Warning - upload rejected because of errors</font><br>\n";
                  }
                  $new_record = 0;
                }
