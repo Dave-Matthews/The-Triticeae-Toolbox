@@ -444,7 +444,7 @@ if (empty($fieldbook)) echo "none";
 $sql="SELECT * from csr_measurement where experiment_uid = $experiment_uid";
 $res = mysql_query($sql) or die(mysql_error());
 if ($rawrow = mysql_fetch_assoc($res)) {
-  echo "<p><b>CSR Annotation</b> ";
+  echo "<p><b>CSR Annotation:</b> ";
   $trial="display_csr_exp.php?function=display&uid=$experiment_uid";
   echo "<a href=".$config['base_url'].$trial.">$trial_code</a>";		
 }
