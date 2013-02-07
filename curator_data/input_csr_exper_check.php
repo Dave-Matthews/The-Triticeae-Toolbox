@@ -94,7 +94,17 @@ public function save_raw_file($wavelength) {
   $row = loadUser($_SESSION['username']);
   $username=$row['name'];
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
-  $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+  if (empty($_FILES['file']['name'][1])) {
+    if (empty($_POST['filename1'])) {
+      echo "missing Raw file\n";
+    } else {
+      $filename1 = $_POST['filename1'];
+      $raw_path = "../raw/phenotype/".$_POST['filename1'];
+    }
+  } else {
+    $filename1 = $_FILES['file']['name'][1];
+    $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+  }
   $experiment_uid = $_POST['exper_uid'];
   if (preg_match("/[0-9]/",$experiment_uid)) {
   } else {
@@ -103,11 +113,10 @@ public function save_raw_file($wavelength) {
   $replace_flag = $_POST['replace'];
   if (file_exists($raw_path)) {
     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
-    $tmp1 = $_FILES['file']['name'][1];
-    $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][1];
-    $raw_path = str_replace("$tmp1","$unq_file_name","$raw_path",$count);
+    $unq_file_name = $unique_str . "_" . $filename1;
+    $raw_path = str_replace("$filename1","$unq_file_name","$raw_path",$count);
   } else {
-    $unq_file_name = $_FILES['file']['name'][1];
+    $unq_file_name = $filename1;
   }
   if (empty($_FILES['file']['name'][0])) {
     if (empty($_POST['filename0'])) {
@@ -118,18 +127,8 @@ public function save_raw_file($wavelength) {
   } else {
     $filename0 = $_FILES['file']['name'][0];
   }
-  if (empty($_FILES['file']['name'][1])) {
-    if (empty($_POST['filename1'])) {
-      echo "missing Raw file\n";
-    } else {
-      $metafile1 = $_POST['filename1'];
-      $unq_file_name = $_POST['filename1'];
-    }
-  } else {
-    $filename1 = $_FILES['file']['name'][1];
-  }
 
-  if (empty($_FILES['file']['name'][1]) && ($metafile1 == "")) {
+  if (empty($_FILES['file']['name'][1]) && ($filename1 == "")) {
     error(1, "No File Upoaded");
     print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
   } else {
@@ -330,10 +329,10 @@ public function save_raw_file($wavelength) {
       echo "using $metafile<br>\n";
     } else {
       echo "using $metafile0<br>\n";
-      $metafile = $raw_path.$metafile0;
+      $metafile = "../raw/phenotype/".$metafile0;
       echo "using $metafile<br>\n";
     }
-      $FileType = PHPExcel_IOFactory::identify($raw_path);
+      $FileType = PHPExcel_IOFactory::identify($metafile);
       switch ($FileType) {
         case 'Excel2007':
           break;
