@@ -100,10 +100,17 @@ public function save_raw_file($wavelength) {
     } else {
       $filename1 = $_POST['filename1'];
       $raw_path = "../raw/phenotype/".$_POST['filename1'];
+      $unq_file_name = $filename1;
     }
   } else {
     $filename1 = $_FILES['file']['name'][1];
     $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+    if (file_exists($raw_path)) {
+      $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
+      $unq_file_name = $unique_str . "_" . $filename1;
+      $raw_path = str_replace("$filename1","$unq_file_name","$raw_path",$count);
+      /* echo "renaming file to $raw_path<br>\n";*/
+    } 
   }
   $experiment_uid = $_POST['exper_uid'];
   if (preg_match("/[0-9]/",$experiment_uid)) {
@@ -111,13 +118,6 @@ public function save_raw_file($wavelength) {
     die("Error: Must select a trial name<br>\n");
   }
   $replace_flag = $_POST['replace'];
-  if (file_exists($raw_path)) {
-    $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
-    $unq_file_name = $unique_str . "_" . $filename1;
-    $raw_path = str_replace("$filename1","$unq_file_name","$raw_path",$count);
-  } else {
-    $unq_file_name = $filename1;
-  }
   if (empty($_FILES['file']['name'][0])) {
     if (empty($_POST['filename0'])) {
       echo "missing Annotation file\n";
@@ -139,7 +139,7 @@ public function save_raw_file($wavelength) {
              will be lost.  Please <a href='".$config['base_url']."feedback.php'>contact the 
              programmers</a>.<p>";
          } else {
-             echo $_FILES['file']['name'][1] . "<br/>";
+             echo "moved file " . $_FILES['file']['name'][1] . " to $raw_path<br/>";
 
              //file should be tab separated text file
              if (!preg_match("/\.txt/",$raw_path)) {
@@ -245,7 +245,8 @@ public function save_raw_file($wavelength) {
              //read in Integration Time and check
              if ($line = fgets($reader)) {
                $temp = str_getcsv($line,"\t");
-               if ($temp[0] != "Integration Time (ms)") {
+               if (!preg_match("/Integration/",$temp[0])) {
+                 $error_flag = 1;
                  echo "Error - Found \"$temp[0]\", expected \"Integration Time (ms)\" in Data File<br>\n";
                }
                for ($i=1; $i<=$count_plot; $i++) {
@@ -304,7 +305,7 @@ public function save_raw_file($wavelength) {
          }
          umask(0);
     } else {
-      print "using $metafile1<br>\n";
+      print "using $filename1<br>\n";
     }
   }
   if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
@@ -428,7 +429,7 @@ public function save_raw_file($wavelength) {
                    <input id="exper_uid" type="hidden" name="exper_uid" value="<?php echo $experiment_uid; ?>">
                    <input id="replace" type="hidden" name="replace" value="Yes">
                    <input id="filename0" type="hidden" name="filename0" value="<?php echo $filename0; ?>">
-                   <input id="filename1" type="hidden" name="filename1" value="<?php echo $filename1; ?>">
+                   <input id="filename1" type="hidden" name="filename1" value="<?php echo $unq_file_name; ?>">
                    <input type="submit" value="Yes">
                    </form>
                    <?php
