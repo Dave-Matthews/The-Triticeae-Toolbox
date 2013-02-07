@@ -332,7 +332,7 @@ public function save_raw_file($wavelength) {
       $metafile = "../raw/phenotype/".$metafile0;
       echo "using $metafile<br>\n";
     }
-      $FileType = PHPExcel_IOFactory::identify($raw_path);
+      $FileType = PHPExcel_IOFactory::identify($metafile);
       switch ($FileType) {
         case 'Excel2007':
           break;
