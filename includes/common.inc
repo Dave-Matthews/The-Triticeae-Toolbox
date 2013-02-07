@@ -158,52 +158,42 @@ function showTableOptions($table, $selected="null", $orderby="uid") {
  * This function gets the primary key by querying the database
  * and then selecting the first field name in the database. That name
  * is always the primary key according to our database scheme
- *
  * @param $tablename - the table of which to get the primary key of.
  * @param $pkey - the primary key of the table
  */
 function get_pkey ($tablename) {
-
-	$result = mysql_query("DESC $tablename");
-	$pkey="";
-
-	while($row = mysql_fetch_assoc($result)) {
-		foreach($row as $k=>$v) {
-			if (strtolower($k)=='field') {
-				$pkey=$v;
-			}
-			break;
-		}
-		break;
-	}
-	return $pkey;
+  $result = mysql_query("DESC $tablename") or die("Error in function get_pkey():<br>".mysql_error());
+  $pkey="";
+  while($row = mysql_fetch_assoc($result)) {
+    foreach($row as $k=>$v) {
+      if (strtolower($k)=='field') 
+	$pkey=$v;
+      break;
+    }
+    break;
+  }
+  return $pkey;
 }
 
 /**
  * This function gets the unique name of the table that we have set 
  * a standard to be. It looks at the table creation string and finds
  * the first field with "name" in it. Pretty simple.
- *
  * @param $table - the table of which to search through.
  * @return the unique name field.
- *
  */
 function get_unique_name($table) {
-
-	$q = mysql_query("SHOW CREATE TABLE $table") or die(mysql_error());
-	$row = mysql_fetch_row($q);
-	
-	$parts = explode("\n", $row[1]);
-
-	for($i = 2; $i<count($parts); $i++) {
-
-	  // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
-	  // if(preg_match("/_name/", $parts[$i], $matches)) {
-	  if(preg_match("/name/", $parts[$i], $matches)) {
-			$line = explode("`", $parts[$i]);
-			return $line[1];
-		}
-	}
+  $q = mysql_query("SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>".mysql_error());
+  $row = mysql_fetch_row($q);
+  $parts = explode("\n", $row[1]);
+  for($i = 2; $i<count($parts); $i++) {
+    // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
+    // if(preg_match("/_name/", $parts[$i], $matches)) {
+    if(preg_match("/name/", $parts[$i], $matches)) {
+      $line = explode("`", $parts[$i]);
+      return $line[1];
+    }
+  }
 }
 
 /**
@@ -474,81 +464,63 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
  *
  * @param array $values - this MUST be an associative array containing every key
  *			  and value that the programmer would like to update. 
- * 
  *	  Note: The keys in the $values array MUST have the same name as the field names
  *		in the table.
- *
  * @param $table - the name of the table of which to query. 
- *
- * @param $pkey - this MUST be an associative array who's keys are the primary key's
- *		  column name in the table and who's value is the unique value that
+ * @param $pkey - this MUST be an associative array whose keys are the primary key's
+ *		  column name in the table and whose value is the unique value that
  * 		  defines the particular row in the table to update. 
- *
  * @return TRUE if the query was successful or FALSE otherwise. If FALSE then an 
  * 	   error message is echoed containing the mysql_error(). 
- *
  * Note: The update query utilizes LIMIT 1 forcing the query to update only 1 row.
  */
 function updateTable(array $values, $table, array $pkey) {
-
-	$updateStr = "UPDATE $table SET ";
-	$strs = array();
-	$count = 0;
-
-	// get table fields
-	$cols = getTableColumns($table);
-	
-	// set values if they exist
-	foreach($cols as $column=>$type) {
-
-		// if the column name is in the $values array, then we want to update it
-		if(array_key_exists($column, $values)) {
-		
- 		  if ( (strpos($type, "enum") !== FALSE) && ($values[$column] != "") ) {
-		      // Get allowed values for enum columns.
-		      $allowed = preg_replace("/enum|[\\(\\)']/", "", $type);
- 		      if ( in_array($values[$column], explode(",", $allowed)) === FALSE )
-			echo "<font color=red>Allowed values of $column are $allowed.</font><br><br>";
-		  }
-
-		  if( (strpos($type, "varchar") !== FALSE) || 
-		      (strpos($type, "longtext") !== FALSE) ||
-		      // (strpos($type, "enum") !== FALSE) ||   No. If there's no value, can't set an enum to ''.
-		      ($values[$column] != "")
-		      )
-		    $strs[$count++] = "$column = '" . $values[$column] . "'";
-
-		  elseif ( (strpos($type, "enum") !== FALSE) && ($values[$column] == "") )
-		    $strs[$count++] = "$column = NULL";
-
-		  else    //default 0 for numberic fields with empty values
-		    $strs[$count++] = "$column = 0";	
-		}
-	}
-
-	// deal with primary key
-	$where = "";
-	$first = 0;
-	foreach($pkey as $k=>$v) {
-		if($first == 0)
-			$where .= "$k='$v'";
-		else
-			$where .= " AND $k='$v'";	//multiple keys
-
-		$first++;
-	}
-
-	// put the update string together
-	$updateStr .= implode(",", $strs) . " WHERE $where LIMIT 1";
-
-	// query	
-	if(mysql_query($updateStr)) 
-		return TRUE;
-	else {
-		error(1, mysql_error()."<br>".$updateStr);
-		return FALSE;
-	}
-
+  $updateStr = "UPDATE $table SET ";
+  $strs = array();
+  $count = 0;
+  // get table fields
+  $cols = getTableColumns($table);
+  // set values if they exist
+  foreach($cols as $column=>$type) {
+    // if the column name is in the $values array, then we want to update it
+    if(array_key_exists($column, $values)) {
+      if ( (strpos($type, "enum") !== FALSE) && ($values[$column] != "") ) {
+	// Get allowed values for enum columns.
+	$allowed = preg_replace("/enum|[\\(\\)']/", "", $type);
+	if ( in_array($values[$column], explode(",", $allowed)) === FALSE )
+	  echo "<font color=red>Allowed values of $column are $allowed.</font><br><br>";
+      }
+      if( (strpos($type, "varchar") !== FALSE) || 
+	  (strpos($type, "longtext") !== FALSE) ||
+	  // (strpos($type, "enum") !== FALSE) ||   No. If there's no value, can't set an enum to ''.
+	  ($values[$column] != "")
+	  )
+	$strs[$count++] = "$column = '" . $values[$column] . "'";
+      elseif ( (strpos($type, "enum") !== FALSE) && ($values[$column] == "") )
+	$strs[$count++] = "$column = NULL";
+      else    //default 0 for numeric fields with empty values
+	$strs[$count++] = "$column = 0";	
+    }
+  }
+  // deal with primary key
+  $where = "";
+  $first = 0;
+  foreach($pkey as $k=>$v) {
+    if($first == 0)
+      $where .= "$k='$v'";
+    else
+      $where .= " AND $k='$v'";	//multiple keys
+    $first++;
+  }
+  // put the update string together
+  $updateStr .= implode(",", $strs) . " WHERE $where LIMIT 1";
+  // query	
+  if(mysql_query($updateStr)) 
+    return TRUE;
+  else {
+    error(1, mysql_error()."<br>The query was:<br>".$updateStr."</br>in function updateTable().<p>");
+    return FALSE;
+  }
 }
 
 /**
@@ -696,7 +668,7 @@ function clean_up_temporary($tmpdir) {
  * 
  */
 function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $start="0") {
-	
+
 	//get the primary key of this table
 	$pkey = get_pkey($table);
 
@@ -832,7 +804,7 @@ function showPages($queryString, $page, $current=0, $limit=20) {
 
 	$query = mysql_query("
 			$queryString
-			") or die(mysql_error());
+			") or die(mysql_error() . "<br>Query was:<br>" . $queryString);
 
 	$max = mysql_num_rows($query);
 

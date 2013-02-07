@@ -212,6 +212,8 @@ EOD;
       Add/Edit Markers</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_programs.php">
       Edit/Delete CAP Data Programs</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php">
+      Edit Anything!</a></li>
       </ul>
       <?php endif ?>
 
