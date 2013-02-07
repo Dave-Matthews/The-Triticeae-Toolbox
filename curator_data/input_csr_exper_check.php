@@ -99,7 +99,7 @@ public function save_raw_file($wavelength) {
       echo "missing Raw file\n";
     } else {
       $metafile1 = $_POST['filename1'];
-      $raw_path = "../raw/phenotype".$_POST['filename1'];
+      $raw_path = "../raw/phenotype/".$_POST['filename1'];
     }
   } else {
     $filename1 = $_FILES['file']['name'][1];
