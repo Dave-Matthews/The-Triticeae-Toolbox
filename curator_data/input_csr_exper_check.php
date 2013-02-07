@@ -222,10 +222,10 @@ public function save_raw_file($wavelength) {
                if ($line = fgets($reader)) {
                  $temp = str_getcsv($line,"\t");
                  $size = count($temp);
-                 if (($j == 1) && (!preg_match("/Start/",$temp[0])) {
+                 if (($j == 1) && (!preg_match("/Start/",$temp[0]))) {
                    $error_flag = 1;
                    echo "Error - Found \"$temp[0]\", expected \"Start time\" in Data File<br>\n";
-                 } elseif (($j == 2) && (!preg_match("/Stop/", $temp[0])) {
+                 } elseif (($j == 2) && (!preg_match("/Stop/", $temp[0]))) {
                    $error_flag = 1;
                    echo "Error - Found \"$temp[0]\", expected \"Stop time\" in Data File<br>\n";
                  }
