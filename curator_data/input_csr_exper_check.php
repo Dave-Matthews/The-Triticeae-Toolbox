@@ -102,6 +102,7 @@ public function save_raw_file($wavelength) {
       $raw_path = "../raw/phenotype".$_POST['filename1'];
     }
   } else {
+    $filename1 = $_FILES['file']['name'][1];
     $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
   }
   $experiment_uid = $_POST['exper_uid'];
