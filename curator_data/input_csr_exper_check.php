@@ -113,10 +113,10 @@ public function save_raw_file($wavelength) {
   $replace_flag = $_POST['replace'];
   if (file_exists($raw_path)) {
     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
-    $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][1];
+    $unq_file_name = $unique_str . "_" . $filename1;
     $raw_path = str_replace("$filename1","$unq_file_name","$raw_path",$count);
   } else {
-    $unq_file_name = $_FILES['file']['name'][1];
+    $unq_file_name = $filename1;
   }
   if (empty($_FILES['file']['name'][0])) {
     if (empty($_POST['filename0'])) {
