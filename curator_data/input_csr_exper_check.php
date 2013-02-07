@@ -330,7 +330,7 @@ public function save_raw_file($wavelength) {
       echo "using $metafile<br>\n";
     } else {
       echo "using $metafile0<br>\n";
-      $metafile = $raw_path.$metafile0;
+      $metafile = "../raw/phenotype/".$metafile0;
       echo "using $metafile<br>\n";
     }
       $FileType = PHPExcel_IOFactory::identify($raw_path);
