@@ -18,12 +18,12 @@ ob_end_flush();
 if( ($id = array_search("Update", $_POST)) != NULL) {
   foreach($_POST as $k=>$v)
     $_POST[$k] = addslashes($v);
-  updateTable($_POST, "csr_trial", array("trial_uid"=>$id));
+  updateTable($_POST, "csr_measurement", array("measurement_uid"=>$id));
 }
 
 $searchstring = '';
 if(isset($_REQUEST['search']) && $_REQUEST['search'] != "") {
-  $tablesToSearch = array("csr_trial");
+  $tablesToSearch = array("csr_measurement");
   $found = array();
   $searchstring = $_REQUEST['search'];
   $words = explode(" ", $_REQUEST['search']);
@@ -87,8 +87,8 @@ include($config['root_dir'] . 'theme/footer.php');
  * @return nothing - this function outputs to the screen.
  */
 function editTrialRow($where, $page, $start="0") {
-  $ignore = array("trial_uid");
-  editGeneral("csr_trial", $where, $page, $ignore, "20", $start);
+  $ignore = array("measurement_uid");
+  editGeneral("csr_measurement", $where, $page, $ignore, "20", $start);
 }
 
 /*
