@@ -98,7 +98,7 @@ public function save_raw_file($wavelength) {
     if (empty($_POST['filename1'])) {
       echo "missing Raw file\n";
     } else {
-      $metafile1 = $_POST['filename1'];
+      $filename1 = $_POST['filename1'];
       $raw_path = "../raw/phenotype/".$_POST['filename1'];
     }
   } else {
@@ -113,9 +113,8 @@ public function save_raw_file($wavelength) {
   $replace_flag = $_POST['replace'];
   if (file_exists($raw_path)) {
     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
-    $tmp1 = $_FILES['file']['name'][1];
     $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][1];
-    $raw_path = str_replace("$tmp1","$unq_file_name","$raw_path",$count);
+    $raw_path = str_replace("$filename1","$unq_file_name","$raw_path",$count);
   } else {
     $unq_file_name = $_FILES['file']['name'][1];
   }
@@ -129,7 +128,7 @@ public function save_raw_file($wavelength) {
     $filename0 = $_FILES['file']['name'][0];
   }
 
-  if (empty($_FILES['file']['name'][1]) && ($metafile1 == "")) {
+  if (empty($_FILES['file']['name'][1]) && ($filename1 == "")) {
     error(1, "No File Upoaded");
     print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
   } else {
