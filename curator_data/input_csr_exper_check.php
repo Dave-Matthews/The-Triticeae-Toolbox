@@ -94,7 +94,16 @@ public function save_raw_file($wavelength) {
   $row = loadUser($_SESSION['username']);
   $username=$row['name'];
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
-  $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+  if (empty($_FILES['file']['name'][1])) {
+    if (empty($_POST['filename1'])) {
+      echo "missing Raw file\n";
+    } else {
+      $metafile1 = $_POST['filename1'];
+      $raw_path = "../raw/phenotype".$_POST['filename1'];
+    }
+  } else {
+    $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+  }
   $experiment_uid = $_POST['exper_uid'];
   if (preg_match("/[0-9]/",$experiment_uid)) {
   } else {
@@ -117,16 +126,6 @@ public function save_raw_file($wavelength) {
     }
   } else {
     $filename0 = $_FILES['file']['name'][0];
-  }
-  if (empty($_FILES['file']['name'][1])) {
-    if (empty($_POST['filename1'])) {
-      echo "missing Raw file\n";
-    } else {
-      $metafile1 = $_POST['filename1'];
-      $unq_file_name = $_POST['filename1'];
-    }
-  } else {
-    $filename1 = $_FILES['file']['name'][1];
   }
 
   if (empty($_FILES['file']['name'][1]) && ($metafile1 == "")) {
