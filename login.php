@@ -17,6 +17,10 @@ connect();
 ?>
 <h1>Login/Register</h1>
 <div class="section">
+  <style type="text/css">
+    ul {margin: 3px;}
+  </style>
+
 <?php
 /**
  * Return the registraion form fragment.
@@ -163,15 +167,13 @@ function HTMLLoginForm($msg = "") {
   <ul>
     <li> Selections made during searches are saved from session to session.
   </ul>
-  <b>Breeders Database Participants</b>
+  <b>Participants</b>
   <ul>
     <li>can create their own sets ("panels") of germplasm lines (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>).
     <li>have pre-release access to all shared data.
-    <li>can test-load their data files in the Sandbox database before submitting them to the curator. 
-      For this purpose please register at the <a href=http://malt.pw.usda.gov/t3/sandbox/$crop>Sandbox site</a>.
     <li>will be allowed to add their own private data to the database (<i>soon!</i>).
  </ul>
-  <b>Breeders Database Curators</b>
+  <b>Curators</b>
   <ul>
     <li>can add data to the database.
     <li>can correct or remove any data.
