@@ -87,7 +87,7 @@ include($config['root_dir'] . 'theme/footer.php');
  * @return nothing - this function outputs to the screen.
  */
 function editTrialRow($where, $page, $start="0") {
-  $ignore = array("phenotype_experiment_info_uid","experiment_uid");
+  $ignore = array("phenotype_experiment_info_uid");
   editGeneral("phenotype_experiment_info", $where, $page, $ignore, "20", $start);
 }
 
