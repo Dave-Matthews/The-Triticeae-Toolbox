@@ -51,7 +51,7 @@ connect();
 
 <div style=" text-align: left; text-indent: 0px; padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px;">
 
-  <table width="99%" border="none" cellpadding="1" cellspacing="1" style="background-color: #ffffff;">
+  <table width="99%" cellpadding="1" cellspacing="1" style="background-color: #ffffff; border: none;">
     <thead>
       <th>Topic
       <th>Link
