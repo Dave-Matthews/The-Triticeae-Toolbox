@@ -96,7 +96,7 @@ public function save_raw_file($wavelength) {
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
   if (empty($_FILES['file']['name'][1])) {
     if (empty($_POST['filename1'])) {
-      echo "missing Raw file\n";
+      die("missing Raw file\n");
     } else {
       $filename1 = $_POST['filename1'];
       $raw_path = "../raw/phenotype/".$_POST['filename1'];
@@ -110,6 +110,8 @@ public function save_raw_file($wavelength) {
       $unq_file_name = $unique_str . "_" . $filename1;
       $raw_path = str_replace("$filename1","$unq_file_name","$raw_path",$count);
       /* echo "renaming file to $raw_path<br>\n";*/
+    } else {
+      $unq_file_name = $filename1;
     } 
   }
   $experiment_uid = $_POST['exper_uid'];
