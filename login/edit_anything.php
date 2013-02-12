@@ -41,23 +41,6 @@ if( ($id = array_search("Update", $_POST)) != NULL) {
   updateTable($_POST, $table, array($pkey=>$id));
   // updateTable() is in includes/common.inc.
 }
-// Deleting a trait?
-elseif (!empty($_POST['Delete'])) {
-  $id = ($_POST['Delete']);
-  $name = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $id");
-  echo "Attempting to delete Trait id = $id, <b>$name</b>...<p>";
-  $sql = "delete from phenotypes where phenotype_uid = $id";
-  $res = mysql_query($sql);
-  $err = mysql_error();
-  if (!empty($err)) {
-    if (strpos($err, "a foreign key constraint fails"))
-      echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this program. The error message is:<br>$err";
-    else
-      echo "<font color=red><b>Can't delete.</b></font> The error message is:<br>$err";
-  }
-  else
-    echo "Success.  Trait <b>$name</b> deleted.<p>";
-}
 
 // Search for desired records.
 if(isset($_REQUEST['table']) && $_REQUEST['table'] != "") 
@@ -97,7 +80,7 @@ if(isset($_GET['start'])) {
   changing one record at a time, so how much trouble can you get into?
   <p>You must know the name of the MySQL database table you want to edit.
     Some tables that seem to be working: 
-    <br>phenotype_category, units, mapset, ...
+    <br>phenotype_category, units, mapset, phenotype_experiment_info ...
     <form action="<?php echo $config['base_url']; ?>login/edit_anything.php" method="get">
       <p>Which table do you wish to edit?
 	<input type="text" name="table" size="20"> 
@@ -106,7 +89,17 @@ if(isset($_GET['start'])) {
 <?php 
 			  }
      else {
+       // A table has been chosen for editing.  Sanitize to avoid disasters.
        $table = ($_REQUEST['table']);
+       $forbidden = array('users','user_types','settings','session_variables','input_file_log');
+       if (in_array($table, $forbidden)) {
+	 echo "Table <b>$table</b> can only be edited by an Administrator.<br>";
+	 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");	 
+       }
+       if (strpos($table, ".")) {
+	 echo "<b>$table</b>: Table name may not contain a \".\" Only this database can be edited.<br>";
+	 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");	 
+       }
        echo "Editing table <b>'$table'</b>.  ";
        $here = $_SERVER['PHP_SELF'];
        echo "<input type=button value='Reselect' onClick=\"window.location='$here'\">";
