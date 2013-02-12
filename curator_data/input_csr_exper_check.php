@@ -419,7 +419,7 @@ public function save_raw_file($wavelength) {
                //check for unique record
                //multiple raw files are allowed if they use a different time
 
-               $sql = "select measurement_uid from csr_measurement where experiment_uid = $experiment_uid and spect_sys_uid  = $spect_sys_uid and measure_date = str_to_date('$value[4]','%m/%d/%Y)";
+               $sql = "select measurement_uid from csr_measurement where experiment_uid = $experiment_uid and spect_sys_uid  = $spect_sys_uid and measure_date = str_to_date('$value[4]','%m/%d/%Y')";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                $row = mysqli_fetch_array($res);
                if (mysqli_num_rows($res) == 0) {
