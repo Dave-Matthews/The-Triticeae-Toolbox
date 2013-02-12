@@ -183,15 +183,20 @@ function get_pkey ($tablename) {
  * @return the unique name field.
  */
 function get_unique_name($table) {
-  $q = mysql_query("SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>".mysql_error());
-  $row = mysql_fetch_row($q);
-  $parts = explode("\n", $row[1]);
-  for($i = 2; $i<count($parts); $i++) {
-    // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
-    // if(preg_match("/_name/", $parts[$i], $matches)) {
-    if(preg_match("/name/", $parts[$i], $matches)) {
-      $line = explode("`", $parts[$i]);
-      return $line[1];
+  // dem feb13: ugly special case:
+  if ($table == "experiments")
+    return "trial_code";
+  else {
+    $q = mysql_query("SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>".mysql_error());
+    $row = mysql_fetch_row($q);
+    $parts = explode("\n", $row[1]);
+    for($i = 2; $i<count($parts); $i++) {
+      // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
+      // if(preg_match("/_name/", $parts[$i], $matches)) {
+      if(preg_match("/name/", $parts[$i], $matches)) {
+	$line = explode("`", $parts[$i]);
+	return $line[1];
+      }
     }
   }
 }
