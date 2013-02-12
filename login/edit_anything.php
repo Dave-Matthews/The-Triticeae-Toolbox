@@ -10,64 +10,10 @@ include($config['root_dir'] . 'theme/admin_header.php');
 connect();
 loginTest();
 $row = loadUser($_SESSION['username']);
-
 ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
-
-/*
- * Session variable stores duplicate records, do we wish to edit duplicates?
- */
-if(isset($_SESSION['DupTraitRecords'])) {
-	sort($_SESSION['DupTraitRecords']);
-	$drds = $_SESSION['DupTraitRecords'];
-}
-if(count($drds) == 0) {
-	session_unregister("DupTraitRecords");
-	unset($drds);
-}
-
-if (!empty($_REQUEST['table'])) {
-  $table = $_REQUEST['table'];
-  $pkey = get_pkey($table);
-}
-
-// Has an update been submitted?
-if( ($id = array_search("Update", $_POST)) != NULL) {
-  foreach($_POST as $k=>$v)
-    $_POST[$k] = addslashes($v);
-  /* $test = array($pkey=>$id); */
-  /* echo "The array of primary keys is:"; print_h($test); */
-  updateTable($_POST, $table, array($pkey=>$id));
-  // updateTable() is in includes/common.inc.
-}
-
-// Search for desired records.
-if(isset($_REQUEST['table']) && $_REQUEST['table'] != "") 
-  $tablesToSearch = array($_REQUEST['table']);
-$searchstring = '';
-if(isset($_REQUEST['search']) && $_REQUEST['search'] != "") {
-  $found = array();
-  $searchstring = $_REQUEST['search'];
-  $words = explode(" ", $_REQUEST['search']);
-  foreach($words as $q) 
-    $found = array_merge($found, desperateTermSearch($tablesToSearch, $q));
-  $drds = array();  // An array of uids of the records found.
-  if(count($found) > 0) {		//if we found results..
-    for($i=0; $i<count($found); $i++) {
-      $parts = explode("@@", $found[$i]);
-      array_push($drds, $parts[2]);
-    }
-  }
-}
-
-$start = 0;
-if(isset($_GET['start'])) {
-	$start = $_GET['start'];
-}
 ?>
-
-<!-- entry point? -->
 
 <h2>Edit Anything</h2>
 <div class="boxContent">
@@ -88,22 +34,57 @@ if(isset($_GET['start'])) {
     </form>
 <?php 
 			  }
-     else {
-       // A table has been chosen for editing.  Sanitize to avoid disasters.
-       $table = ($_REQUEST['table']);
-       $forbidden = array('users','user_types','settings','session_variables','input_file_log');
-       if (in_array($table, $forbidden)) {
-	 echo "Table <b>$table</b> can only be edited by an Administrator.<br>";
-	 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");	 
-       }
-       if (strpos($table, ".")) {
-	 echo "<b>$table</b>: Table name may not contain a \".\" Only this database can be edited.<br>";
-	 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");	 
-       }
-       echo "Editing table <b>'$table'</b>.  ";
-       $here = $_SERVER['PHP_SELF'];
-       echo "<input type=button value='Reselect' onClick=\"window.location='$here'\">";
-       $pkey = get_pkey($table);
+else {
+  // A table has been chosen for editing.  Sanitize to avoid disasters.
+  $table = ($_REQUEST['table']);
+  $forbidden = array('users','user_types','settings','session_variables','input_file_log');
+  if (in_array($table, $forbidden)) {
+    echo "Table <b>$table</b> can only be edited by an Administrator.<p>";
+    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");	 
+  }
+  if (strpos($table, ".")) {
+    echo "<b>$table</b>: Table name may not contain a \".\" Only this database can be edited.<p>";
+    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");	 
+  }
+  $res = mysql_query("show tables like '$table'");
+  if (mysql_num_rows($res) == 0) {
+    echo "Table <b>$table</b> does not exist.<p>";
+    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+}
+  echo "Editing table <b>'$table'</b>.  ";
+  $here = $_SERVER['PHP_SELF'];
+  echo "<input type=button value='Reselect' onClick=\"window.location='$here'\"><p>";
+  $pkey = get_pkey($table);
+
+  // Has an update been submitted?
+  if( ($id = array_search("Update", $_POST)) != NULL) {
+    foreach($_POST as $k=>$v)
+      $_POST[$k] = addslashes($v);
+    updateTable($_POST, $table, array($pkey=>$id));
+    // updateTable() is in includes/common.inc.
+  }
+
+  // Search for desired records.
+  $tablesToSearch = array($table);
+  $searchstring = '';
+  if(isset($_REQUEST['search']) && $_REQUEST['search'] != "") {
+    $found = array();
+    $searchstring = $_REQUEST['search'];
+    $words = explode(" ", $_REQUEST['search']);
+    foreach($words as $q) 
+      $found = array_merge($found, desperateTermSearch($tablesToSearch, $q));
+    $drds = array();  // An array of uids of the records found.
+    if(count($found) > 0) {		//if we found results..
+      for($i=0; $i<count($found); $i++) {
+	$parts = explode("@@", $found[$i]);
+	array_push($drds, $parts[2]);
+      }
+    }
+  }
+
+  $start = 0;
+  if(isset($_GET['start'])) 
+    $start = $_GET['start'];
 ?>
     <form action="<?php echo $here ?>" method="get">
     <p>Show only items containing these words:<br>
@@ -112,18 +93,17 @@ if(isset($_GET['start'])) {
 	<input type="submit" value="Search" /></p>
     </form>
 <?php
-       // attaching the query string to the callback URL.
-       $self = $_SERVER['PHP_SELF'] . "?" . $_SERVER['QUERY_STRING'];
-       if(isset($drds) && count($drds) > 0) {
-	 $self .= isset($_GET['search']) ? "" : "search=". $_REQUEST['search'];
-	 editSelectRows($table, $drds, $self, $start);  // includes/edit_anything.inc
-       }
-       else if(!isset($drds))
-	 editAllRows($table, $self, $start);
-       else
-	 echo "<p>Search returned no results</p>";
-     }
-
+  // attaching the query string to the callback URL.
+  $self = $_SERVER['PHP_SELF'] . "?" . $_SERVER['QUERY_STRING'];
+  if(isset($drds) && count($drds) > 0) {
+    $self .= isset($_GET['search']) ? "" : "search=". $_REQUEST['search'];
+    editSelectRows($table, $drds, $self, $start); 
+  }
+  else if(!isset($drds))
+    editAllRows($table, $self, $start);
+  else
+    echo "<p>Search returned no results</p>";
+}
 echo "</div></div>";
 include($config['root_dir'] . 'theme/footer.php');
 
