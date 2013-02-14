@@ -467,7 +467,6 @@ function DispMarkers (mapuid) {
  */
 function DispPhenoSel(value, middle, phenotype_uid) {
   	var req = getXMLHttpRequest();
-
 	var column = 1;
 	if(middle == "Phenotype")
 	    { column = 2; }
@@ -518,6 +517,35 @@ function DispPhenoSel(value, middle, phenotype_uid) {
   	};
   	req.open("GET", "includes/ajaxlib.php"+qs, true);
   	req.send(null);
+}
+
+/*
+ * Modification of DispPhenoSel() for Select Lines by Properties.
+ */
+function DispPropSel(value, middle, property_values_uid) {
+    var req = getXMLHttpRequest();
+    if(!req) 
+	document.getElementById('phenotypeSelTab').innerHTML = "This function requires Ajax.";
+    var column = 1;
+    if(middle == "Property")
+	column = 2; 
+    else if(middle == "PropValue")
+	column = 3; 
+    else 
+	document.getElementById("phenotypeSelTab").rows[1].cells[2].innerHTML = "";
+    // testing
+    //document.getElementById('phenotypeSelTab').rows[2].cells[0].innerHTML = "var middle = "+middle;
+    var resp = document.getElementById("phenotypeSelTab").rows[1].cells[column];
+    var qs = "?func=Disp"+middle+"Sel&id="+value;
+    // if(middle == "PropValue") 
+    // 	qs = qs+"&propvalid="+property_values_uid; 
+    req.onreadystatechange = function() {
+	if(req.readyState == 4) 
+	    if(middle != "PropValue") 
+		resp.innerHTML = req.responseText;
+    };
+    req.open("GET", "includes/ajaxlib.php"+qs, true);
+    req.send(null);
 }
 
 /**
