@@ -1149,6 +1149,68 @@ and experiments.experiment_uid IN ($trialsSelected)
 	}
 }
 
+// Modified DispCategorySel() for Select Lines by Properties.
+function DispPropCategorySel($arr) {
+  if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
+    echo "Please select a category.";
+    return;
+  }
+  extract($arr);
+  $query = mysql_query("SELECT properties_uid, name 
+FROM properties 
+WHERE category_uid = $id 
+order by name") or die(mysql_error());
+  // Display in selection box.
+  if(mysql_num_rows($query) > 0) {
+    echo "<select name='property' size=5 
+onfocus=\"DispPropSel(this.value, 'Property')\" 
+onchange=\"DispPropSel(this.value, 'Property')\">";
+    while($row = mysql_fetch_row($query)) 
+      echo "<option value=$row[0]>$row[1]</option>";
+    echo "</select>";
+  }
+}
+
+// Modified DispTrialSel() for Select Lines by Properties.
+function DispPropertySel($arr) {
+  if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
+    echo "Please select a property.";
+    return;
+  }
+  extract($arr);
+  $query = mysql_query("SELECT property_values_uid, value 
+FROM property_values 
+WHERE property_uid = $id 
+order by value") or die(mysql_error());
+  if(mysql_num_rows($query) > 0) {
+    echo "<select name='property' size=3 
+onfocus=\"DispPropSel(this.value, 'PropValue')\" 
+onchange=\"DispPropSel(this.value, 'PropValue')\">";
+    while($row = mysql_fetch_row($query)) 
+      echo "<option value=$row[0]>$row[1]</option>";
+    echo "</select>";
+  }
+}
+
+// Modified DispPhenotypeSel() for Select Lines by Properties.
+function DispPropValueSel($arr) {
+  if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
+    echo "Please select a value.";
+    return;
+  }
+  extract($arr);
+  echo "<td>id = $id";
+  /* $query = mysql_query("SELECT property_values_uid, value FROM property_values WHERE property_uid = $id order by value") or die(mysql_error()); */
+  /* if(mysql_num_rows($query) > 0) { */
+  /*   echo "<select name='property' size=4 onfocus=\"DispPropSel(this.value, 'val')\" onchange=\"DispPropSel(this.value, 'val')\">"; */
+  /*   while($row = mysql_fetch_row($query))  */
+  /*     echo "<option value=$row[0]>$row[1]</option>"; */
+  /*   echo "</select>"; */
+  /* } */
+  /* else  */
+  /*   echo "<p style='color: red;'>There are no values available for this property.</p>"; */
+}
+
 /**
  * store or retrieve session variables
  */
