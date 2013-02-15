@@ -50,7 +50,7 @@ class Instrument {
 <br>
 <form action="curator_data/input_csr_spect_check.php" method="post" enctype="multipart/form-data">
   <table>
-    <tr><td><strong>CSR System Description File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3_SpectrometerSystem.xlsx">Example File</a></tr>
+    <tr><td><strong>CSR System Description File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3_SpectrometerSystem.xlsx">Example File</a><td><font color=red>Updated 02/15/2013</font></tr>
   </table>
   <p><input type="submit" value="Upload" /></p>
 </form>
