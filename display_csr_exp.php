@@ -8,11 +8,11 @@ connect();
   global $config;
   include($config['root_dir'] . 'theme/admin_header.php');
   if (isset($_GET['uid'])) {
-    $experiment_uid = $_GET['uid'];
+    $uid = $_GET['uid'];
   } else {
     die("Error - no experiment found<br>\n");
   }
-  $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
+  $sql = "select trial_code from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = $uid";
   $res = mysql_query($sql) or die (mysql_error());
   if ($row = mysql_fetch_assoc($res)) {
     $trial_code = $row["trial_code"];
@@ -23,29 +23,29 @@ connect();
   $sql = "select * from csr_measurement_rd";
   $res = mysql_query($sql) or die (mysql_error());
   while ($row = mysql_fetch_assoc($res)) {
-    $uid = $row["radiation_dir_uid"];
+    $rd_uid = $row["radiation_dir_uid"];
     $direction = $row["direction"];
-    $dir_list[$uid] = $direction;
+    $dir_list[$rd_uid] = $direction;
   }
 
   $sql = "select * from csr_system";
   $res = mysql_query($sql) or die (mysql_error());
   while ($row = mysql_fetch_assoc($res)) {
-    $uid = $row["system_uid"];
+    $sy_uid = $row["system_uid"];
     $name = $row["system_name"];
-    $spect_list[$uid] = $name;
+    $spect_list[$sy_uid] = $name;
   }
 
   $count = 0;
-  $sql = "select * from csr_measurement where experiment_uid =$experiment_uid";
+  $sql = "select * from csr_measurement where measurement_uid = $uid";
   $res = mysql_query($sql) or die (mysql_error());
   echo "<h2>CSR Annotation for $trial_code</h2>\n";
   echo "<table>";
-  echo "<tr><td>Upwelling/Downwelling<td>Measurement date<td>Growth stage<td>Start time<td>Stop time<td>Integration time<td>weather<td>Spect Sys<td>Number of<br>measurements<td>Height from<br>canopy<td>Incident<br>adjustment<td>Commments";
   while ($row = mysql_fetch_assoc($res)) {
     $rad_dir_uid = $row["radiation_dir_uid"];
     $measure_date = $row["measure_date"];
     $growth_stage = $row["growth_stage"];
+    $growth_stage_name = $row["growth_stage_name"];
     $start_time = $row["start_time"];
     $end_time = $row["end_time"];
     $integration_time = $row["integration_time"];
@@ -58,7 +58,19 @@ connect();
 
     $spect_sys = $spect_list[$spect_sys_uid];
     $rad_dir = $dir_list[$rad_dir_uid];
-    echo "<tr><td>$rad_dir<td>$measure_date<td>$growth_stage<td>$start_time<td>$end_time<td>$integration_time<td>$weather<td>$spect_sys<td>$num_measurements<td>$height_from_canopy<td>$incident_adj<td>$comments\n";
+    echo "<tr><td>Upwelling/Downwelling<td>$rad_dir";
+    echo "<tr><td>Measurement date<td>$measure_date";
+    echo "<tr><td>Growth stage<td><a href=http://plantontology.org/amigo/go.cgi?view=details&search_constraint=terms&query=$growth_stage target=_blank>$growth_stage</a>";
+    echo "<tr><td>Growth stage name<td>$growth_stage_name";
+    echo "<tr><td>Start time<td>$start_time";
+    echo "<tr><td>Stop time<td>$end_time";
+    echo "<tr><td>Integration time<td>$integration_time";
+    echo "<tr><td>Weather<td>$weather";
+    echo "<tr><td>Spect Sys<td>$spect_sys";
+    echo "<tr><td>Number of<br>measurements<td>$num_measurements";
+    echo "<tr><td>Height from<br>canopy<td>$height_from_canopy";
+    echo "<tr><td>Incident<br>adjustment<td>$incident_adj";
+    echo "<tr><td>Comments<td>$comments\n";
     $count++;
   }
   echo "</table>";
