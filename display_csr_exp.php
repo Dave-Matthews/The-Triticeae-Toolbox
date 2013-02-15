@@ -69,7 +69,7 @@ connect();
     echo "<tr><td>Spect Sys<td>$spect_sys";
     echo "<tr><td>Number of<br>measurements<td>$num_measurements";
     echo "<tr><td>Height from<br>canopy<td>$height_from_canopy";
-    echo "<tr><td>Incident<td>adjustment<td>$incident_adj";
+    echo "<tr><td>Incident<br>adjustment<td>$incident_adj";
     echo "<tr><td>Comments<td>$comments\n";
     $count++;
   }
