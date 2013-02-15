@@ -459,8 +459,8 @@ while ($row = mysql_fetch_assoc($res)) {
   echo "<td><a href=$tmp2>Open File</a>";
 
   $sql="SELECT * from csr_system where system_uid = $sys_uid";
-  $res = mysql_query($sql) or die(mysql_error(). $sql);
-  if ($rawrow = mysql_fetch_assoc($res)) {
+  $res2 = mysql_query($sql) or die(mysql_error(). $sql);
+  if ($rawrow = mysql_fetch_assoc($res2)) {
     $trial="display_csr_spe.php?function=display&uid=$sys_uid";
     echo "<td><a href=".$config['base_url'].$trial.">View</a>";
   }
