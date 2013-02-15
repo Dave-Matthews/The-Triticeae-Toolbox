@@ -8,11 +8,11 @@ connect();
   global $config;
   include($config['root_dir'] . 'theme/admin_header.php');
   if (isset($_GET['uid'])) {
-    $experiment_uid = $_GET['uid'];
+    $uid = $_GET['uid'];
   } else {
     die("Error - no experiment found<br>\n");
   }
-  $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
+  $sql = "select trial_code from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = $uid";
   $res = mysql_query($sql) or die (mysql_error());
   if ($row = mysql_fetch_assoc($res)) {
     $trial_code = $row["trial_code"];
@@ -37,7 +37,7 @@ connect();
   }
 
   $count = 0;
-  $sql = "select * from csr_measurement where experiment_uid =$experiment_uid";
+  $sql = "select * from csr_measurement where measurement_uid = $uid";
   $res = mysql_query($sql) or die (mysql_error());
   echo "<h2>CSR Annotation for $trial_code</h2>\n";
   echo "<table>";
@@ -69,7 +69,7 @@ connect();
     echo "<tr><td>Spect Sys<td>$spect_sys";
     echo "<tr><td>Number of<br>measurements<td>$num_measurements";
     echo "<tr><td>Height from<br>canopy<td>$height_from_canopy";
-    echo "<tr><td>Incident<tr>adjustment<td>$incident_adj";
+    echo "<tr><td>Incident<td>adjustment<td>$incident_adj";
     echo "<tr><td>Comments<tr>$comments\n";
     $count++;
   }

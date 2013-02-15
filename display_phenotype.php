@@ -442,7 +442,7 @@ if ($rawrow = mysql_fetch_assoc($rawres)) {
 if (empty($fieldbook)) echo "none";  
 
 $found = 0;
-$sql="SELECT measure_date, spect_sys_uid, raw_file_name from csr_measurement where experiment_uid = $experiment_uid";
+$sql="SELECT measure_date, spect_sys_uid, raw_file_name, measuremtn_uid from csr_measurement where experiment_uid = $experiment_uid";
 $res = mysql_query($sql) or die(mysql_error());
 while ($row = mysql_fetch_assoc($res)) {
   if ($found == 0) {
@@ -452,7 +452,8 @@ while ($row = mysql_fetch_assoc($res)) {
   $date = $row["measure_date"];
   $sys_uid = $row["spect_sys_uid"];
   $raw_file = $row["raw_file_name"];
-  $trial="display_csr_exp.php?function=display&uid=$experiment_uid";
+  $measurement_uid = $row["measurement_uid"];
+  $trial="display_csr_exp.php?function=display&uid=$measurement_uid";
   $tmp2 = $config['base_url'] . "raw/phenotype/" . $raw_file;
   echo "<tr><td>$date";
   echo "<td><a href=".$config['base_url'].$trial.">View</a>";
