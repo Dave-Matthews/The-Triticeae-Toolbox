@@ -23,17 +23,17 @@ connect();
   $sql = "select * from csr_measurement_rd";
   $res = mysql_query($sql) or die (mysql_error());
   while ($row = mysql_fetch_assoc($res)) {
-    $uid = $row["radiation_dir_uid"];
+    $rd_uid = $row["radiation_dir_uid"];
     $direction = $row["direction"];
-    $dir_list[$uid] = $direction;
+    $dir_list[$rd_uid] = $direction;
   }
 
   $sql = "select * from csr_system";
   $res = mysql_query($sql) or die (mysql_error());
   while ($row = mysql_fetch_assoc($res)) {
-    $uid = $row["system_uid"];
+    $sy_uid = $row["system_uid"];
     $name = $row["system_name"];
-    $spect_list[$uid] = $name;
+    $spect_list[$sy_uid] = $name;
   }
 
   $count = 0;
@@ -60,7 +60,7 @@ connect();
     $rad_dir = $dir_list[$rad_dir_uid];
     echo "<tr><td>Upwelling/Downwelling<td>$rad_dir";
     echo "<tr><td>Measurement date<td>$measure_date";
-    echo "<tr><td>Growth stage<td><a href=http://plantontology.org/amigo/go.cgi?view=details&search_constraint=terms&query=$growth_stage>$growth_stage</a>";
+    echo "<tr><td>Growth stage<td><a href=http://plantontology.org/amigo/go.cgi?view=details&search_constraint=terms&query=$growth_stage target=_blank>$growth_stage</a>";
     echo "<tr><td>Growth stage name<td>$growth_stage_name";
     echo "<tr><td>Start time<td>$start_time";
     echo "<tr><td>Stop time<td>$end_time";
@@ -69,8 +69,8 @@ connect();
     echo "<tr><td>Spect Sys<td>$spect_sys";
     echo "<tr><td>Number of<br>measurements<td>$num_measurements";
     echo "<tr><td>Height from<br>canopy<td>$height_from_canopy";
-    echo "<tr><td>Incident<td>adjustment<td>$incident_adj";
-    echo "<tr><td>Comments<tr>$comments\n";
+    echo "<tr><td>Incident<br>adjustment<td>$incident_adj";
+    echo "<tr><td>Comments<td>$comments\n";
     $count++;
   }
   echo "</table>";
