@@ -488,11 +488,14 @@ private function typeExperimentCheck()
 		       if (($check ==0) || ($check ==1)) {
 			 for ($j=0;$j<$pheno_num;$j++) {
 			   $pheno_uid =$phenoids[$j];
-			   $phenotype_data = $current[$offset+$j];
+			   // Remove some invisible characters, esp. " ", chr(32).
+			   $phenotype_data = trim($current[$offset+$j]);
 			   //put in check for SAS value for NULL
-			   // check datatype, if continuous or discrete it must be numeric
-			   if ((!is_null($phenotype_data))&&($phenotype_data!=".")) {
-			     //if ((($datatype[$j]=='continuous')||($datatype[$j]=='discrete'))&&(!is_numeric($phenotype_data))) {
+			   // Apparently PHP's trim(chr(32)) == chr(0), not NULL.  Damn.
+			   /* if ((!is_null($phenotype_data))&&($phenotype_data!=".")) { */
+			   /* if ((!is_null($phenotype_data))&&($phenotype_data!=".")&&(ord($phenotype_data)!=0)) { */
+			   if ((!is_null($phenotype_data)) && ($phenotype_data!=".") && ($phenotype_data!="")) {
+			     // Check that the value is numeric if the schema says it must be.
 			     $dt = $datatypes[$j];
 			     if ( (!is_numeric($phenotype_data)) AND ($dt != "string") AND ($dt != "text") ) {
 			       echo "<font color=red><b>Error:</b></font> Data not numeric. 
