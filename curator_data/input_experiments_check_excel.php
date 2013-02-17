@@ -151,13 +151,15 @@ private function typeExperimentCheck()
 	       if ($means['cells'][3][1] == "*Breeding Program Code")
 		 $breeding_program_name = $means['cells'][3][2];
 	       else {
-		 echo "Fatal Error: Row 3 of the spreadsheet must be \"*Breeding Program Code\".<p>";
+		 $actual = $means['cells'][3][1];
+		 echo "<b>Error</b>: Row 3 of the spreadsheet must be \"*Breeding Program Code\"<br>";
+		 echo "instead of \"$actual\".<p>";
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	       }
 	       if ($means['cells'][4][1] == "*Trial Code")
 		 $trial_code = $means['cells'][4][2];
 	       else {
-		 echo "Fatal Error: Row 4 of the spreadsheet must be \"*Trial Code\".<p>";
+		 echo "<b>Error</b>: Row 4 of the spreadsheet must be \"*Trial Code\".<p>";
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	       }
 	       /*
@@ -169,10 +171,10 @@ private function typeExperimentCheck()
 		 $experiment = mysql_fetch_assoc($res);
 		 $experiment_uid = $experiment['id'];
 	       } elseif (0 == mysql_num_rows($res)) {
-		 echo "Fatal Error: experiment ".$trial_code. " does not exist <br/><br/>";
+		 echo "<b>Error</b>: experiment ".$trial_code. " does not exist <br/><br/>";
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	       } else {
-		 echo "Fatal Error: experiment ".$trial_code." matches multiple experiments-must be unique <br/><br/>" ;
+		 echo "<b>Error</b>: experiment ".$trial_code." matches multiple experiments-must be unique <br/><br/>" ;
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	       } // end if
 
@@ -287,8 +289,8 @@ private function typeExperimentCheck()
 		   } // end of if ($BeginLinesInput === FALSE), finished collecting trial statistics
 		   else {
 		     // Get required columns
-		     $line_name = ForceValue($current[$COL_LINENAME], "Fatal Error: missing Line Name at row " . $i);
-		     $check = ForceValue($current[$COL_CHECK], "Fatal Error: missing Check value at row " . $i);
+		     $line_name = ForceValue($current[$COL_LINENAME], "<b>Error</b>: missing Line Name at row " . $i);
+		     $check = ForceValue($current[$COL_CHECK], "<b>Error</b>: missing Check value at row " . $i);
 		     $sql = "select line_record_uid as id from line_records where line_record_name  = '$line_name'";
 		     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		     if (mysql_numrows($res) > 0) {
@@ -365,7 +367,7 @@ private function typeExperimentCheck()
 			 $row = mysql_fetch_assoc($res);
 			 $BPcode_uid = $row['id'];
 		       } else {
-			 echo "Fatal Error: CAPbreeding program  does not exist at row " . $i . "<br/><br/>";
+			 echo "<b>Error</b>: CAPbreeding program  does not exist at row " . $i . "<br/><br/>";
 			 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		       }
 		       $sql = "SELECT de.datasets_experiments_uid as id
@@ -418,7 +420,7 @@ private function typeExperimentCheck()
 		       /* 	 } else { */
 		       /* 	   $nr  = mysql_num_rows($res); */
 		       /* 	   echo "numrows = $nr<p>"; */
-		       /* 	   die ("Fatal Error: problem with dataset \"".$ds_name."\""); */
+		       /* 	   die ("<b>Error</b>: problem with dataset \"".$ds_name."\""); */
 		       /* 	 } */
 		       /* } */
 
@@ -740,8 +742,8 @@ private function typeExperimentCheck()
        } // end of if ($BeginLinesInput === FALSE), finished collecting trial statistics
        else {
        // Get required columns
-       $line_name = ForceValue($current[$COL_LINENAME], "Fatal Error: Missing line name at row " . $i);
-       $check =	ForceValue($current[$COL_CHECK], "Fatal Error: Missing checkvalue at row " . $i);
+       $line_name = ForceValue($current[$COL_LINENAME], "<b>Error</b>: Missing line name at row " . $i);
+       $check =	ForceValue($current[$COL_CHECK], "<b>Error</b>: Missing checkvalue at row " . $i);
 
        //Store experiment_uids for this file
        if (!in_array($experiment_uid,$experiment_uids)) {
@@ -844,8 +846,8 @@ private function typeExperimentCheck()
 	   } else {
 	     $nr  = mysql_num_rows($res);
 	     echo "numrows = $nr<p>";
-	     die ("Fatal Error: problem with dataset \"".$ds_name."\"");
-	     /* die ("Fatal Error: dataset ".$ds_uid." does not exist at row " . $i); */
+	     die ("<b>Error</b>: problem with dataset \"".$ds_name."\"");
+	     /* die ("<b>Error</b>: dataset ".$ds_uid." does not exist at row " . $i); */
 	   }
 	 }
 	 if (DEBUG>1) {
