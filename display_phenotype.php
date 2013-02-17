@@ -442,25 +442,26 @@ if ($rawrow = mysql_fetch_assoc($rawres)) {
 if (empty($fieldbook)) echo "none";  
 
 $found = 0;
-$sql="SELECT measure_date, spect_sys_uid, raw_file_name from csr_measurement where experiment_uid = $experiment_uid";
+$sql="SELECT measure_date, spect_sys_uid, raw_file_name, measurement_uid from csr_measurement where experiment_uid = $experiment_uid";
 $res = mysql_query($sql) or die(mysql_error());
 while ($row = mysql_fetch_assoc($res)) {
   if ($found == 0) {
-    echo "<table><tr><td>Date<td>CSR Annotation<td>CSR Data<td>System\n";
+    echo "<table><tr><td>Date<td>Spect System<td>CSR Annotation<td>CSR Data<td>System\n";
     $found = 1;
   }
   $date = $row["measure_date"];
   $sys_uid = $row["spect_sys_uid"];
   $raw_file = $row["raw_file_name"];
-  $trial="display_csr_exp.php?function=display&uid=$experiment_uid";
+  $measurement_uid = $row["measurement_uid"];
+  $trial="display_csr_exp.php?function=display&uid=$measurement_uid";
   $tmp2 = $config['base_url'] . "raw/phenotype/" . $raw_file;
-  echo "<tr><td>$date";
+  echo "<tr><td>$date<td>$sys_uid";
   echo "<td><a href=".$config['base_url'].$trial.">View</a>";
   echo "<td><a href=$tmp2>Open File</a>";
 
   $sql="SELECT * from csr_system where system_uid = $sys_uid";
-  $res = mysql_query($sql) or die(mysql_error(). $sql);
-  if ($rawrow = mysql_fetch_assoc($res)) {
+  $res2 = mysql_query($sql) or die(mysql_error(). $sql);
+  if ($rawrow = mysql_fetch_assoc($res2)) {
     $trial="display_csr_spe.php?function=display&uid=$sys_uid";
     echo "<td><a href=".$config['base_url'].$trial.">View</a>";
   }
