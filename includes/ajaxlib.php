@@ -1180,8 +1180,7 @@ function DispPropertySel($arr) {
   extract($arr);
   $query = mysql_query("SELECT property_values_uid, value 
 FROM property_values 
-WHERE property_uid = $id 
-order by value") or die(mysql_error());
+WHERE property_uid = $id") or die(mysql_error());
   if(mysql_num_rows($query) > 0) {
     echo "<select name='property' size=3 
 onfocus=\"DispPropSel(this.value, 'PropValue')\" 
