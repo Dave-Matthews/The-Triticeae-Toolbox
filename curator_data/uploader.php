@@ -93,7 +93,7 @@ ob_end_flush();
 					foreach($_POST as $k=>$v) echo "\n\t<input type=\"hidden\" name=\"$k\" value=\"$v\" />";
 				}
     			print "<input type=\"Submit\" value=\"Accept\">";
-    			print "<input type=\"Button\" value=\"Not Accept\" onClick=\"history.go(-1); return;\">";
+    			print "<input type=\"Button\" value=\"Cancel\" onClick=\"history.go(-1); return;\">";
     			print "</form>";
    			} else {
     			error(1,"There was an error uploading the file to the server, please contact website administrator to resolve the problem.");
