@@ -1,4 +1,18 @@
 <?php
+/**
+ * Canopy Spectral Reflectance
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index_check.php
+ * 
+ */
   require_once 'config.php';
   require $config['root_dir'].'includes/bootstrap.inc';
   connect();

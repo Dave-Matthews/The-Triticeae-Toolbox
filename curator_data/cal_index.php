@@ -1,5 +1,18 @@
 <?php
-// uploading it to main server
+/**
+ * Canopy Spectral Reflectance
+*
+* PHP version 5.3
+* Prototype version 1.5.0
+*
+* @category PHP
+* @package  T3
+* @author   Clay Birkett <clb343@cornell.edu>
+* @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+* @version  GIT: 2
+* @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index.php
+*
+*/
 
 require 'config.php';
 /*
@@ -23,13 +36,19 @@ ob_end_flush();
 
 new Experiments($_GET['function']);
 
+/** CSR phenotype experiment
+ * 
+ * @author claybirkett
+ *
+ */
+
 class Experiments
 {
-    
-    private $delimiter = "\t";
-    
 	
-	// Using the class's constructor to decide which action to perform
+	/**
+	 * Using the class's constructor to decide which action to perform
+	 * @param string $function action to perform
+	 */
 	public function __construct($function = null)
 	{	
 		switch($function)
@@ -45,6 +64,9 @@ class Experiments
 		}	
 	}
 
+/**
+ * display the file that has been loaded
+ */
 private function typeDisplay() {
   global $config;
   include($config['root_dir'] . 'theme/admin_header.php');
@@ -99,6 +121,9 @@ private function typeDisplay() {
   echo "</table>";
 }
 
+/**
+ * wrapper to display header and footer for the input form
+ */
 private function typeExperiments()
 	{
 		global $config;
@@ -114,7 +139,9 @@ private function typeExperiments()
         include($config['root_dir'].'theme/footer.php');
 	}
 	
-	
+	/**
+	 * display input form
+	 */
 	private function type_Experiment_Name()
 	{
             global $config;
@@ -148,38 +175,35 @@ while ($row = mysqli_fetch_assoc($res)) {
   $trial_list[$uid] = $tc;
   echo "<option value=\"$mid\">$tc $mid</option>\n";
 }
-echo "</select>\n";
 ?>
+</select>
   
   <tr><td><strong>Box Smoothing:</strong><td>
   <select id="smooth" name="smooth" onchange="javascript: update_smooth()">
-  <option value='0'>1 points</option>\n";
-  <option value='3'>3 points</option>\n";
-  <option value='5'>5 points</option>\n";
+  <option value='0'>1 points</option>
+  <option value='3'>3 points</option>
+  <option value='5'>5 points</option>
   </select>
   <tr><td><b>Wavelength<br>Parameters:</b>
       <td><input type="text" id="W1" name="W1" onchange="javascript: update_w1()">W1
       <td><input type="text" id="W2" name="W2" onchange="javascript: update_w2()">W2
   <tr><td><strong>Formula:</strong><td>
   <select id="formula1" name="formula1" onchange="javascript: update_f1()">
-  <option value=''>Select a formula</option>\n";
-  <option value='W1 / W2'>W1 / W2</option>\n";
-  <option value='(W1 - W2)/(W1 + W2)'>(W1 - W2)/(W1 + W2)</option>\n";
+  <option value=''>Select a formula</option>
+  <option value='W1 / W2'>W1 / W2</option>
+  <option value='(W1 - W2)/(W1 + W2)'>(W1 - W2)/(W1 + W2)</option>
   </select>
   or
-  <td><input type="text" id="formula2" name="formula2" rows="1" cols="50" onchange="javascript: update_f2()"></textarea>Enter custom formula<br>
+  <td><input type="text" id="formula2" name="formula2" size="50" onchange="javascript: update_f2()">Enter custom formula<br>
   </table>
   <p><input type="button" value="Calculate" onclick="javascript:cal_index()"/></p>
 </form>
 Typical wavelength parameters are: 450 (Blue), 680 (Red), 800 (NIR)<br>
 
 <!--a href=login/edit_csr_field.php>Edit Field Book Table</a><br-->
-<div id="step2">		
+<div id="step2">	
+</div>	
 <?php
-
-echo "</div>";
-  
-
 	} /* end of type_Experiment_Name function*/
 } /* end of class */
 
