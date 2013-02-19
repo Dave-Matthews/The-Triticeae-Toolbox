@@ -58,7 +58,7 @@ class Maps {
     include($config['root_dir'].'theme/normal_header.php');
 
     echo "<h2>Map Sets</h2>";
-    echo "The selected map is used in \"Genomic Association and Prediction\". If a selected marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
+    echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
     echo "<div id=\"step1\">";
     $this->type_MapSet_Display();
     echo "</div>";
