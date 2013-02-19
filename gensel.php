@@ -367,9 +367,9 @@ class Downloads
                   <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <table>
-                  <tr><td><td>fixed effect (trial is always included)
+                  <!--tr><td><td>fixed effect (trial is always included)-->
                   <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('$unique_str')">
-                  <td>
+                  <!-td-->
                   </table><br>
                   </div>
                   <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
@@ -549,7 +549,6 @@ class Downloads
           <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 
           <table border=0>
-          <tr><td><td>fixed effect (trial is always included)
           <tr><td>
           <input type="button" value="GWAS Analysis" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> 
           <td>
@@ -888,12 +887,41 @@ class Downloads
             $max_miss_line = $_GET['mml'];
             $min_maf = $_GET['mmaf'];
             $model_opt = $_GET['fixed1'];
+            $triallabel = "";
+            if (isset($_SESSION['training_trials'])) {
+              $trial = $_SESSION['training_trials'];
+              foreach ($trial as $uid) {
+                $sql = "select trial_code from experiments where experiment_uid = $uid";
+                      $res = mysql_query($sql) or die(mysql_error());
+                      if ($row = mysql_fetch_array($res)) {
+                        $trial = $row[0];
+                      }
+                      if ($triallabel == "") {
+                         $triallabel = "triallabel <- list()\n";
+                      }
+                      $triallabel .= "triallabel[$uid] <- \"$trial\"\n";
+              }
+            }
+            if (isset($_SESSION['selected_trials'])) {
+              $trial = $_SESSION['selected_trials'];
+              foreach ($trial as $uid) {
+                $sql = "select trial_code from experiments where experiment_uid = $uid";
+                      $res = mysql_query($sql) or die(mysql_error());
+                      if ($row = mysql_fetch_array($res)) {
+                        $trial = $row[0];
+                      }
+                      if ($triallabel == "") {
+                         $triallabel = "triallabel <- list()\n";
+                      }
+                      $triallabel .= "triallabel[$uid] <- \"$trial\"\n";
+              }
+            }
                 if (isset($_SESSION['training_trials'])) {
                         $experiments_t = $_SESSION['training_trials'];
                         $experiments_t = implode(",",$experiments_t);
                 } elseif (isset($_SESSION['selected_trials'])) {
-                        $experiments_t = $_SESSION['selected_trials'];
-                        $experiments_t = implode(",",$experiments_t);
+                        $trials = $_SESSION['selected_trials'];
+                        $experiments_t = implode(",",$trials);
                 } else {
                         $experiments_t = "";
                 }
@@ -1028,7 +1056,7 @@ class Downloads
                 }
                 if(!file_exists($dir.$filename3)){
                     $h = fopen($dir.$filename3, "w+");
-                    $png = "png(\"$dir$filename4\", width=600, height=500)\n";
+                    $png = "png(\"$dir$filename4\", width=900, height=500)\n";
                     $png2 = "png(\"$dir$filename10\", width=600, height=500)\n";
                     $cmd1 = "snpData_p <- read.table(\"$dir$filename1\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd2 = "snpData_t <- read.table(\"$dir$filename8\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
@@ -1042,6 +1070,7 @@ class Downloads
                     $cmd6 = "fileout <- \"$filename7\"\n";
                     $cmd7 = "phenolabel <- \"$phenolabel\"\n";
                     $cmd8 = "common_code <- \"" . $config['root_dir'] . "R/AmatrixStructure.R\"\n";
+                    $cmd9 = $triallabel;
                     fwrite($h, $png);
                     fwrite($h, $png2);
                     if ($training_lines != "") {
@@ -1054,6 +1083,7 @@ class Downloads
                     fwrite($h, $cmd6);
                     fwrite($h, $cmd7);
                     fwrite($h, $cmd8);
+                    fwrite($h, $cmd9);
                     fwrite($h, "model <- \"$model_opt\"\n");
                     fwrite($h, "setwd(\"/tmp/tht/\")\n");
                     fclose($h);
@@ -3541,6 +3571,12 @@ selected lines</a><br>
 	  $min_maf = 100;
 	 elseif ($min_maf<0)
 	 $min_maf = 0;
+
+         if (isset($_SESSION['selected_map'])) {
+           $selected_map = $_SESSION['selected_map'];
+         } else {
+           $selected_map = 1;
+         }
 	
 	 if (count($markers)>0) {
 	  $markers_str = implode(",", $markers);
@@ -3573,7 +3609,7 @@ selected lines</a><br>
 	 AND mim.marker_uid = markers.marker_uid
 	 AND mim.map_uid = map.map_uid
 	 AND map.mapset_uid = mapset.mapset_uid
-	 AND mapset.mapset_uid = 1
+	 AND mapset.mapset_uid = $selected_map 
 	 order by mim.chromosome, mim.start_position";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
@@ -3657,7 +3693,7 @@ selected lines</a><br>
 	         AND mim.marker_uid = markers.marker_uid
 	         AND mim.map_uid = map.map_uid
 	         AND map.mapset_uid = mapset.mapset_uid
-	         AND mapset.mapset_uid = 1";
+	         AND mapset.mapset_uid = $selected_map";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	     if ($row = mysql_fetch_array($res)) {
                 $chrom = $row[2];
