@@ -1,64 +1,54 @@
 <?php
+// 18feb13 dem: New, replacing the old ugly file of the same name
 
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
+include($config['root_dir'] . 'theme/admin_header.php');
 connect();
 loginTest();
-
 $row = loadUser($_SESSION['username']);
 ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-new Traits($_GET['function']);
-
-class Traits {
-
-  // Using the class's constructor to decide which action to perform
-  public function __construct($function = null) {	
-    switch($function) {
-    default:
-      $this->typeTraits(); /* intial case*/
-      break;
-    }	
-  }
-
-  private function typeTraits() {
-    global $config;
-    include($config['root_dir'] . 'theme/admin_header.php');
-    echo "<h2>Add, Edit or Delete Trait Information </h2>"; 
-    $this->type_Trait_Name();
-    $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
-  }
-	
-  private function type_Trait_Name() {
-    $url1 = $config['base_url'] . "curator_data/traitAdd.php";
-    $url2 = $config['base_url'] . "login/edit_traits.php";
 ?>
+
 <style type="text/css">
+  p {width: 80%}
   th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
   table {background: none; border-collapse: collapse}
   td {border: 0px solid #eee !important;}
   h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
 
-<table>
-  <tr>
-    <td>
-      <form action="<?php echo $url1; ?>" method="GET">
-	<input type="submit" value="Add Traits">
-      </form>
-    <td colspan="2">
-    <td>
-      <form action="<?php echo $url2; ?>" method="GET">
-	<input type="submit" value="Edit / Delete Traits">
-      </form>  
-    </td>
-  </tr>
-</table>
+<h2>Add / Edit Traits and Genetic Characters </h2>
+
+<h3>Traits</h3>
+
+<p><b>Traits</b> are environment-dependent characteristics of a line,
+usually measured in several trials and replicated.  Their values are
+usually quantitative and expressed in defined units.  Examples are
+yield, height, grain protein.  In this database each trait must be
+assigned to a <i>Category</i>, e.g. Agronomic, Quality.</p>
+
+<li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php">Upload</a> a file of traits
+<li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php?add=single">Enter</a> a single trait interactively
+<li><a href="<?php echo $config['base_url'] ?>login/edit_traits.php">Edit</a> existing traits
+<li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php?add=category">Add</a> a new Category
+<li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php?add=unit">Add</a> a new Unit
+
+<h3>Properties</h3>
+
+<p><b>Genetic characters</b>, or <i>properties</i>, are
+environment-insensitive and usually have a small set of discrete values.
+Examples are the allele states of major genes affecting phenotype, such
+as <i>Rht1</i> for reduced height and <i>Lr</i> genes for leaf rust
+resistance.  Categories for these characters are the same as for
+traits.</p>
+
+<li><a href="<?php echo $config['base_url'] ?>curator_data/propertyAdd.php">Upload</a> a file of properties
 
 <?php
-   } /* end of type_Trait_Name function*/
-} /* end of class */
+    $footer_div = 1;
+    include($config['root_dir'].'theme/footer.php');
 ?>
