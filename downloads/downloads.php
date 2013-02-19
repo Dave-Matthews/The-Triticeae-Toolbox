@@ -2376,6 +2376,12 @@ class Downloads
 	  $min_maf = 100;
 	 elseif ($min_maf<0)
 	 $min_maf = 0;
+
+         if (isset($_SESSION['selected_map'])) {
+           $selected_map = $_SESSION['selected_map'];
+         } else {
+           $selected_map = 1;
+         }
 	
 	 if (count($markers)>0) {
 	  $markers_str = implode(",", $markers);
@@ -2408,7 +2414,7 @@ class Downloads
 	 AND mim.marker_uid = markers.marker_uid
 	 AND mim.map_uid = map.map_uid
 	 AND map.mapset_uid = mapset.mapset_uid
-	 AND mapset.mapset_uid = 1
+	 AND mapset.mapset_uid = $selected_map 
 	 order by mim.chromosome, mim.start_position";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
@@ -2506,7 +2512,7 @@ class Downloads
 	         AND mim.marker_uid = markers.marker_uid
 	         AND mim.map_uid = map.map_uid
 	         AND map.mapset_uid = mapset.mapset_uid
-	         AND mapset.mapset_uid = 1";
+	         AND mapset.mapset_uid = $selected_map";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	     if ($row = mysql_fetch_array($res)) {
 	        $chrom = $lookup_chrom[$row[2]];
@@ -2607,6 +2613,11 @@ class Downloads
 		elseif ($min_maf<0)
 			$min_maf = 0;
 			// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
+        if (isset($_SESSION['selected_map'])) {
+           $selected_map = $_SESSION['selected_map'];
+         } else {
+           $selected_map = 1;
+         }
 
 	 //get lines and filter to get a list of markers which meet the criteria selected by the user
           $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
@@ -2668,11 +2679,7 @@ class Downloads
 			$outputheader .= "<Delimited_Values>".$delimiter."No\n";
 			$outputheader .= "<Taxon_Name>".$delimiter.$line_str."\n";
 			$outputheader .= "<Chromosome_Number>".$delimiter."<Genetic_Position>".$delimiter."<Locus_Name>".$delimiter."<Value>\n";
-		// $firephp = log($outputheader);
 
-			// get marker map data, line and marker names; use latest consensus map
-			// as the map default
-		$mapset = 1;	
          $sql = "SELECT mim.chromosome, mim.start_position, lr.line_record_name as lname, m.marker_name AS mname,
                     CONCAT(a.allele_1,a.allele_2) AS value
 			FROM
@@ -2691,7 +2698,7 @@ class Downloads
 				AND gd.marker_uid IN ($marker_uid)
 				AND mim.map_uid = map.map_uid
 				AND map.mapset_uid = mapset.mapset_uid
-				AND mapset.mapset_uid = '$mapset'
+				AND mapset.mapset_uid = $selected_map
 				AND tb.line_record_uid = lr.line_record_uid
 				AND gd.tht_base_uid = tb.tht_base_uid
 				AND tb.experiment_uid IN ($experiments)
@@ -2768,8 +2775,13 @@ class Downloads
 			$min_maf = 100;
 		elseif ($min_maf<0)
 			$min_maf = 0;
-		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
-		
+	
+         if (isset($_SESSION['selected_map'])) {
+           $selected_map = $_SESSION['selected_map'];
+         } else {
+           $selected_map = 1;
+         }
+	
 		$lookup_chrom = array(
 		  '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
 		  '6H' => '6','7H' => '7','UNK'  => '10'
@@ -2793,7 +2805,7 @@ class Downloads
 		where mim.marker_uid = markers.marker_uid
 		AND mim.map_uid = map.map_uid
 		AND map.mapset_uid = mapset.mapset_uid
-		AND mapset.mapset_uid = 1";
+		AND mapset.mapset_uid = $selected_map";
 		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		while ($row = mysql_fetch_array($res)) {
 		  $uid = $row[0];
@@ -2869,12 +2881,7 @@ class Downloads
                 } else {
                   $outputheader = "<Map>\n";
                 }
-            // $firephp = log($outputheader);
 
-                // get marker map data, line and marker names; use latest consensus map
-                // as the map default
-        $mapset = 1;
-	
         //sort marker_list by map location
         if (uasort($marker_list_all, array($this,'cmp'))) {
         } else {
