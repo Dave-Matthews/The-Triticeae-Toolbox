@@ -95,7 +95,7 @@
   fwrite($h, "value\n");
   fwrite($h, "}\n");
   fclose($h);
-  exec("cat /tmp/tht/$unique_str/$filename1 ../R/gbe.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename2");
+  exec("cat /tmp/tht/$unique_str/$filename1 ../R/csr-index.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename2");
   if (file_exists("/tmp/tht/$unique_str/$filename2")) {
     $h = fopen("/tmp/tht/$unique_str/$filename2", "r");
     while ($line=fgets($h)) {
