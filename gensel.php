@@ -437,10 +437,9 @@ class Downloads
 
         <p><b>Genomic Prediction</b><br>
         1. Select a <a href="downloads/select_all.php">set of lines</a> for one or more trials and one trait.<br>
-        2. Select the <a href="maps/select_map.php">genetic map</a> which has the best coverage for this set.<br>
-        3. Return to this page and select rrBLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
-        4. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
-        5. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
+        2. Return to this page and select rrBLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
+        3. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
+        4. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
         
         <p><a href="downloads/genomic-tools.php">Additional notes on rrBLUP and methods</a><br>
         <?php

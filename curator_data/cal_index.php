@@ -36,15 +36,6 @@ ob_end_flush();
 
 new Experiments($_GET['function']);
 
-<<<<<<< HEAD
-class Experiments
-{
-    
-    private $delimiter = "\t";
-    
-	
-	// Using the class's constructor to decide which action to perform
-=======
 /** CSR phenotype experiment
  * 
  * @author claybirkett
@@ -58,7 +49,6 @@ class Experiments
 	 * Using the class's constructor to decide which action to perform
 	 * @param string $function action to perform
 	 */
->>>>>>> bef03326239ea27864dffff06644ee7f1c988e9a
 	public function __construct($function = null)
 	{	
 		switch($function)
