@@ -36,7 +36,7 @@ class Traits {
     $url1 = $config['base_url'] . "curator_data/input_csr_spect.php";
     $url2 = $config['base_url'] . "curator_data/input_csr_field.php";
     $url3 = $config['base_url'] . "curator_data/input_csr_exper.php";
-    $url4 = $config['base_url'] . "login/edit_traits.php";
+    $url4 = $config['base_url'] . "curator_data/cal_index.php";
 ?>
 <style type="text/css">
   th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
@@ -55,6 +55,9 @@ class Traits {
      <tr><td>Phenotype Results<td><form action="<?php echo $url3; ?>" method="GET">
 	<input type="submit" value="Add">
       </form>  
+     <tr><td>Calculate Index<td><form action="<?php echo $url4; ?>" method="GET">
+        <input type="submit" value="Add">
+      </form>
 </table>
 
 <?php
