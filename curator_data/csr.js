@@ -53,6 +53,35 @@ function update_f1() {
   var e = document.getElementById("formula1");
   formula1 = e.options[e.selectedIndex].value;
   formula1 = encodeURIComponent(formula1);
+  if (formula1 == "NWI1") {
+    w1 = 970;
+    w2 = 900;
+    formula2 = "(W1-W2)/(W1+W2)";
+  } else if (formula1== "NWI3") {
+    w1 = 970;
+    w2 = 880;
+    formula2 = "(W1-W2)/(W1+W2)";
+  } else if (formula1 == "NDVI") {
+    w1 = 900;
+    w2 = 680;
+    formula2 = "(W1-W2)/(W1+W2)";
+  } else if (formula1 == "NDVIR") {
+    w1 = 780;
+    w2 = 670;
+    formula2 = "(W1-W2)/(W1+W2)";
+  } else if (formula1 == "NDVIG") {
+    w1 = 780;
+    w2 = 550;
+    formula2 = "(W1-W2)/(W1+W2)";
+  } else if (formula1 == "SR") {
+    w1 = 900;
+    w2 = 680;
+    formula2 = "(W1-W2)";
+  }
+  document.getElementById("W1").value = w1;
+  document.getElementById("W2").value = w2;
+  document.getElementById("formula2").value = formula2;
+   
 }
 
 function update_f2() {

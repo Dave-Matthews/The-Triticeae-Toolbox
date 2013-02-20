@@ -35,11 +35,15 @@
     $smooth = 0;
     echo "no smoothing<br>\n";
   }
-  if (isset($_POST['formula1']) && !empty($_POST['formula1'])) {
-    $index = $_POST['formula1'];
-    echo "formula = $index<br>\n";
-  } elseif (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
+  if (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
     $index = $_POST['formula2'];
+    if (preg_match("/system/", $index)) {
+    	die("Illegal formula");
+    } elseif (preg_match("/shell/", $index)) {
+    	die("Illegal formula");
+    } elseif (preg_match("/[{}]/", $index)) {
+    	die("Illegal formula");
+    }
     echo "formula = $index<br>\n";
   } else {
     die("no formula specified<br>\n");
@@ -92,17 +96,17 @@
   fwrite($h, "calIndex <- function(data, idx1, idx2) {\n");
   if ($smooth == 0) {
     fwrite($h, "W1 <- data[idx1]\n");
-  } elseif ($smooth == 3) {
-    fwrite($h, "W1 <- (data[idx1-1] + data[idx1] + data[idx1+1])/3\n");
   } elseif ($smooth == 5) {
-    fwrite($h, "W1 <- (data[idx1-2] + data[idx1-1] + data[idx1] + data[idx1+1] + data[idx1+2] + 1)/5\n");
+  	fwrite($h, "W1 <- (sum(data[idx1-5:ixd1+5])) / 10\n");
+  } elseif ($smooth == 10) {
+    fwrite($h, "W1 <- (sum(data[idx1-10:idx1+10])) / 20\n");
   }
   if ($smooth == 0) {
     fwrite($h, "W2 <- data[idx2]\n");
-  } elseif ($smooth == 3) {
-    fwrite($h, "W2 <- (data[idx2-1] + data[idx2] + data[idx2+1])/3\n");
   } elseif ($smooth == 5) {
-    fwrite($h, "W2 <- (data[idx2-2] + data[idx2-1] + data[idx2] + data[idx2+1] + data[idx2+2] + 1)/5\n");
+    fwrite($h, "W1 <- (sum(data[idx2-5:ixd2+5])) / 10\n");
+  } elseif ($smooth == 10) {
+  	fwrite($h, "W1 <- (sum(data[idx2-10:idx2+10])) / 20\n");
   }
 
   fwrite($h, "value <- $index\n");
