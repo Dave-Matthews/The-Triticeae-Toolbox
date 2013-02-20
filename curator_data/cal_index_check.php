@@ -43,6 +43,10 @@
     	die("<font color=red>Error: Illegal formula</font>");
     } elseif (preg_match("/[{}]/", $index)) {
     	die("<font color=red>Error: Illegal formula</font>");
+    } elseif (preg_match("/write/", $index)) {
+    	die("<font color=red>Error: Illegal formula</font>");
+    } elseif (preg_match("/read/", $index)) {
+    	die("<font color=red>Error: Illegal formula</font>");
     }
     echo "formula = $index<br>\n";
   } else {
