@@ -35,11 +35,19 @@
     $smooth = 0;
     echo "no smoothing<br>\n";
   }
-  if (isset($_POST['formula1']) && !empty($_POST['formula1'])) {
-    $index = $_POST['formula1'];
-    echo "formula = $index<br>\n";
-  } elseif (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
+  if (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
     $index = $_POST['formula2'];
+    if (preg_match("/system/", $index)) {
+    	die("<font color=red>Error: Illegal formula</font>");
+    } elseif (preg_match("/shell/", $index)) {
+    	die("<font color=red>Error: Illegal formula</font>");
+    } elseif (preg_match("/[{}]/", $index)) {
+    	die("<font color=red>Error: Illegal formula</font>");
+    } elseif (preg_match("/write/", $index)) {
+    	die("<font color=red>Error: Illegal formula</font>");
+    } elseif (preg_match("/read/", $index)) {
+    	die("<font color=red>Error: Illegal formula</font>");
+    }
     echo "formula = $index<br>\n";
   } else {
     die("no formula specified<br>\n");
@@ -92,17 +100,25 @@
   fwrite($h, "calIndex <- function(data, idx1, idx2) {\n");
   if ($smooth == 0) {
     fwrite($h, "W1 <- data[idx1]\n");
-  } elseif ($smooth == 3) {
-    fwrite($h, "W1 <- (data[idx1-1] + data[idx1] + data[idx1+1])/3\n");
   } elseif ($smooth == 5) {
-    fwrite($h, "W1 <- (data[idx1-2] + data[idx1-1] + data[idx1] + data[idx1+1] + data[idx1+2] + 1)/5\n");
+  	fwrite($h, "idx1a <- idx1 - 5\n");
+  	fwrite($h, "idx1b <- idx1a + 10\n");
+  	fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 10)\n");
+  } elseif ($smooth == 10) {
+  	fwrite($h, "idx1a <- idx1 - 10\n");
+  	fwrite($h, "idx1b <- idx1a + 20\n");
+    fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 20)\n");
   }
   if ($smooth == 0) {
     fwrite($h, "W2 <- data[idx2]\n");
-  } elseif ($smooth == 3) {
-    fwrite($h, "W2 <- (data[idx2-1] + data[idx2] + data[idx2+1])/3\n");
   } elseif ($smooth == 5) {
-    fwrite($h, "W2 <- (data[idx2-2] + data[idx2-1] + data[idx2] + data[idx2+1] + data[idx2+2] + 1)/5\n");
+  	fwrite($h, "idx2a <- idx2 - 5\n");
+  	fwrite($h, "idx2b <- idx2a + 10\n");
+    fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 10)\n");
+  } elseif ($smooth == 10) {
+  	fwrite($h, "idx2a <- idx2 - 10\n");
+  	fwrite($h, "idx2b <- idx2a + 20\n");
+  	fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 20)\n");
   }
 
   fwrite($h, "value <- $index\n");

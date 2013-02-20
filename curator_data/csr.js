@@ -52,7 +52,35 @@ function update_w2() {
 function update_f1() {
   var e = document.getElementById("formula1");
   formula1 = e.options[e.selectedIndex].value;
-  formula1 = encodeURIComponent(formula1);
+  if (formula1 == "NWI1") {
+    w2 = 970;
+    w1 = 900;
+    formula2 = "(W2-W1)/(W1+W2)";
+  } else if (formula1== "NWI3") {
+    w2 = 970;
+    w1 = 880;
+    formula2 = "(W2-W1)/(W1+W2)";
+  } else if (formula1 == "NDVI") {
+    w2 = 900;
+    w1 = 680;
+    formula2 = "(W2-W1)/(W1+W2)";
+  } else if (formula1 == "NDVIR") {
+    w2 = 780;
+    w1 = 670;
+    formula2 = "(W2-W1)/(W1+W2)";
+  } else if (formula1 == "NDVIG") {
+    w2 = 780;
+    w1 = 550;
+    formula2 = "(W2-W1)/(W1+W2)";
+  } else if (formula1 == "SR") {
+    w2 = 900;
+    w1 = 680;
+    formula2 = "(W2-W1)";
+  }
+  document.getElementById("W1").value = w1;
+  document.getElementById("W2").value = w2;
+  document.getElementById("formula2").value = formula2;
+  formula2 = encodeURIComponent(formula2); 
 }
 
 function update_f2() {
