@@ -38,11 +38,11 @@
   if (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
     $index = $_POST['formula2'];
     if (preg_match("/system/", $index)) {
-    	die("Illegal formula");
+    	die("<font color=red>Error: Illegal formula</font>");
     } elseif (preg_match("/shell/", $index)) {
-    	die("Illegal formula");
+    	die("<font color=red>Error: Illegal formula</font>");
     } elseif (preg_match("/[{}]/", $index)) {
-    	die("Illegal formula");
+    	die("<font color=red>Error: Illegal formula</font>");
     }
     echo "formula = $index<br>\n";
   } else {
@@ -97,7 +97,7 @@
   if ($smooth == 0) {
     fwrite($h, "W1 <- data[idx1]\n");
   } elseif ($smooth == 5) {
-  	fwrite($h, "W1 <- (sum(data[idx1-5:ixd1+5])) / 10\n");
+  	fwrite($h, "W1 <- (sum(data[idx1-5:idx1+5])) / 10\n");
   } elseif ($smooth == 10) {
     fwrite($h, "W1 <- (sum(data[idx1-10:idx1+10])) / 20\n");
   }
