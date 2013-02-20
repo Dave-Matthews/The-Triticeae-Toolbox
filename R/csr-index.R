@@ -33,10 +33,7 @@ source(file_for)
 for (i in 2:ncol(csrData)) {
   if (i == 2) {
     xrange <- c(W1wav-20,W2wav+20)
-    y1 <- rowMeans(csrData[W1idx,]) - 20
-    y2 <- rowMeans(csrData[W2idx,]) + 20
-
-    yrange <- c(y1, y2)
+    yrange <- range(csrData[W1idx:W2idx,-(1)])
     plot(csrData[,1], csrData[,i], xlim=xrange, ylim=yrange, type="n", xlab="wavelength", ylab="CSR value")
     lines(csrData[,1], csrData[,i])
   } else {
