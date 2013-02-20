@@ -52,7 +52,6 @@ function update_w2() {
 function update_f1() {
   var e = document.getElementById("formula1");
   formula1 = e.options[e.selectedIndex].value;
-  formula1 = encodeURIComponent(formula1);
   if (formula1 == "NWI1") {
     w1 = 970;
     w2 = 900;
@@ -81,7 +80,7 @@ function update_f1() {
   document.getElementById("W1").value = w1;
   document.getElementById("W2").value = w2;
   document.getElementById("formula2").value = formula2;
-   
+  formula2 = encodeURIComponent(formula2); 
 }
 
 function update_f2() {
