@@ -104,7 +104,7 @@
   if ($smooth == 0) {
     fwrite($h, "W2 <- data[idx2]\n");
   } elseif ($smooth == 5) {
-    fwrite($h, "W1 <- (sum(data[idx2-5:ixd2+5])) / 10\n");
+    fwrite($h, "W1 <- (sum(data[idx2-5:idx2+5])) / 10\n");
   } elseif ($smooth == 10) {
   	fwrite($h, "W1 <- (sum(data[idx2-10:idx2+10])) / 20\n");
   }
