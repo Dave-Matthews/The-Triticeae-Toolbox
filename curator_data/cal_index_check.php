@@ -97,16 +97,24 @@
   if ($smooth == 0) {
     fwrite($h, "W1 <- data[idx1]\n");
   } elseif ($smooth == 5) {
-  	fwrite($h, "W1 <- (sum(data[idx1-5:idx1+5]) / 10)\n");
+  	fwrite($h, "idx1a <- idx1 - 5\n");
+  	fwrite($h, "idx1b <- idx1a + 10\n");
+  	fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 10)\n");
   } elseif ($smooth == 10) {
-    fwrite($h, "W1 <- (sum(data[idx1-10:idx1+10]) / 20)\n");
+  	fwrite($h, "idx1a <- idx1 - 10\n");
+  	fwrite($h, "idx1b <- idx1a + 20\n");
+    fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 20)\n");
   }
   if ($smooth == 0) {
     fwrite($h, "W2 <- data[idx2]\n");
   } elseif ($smooth == 5) {
-    fwrite($h, "W2 <- (sum(data[idx2-5:idx2+5]) / 10)\n");
+  	fwrite($h, "idx2a <- idx2 - 5\n");
+  	fwrite($h, "idx2b <- idx2a + 10\n");
+    fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 10)\n");
   } elseif ($smooth == 10) {
-  	fwrite($h, "W2 <- (sum(data[idx2-10:idx2+10]) / 20)\n");
+  	fwrite($h, "idx2a <- idx2 - 10\n");
+  	fwrite($h, "idx2b <- idx2a + 20\n");
+  	fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 20)\n");
   }
 
   fwrite($h, "value <- $index\n");
