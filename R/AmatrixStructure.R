@@ -25,7 +25,8 @@ if (class(mrkRelMat) == "list"){ # Do this if you have missing marker data
         mrkRelMat <- mrkRelMat$A
 }
 
-#Plot of first two axes of the PCA, with lines in different trials in different colors
+#Plot of first two axes of the PCA
+#can not use different colors for trials because the plots they will be hidden
 relMatPCA <- prcomp(mrkRelMat)
 uniqueTrials <- unique(phenoData$trial) # Third column of phenoData has trial names
 mainTitle <- "Principal Components Analysis"
@@ -34,7 +35,7 @@ for (trial in 1:length(uniqueTrials)){
 	if (trial == 1){
 		plot(relMatPCA$x[trialLines, 1:2], pch=16, xlim=range(relMatPCA$x[, 1]), ylim=range(relMatPCA$x[, 2]), main=mainTitle)
 	} else{
-		points(relMatPCA$x[trialLines, 1:2], pch=16, col=trial)
+		points(relMatPCA$x[trialLines, 1:2], pch=16)
 	}
 }
 dev.set(dev.next())
