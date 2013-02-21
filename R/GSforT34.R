@@ -47,17 +47,29 @@ if (yesPredPheno) {
           mainTitle <- paste("Prediction of ", phenolabel, ", accuracy = ", round(mean(allCor, na.rm=TRUE), 2), sep="")
         }
 # Second, plot by trial
+        meanTrial <- mean(phenoData$phenoTrain, na.rm=TRUE)
+        trialLines <- rownames(snpData_p)
+        adjusted <- addBlups$g[trialLines] + meanTrial
+        xlegend <- max(addBlups$g[trialLines] + meanTrial)
+        yrange <- range(unlist(allMeans), na.rm=TRUE)
+        ydiv <- (yrange[2] - yrange[1])/10
+        ylegend <- max(unlist(allMeans)) - ydiv
+        xrange <- range(adjusted)
+        xrange[2] <- xrange[2] + (xrange[2] - xrange[1])/2
         for (trial in 1:length(predTrials)){
 		trialLines <- unique(phenoData$gid[phenoData$trial == predTrials[trial]])
 		# Get correlations between predicted
-                meanTrial <- mean(phenoData$pheno)
                 meanTrial <- mean(phenoData$phenoTrain, na.rm=TRUE)
                 adjusted <- addBlups$g[trialLines] + meanTrial
+                exper <- predTrials[trial]
+                trialname <- triallabel[exper]
 		if (trial == 1){
-			plot(adjusted, allMeans[[trial]], pch=16, xlim=range(adjusted), ylim=range(unlist(allMeans),na.rm=TRUE), main=mainTitle, xlab="Prediction", ylab="Observed Phenotype")
+			plot(adjusted, allMeans[[trial]], pch=16, xlim=xrange, ylim=range(unlist(allMeans),na.rm=TRUE), main=mainTitle, xlab="Prediction", ylab="Observed Phenotype")
 		} else{
 			points(adjusted, allMeans[[trial]], pch=16, col=trial)
 		}
+                legend(xlegend, ylegend, trialname, text.col=trial)
+                ylegend <- ylegend - ydiv
 	}
 } else {
 # No prediction set (or prediction set all NA)
@@ -147,16 +159,28 @@ if (yesPredPheno) {
           mainTitle <- paste("Accuracy = ", round(mean(allCor), 2), sep="")
         }
 # Second, plot by trial
+        meanTrial <- mean(phenoData$pheno, na.rm=TRUE)
+        adjusted <- meanPred + meanTrial
+        xlegend <- max(meanPred + meanTrial)
+        yrange <- range(unlist(allMeans), na.rm=TRUE)
+        ydiv <- (yrange[2] - yrange[1])/10
+        ylegend <- max(unlist(allMeans)) - ydiv
+        xrange <- range(adjusted)
+        xrange[2] <- xrange[2] + (xrange[2] - xrange[1])/2
 	for (trial in 1:length(trainTrials)){
 		trialLines <- unique(phenoData$gid[phenoData$trial == trainTrials[trial]])
 		# Get correlations between predicted
                 meanTrial <- mean(phenoData$pheno, na.rm=TRUE)
                 adjusted <- meanPred[trialLines] + meanTrial
+                exper <- trainTrials[trial]
+                trialname <- triallabel[exper]
 		if (trial == 1){
-			plot(adjusted, allMeans[[trial]], pch=16, xlim=range(adjusted), ylim=range(unlist(allMeans),na.rm=TRUE), main=mainTitle, xlab="Cross-validated Prediction", ylab="Observed Phenotype")
+			plot(adjusted, allMeans[[trial]], pch=16, xlim=xrange, ylim=range(unlist(allMeans),na.rm=TRUE), main=mainTitle, xlab="Cross-validated Prediction", ylab="Observed Phenotype")
 		} else{
 			points(adjusted, allMeans[[trial]], pch=16, col=trial)
 		}
+                legend(xlegend, ylegend, trialname, text.col=trial)
+                ylegend <- ylegend - ydiv
 	}
 }#END no prediction set
 dev.off()
