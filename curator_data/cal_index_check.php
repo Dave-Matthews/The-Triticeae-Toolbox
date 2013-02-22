@@ -30,7 +30,6 @@
   }
   if (isset($_POST['smooth']) && !empty($_POST['smooth'])) {
     $smooth = $_POST['smooth'];
-    echo "using $smooth points for smoothing<br>";
   } else {
     $smooth = 0;
     echo "no smoothing<br>\n";
@@ -102,23 +101,23 @@
     fwrite($h, "W1 <- data[idx1]\n");
   } elseif ($smooth == 5) {
   	fwrite($h, "idx1a <- idx1 - 5\n");
-  	fwrite($h, "idx1b <- idx1a + 10\n");
-  	fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 10)\n");
+  	fwrite($h, "idx1b <- idx1 + 5\n");
+  	fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 11)\n");
   } elseif ($smooth == 10) {
   	fwrite($h, "idx1a <- idx1 - 10\n");
-  	fwrite($h, "idx1b <- idx1a + 20\n");
-    fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 20)\n");
+  	fwrite($h, "idx1b <- idx1 + 10\n");
+    fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 21)\n");
   }
   if ($smooth == 0) {
     fwrite($h, "W2 <- data[idx2]\n");
   } elseif ($smooth == 5) {
   	fwrite($h, "idx2a <- idx2 - 5\n");
-  	fwrite($h, "idx2b <- idx2a + 10\n");
-    fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 10)\n");
+  	fwrite($h, "idx2b <- idx2 + 5\n");
+    fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 11)\n");
   } elseif ($smooth == 10) {
   	fwrite($h, "idx2a <- idx2 - 10\n");
-  	fwrite($h, "idx2b <- idx2a + 20\n");
-  	fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 20)\n");
+  	fwrite($h, "idx2b <- idx2 + 10\n");
+  	fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 21)\n");
   }
 
   fwrite($h, "value <- $index\n");
@@ -138,8 +137,10 @@
     }
     fclose($h);
   }
-  print "Plot of CSR Data File, x and y axes are scaled according to W1 and W2 parameters<br>";
-  print "<img src=\"/tmp/tht/$unique_str/$filename6\" /><br>";
+  if (file_exists("/tmp/tht/$unique_str/$filename6")) {
+    print "Plot of CSR Data File, x and y axes are scaled according to W1 and W2 parameters<br>";
+    print "<img src=\"/tmp/tht/$unique_str/$filename6\" /><br>";
+  }
   print "<img src=\"/tmp/tht/$unique_str/$filename7\" /><br>";
   if (file_exists("/tmp/tht/$unique_str/$filename4")) {
     print "<a href=/tmp/tht/$unique_str/$filename4 target=\"_blank\"type=\"text/csv\">results file of calculated index<br>\n";
