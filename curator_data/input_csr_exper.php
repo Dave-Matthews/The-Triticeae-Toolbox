@@ -81,7 +81,7 @@ private function typeExperiments()
   <select name="exper_uid">
 <?php
 echo "<option>select a trial</option>\n";
-$sql = "select trial_code, experiment_uid, experiment_year from experiments where experiment_type_uid = 1 order by experiment_year desc";
+$sql = "select trial_code, experiment_uid, experiment_year from experiments where experiment_type_uid = 1 order by experiment_year desc, trial_code";
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
 while ($row = mysqli_fetch_assoc($res)) {
   $tc = $row['trial_code'];
