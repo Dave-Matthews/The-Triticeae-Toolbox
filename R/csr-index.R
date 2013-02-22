@@ -16,6 +16,10 @@ for (i in 1:length(wavelength)) {
      W1idx <- i
   }
 }
+if (W1idx == 1) {
+  stop("Error: W1 wavelength is too small")
+}
+
 min <- max(wavelength)
 for (i in 1:length(wavelength)) {
   diff <- abs(W2wav - wavelength[i])
@@ -23,6 +27,9 @@ for (i in 1:length(wavelength)) {
      min <- diff
      W2idx <- i
   }
+}
+if (W2idx == length(wavelength)) {
+  stop("Error: W2 wavelength is too large")
 }
 
 #read in formula to calculate index
@@ -52,6 +59,6 @@ write.csv(results2, file=file_out, quote=FALSE, row.names = FALSE)
 #plot index vs plot number
 dev.set(dev.next())
 xrange <- range(pltData)
-yrange <- range(results)
+yrange <- range(results, na.rm=TRUE)
 plot(pltData, results, xlim=xrange, ylim=yrange, xlab="plot", ylab="CSR Index")
 dev.off()
