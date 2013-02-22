@@ -91,6 +91,13 @@ function update_f2() {
 function update_smooth() {
   var e = document.getElementById("smooth");
   smooth = e.options[e.selectedIndex].value;
+  if (smooth == 0) {
+    document.getElementById("smooth2").innerHTML = "no smoothing";
+  } else if (smooth == 5) {
+    document.getElementById("smooth2").innerHTML = "average at wavelength and 5 points on either side";
+  } else if (smooth == 10) {
+    document.getElementById("smooth2").innerHTML = "average at wavelength and 10 points on either side";
+  }
 }
 
 function cal_index() {
