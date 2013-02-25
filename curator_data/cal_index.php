@@ -180,9 +180,9 @@ while ($row = mysqli_fetch_row($res)) {
 </select>
   <tr><td><strong>Smoothing:</strong><td>
   <select id="smooth" name="smooth" onchange="javascript: update_smooth()">
-  <option value="0">0 points</option>
-  <option value="5">5 points</option>
-  <option value="10">10 points</option>
+  <option value="0">0</option>
+  <option value="5">11</option>
+  <option value="10">21</option>
   </select>
   <td id="smooth2">no smoothing
  
@@ -196,6 +196,7 @@ while ($row = mysqli_fetch_row($res)) {
   <option value="NDVIR">NDVI Red</option>
   <option value="NDVIG">NDVI Green</option>
   </select>
+  <td id="formdesc">
   <tr><td><strong>W1:</strong><td><input type="text" id="W1" name="W1" onchange="javascript: update_w1()">
   <tr><td><strong>W2:</strong><td><input type="text" id="W2" name="W2" onchange="javascript: update_w2()">
   <tr><td><strong>Formula:</strong><td><input type="text" id="formula2" name="formula2" onchange="javascript: update_f2()">
