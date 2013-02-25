@@ -446,7 +446,7 @@ $sql="SELECT date_format(measure_date, '%m-%d-%Y'), spect_sys_uid, raw_file_name
 $res = mysql_query($sql) or die(mysql_error());
 while ($row = mysql_fetch_array($res)) {
   if ($found == 0) {
-    echo "<table><tr><td>Date<td>CSR Annotation<td>CSR Data<td>Spectrometer<br>System\n";
+    echo "<table><tr><td>Date<td>CSR Annotation<td>CSR Data<td>Spectrometer<br>System<td>CSR Data\n";
     $found = 1;
   }
   $date = $row[0];
@@ -463,11 +463,13 @@ while ($row = mysql_fetch_array($res)) {
   $res2 = mysql_query($sql) or die(mysql_error(). $sql);
   if ($rawrow = mysql_fetch_assoc($res2)) {
     $system_name = $rawrow["system_name"];
-    $trial="display_csr_spe.php?function=display&uid=$sys_uid";
-    echo "<td><a href=".$config['base_url'].$trial.">$system_name</a>";
+    $trial= $config['base_url'] . "display_csr_spe.php?function=display&uid=$sys_uid";
+    echo "<td><a href=$trial>$system_name</a>";
   } else {
     echo "<td>missing";
   }
+  $trial= $config['base_url'] . "curator_data/cal_index.php";
+  echo "<td><a href=$trial>Calculate Index</a>";
 }
 echo "</table>";
 
