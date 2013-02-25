@@ -16,9 +16,6 @@ for (i in 1:length(wavelength)) {
      W1idx <- i
   }
 }
-if (W1idx == 1) {
-  stop("Error: W1 wavelength is too small")
-}
 
 min <- max(wavelength)
 for (i in 1:length(wavelength)) {
@@ -27,9 +24,6 @@ for (i in 1:length(wavelength)) {
      min <- diff
      W2idx <- i
   }
-}
-if (W2idx == length(wavelength)) {
-  stop("Error: W2 wavelength is too large")
 }
 
 #filter data set
@@ -54,6 +48,14 @@ for (i in 2:ncol(csrData)) {
   } else {
     lines(csrData[,1], csrFilt[,i])
   }
+}
+
+#check wavelength range before calculating index
+if (W1idx == 1) {
+  stop("Error: W1 wavelength is too small")
+}
+if (W2idx == length(wavelength)) {
+  stop("Error: W2 wavelength is too large")
 }
 
 # apply formula to calculate index for each column then write to file
