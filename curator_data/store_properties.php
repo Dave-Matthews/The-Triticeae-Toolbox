@@ -119,7 +119,7 @@ for ($i = 4; $i <= $data->sheets[0]['numRows']; $i++) {
     // Are there new values to add?
     $newvals = array_diff($vals, $loadedvals);
     foreach ($newvals as $nv) {
-      $sql = "insert into property_values values (DEFAULT, $puid, '$pname', '$nv')";
+      $sql = "insert into property_values values (DEFAULT, $puid, '$nv')";
       mysql_query($sql) or die (mysql_error()."<br>Query was:<br>$sql");
     }
     $inum++;
