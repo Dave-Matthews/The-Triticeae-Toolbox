@@ -24,7 +24,7 @@ include($config['root_dir'] . 'theme/admin_header.php');
     <h2>Add New Lines</h2>
     <form action="<?php echo $config['base_url'] ?>curator_data/input_line_names_check.php" method="post" 
 	  enctype="multipart/form-data">
-      <p><strong>File:</strong> <input id="file" type="file" name="file" />
+      <p><strong>File:</strong> <input value="file" type="file" name="file" />
 	<a href="<?php echo $config['base_url'] ?>curator_data/examples/T3/LineSubmissionForm_Wheat.xls">
 	  Example line input file</a></p>
       <p><input type="submit" value="Upload Line File" /></p>
