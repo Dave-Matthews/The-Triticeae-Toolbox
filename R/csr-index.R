@@ -16,6 +16,7 @@ for (i in 1:length(wavelength)) {
      W1idx <- i
   }
 }
+
 min <- max(wavelength)
 for (i in 1:length(wavelength)) {
   diff <- abs(W2wav - wavelength[i])
@@ -23,6 +24,14 @@ for (i in 1:length(wavelength)) {
      min <- diff
      W2idx <- i
   }
+}
+
+#filter data set
+if (smooth > 0) {
+  flt2 <- (2*smooth) + 1
+  csrFilt <- apply(csrData, 2, runmed,k=flt2)
+} else {
+  csrFilt <- csrData
 }
 
 #read in formula to calculate index
@@ -34,16 +43,24 @@ for (i in 2:ncol(csrData)) {
   if (i == 2) {
     xrange <- c(W1wav-20,W2wav+20)
     yrange <- range(csrData[W1idx:W2idx,-(1)])
-    plot(csrData[,1], csrData[,i], xlim=xrange, ylim=yrange, type="n", xlab="wavelength", ylab="CSR value")
-    lines(csrData[,1], csrData[,i])
+    plot(csrData[,1], csrFilt[,i], xlim=xrange, ylim=yrange, type="n", xlab="wavelength", ylab="CSR value")
+    lines(csrData[,1], csrFilt[,i])
   } else {
-    lines(csrData[,1], csrData[,i])
+    lines(csrData[,1], csrFilt[,i])
   }
 }
 
+#check wavelength range before calculating index
+if (W1idx == 1) {
+  stop("Error: W1 wavelength is too small")
+}
+if (W2idx == length(wavelength)) {
+  stop("Error: W2 wavelength is too large")
+}
+
 # apply formula to calculate index for each column then write to file
-csrData <- csrData[,-(1)]      
-results <- apply(csrData, 2, calIndex,idx1= W1idx, idx2=W2idx);
+csrFilt <- csrData[,-(1)]      
+results <- apply(csrFilt, 2, calIndex,idx1= W1idx, idx2=W2idx);
 pltData <- pltData[-(1)]
 pltData <- t(pltData)
 results2 <- data.frame(plot=pltData, index=results)
@@ -52,6 +69,6 @@ write.csv(results2, file=file_out, quote=FALSE, row.names = FALSE)
 #plot index vs plot number
 dev.set(dev.next())
 xrange <- range(pltData)
-yrange <- range(results)
+yrange <- range(results, na.rm=TRUE)
 plot(pltData, results, xlim=xrange, ylim=yrange, xlab="plot", ylab="CSR Index")
 dev.off()

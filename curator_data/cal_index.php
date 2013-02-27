@@ -18,7 +18,7 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+include($config['root_dir'] . 'includes/bootstrap.inc');
 
 connect();
 $mysqli = connecti();
@@ -162,28 +162,29 @@ private function typeExperiments()
 
 <form action="curator_data/cal_index_check.php" enctype="multipart/form-data">
   <table>
-  <tr><td><strong>Trial Name:</strong><td>
+  <tr><td><strong>Trial:</strong><td>
   <select id="trial" name="trial" onchange="javascript: update_trial()">
 <?php
 /*echo "<option value=''>select a trial</option>\n";*/
-$sql = "select trial_code, experiments.experiment_uid, measurement_uid from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid"; 
+$sql = "select trial_code, measurement_uid, date_format(measure_date,'%m-%d-%y') from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid"; 
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
 echo "<option>select a trial</option>\n";
-while ($row = mysqli_fetch_assoc($res)) {
-  $tc = $row['trial_code'];
-  $mid = $row['measurement_uid'];
+while ($row = mysqli_fetch_row($res)) {
+  $tc = $row[0];
+  $mid = $row[1];
+  $date = $row[2];
   $trial_list[$uid] = $tc;
-  echo "<option value=\"$mid\">$tc $mid</option>\n";
+  echo "<option value=\"$mid\">$tc $date</option>";
 }
 ?>
 </select>
-  
-  <tr><td><strong>Box Smoothing:</strong><td>
+  <tr><td><strong>Smoothing:</strong><td>
   <select id="smooth" name="smooth" onchange="javascript: update_smooth()">
-  <option value="0">0 points</option>
-  <option value="5">5 points</option>
-  <option value="10">10 points</option>
+  <option value="0">0</option>
+  <option value="5">11</option>
+  <option value="10">21</option>
   </select>
+  <td id="smooth2">no smoothing
  
   <tr><td><strong>Index:</strong><td>
   <select id="formula1" name="formula1" onchange="javascript: update_f1()">
@@ -195,10 +196,11 @@ while ($row = mysqli_fetch_assoc($res)) {
   <option value="NDVIR">NDVI Red</option>
   <option value="NDVIG">NDVI Green</option>
   </select>
+  <td id="formdesc">
   <tr><td><strong>W1:</strong><td><input type="text" id="W1" name="W1" onchange="javascript: update_w1()">
   <tr><td><strong>W2:</strong><td><input type="text" id="W2" name="W2" onchange="javascript: update_w2()">
-  <tr><td><strong>Formula:</strong><td><input type="text" id="formula2" name="formula2" size="50" onchange="javascript: update_f2()">
-  <tr><td><td>Select an index or enter custom wavelengths and formula
+  <tr><td><strong>Formula:</strong><td><input type="text" id="formula2" name="formula2" onchange="javascript: update_f2()">
+  <tr><td><td>Select an index or<br>enter custom wavelengths and formula
   </table>
   <p><input type="button" value="Calculate" onclick="javascript:cal_index()"/></p>
 </form>

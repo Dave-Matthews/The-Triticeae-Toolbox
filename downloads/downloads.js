@@ -73,23 +73,6 @@ function load_title(command) {
     });
 }
 
-function load_title2(command) {
-    var url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&pi=' + phenotype_items_str + '&subset=' + subset + '&cmd=' + command;
-    var tmp = new Ajax.Updater($('title'), url, {
-        onComplete : function() {
-            $('title').show();
-            document.title = title;
-        }
-    });
-    url = "side_menu.php";
-    tmp = new Ajax.Updater($('quicklinks'), url, {
-    onComplete : function() {
-      $('quicklinks').show();
-      document.title = title;
-    }
-    });
-}
-
 function haplotype_step2(command) {
     var i = document.myForm.elements.length;
     var e = document.myForm.elements;
@@ -740,7 +723,7 @@ function update_phenotype_linesb(options) {
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Loading Markers...';
                 //changes are right here
-                var tmp = new Ajax.Updater($('step5'), url, {
+                var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
                     //onCreate: function() { Element.show('spinner'); },
                     onComplete: function() {
                          $('step5').show();
@@ -750,24 +733,24 @@ function update_phenotype_linesb(options) {
                         Element.hide('spinner');
                         markers_loading = false;
                         markers_loaded = true;
-                        load_title();
                     }}
                 );
+                url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&pi=' + phenotype_items_str + '&subset=' + subset;
+                tmp = new Ajax.Updater($('title'), url, {
+                     onComplete : function() {
+                     $('title').show();
+                     document.title = title;
+                     }
+                });
+                url = "side_menu.php";
+                tmp = new Ajax.Updater($('quicklinks'), url, {
+                    onComplete : function() {
+                    $('quicklinks').show();
+                    document.title = title;
+                    }
+                });
+
             }
-		
-			function getdownload_qtlminer()
-			{
-				if (selectedTraits() === '') {
-					alert('Please select at least one trait!');
-					return false;
-				}
-			    var mm = $('mm').getValue();
-                var mmaf = $('mmaf').getValue();
-                var url=php_self + "?function=type1build_qtlminer&bp=" + breeding_programs_str+'&yrs='+ years_str+'&t='+selectedTraits()+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
-				
-					document.location = url;
-				
-			}
 
 			function getdownload_tassel(version)
 			{

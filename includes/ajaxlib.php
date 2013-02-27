@@ -1150,64 +1150,66 @@ and experiments.experiment_uid IN ($trialsSelected)
 }
 
 // Modified DispCategorySel() for Select Lines by Properties.
+// $arr is a one-pair array('id' => phenotype_category_uid).
+// Called by includes/core.js function DispPropSel(val, middle).
 function DispPropCategorySel($arr) {
-  if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
+  if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
     echo "Please select a category.";
-    return;
-  }
-  extract($arr);
-  $query = mysql_query("SELECT properties_uid, name 
-FROM properties 
-WHERE category_uid = $id 
-order by name") or die(mysql_error());
-  // Display in selection box.
-  if(mysql_num_rows($query) > 0) {
-    echo "<select name='property' size=5 
-onfocus=\"DispPropSel(this.value, 'Property')\" 
-onchange=\"DispPropSel(this.value, 'Property')\">";
-    while($row = mysql_fetch_row($query)) 
-      echo "<option value=$row[0]>$row[1]</option>";
-    echo "</select>";
+  else {
+    extract($arr);
+    $query = mysql_query("SELECT properties_uid, name 
+     FROM properties 
+     WHERE category_uid = $id 
+     order by name") or die(mysql_error());
+    if(mysql_num_rows($query) > 0) {
+      echo "<select name='property' size=5 
+     onfocus=\"DispPropSel(this.value, 'Property')\" 
+     onchange=\"DispPropSel(this.value, 'Property')\">";
+      while($row = mysql_fetch_row($query)) 
+	echo "<option value=$row[0]>$row[1]</option>";
+      echo "</select>";
+    }
+    else
+      echo "<p style='color: red;'>No properties available in this category.</p>";
   }
 }
 
 // Modified DispTrialSel() for Select Lines by Properties.
 function DispPropertySel($arr) {
-  if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
+  if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
     echo "Please select a property.";
-    return;
-  }
-  extract($arr);
-  $query = mysql_query("SELECT property_values_uid, value 
-FROM property_values 
-WHERE property_uid = $id") or die(mysql_error());
-  if(mysql_num_rows($query) > 0) {
-    echo "<select name='property' size=3 
-onfocus=\"DispPropSel(this.value, 'PropValue')\" 
-onchange=\"DispPropSel(this.value, 'PropValue')\">";
-    while($row = mysql_fetch_row($query)) 
-      echo "<option value=$row[0]>$row[1]</option>";
-    echo "</select>";
+  else {
+    extract($arr);
+    $query = mysql_query("SELECT property_values_uid, property_values.value 
+     FROM property_values 
+     WHERE property_uid = $id") or die(mysql_error());
+    if(mysql_num_rows($query) > 0) {
+      // Strange.  (this.value..) works in IE and Chrome in DispPropCategorySel() but not here.
+      echo "<select size=3 onchange=\"DispPropSel(this.options[this.selectedIndex].value, 'PropValue')\">";
+      while($row = mysql_fetch_row($query)) 
+	echo "<option value='$row[0]'>$row[1]</option>";
+      echo "</select>";
+    }
   }
 }
 
 // Modified DispPhenotypeSel() for Select Lines by Properties.
 function DispPropValueSel($arr) {
-  if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
+  if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
     echo "Please select a value.";
-    return;
-  }
+  else {
   extract($arr);
-  echo "<td>id = $id";
-  /* $query = mysql_query("SELECT property_values_uid, value FROM property_values WHERE property_uid = $id order by value") or die(mysql_error()); */
-  /* if(mysql_num_rows($query) > 0) { */
-  /*   echo "<select name='property' size=4 onfocus=\"DispPropSel(this.value, 'val')\" onchange=\"DispPropSel(this.value, 'val')\">"; */
-  /*   while($row = mysql_fetch_row($query))  */
-  /*     echo "<option value=$row[0]>$row[1]</option>"; */
-  /*   echo "</select>"; */
-  /* } */
-  /* else  */
-  /*   echo "<p style='color: red;'>There are no values available for this property.</p>"; */
+  $query = mysql_query("select name, value
+     from property_values pv, properties pr
+     where property_values_uid = $id
+     and pr.properties_uid = pv.property_uid") or die (mysql_error());
+  $row = mysql_fetch_row($query);
+  echo "$row[0] = $row[1], ";
+  // Doesn't work:
+  //echo "<input type=hidden name='charlie' value='bill'>";
+  // All I can think of to return this value to line_properties.php is via cookie.
+  $_SESSION['propvals'][] = array($id, $row[0], $row[1]);
+  }
 }
 
 /**

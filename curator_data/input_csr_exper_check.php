@@ -181,7 +181,7 @@ public function save_raw_file($wavelength) {
                $plot_list[$plot] = 1;
              }
              $count = count($plot_list);
-             echo "found $count plots in fieldbook for experiment $trial_code<br>\n";
+             //echo "found $count plots in fieldbook for experiment $trial_code<br>\n";
 
              if ($temp[2] != "Date") {
                echo "Error - Expected \"Date\" found \"$temp[2]\"<br>\n";
@@ -191,6 +191,7 @@ public function save_raw_file($wavelength) {
                echo "Error - Bad date format, found $temp[3] should be mm/dd/yy<br>\n";
                $error_flag = 1;
              }
+             $csr_date = $temp[3];
 
              //read in plot and check
              $error = 0;
@@ -262,6 +263,7 @@ public function save_raw_file($wavelength) {
              }
 
              $i = 1;
+             echo "verifying csr data file<br>";
              while ($line = fgets($reader)) {
                $size_t = 0;
                $temp = str_getcsv($line,"\t");
@@ -284,9 +286,13 @@ public function save_raw_file($wavelength) {
                    }
                  }
                  if ($size_t != $count_plot) {
-                   echo "Error - line $i size = $size_t expected = $count_plot<br>\n";
+                   echo "<br>Error - line $i size = $size_t expected = $count_plot<br>\n";
                  } else {
                    $i++;
+                 }
+                 if ($i % 100 == 0) {
+                   echo "finished $i lines<br>";
+                   flush();
                  }
                }
              }
@@ -391,6 +397,15 @@ public function save_raw_file($wavelength) {
                if ($data[4] !== "Measurement date time") {
                  echo "expected \"Measurement date\" found $data[4]<br>";
                  $error_flag = 1;
+               } else {
+                 $meta_date = $value[4];
+               }
+               //if initial file read from form then check that date matches value in CSR file
+               if (!empty($_FILES['file']['name'][1])) { 
+                 if ($meta_date !== $csr_date) {
+                   echo "Measurement date $value[4] does not match date in CSR data file $csr_date<br>";
+                   $error_flag = 1;
+                 }
                }
                if ($data[5] != "Growth Stage") {
                  echo "expected \"Growth Stage\" found $data[5]<br>";
@@ -451,8 +466,6 @@ public function save_raw_file($wavelength) {
                    $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
-                   //$sql = "insert into csr_rawfiles (experiment_uid, measurement_uid, users_uid, name) values ($experiment_uid, $measurement_uid, $userid, '$unq_file_name')";
-                   //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql"); 
                  } else {
                    $sql = "delete from csr_measurement where measurement_uid  = $measurement_uid";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -460,9 +473,10 @@ public function save_raw_file($wavelength) {
                    $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
-                   //$sql = "insert into csr_rawfiles (experiment_uid, measurement_uid, users_uid, name) values ($experiment_uid, $measurement_uid, $userid, '$unq_file_name')";
-                   //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                  }
+                 $sql = "insert into input_file_log (file_name, users_name, created_on)
+                        VALUES('$unq_file_name', '$username', NOW())";
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                }
                echo "<br><table>\n";
                for ($i=1; $i<=$lines_found; $i++) {

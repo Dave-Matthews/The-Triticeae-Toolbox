@@ -346,9 +346,9 @@ class Downloads
 		
 		$dir = '/tmp/tht/';
                 $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
-                $filename1 = 'THTdownload_tassel_hapmap_' . $unique_str . '.txt';
-                $filename2 = 'THTdownload_tassel_' . $unique_str . '.jnlp';
-                $filename3 = 'THTdownload_tassel_traits_' . $unique_str . '.txt';
+                $filename1 = 'download_tassel_hapmap_' . $unique_str . '.txt';
+                $filename2 = 'download_tassel_' . $unique_str . '.jnlp';
+                $filename3 = 'download_tassel_traits_' . $unique_str . '.txt';
 
                 if(!file_exists($dir.$filename1)){
                         $h = fopen($dir.$filename1, "w+");
@@ -1400,7 +1400,7 @@ class Downloads
 		//$firephp->error("Curent location: ". getcwd());
 		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
 		$dir = '/tmp/tht/';
-		$filename = 'THTdownload_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
+		$filename = 'download_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 		
         // File_Archive doesn't do a good job of creating files, so we'll create it first
 		if(!file_exists($dir.$filename)){
@@ -1477,7 +1477,7 @@ class Downloads
 		//$firephp->error("Curent location: ". getcwd());
 		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
 		$dir = '/tmp/tht/';
-		$filename = 'THTdownload_tasselV3_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
+		$filename = 'download_tasselV3_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 		
         // File_Archive doesn't do a good job of creating files, so we'll create it first
 		if(!file_exists($dir.$filename)){
@@ -1626,7 +1626,7 @@ class Downloads
 	  }
 	  
 	  $dir = '/tmp/tht/';
-	  $filename = 'THTdownload_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
+	  $filename = 'download_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
 	  
 	  // File_Archive doesn't do a good job of creating files, so we'll create it first
 	  if(!file_exists($dir.$filename)){
@@ -2430,7 +2430,7 @@ class Downloads
 	 //get header
 	 $empty = array();
 	 $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode";
-	 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
+	 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str) order by line_record_uid";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
 	  $name = $row[0];

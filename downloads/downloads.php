@@ -7,7 +7,7 @@
  * 
  * @category PHP
  * @package  T3
- * @author   Clay Birkett <cbirkett@gmail.com>
+ * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
@@ -544,7 +544,13 @@ class Downloads
 	    <script type="text/javascript">
 	      var mm = 10;
 	      var mmaf = 5; 
-              window.onload = load_markers_lines( mm, mmaf);
+              if ( window.addEventListener ) {
+                window.addEventListener( "load", load_markers_lines( mm, mmaf), false );
+              } else if ( window.attachEvent ) {
+                window.attachEvent( "onload", load_markers_lines);
+              } else if ( window.onload ) {
+                window.onload = load_markers_lines( mm, mmaf);
+              }
 	    </script>
 	    </div>
 	     <?php 	
@@ -571,8 +577,7 @@ class Downloads
 	      $res = mysql_query($sql) or die(mysql_error());
 	      $row = mysql_fetch_assoc($res)
 	      ?>
-	      <option disabled="disabled" value="
-	      <?php $uid ?>">
+	      <option disabled value="<?php $uid ?>">
 	      <?php echo $row['line_record_name'] ?>
 	      </option>
 	      <?php
@@ -612,7 +617,7 @@ class Downloads
 	        $res = mysql_query($sql) or die(mysql_error());
 	        $row = mysql_fetch_assoc($res)
 	        ?>
-	        <option disabled="disabled" value="
+	        <option disabled value="
 	        <?php $uid ?>">
 	        <?php echo $row['marker_name'] ?>
 	        </option>
@@ -650,7 +655,7 @@ class Downloads
                 $res = mysql_query($sql) or die(mysql_error());
                 $row = mysql_fetch_assoc($res)
                 ?>
-                    <option disabled="disabled" value="<?php echo $row['phenotypes_name'] ?>">
+                    <option disabled value="<?php echo $row['phenotypes_name'] ?>">
                      <?php echo $row['phenotypes_name'] ?>
                     </option>
                     <?php
@@ -685,7 +690,7 @@ class Downloads
                 $res = mysql_query($sql) or die(mysql_error());
                 $row = mysql_fetch_assoc($res)
                 ?>
-                    <option disabled="disabled" value="<?php echo $row['trial_code'] ?>">
+                    <option disabled value="<?php echo $row['trial_code'] ?>">
                      <?php echo $row['trial_code'] ?>
                     </option>
                     <?php
@@ -825,7 +830,8 @@ class Downloads
            $marker_list_name[$i] = $row[1];
 	   $i++;
 	 }
-	
+
+         //$start_time = microtime(true);	
 	 //calculate allele frequence and missing
 	 foreach ($lines as $line_record_uid) {
 	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
@@ -833,31 +839,25 @@ class Downloads
           if ($row = mysql_fetch_array($res)) {
 	    $alleles = $row[0];
 	    $outarray = explode(',',$alleles);
-	    $i=0;
-	    foreach ($outarray as $allele) {
-              if ($allele=='AA') { $marker_aacnt[$i]++; }
-              elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-              elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-              elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
-              else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-              $i++;
-	    }
-          } else { 
-            foreach ($marker_misscnt as $i=>$value) {
-              $marker_misscnt[$i]++;
+            foreach ($outarray as $i=>$allele) {
+              $marker_cnt[$i][$allele]++;
             }
+          } else { 
+            $marker_cnt["mis"]++;
           }
 	 }
+         //$end_time = microtime(true);
+         //$diff = $end_time - $start_time;
+         //echo "elapsed = $diff<br>\n";
          $i=0;
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
 	 foreach ($marker_list as $marker_uid) {
-	   //if (isset($markers_lookup[$marker_uid])) {
-	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-           $total_af = 2 * ($marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i]);
+           $total = $marker_cnt[$i]["AA"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"] + $marker_cnt[$i]["BB"] + $marker_cnt["mis"] + $marker_cnt[$i]["--"] + $marker_cnt[$i][""];
+           $total_af = 2 * ($marker_cnt[$i]["AA"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"] + $marker_cnt[$i]["BB"]);
 	   if ($total_af > 0) {
-	     $maf = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total_af, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total_af),1);
-	     $miss = round(100*$marker_misscnt[$i]/$total,1);
+             $maf = round(100 * min((2 * $marker_cnt[$i]["AA"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"]) /$total_af, (2 * $marker_cnt[$i]["BB"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"]) / $total_af),1);
+             $miss = round(100*($marker_cnt[$i]["--"] + $marker_cnt["mis"] + $marker_cnt[$i][""])/$total,1);
 	     if ($maf >= $min_maf) $num_maf++;
 	     if ($miss > $max_missing) $num_miss++;
 	     if (($miss > $max_missing) OR ($maf < $min_maf)) {
@@ -867,7 +867,6 @@ class Downloads
              }
 	     $num_mark++;
 	   }
-	   //}
            $i++; 
 	 }
          $_SESSION['filtered_markers'] = $markers_filtered;
@@ -881,7 +880,7 @@ class Downloads
 	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
 	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
 	</i>
-	<br><input type="button" value="Refresh" onclick="javascript:mrefresh(); load_title()" /><br>
+	<br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
 	<?php
 	}
 	
