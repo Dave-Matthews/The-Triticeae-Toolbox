@@ -831,7 +831,7 @@ class Downloads
 	   $i++;
 	 }
 
-         $start_time = microtime(true);	
+         //$start_time = microtime(true);	
 	 //calculate allele frequence and missing
 	 foreach ($lines as $line_record_uid) {
 	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
@@ -846,9 +846,9 @@ class Downloads
             $marker_cnt["mis"]++;
           }
 	 }
-         $end_time = microtime(true);
-         $diff = $end_time - $start_time;
-         echo "elapsed = $diff<br>\n";
+         //$end_time = microtime(true);
+         //$diff = $end_time - $start_time;
+         //echo "elapsed = $diff<br>\n";
          $i=0;
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
