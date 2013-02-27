@@ -437,34 +437,39 @@ $rawsql="SELECT experiment_uid from fieldbook where experiment_uid = $experiment
 $rawres=mysql_query($rawsql) or die(mysql_error());
 if ($rawrow = mysql_fetch_assoc($rawres)) {
   $fieldbook="display_fieldbook.php?function=display&uid=$experiment_uid";
-  echo "<a href=".$config['base_url'].$fieldbook.">$trial_code</a>";
+  echo "<a href=".$config['base_url'].$fieldbook.">$trial_code</a>\n";
 }
 if (empty($fieldbook)) echo "none";  
 
 $found = 0;
-$sql="SELECT measure_date, spect_sys_uid, raw_file_name, measurement_uid from csr_measurement where experiment_uid = $experiment_uid";
+$sql="SELECT date_format(measure_date, '%m-%d-%Y'), spect_sys_uid, raw_file_name, measurement_uid from csr_measurement where experiment_uid = $experiment_uid";
 $res = mysql_query($sql) or die(mysql_error());
-while ($row = mysql_fetch_assoc($res)) {
+while ($row = mysql_fetch_array($res)) {
   if ($found == 0) {
-    echo "<table><tr><td>Date<td>Spect System<td>CSR Annotation<td>CSR Data<td>System\n";
+    echo "<table><tr><td>Date<td>CSR Annotation<td>CSR Data<td>Spectrometer<br>System<td>CSR Data\n";
     $found = 1;
   }
-  $date = $row["measure_date"];
-  $sys_uid = $row["spect_sys_uid"];
-  $raw_file = $row["raw_file_name"];
-  $measurement_uid = $row["measurement_uid"];
+  $date = $row[0];
+  $sys_uid = $row[1];
+  $raw_file = $row[2];
+  $measurement_uid = $row[3];
   $trial="display_csr_exp.php?function=display&uid=$measurement_uid";
   $tmp2 = $config['base_url'] . "raw/phenotype/" . $raw_file;
-  echo "<tr><td>$date<td>$sys_uid";
+  echo "<tr><td>$date";
   echo "<td><a href=".$config['base_url'].$trial.">View</a>";
   echo "<td><a href=$tmp2>Open File</a>";
 
-  $sql="SELECT * from csr_system where system_uid = $sys_uid";
+  $sql="SELECT system_name from csr_system where system_uid = $sys_uid";
   $res2 = mysql_query($sql) or die(mysql_error(). $sql);
   if ($rawrow = mysql_fetch_assoc($res2)) {
-    $trial="display_csr_spe.php?function=display&uid=$sys_uid";
-    echo "<td><a href=".$config['base_url'].$trial.">View</a>";
+    $system_name = $rawrow["system_name"];
+    $trial= $config['base_url'] . "display_csr_spe.php?function=display&uid=$sys_uid";
+    echo "<td><a href=$trial>$system_name</a>";
+  } else {
+    echo "<td>missing";
   }
+  $trial= $config['base_url'] . "curator_data/cal_index.php";
+  echo "<td><a href=$trial>Calculate Index</a>";
 }
 echo "</table>";
 
