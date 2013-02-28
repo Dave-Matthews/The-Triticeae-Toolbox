@@ -1878,7 +1878,7 @@ class Downloads
 			$outarray = array_combine($keys  , $outarray);
 			//// $firephp->table('outarray label ', $outarray); 
             while ($row = mysql_fetch_array($res)) {
-               $keyval = $row['phenotype_uid'].$row['experiment_uid'];
+               $keyval = $row['phenotype_uid'].":".$row['experiment_uid'];
 			   // $firephp->log("keyvals ".$keyval." ".$row['value']);
                $outarray[$keyval]= $row['value'];
             }
