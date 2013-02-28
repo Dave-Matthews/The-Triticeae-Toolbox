@@ -1803,7 +1803,7 @@ class Downloads
       while($row = mysql_fetch_array($res)) {
          $outputheader2 .= $delimiter . str_replace(" ","_",$row['phenotypes_name']);
          $outputheader3 .= $delimiter . $row['trial_code'];
-         $keys[] = $row['phenotype_uid'].$row['experiment_uid'];
+         $keys[] = $row['phenotype_uid'].":".$row['experiment_uid'];
       }
       $nexp=$ncols;
 		//$firephp->log("trait_location information ".$outputheader2."  ".$outputheader3);
@@ -1855,14 +1855,6 @@ class Downloads
 		for ($i=0;$i<$nlines;$i++) {
             $outline = $lines[$i].$delimiter;
 			// get selected traits for this line in the selected experiments, change for multiple check lines
-           /* $sql = "SELECT pd.phenotype_uid, pd.value, tb.experiment_uid
-                     FROM tht_base as tb, phenotype_data as pd
-                     WHERE 
-                        tb.line_record_uid =  $line_uid[$i]
-                        AND tb.experiment_uid IN ($experiments)
-                        AND pd.tht_base_uid = tb.tht_base_uid
-                       AND pd.phenotype_uid IN ($traits)  
-                     ORDER BY pd.phenotype_uid,tb.experiment_uid";*/
 // dem 8oct10: Don't round the data.
 //			$sql = "SELECT avg(cast(pd.value AS DECIMAL(9,1))) as value,pd.phenotype_uid,tb.experiment_uid 
 			if (preg_match("/\d/",$experiments)) {
@@ -1886,7 +1878,7 @@ class Downloads
 			$outarray = array_combine($keys  , $outarray);
 			//// $firephp->table('outarray label ', $outarray); 
             while ($row = mysql_fetch_array($res)) {
-               $keyval = $row['phenotype_uid'].$row['experiment_uid'];
+               $keyval = $row['phenotype_uid'].":".$row['experiment_uid'];
 			   // $firephp->log("keyvals ".$keyval." ".$row['value']);
                $outarray[$keyval]= $row['value'];
             }
