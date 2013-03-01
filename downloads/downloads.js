@@ -688,13 +688,6 @@ function update_phenotype_linesb(options) {
                 document.location = url;
             }
 
-			function get_download_loc(version) {
-			    var mm = $('mm').getValue();
-                var mmaf = $('mmaf').getValue();
-                var url=php_self + "?function=type2_build_tassel_" + version + "&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
-                document.location = url;
-			}
-			
 			function load_markers_pheno( mm, mmaf) {
                 markers_loading = true;
                 $('step5').hide();
@@ -715,12 +708,12 @@ function update_phenotype_linesb(options) {
                 );
             }
 
-			function load_markers_lines( mm, mmaf) {
+			function load_markers_lines( mm, mmaf, use_line) {
 			    select1_str = "Lines";
                 markers_loading = true;
                 Element.show('spinner');
                 document.getElementById('step5').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
-                var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
+                var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&use_line=' + use_line;
                 document.title='Loading Markers...';
                 //changes are right here
                 var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
@@ -752,28 +745,16 @@ function update_phenotype_linesb(options) {
 
             }
 
-			function getdownload_tassel(version)
-			{
-				if (selectedTraits() === '') {
-					alert("Please select at least one trait!");
-					return false;
-				}
-			    var mm = $('mm').getValue();
-                var mmaf = $('mmaf').getValue();
-			    //var subset = $('subset').getValue();
-			    var url=php_self + "?function=type2_build_tassel_" + version + "&lines=" + lines_str+'&yrs='+ years_str+'&e='+experiments_str+'&pi='+phenotype_items_str+'&subset='+subset+'&mm='+mm+'&mmaf='+mmaf;
-               document.location = url;
-			}
-
             function mrefresh() {
                 var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
+                var use_line = "yes";
                 if (select1_str == "Phenotypes") {
                     load_markers_pheno( mm, mmaf);
                 } else if (select1_str == "Locations") {
                     load_markers_loc( mm, mmaf);
                 } else if (select1_str == "Lines") {
-                    load_markers_lines( mm, mmaf);
+                    load_markers_lines( mm, mmaf, use_line);
                 } else {
                     load_markers( mm, mmaf);
                 }
