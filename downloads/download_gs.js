@@ -24,8 +24,8 @@ function load_title(command) {
     });
 }
 
-function run_histo(unq_file) {
-    var url = php_self + "?function=run_histo" + "&unq=" + unq_file;
+function run_histo(unq_file, pheno) {
+    var url = php_self + "?function=run_histo" + "&unq=" + unq_file + "&pheno=" + pheno;
     var tmp = new Ajax.Updater($('step3'), url, {
         onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
@@ -76,7 +76,7 @@ function run_rscript(unq_file) {
     });
 }
 
-function load_genomic_prediction(unq_file) {
+function load_genomic_prediction() {
     var unq_file = Date.now();
     document.getElementById('step5').innerHTML = "";
     Element.show('spinner'); 
@@ -97,12 +97,29 @@ function load_genomic_prediction(unq_file) {
     });
 }
 
-// use this function to run GWA on training set 
-function load_genomic_gwas(unq_file) {
+function load_histogram(pheno) {
     var unq_file = Date.now();
     document.getElementById('step5').innerHTML = "";
     Element.show('spinner');
     document.getElementById('step3').innerHTML = "Creating Data Files";
+    var url = php_self + "?function=download_session_v4" + "&unq=" + unq_file + "&pheno=" + pheno;
+    var tmp = new Ajax.Updater($('step3'), url, {
+        onCreate: function() { Element.show('spinner'); },
+        onComplete : function() {
+            $('step3').show();
+            document.title = title;
+            run_histo(unq_file, pheno);
+            Element.hide('spinner');
+        }
+    });
+}
+
+// use this function to run GWA on training set 
+function load_genomic_gwas() {
+    var unq_file = Date.now();
+    document.getElementById('step5').innerHTML = "";
+    Element.show('spinner');
+    document.getElementById('step4').innerHTML = "Creating Data Files";
     var mmm = $('mmm').getValue();
     var mml = $('mml').getValue();
     var mmaf = $('mmaf').getValue();
@@ -112,7 +129,7 @@ function load_genomic_gwas(unq_file) {
         onComplete : function() {
             $('step1').show();
             document.title = title;
-            document.getElementById('step3').innerHTML = "Finished Data Files";
+            document.getElementById('step4').innerHTML = "Finished Data Files";
             run_histo(unq_file);
             run_gwa(unq_file);
         }

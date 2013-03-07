@@ -197,14 +197,13 @@ class Downloads
 		<script type="text/javascript" src="downloads/downloads.js"></script>
          <?php 
                 if (empty($_SESSION['selected_lines'])) {
-                    echo "Download genotype, phenotype, map, and genotype conflicts. File format are compatible whith Tassel, R, or FlapJack.<br><br>";
-                    echo "<font color=red>Select lines for download then return to this page.</font><br><br>";
+                    echo "Download genotype, phenotype, map, and genotype conflicts. File formats are available for Tassel, R, or FlapJack.<br><br>";
                     echo "<a href=";
                     echo $config['base_url'];
-                    echo "pedigree/line_selection.php>Select Lines by Properties</a><br><br>";
+                    echo "pedigree/line_selection.php>Select Lines by Properties</a> or ";
                     echo "<a href=";
                     echo $config['base_url'];
-                    echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
+                    echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>.";
                 } else {
                    $this->type1_lines_trial_trait(); 
                 }
