@@ -131,7 +131,6 @@ private function typeExperiments()
 
 		echo "<h2>Calculate Canopy Spectral Reflectance (CSR) Index</h2>"; 
                 echo "These indices are calculated from plot phenotype data and may be can be used to predict plant performance.<br><br>";	
-                	
 			
 		$this->type_Experiment_Name();
 
@@ -206,8 +205,11 @@ while ($row = mysqli_fetch_row($res)) {
 </form>
 
 <!--a href=login/edit_csr_field.php>Edit Field Book Table</a><br-->
-<div id="step2">	
-</div>	
+<div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+</div>
+<div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+<img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+</div>
 <?php
 	} /* end of type_Experiment_Name function*/
 } /* end of class */
