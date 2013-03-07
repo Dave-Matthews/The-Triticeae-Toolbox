@@ -16,6 +16,9 @@
   require_once 'config.php';
   require $config['root_dir'].'includes/bootstrap.inc';
   connect();
+  ?>
+  <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+  <?php
   if (isset($_POST['trial']) && !empty($_POST['trial'])) {
     $trial = $_POST['trial'];
     $sql = "select raw_file_name from csr_measurement where measurement_uid = $trial";
