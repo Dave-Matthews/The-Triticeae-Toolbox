@@ -197,7 +197,8 @@ class Downloads
 		<script type="text/javascript" src="downloads/downloads.js"></script>
          <?php 
                 if (empty($_SESSION['selected_lines'])) {
-                    echo "Select lines for download then return to this page.<br><br>";
+                    echo "Download genotype, phenotype, map, and genotype conflicts. File format are compatible whith Tassel, R, or FlapJack.<br><br>";
+                    echo "<font color=red>Select lines for download then return to this page.</font><br><br>";
                     echo "<a href=";
                     echo $config['base_url'];
                     echo "pedigree/line_selection.php>Select Lines by Properties</a><br><br>";
