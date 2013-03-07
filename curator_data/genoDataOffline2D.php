@@ -175,12 +175,11 @@ if (($errFile = fopen($errorFile, "w")) === false) {
 }
 
 //get marker seq
-$sql = "SELECT marker_uid, A_allele, B_allele, sequence from markers where sequence is not NULL";
+$sql = "SELECT marker_uid, A_allele, B_allele from markers";
 $res = mysql_query($sql) or die("Database Error: setting lookup - ". mysql_error()."\n\n$sql");
 while ($row = mysql_fetch_array($res)) {
     $marker_uid = $row['marker_uid'];
     $marker_snp[$marker_uid] = $row['A_allele'] . $row['B_allele'];
-    $marker_seq[$marker_uid] = $row['sequence'];
 }
 
 // Testing for non-processing
@@ -380,16 +379,14 @@ while (!feof($reader))  {
     	}
     }
     
-    if (isset($marker_seq[$marker_uid])) {
-      $seq = $marker_seq[$marker_uid];
+    if (isset($marker_snp[$marker_uid])) {
       $marker_ab = $marker_snp[$marker_uid];
       $a_allele = substr($marker_ab,0,1);
       $b_allele = substr($marker_ab,1,1);
-    } else {
-      $msg = 'ERROR:  marker sequene and allele information not found '.$marker.'\n';
-      fwrite($errFile, $msg);
-      die ("Error: no marker sequence or allele information found for $marker\n");
-      $seq = "unknown";
+    }
+    if (is_null($marker_ab) || (empty($marker_ab))) {
+      $msg = "ERROR:  marker allele information not found $marker";
+      exitFatal($errFile, $msg);
     }
     
     $rowNum++;		// number of lines
