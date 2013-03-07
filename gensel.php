@@ -360,9 +360,9 @@ class Downloads
                   ?>
                   <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
-        Max missing markers &le; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />%
+        Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
-        Max missing lines &le; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />%
+        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
                   <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
@@ -539,9 +539,9 @@ class Downloads
           ?>
           <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
-        Max missing markers &le; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />%
+        Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
-        Max missing lines &le; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />%
+        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
 
           </div>
           <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
@@ -1616,6 +1616,14 @@ class Downloads
           $marker_list_loc[$uid] = $i;
 	  $i++;
 	 }
+  
+         //get location information for lines
+         $sql = "select line_record_uid, line_record_name from line_records";
+         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+         while ($row = mysql_fetch_array($res)) {
+          $uid = $row[0];
+          $line_list_name[$uid] = $row[1];
+         }
 	
 	 //calculate allele frequence and missing
          $marker_misscnt = array();
@@ -1677,24 +1685,36 @@ class Downloads
            }
          }
          $lines_removed = 0; 
+         $lines_removed_name = "";
          $num_line = 0;
          foreach ($lines as $line_record_uid) {
            $total = count($markers_filtered);
            $miss = 100*$line_misscnt[$line_record_uid]/$total;
            if ($miss > $max_miss_line) {
              $lines_removed++;
+             if ($lines_removed_name == "") {
+               $lines_removed_name = $line_list_name[$line_record_uid];
+             } else {
+               $lines_removed_name = $lines_removed_name . ", $line_list_name[$line_record_uid]";
+             }
            } else {
              $lines_filtered[] = $line_record_uid;
            }
            $num_line++;
          }
          $_SESSION['filtered_lines'] = $lines_filtered;
+         $comm = substr($lines_removed_name, 0, 100);
 	 
 	  ?>
 	<i>
 	<br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
 	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
-        <br></i><b><?php echo ($lines_removed) ?></b><i> of </i><b><?php echo ($num_line) ?></b><i> lines will be removed </b></i>.
+        <br></i><b><?php echo ($lines_removed) ?></b><i> of </i><b><?php echo ($num_line) ?></b><i> lines will be removed</b></i>
+        <?php
+        if ($lines_removed_name != "") {
+          echo "(<a title=\"$lines_removed_name\">$comm</a>).";
+        }
+        ?>
 	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> markers will be removed.</i>
 	<?php
 	}

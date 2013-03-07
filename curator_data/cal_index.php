@@ -22,16 +22,15 @@ include($config['root_dir'] . 'includes/bootstrap.inc');
 
 connect();
 $mysqli = connecti();
-loginTest();
+//loginTest();
 
 /* ******************************* */
 $row = loadUser($_SESSION['username']);
 
 ////////////////////////////////////////////////////////////////////////////////
-ob_start();
-
-authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
-ob_end_flush();
+//ob_start();
+//authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_PARTICIPANT));
+//ob_end_flush();
 
 
 new Experiments($_GET['function']);
@@ -130,8 +129,9 @@ private function typeExperiments()
                 global $mysqli;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
-		echo "<h2>Calculate CSR Index</h2>"; 
-		
+		echo "<h2>Calculate Canopy Spectral Reflectance (CSR) Index</h2>"; 
+                echo "These indices are calculated from plot phenotype data and may be can be used to predict plant performance.<br><br>";	
+                	
 			
 		$this->type_Experiment_Name();
 

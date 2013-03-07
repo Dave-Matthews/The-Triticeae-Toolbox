@@ -146,6 +146,8 @@ EOD;
 	<li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
         <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
  	<li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
+        <li><a href="<?php echo $config['base_url']; ?>histo.php" title="Histogram">Traits and Trials Histogram</a>
+        <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
@@ -212,6 +214,8 @@ EOD;
       Add/Edit Markers</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_programs.php">
       Edit/Delete CAP Data Programs</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php">
+      Edit Anything!</a></li>
       </ul>
       <?php endif ?>
 
@@ -252,11 +256,16 @@ EOD;
 	</a>
       <li>
 	<a href="<?php echo $config['base_url']; ?>login/cleanup_temporary_dir.php" title="Clean up temporary files">
-	  Clean up temporary files
-	</a>
-	<a href="http://thehordeumtoolbox.org/webalizer/" title="Webalizer">
-	  Usage Statistics
-	</a>
+	  Clean up temporary files</a>
+      <li>
+	<a href="http://thehordeumtoolbox.org/webalizer/" title="Webalizer old" target="_blank">
+	  Usage, wheat.pw.usda.gov</a>
+      <li>
+	<a href="http://triticeaetoolbox.org/webalizer/" title="Webalizer new" target="_blank">
+	  Usage, tcap</a>
+      <li>
+	<a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">
+	  Usage Analytics</a>
     </ul>
   </li>
 <?php endif; ?>
