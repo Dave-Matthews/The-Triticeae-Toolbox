@@ -207,7 +207,8 @@ class Instrument_Check
                    echo "saved to database<br>\n";
                  }
                }
-               echo "<br><table>\n";
+               echo "<br><a href=../display_csr_spe.php>Check data stored in database</a>\n";
+               echo "<br>Data read from import file<table>\n";
                for ($i=1; $i<=$lines_found; $i++) {
                  echo "<tr><td>$i<td>$data[$i]<td>$value[$i]\n";
                }

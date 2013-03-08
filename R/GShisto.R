@@ -18,10 +18,12 @@ if (length(unq.trial) > 1) {
       } 
     }
     trialname <- triallabel[exper]
-    mainlabel <- paste("Histogram of ",trialname)
+    mainlabel <- paste(trialname,"\n",phenolabel)
     hist(phenos, main=mainlabel, xlab=phenounit)
   }
 } else {
-  mainlabel <- paste("Histogram of Training Set,",phenolabel)
+  exper <- unq.trial[1]
+  trialname <- triallabel[exper]
+  mainlabel <- paste(trialname,"\n",phenolabel)
   hist(pheno, main=mainlabel, xlab=phenounit)
 }

@@ -708,11 +708,11 @@ function update_phenotype_linesb(options) {
                 );
             }
 
-			function load_markers_lines( mm, mmaf) {
+			function load_markers_lines( mm, mmaf, use_line) {
 			    select1_str = "Lines";
                 markers_loading = true;
                 $('step5').hide();
-                var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf;
+                var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&use_line=' + use_line;
                 document.title='Loading Markers...';
                 //changes are right here
                 var tmp = new Ajax.Updater($('step5'),url,
@@ -770,12 +770,13 @@ function update_phenotype_linesb(options) {
             function mrefresh() {
                 var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
+                var use_line = "yes";
                 if (select1_str == "Phenotypes") {
                     load_markers_pheno( mm, mmaf);
                 } else if (select1_str == "Locations") {
                     load_markers_loc( mm, mmaf);
                 } else if (select1_str == "Lines") {
-                    load_markers_lines( mm, mmaf);
+                    load_markers_lines( mm, mmaf, use_line);
                 } else {
                     load_markers( mm, mmaf);
                 }
