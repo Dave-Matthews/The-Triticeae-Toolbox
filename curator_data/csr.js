@@ -1,4 +1,4 @@
-/*global $,Ajax*/
+/*global $,Ajax,Element*/
 
 var php_self = document.location.href;
 var title = document.title;
@@ -115,15 +115,15 @@ function cal_index() {
   param += '&formula1=' + formula1;
   param += '&formula2=' + formula2;
   param += '&smooth=' + smooth;
-  document.getElementById("step2").innerHTML = "";
+  //document.getElementById("step2").innerHTML = "";
   var url = "curator_data/cal_index_check.php?trial=" + trial + "&W1=" + w1 + "&W2=" + w2 + "&formula1=" + formula1 + "&formula2=" + formula2;
   url = "curator_data/cal_index_check.php";
-  /*var url = php_self + "?function=display&uid=" + uid;*/
-  /*var tmp = new Ajax.Updater($('step2'), url, {*/
+  Element.show('spinner');
   var tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
         onComplete : function() {
             $('step2').show();
             document.title = title;
+            Element.hide('spinner');
         }
     });
 }

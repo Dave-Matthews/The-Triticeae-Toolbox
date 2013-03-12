@@ -687,6 +687,12 @@ class Downloads
 	$saved_session = "";
 	$message2 = "";
 
+        if (isset($_GET['use_line']) && ($_GET['use_line'] == "yes")) {
+          $use_database = 0;
+        } else {
+          $use_database = 1;
+        }
+
 	if (isset($_SESSION['phenotype'])) {
 	    $phenotype = $_SESSION['phenotype'];
 	    $message2 = "transfer phenotype and genotype data";
@@ -736,8 +742,12 @@ class Downloads
 	  $min_maf = 100;
 	 elseif ($min_maf<0)
 	  $min_maf = 0;
-	 
-	 $this->calculate_af($lines, $min_maf, $max_missing); 
+	
+         if ($use_database) {
+           $this->calculate_db($lines, $min_maf, $max_missing);
+         } else { 
+	   $this->calculate_af($lines, $min_maf, $max_missing); 
+         }
 	 
 	 if ($saved_session != "") {
 	     if ($countLines == 0) {
@@ -766,6 +776,60 @@ class Downloads
 	  }
 	  return ($a < $b) ? -1 : 1;
 	}
+
+        function calculate_db(&$lines, $min_maf, $max_missing) {
+         //calculate allele frequencies using allele_frequencies table
+
+         $selectedlines = implode(",", $lines);
+
+         //get genotype experiments that correspond with the Datasets (BP and year) selected for the experiments
+         $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
+         FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
+         WHERE
+         e.experiment_type_uid = et.experiment_type_uid
+         AND lr.line_record_uid = tb.line_record_uid
+         AND e.experiment_uid = tb.experiment_uid
+         AND lr.line_record_uid in ($selectedlines)
+         AND et.experiment_type_name = 'genotype'";
+         $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+         if (mysql_num_rows($res)>0) {
+          while ($row = mysql_fetch_array($res)){
+           $exp[] = $row["exp_uid"];
+          }
+          $exp = implode(',',$exp);
+         }
+
+         $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+         SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+         FROM allele_frequencies AS af
+         WHERE af.experiment_uid in ($exp)
+         group by af.marker_uid";
+
+         $res = mysql_query($sql_mstat) or die(mysql_error());
+         $num_mark = mysql_num_rows($res);
+         $num_maf = $num_miss = $num_removed = 0;
+
+         while ($row = mysql_fetch_array($res)){
+          $marker_uid[] = $row["marker"];
+          $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+          $miss = round(100*$row["summis"]/$row["total"],1);
+          if ($maf >= $min_maf)
+           $num_maf++;
+          if ($miss > $max_missing)
+           $num_miss++;
+          if (($miss > $max_missing) OR ($maf < $min_maf))
+           $num_removed++;
+         }
+         $_SESSION['filtered_markers'] = $marker_uid;
+
+         ?>
+        <p>
+        Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />&nbsp;&nbsp;
+        Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />
+        <br><input type="button" value="Filter markers" onclick="javascript:mrefresh();" /><br>
+        <?php
+
+        }
 	
 	/**
 	 * display minor allele frequence and missing data using selected lines
@@ -802,30 +866,22 @@ class Downloads
 	  if ($row = mysql_fetch_array($res)) {
 	    $alleles = $row[0];
 	    $outarray = explode(',',$alleles);
-	    $i=0;
-	    foreach ($outarray as $allele) {
-              if ($allele=='AA') { $marker_aacnt[$i]++; }
-              elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-              elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-              elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
-              else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-              $i++;
+	    foreach ($outarray as $i=>$allele) {
+              $marker_cnt[$i][$allele]++;
 	    }
           } else {
-            foreach ($marker_misscnt as $i=>$value) {
-              $marker_misscnt[$i]++;
-            }
+            $marker_cnt[$i][$allele]++;
           }
 	 }
          $i=0;
 	 $num_mark = 0;
 	 $num_maf = $num_miss = $num_removed = 0;
 	 foreach ($marker_list as $marker_uid) {
-	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-           $total_af = 2 * ($marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i]);
+           $total = $marker_cnt[$i]["AA"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"] + $marker_cnt[$i]["BB"] + $marker_cnt["mis"] + $marker_cnt[$i]["--"] + $marker_cnt[$i][""];
+           $total_af = 2 * ($marker_cnt[$i]["AA"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"] + $marker_cnt[$i]["BB"]);
 	   if ($total_af > 0) {
-	     $maf = 100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total_af, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total_af);
-	     $miss = 100*$marker_misscnt[$i]/$total;
+             $maf = round(100 * min((2 * $marker_cnt[$i]["AA"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"]) /$total_af, (2 * $marker_cnt[$i]["BB"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"]) / $total_af),1);
+             $miss = round(100*($marker_cnt[$i]["--"] + $marker_cnt["mis"] + $marker_cnt[$i][""])/$total,1);
 	     if ($maf >= $min_maf) $num_maf++;
 	     if ($miss > $max_missing) $num_miss++;
 	     if (($miss > $max_missing) OR ($maf < $min_maf)) {
