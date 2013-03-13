@@ -23,7 +23,7 @@ if( ($id = array_search("Update", $_POST)) != NULL) {
 
 $searchstring = '';
 if(isset($_REQUEST['search']) && $_REQUEST['search'] != "") {
-  $tablesToSearch = array("phenotype_experiment_info");
+  $tablesToSearch = array("phenotype_experiment_info","experiments");
   $found = array();
   $searchstring = $_REQUEST['search'];
   $words = explode(" ", $_REQUEST['search']);
