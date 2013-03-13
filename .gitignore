@@ -8,3 +8,4 @@ includes/bootstrap_curator.inc
 viroblast/data/*
 # Other:
 downloads/old
+whatsnew.html
