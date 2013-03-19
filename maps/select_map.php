@@ -40,7 +40,7 @@ class Maps {
       $this->typeMapSave();
       break;
     case 'Markers':
-      $this->typeMapMarker();
+      $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
       break;
     default:
       $this->typeMapSet(); /* initial case */
@@ -63,6 +63,7 @@ class Maps {
     $this->type_MapSet_Display();
     echo "</div>";
     echo "<div id=\"step2\">";
+    echo "<img id=\"spinner\" src=\"images/ajax-loader.gif\" style=\"display:none;\" />";
     echo "</div>";
     echo "<div id=\"step3\"></div>";
     if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) {
