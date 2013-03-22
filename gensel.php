@@ -1715,11 +1715,11 @@ class Downloads
         <td><b><?php echo ("$count") ?></b><i> markers</i> 
         <?php
         echo "<tr><td>using<b> $count</b> markers<br>";
-        if ($lines_removed > 1) {
-          echo ("</i><b>$lines_removed") ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
+        if ($lines_removed == 1) {
+          echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
           <?php
         } else {
-          echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
+          echo ("</i><b>$lines_removed") ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
           <?php
         }
         if ($lines_removed_name != "") {
@@ -3072,7 +3072,7 @@ selected lines</a><br>
               $year = $row[2];
               $sql = "select pd.value as value
                      from tht_base as tb, phenotype_data as pd
-                     $sql_option
+                     WHERE tb.experiment_uid = $exper AND 
                      tb.line_record_uid  = $uid
                      AND pd.tht_base_uid = tb.tht_base_uid
                      AND pd.phenotype_uid = $traits";
