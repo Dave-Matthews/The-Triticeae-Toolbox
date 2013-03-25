@@ -6,15 +6,21 @@ connect();
 ?>
 
 
-    <h2>Breeders Datafarm, Wheat</h2>
+    <h2>Breeders Toybox, Wheat</h2>
+    <h3 style="color: #de5414; margin-left: 30px;"><i>Making breeding fun!</i></h3>
+    <br>
     <div class="section">
+      <p>If you knew everything about the genome of each of your
+	breeding lines, wouldn't it be <b>fun</b> to decide who to cross?
+	
       <h3>Welcome to the Breeders Datafarm!</h3>
 
-      <p>BDF is the web portal for data from US Uniform Regional 
-	Nurseries.  Supported by the <a href="http://scabusa.org">US Wheat and Barley Scab 
-	Initiative</a>, it is derived from The Triticeae Toolbox (T3),
-	the database of the <a href="http://triticeaecap.org/">Triticeae Coordinated
-	  Agricultural Project</a> (T-CAP).
+      <p>BDF is the web portal for data from US Uniform Regional
+	Nurseries.  Supported by the <a href="http://scabusa.org">US
+	Wheat and Barley Scab Initiative</a>, it is derived from The
+	Triticeae Toolbox (T3), the database of
+	the <a href="http://triticeaecap.org/">Triticeae Coordinated
+	Agricultural Project</a> (T-CAP).
 
       <p><b>Participants</b>: The templates for submitting your data about
 	phenotype trials, phenotype results, and the lines tested are here.
