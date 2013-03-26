@@ -1,16 +1,4 @@
 /*global $,Ajax,Element,window*/
-/**
- * PHP version 5.3
- * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/cluster.js
- */
-
 var php_self = document.location.href;
 var title = document.title;
 var mmm = 10;
