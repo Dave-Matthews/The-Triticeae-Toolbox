@@ -81,7 +81,7 @@ else {
   }
   print "</textarea>";
 ?>
-  <script type="text/javascript" src="cluster.js"></script>
+  <script type="text/javascript" src="cluster3.js"></script>
   <p>How many clusters?&nbsp;
   <input type=text id='clusters' name="clusters" value=<?php echo $clusters ?> size="1">  (Maximum 8.)<br>
   <?php

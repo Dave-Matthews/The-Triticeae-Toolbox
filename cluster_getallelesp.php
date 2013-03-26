@@ -10,7 +10,7 @@
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ * @link     http://triticeaetoolbox.org/wheat/cluster_getallelesp.php
  * 
  */
 
@@ -83,7 +83,7 @@ else {
   }
   if ($update) {
     echo "Updating table allele_byline_clust...<p>";
-    set_time_limit(300);  // Default 30sec runs out in ca. line 105.  
+    set_time_limit(3000);  // Default 30sec runs out in ca. line 105. So does 300.
     mysql_query("truncate table allele_byline_clust") or die(mysql_error());
     $lookup = array('AA' => '1',
 		    'BB' => '0',
@@ -158,15 +158,30 @@ else {
   file_put_contents($outfile, $outputheader);
 
   // Get the alleles for currently selected lines, all genotyped markers.	
-  $sql = "select line_record_name, alleles from allele_byline_clust
-          where line_record_uid in ($sel_lines)
-          order by line_record_name";
-  $starttime = time();
-  $res = mysql_query($sql) or die(mysql_error());
-  $elapsed = time() - $starttime;
-  echo "<p>Query time: $elapsed sec<br>";
-  while ($row = mysql_fetch_array($res)) 
-    file_put_contents($outfile, $row[0].$delimiter.$row[1]."\n", FILE_APPEND);
+  foreach ($_SESSION['filtered_lines'] as $lineuid) {
+    $sql = "select line_record_name, alleles from allele_byline_clust
+          where line_record_uid = $lineuid";
+    $res = mysql_query($sql) or die(mysql_error());
+    if ($row = mysql_fetch_array($res)) {
+      $outarray2 = array();
+      $line_name = $row[0];
+      $alleles = $row[1];
+      //echo "$line_name $alleles\n";
+      $outarray = explode(',',$alleles);
+      $i=0;
+      foreach ($outarray as $allele) {
+        $marker_id = $marker_list[$i];
+        if (isset($marker_lookup[$marker_id])) {
+          $outarray2[]=$allele;
+        }
+        $i++;
+      }
+      $outarray = implode($delimiter,$outarray2);
+      file_put_contents($outfile, $line_name.$delimiter.$outarray."\n", FILE_APPEND);
+    }
+    $elapsed = time() - $starttime;
+    $_SESSION['timmer'] = $elapsed;
+  }
   
   // Get phenotype data
   $outfile = "/tmp/tht/phenoData.csv".$time;
@@ -238,7 +253,3 @@ else {
   }
   file_put_contents($outfile, $new_name.$delimiter.$pheno_str."\n", FILE_APPEND);
 }
-
-echo "</div></div></div>";
-
-?>
