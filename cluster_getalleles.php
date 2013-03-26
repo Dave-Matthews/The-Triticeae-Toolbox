@@ -18,34 +18,16 @@ require 'config.php';
 //Need write access to update the cache table.
 //include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'includes/bootstrap_curator.inc');
-<<<<<<< HEAD
-connect();
-
-print "<div class='boxContent'>";
-$selectedcount = count($_SESSION['selected_lines']);
-echo "<h3><font color=blue>Currently Selected Lines</font>: $selectedcount</h3>";
-if ($selectedcount != 0) {
-  print "<textarea rows = 9>";
-=======
 include($config['root_dir'].'downloads/marker_filter.php');
 
 connect();
 
->>>>>>> 496623391a66cce321945ba3e102da45c4432790
   foreach ($_SESSION['selected_lines'] as $lineuid) {
     $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
     while ($row=mysql_fetch_assoc($result)) {
       $selval=$row['line_record_name'];
     }
   }
-<<<<<<< HEAD
-  print "</textarea><p>";
-}
-// Clean up all old copies.
-// No, bad idea, it could be another user's file.  Use a cron job.
-//array_map("unlink", glob($config['root_dir']."downloads/temp/clustertable.txt*"));
-
-=======
 
 $starttime = time();
 $selected_lines = $_SESSION['selected_lines'];
@@ -54,22 +36,15 @@ $max_missing = $_GET['mmm'];
 $max_miss_line = $_GET['mml'];
 calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
 
->>>>>>> 496623391a66cce321945ba3e102da45c4432790
 if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
   // No lines selected so prompt to get some.
   echo "<a href=".$config['base_url']."pedigree/line_selection.php>Select lines.</a> ";
   echo "(Patience required for more than a few hundred lines.)";
-<<<<<<< HEAD
-}
-else {
-  $sel_lines = implode(",", $_SESSION['selected_lines']);
-=======
 } elseif (!isset ($_SESSION['filtered_lines'])) {
   echo "Error: filtering routine did not work<br>\n";
   die();
 } else {
   $sel_lines = implode(",", $_SESSION['filtered_lines']);
->>>>>>> 496623391a66cce321945ba3e102da45c4432790
   $delimiter =",";
   // Adapted from download/downloads.php:
   // 2D array of alleles for all markers x currently selected lines
@@ -150,11 +125,6 @@ else {
       mysql_query($sql) or die(mysql_error()."<br>Query:<br>$sql");
     }
   } // end of if($update)
-<<<<<<< HEAD
-
-  // Save the list of marker names to the output file.
-  $outputheader = trim($outputheader, ",")."\n";
-=======
 
   $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
                 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -183,26 +153,12 @@ else {
     }
   }
   $outputheader .= "\n";
->>>>>>> 496623391a66cce321945ba3e102da45c4432790
   // Make the filename unique to deal with concurrency.
   $time = $_GET['time'];
   if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
   $outfile = "/tmp/tht/mrkData.csv".$time;
   file_put_contents($outfile, $outputheader);
 
-<<<<<<< HEAD
-  // Get the alleles for currently selected lines, all genotyped markers.	
-  $sql = "select line_record_name, alleles from allele_byline_clust
-          where line_record_uid in ($sel_lines)
-          order by line_record_name";
-  $starttime = time();
-  $res = mysql_query($sql) or die(mysql_error());
-  $elapsed = time() - $starttime;
-  echo "<p>Query time: $elapsed sec<br>";
-  while ($row = mysql_fetch_array($res)) 
-    file_put_contents($outfile, $row[0].$delimiter.$row[1]."\n", FILE_APPEND);
-}
-=======
   //$starttime = time();
   // Get the alleles for currently selected lines, all genotyped markers.	
   foreach ($_SESSION['filtered_lines'] as $lineuid) {
@@ -230,7 +186,6 @@ else {
     $elapsed = time() - $starttime;
     $_SESSION['timmer'] = $elapsed;
   }
->>>>>>> 496623391a66cce321945ba3e102da45c4432790
 
 echo "</div></div></div>";
 
