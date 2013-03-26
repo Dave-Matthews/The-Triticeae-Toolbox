@@ -149,7 +149,7 @@ Analysis time = <?php echo $elapsed ?> s<br>
   table td {text-align: center;}
 </style>
 
-<script type="text/javascript" src="cluster.js"></script>
+<script type="text/javascript" src="cluster3.js"></script>
 <?php
 /* Show table of cluster members.  */
 $clustInfo = file("/tmp/tht/clustInfo.txt".$time);

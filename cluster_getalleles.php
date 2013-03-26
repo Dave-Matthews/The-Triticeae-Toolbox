@@ -159,14 +159,12 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
   $outfile = "/tmp/tht/mrkData.csv".$time;
   file_put_contents($outfile, $outputheader);
 
-  //$starttime = time();
   // Get the alleles for currently selected lines, all genotyped markers.	
   foreach ($_SESSION['filtered_lines'] as $lineuid) {
     $sql = "select line_record_name, alleles from allele_byline_clust
           where line_record_uid = $lineuid";
-    //echo "$sql<br>\n";
     $res = mysql_query($sql) or die(mysql_error());
-    if ($row = mysql_fetch_array($res)) 
+    if ($row = mysql_fetch_array($res)) {
       $outarray2 = array();
       $line_name = $row[0];
       $alleles = $row[1];
@@ -180,13 +178,10 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
         }
         $i++;
       }
-      $outarray = implode($delimiter,$outarray2);  
+      $outarray = implode($delimiter,$outarray2);
       file_put_contents($outfile, $line_name.$delimiter.$outarray."\n", FILE_APPEND);
     }
     $elapsed = time() - $starttime;
     $_SESSION['timmer'] = $elapsed;
   }
-
-echo "</div></div></div>";
-
-?>
+}
