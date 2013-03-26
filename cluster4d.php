@@ -6,6 +6,7 @@ connect();
 ?>
 
 <div id="primaryContentContainer">
+  <img id='spinner' src='./images/progress.gif' alt='Working...' style='display:none;'>
   <div id="primaryContent">
   <h1>Cluster Lines 3D, Hierarchical</h1>
   <div class="section">
@@ -14,29 +15,15 @@ connect();
 $nclusters = $_GET['clusters'];
 // Timestamp for names of temporary files.
 $time = $_GET['time'];
-$querytime = date("U") - $time;
+$min_maf = $_GET['mmaf'];
+$max_missing = $_GET['mmm'];
+$max_miss_line = $_GET['mml'];
+$querytime = $_SESSION['timmer'];
 
-if(isset($_SESSION['selected_lines'])) {
-  $lines = $_SESSION['selected_lines'];
-  $lines_str = implode(",",$lines);
-  $line_name_str = "";
-  foreach ($lines as $uid) {
-    $sql = "select line_record_name from line_records where line_record_uid = $uid";
-    $res = mysql_query($sql) or die(mysql_error());
-    $row = mysql_fetch_assoc($res);
-    $name = $row['line_record_name'];
-    if ($line_name_str == "") {
-      $line_name_str = $name;
-    } else {
-      $line_name_str = $line_name_str . ",$name";
-    }
-  }
-}
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
-$cmd = "lineNames <-c('')\n";
-fwrite($setup, $cmd);
+fwrite($setup, "lineNames <-c('')\n");
 fwrite($setup, "nClust <- $nclusters\n");
 fwrite($setup, "setwd(\"/tmp/tht/\")\n");
 fwrite($setup, "mrkDataFile <-c('mrkData.csv".$time."')\n");
@@ -115,7 +102,7 @@ $zrange = max($zvals) - min($zvals);
 for ($i=0; $i<count($coords); $i++) {
   $name = str_replace("\"", "", $coords[$i][0]);
   $clusternumber = $coords[$i][1];
-  $x = 1 + 5 * $coords[$i][2] / $xrange;
+  $x = 5 * $coords[$i][2] / $xrange;
   $y = 5 * $coords[$i][3] / $yrange;
   $z = 5 * $coords[$i][4] / $zrange;
   echo "
@@ -162,6 +149,7 @@ Analysis time = <?php echo $elapsed ?> s<br>
   table td {text-align: center;}
 </style>
 
+<script type="text/javascript" src="cluster.js"></script>
 <?php
 /* Show table of cluster members.  */
 $clustInfo = file("/tmp/tht/clustInfo.txt".$time);
@@ -197,11 +185,27 @@ for ($i=1; $i<count($clustsize)+1; $i++) {
   print "</tr>";
  }
 print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
-print "</table>";
+?>
+</table>
+<p>
+    How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1">
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+<br>
+<?php
+echo "<table>";
+$count = count($_SESSION['filtered_markers']);
+echo "<tr><td>markers<td>$count\n";
+$count = count($_SESSION['filtered_lines']);
+echo "<tr><td>lines<td>$count\n";
+echo "</table>";
 print "<p>Select the clusters you want to use. ";
 print "<input type = 'hidden' name = 'time' value = $time>";
-print "<input type=submit value='Re-cluster'> in ";
-print "<input type=text name='clusters' value='5' size='1'> clusters";
+print "<input type=button value='Re-cluster' onclick='javascript:recluster($time)'>";
 print "</form>";
 
 // Clean up old files, older than 1 day.
