@@ -1,4 +1,19 @@
 <?php
+/**
+ * Download Gateway New
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ * 
+ */
+
 require 'config.php';
 //Need write access to update the cache table.
 //include($config['root_dir'].'includes/bootstrap.inc');
