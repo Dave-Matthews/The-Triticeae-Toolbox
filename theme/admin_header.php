@@ -1,3 +1,18 @@
+<?php
+/**
+ * Header and Menu
+ *
+ * PHP version 5.3
+ *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/theme/admin_header.php
+ *
+ */
+?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -16,21 +31,8 @@
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/new.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
-<?php
-/**
- * Header and Menu
- *
- * PHP version 5.3
- *
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <claybirkett@gmail.com>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/theme/admin_header.php
- *
- */
 
+<?php
    connect();
    // clear session if it contains variables from another database
    $database = mysql_grab("select value from settings where name='database'");
@@ -187,7 +189,7 @@ EOD;
   //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
   if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
   ?> 
-   <li> <a title="Curate the Database">Curation</a>
+   <li> <a href="" title="Curate the Database">Curation</a>
       <ul>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
       Add/Edit Traits</a></li>
@@ -223,7 +225,7 @@ EOD;
 //   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
   if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
     ?>
-  <li> <a title="Manage access to my data">Share data</a>
+  <li> <a href="" title="Manage access to my data">Share data</a>
   <ul>
   <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a>
   </ul>
@@ -231,7 +233,7 @@ EOD;
 
       <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
   <li>
-    <a title="<?php echo $lang["desc_sc5"]; ?>">
+    <a href="" title="<?php echo $lang["desc_sc5"]; ?>">
       Administration
     </a>
     <ul>
