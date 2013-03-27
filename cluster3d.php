@@ -6,15 +6,20 @@ connect();
 ?>
 
 <div id="primaryContentContainer">
+  <img id='spinner' src='./images/progress.gif' alt='Working...' style='display:none;'>
   <div id="primaryContent">
   <h1>Cluster Lines by Genotype, SVD</h1>
   <div class="section">
 
 <?php
 $nclusters = $_GET['clusters'];
+
 // Timestamp for names of temporary files.
 $time = $_GET['time'];
-$querytime = date("U") - $time;
+$min_maf = $_GET['mmaf'];
+$max_missing = $_GET['mmm'];
+$max_miss_line = $_GET['mml'];
+$querytime = $_SESSION['timmer'];
 
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
@@ -32,12 +37,21 @@ $starttime = time();
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
-exec("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla");
+exec("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster3d.txt$time");
 $elapsed = time() - $starttime;
 
 /*
  * Show the graphic.
  */
+if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
+  echo "Error - R script failed<br>\n";
+  $h = fopen("/tmp/tht/cluster3d.txt".$time,"r");
+  while ($line=fgets($h)) {
+    echo "$line<br>\n";
+  }
+  fclose($h);
+  die();
+}
 ?>
     <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
     <link rel="stylesheet" type="text/css" href="X3DOM/x3dom.css" />
@@ -74,6 +88,7 @@ for ($i=1; $i <= count($color); $i++) {
 
 $coords = file("/tmp/tht/clust3dCoords.csv".$time);
 $coords = preg_replace("/\n/", "", $coords);
+
 // Get the ranges of the PCA values.
 for ($i=0; $i<count($coords); $i++) {
   $coords[$i] = explode("\t", $coords[$i]);
@@ -129,12 +144,12 @@ for ($i=0; $i<count($coords); $i++) {
 <!-- For testing only: Show elapsed times. -->
 Query time = <?php echo $querytime ?> s<br>
 Analysis time = <?php echo $elapsed ?> s<br>
-
 <style type="text/css">
   table th {text-align: center;}
   table td {text-align: center;}
 </style>
 
+<script type="text/javascript" src="cluster3.js"></script>
 <?php
 /* Show table of cluster members.  */
 $clustInfo = file("/tmp/tht/clustInfo.txt".$time);
@@ -170,11 +185,27 @@ for ($i=1; $i<count($clustsize)+1; $i++) {
   print "</tr>";
  }
 print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
-print "</table>";
+?>
+</table>
+    <p>
+    How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1">
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+<br>
+<?php
+echo "<table>";
+$count = count($_SESSION['filtered_markers']);
+echo "<tr><td>markers<td>$count\n";
+$count = count($_SESSION['filtered_lines']);
+echo "<tr><td>lines<td>$count\n";
+echo "</table>";
 print "<p>Select the clusters you want to use. ";
 print "<input type = 'hidden' name = 'time' value = $time>";
-print "<input type=submit value='Re-cluster'> in ";
-print "<input type=text name='clusters' value='5' size='1'> clusters";
+print "<input type=button value='Re-cluster' onclick='javascript:recluster($time)'>";
 print "</form>";
 
 // Clean up old files, older than 1 day.
@@ -183,4 +214,5 @@ system("find /tmp/tht -mtime +1 -name 'mrkData.csv*' -delete");
 
 print "</div></div></div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); ?>
+include($config['root_dir'].'theme/footer.php');
+?>

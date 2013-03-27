@@ -1658,7 +1658,7 @@ class Downloads
 	   if ($total_af > 0) {
 	     $maf = 100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total);
 	     $miss = 100 * $marker_misscnt[$i]/$total;
-	     if ($maf >= $min_maf) $num_maf++;
+	     if ($maf < $min_maf) $num_maf++;
 	     if ($miss > $max_missing) $num_miss++;
 	     if (($miss > $max_missing) OR ($maf < $min_maf)) {
                $num_removed++;
@@ -1670,6 +1670,7 @@ class Downloads
            $i++; 
 	 }
          $_SESSION['filtered_markers'] = $markers_filtered;
+         $count = count($markers_filtered);
 
          //calculate missing from each line
          foreach ($lines as $line_record_uid) {
@@ -1704,19 +1705,28 @@ class Downloads
          }
          $_SESSION['filtered_lines'] = $lines_filtered;
          $comm = substr($lines_removed_name, 0, 100);
+         $count2 = count($lines_filtered);
 	 
 	  ?>
-	<i>
-	<br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
-	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
-        <br></i><b><?php echo ($lines_removed) ?></b><i> of </i><b><?php echo ($num_line) ?></b><i> lines will be removed</b></i>
+        <table>
+        <tr><td>filtered<td>remaining
+	<tr><td><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) less than </i><b><?php echo ($min_maf) ?></b><i>%
+	<br><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
+        <td><b><?php echo ("$count") ?></b><i> markers</i> 
         <?php
+        echo "<tr><td>using<b> $count</b> markers<br>";
+        if ($lines_removed == 1) {
+          echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
+          <?php
+        } else {
+          echo ("</i><b>$lines_removed") ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
+          <?php
+        }
         if ($lines_removed_name != "") {
           echo "(<a title=\"$lines_removed_name\">$comm</a>).";
         }
-        ?>
-	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> markers will be removed.</i>
-	<?php
+        echo "<td><b>$count2</b><i> lines</a>";
+        echo ("</table>");
 	}
 	
 	/**
@@ -3062,7 +3072,7 @@ selected lines</a><br>
               $year = $row[2];
               $sql = "select pd.value as value
                      from tht_base as tb, phenotype_data as pd
-                     $sql_option
+                     WHERE tb.experiment_uid = $exper AND 
                      tb.line_record_uid  = $uid
                      AND pd.tht_base_uid = tb.tht_base_uid
                      AND pd.phenotype_uid = $traits";

@@ -256,7 +256,7 @@ class Downloads
                     lr.line_record_uid=tb.line_record_uid
                     and tb.experiment_uid = exp.experiment_uid
                     and lr.line_record_uid = $uid";
-          //echo "$sql<br>\n";
+            //echo "$sql<br>\n";
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
             if (preg_match("/\d/",$selectedtrials)) {   //for case where there are phenotype measurements
             while ($row = mysql_fetch_array($res)) {
@@ -266,7 +266,7 @@ class Downloads
               $year = $row[2];
               $sql = "select pd.value as value
                      from tht_base as tb, phenotype_data as pd
-                     $sql_option
+                     WHERE tb.experiment_uid = $exper AND 
                      tb.line_record_uid  = $uid
                      AND pd.tht_base_uid = tb.tht_base_uid
                      AND pd.phenotype_uid = $traits";
