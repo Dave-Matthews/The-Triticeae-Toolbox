@@ -81,29 +81,26 @@ else {
   }
   print "</textarea>";
 ?>
+  <script type="text/javascript" src="cluster3.js"></script>
   <p>How many clusters?&nbsp;
-  <input type=text id='clusters' name="clusters" value=<?php echo $clusters ?> size="1">  (Maximum 8.)
-
+  <input type=text id='clusters' name="clusters" value=<?php echo $clusters ?> size="1">  (Maximum 8.)<br>
+  <?php
+        $min_maf = 5;
+        $max_missing = 10;
+        $max_miss_line = 10;
+        ?>
+        <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+  <br><br>
+  <input type=button value="Cluster Analysis" onclick="javascript:get_alleles(<?php echo ($time) ?>)">
   <div id='ajaxresult'></div>
   <script type="text/javascript">
-        var req= getXMLHttpRequest();
  	var resp=document.getElementById('ajaxresult');
- 	if(!req) {
-	  alert("Browser not supporting Ajax");
-	}
-	resp.innerHTML = "<img src='./images/progress.gif' alt='Working...'><br>\
-Analyzing marker alleles for <b><?php echo $linecount ?><\/b> lines.<br>\
-Analysis time is ca. one minute for 1000 lines (3 million alleles).";
-  	req.onreadystatechange = function(){
-	  if(req.readyState === 4){
-	    //var button = "<p><input type='submit' value='Analyze'><\/form>";
-	    //resp.innerHTML= button + req.responseText;
-	    window.location = "cluster3d.php?clusters="+document.getElementById('clusters').value+"&time=<?php echo $time ?>";
-	  }
-  	};
-	req.open("GET", "cluster_getalleles.php?time=<?php echo $time ?>", true);
-  	req.send(null);
-	</script>
+	resp.innerHTML = "<img id='spinner' src='./images/progress.gif' alt='Working...' style='display:none;'>";
+  </script>
 <?php
 	    } // end of if('selected_lines' exist)
 
