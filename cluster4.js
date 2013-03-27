@@ -15,6 +15,7 @@ function get_alleles(unq_file) {
   mml = $('mml').getValue();
   mmaf = $('mmaf').getValue();
   clusters = $('clusters').getValue();
+  Element.show('spinner');
   var url = "cluster_getallelesp.php?time=" + unq_file + "&mmaf=" + mmaf + "&mmm=" + mmm + "&mml=" + mml;
   var tmp = new Ajax.Request(url, {
         onComplete : function() {
