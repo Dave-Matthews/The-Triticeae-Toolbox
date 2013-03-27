@@ -1,4 +1,4 @@
-/*global $,Ajax*/
+/*global $,Ajax,Element*/
 
 var php_self = document.location.href;
 var title = document.title;
@@ -36,9 +36,11 @@ function load_markersInMap() {
   document.getElementById("step3").innerHTML = "";
   var url = php_self + "?function=Markers";
   var tmp = new Ajax.Updater($('step3'), url, {
+        onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
             $('step3').show();
             document.title = title;
+            Element.hide('spinner');
         }
     });
 }
