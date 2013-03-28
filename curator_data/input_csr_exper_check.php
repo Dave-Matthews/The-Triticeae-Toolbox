@@ -206,7 +206,7 @@ public function save_raw_file($wavelength) {
                    $count_plot++;
                    if (isset($plot_list[$temp[$i]])) {
                    } else {
-                     echo "Error - plot $temp[$i] not defined in fieldbook for experiment $trial_code<br>\n";
+                     echo "<font color=red>Error - plot $temp[$i] not defined in fieldbook for experiment $trial_code</font><br>\n";
                      $error_flag = 1;
                    }
                  } elseif ($temp[$i] == "") {
@@ -456,7 +456,7 @@ public function save_raw_file($wavelength) {
                    <?php
                    $error_flag = 1;
                  } elseif ($error_flag > 0) {
-                   echo "<font color=red>Warning - upload rejected because of errors</font><br>\n";
+                   echo "<font color=red>Error - upload rejected because of errors</font><br>\n";
                  }
                  $new_record = 0;
                }
@@ -477,8 +477,14 @@ public function save_raw_file($wavelength) {
                  $sql = "insert into input_file_log (file_name, users_name, created_on)
                         VALUES('$unq_file_name', '$username', NOW())";
                  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                 $sql = "select measurement_uid from csr_measurement where experiment_uid = $experiment_uid and spect_sys_uid  = $spect_sys_uid and measure_date = str_to_date('$value[4]','%m/%d/%Y')";
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                 $row = mysqli_fetch_array($res);
+                 echo "<br>Check results by viewing <a href=display_csr_exp.php?uid=$row[0]>data stored in database</a><br>";
+               } else {
+                 echo "<br><font color=red>Error - data not saved</font><br>\n";
                }
-               echo "<br><table>\n";
+               echo "<br>Data read from import file<table>\n";
                for ($i=1; $i<=$lines_found; $i++) {
                  echo "<tr><td>$i<td>$data[$i]<td>$value[$i]\n";
                }
