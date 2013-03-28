@@ -1,4 +1,18 @@
 <?php
+/**
+ * Canopy Spectral Reflectance, Fieldbook import
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_field_check.php
+ * 
+ */
 
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
@@ -340,8 +354,9 @@ private function typeExperimentCheck()
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";
+               echo "<br>Check results by viewing <a href=display_fieldbook.php?uid=$experiment_uid>data stored in database</a><br>";
            }   
-           echo "<br><table>\n";
+           echo "<br>Data read from import file<table>\n";
            for ($i=1; $i<=$lines_found; $i++) {
                  echo "<tr><td>$i";
                  for ($j="A"; $j <= "P"; $j++) {
