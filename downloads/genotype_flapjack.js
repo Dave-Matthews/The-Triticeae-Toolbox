@@ -25,13 +25,20 @@ function use_normal() {
     document.getElementById('step4').innerHTML = "";
 }
 
-function load_title() {
-    var url = php_self + "?function=refreshtitle";
+function load_title(command) {
+    var url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&cmd=' + command;
     var tmp = new Ajax.Updater($('title'), url, {
         onComplete : function() {
             $('title').show();
             document.title = title;
         }
+    });
+    url = "side_menu.php";
+    tmp = new Ajax.Updater($('quicklinks'), url, {
+    onComplete : function() {
+      $('quicklinks').show();
+      document.title = title;
+    }
     });
 }
 
@@ -93,6 +100,30 @@ function update_years(options) {
 				}		
 }
 
+function update_line_trial(options) {
+    select1_str = "Lines";
+    experiments_str = "";
+    phenotype_items_str = "";
+    $A(options).each(function(experiment) {
+        if (experiment.selected) {
+            experiments_str += (experiments_str === "" ? "" : ",") + experiment.value;
+        }
+    });
+    load_lines3();
+    document.getElementById('step4').innerHTML = "";
+    document.getElementById('step5').innerHTML = "";
+}
+
+function update_lines(options) {
+    lines_str = "";
+    $A(options).each(function(lines) {
+        if (lines.selected) {
+            lines_str += (lines_str === "" ? "" : ",") + lines.value;
+        }
+    });
+    load_markers();
+}
+
 function load_lines() {
     $('step11').hide();
     var url = php_self + "?function=step1lines";
@@ -129,6 +160,24 @@ function load_lines3() {
     });
 }
 
+function load_markers() {
+  markers_loading = true;
+    $('step5').hide();
+    var url=php_self + "?function=type1markers&bp=" + breeding_programs_str + '&lines=' + lines_str + '&exps=' + experiments_str;
+    document.title='Loading Markers...';
+    var tmp = new Ajax.Updater($('step5'),url,
+         {  onComplete: function() {
+             $('step5').show();
+            if (traits_loading === false) {
+                document.title = title;
+            }
+            markers_loading = false;
+            markers_loaded = true;
+            load_title();
+        }}
+    );
+}
+
 function update_select1(options) {
   select1_str = "";
   $A(options).each(function(select1) {
@@ -144,9 +193,28 @@ function update_select1(options) {
   } else if (select1_str == "Lines") {
     load_lines();
     load_lines2();
-    load_lines3();
   }
   /*load_title();*/
+}
+
+function update_experiments(options) 
+{
+    experiments_str = "";
+
+    $A(options).each(function(experiments) {
+        if (experiments.selected) {
+            experiments_str +=  (experiments_str === "" ? "" : ",") + experiments.value;
+        }
+    });
+
+    var url = php_self + "?function=step3lines&exps=" + experiments_str;
+    var tmp = new Ajax.Updater($('step4'), url, {
+            onComplete: function() {
+                $('step4').show();
+                load_markers();
+            }
+        }
+    );
 }
 
 function load_tab_delimiter(options)
