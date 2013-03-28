@@ -1,4 +1,18 @@
 <?php
+/**
+ * Canopy Spectral Reflectance, System File import
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_spec_check.php
+ * 
+ */
 
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
@@ -206,8 +220,11 @@ class Instrument_Check
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
                  }
+                 $sql = "select system_uid from csr_system where system_name = \"$value[2]\"";
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                 $row = mysqli_fetch_array($res);
+                 echo "<br>Check results by viewing <a href=display_csr_spe.php?uid=$row[0]>data stored in database</a><br>";
                }
-               echo "<br><a href=../display_csr_spe.php>Check data stored in database</a>\n";
                echo "<br>Data read from import file<table>\n";
                for ($i=1; $i<=$lines_found; $i++) {
                  echo "<tr><td>$i<td>$data[$i]<td>$value[$i]\n";
