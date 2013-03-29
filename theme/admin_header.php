@@ -180,6 +180,7 @@ EOD;
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">About T3</a>
     <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">Data Programs</a>
     <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Traits and units used">Trait Descriptions</a>
+    <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Genetic Characters (Genes etc.)">Property Descriptions</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
   </ul>
 
