@@ -48,9 +48,6 @@ function get_imagemap (array $blks, $umapname) {
 	<div id="primaryContent">
 		<div class="box">
 		<h2>Haplotype Data for Selected Lines and Markers</h2>
-  <table>
-<tr>
-<td>
 <?php
   if(isset($_SESSION['phenotype'])) {
     $phenotype = $_SESSION['phenotype'];
@@ -68,6 +65,7 @@ if(isset($_SESSION['experiments'])) {
   $experiments = $_SESSION['experiments'];
  }
 if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
+        echo "<table><tr><td valign=\"top\">";
 	$slines=$_SESSION['selected_lines'];
 	$smkrs_all=$_SESSION['clicked_buttons'];
 	$cnt_all=count($smkrs_all);
