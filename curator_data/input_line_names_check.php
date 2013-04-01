@@ -1,6 +1,6 @@
 <?php
 
-// 12/14/2010 JLee  Change to use curator bootstrap
+// 21feb2013 dem: Use line_properties table instead of schema-coded properties.
 
 require 'config.php';
 /*
@@ -143,52 +143,50 @@ class LineNames_Check
 	  print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
 	}
 	else {
-	  if(move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) 
-	    {
-	      /* start reading the excel */
-	      $datafile = $target_path.$uploadfile;
-	      $reader = & new Spreadsheet_Excel_Reader();
-	      $reader->setOutputEncoding('CP1251');
-	      $reader->read($datafile);
-	      $linedata = $reader->sheets[0];
-	      $cols = $reader->sheets[0]['numCols'];
-	      $rows = $reader->sheets[0]['numRows'];
-	      //echo "nrows ".$rows." ncols ".$cols."<br>";
-	      //if (DEBUG) echo "Input File Name: ".$datafile."\n";
+	  if(move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
+	    /* start reading the excel */
+	    $datafile = $target_path.$uploadfile;
+	    $reader = & new Spreadsheet_Excel_Reader();
+	    $reader->setOutputEncoding('CP1251');
+	    $reader->read($datafile);
+	    $linedata = $reader->sheets[0];
+	    $cols = $reader->sheets[0]['numCols'];
+	    $rows = $reader->sheets[0]['numRows'];
+	    //echo "nrows ".$rows." ncols ".$cols."<br>";
+	    //if (DEBUG) echo "Input File Name: ".$datafile."\n";
 
-	      // Read the Breeding Program from row 3.
-	      if ($linedata['cells'][3][1] != "*Breeding Program Code") {
-		die("Row 3 must begin with '*Breeding Program Code'.");
-		  }
-	      $bp = $linedata['cells'][3][2];
-	      // Test whether this program is already in the database.
-	      $sql = mysql_query("SELECT distinct data_program_code from CAPdata_programs");
-	      while ($row = mysql_fetch_row($sql))
-		$bpcodes[] = $row[0];
-	      if ((in_array($bp, $bpcodes) === FALSE) OR (strlen($bp) == 0) ) {
-		die("Breeding Program Code '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br><br>");
-	      }
+	    // Read the Breeding Program from row 3.
+	    if ($linedata['cells'][3][1] != "*Breeding Program") 
+	      die("Cell A3 must be <b>*Breeding Program</b>.");
+	    $bp = $linedata['cells'][3][2];
+	    // Test whether this program is already in the database.
+	    $sql = mysql_query("SELECT distinct data_program_code from CAPdata_programs");
+	    while ($row = mysql_fetch_row($sql))
+	      $bpcodes[] = $row[0];
+	    if ((in_array($bp, $bpcodes) === FALSE) OR (strlen($bp) == 0) ) {
+	      die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br><br>");
+	    }
 
-/*
- * The following code allows the curator to put the columns in any order.
- * It also allows him/her to supply useless columns
- */
+/* The following code allows the curator to put the columns in any order.
+ * It also allows him/her to supply useless columns */
 // These are the required columns. -1 means that the column has not been found.
 	      $columnOffsets = array(
 			'line_name' => -1,
-			'species' => -1,
-			'growth_habit' => -1
+			'species' => -1
 		);
+	      // Available line properties:
+	      $res = mysql_query("select name from properties") or die (mysql_error());
+	      while ($r = mysql_fetch_row($res))
+		$properties[] = $r[0];
 
-		/* Attempt to find each required column */
-		// First, locate the header line.
+	      /* Attempt to find each required column */
+	      // First, locate the header line.
 		$firstline = 0;
 		$header = array();
 		for ($irow = 4; $irow <=$rows; $irow++) {
 			$teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
-			if (empty($teststr)){
+			if (empty($teststr))
 			  break; 
-			} 
 			elseif (strtolower($teststr) == "*line name") {
 			  $firstline = $irow;
 			  // read out header line
@@ -201,84 +199,58 @@ class LineNames_Check
 			}
 			else { die("The header row must begin with '*Line Name'.");}
 		}
-		
-		foreach($header as $columnOffset => $columnName){ // loop through the columns in the header row
-			//clean up column name so that it can be matched
-			$columnName = strtolower(trim($columnName));
-			 //break column title into pieces based on spaces and newlines
-			//$colpart= explode('\\n',$columnName);
-			//$colpart = implode(" ",$columnName);
-			$order = array("\n","\t"," ");
-			$replace = array(" ",'','');
-			$columnName = str_replace($order, $replace, $columnName);
-			// DEBUG
-			//echo "<br>\$columnOffset = ".$columnOffset." => \$columnName = ".$columnName;
+		// Now read in the data cells.
+		foreach($header as $columnOffset => $columnName) { // Loop through the columns in the header row.
+		  // Require exact match for Property names.
+		  if ($columnOffset < 6) {
+		    //Clean up column name so that it can be matched.
+		    $columnName = strtolower(trim($columnName));
+		    $order = array("\n","\t"," ");
+		    $replace = array(" ",'','');
+		    $columnName = str_replace($order, $replace, $columnName);
+		  }
+		  // Determine the column offset of "*Line Name"...
+		  if (preg_match('/^\s*\*linename\s*$/is', trim($columnName)))
+		    $columnOffsets['line_name'] = $columnOffset+1;
 
-			// Determine the column offset of "*Line Name"...
-			if (preg_match('/^\s*\*linename\s*$/is', trim($columnName)))
-				$columnOffsets['line_name'] = $columnOffset+1;
+		  // Determine the column offset of "Aliases"...
+		  if (preg_match('/^\s*aliases\s*$/is', trim($columnName)))
+		    $columnOffsets['synonyms'] = $columnOffset+1;
 
-			// Determine the column offset of "Aliases"...
-			if (preg_match('/^\s*aliases\s*$/is', trim($columnName)))
-				$columnOffsets['synonyms'] = $columnOffset+1;
+		  // Determine the column offset of "GRIN Accession"...
+		  if (preg_match('/^\s*grinaccession\s*$/is', trim($columnName)))
+		    $columnOffsets['grin'] = $columnOffset+1;
+		
+		  // Determine the column offset of "Pedigree"...
+		  if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
+		    $columnOffsets['pedigree'] = $columnOffset+1;
+		
+		  // Determine the column offset of "*Filial Generation"...
+		  if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
+		    $columnOffsets['generation'] = $columnOffset+1;
+		
+		  // Determine the column offset of "*aestivum / durum / other"...
+		  if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
+		    $columnOffsets['species'] = $columnOffset+1;
+		
+		  // Determine the column offset of "Comments"...
+		  if (preg_match('/^\s*comments\s*$/is', trim($columnName)))
+		    $columnOffsets['comments'] = $columnOffset+1;
 
-			// Determine the column offset of "GRIN Accession"...
-			if (preg_match('/^\s*grinaccession\s*$/is', trim($columnName)))
-				$columnOffsets['grin'] = $columnOffset+1;
-		
-			// Determine the column offset of "Pedigree"...
-			if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
-				$columnOffsets['pedigree'] = $columnOffset+1;
-		
-			// Determine the column offset of "*Filial Generation"...
-			if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
-				$columnOffsets['generation'] = $columnOffset+1;
-		
-			// Determine the column offset of "Hard / Soft"...
-			if (preg_match('/^\s*hard\/soft\s*$/is', trim($columnName)))
-				$columnOffsets['hardness'] = $columnOffset+1;
-		
-			// Determine the column offset of "Red / White"...
-			if (preg_match('/^\s*red\/white\s*$/is', trim($columnName)))
-				$columnOffsets['color'] = $columnOffset+1;
-		
-			// Determine the column offset of "Spring / Winter / Facultative"...
-			//if (preg_match('/^\s*growthhabit\s*$/is', trim($columnName)))
-			if (preg_match('/^\s*spring\/winter\/facultative\s*$/is', trim($columnName)))
-				$columnOffsets['growth_habit'] = $columnOffset+1;
-		
-			// Determine the column offset of "*aestivum / durum / other"...
-			if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
-				$columnOffsets['species'] = $columnOffset+1;
-		
-			// Determine the column offset of "Awned / Awnless"...
-			if (preg_match('/^\s*awned\/awnless\s*$/is', trim($columnName)))
-				$columnOffsets['awned'] = $columnOffset+1;
-		
-			// Determine the column offset of "Chaff color"...
-			if (preg_match('/^\s*chaffcolor\s*$/is', trim($columnName)))
-				$columnOffsets['chaff'] = $columnOffset+1;
-		
-			// Determine the column offset of "Qualitative height"...
-			if (preg_match('/^\s*qualitativeheight\s*$/is', trim($columnName)))
-				$columnOffsets['height'] = $columnOffset+1;
-		
-			// Determine the column offset of "Row Type"...
-			if (preg_match('/^\s*rowtype\s*$/is', trim($columnName)))
-				$columnOffsets['row_type'] = $columnOffset+1;
-		
-			// Determine the column offset of "End Use"...
-			if (strpos($columnName,'use'))
-				$columnOffsets['end_use'] = $columnOffset+1;
-				
-			// Determine the column offset of "hull"...
-			if (preg_match('/^\s*hull\s*$/is', trim($columnName)))
-				$columnOffsets['hull'] = $columnOffset+1;
+		  // Find other Properties, and determine the column offset...
+		  $pr = trim($columnName);
+		  if (in_array($pr, $properties)) {
+		    // Get this property's allowed values.
+		    $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
+		    $sql = "select value from property_values where property_uid = $propuid";
+		    $res = mysql_query($sql) or die(mysql_error());
+		    while ($r = mysql_fetch_row($res)) 
+		      $allowedvals[$pr][] = $r[0];
+		    $columnOffsets[$columnName] = $columnOffset+1;
+		    $ourprops[] = $pr;
+		  }
+		} // end foreach($header as $columnOffset => $columnName)
 
-			// Determine the column offset of "Comments"...
-			if (preg_match('/^\s*comments\s*$/is', trim($columnName)))
-				$columnOffsets['comments'] = $columnOffset+1;
-		}
 		/* Now check to see if any required columns weren't found */
 		if (in_array(-1, $columnOffsets)) {
 		  echo "Some required columns were not found, indicated as -1.<br/>";
@@ -288,19 +260,16 @@ class LineNames_Check
 		}
 		/* echo "<div><pre>\$columnOffsets = ".print_r($columnOffsets, true)."</pre></div>"; */
 				
-	      /* my insert update script goes here */
-				
-	      $line_inserts_str = "";
-	      $line_uid = "";
-	      $line_uids = "";
-	      $line_uids_multiple = "";
-	      $lines_seen = array();
-	      $syns_seen = array();
+		$line_inserts_str = "";
+		$line_uid = "";
+		$line_uids = "";
+		$line_uids_multiple = "";
+		$lines_seen = array();
+		$syns_seen = array();
 
 	      //Ignore the next row after the header.  Or error.
- 	      if ($linedata['cells'][$firstline+1][2] != "comma separated values") {
+ 	      if ($linedata['cells'][$firstline+1][2] != "comma separated values") 
  		die("Row 5 must be the descriptions of the columns.  Please don't delete it.<br><br>"); 
- 	      }
 	      for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
 		//Ignore empty rows.
 		if (empty($linedata['cells'][$irow])) break;
@@ -335,7 +304,7 @@ class LineNames_Check
 		  if ( !preg_match("/^PI [0-9]*$/", $grin) 
 		       AND !preg_match("/^CItr [0-9]*$/", $grin) 
 		       AND !preg_match("/^GSTR [0-9]*$/", $grin) )
-		    die_nice("$line: Invalid GRIN Accession $grin");
+		    die_nice("Row $irow, Line $line: Invalid GRIN Accession $grin");
 		  // Is this accession already used for a different line?
 		  $sql = "select line_record_name 
                       from barley_pedigree_catalog_ref bpcr, line_records lr
@@ -346,31 +315,29 @@ class LineNames_Check
 		  if (mysql_num_rows($res) > 0) {
 		    $row = mysql_fetch_row($res);
 		    if ($row[0] != $line) 
-		      die_nice("GRIN Accession $grin is already used for Line $row[0].");
+		      die_nice("Row $irow, Line $line: GRIN Accession $grin is already used for Line $row[0].");
 		  }
 		}
 		$generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
 		if ( (empty($generation)) OR ($generation != (int)$generation) OR ($generation < 1) OR ($generation > 9) )
 		  die_nice("$line: Filial Generation (1-9) is required.");
-		$hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
-		$color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
-		$growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
-		//if (empty($growth)) die_nice("Row $irow: S, W or F is required.");
 		$species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
 		$species = preg_replace("/^a$/", "aestivum", $species);
 		$species = preg_replace("/^d$/", "durum", $species);
-		if (empty($species)) die_nice("Row $irow: Species is required.");
-		$awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
-		$chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
-		$height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
+		if (empty($species)) die_nice("Row $irow, Line $line: Species is required.");
 		$pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
 		$comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
-		/* For barley.
-		 $enduse = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['end_use']]),"\0..\37!@\177..\377");
-		 $rowtype = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['row_type']]),"\0..\37!@\177..\377");
-		 $hull = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hull']]),"\0..\37!@\177..\377");
-		*/
-			
+		foreach ($ourprops as $pr) {
+		  $propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
+		  if (!empty($propval[$pr])) {
+		    // Test for allowed value.
+		    if (!in_array($propval[$pr], $allowedvals[$pr])) {
+		      $alllist = implode(",", $allowedvals[$pr]);
+		      die_nice("<b>$propval[$pr]: </b>Allowed values of property $pr are only <b>$alllist</b>.");
+		    }
+		  }
+		}
+
 		// Line Name is required.
 		if (!empty($line)) {
 		  // Have we already seen this this Line Name in this file?
@@ -440,7 +407,6 @@ class LineNames_Check
 			  }
 			}
 			else 
-			  // It's a line name.
 			  die_nice("$line alias '$syn' is an existing Line Name.");
 		      }
 		      elseif (count($linesyn_uid) > 1) {
@@ -465,36 +431,30 @@ class LineNames_Check
 	      else $line_update_data = array();
 	      $line_insert_data = explode(",",$line_inserts_str);
 	      // $line_insert_data is a string containing a single line name.  See line 374.
+
 	      // If any errors, show what we read and stop.
 	      if ($cnt != 0) {
 		?>
-		<h3>We were reading the following data from the uploaded file.</h3>
-		  Breeding Program: <?php echo $bp ?><p>
-		<table style="width: 852px;">
-	<tr>
-	<th style="width: 180px;" class="marker">Line Name</th>
-	<th style="width: 180px;" class="marker">Aliases</th>
-	<th style="width: 150px;" class="marker">GRIN</th>
-	<th style="width: 70px;" class="marker">Gener ation</th>
-	<th style="width: 50px;" class="marker">Hard ness</th>
-	<th style="width: 50px;" class="marker">Color</th>
-	<th style="width: 50px;" class="marker">Growth Habit</th>
-	<th style="width: 100px;" class="marker">Species</th>
-	<th style="width: 50px;" class="marker">Awned</th>
-	<th style="width: 100px;" class="marker">Chaff Color</th>
-	<th style="width: 100px;" class="marker">Height</th>
-	<th style="width: 180px;" class="marker">Pedigree</th>
-	<th style="width: 180px;" class="marker">Comments</th>
-        <!-- For barley.
-	<th style="width: 40px;" class="marker" >Row Type </th>
-	<th style="width: 50px;" class="marker" >End Use </th>
-	<th style="width: 70px;" class="marker" >Hull </th>
-        -->
-	</tr>
-	</table>
-		
-		<div id="test" style="padding: 0; height: 200px; width: 850px;  overflow: scroll;border: 1px solid #5b53a6;">
-			<table>
+<h3>We were reading the following data from the uploaded file.</h3>
+Breeding Program: <b><?php echo $bp ?></b><p>
+  <table style="table-layout:fixed;">
+    <tr>
+      <th style="width: 80px;" class="marker">Line Name</th>
+      <th style="width: 80px;" class="marker">Aliases</th>
+      <th style="width: 50px;" class="marker">GRIN</th>
+      <th style="width: 80px;" class="marker">Pedigree</th>
+      <th style="width: 40px;" class="marker">Gener ation</th>
+      <th style="width: 50px;" class="marker">Species</th>
+		  <?php 
+		  foreach ($ourprops as $pr)
+		  echo "<th style='width: 50px;' class=marker>".$pr."</th>";
+		?>
+      <th style="width: 80px;" class="marker">Comments</th>
+    </tr>
+  </table>
+  
+  <div id="test" style="padding: 0; height: 300px; width: 935px;  overflow: scroll;border: 1px solid #5b53a6;">
+    <table style="table-layout:fixed; word-wrap: break-word;">
 		  <?php
 		  for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
 		    //Ignore empty rows.
@@ -505,59 +465,34 @@ class LineNames_Check
 		    if (!empty($line)) {
 		      $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
 		      $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
+		      $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
 		      $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
-		      $hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
-		      $color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
-		      $growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
 		      $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
 		      $species = preg_replace("/^a$/", "aestivum", $species);
 		      $species = preg_replace("/^d$/", "durum", $species);
-		      $awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
-		      $chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
-		      $height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
-		      $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
+		      foreach ($ourprops as $pr) 
+			$propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
 		      $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
-		      /* For barley.
-		       $enduse = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['end_use']]),"\0..\37!@\177..\377");
-		       $rowtype = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['row_type']]),"\0..\37!@\177..\377");
-		       $hull = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hull']]),"\0..\37!@\177..\377");
-		      */
 		      ?>
 			<tr>
-			   <td style="width: 120px;">
+			   <td style="width: 100px;">
 			   <?php echo $line ?></td> 
-			   <td style="width: 120px;">
+			   <td style="width: 70px;">
 			   <?php echo $synonyms ?></td> 
-			   <td style="width: 120px;">
+			   <td style="width: 90px;">
 			   <?php echo $grin ?></td> 
+			   <td style="width: 180px;">
+			   <?php echo $pedstring ?></td> 
 			   <td style="width: 120px;">
 			   <?php echo $generation ?></td> 
 			   <td style="width: 120px;">
-			   <?php echo $hardness ?></td> 
-			   <td style="width: 120px;">
-			   <?php echo $color ?></td> 
-			   <td style="width: 120px;">
-			   <?php echo $growth ?></td> 
-			   <td style="width: 120px;">
 			   <?php echo $species ?></td> 
-			   <td style="width: 120px;">
-			   <?php echo $awned ?></td> 
-			   <td style="width: 150px;">
-			   <?php echo $chaff ?></td> 
-			   <td style="width: 150px;">
-			   <?php echo $height ?></td> 
-			   <td style="width: 180px;">
-			   <?php echo $pedstring ?></td> 
-			   <td style="width: 180px;">
+			   <?php 
+			   foreach ($ourprops as $pr)
+			   echo "<td style='width: 120px;'>".$propval[$pr]."</td>";
+		           ?>
+	                   <td style="width: 120px;">
 			   <?php echo $comments ?></td> 
-			   <!-- For barley.
-			   <td style="width: 50px;">
-			   <?php echo $enduse ?></td> 
-			   <td style="width: 30px;">
-			   <?php echo $rowtype ?></td> 
-			   <td style="width: 60px;">
-			   <?php echo $hull ?></td> 
-			   -->
 			   </tr>
 			   <?php
 			   } /* end of if (!empty($line)) */
@@ -574,367 +509,280 @@ class LineNames_Check
 	      elseif ($cnt == 0) {
 		// No errors so far.
 		echo "<h3>The file is read as follows.</h3>\n";
-		echo "Breeding Program: $bp";
+		echo "Breeding Program: <b>$bp</b>";
 		?>
-		<p>		      		
-		<table style="width: 852px;">
-	<tr>
-	<th style="width: 140px;" class="marker">Line Name</th>
-	<th style="width: 150px;" class="marker">Aliases</th>
-	<th style="width: 150px;" class="marker">GRIN</th>
-	<th style="width: 70px;" class="marker">Gener ation</th>
-	<th style="width: 50px;" class="marker">Hard ness</th>
-	<th style="width: 50px;" class="marker">Color</th>
-	<th style="width: 50px;" class="marker">Growth Habit</th>
-	<th style="width: 100px;" class="marker">Species</th>
-	<th style="width: 50px;" class="marker">Awned</th>
-	<th style="width: 100px;" class="marker">Chaff Color</th>
-	<th style="width: 100px;" class="marker">Height</th>
-	<th style="width: 180px;" class="marker">Pedigree</th>
-	<th style="width: 180px;" class="marker">Comments</th>
-	</tr>
-	</table>
-		
-		<div id="test" style="padding: 0; height: 200px; width: 850px;  overflow: scroll;border: 1px solid #5b53a6;">
-			<table>
-			<?php 
-				for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
-				  //Ignore empty rows.
-				  if (empty($linedata['cells'][$irow])) break;
-				//Extract data.
-				  $line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
-				  // Line Name is required.
-				if (!empty($line)) {
-				  $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
-				  $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
-				  $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
-				  $hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
-				  $color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
-				  $growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
-				  $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
-				  $species = preg_replace("/^a$/", "aestivum", $species);
-				  $species = preg_replace("/^d$/", "durum", $species);
-				  $awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
-				  $chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
-				  $height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
-				  $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
-				  $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
-				  /* For barley.
-				   $enduse = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['end_use']]),"\0..\37!@\177..\377");
-				   $rowtype = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['row_type']]),"\0..\37!@\177..\377");
-				   $hull = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hull']]),"\0..\37!@\177..\377");
-				  */
-				  ?>
-			
-				    <tr>
-				       <td style="width: 120px;">
-				       <?php echo $line ?></td> 
-				       <td style="width: 120px;">
-				       <?php echo $synonyms ?></td> 
-				       <td style="width: 120px;">
-				       <?php echo $grin ?></td> 
-				       <td style="width: 120px;">
-				       <?php echo $generation ?></td> 
-				       <td style="width: 120px;">
-				       <?php echo $hardness ?></td> 
-				       <td style="width: 120px;">
-				       <?php echo $color ?></td> 
-				       <td style="width: 120px;">
-				       <?php echo $growth ?></td> 
-				       <td style="width: 120px;">
-				       <?php echo $species ?></td> 
-				       <td style="width: 120px;">
-				       <?php echo $awned ?></td> 
-				       <td style="width: 150px;">
-				       <?php echo $chaff ?></td> 
-				       <td style="width: 150px;">
-				       <?php echo $height ?></td> 
-				       <td style="width: 180px;">
-				       <?php echo $pedstring ?></td> 
-				       <td style="width: 180px;">
-				       <?php echo $comments ?></td> 
-				       <!-- For barley.
-				       <td style="width: 50px;">
-				       <?php echo $enduse ?></td> 
-				       <td style="width: 30px;">
-				       <?php echo $rowtype ?></td> 
-				       <td style="width: 60px;">
-				       <?php echo $hull ?></td> 
-				       -->
-				       </tr>
-				       <?php
-				       } /* end of if (!empty($line))*/
-				}  /* end of for loop */
-			?>
-			</table>
-			</div>
-		
-		<h3>The following lines will be added or edited.</h3>
-		Please verify that<br>
-		1. The lines to be added are new ones and aren't already in the 
-		database, e.g. under a variant spelling.<br>
-                2. The lines to be edited are ones you wish to change the existing data for.<br>
-		Please don't replace a detailed pedigree with a shallower one, unless it's wrong.
+  <table style="table-layout:fixed;">
+    <tr>
+      <th style="width: 80px;" class="marker">Line Name</th>
+      <th style="width: 80px;" class="marker">Aliases</th>
+      <th style="width: 50px;" class="marker">GRIN</th>
+      <th style="width: 80px;" class="marker">Pedigree</th>
+      <th style="width: 40px;" class="marker">Gener ation</th>
+      <th style="width: 50px;" class="marker">Species</th>
+		  <?php 
+		  foreach ($ourprops as $pr)
+		  echo "<th style='width: 50px;' class=marker>".$pr."</th>";
+		?>
+      <th style="width: 80px;" class="marker">Comments</th>
+    </tr>
+  </table>
+  
+  <div id="test" style="padding: 0; height: 300px; width: 935px;  overflow: scroll;border: 1px solid #5b53a6;">
+    <table style="table-layout:fixed; word-wrap: break-word;">
+	 <?php 
+	 for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
+	   //Ignore empty rows.
+	   if (empty($linedata['cells'][$irow])) break;
+	   //Extract data.
+	   $line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
+	   // Line Name is required.
+	   if (!empty($line)) {
+	     $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
+	     $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
+	     $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
+	     $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
+	     $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
+	     $species = preg_replace("/^a$/", "aestivum", $species);
+	     $species = preg_replace("/^d$/", "durum", $species);
+	     foreach ($ourprops as $pr) 
+	       $propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
+	     $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
+	     ?>
+	    <tr>
+	      <td style="width: 100px;">
+		<?php echo $line ?></td> 
+	      <td style="width: 70px;">
+		<?php echo $synonyms ?></td> 
+	      <td style="width: 90px;">
+		<?php echo $grin ?></td> 
+	      <td style="width: 180px;">
+		<?php echo $pedstring ?></td> 
+	      <td style="width: 120px;">
+		<?php echo $generation ?></td> 
+	      <td style="width: 120px;">
+		<?php echo $species ?></td> 
+	      <?php 
+		 foreach ($ourprops as $pr)
+		 echo "<td style='width: 120px;'>".$propval[$pr]."</td>";
+		 ?>
+	      <td style="width: 120px;">
+	      <?php echo $comments ?></td> 
+</tr>
+    <?php
+    } /* end of if (!empty($line))*/
+	 }  /* end of for loop */
+    ?>
+</table>
+</div>
+
+<h3>The following lines will be added or edited.</h3>
+Please verify that<br>
+    1. The lines to be added are new ones and aren&apos;t already in the 
+database, e.g. under a variant spelling.<br>
+2. The lines to be edited are ones you wish to change the existing data for.<br>
+Please don&apos;t replace a detailed pedigree with a shallower one, unless it&apos;s wrong.
 <p>
 <?php
 $lid = count($line_insert_data);
 $lud = count($line_update_data);
 ?>
 <table><tr><td>
- <table >
+      <table >
 	<tr>
           <th style="width: 140px;" class="marker">Lines to Add: <?php echo "$lid" ?></th>
           <th style="width: 150px;" class="marker" >Lines to Edit: <?php echo "$lud" ?></th>
 	</tr>
+      </table>
+      <div id="test" style="padding: 0; height: 200px; width: 290px;  overflow: scroll;border: 1px solid #5b53a6;">
+	<table>
+   <?php
+   if($line_update_data !="") {
+       for ($i = 0; $i < max(count($line_insert_data),count($line_update_data)); $i++) {
+	 ?>
+	     <tr>
+	       <td style="width: 130px;">
+		 <?php echo $line_insert_data[$i] ?>
+	       </td> 
+	       <td style="width: 160px;">
+		 <?php echo $line_update_data[$i] ?>
+	       </td>
+	 <?php
+       }/* end of for loop */
+   }
+   else {
+     for ($i = 0; $i < count($line_insert_data); $i++) {
+       ?>
+		  <tr>
+		    <td style="width: 130px;">
+		      <?php echo $line_insert_data[$i] ?>
+		    </td> 
+		    <td style="width: 160px;">
+		      <?php echo "No Updates" ?>
+		    </td>
+	 <?php
+	 }/* end of for loop */
+   }
+?>
 	</table>
-			
-			<div id="test" style="padding: 0; height: 200px; width: 290px;  overflow: scroll;border: 1px solid #5b53a6;">
-			<table>
-			<?php
-				if($line_update_data !="") 
-			{
-				for ($i = 0; $i < max(count($line_insert_data),count($line_update_data)); $i++)
-				{
-			?>
-			
-			<tr>
-			<td style="width: 130px;">
-			<?php echo $line_insert_data[$i] ?>
-			</td> 
-			<td style="width: 160px;">
-			<?php echo $line_update_data[$i] ?>
-			</td>
-			<?php
-				}/* end of for loop */
-				}
-				else
-				{
-				for ($i = 0; $i < count($line_insert_data); $i++)
-				{
-			?>
-			
-			<tr>
-			<td style="width: 130px;">
-			<?php echo $line_insert_data[$i] ?>
-			</td> 
-			<td style="width: 160px;">
-			<?php echo "No Updates" ?>
-			</td>
-			<?php
-				}/* end of for loop */
-				}
-				
-			?>
-			
-			</table>
-			</div>
-		</td>
-		<td style="width: 250px; text-align: left; vertical-align: top;">
-		<h3>Editing lines</h3>
-		To add or change information about a line, edit the file 
-		and reload, or load a new one.  Empty cells and unchanged 
-		cells will have no effect.  Cells with content will <b>replace</b>
-		the existing values. (exception: New Aliases will be <b>added</b>.)
-		<P>Alternatively you can use the 
-		<a href="<?php echo $config['base_url'] ?>login/edit_line.php">
-		Edit Lines</a> form.
-		</td>
-		</tr></table>
-				
-		<input type="Button" value="Accept" onclick="javascript: update_database('<?php echo $datafile?>','<?php echo $uploadfile ?>','<?php echo $username?>' )"/>
-		<input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
-    			
-		<?php	}
+      </div>
+    </td>
+    <td style="width: 250px; text-align: left; vertical-align: top;">
+      <h3>Editing lines</h3>
+      To add or change information about a line, edit the file 
+      and reload, or load a new one.  Empty cells and unchanged 
+      cells will have no effect.  Cells with content will <b>replace</b>
+      the existing values. (exception: New Aliases will be <b>added</b>.)
+      <P>Alternatively you can use the 
+	<a href="<?php echo $config['base_url'] ?>login/edit_line.php">
+	  Edit Lines</a> form.
+    </td>
+</tr></table>
+
+<input type="Button" value="Accept" onclick="javascript: update_database('<?php echo $datafile?>','<?php echo $uploadfile ?>','<?php echo $username?>' )"/>
+<input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
+
+	    <?php	}
 	    }
-	  else {
+	  else 
 	    error(1,"There was an error uploading the file, please try again!");
-	  }
 	}
 	}
+    } /* end of function type_Line_Name */
 	
-	} /* end of function type_Line_Name */
+    /* Validation completed, now load the database. */
+    private function type_Database() {
+      global $config;
+      include($config['root_dir'] . 'theme/admin_header.php');
+      global $cnt;
+      $datafile = $_GET['linedata'];
+      //dem jan2012: This isn't useful.
+      //$filename_old = $_GET['file_name'];
+      //$filename = $filename_old.rand();
+      $filename = $_GET['file_name'];
+      $username = $_GET['user_name'];
 	
-	private function type_Database() {
-	global $config;
-	include($config['root_dir'] . 'theme/admin_header.php');
+      $reader = & new Spreadsheet_Excel_Reader();
+      $reader->setOutputEncoding('CP1251');
+      $reader->read($datafile);
+      $linedata = $reader->sheets[0];
+      $cols = $reader->sheets[0]['numCols'];
+      $rows = $reader->sheets[0]['numRows'];
 	
-	global $cnt;
-	$datafile = $_GET['linedata'];
-	//dem jan2012: This isn't useful.
-	//$filename_old = $_GET['file_name'];
-	//$filename = $filename_old.rand();
-	$filename = $_GET['file_name'];
-	$username = $_GET['user_name'];
-	
-	$reader = & new Spreadsheet_Excel_Reader();
-	$reader->setOutputEncoding('CP1251');
-	$reader->read($datafile);
-	$linedata = $reader->sheets[0];
-	$cols = $reader->sheets[0]['numCols'];
-	$rows = $reader->sheets[0]['numRows'];
-	
-	// Read the Breeding Program from row 3.
-	if ($linedata['cells'][3][1] != "*Breeding Program Code") {
-	  die("Row 3 must begin with '*Breeding Program Code'.");
-	}
-	$bp = $linedata['cells'][3][2];
+      // Read the Breeding Program from row 3.
+      if ($linedata['cells'][3][1] != "*Breeding Program") 
+	die("Cell A3 must be <b>*Breeding Program</b>.");
+      $bp = $linedata['cells'][3][2];
 
-// 	$columnOffsets = array(
-// 			       'line_name' => -1,
-// 			       'species' => -1,
-// 			       'growth_habit' => -1
-// 			       'pedigree' => -1,
-// 			       'comments' => -1
-// 			       );
-	
+      // Available line properties:
+      $res = mysql_query("select name from properties") or die (mysql_error());
+      while ($r = mysql_fetch_row($res))
+	$properties[] = $r[0];
 
-	/* Attempt to find each required column */
-	// First, locate the header line.
-	$firstline = 0;
-	$header = array();
-	for ($irow = 4; $irow <=$rows; $irow++) {
-	  $teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
-	  if (empty($teststr)){
-	    break; 
-	  } elseif (strtolower($teststr) =="*line name") {
+      /* Attempt to find each required column */
+      // First, locate the header line.
+      $firstline = 0;
+      $header = array();
+      for ($irow = 4; $irow <=$rows; $irow++) {
+	$teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
+	if (empty($teststr)){
+	  break; 
+	} elseif (strtolower($teststr) =="*line name") {
+	  $firstline = $irow;
+	  // read out header line
+	  for ($icol = 1; $icol <= $cols; $icol++) {
 	    $firstline = $irow;
-	    // read out header line
-	    for ($icol = 1; $icol <= $cols; $icol++) {
-	      $firstline = $irow;
-	      $value = addcslashes(trim($linedata['cells'][$irow][$icol]),"\0..\37!@\177..\377");
-	      $header[] = $value;
-	    }
-	    break 1;
+	    $value = addcslashes(trim($linedata['cells'][$irow][$icol]),"\0..\37!@\177..\377");
+	    $header[] = $value;
 	  }
+	  break 1;
 	}
-		
-	foreach($header as $columnOffset => $columnName){ // loop through the columns in the header row
-	  //clean up column name so that it can be matched
+      }
+      // Now read in the data cells.		
+      foreach($header as $columnOffset => $columnName) { // Loop through the columns in the header row.
+	// Require exact match for Property names.
+	if ($columnOffset < 6) {
+	  //Clean up column name so that it can be matched.
 	  $columnName = strtolower(trim($columnName));
-	  //break column title into pieces based on spaces and newlines
-	  //$colpart= explode('\\n',$columnName);
-	  //$colpart = implode(" ",$columnName);
 	  $order = array("\n","\t"," ");
 	  $replace = array(" ",'','');
 	  $columnName = str_replace($order, $replace, $columnName);
-			
-	  // Determine the column offset of "*Line Name"...
-	  if (preg_match('/^\s*\*linename\s*$/is', trim($columnName)))
-	    $columnOffsets['line_name'] = $columnOffset+1;
-		
-	  // Determine the column offset of "Aliases"...
-	  if (preg_match('/^\s*aliases\s*$/is', trim($columnName)))
-	    $columnOffsets['synonyms'] = $columnOffset+1;
-
-	  // Determine the column offset of "GRIN Accession"...
-	  if (preg_match('/^\s*grinaccession\s*$/is', trim($columnName)))
-	    $columnOffsets['grin'] = $columnOffset+1;
-		
-	  // Determine the column offset of "Pedigree"...
-	  if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
-	    $columnOffsets['pedigree'] = $columnOffset+1;
-		
-	  // Determine the column offset of "*Filial Generation"...
-	  if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
-	    $columnOffsets['generation'] = $columnOffset+1;
-		
-	  // Determine the column offset of "Hard / Soft"...
-	  if (preg_match('/^\s*hard\/soft\s*$/is', trim($columnName)))
-	    $columnOffsets['hardness'] = $columnOffset+1;
-		
-	  // Determine the column offset of "Red / White"...
-	  if (preg_match('/^\s*red\/white\s*$/is', trim($columnName)))
-	    $columnOffsets['color'] = $columnOffset+1;
-		
-	  // Determine the column offset of "Spring / Winter / Facultative"...
-	  //if (preg_match('/^\s*growthhabit\s*$/is', trim($columnName)))
-	  if (preg_match('/^\s*spring\/winter\/facultative\s*$/is', trim($columnName)))
-	    $columnOffsets['growth_habit'] = $columnOffset+1;
-
-	  // Determine the column offset of "*aestivum / durum / other"...
-	  if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
-	    $columnOffsets['species'] = $columnOffset+1;
-		
-	  // Determine the column offset of "Awned / Awnless"...
-	  if (preg_match('/^\s*awned\/awnless\s*$/is', trim($columnName)))
-	    $columnOffsets['awned'] = $columnOffset+1;
-		
-	  // Determine the column offset of "Chaff color"...
-	  if (preg_match('/^\s*chaffcolor\s*$/is', trim($columnName)))
-	    $columnOffsets['chaff'] = $columnOffset+1;
-		
-	  // Determine the column offset of "Qualitative height"...
-	  if (preg_match('/^\s*qualitativeheight\s*$/is', trim($columnName)))
-	    $columnOffsets['height'] = $columnOffset+1;
-		
-	  // Determine the column offset of "Row Type"...
-	  if (preg_match('/^\s*rowtype\s*$/is', trim($columnName)))
-	    $columnOffsets['row_type'] = $columnOffset+1;
-		
-	  // Determine the column offset of "End Use"...
-	  if (strpos($columnName,'use'))
-	    $columnOffsets['end_use'] = $columnOffset+1;
-				
-	  // Determine the column offset of "Hull"...
-	  if (preg_match('/^\s*hull\s*$/is', trim($columnName)))
-	    $columnOffsets['hull'] = $columnOffset+1;
-
-	  // Determine the column offset of "Comments"...
-	  if (preg_match('/^\s*comments\s*$/is', trim($columnName)))
-	    $columnOffsets['comments'] = $columnOffset+1;
 	}
+	// Determine the column offset of "*Line Name"...
+	if (preg_match('/^\s*\*linename\s*$/is', trim($columnName)))
+	  $columnOffsets['line_name'] = $columnOffset+1;
+	
+	// Determine the column offset of "Aliases"...
+	if (preg_match('/^\s*aliases\s*$/is', trim($columnName)))
+	  $columnOffsets['synonyms'] = $columnOffset+1;
 
-	//Ignore the next row after the header.  Or error.
-	if ($linedata['cells'][$firstline+1][2] != "comma separated values") {
-	  die("The row below the column names must be the column descriptions.  Please don't change it.<br><br>"); 
+	// Determine the column offset of "GRIN Accession"...
+	if (preg_match('/^\s*grinaccession\s*$/is', trim($columnName)))
+	  $columnOffsets['grin'] = $columnOffset+1;
+		
+	// Determine the column offset of "Pedigree"...
+	if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
+	  $columnOffsets['pedigree'] = $columnOffset+1;
+		
+	// Determine the column offset of "*Filial Generation"...
+	if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
+	  $columnOffsets['generation'] = $columnOffset+1;
+		
+	// Determine the column offset of "*aestivum / durum / other"...
+	if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
+	  $columnOffsets['species'] = $columnOffset+1;
+		
+	// Determine the column offset of "Comments"...
+	if (preg_match('/^\s*comments\s*$/is', trim($columnName)))
+	  $columnOffsets['comments'] = $columnOffset+1;
+
+	// Find other Properties, and determine the column offset...
+	$pr = trim($columnName);
+	if (in_array($pr, $properties)) {
+	  // Get this property's allowed values.
+	  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
+	  $sql = "select value from property_values where property_uid = $propuid";
+	  $res = mysql_query($sql) or die(mysql_error());
+	  while ($r = mysql_fetch_row($res)) 
+	    $allowedvals[$pr][] = $r[0];
+	  $columnOffsets[$columnName] = $columnOffset+1;
+	  $ourprops[] = $pr;
 	}
-	for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
-	  //Ignore empty rows.
-	  if (empty($linedata['cells'][$irow])) break;
-	  //Extract data
-	  $line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
-	  // Line Name is required.
-	  if (!empty($line)) {
-	    $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
-	    // Strip out any single-quotes.
-	    $synonyms = str_replace('\'', '', $synonyms);
-	    $synonyms = explode(',', str_replace(', ', ',', $synonyms));
-	    if (!empty ($synonyms)) {
-	      $tooshort = array();
-	      foreach ($synonyms as $s) 
-		if (!empty($s))
-		  if ( (strlen($s) < 3) OR (strlen($s) < 4 AND is_numeric($s)) ) 
-		    array_push($tooshort, $s);
-	      $synonyms = array_diff($synonyms, $tooshort);
-	    }
-	    $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
-	    $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
-	    $hardness = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hardness']]),"\0..\37!@\177..\377");
-	    $color = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['color']]),"\0..\37!@\177..\377");
-	    $growth = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['growth_habit']]),"\0..\37!@\177..\377");
-	    $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
-	    $species = preg_replace("/^a$/", "aestivum", $species);
-	    $species = preg_replace("/^d$/", "durum", $species);
-	    $awned = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['awned']]),"\0..\37!@\177..\377");
-	    $chaff = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['chaff']]),"\0..\37!@\177..\377");
-	    $height = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['height']]),"\0..\37!@\177..\377");
-	    $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
-	    $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
-	    /* For barley.
-	     $enduse = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['end_use']]),"\0..\37!@\177..\377");
-	     $rowtype = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['row_type']]),"\0..\37!@\177..\377");
-	     $hull = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['hull']]),"\0..\37!@\177..\377");
-	    */
+      } // end foreach($header as $columnOffset => $columnName)
+
+      for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
+	//Ignore empty rows.
+	if (empty($linedata['cells'][$irow])) break;
+	//Extract data
+	$line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
+	// Line Name is required.
+	if (!empty($line)) {
+	  $synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
+	  // Strip out any single-quotes.
+	  $synonyms = str_replace('\'', '', $synonyms);
+	  $synonyms = explode(',', str_replace(', ', ',', $synonyms));
+	  if (!empty ($synonyms)) {
+	    $tooshort = array();
+	    foreach ($synonyms as $s) 
+	      if (!empty($s))
+		if ( (strlen($s) < 3) OR (strlen($s) < 4 AND is_numeric($s)) ) 
+		  array_push($tooshort, $s);
+	    $synonyms = array_diff($synonyms, $tooshort);
+	  }
+	  $grin = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['grin']]),"\0..\37!@\177..\377");
+	  $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
+	  $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
+	  $species = preg_replace("/^a$/", "aestivum", $species);
+	  $species = preg_replace("/^d$/", "durum", $species);
+	  $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
+	  $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
+	  foreach ($ourprops as $pr) {
+	    $propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
+	  }
 				
-	  //check if line is in database
 	  $line_uid=get_lineuid($line);
 	  // $line_uid is an array.
 	  if ($line_uid === FALSE) {
 	    // Insert new line into database
-	    // Required fields: species
-	    if (empty($species)) {
-	      die_nice("Field <b>species</b> is required, values a, d or other, in row $irow, Line Name = $line.");
-	    }
 	    //convert line name to upper case and replace spaces with an underscore
 	    $line = strtoupper(str_replace(" ","_",$line));
 	    $sql_beg = "INSERT INTO line_records (line_record_name,";
@@ -945,98 +793,76 @@ $lud = count($line_update_data);
 	      $pedstring = mysql_real_escape_string($pedstring);
 	      $sql_mid .= "'$pedstring', ";
 	    }
-	    if (!empty($growth)) {
-	      $sql_beg .= "growth_habit,";
-	      $sql_mid .= "'$growth', ";
-	    }
 	    if (!empty($bp)) {
 	      $sql_beg .= "breeding_program_code,";
+	      $bp = mysql_real_escape_string($bp);
 	      $sql_mid .= "'$bp', ";
 	    }
 	    // For numbers, 0 is empty.
 	    if (isset($generation) AND $generation != "") {
 	      $sql_beg .= "generation,";
+	      $generation = mysql_real_escape_string($generation);
 	      $sql_mid .= "'$generation', ";
-	    }
-	    if (!empty($hardness)) {
-	      $sql_beg .= "hardness,";
-	      $sql_mid .= "'$hardness', ";
-	    }
-	    if (!empty($color)) {
-	      $sql_beg .= "color,";
-	      $sql_mid .= "'$color', ";
 	    }
 	    if (!empty($species)) {
 	      $sql_beg .= "species,";
+	      $species = mysql_real_escape_string($species);
 	      $sql_mid .= "'$species', ";
-	    }
-	    if (!empty($awned)) {
-	      $sql_beg .= "awned,";
-	      $sql_mid .= "'$awned', ";
-	    }
-	    if (!empty($chaff)) {
-	      $sql_beg .= "chaff,";
-	      $sql_mid .= "'$chaff', ";
-	    }
-	    if (!empty($height)) {
-	      $sql_beg .= "height,";
-	      $sql_mid .= "'$height', ";
 	    }
 	    if (!empty($comments)) {
 	      $sql_beg .= "description,";
+	      $comments = mysql_real_escape_string($comments);
 	      $sql_mid .= "'$comments', ";
 	    }
-	    /* For barley.
-	    if (!empty($rowtype)) {
-	      $sql_beg .= "row_type,";
-	      $sql_mid .= "$rowtype, ";
-	    }
-	    if (!empty($enduse)) {
-	      $sql_beg .= "primary_end_use,";
-	      $sql_mid .= "'$enduse', ";
-	    }
-	    if (!empty($hull)) {
-	      $sql_beg .= "hull,";
-	      $sql_mid .= "'$hull', ";
-	    }
-	    */
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
 	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
 	    $line_uid = mysql_insert_id();
-	    // $line_uid is no longer an (empty) array, cf. line 905, it's an int.
-	    // Insert synonyms.
-	    if ($linesuccess AND !empty($synonyms)) {
-	      foreach ($synonyms as $syn) {
-		if (!empty($syn)) {
-		  $sql = "insert into line_synonyms 
-		  (line_record_uid, line_synonym_name, updated_on, created_on) values 
-		  ('$line_uid', '$syn', NOW(),NOW())";
-		  $res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 963");
+	    // $line_uid is no longer an array===FALSE, cf. above, it's an int.
+	    if ($linesuccess) {
+	      // Insert property values in table line_properties.
+	      foreach ($ourprops as $pr) {
+                if (!empty($propval[$pr])) {
+		  $propval[$pr] = mysql_real_escape_string($propval[$pr]);
+		  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
+		  $propvaluid = mysql_grab("select property_values_uid from property_values 
+                                          where property_uid = $propuid and value = '$propval[$pr]'");
+		  $sql = "insert into line_properties (line_record_uid, property_value_uid) values ($line_uid, $propvaluid)";
+		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
 		}
 	      }
-	    }
-
-	    // Insert GRIN accession.
-	    if ($linesuccess AND !empty($grin)) {
-	      // Is there already a GRIN accession for this line?  If so, replace.
-	      $sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
+	      // Insert synonyms.
+	      if (!empty($synonyms)) {
+		foreach ($synonyms as $syn) {
+		  if (!empty($syn)) {
+		    $sql = "insert into line_synonyms 
+		      (line_record_uid, line_synonym_name, updated_on, created_on) values 
+		      ('$line_uid', '$syn', NOW(),NOW())";
+		    $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		  }
+		}	  
+	      }
+	      // Insert GRIN accession.
+	      if (!empty($grin)) {
+		// Is there already a GRIN accession for this line?  If so, replace.
+		$sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
                 WHERE barley_pedigree_catalog_uid=2
                 AND line_record_uid = '$line_uid'";
-	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
-	      if (mysql_num_rows($res) == 1) {
-		$sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
+		$res = mysql_query($sql) or errmsg($sql, mysql_error());
+		if (mysql_num_rows($res) == 1) {
+		  $sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
                 updated_on=NOW() WHERE barley_pedigree_catalog_uid=2 
                 AND line_record_uid = '$line_uid'";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 990");
-	      }
-	      elseif (mysql_num_rows($res) == 0) {
-		$sql = "insert into barley_pedigree_catalog_ref 
+		  $res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 990");
+		}
+		elseif (mysql_num_rows($res) == 0) {
+		  $sql = "insert into barley_pedigree_catalog_ref 
                 (barley_pedigree_catalog_uid, line_record_uid, barley_ref_number, 
                 updated_on, created_on) values ('2', '$line_uid', '$grin', NOW(),NOW())";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 996");
+		  $res = mysql_query($sql) or errmsg($sql, mysql_error()." at script line 996");
+		}
+		else echo "Unexpected: Line '$line' already has multiple GRIN accessions. Not adding.<br>";
 	      }
-	      else echo "Unexpected: Line '$line' already has multiple GRIN accessions. Not adding.<br>";
 	    }
 						
 	  } // end of if ($line_uid === FALSE) 
@@ -1052,147 +878,136 @@ $lud = count($line_update_data);
 	      $pedstring = mysql_real_escape_string($pedstring);
 	      $sql_mid .= "pedigree_string = '$pedstring', ";
 	    }
-	    if (!empty($growth)) {
-	      $sql_mid .= "growth_habit='$growth', ";
-	    }
 	    if (!empty($bp)) {
+              $bp = mysql_real_escape_string($bp);
 	      $sql_mid .= "breeding_program_code='$bp', ";
 	    }
 	    // For numbers, 0 is empty.
 	    if (isset($generation) AND $generation != "") {
+              $generation = mysql_real_escape_string($generation);
 	      $sql_mid .= "generation = '$generation', ";
 	    }
-	    if (!empty($hardness)) {
-	      $sql_mid .= "hardness = '$hardness', ";
-	    }
-	    if (!empty($color)) {
-	      $sql_mid .= "color = '$color', ";
-	    }
 	    if (!empty($species)) {
+              $species = mysql_real_escape_string($species);
 	      $sql_mid .= "species = '$species', ";
 	    }
-	    if (!empty($awned)) {
-	      $sql_mid .= "awned = '$awned', ";
-	    }
-	    if (!empty($chaff)) {
-	      $sql_mid .= "chaff = '$chaff', ";
-	    }
-	    if (!empty($height)) {
-	      $sql_mid .= "height = '$height', ";
-	    }
 	    if (!empty($comments)) {
+              $comments = mysql_real_escape_string($comments);
 	      $sql_mid .= "description = '$comments', ";
 	    }
-	    /* For barley.
-	    if (!empty($rowtype)) {
-	      $sql_mid .= "row_type='$rowtype', ";
-	    }
-	    if (!empty($enduse)) {
-	      $sql_mid .= "primary_end_use='$enduse', ";
-	    }
-	    if (!empty($hull)) {
-	      $sql_mid .= "hull='$hull', ";
-	    }
-	    */
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
 	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
-	    // Update synonyms.
-	    if ($linesuccess AND !empty($synonyms)) {
-	      // Is there already a value?  If so delete.
-	      $sql = "delete from line_synonyms where line_record_uid = $line_uids";
-	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
-	      foreach ($synonyms as $syn) {
-		if (!empty($syn)) {
-		  $sql = "insert into line_synonyms 
-		  (line_record_uid, line_synonym_name, updated_on, created_on) values 
-		  ('$line_uids', '$syn', NOW(),NOW())";
-		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
+            if ($linesuccess) {
+	      // Update property values in table line_properties.
+	      foreach ($ourprops as $pr) {
+		if (!empty($propval[$pr])) {
+		  $propval[$pr] = mysql_real_escape_string($propval[$pr]);
+		  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
+		  $propvaluid = mysql_grab("select property_values_uid from property_values 
+                                          where property_uid = $propuid and value = '$propval[$pr]'");
+		  // Is there already a value for this line and property?  If so, replace.
+		  $linepropuid = mysql_grab("select line_properties_uid
+			      from line_properties lp, property_values pv
+			      where line_record_uid = $line_uids and property_uid = $propuid
+			      and lp.property_value_uid = pv.property_values_uid");
+		  if (!empty($linepropuid)) {
+		    mysql_query("update line_properties 
+                        set property_value_uid = $propvaluid
+                        where line_properties_uid = $linepropuid") or errmsg($sql, mysql_error());
+		  }
+		  else {
+		    /* echo "Row $irow, Line $line: Inserting $pr value $propval[$pr].<p>"; */
+		    mysql_query("insert into line_properties (line_record_uid, property_value_uid) 
+                          values ($line_uids, $propvaluid)") or errmsg($sql, mysql_error());
+		  }
 		}
 	      }
-	    }
-
-	    // Update GRIN accession.
-	    if ($linesuccess AND !empty($grin)) {
-	      // Is there already a GRIN accession for this line?  If so, replace.
-	      // $line_uids is a string and $line_uid is an array.  Both contain one uid.
-	      //echo "<pre>Line 1090: line_uids = $line_uids<br>line_uid = "; print_r($line_uid); echo "</pre>"; 
-	      $sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
+	      // Update synonyms.
+	      if (!empty($synonyms)) {
+		// Is there already a value?  If so delete.
+		$sql = "delete from line_synonyms where line_record_uid = $line_uids";
+		$res = mysql_query($sql) or errmsg($sql, mysql_error());
+		foreach ($synonyms as $syn) {
+		  if (!empty($syn)) {
+		    $sql = "insert into line_synonyms 
+	  	      (line_record_uid, line_synonym_name, updated_on, created_on) values 
+		      ('$line_uids', '$syn', NOW(),NOW())";
+		    $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		  }
+		}
+	      }
+	      // Update GRIN accession.
+	      if (!empty($grin)) {
+		// Is there already a GRIN accession for this line?  If so, replace.
+		// $line_uids is a string and $line_uid is an array.  Both contain one uid.
+		//echo "<pre>Line 1090: line_uids = $line_uids<br>line_uid = "; print_r($line_uid); echo "</pre>"; 
+		$sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
                 WHERE barley_pedigree_catalog_uid=2
                 AND line_record_uid = '$line_uids'";
-	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
-	      if (mysql_num_rows($res) == 1) {
-		$sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
+		$res = mysql_query($sql) or errmsg($sql, mysql_error());
+		if (mysql_num_rows($res) == 1) {
+		  $sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
                 updated_on=NOW() WHERE barley_pedigree_catalog_uid=2 
                 AND line_record_uid = '$line_uids'";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error());
-	      }
-	      elseif (mysql_num_rows($res) == 0) {
-		$sql = "insert into barley_pedigree_catalog_ref 
+		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		}
+		elseif (mysql_num_rows($res) == 0) {
+		  $sql = "insert into barley_pedigree_catalog_ref 
                 (barley_pedigree_catalog_uid, line_record_uid, barley_ref_number, 
                 updated_on, created_on) values ('2', '$line_uids', '$grin', NOW(),NOW())";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error().' at script line 1101');
+		  $res = mysql_query($sql) or errmsg($sql, mysql_error().' at script line 1101');
+		}
+		else {};  // More than one GRIN accession for this line already.
 	      }
-	      else {};  // More than one GRIN accession for this line already.
 	    }
-
-						
-	  }else {
+	  }
+	  else {
 	    $line_uids = implode(",",$line_uid);
 	    error(0, "$line is found in multiple records($line_uids), in line record table, please fix");
 	  }
-
-				
-				if (!empty($CAPcode)){
-				if ($CAPcode == $line)
-				{
-					continue; /* for 2008 data*/
-				}
-				else
-				{				
-					$linesyn_uid = get_lineuid($CAPcode);
-					if ($linesyn_uid===FALSE) {
-						// Insert CAPentry code as a synonym into database
-						$sql = "INSERT INTO line_synonyms (line_record_uid,line_synonym_name, updated_on, created_on)
+	  if (!empty($CAPcode)) {
+	    if ($CAPcode == $line) 
+	      continue; /* for 2008 data*/
+	    else {				
+	      $linesyn_uid = get_lineuid($CAPcode);
+	      if ($linesyn_uid===FALSE) {
+		// Insert CAPentry code as a synonym into database
+		$sql = "INSERT INTO line_synonyms (line_record_uid,line_synonym_name, updated_on, created_on)
 										VALUES($line_uid, '$CAPcode', NOW(),NOW())";
-					} elseif ((count($linesyn_uid)==1)AND($linesyn_uid!=$line_uid)){
-						$linesyn_uids = implode(",",$line_uid);
-						
-						$sql = mysql_query("SELECT line_record_name from line_records where line_record_uid in ($linesyn_uids)");
-						
-						$row = mysql_fetch_array($sql);
-						
-						$line_name = $row['line_record_name'];
-						
-						
-						error(0, "$CAPcode is linked to a diffent line ($line_name), in line record table, please fix");
-					} elseif (count($linesyn_uid)>1) {
-						$linesyn_uids = implode(",",$line_uid);
-						error(0, "$CAPcode is linked multiple lines ($linesyn_uids), in line record table, please fix");
-					}
-				}
-				}
-	  } /* end of if (!empty($line)) */
-	}
+	      } elseif ((count($linesyn_uid)==1)AND($linesyn_uid!=$line_uid)){
+		$linesyn_uids = implode(",",$line_uid);
+		$sql = mysql_query("SELECT line_record_name from line_records where line_record_uid in ($linesyn_uids)");
+		$row = mysql_fetch_array($sql);
+		$line_name = $row['line_record_name'];
+		error(0, "$CAPcode is linked to a diffent line ($line_name), in line record table, please fix");
+	      } elseif (count($linesyn_uid)>1) {
+		$linesyn_uids = implode(",",$line_uid);
+		error(0, "$CAPcode is linked multiple lines ($linesyn_uids), in line record table, please fix");
+	      }
+	    }
+	  }
+      } /* end of if (!empty($line)) */
+    }
 		 
-	if ($cnt > 0) {
-	  // if MySQL errors
-	  // Cool.  Jump back _two_ pages!
-	  print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">";
-	}
-	else {
-	  echo "<h3>Loaded</h3>";
+      if ($cnt > 0) {
+	// if MySQL errors
+	// Cool.  Jump back _two_ pages!
+	print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">";
+      }
+      else {
+	echo "<h3>Loaded</h3>";
 	echo "The data was loaded successfully. You can check it with <a href='".$config['base_url']."search.php'>Quick search...</a>";
 	// Timestamp, e.g. _28Jan12_23:01
 	$ts = date("_jMy_H:i");
 	$filename = $filename . $ts;
 	$devnull = mysql_query("INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysql_error());
-	}
+      }
 
-	$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+      $footer_div = 1;
+      include($config['root_dir'].'theme/footer.php');
 		
-	} /* end of function type_Database */
+    } /* end of function type_Database */
 
 } /* end of class */
 

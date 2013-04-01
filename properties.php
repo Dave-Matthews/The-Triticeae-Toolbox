@@ -4,7 +4,12 @@ include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'theme/admin_header.php');
 connect();
 ?>
-<h1>Property Descriptions</h1>
+
+<style type=text/css>
+  table th { border-top: 2px solid #9a292c; }
+</style>
+
+<h1>Genetic Characters</h1>
 <div class="section">
   <table>
 

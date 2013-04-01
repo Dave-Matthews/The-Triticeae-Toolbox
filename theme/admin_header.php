@@ -174,49 +174,39 @@ EOD;
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
 
-  <li>
-  <a title="<?php echo $lang["desc_sc2"]; ?>">About..</a>
-  <ul>
-    <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">About T3</a>
-    <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">Data Programs</a>
-    <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Traits and units used">Trait Descriptions</a>
-    <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Genetic Characters (Genes etc.)">Property Descriptions</a>
-    <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
-  </ul>
-
   <?php 
   //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
   if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
   ?> 
-   <li> <a href="" title="Curate the Database">Curation</a>
+   <li> <a href="" title="Curate the Database">Curate</a>
       <ul>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
-      Add/Edit Traits</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
-      Add/Edit Lines</a></li>
+      Lines</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
-      Add/Edit Pedigree</a></li>
+      Pedigrees</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
-      Add Phenotype Experiment Annotations</a></li>
+      Phenotype Trial Annotations</a></li>
       <!-- <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data"> -->
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php" title="Phenotype data">
-      Add Phenotype Results</a></li>
+      Phenotype Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_router.php" title="Phenotype CSR data">
-      Add CSR Data</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
-      Add Genotype Experiment Annotations</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
-      Add Genotype Results </a></li>
+      CSR Data</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
-      Delete Trials / Experiments</a></li>
+      Delete Trials or Experiments</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
+      Traits and Genetic Characters</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
+      Genotype Experiment Annotations</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
+      Genotype Results </a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
-      Add Maps</a></li>
+      Maps</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
-      Add/Edit Markers</a></li>
+      Markers</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_programs.php">
-      Edit/Delete CAP Data Programs</a></li>
+      CAP Data Programs</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php">
-      Edit Anything!</a></li>
+      Anything!</a></li>
       </ul>
       <?php endif ?>
 
@@ -233,7 +223,7 @@ EOD;
       <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
   <li>
     <a href="" title="<?php echo $lang["desc_sc5"]; ?>">
-      Administration
+      Administer
     </a>
     <ul>
       <li>
@@ -271,7 +261,16 @@ EOD;
   </li>
 <?php endif; ?>
 			
-			
+  <li>
+  <a title="<?php echo $lang["desc_sc2"]; ?>">About..</a>
+  <ul>
+    <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">About T3</a>
+    <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">Data Programs</a>
+    <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Traits and units used">Trait Descriptions</a>
+    <li><a href="<?php echo $config['base_url']; ?>properties.php" title="Genetic Characters (Genes etc.)">Genetic Character Descriptions</a>
+    <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
+  </ul>
+
 </ul>
 </div>
 <div id="quicklinks" style="top:141px">
