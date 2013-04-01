@@ -16,6 +16,13 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
+/* Add "(new <date>)" if newer than 30 days. */
+function filelink($path, $label) {
+  echo "<a href='curator_data/examples/$path'>$label</a>";
+  if (time() - filemtime("examples/$path") < 2592000)
+    echo " <font size= -2 color=red>(new ". date("dMY", filemtime("examples/$path")) . ")</font>";
+}
+
 include($config['root_dir'] . 'theme/admin_header.php');
 ?>
 
@@ -24,9 +31,8 @@ include($config['root_dir'] . 'theme/admin_header.php');
     <h2>Add New Lines</h2>
     <form action="<?php echo $config['base_url'] ?>curator_data/input_line_names_check.php" method="post" 
 	  enctype="multipart/form-data">
-      <p><strong>File:</strong> <input value="file" type="file" name="file" />
-	<a href="<?php echo $config['base_url'] ?>curator_data/examples/T3/LineSubmissionForm_Wheat.xls">
-	  Example line input file</a></p>
+      <p><strong>File:</strong> <input value="file" type="file" name="file" /> 
+  <?php filelink("T3/LineSubmissionForm_Wheat.xls", "Example template") ?>
       <p><input type="submit" value="Upload Line File" /></p>
     </form>
   </div>
