@@ -119,6 +119,8 @@ EOD;
     <li><a href="" title="Lines and Phenotypes">Select</a>
       <ul>
 	<li>
+          <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
+            Wizard (Lines, Traits, Trials) </a>
 	  <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters">
 	    Lines by Properties</a>
 	<li>
@@ -137,9 +139,6 @@ EOD;
 	    Markers</a>
         <li>
           <a href="<?php echo $config['base_url']; ?>maps/select_map.php" title="Select genetic map">Genetic Map</a>
-	<li>
-	  <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
-	    Wizard (Lines, Traits, Trials) </a>
         <li>
           <a href="<?php echo $config['base_url']; ?>downloads/clear_selection.php" title="Clear selection">Clear selection</a>
       </ul>
