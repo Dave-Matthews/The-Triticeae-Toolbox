@@ -109,6 +109,11 @@ private function refresh_title()
           store_session_variables('selected_lines', $username);
         }
       }
+      if (isset($_GET['exps'])) {
+          $trials_ary = explode(",",$_GET['exps']);
+          $_SESSION['selected_trials'] = $trials_ary;
+          $_SESSION['experiments'] = $_GET['exps'];
+      } 
    if (isset($_SESSION['selected_lines'])) {
      ?>
      <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
@@ -570,6 +575,11 @@ private function type1_markers() {
   $experiments = $_GET['exps'];
   $datasets = $_GET['dp'];
   if (empty($_GET['lines'])) {
+    if (count($_SESSION['selected_lines'])>0) {
+      $lines = $_SESSION['selected_lines'];
+      $lines_str = implode(",", $lines);
+      $count = count($_SESSION['selected_lines']);
+    } else {
       $sql_option = "";
       $lines = array();
       if (preg_match("/\d/",$experiments)) {
@@ -586,13 +596,14 @@ private function type1_markers() {
       while($row = mysql_fetch_array($res)) {
         $lines[] = $row['line_record_uid'];
       } 
+    }
   } else {
     $lines_str = $_GET['lines'];
     $lines = explode(',', $lines_str);
   }
   $count1 = count($lines);
-  $trials = explode(',', $trial_str);
-  $count2 = count($experiments);
+  $trials = explode(',', $experiments);
+  $count2 = count($trials);
   echo "current data selection = $count1 lines, $count2 trials";
   ?>
   <table> <tr> <td COLSPAN="3">

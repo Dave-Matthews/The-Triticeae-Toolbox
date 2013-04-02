@@ -38,6 +38,7 @@ function load_title(command) {
     onComplete : function() {
       $('quicklinks').show();
       document.title = title;
+      document.getElementById('step5').innerHTML = "Selection saved";
     }
     });
 }
@@ -149,12 +150,12 @@ function load_lines2() {
 }
 
 function load_lines3() {
-    $('step4').hide();
-    var url = php_self + "?function=typeFlapJack2";
+    $('step5').hide();
+    var url = php_self + "?function=type1markers&lines=" + lines_str + '&exps=' + experiments_str;
     document.title = 'Loading Step1...';
-    var tmp = new Ajax.Updater($('step4'), url, {
+    var tmp = new Ajax.Updater($('step5'), url, {
         onComplete : function() {
-            $('step4').show();
+            $('step5').show();
             document.title = title;
         }
     });
