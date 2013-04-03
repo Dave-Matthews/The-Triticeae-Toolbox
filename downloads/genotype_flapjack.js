@@ -27,7 +27,7 @@ function use_normal() {
 
 function load_title(command) {
     var url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&cmd=' + command;
-    var tmp = new Ajax.Updater($('title'), url, {
+    var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
         onComplete : function() {
             $('title').show();
             document.title = title;
