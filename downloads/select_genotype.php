@@ -575,7 +575,7 @@ private function type1_markers() {
   $experiments = $_GET['exps'];
   $datasets = $_GET['dp'];
   if (empty($_GET['lines'])) {
-    if (count($_SESSION['selected_lines'])>0) {
+    if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
       $lines = $_SESSION['selected_lines'];
       $lines_str = implode(",", $lines);
       $count = count($_SESSION['selected_lines']);
@@ -604,7 +604,12 @@ private function type1_markers() {
   $count1 = count($lines);
   $trials = explode(',', $experiments);
   $count2 = count($trials);
-  echo "current data selection = $count1 lines, $count2 trials";
+  echo "current data selection = $count1 lines, $count2 ";
+  if ($count2 == 1) {
+    echo "experiment";
+  } else {
+    echo "experiments";
+  }
   ?>
   <table> <tr> <td COLSPAN="3">
                 <input type="hidden" name="subset" id="subset" value="yes" /><br>
