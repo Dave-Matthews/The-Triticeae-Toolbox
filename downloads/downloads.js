@@ -71,6 +71,9 @@ function load_title(command) {
       document.title = title;
     }
     });
+    if (command == "save") {
+      document.getElementById('step5').innerHTML = "Selection saved";
+    }
 }
 
 function haplotype_step2(command) {
