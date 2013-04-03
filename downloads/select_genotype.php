@@ -79,8 +79,8 @@ class GenoType_FlapJack
 private function refresh_title()
 {
    $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
-   echo "<h2>Select Lines and Trials</h2>";
-   echo "<p>Select genotype data for analysis or download. To select lines with phenotypes use <a href=downloads/select_all.php>Select Phenotype</a>. Select multiple options by holding down the Ctrl key while selecting.";
+   echo "<h2>Select Lines</h2>";
+   echo "<p>Select genotype data for analysis or download. Select multiple options by holding down the Ctrl key while selecting.";
    if ($command == "save") {
       if (!empty($_GET['lines'])) {
           $lines_str = $_GET['lines'];
@@ -109,11 +109,11 @@ private function refresh_title()
           store_session_variables('selected_lines', $username);
         }
       }
-      if (isset($_GET['exps'])) {
+      /** if (isset($_GET['exps'])) {
           $trials_ary = explode(",",$_GET['exps']);
           $_SESSION['selected_trials'] = $trials_ary;
           $_SESSION['experiments'] = $_GET['exps'];
-      } 
+      } **/
    if (isset($_SESSION['selected_lines'])) {
      ?>
      <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
@@ -140,11 +140,11 @@ private function type1()
   <p>1.
   <select name="select1" onchange="javascript: update_select1(this.options)">
   <option value="BreedingProgram">Data Program</option>
-  <option <?php
+  <!-- option <?php
   if (isset($_SESSION['selected_lines'])) {
       echo "selected='selected'";
   }
-  ?> value="Lines">Lines</option>
+  ?> value="Lines">Lines</option-->
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
   <?php
@@ -177,7 +177,7 @@ private function type1_checksession()
   <p>1.
   <select name="select1" onchange="javascript: update_select1(this.options)">
   <option value="BreedingProgram">Data Program</option>
-  <option value="Lines">Lines</option>
+  <!-- option value="Lines">Lines</option-->
   </select></p>
   <script type="text/javascript" src="downloads/genotype_flapjack.js"></script>
   <?php 
@@ -300,11 +300,11 @@ private function step2_lines()
     ?>
     <p>2.
     <select name="select2">
-    <option value="trials">Trials</option>
+    <option value="trials">Experiments</option>
     </select></p>
     <table id="linessel" class="tableclass1">
     <tr>
-    <th>Trials</th>
+    <th>Experiments</th>
     </tr>
     <tr><td>
     <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_trial(this.options)">
@@ -514,12 +514,12 @@ private function typeGenoType()
 
     <p>3.
     <select name="select1">
-      <option value="DataProgram">Trials</option>
+      <option value="DataProgram">Experiments</option>
     </select></p>
 
 <table>
 	
-	<tr><th>Trials</th></tr>
+	<tr><th>Experiments</th></tr>
 	<tr><td>
 		<!--select name="experiments" multiple="multiple" size="10" style="height: 12em" onchange="javascript:load_tab_delimiter(this.options)"-->
                 <select name="experiments" multiple="multiple" size="10" style="height: 12em" onchange="javascript:update_experiments(this.options)">
