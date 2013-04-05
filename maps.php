@@ -324,7 +324,7 @@ class Maps {
                 $sql = "SELECT count(*) from mapset";
                 $res = mysql_query($sql) or die(mysql_error());
                 $row = mysql_fetch_array($res);
-                $height = $row[0] + 5;
+                $height = $row[0] + 1 + 0.3*$row[0];
                 ?>
 	
 		<div style=" float: left; margin-bottom: 1.5em;">
@@ -424,10 +424,13 @@ class Maps {
 	private function type_Maps()
 	{
 		$mapset_query = $_GET['mset'];
-	        $sql = "SELECT count(*) from mapset";
+                $sql = "SELECT count(*) from mapset";
                 $res = mysql_query($sql) or die(mysql_error());
                 $row = mysql_fetch_array($res);
-                $height = $row[0] + 5;	
+                $height = $row[0] + 1 + 0.3*$row[0];
+                if ($height < 14) {
+                  $height = 14;
+                }
 		
 ?>
 
