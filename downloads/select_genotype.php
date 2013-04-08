@@ -135,6 +135,7 @@ private function type1()
   unset($_SESSION['selected_lines']);
   unset($_SESSION['phenotype']);
   unset($_SESSION['clicked_buttons']);
+  unset($_SESSION['filtered_markers']);
 
   ?>
   <p>1.
