@@ -70,30 +70,6 @@ function load_experiments()
     document.getElementById('step4').innerHTML = "";
 }       
 
-function load_lines3() {
-    $('step5').hide();
-    var url = php_self + "?function=type1markers&lines=" + lines_str + '&exps=' + experiments_str;
-    document.title = 'Loading Step1...';
-    var tmp = new Ajax.Updater($('step5'), url, {
-        onComplete : function() {
-            $('step5').show();
-            document.title = title;
-        }
-    });
-}
-
-function load_markers() {
-    $('step5').hide();
-    var url=php_self + "?function=type1markers&bp=" + breeding_programs_str + '&lines=' + lines_str + '&exps=' + experiments_str;
-    document.title='Loading Markers...';
-    var tmp = new Ajax.Updater($('step5'),url,
-         {  onComplete: function() {
-             $('step5').show();
-            load_title();
-        }}
-    );
-}
-
 function update_breeding_programs(options) {
     breeding_programs_str = "";
     experiments_str = "";
@@ -128,6 +104,7 @@ function update_years(options) {
 function update_line_trial(options) {
     select1_str = "Lines";
     experiments_str = "";
+    phenotype_items_str = "";
     $A(options).each(function(experiment) {
         if (experiment.selected) {
             experiments_str += (experiments_str === "" ? "" : ",") + experiment.value;
@@ -172,13 +149,31 @@ function load_lines2() {
     });
 }
 
+function load_lines3() {
+    $('step5').hide();
+    var url = php_self + "?function=type1markers&lines=" + lines_str + '&exps=' + experiments_str;
+    document.title = 'Loading Step1...';
+    var tmp = new Ajax.Updater($('step5'), url, {
+        onComplete : function() {
+            $('step5').show();
+            document.title = title;
+        }
+    });
+}
+
 function load_markers() {
+  markers_loading = true;
     $('step5').hide();
     var url=php_self + "?function=type1markers&bp=" + breeding_programs_str + '&lines=' + lines_str + '&exps=' + experiments_str;
     document.title='Loading Markers...';
     var tmp = new Ajax.Updater($('step5'),url,
          {  onComplete: function() {
              $('step5').show();
+            if (traits_loading === false) {
+                document.title = title;
+            }
+            markers_loading = false;
+            markers_loaded = true;
             load_title();
         }}
     );
