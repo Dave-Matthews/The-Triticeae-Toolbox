@@ -64,6 +64,10 @@ class GenoType_FlapJack
                     case 'step3lines':
                         echo $this->step3_lines();
                         break;
+                 
+                    case 'step1yearprog':
+                        $this->step1_yearprog();
+                        break;
 
                     case 'type1markers':
                         echo $this->type1_markers();
@@ -229,6 +233,47 @@ private function step1_breedprog()
   </tr>
   </table>
   <?php 
+}
+
+/**
+ * starting with year
+*/
+    private function step1_yearprog()
+    {
+    $CAPdata_programs = $_GET['bp'];
+     ?>
+    <div id="step21">
+                        <p>2.
+                <select name="select2">
+                  <option value="BreedingProgram">Year</option>
+                </select></p>
+
+    <table id="phenotypeSelTab" class="tableclass1">
+    <tr>
+    <th>Year</th>
+    </tr>
+    <tr><td>
+    <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
+    <?php
+    $sql = "SELECT e.experiment_year AS year 
+    FROM experiments AS e, experiment_types AS et
+    WHERE e.experiment_type_uid = et.experiment_type_uid
+    AND et.experiment_type_name = 'genotype'
+    AND e.CAPdata_programs_uid IN ('$CAPdata_programs')
+    GROUP BY e.experiment_year DESC";
+    $res = mysql_query($sql) or die(mysql_error());
+    while ($row = mysql_fetch_assoc($res))
+    {
+    ?>
+    <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
+    <?php
+    }
+    ?>
+    </select>
+    </td>
+    </table>
+    </div>
+    <?php
 }
 
 private function type1_lines_trial_trait()
