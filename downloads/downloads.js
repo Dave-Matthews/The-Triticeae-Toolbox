@@ -684,11 +684,32 @@ function update_phenotype_linesb(options) {
                 document.getElementById('step5').innerHTML = "";
 			} 
 	
-			function use_session(version) {
-			    var mm = $('mm').getValue();
+	function use_session(version) {
+	        var mm = $('mm').getValue();
                 var mmaf = $('mmaf').getValue();
-                var url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                var mml = $('mml').getValue();
+                markers_loading = true;
+                Element.show('spinner');
+                document.getElementById('step5').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
+                var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&mml=' + mml + '&use_line=yes';
+                document.title='Loading Markers...';
+                //changes are right here
+                var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
+                    //onCreate: function() { Element.show('spinner'); },
+                    onComplete: function() {
+                         $('step5').show();
+                        if (traits_loading === false) {
+                            document.title = title;
+                        }
+                        //Element.hide('spinner');
+                        markers_loading = false;
+                        markers_loaded = true;
+                    }}
+                );
+
+                url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
                 document.location = url;
+                Element.hide('spinner');
             }
 
 			function load_markers_pheno( mm, mmaf) {
@@ -762,3 +783,11 @@ function update_phenotype_linesb(options) {
                     load_markers( mm, mmaf);
                 }
             }
+
+function filterDesc(min_maf, max_missing, max_miss_line) {
+  alert("1. Marker allele frequency is calculated for the selected lines.\n2. Markers are removed that have MAF less than " +  min_maf + "% or are missing in more than " + max_missing + "% of the lines.\n3. Lines are removed if they are missing more than " + max_miss_line + "% of the marker data.\nAfter changing the default settings for the filter, select Download to use the new paramaters");
+}
+
+function linesRemoved(lineRemovedName) {
+  alert("Lines Removed\n" + lineRemovedName);
+}
