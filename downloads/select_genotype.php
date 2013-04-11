@@ -64,6 +64,10 @@ class GenoType_FlapJack
                     case 'step3lines':
                         echo $this->step3_lines();
                         break;
+                 
+                    case 'step1yearprog':
+                        $this->step1_yearprog();
+                        break;
 
                     case 'type1markers':
                         echo $this->type1_markers();
@@ -79,8 +83,8 @@ class GenoType_FlapJack
 private function refresh_title()
 {
    $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
-   echo "<h2>Select Lines and Trials</h2>";
-   echo "<p>Select genotype data for analysis or download. To select lines with phenotypes use <a href=downloads/select_all.php>Select Phenotype</a>. Select multiple options by holding down the Ctrl key while selecting.";
+   echo "<h2>Select Lines</h2>";
+   echo "<p>Select genotype data for analysis or download. Select multiple options by holding down the Ctrl key while selecting.";
    if ($command == "save") {
       if (!empty($_GET['lines'])) {
           $lines_str = $_GET['lines'];
@@ -109,6 +113,11 @@ private function refresh_title()
           store_session_variables('selected_lines', $username);
         }
       }
+      /** if (isset($_GET['exps'])) {
+          $trials_ary = explode(",",$_GET['exps']);
+          $_SESSION['selected_trials'] = $trials_ary;
+          $_SESSION['experiments'] = $_GET['exps'];
+      } **/
    if (isset($_SESSION['selected_lines'])) {
      ?>
      <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
@@ -130,16 +139,17 @@ private function type1()
   unset($_SESSION['selected_lines']);
   unset($_SESSION['phenotype']);
   unset($_SESSION['clicked_buttons']);
+  unset($_SESSION['filtered_markers']);
 
   ?>
   <p>1.
   <select name="select1" onchange="javascript: update_select1(this.options)">
   <option value="BreedingProgram">Data Program</option>
-  <option <?php
+  <!-- option <?php
   if (isset($_SESSION['selected_lines'])) {
       echo "selected='selected'";
   }
-  ?> value="Lines">Lines</option>
+  ?> value="Lines">Lines</option-->
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
   <?php
@@ -172,7 +182,7 @@ private function type1_checksession()
   <p>1.
   <select name="select1" onchange="javascript: update_select1(this.options)">
   <option value="BreedingProgram">Data Program</option>
-  <option value="Lines">Lines</option>
+  <!-- option value="Lines">Lines</option-->
   </select></p>
   <script type="text/javascript" src="downloads/genotype_flapjack.js"></script>
   <?php 
@@ -192,7 +202,7 @@ private function step1_breedprog()
   <select name="breeding_programs" size="10" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
   <?php
   $sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-  FROM CAPdata_programs WHERE program_type='breeding' OR program_type='mapping' ORDER BY name";
+  FROM CAPdata_programs WHERE program_type='data' ORDER BY name";
  
   $res = mysql_query($sql) or die(mysql_error());
   while ($row = mysql_fetch_assoc($res))
@@ -223,6 +233,47 @@ private function step1_breedprog()
   </tr>
   </table>
   <?php 
+}
+
+/**
+ * starting with year
+*/
+    private function step1_yearprog()
+    {
+    $CAPdata_programs = $_GET['bp'];
+     ?>
+    <div id="step21">
+                        <p>2.
+                <select name="select2">
+                  <option value="BreedingProgram">Year</option>
+                </select></p>
+
+    <table id="phenotypeSelTab" class="tableclass1">
+    <tr>
+    <th>Year</th>
+    </tr>
+    <tr><td>
+    <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
+    <?php
+    $sql = "SELECT e.experiment_year AS year 
+    FROM experiments AS e, experiment_types AS et
+    WHERE e.experiment_type_uid = et.experiment_type_uid
+    AND et.experiment_type_name = 'genotype'
+    AND e.CAPdata_programs_uid IN ('$CAPdata_programs')
+    GROUP BY e.experiment_year DESC";
+    $res = mysql_query($sql) or die(mysql_error());
+    while ($row = mysql_fetch_assoc($res))
+    {
+    ?>
+    <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
+    <?php
+    }
+    ?>
+    </select>
+    </td>
+    </table>
+    </div>
+    <?php
 }
 
 private function type1_lines_trial_trait()
@@ -295,11 +346,11 @@ private function step2_lines()
     ?>
     <p>2.
     <select name="select2">
-    <option value="trials">Trials</option>
+    <option value="trials">Experiments</option>
     </select></p>
     <table id="linessel" class="tableclass1">
     <tr>
-    <th>Trials</th>
+    <th>Experiments</th>
     </tr>
     <tr><td>
     <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_trial(this.options)">
@@ -422,12 +473,13 @@ private function typeGenoType()
 					<td>
 						<select name="breeding_programs" size="10" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
 		<?php 
-		// Original:
-		//$sql = "SELECT breeding_programs_uid AS id, breeding_programs_name AS name FROM breeding_programs";
-		// Select breeding programs for the drop down menu
-		//Note this will need to change to allow data from all programs, breeding and mapping
-		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-				FROM CAPdata_programs WHERE program_type='breeding' OR program_type='mapping' ORDER BY name";
+		// Select data programs for the drop down menu
+                $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, dp.data_program_name AS name, dp.data_program_code AS code
+                                FROM CAPdata_programs as dp, experiments as e, experiment_types as e_t
+                                WHERE dp.CAPdata_programs_uid = e.CAPdata_programs_uid
+                                AND e.experiment_type_uid = e_t.experiment_type_uid
+                                AND e_t.experiment_type_name = 'genotype'
+                                AND program_type='data' ORDER BY name";
 
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
@@ -485,12 +537,11 @@ private function typeGenoType()
 	
 	
 	/* Query for getting experiment id, trial code and year */
+        /* AND e.experiment_year IN ($years) */
 	$sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year, e.traits AS traits
-				FROM experiments AS e, datasets AS ds, datasets_experiments AS d_e, experiment_types AS e_t
-				WHERE e.experiment_uid = d_e.experiment_uid
-				AND d_e.datasets_uid = ds.datasets_uid
-				AND ds.breeding_year IN ($years)
-				AND ds.CAPdata_programs_uid IN ($CAPdata_programs)
+				FROM experiments AS e, experiment_types AS e_t
+                                WHERE e.CAPdata_programs_uid IN ($CAPdata_programs)
+                                AND e.experiment_year IN ($years)
 				AND e.experiment_type_uid = e_t.experiment_type_uid
 				AND e_t.experiment_type_name = 'genotype'";
 	if (!authenticate(array(USER_TYPE_PARTICIPANT,
@@ -500,7 +551,8 @@ private function typeGenoType()
 
 	$sql .= " ORDER BY e.experiment_year DESC";
 
-		
+	
+        //echo "$sql<br>";	
 	$res = mysql_query($sql) or die(mysql_error());
 	$num_mark = mysql_num_rows($res);
 	//check if any experiments are visible for this user
@@ -509,12 +561,12 @@ private function typeGenoType()
 
     <p>3.
     <select name="select1">
-      <option value="DataProgram">Trials</option>
+      <option value="DataProgram">Experiments</option>
     </select></p>
 
 <table>
 	
-	<tr><th>Trials</th></tr>
+	<tr><th>Experiments</th></tr>
 	<tr><td>
 		<!--select name="experiments" multiple="multiple" size="10" style="height: 12em" onchange="javascript:load_tab_delimiter(this.options)"-->
                 <select name="experiments" multiple="multiple" size="10" style="height: 12em" onchange="javascript:update_experiments(this.options)">
@@ -570,6 +622,11 @@ private function type1_markers() {
   $experiments = $_GET['exps'];
   $datasets = $_GET['dp'];
   if (empty($_GET['lines'])) {
+    if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
+      $lines = $_SESSION['selected_lines'];
+      $lines_str = implode(",", $lines);
+      $count = count($_SESSION['selected_lines']);
+    } else {
       $sql_option = "";
       $lines = array();
       if (preg_match("/\d/",$experiments)) {
@@ -586,14 +643,20 @@ private function type1_markers() {
       while($row = mysql_fetch_array($res)) {
         $lines[] = $row['line_record_uid'];
       } 
+    }
   } else {
     $lines_str = $_GET['lines'];
     $lines = explode(',', $lines_str);
   }
   $count1 = count($lines);
-  $trials = explode(',', $trial_str);
-  $count2 = count($experiments);
-  echo "current data selection = $count1 lines, $count2 trials";
+  $trials = explode(',', $experiments);
+  $count2 = count($trials);
+  echo "current data selection = $count1 lines, $count2 ";
+  if ($count2 == 1) {
+    echo "experiment";
+  } else {
+    echo "experiments";
+  }
   ?>
   <table> <tr> <td COLSPAN="3">
                 <input type="hidden" name="subset" id="subset" value="yes" /><br>

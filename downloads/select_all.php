@@ -281,8 +281,7 @@ class Downloads
       ?>
       <h2>Select Lines, Traits, and Trials</h2>
       <p>
-      Select genotype and phenotype data for analysis or download. To selecting lines without phenotypes use
-      <a href=downloads/select_genotype.php>Select Genotype</a>.
+      Select genotype and phenotype data for analysis or download.
       <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
       <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
       <?php 

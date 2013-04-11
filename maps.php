@@ -9,6 +9,7 @@
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/maps.php
  * 
+ * 04/04/2013   C.Birkett make column height dynamic so scroll bars are not used
  * 06/22/2012   C.Birkett sort each column so rows are aligned, move style sheet to top
  * 1apr12 dem: Small cleanups.  Needs work.
  * 10/19/2010   J.Lee use dynamic GBrowse tracks generation
@@ -318,7 +319,14 @@ class Maps {
 			
 
       </script>		
-		
+	
+                <?php
+                $sql = "SELECT count(*) from mapset";
+                $res = mysql_query($sql) or die(mysql_error());
+                $row = mysql_fetch_array($res);
+                $height = $row[0] + 1 + 0.3*$row[0];
+                ?>
+	
 		<div style=" float: left; margin-bottom: 1.5em;">
 		<table>
 				<tr>
@@ -331,7 +339,7 @@ class Maps {
 				</tr>
 				<tr>
 					<td>
-						<select name="mapsetnames" size="10" style="height: 12em;" onchange="javascript: update_mapset(this.value)">
+						<select name="mapsetnames" size="10" style="height: <?php echo $height ?>em;" onchange="javascript: update_mapset(this.value)">
 				<?php
 		
 		
@@ -351,7 +359,7 @@ class Maps {
 		
 	
 			<td>
-						<select name="MapType" size="10" style="height: 12em;" >
+						<select disabled name="MapType" size="10" style="height: <?php echo $height ?>em;" >
 		<?php
 
 		
@@ -367,7 +375,7 @@ class Maps {
 					</td>
 					
 			<td>
-						<select name="MapUnit" size="10" style="height: 12em;width: 6em" >
+						<select disabled name="MapUnit" size="10" style="height: <?php echo $height ?>em;width: 6em" >
 		<?php
 
 		
@@ -386,7 +394,7 @@ class Maps {
 
 						
 			<td>
-						<select name="comments" size="10" style="height: 12em;width: 28em" onchange="javascript: display_comments(this.value)">
+						<select name="comments" size="10" style="height: <?php echo $height ?>em;width: 28em" onchange="javascript: display_comments(this.value)">
 		<?php
 
 		
@@ -415,12 +423,14 @@ class Maps {
 			
 	private function type_Maps()
 	{
-		$mapset_query = $_GET['mset']; 
-		
-		/* For debugging
-			$firephp = FirePHP::getInstance(true);
-			$firephp->log($mapset_query,"mapset_query");
-		*/
+		$mapset_query = $_GET['mset'];
+                $sql = "SELECT count(*) from mapset";
+                $res = mysql_query($sql) or die(mysql_error());
+                $row = mysql_fetch_array($res);
+                $height = $row[0] + 1 + 0.3*$row[0];
+                if ($height < 14) {
+                  $height = 14;
+                }
 		
 ?>
 
@@ -431,7 +441,7 @@ class Maps {
 	
 	<tr><th>Maps</th></tr>
 	<tr><td>
-		<select name="mapsdetails" size="10" style="height: 12em" onchange="javascript: update_maps(this.value)">
+		<select name="mapsdetails" size="10" style="height: <?php echo $height ?>em" onchange="javascript: update_maps(this.value)">
 <?php
 	/* Query for fetching Map Names based on user selected mapset name */
 		$sql = "SELECT m.map_name FROM map m, mapset ms where mapset_name='".$mapset_query."' and m.mapset_uid = ms.mapset_uid";
