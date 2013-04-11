@@ -40,6 +40,18 @@ include($config['root_dir'] . 'theme/admin_header.php');
 
 <div class="box">
   <div class="boxContent">
+    <h2>Add Genetic Characters for Existing Lines</h2>
+    <form action="<?php echo $config['base_url'] ?>curator_data/line_properties.php" method="post" 
+	  enctype="multipart/form-data">
+      <p><strong>File:</strong> <input value="file" type="file" name="file" /> 
+  <?php filelink("T3/Line_Properties.xls", "Example template") ?>
+      <p><input type="submit" value="Upload Line File" /></p>
+    </form>
+  </div>
+</div>
+
+<div class="box">
+  <div class="boxContent">
     <h2>Edit Lines</h2>
     <ul>
       <li><a href="<?php echo $config['base_url'] ?>login/edit_line.php">Line names and properties</a>
