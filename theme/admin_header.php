@@ -119,6 +119,8 @@ EOD;
     <li><a href="" title="Lines and Phenotypes">Select</a>
       <ul>
 	<li>
+          <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
+            Wizard (Lines, Traits, Trials)</a>
 	  <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters">
 	    Lines by Properties</a>
 	<li>
@@ -126,6 +128,8 @@ EOD;
 	    Lines by Phenotype</a>
 	<li><a href="<?php echo $config['base_url']; ?>haplotype_search.php" title="Select desired alleles for a set of markers">
 	    Lines by Haplotype</a>
+        <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
+            Lines by Genotype Experiment</a>
  <?php if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
 	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=green>My Line Panels</font></a>
  <?php endif ?>
@@ -137,9 +141,6 @@ EOD;
 	    Markers</a>
         <li>
           <a href="<?php echo $config['base_url']; ?>maps/select_map.php" title="Select genetic map">Genetic Map</a>
-	<li>
-	  <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
-	    Wizard (Lines, Traits, Trials) </a>
         <li>
           <a href="<?php echo $config['base_url']; ?>downloads/clear_selection.php" title="Clear selection">Clear selection</a>
       </ul>

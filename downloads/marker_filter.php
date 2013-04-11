@@ -119,26 +119,32 @@
            $num_line++;
          }
          $_SESSION['filtered_lines'] = $lines_filtered;
-         $comm = substr($lines_removed_name, 0, 100);
+         if (strlen($lines_removed_name) > 75) {
+           $comm = substr($lines_removed_name, 0, 75) . " ...";
+         } else {
+           $comm = $lines_removed_name;
+         }
          $count2 = count($lines_filtered);
 
           ?>
         <table>
-        <tr><td>filtered<td>remaining
+        <tr><td colspan=2><a onclick="filterDesc( <?php echo ($min_maf) ?>, <?php echo ($max_miss_line) ?>, <?php echo ($max_miss_line) ?>)">Description of filtering</a>
         <tr><td><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) less than </i><b><?php echo ($min_maf) ?></b><i>%
         <br><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
         <td><b><?php echo ("$count") ?></b><i> markers</i>
+        <tr><td>
         <?php
-        echo "<tr><td>using<b> $count</b> markers<br>";
         if ($lines_removed > 1) {
           echo ("</i><b>$lines_removed") ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
           <?php
         } else {
-          echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
+          echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data </b></i>
           <?php
         }
         if ($lines_removed_name != "") {
-          echo "(<a title=\"$lines_removed_name\">$comm</a>).";
+          ?>
+          <br>(<a onclick="linesRemoved('<?php echo ($lines_removed_name) ?>')"><?php echo ($comm) ?></a>)
+          <?php
         }
         echo "<td><b>$count2</b><i> lines</a>";
         echo ("</table>");

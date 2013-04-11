@@ -26,10 +26,21 @@ for (i in 1:length(wavelength)) {
   }
 }
 
+#remove columns that only contain NA
+csrFilt <- csrData
+isnaMat <- !is.na(csrData)
+nFalse <- apply(isnaMat, 2, sum)
+for (i in ncol(csrData):2) {
+  if (nFalse[i] == 0){
+    csrFilt <- csrFilt[,-i]
+    print(paste("Column ",i," removed"))
+  }
+}
+
 #filter data set
 if (smooth > 0) {
   flt2 <- (2*smooth) + 1
-  csrFilt <- apply(csrData, 2, runmed,k=flt2)
+  csrFilt <- apply(csrFilt, 2, runmed,k=flt2)
 } else {
   csrFilt <- csrData
 }
@@ -39,7 +50,7 @@ source(file_for)
 
 #plot csr data for all plots
 #scale the axis to zoom in on the selected wavelengths
-for (i in 2:ncol(csrData)) {
+for (i in 2:ncol(csrFilt)) {
   if (i == 2) {
     xrange <- c(W1wav-20,W2wav+20)
     yrange <- range(csrData[W1idx:W2idx,-(1)], na.rm = TRUE)

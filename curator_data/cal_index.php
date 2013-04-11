@@ -130,7 +130,9 @@ private function typeExperiments()
 		include($config['root_dir'] . 'theme/admin_header.php');
 
 		echo "<h2>Calculate Canopy Spectral Reflectance (CSR) Index</h2>"; 
-                echo "These indices are calculated from plot phenotype data and may be can be used to predict plant performance.<br><br>";	
+                echo "The CSR indices are calculated from plot phenotype data and may be used to predict plant performance. Select ";	
+                echo " a Trial and Index then click the Calculate button. The wavelength paramaters (W1, W2) and the formula ";
+                echo "may be modified from their default values.<br><br>";
 			
 		$this->type_Experiment_Name();
 
@@ -199,7 +201,6 @@ while ($row = mysqli_fetch_row($res)) {
   <tr><td><strong>W1:</strong><td><input type="text" id="W1" name="W1" onchange="javascript: update_w1()">
   <tr><td><strong>W2:</strong><td><input type="text" id="W2" name="W2" onchange="javascript: update_w2()">
   <tr><td><strong>Formula:</strong><td><input type="text" id="formula2" name="formula2" onchange="javascript: update_f2()">
-  <tr><td><td>Select an index or<br>enter custom wavelengths and formula
   </table>
   <p><input type="button" value="Calculate" onclick="javascript:cal_index()"/></p>
 </form>
