@@ -8,7 +8,7 @@ connect();
 <div id="primaryContentContainer">
   <img id='spinner' src='./images/progress.gif' alt='Working...' style='display:none;'>
   <div id="primaryContent">
-  <h1>Cluster Lines 3D, Hierarchical</h1>
+  <h1>Cluster Lines 3D, hclust</h1>
   <div class="section">
 
 <?php
@@ -131,7 +131,7 @@ for ($i=0; $i<count($coords); $i++) {
     <br><br><p style="font-size: 8pt">
       <b>Browsers:</b><br>
       <b>Firefox</b> and <b>Chrome</b> work well.<br>
-      <b>Internet Explorer</b> requires <a href="http://get.adobe.com/flashplayer/">Flash Player 11</a> (new version).<br>
+      <b>Internet Explorer</b> requires <a href="https://developers.google.com/chrome/chrome-frame/">Chrome Frame</a> plug-in.<br>
       <b>Mac Safari</b>: Set "Enable WebGL" in the 
       <span onclick = "alert('To get Safari to show the Develop menu, go to Preferences.../Advanced. \n\'Show Develop menu\' is at the bottom of the dialog box.')" style = "text-decoration: underline">
 	Develop menu.</span><br>
@@ -214,4 +214,5 @@ system("find /tmp/tht -mtime +1 -name 'mrkData.csv*' -delete");
 
 print "</div></div></div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); ?>
+include($config['root_dir'].'theme/footer.php');
+?>
