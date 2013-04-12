@@ -31,15 +31,6 @@ function showLines($page, $start=0, $limit=40) {
 	showPages($qstring, $page, $start, $limit);
 }
 
-
-/*
- * This is a simple wrapper for the showRecord function to make it compatible with the view.php page.
- */
-function show_line_records($id) {
-	showRecord($id);
-}
-
-
 /*
  * This function shows a line record in an easy to read table format.
  * It also displays the parents of the particular line record in a comma separated list.
@@ -47,121 +38,115 @@ function show_line_records($id) {
  * @param $id - the id of the record of which to retrieve.
  * @return nothing - it echos the result. Use in conjunction with output buffering if you wish to maniuplate.
  */
-function showRecord($id) {
+function show_line_records($id) {
+  $name = getAccessionName($id);
+  // Passport info
+  echo "<div style='float: left; margin-left: 10px;'>";
+  echo "<h3>Passport</h3>";
+  echo "<table class='tableclass1'>";
+  // Custom instead of show_general():
+  $res= mysql_query("
+     select line_record_name, species, breeding_program_code, pedigree_string, generation, description, updated_on
+     from line_records where line_record_uid = $id") or die(mysql_error());
+  $row = mysql_fetch_assoc($res);
+  $bpcode = $row['breeding_program_code'];
+  $bpname = mysql_grab("select data_program_name from CAPdata_programs where data_program_code = '$bpcode'");
+  foreach ($row as $k=>$v) {
+    // If there's no value, ignore completely.
+    if (!empty($v)) {
+      if ($k == 'breeding_program_code')
+	echo "<tr><td><b>Breeding program</b><td>$bpname ($bpcode)";
+      else {
+	echo "<tr><td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong>";
+	echo "<td>$v";
+      }
+    }
+  }
+  echo "</table></div>";
 
-			$lines = mysql_query("
-			SELECT *
-			FROM line_records
-			WHERE line_record_uid = '$id'
-			") or die(mysql_error());
+  // Synonyms and links to GRIN
+  echo "<div style='float: left; margin-left: 10px;'>";
+  echo "<h3>Synonyms</h3>";
+  echo "<table class='tableclass1' cellspacing=0 cellpadding=0>";
+  $synonyms = getSynonymNames($id);
+  if ($synonyms===FALSE)
+    echo "<tr><td>No synonyms";
+  else 
+    echo "<tr><td>". implode(", ",  $synonyms);
+  $bpc = getBarleyPedigreeCatalogIDs($id);
+  if ($bpc===FALSE)
+    echo "<tr><td>No database links";
+  else {
+    $bpclink = getBarleyPedigreeCatalogLink($id);
+    $n_bpc = count($bpclink);
+    for ($i = 0;$i<$n_bpc;$i++) 
+      echo "<tr><td><a href=".$bpclink[$i].">".$bpc[$i]."</a>";
+  }
+  echo "</table>";
+  // Pheno/Geno data links
+  // part of the Synonym <div>
+  echo "<h3>Phenotype,<br>Genotype Data</h3>";
+  echo "<table class='tableclass1'>";
+  $phenotype = lineHasPhenotypeData($id) ? "<a href=\"phenotype/show.php?line=$id\">Show</a>" : "None";
+  echo "<tr><td><strong>Phenotype Results:</strong>";
+  echo "<td>$phenotype";
+  $genotype = lineHasGenotypeData($id) ? "<a href=\"genotyping/show.php?line=$id\">Show</a>" : "None";
+  echo "<tr>";
+  echo "<td><strong>Marker Alleles:</strong>";
+  echo "<td>$genotype";
+  echo "</table><br>";
+  echo "</div>";
 
-		$name = getAccessionName($id);
-
-	echo "<div style='float: left;'>";
-	
-		// General Line Record Information
-		echo "\n<h3>Line Record Information</h3><br />";
-		show_general("line_records", $id, $lines);
-
-	echo "</div> <div style='float: left; margin-left: 10px;'>";
-	
-	// Get synonyms and links to other databases
-		echo "\n<h3>Synonyms and Links to Germplasm Databases</h3><br />";
-		echo "\n<table class=\"tableclass1\" cellspacing=0 cellpadding=0>";
-		$synonyms = getSynonymNames($id);
-		
-		if ($synonyms===FALSE){
-			echo "\n\t<tr>";
-			echo "\n\t\t<td><strong>No synonyms were found.</strong></td>";
-			echo "\n\t</tr>";
-		} else {
-		echo "\n\t<tr>";
-		echo "\n\t\t<td>". implode(", ",  $synonyms)."</td>";
-		echo "\n\t</tr>";
-		}
-		
-			$bpc = getBarleyPedigreeCatalogIDs($id);
-		
-		if ($bpc===FALSE){
-			echo "\n\t<tr>";
-			echo "\n\t\t<td><strong>No Links to Catalogs were found.</strong></td>";
-			echo "\n\t</tr>";
-		} else {
-			$bpclink = getBarleyPedigreeCatalogLink($id);
-			$n_bpc = count($bpclink);
-			echo "\n\t<tr>";
-			for ($i = 0;$i<$n_bpc;$i++) {
-					echo "\n\t\t<td><a href=".$bpclink[$i].">".$bpc[$i]."</a></td>";
-			}
-			
-			echo "\n\t</tr>";
-		}
-		echo "</table>";
-
-	echo "</div> <div style='float: left; margin-left: 10px;'>";
-		// Get pedigree information
-		echo "\n<h3>Pedigree Information</h3><br />";
-		echo "\n<table class=\"tableclass1\" cellspacing=0 cellpadding=0>";
-
-		$tree = getPedigrees($name);
-		$pedigree = (!is_array($tree[$name])) ? "No Record" : tree2str($tree, $name);
-
-		// Pedigree Tree Link
-		echo "\n\t<tr>";
-		echo "\n\t\t<td><strong>Pedigree Tree</strong></td>";
-		echo "\n\t\t<td><a href=\"pedigree/pedigree_tree.php?line=".urlencode($name)."\">View Tree</a></td>";
-		echo "\n\t</tr>";
-
-		// Pedigree String
-		echo "\n\t<tr>";
-		echo "\n\t\t<td><strong>Pedigree String:</strong></td>";
-		echo "\n\t\t<td class=\"blend\"><input type=\"text\" value=\"$pedigree\" size=\"40\" onclick=\"this.select()\" /></td>";
-		echo "\n\t</tr>";
-
-		// Immediate Parents
-		echo "\n\t<tr>";
-		echo "\n\t\t<td><strong>Direct Parents</strong></td>";
-		echo "<td>";
-		$prnts = getParents($id);
-		foreach ($prnts as $pt) {
-		  $lnkpts .= "<a href=".$config['base_url']."view.php?table=line_records&name=$pt>$pt</a>, ";
-		}
-		echo rtrim($lnkpts, ' ,')."</td>";
-		echo "\n\t</tr>";
-
-		// Children
-		echo "\n\t<tr>";
-		echo "\n\t\t<td><strong>Direct Children</strong></td>";
-		echo "\n\t\t<td>". implode(", ", getChildren($id)) ." - <a href=\"pedigree/reverse_pedigree.php?line=".urlencode($name)."\">View All Children</td>";
-		echo "\n\t</tr>";
-
-		echo "\n\t</table><br />";
-
-		// Phenotype Information
-		echo "\n<h3>Phenotype Information</h3><br />";
-		echo "\n<table class=\"tableclass1\">";
-
-		// Phenotype Data Link
-		$phenotype = lineHasPhenotypeData($id) ? "<a href=\"phenotype/show.php?line=$id\">Show Phenotype Data</a>" : "No Phenotype Data Found";
-		echo "\n\t<tr>";
-		echo "\n\t\t<td><strong>Phenotype Data:</strong></td>";
-		echo "\n\t\t<td class=\"blend\">$phenotype</td>";
-		echo "\n\t</tr>";
-		echo "\n</table><br />";
+  // Properties
+  echo "<div style='float: left; margin-left: 10px;'>";
+  $sql = "select properties.name, pv.value
+	from line_properties lp, property_values pv, properties
+	where line_record_uid = $id
+	and lp.property_value_uid = pv.property_values_uid
+	and properties.properties_uid = pv.property_uid";
+  $res = mysql_query($sql) or die (mysql_error());
+  if (mysql_num_rows($res) > 0) {
+    echo "<h3>Genetic Properties</h3>";
+    echo "<table><tr>";
+    echo "<th>Attribute/Gene<th>Value/Allele";
+    while ($r = mysql_fetch_row($res))
+      echo "<tr><td>$r[0]<td>$r[1]";
+    echo "</table>";
+  }
+  echo "</div>";
 
 
-		// Genotype Information
-		echo "\n<h3>Genotype Information</h3><br />";
-		echo "\n<table class=\"tableclass1\">";
-
-		$genotype = lineHasGenotypeData($id) ? "<a href=\"genotyping/show.php?line=$id\">Show Marker Data</a>" : "No Marker Data Found";
-		echo "\n\t<tr>";
-		echo "\n\t\t<td><strong>Marker Data:</strong></td>";
-		echo "\n\t\t<td class=\"blend\">$genotype</td>";
-		echo "\n\t</tr>";
-		echo "\n</table><br />";
-
-	echo "</div>";
+  // Pedigree
+  echo "<div style='float: left; margin-left: 10px;'>";
+  echo "<h3>Pedigree</h3>";
+  echo "<table class='tableclass1' cellspacing=0 cellpadding=0>";
+  $tree = getPedigrees($name);
+  $pedigree = (!is_array($tree[$name])) ? "No Record" : tree2str($tree, $name);
+  if (is_array($tree[$name])) {
+    echo "<tr><td><strong>Ancestor<br>Expansion:</strong>";
+    // break-all required for long pedigrees like MOREX, except in Firefox
+    echo "<td style='word-break:break-all;'>$pedigree<br>";
+    echo "<a href=\"pedigree/pedigree_tree.php?line=".urlencode($name)."\">Graphical Tree</a>";
+  }
+  // Parents
+  echo "<tr><td><strong>Parents</strong><td>";
+  $prnts = getParents($id);
+  if (empty($prnts))
+    echo "Not found";
+  else {
+    foreach ($prnts as $pt) 
+      $lnkpts .= "<a href=".$config['base_url']."view.php?table=line_records&name=$pt>$pt</a>, ";
+    echo rtrim($lnkpts, ' ,');
+  }
+  // Children
+  echo "<tr><td><strong>Children</strong><td>";
+  $kids = implode(", ", getChildren($id));
+  if (empty($kids))
+    echo "Not found";
+  else 
+    echo "$kids<br><a href=\"pedigree/reverse_pedigree.php?line=".urlencode($name)."\">Descendants";
+  echo "</table><br>";
+  echo "</div>";
 }
 
 /*
@@ -574,10 +559,10 @@ function editPedigree($line, $callback) {
 		foreach($row as $k=>$v) {
 			
 			if($k == "parent_id") {
-				echo "\n<strong>parent:</strong>\t ". getAccessionName($v) ."  <a href=\"login/edit_line.php?line=".urlencode($v)."\">Edit Line</a> <br />\n";
+				echo "<strong>parent:</strong> ". getAccessionName($v) ."  <a href=\"login/edit_line.php?line=".urlencode($v)."\">Edit Line</a> <br />";
 			}
 			else if( !in_array($k, $ignore) ) {
-				echo "\n<strong>$k:</strong>\t <input type=\"text\" name=\"$k\" value=\"$v\" /><br />";
+				echo "<strong>$k:</strong>\t <input type=\"text\" name=\"$k\" value=\"$v\" /><br />";
 			}
 		}
 
