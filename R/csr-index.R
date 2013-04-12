@@ -42,7 +42,7 @@ source(file_for)
 for (i in 2:ncol(csrData)) {
   if (i == 2) {
     xrange <- c(W1wav-20,W2wav+20)
-    yrange <- range(csrData[W1idx:W2idx,-(1)])
+    yrange <- range(csrData[W1idx:W2idx,-(1)], na.rm = TRUE)
     plot(csrData[,1], csrFilt[,i], xlim=xrange, ylim=yrange, type="n", xlab="wavelength", ylab="CSR value")
     lines(csrData[,1], csrFilt[,i])
   } else {
@@ -68,7 +68,7 @@ write.csv(results2, file=file_out, quote=FALSE, row.names = FALSE)
 
 #plot index vs plot number
 dev.set(dev.next())
-xrange <- range(pltData)
+xrange <- range(pltData, na.rm=TRUE)
 yrange <- range(results, na.rm=TRUE)
 plot(pltData, results, xlim=xrange, ylim=yrange, xlab="plot", ylab="CSR Index")
 dev.off()
