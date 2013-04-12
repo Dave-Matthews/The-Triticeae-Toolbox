@@ -125,6 +125,7 @@ function load_experiments()
 function update_breeding_programs(options) {
     breeding_programs_str = "";
     experiments_str = "";
+    years_str = "";
 		
     $A(options).each(
             function(breeding_program) {
@@ -132,10 +133,6 @@ function update_breeding_programs(options) {
 			breeding_programs_str += (breeding_programs_str === "" ? "" : ",") + breeding_program.value;
 		}
             });
-	if (breeding_programs_str !== "" && years_str !== "")
-	{				
-		load_experiments();
-	}
    load_yearprog();
    document.getElementById('step3').innerHTML = "";
    document.getElementById('step4').innerHTML = "";
