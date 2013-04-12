@@ -132,12 +132,12 @@ for ($i=0; $i<count($coords); $i++) {
     <br><br><p style="font-size: 8pt">
       <b>Browsers:</b><br>
       <b>Firefox</b> and <b>Chrome</b> work well.<br>
-      <b>Internet Explorer</b> requires <a href="https://developers.google.com/chrome/chrome-frame/">Chrome Frame</a> plug-in.<br>
+      <b>Internet Explorer</b> requires <a href="http://www.google.com/chromeframe/eula.html?quickenable=true">Chrome Frame</a> plug-in.<br>
       <b>Mac Safari</b>: Set "Enable WebGL" in the 
       <span onclick = "alert('To get Safari to show the Develop menu, go to Preferences.../Advanced. \n\'Show Develop menu\' is at the bottom of the dialog box.')" style = "text-decoration: underline">
 	Develop menu.</span><br>
     <p style="font-size: 8pt">
-	Graphics from <a href="http://www.x3dom.org">www.x3dom.org</a>
+	Graphics from <a href="http://www.x3dom.org">x3dom.org</a>
   </div>
 
 <div style="clear:both">
