@@ -9,11 +9,39 @@ var w1 = "";
 var w2 = "";
 var w3 = "";
 var smooth = "";
+var xrange = "formula";
 
 function display(option) {
   var uid = option;
   var url = php_self + "?function=display&uid=" + uid;
   document.location = url;
+}
+
+function update_zoom(frm) {
+  if (frm.xrange[0].checked) {
+    xrange = "entire";
+  } else {
+    xrange = "formula";
+  }
+  if (trial.length > 1) {
+  var param = 'trial=' + trial;
+  param += '&W1=' + w1;
+  param += '&W2=' + w2;
+  param += '&W3=' + w3;
+  param += '&formula1=' + formula1;
+  param += '&formula2=' + formula2;
+  param += '&smooth=' + smooth;
+  param += '&xrange=' + xrange;
+  url = "curator_data/cal_index_check.php";
+  Element.show('spinner');
+  var tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
+        onComplete : function() {
+            $('step2').show();
+            document.title = title;
+            Element.hide('spinner');
+        }
+    });
+  } 
 }
 
 function display2(option) {
@@ -42,11 +70,33 @@ function update_trial() {
 }
 
 function update_w1() {
-  w1 = document.getElementById("W1").value;
+  var test = document.getElementById("W1").value;
+  if (isNaN(test)) {
+    window.alert("value must be a number");
+    document.getElementById("W1").value = "";
+  } else {
+    w1 = document.getElementById("W1").value;
+  }
 }
 
 function update_w2() {
-  w2 = document.getElementById("W2").value;
+  var test = document.getElementById("W2").value;
+  if (isNaN(test)) {
+    window.alert("value must be a number");
+    document.getElementById("W2").value = "";
+  } else {
+    w2 = document.getElementById("W2").value;
+  }
+}
+
+function update_w3() {
+  var test = document.getElementById("W3").value;
+  if (isNaN(test)) {
+    window.alert("value must be a number");
+    document.getElementById("W3").value = "";
+  } else {
+    w3 = document.getElementById("W3").value;
+  }
 }
 
 function update_f1() {
@@ -112,6 +162,7 @@ function cal_index() {
   var param = 'trial=' + trial;
   param += '&W1=' + w1;
   param += '&W2=' + w2;
+  param += '&W3=' + w3;
   param += '&formula1=' + formula1;
   param += '&formula2=' + formula2;
   param += '&smooth=' + smooth;
