@@ -8,7 +8,7 @@ connect();
 <div id="primaryContentContainer">
   <img id='spinner' src='./images/progress.gif' alt='Working...' style='display:none;'>
   <div id="primaryContent">
-  <h1>Cluster Lines by Genotype, SVD</h1>
+  <h1>Cluster Lines 3D, pam</h1>
   <div class="section">
 
 <?php
@@ -132,7 +132,7 @@ for ($i=0; $i<count($coords); $i++) {
     <br><br><p style="font-size: 8pt">
       <b>Browsers:</b><br>
       <b>Firefox</b> and <b>Chrome</b> work well.<br>
-      <b>Internet Explorer</b> requires <a href="http://get.adobe.com/flashplayer/">Flash Player 11</a> (new version).<br>
+      <b>Internet Explorer</b> requires <a href="https://developers.google.com/chrome/chrome-frame/">Chrome Frame</a> plug-in.<br>
       <b>Mac Safari</b>: Set "Enable WebGL" in the 
       <span onclick = "alert('To get Safari to show the Develop menu, go to Preferences.../Advanced. \n\'Show Develop menu\' is at the bottom of the dialog box.')" style = "text-decoration: underline">
 	Develop menu.</span><br>
@@ -187,7 +187,7 @@ for ($i=1; $i<count($clustsize)+1; $i++) {
 print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
 ?>
 </table>
-    <p>
+<p>
     How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1">
     &nbsp;&nbsp;&nbsp;&nbsp;
     Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
