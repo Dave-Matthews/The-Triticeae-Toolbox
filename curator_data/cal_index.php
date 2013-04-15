@@ -196,11 +196,17 @@ while ($row = mysqli_fetch_row($res)) {
   <option value="NDVI">NDVI</option>
   <option value="NDVIR">NDVI Red</option>
   <option value="NDVIG">NDVI Green</option>
+  <option value="OSAVI">OSAVI</option>
+  <option value="TCARI">TCARI</option>
   </select>
   <td id="formdesc">
   <tr><td><strong>W1:</strong><td><input type="text" id="W1" name="W1" onchange="javascript: update_w1()">
   <tr><td><strong>W2:</strong><td><input type="text" id="W2" name="W2" onchange="javascript: update_w2()">
+  <tr><td><strong>W3:</strong><td><input type="text" id="W3" name="W3" onchange="javascript: update_w3()">
   <tr><td><strong>Formula:</strong><td><input type="text" id="formula2" name="formula2" onchange="javascript: update_f2()">
+  <tr><td><strong>plot CSR:</strong><td>
+  <input type="radio" name="xrange" value="zoomout" onchange="javascript: update_zoom(this.form)">entire range
+  <input type="radio" name="xrange" value="zoomin" checked onchange="javascript: update_zoom(this.form)">within (W1,W2,W3)
   </table>
   <p><input type="button" value="Calculate" onclick="javascript:cal_index()"/></p>
 </form>
