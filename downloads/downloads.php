@@ -807,9 +807,14 @@ class Downloads
 	  }
 	  return ($a < $b) ? -1 : 1;
 	}
-
-        function calculate_db(&$lines, $min_maf, $max_missing, $max_miss_line) {
-         //calculate allele frequencies using allele_frequencies table
+/**
+ * calculate allele frequencies using allele_frequencies table
+ * @param array $lines
+ * @param float $min_maf
+ * @param float $max_missing
+ * @param float $max_miss_line
+ */
+private function calculate_db(&$lines, $min_maf, $max_missing, $max_miss_line) {
 
          $selectedlines = implode(",", $lines);
 
