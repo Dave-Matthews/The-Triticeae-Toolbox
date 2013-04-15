@@ -179,7 +179,7 @@ function cal_index() {
   param += '&formula1=' + formula1;
   param += '&formula2=' + formula2;
   param += '&smooth=' + smooth;
-  //document.getElementById("step2").innerHTML = "";
+  param += '&xrange=' + xrange;
   var url = "curator_data/cal_index_check.php?trial=" + trial + "&W1=" + w1 + "&W2=" + w2 + "&formula1=" + formula1 + "&formula2=" + formula2;
   url = "curator_data/cal_index_check.php";
   Element.show('spinner');
