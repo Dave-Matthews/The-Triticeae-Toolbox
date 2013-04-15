@@ -520,7 +520,7 @@ class DownloadsJNLP
             <?php
             $this->step4_lines();
             ?></div>
-	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
+	    <div id="step4b" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
 	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 	    <script type="text/javascript">
 	      var mm = 10;
@@ -696,12 +696,11 @@ class DownloadsJNLP
 
 	if (isset($_SESSION['phenotype'])) {
 	    $phenotype = $_SESSION['phenotype'];
-	    $message2 = "transfer phenotype and genotype data";
+	    $message2 = "create phenotype and genotype data files";
 	} else {
 	    $phenotype = "";
-	    $message2 = "transfer genotype data";
+	    $message2 = "create genotype data file";
 	}
-        $message2 = $message2 . " to Tassel";
 	 if (isset($_SESSION['selected_lines'])) {
 	     $countLines = count($_SESSION['selected_lines']);
 	     $lines = $_SESSION['selected_lines'];
@@ -743,21 +742,31 @@ class DownloadsJNLP
 	  $min_maf = 100;
 	 elseif ($min_maf<0)
 	  $min_maf = 0;
-	
+         $max_miss_line = 10;
+         if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml']))
+           $max_miss_line = $_GET['mml'];
+         ?>
+        <p>
+        Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove markers missing &gt; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />% of data
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove lines missing &gt <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+        <?php
          if ($use_database) {
            $this->calculate_db($lines, $min_maf, $max_missing);
          } else { 
-	   $this->calculate_af($lines, $min_maf, $max_missing); 
+	   calculate_af($lines, $min_maf, $max_missing); 
          }
-	 
+
 	 if ($saved_session != "") {
 	     if ($countLines == 0) {
 	       echo "Choose one or more lines before using a saved selection. ";
 	       echo "<a href=";
 	       echo $config['base_url'];
 	       echo "pedigree/line_selection.php> Select lines</a><br>";
-	     } else {
-	       echo "<br>Use existing selection to $message2<br>";
+	     } elseif ($use_database) {
+	       echo "<br>Filter markers and lines then $message2<br><br>";
 	       ?>
 	       <input type="button" value="Create Tassel Import" onclick="javascript:use_session('v4');"  />
 	       <?php    
@@ -827,15 +836,6 @@ class DownloadsJNLP
           if (($miss > $max_missing) OR ($maf < $min_maf))
            $num_removed++;
          }
-         $_SESSION['filtered_markers'] = $marker_uid;
-
-         ?>
-        <p>
-        Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />&nbsp;&nbsp;
-        Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />
-        <br><input type="button" value="Filter markers" onclick="javascript:mrefresh();" /><br>
-        <?php
-
         }
 	
 	/**
