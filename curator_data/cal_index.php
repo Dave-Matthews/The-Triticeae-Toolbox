@@ -196,6 +196,8 @@ while ($row = mysqli_fetch_row($res)) {
   <option value="NDVI">NDVI</option>
   <option value="NDVIR">NDVI Red</option>
   <option value="NDVIG">NDVI Green</option>
+  <option value="OSAVI">OSAVI</option>
+  <option value="TCARI">TCARI</option>
   </select>
   <td id="formdesc">
   <tr><td><strong>W1:</strong><td><input type="text" id="W1" name="W1" onchange="javascript: update_w1()">
