@@ -23,7 +23,7 @@ function update_zoom(frm) {
   } else {
     xrange = "formula";
   }
-  if (trial.length > 1) {
+  if (trial !== "") {
   var param = 'trial=' + trial;
   param += '&W1=' + w1;
   param += '&W2=' + w2;
