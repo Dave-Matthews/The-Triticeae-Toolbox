@@ -129,11 +129,16 @@ function update_f1() {
     w1 = 550;
     formula2 = "(W2-W1)/(W1+W2)";
     desc = "<a target='_blank' href=http://en.wikipedia.org/wiki/Normalized_Difference_Vegetation_Index>Green Normalized Difference Vegetation Index</a>";
+  } else if (formula1 == "PRI") {
+    w2 = 570;
+    w1 = 531;
+    formula2 = "(W2-W1)/(W1+W2)";
+    desc = "<a target='_blank' href=http://en.wikipedia.org/wiki/Photochemical_Reflectance_Index>Photochemical Reflective Index</a>";
   } else if (formula1 == "SR") {
     w2 = 900;
     w1 = 680;
-    formula2 = "(W2-W1)";
-    desc = "Simple Ratio";
+    formula2 = "(W2/W1)";
+    desc = "<a target='_blank' href=http://cdn.intechopen.com/pdfs/19066/InTech-Field_measurements_of_canopy_spectra_for_biomass_assessment_of_small_grain_cereals.pdf>Simple Ratio Vegetation Index</a>";
   } else if (formula1 == "OSAVI") {
     w2 = 800;
     w1 = 670;

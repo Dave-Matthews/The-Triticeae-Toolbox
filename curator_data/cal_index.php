@@ -193,6 +193,7 @@ while ($row = mysqli_fetch_row($res)) {
   <option value="SR">SR</option>
   <option value="NWI1">NWI 1</option>
   <option value="NWI3">NWI 3</option>
+  <option value="PRI">PRI</option>
   <option value="NDVI">NDVI</option>
   <option value="NDVIR">NDVI Red</option>
   <option value="NDVIG">NDVI Green</option>
