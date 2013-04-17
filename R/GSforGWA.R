@@ -63,3 +63,4 @@ if (moreThan1Trial) {
   }
 }
 write.csv(results, file=fileout, quote=FALSE)
+write.csv(mrkRelMat, file=fileK, quote=FALSE)
