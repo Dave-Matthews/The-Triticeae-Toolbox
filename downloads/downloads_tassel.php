@@ -756,7 +756,7 @@ class DownloadsJNLP
          if ($use_database) {
            $this->calculate_db($lines, $min_maf, $max_missing);
          } else { 
-	   calculate_af($lines, $min_maf, $max_missing); 
+	   calculate_af($lines, $min_maf, $max_missing, $max_miss_line); 
          }
 
 	 if ($saved_session != "") {
