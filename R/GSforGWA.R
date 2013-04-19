@@ -12,8 +12,6 @@ options(cores=nCores)
 #phenoData <- read.table("/tmp/tht/THTdownload_traits_MGLI.txt", header=TRUE, na.strings="-999", stringsAsFactors=FALSE, sep="\t", row.names=NULL)
 #hmpData <- read.table("/tmp/tht/THTdownload_hmp_MGLI.txt", header=TRUE, stringsAsFactors=FALSE, sep="\t", check.names = FALSE)
 
-write.csv(mrkRelMat, file=fileK, quote=FALSE)
-
 # Read and parse snp file
 mrkData <- hmpData[,-(1:4)]
 mrkRelMat <- A.mat(t(mrkData), return.imputed=TRUE)
@@ -21,6 +19,8 @@ if (class(mrkRelMat) == "list"){ # Do this if you have missing marker data
         mrkData.imputed <- mrkRelMat$imputed # We will use the imputed markers later on
         mrkRelMat <- mrkRelMat$A
 }
+write.csv(mrkRelMat, file=fileK, quote=FALSE)
+
 eig.result <- eigen(mrkRelMat)
 lambda <- eig.result$values
 mainTitle <- paste("Principal Component analysis of ", phenolabel)
