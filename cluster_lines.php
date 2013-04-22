@@ -72,6 +72,7 @@ if (isset($_SESSION['selected_lines'])) {
   <input type='hidden' name='time' value=<?php echo $time ?> >
 
   <div id='ajaxresult'></div>
+  <script type="text/javascript" src="downloads/download_gs.js"></script>
   <script type="text/javascript">
         var req= getXMLHttpRequest();
  	var resp=document.getElementById('ajaxresult');
