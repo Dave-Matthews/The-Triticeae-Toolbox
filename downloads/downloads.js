@@ -117,7 +117,7 @@ function haplotype_step2(command) {
 
 function haplotype_step2_combine() {
     var param = 'function=selLines';
-    param += '&selLines=' + document.lines.elements["selLines"].value;
+    param += '&selLines=' + document.lines.elements.selLines.value;
     if (document.lines.elements[0].checked) {
       param += '&selectWithin=' + document.lines.elements[0].value;
     }
