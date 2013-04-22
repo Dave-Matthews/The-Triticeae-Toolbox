@@ -467,7 +467,7 @@ class Downloads
 
           <table border=0>
           <tr><td>
-          <input type="button" value="GWAS Analysis" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> 
+          <input type="button" value="Analyze" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> GWAS
           <td>
           <select name="model2" onchange="javascript: update_fixed(this.value)">
           <option>0</option>
@@ -478,7 +478,7 @@ class Downloads
           <option>5</option>
           </select>principal components
           <!--td><input type="checkbox" value="PC3D">PC3D -->
-          <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('<?php echo $unique_str; ?>')">
+          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $unique_str; ?>')"> rrBLUP
           <td>
           <!--td><input type="checkbox" name="model3" value="reduce">reduce -->
           </table><br>
