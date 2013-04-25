@@ -400,6 +400,8 @@ while (!feof($reader))  {
     $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
     $sql = "START TRANSACTION";
     $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+    $sql = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
+    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
     for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
       $line_name = $header[$data_pt];
 
