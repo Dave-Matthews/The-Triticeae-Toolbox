@@ -342,6 +342,9 @@ $rowNum = 0;
 $line_name = "qwerty";
 $errLines = 0;
 $data = array();
+
+$sql = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
+$res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
     
 while (!feof($reader))  {
     // If we have too many errors stop processing - something is wrong
@@ -399,8 +402,6 @@ while (!feof($reader))  {
     $sql = "SET unique_checks=0";
     $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
     $sql = "START TRANSACTION";
-    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
-    $sql = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
     $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
     for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
       $line_name = $header[$data_pt];
