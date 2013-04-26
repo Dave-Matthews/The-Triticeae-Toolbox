@@ -8,26 +8,29 @@ include($config['root_dir'].'theme/admin_header.php');
 connect();
 /* loginTest(); */
 ?>
-  <h1>Current MySQL Processes</h1>
-  <div class="section">
+<h1>Current Processes</h1>
+<div class="section">
+  <h3>MySQL</h3>
 <?php 
 
+print "<table><tr><th>Database<th>State<th>Status<th>Command";
 $sql = "show processlist";
-$res1 = mysql_query($sql);
-$rowcount = mysql_num_rows($res1);
-while ($row = mysql_fetch_assoc($res1)) {
-  $db = $row[db];
-  $usr = $row[User];
-}
-echo "Database <b>$db</b>, user <b>$usr</b><p>";
-echo "Processes: <b>$rowcount</b><p>";
-print "<table><tr><th>State<th>Status<th>Command";
-
 $res = mysql_query($sql);
 while ($row = mysql_fetch_assoc($res)) 
-  print "<tr><td>$row[Command]<td>$row[State]<td>$row[Info]";
-
+  print "<tr><td>$row[db]<td>$row[Command]<td>$row[State]<td>$row[Info]";
 print "</table>";
+?>
+
+</div>
+
+<div class="section">
+  <h3>PHP</h3>
+
+<?php
+echo "<pre><font size=2><table><td style='width:500px'>"; 
+system("ps uww -C php");
+echo "</td></table></font></pre>"; 
+
 echo "</div>";
 $footer_div=1;
 include($config['root_dir'].'theme/footer.php'); 
