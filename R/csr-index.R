@@ -26,6 +26,19 @@ for (i in 1:length(wavelength)) {
   }
 }
 
+if (is.na(W3wav)) {
+  W3idx <- ""
+} else {
+min <- max(wavelength)
+for (i in 1:length(wavelength)) {
+  diff <- abs(W3wav - wavelength[i])
+  if (diff < min) {
+     min <- diff
+     W3idx <- i
+  }
+}
+}
+
 #remove columns that only contain NA
 csrFilt <- csrData
 isnaMat <- !is.na(csrData)
@@ -52,7 +65,11 @@ source(file_for)
 #scale the axis to zoom in on the selected wavelengths
 for (i in 2:ncol(csrFilt)) {
   if (i == 2) {
-    xrange <- c(W1wav-20,W2wav+20)
+    if (zoom == "entire") {
+      xrange <- c(wavelength[1],wavelength[length(wavelength)])
+    } else {
+      xrange <- c(min(W1wav,W2wav,W3wav,na.rm=TRUE)-20,max(W1wav,W2wav,W3wav,na.rm=TRUE)+20)
+    }
     yrange <- range(csrData[W1idx:W2idx,-(1)], na.rm = TRUE)
     plot(csrData[,1], csrFilt[,i], xlim=xrange, ylim=yrange, type="n", xlab="wavelength", ylab="CSR value")
     lines(csrData[,1], csrFilt[,i])
@@ -68,10 +85,16 @@ if (W1idx == 1) {
 if (W2idx == length(wavelength)) {
   stop("Error: W2 wavelength is too large")
 }
+if (W3idx == "") {
+} else {
+if ((W3idx == 1) || (W3idx == length(wavelength))) {
+  stop("Error: W3 out of range")
+}
+}
 
 # apply formula to calculate index for each column then write to file
 csrFilt <- csrData[,-(1)]      
-results <- apply(csrFilt, 2, calIndex,idx1= W1idx, idx2=W2idx);
+results <- apply(csrFilt, 2, calIndex,idx1= W1idx, idx2=W2idx,  idx3=W3idx);
 pltData <- pltData[-(1)]
 pltData <- t(pltData)
 results2 <- data.frame(plot=pltData, index=results)

@@ -60,9 +60,6 @@ class Downloads
             case 'step1lines':
                 $this->step1_lines();
                 break;
-			case 'step5programs':
-			     $this->step5_programs();
-			     break;
 			case 'step2lines':
 				$this->step2_lines();
 				break;
@@ -78,9 +75,6 @@ class Downloads
 			case 'step1yearprog':
 			    $this->step1_yearprog();
 			    break;
-			case 'type1traits':
-				$this->type1_traits();
-				break;
 			case 'type1build_qtlminer':
 				$this->type1_build_qtlminer();
 				break;
@@ -756,7 +750,7 @@ class Downloads
            $max_miss_line = $_GET['mml'];
          ?>
         <p>
-        Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />
+        Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove markers missing &gt; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -775,7 +769,7 @@ class Downloads
 	       echo $config['base_url'];
 	       echo "pedigree/line_selection.php> Select lines</a><br>";
 	     } else {
-	       echo "<br>Filter markers then $message2<br>";
+	       echo "<br>Filter lines and markers then $message2<br>";
 	       ?>
                <table border=0>
 	       <tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" />
@@ -807,9 +801,14 @@ class Downloads
 	  }
 	  return ($a < $b) ? -1 : 1;
 	}
-
-        function calculate_db(&$lines, $min_maf, $max_missing, $max_miss_line) {
-         //calculate allele frequencies using allele_frequencies table
+/**
+ * calculate allele frequencies using allele_frequencies table
+ * @param array $lines
+ * @param float $min_maf
+ * @param float $max_missing
+ * @param float $max_miss_line
+ */
+private function calculate_db(&$lines, $min_maf, $max_missing, $max_miss_line) {
 
          $selectedlines = implode(",", $lines);
 
@@ -853,206 +852,6 @@ class Downloads
          }
         }
 	
-	/**
-	 * display minor allele frequence and missing data using selected lines
-	 * @param array $lines
-	 * @param floats $min_maf
-	 * @param floats $max_missing
-	 */
-	
-	/**
-	 * starting with breeding programs display marker information
-	 */
-	private function step5_programs() {
-	  $experiments = $_GET['exps'];
-	  $CAPdataprogram = $_GET['bp'];
-	  $years = $_GET['yrs'];
-	  $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-	 
-	  /** Use currently selected lines? */
-	  if (count($_SESSION['selected_lines']) > 0) {
-	    $sub_ckd = ""; $all_ckd = "checked";
-	  } else {
-	    $sub_ckd = "disabled"; $all_ckd = "checked";
-	  }
-	  if ($subset == "yes") {
-	    $sub_ckd = "checked"; $all_ckd = "";
-	  } elseif ($subset == "no") {
-	    $sub_ckd = ""; $all_ckd = "checked";
-	  } elseif ($subset == "comb") {
-	    $sub_ckd = ""; $cmb_ckd = "checked";
-	  }
-	  ?>
-	  <p>5.<select name="select1">
-	  <option value="BreedingProgram">Lines</option>
-	  </select></p>
-	  
-	  <table id="phenotypeSelTab" class="tableclass1">
-	  <tr>
-	  <th>Lines</th>
-	  </tr>
-	  <tr><td>
-	  <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
-	  <?php
-	  if ($sub_ckd == "checked") {
-	    $selected_lines = $_SESSION['selected_lines'];
-	    foreach ($selected_lines as $line) {
-	      $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      $row = mysql_fetch_assoc($res);
-	      ?>
-	      <option selected value="<?php echo $row['id'] ?>">
-	      <?php echo $row['name'] ?>
-	      </option>
-	     <?php
-	    }
-	  } elseif ($cmb_ckd == "checked") {
-	    $lines_list = array();
-	    $lines_new = "";
-	    $selected_lines = $_SESSION['selected_lines'];
-	    foreach ($selected_lines as $line) {
-	      $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      $row = mysql_fetch_assoc($res);
-	      $temp = $row['id'];
-	      $lines_list[$temp] = 1;
-	      ?>
-	      <option selected value="<?php echo $row['id'] ?>">
-	      <?php echo $row['name'] ?>
-	      </option>
-	      <?php
-	    }
-	    $sql_option = "";
-	    if (preg_match("/\d/",$experiments)) {
-	      $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
-	    }
-	    if (preg_match("/\d/",$datasets)) {
-	      $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-	    }
-	    $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
-	    FROM line_records, tht_base
-	    WHERE line_records.line_record_uid=tht_base.line_record_uid
-	    $sql_option";
-	    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	    while($row = mysql_fetch_array($res)) {
-	      $temp1 = $row['name'];
-	      $temp2 = $row['id'];
-	      if (isset($lines_list[$temp2])) {
-	      } else {
-	        if ($lines_new == "") {
-	          $lines_new = $temp1;
-	          ?>
-	          <option disabled="disabled">--added--
-	          </option>
-	          <?php
-	        }
-	        ?>
-	        <option selected value="<?php echo $row['id'] ?>">
-	        <?php echo $row['name'] ?>
-	        </option>
-	        <?php
-	      }
-	    }
-	  } else {
-	    $sql_option = "";
-	    if (preg_match("/\d/",$experiments)) {
-	      $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
-	    }
-	    if (preg_match("/\d/",$datasets)) {
-	      $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-	    }
-	    $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
-	    FROM line_records, tht_base
-	    WHERE line_records.line_record_uid=tht_base.line_record_uid
-	    $sql_option";
-	    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	    while($row = mysql_fetch_array($res)) {
-	      ?>
-	      <option selected value="<?php echo $row['id'] ?>">
-	      <?php echo $row['name'] ?>
-	      </option>
-	      <?php 
-	    }
-	  }
-	  ?>
-	  </select>
-	  </table>
-	  <?php 
-	  if (count($_SESSION['selected_lines']) > 0) {
-	    ?>
-	    <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently
-	    selected lines</a><br>
-	    <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
-	    <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
-	    <?php
-	  }
-	}
-
-	/**
-	 * display traits given a list of experiments
-	 */
-	private function type1_traits()
-	{
-		$experiments = $_GET['exps'];
-		
-		if (empty($experiments))
-		{
-			echo "
-				4. <select><option>Traits</option></select>
-				<div>
-					<p><em>No Trials Selected</em></p>
-				</div>";
-		}
-		else
-		{
-?>
-<p>4. 
-<select><option>Traits</option></select></p>
-<div>
-<?php
-// List all traits associated with a list of experiments
-
-
-			$sql = "SELECT p.phenotype_uid AS id, p.phenotypes_name AS name
-					FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
-					WHERE pd.tht_base_uid = t.tht_base_uid
-					AND p.phenotype_uid = pd.phenotype_uid
-					AND t.experiment_uid IN ($experiments)
-					GROUP BY p.phenotype_uid";
-
-			$res = mysql_query($sql) or die(mysql_error());
-			if (mysql_num_rows($res) >= 1)
-			{
-?>
-<table>
-	<tr><th>Trait</th></tr>
-	<tr><td>
-		<select id="traitsbx" name="traits" multiple="multiple" style="height: 12em" onchange="javascript: update_phenotype_items(this.options)">
-<?php
-				while ($row = mysql_fetch_assoc($res))
-				{
-?>
-			<option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
-<?php
-				}
-?>
-		</select>
-	</td></tr>
-</table>
-<?php
-			}
-			else
-			{
-?>
-		<p style="font-weight: bold;">No Data</p>
-<?php
-			}
-?>
-</div>
-<?php
-		}
-	}
-
 	/**
 	 * creates output files in qtlminer format
 	 */

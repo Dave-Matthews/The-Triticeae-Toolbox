@@ -1,4 +1,18 @@
-<?php 
+<?php
+/**
+ * Quick search
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/search.php
+ * 
+ */
 	include("includes/bootstrap.inc");
 	connect();
 
@@ -152,10 +166,13 @@
 				$names = array();
 
 				/* do not search through _uids */
+                                /* do not add duplicates */
 				for($i=0; $i<count($ukeys); $i++) {
-					if( strpos($ukeys[$i], "_uid")  === FALSE) {
-						array_push($names, $ukeys[$i] );
-					}
+			           if (strpos($ukeys[$i], "_uid")  === FALSE) {
+                                     if (!in_array($ukeys[$i],$names)) {
+		          	       array_push($names, $ukeys[$i] );
+                                     }
+				   }
 				}
 
 				/* add this table to the search tree if there are fields to search */

@@ -28,6 +28,7 @@ date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
 require_once $config['root_dir'].'includes/File_Archive/Archive.php';
+require_once $config['root_dir'].'downloads/marker_filter.php';
 
 // connect to database
 connect();
@@ -57,30 +58,6 @@ class Downloads
     {	
         switch($function)
         {
-            case 'type1':
-                $this->type1();
-                break;
-            case 'type1preselect':
-                $this->type1_preselect();
-                break;
-            case 'type1experiments':
-                $this->type1_experiments();
-                break;
-            case 'step1dataprog':
-                $this->step1_dataprog();
-                break;
-            case 'enterlines':
-                $this->enter_lines();
-                break;
-            case 'step1lines':
-                $this->step1_lines();
-                break;
-            case 'step1locations':
-                $this->step1_locations();
-                break;
-            case 'step2locations':
-                $this->step2_locations();
-                break;
             case 'genomic_prediction':
                 $this->genomic_prediction();
                 break;
@@ -93,33 +70,6 @@ class Downloads
             case 'run_rscript':
                 $this->run_rscript();
                 break;
-			case 'step3locations':
-			    $this->step3_locations();
-			    break;
-			case 'step5locations':
-			    $this->step5_locations();
-			    break;
-			case 'step5programs':
-			     $this->step5_programs();
-			     break;
-			case 'step2lines':
-				$this->step2_lines();
-				break;
-			case 'step3lines':
-				$this->step3_lines();
-				break;
-		 	case 'step4lines':
-				$this->step4_lines();
-				break;
-                        case 'step5lines':
-                                $this->step5_lines();
-                                break;
-			case 'step1breedprog':
-				$this->step1_breedprog();
-				break;
-			case 'step1yearprog':
-			    $this->step1_yearprog();
-			    break;
 			case 'type1traits':
 				$this->type1_traits();
 				break;
@@ -137,12 +87,6 @@ class Downloads
 				break;
 			case 'type1build_tassel_v3':
 				echo $this->type1_build_tassel_v3();
-				break;
-			case 'step2lines':
-				echo $this->step2_lines();
-				break;
-			case 'searchLines':
-				echo $this->step1_search_lines();
 				break;
 			case 'download_session_v2':
 			    echo $this->type1_session(V2);
@@ -186,35 +130,6 @@ class Downloads
 		$this->type1_checksession();
 		include($config['root_dir'].'theme/footer.php');
 	}	
-	
-	/**
-	 * When there is no data saved in session this handles outputting the header and footer and calls the first real action of the type1 download.
-	 */ 
-	private function type1()
-	{
-		global $config;
-		#include($config['root_dir'].'theme/normal_header.php');
-
-		#echo "<h2>Tassel Download</h2>";
-		#echo "<p><em>Select multiple options by holding down the Ctrl key while clicking.
-		#</em></p>";
-		unset($_SESSION['selected_lines']);
-		unset($_SESSION['phenotype']);
-		unset($_SESSION['clicked_buttons']);
-		
-		?>
-		<p>1.
-		<select name="select1" onchange="javascript: update_select1(this.options)">
-		<option value="BreedingProgram">Program</option>
-		<option value="Lines">Lines</option>
-		<option value="Locations">Locations</option>
-		<option value="Phenotypes">Trait Category</option>
-		</select></p>
-		<?php 
-		$this->step1_breedprog();
-		$footer_div = 1;
-        #	include($config['root_dir'].'theme/footer.php');
-	}
 	
 	/**
 	 * Checks the session variable, if there is lines data saved then go directly to the lines menu
@@ -274,7 +189,7 @@ class Downloads
 			}	
             $this->refresh_title();
                 if (empty($_SESSION['training_traits'])) {
-                   if (empty($_SESSION['selected_traits'])) { 
+                   if (empty($_SESSION['phenotype'])) { 
                      echo "Select training set using ";
                      //echo $config['base_url'];
                      //echo "phenotype/phenotype_selection.php>Trials and Traits</a> or ";
@@ -291,7 +206,7 @@ class Downloads
                     echo "<a href=";
                     echo $config['base_url'];
                     echo "pedigree/line_selection.php>Lines by Properties</a><br>";
-                } elseif (empty($_SESSION['selected_traits']) && empty($_SESSION['training_traits'])) {
+                } elseif (empty($_SESSION['phenotype']) && empty($_SESSION['training_traits'])) {
                     echo "Please select traits before using this feature.<br><br>";
                     echo "<a href=";
                     echo $config['base_url'];
@@ -423,6 +338,7 @@ class Downloads
            unset($_SESSION['training_trials']);
            unset($_SESSION['training_lines']);
            unset($_SESSION['filtered_lines']);
+           unset($_SESSION['phenotype']);
       } elseif ($command== "clear_p") {
           unset($_SESSION['selected_traits']);
           unset($_SESSION['selected_trials']);
@@ -491,14 +407,15 @@ class Downloads
         if (empty($_SESSION['selected_lines'])) {
             echo "</table>";
         }
-      } elseif (!empty($_SESSION['selected_traits']) && !empty($_SESSION['selected_trials'])) {
+      //} elseif (!empty($_SESSION['selected_traits']) && !empty($_SESSION['selected_trials'])) { use when I get this working for multiple traits
+      } elseif (!empty($_SESSION['phenotype']) && !empty($_SESSION['selected_trials'])) {
         ?>
         <table>
         <tr><td>Traits<td>Trials<td>Lines
         <tr><td>
         <?php
-        $tmp = $_SESSION['selected_traits'];
-        $traits= implode(",",$tmp);
+        $traits = $_SESSION['phenotype'];
+        //$traits= implode(",",$tmp); use when I get this working for multiple traits
         $sql = "select phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
         $res = mysql_query($sql) or die(mysql_error());
         while ($row = mysql_fetch_array($res)) {
@@ -550,7 +467,7 @@ class Downloads
 
           <table border=0>
           <tr><td>
-          <input type="button" value="GWAS Analysis" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> 
+          <input type="button" value="Analyze" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> GWAS
           <td>
           <select name="model2" onchange="javascript: update_fixed(this.value)">
           <option>0</option>
@@ -561,7 +478,7 @@ class Downloads
           <option>5</option>
           </select>principal components
           <!--td><input type="checkbox" value="PC3D">PC3D -->
-          <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('<?php echo $unique_str; ?>')">
+          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $unique_str; ?>')"> rrBLUP
           <td>
           <!--td><input type="checkbox" name="model3" value="reduce">reduce -->
           </table><br>
@@ -694,9 +611,9 @@ class Downloads
         if (isset($_SESSION['training_traits'])) {
             $phenotype = $_SESSION['training_traits'];
             $phenotype = $phenotype[0];
-        } elseif (isset($_SESSION['selected_traits'])) {
-            $phenotype = $_SESSION['selected_traits'];
-            $phenotype = $phenotype[0];
+        //} elseif (isset($_SESSION['selected_traits'])) {  use when multiple traits is working
+          } elseif (isset($_SESSION['phenotype'])) {
+            $phenotype = $_SESSION['phenotype'];
         }
         $sql = "select phenotypes_name, unit_name from phenotypes, units
                where phenotypes.unit_uid = units.unit_uid
@@ -704,6 +621,8 @@ class Downloads
         $res = mysql_query($sql) or die(mysql_error());
         $row = mysql_fetch_array($res);
         $phenolabel = $row[0];
+        //$unique_fld = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+        //mkdir("/tmp/tht/$unique_fld");  it would be better to put all files in directory
         $dir = '/tmp/tht/';
         $filename9 = 'THTdownload_hmp_' . $unique_str. '.txt';
         $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
@@ -714,6 +633,7 @@ class Downloads
         $filename5 = 'process_error_gwa_' . $unique_str . '.txt';
         $filename6 = 'R_error_gwa_' . $unique_str . '.txt';
         $filename1 = 'THT_result_' . $unique_str . '.csv';
+        $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if(!file_exists($dir.$filename3)){
             $h = fopen($dir.$filename3, "w+");
             $png1 = "png(\"$dir$filename4\", width=800, height=400)\n";
@@ -726,6 +646,7 @@ class Downloads
             $cmd6 = "fileerr <- \"$dir$filename6\"\n";
             $cmd7 = "fileout <- \"$filename1\"\n";
             $cmd8 = "model_opt <- \"$model_opt\"\n";
+            $cmd9 = "fileK <- \"$filenameK\"\n";
             fwrite($h, $png1);
             fwrite($h, $png2);
             fwrite($h, $png3);
@@ -736,6 +657,7 @@ class Downloads
             fwrite($h, $cmd6);
             fwrite($h, $cmd7);
             fwrite($h, $cmd8);
+            fwrite($h, $cmd9);
             fwrite($h, "setwd(\"/tmp/tht/\")\n");
             fclose($h);
         }
@@ -753,6 +675,7 @@ class Downloads
                   print "<img src=\"/tmp/tht/$filename4\" /><br>";
                   print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
                   print "with columns for marker name, chromosome, position, marker score<br><br>";
+                  print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
         }
         if (file_exists("/tmp/tht/$filename5")) {
            $h = fopen("/tmp/tht/$filename5", "r");
@@ -846,7 +769,8 @@ class Downloads
         }
         if (file_exists("/tmp/tht/$filename4")) {
              print "<img src=\"/tmp/tht/$filename4\" /><br>";
-             if (isset($_SESSION['selected_traits'])) {
+             //if (isset($_SESSION['selected_traits'])) { use when multiple traits is supported
+             if (isset($_SESSION['phenotype'])) {
                   print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export prediction to CSV file</a><br><br>";
              } else { 
                   print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
@@ -951,9 +875,9 @@ class Downloads
                     $res = mysql_query($sql) or die(mysql_error());
                     $row = mysql_fetch_array($res);
                     $phenolabel = $row[0];
-                } elseif (isset($_SESSION['selected_traits'])) {
-                    $phenotype = $_SESSION['selected_traits'];
-                    $phenotype = $phenotype[0];
+                //} elseif (isset($_SESSION['selected_traits'])) {
+                  } elseif (isset($_SESSION['phenotype'])) {
+                    $phenotype = $_SESSION['phenotype'];
                     $sql = "select phenotypes_name from phenotypes where phenotype_uid = $phenotype";
                     $res = mysql_query($sql) or die(mysql_error());
                     $row = mysql_fetch_array($res);
@@ -966,10 +890,10 @@ class Downloads
                 <?php
               
                 if ($training_lines == "") {
-                  $this->calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+                  calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
                   $lines = $_SESSION['filtered_lines'];
                 } else {
-                  $this->calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
+                  calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
                   $training_lines = $_SESSION['filtered_lines'];
                 }
                 $markers = $_SESSION['filtered_markers'];
@@ -1097,482 +1021,6 @@ class Downloads
 	}
 	
 	/**
-	 * this is the main entry point when there are no lines saved in session variable
-	 */
-    private function type1_breeding_programs_year()
-	{
-		?>	
-			<div id="step11">
-			<table>
-				<tr>
-					<th>Breeding Program</th>
-				</tr>
-				<tr>
-					<td>
-						<select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
-		<?php
-
-		// Select breeding programs for the drop down menu
-		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-				FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
-
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
-		{
-			?>
-				<option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
-			<?php
-		}
-		?>
-						</select>
-			</table>
-			</div></div>
-					
-			<div id="step2" style="float: left; margin-bottom: 1.5em;">
-			<p>2.
-		<select name="select2">
-		  <option value="BreedingProgram">Year</option>
-		</select></p>
-			<table>
-					<tr>
-					    <th>Year</th>
-					</tr>
-					<tr>
-					<td>
-						<select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-		<?php
-
-		// set up drop down menu with data showing year
-		// should this be phenotype experiments only? No
-
-		$sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-				WHERE e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'phenotype'";
-		if (!authenticate(array(USER_TYPE_PARTICIPANT,
-					USER_TYPE_CURATOR,
-					USER_TYPE_ADMINISTRATOR)))
-			$sql .= " and data_public_flag > 0";
-		$sql .= " GROUP BY e.experiment_year ASC";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
-			?>
-				<option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-			<?php
-		}
-		?>
-						</select>
-					</td>
-				</tr>
-			</table>
-		</div>
-		<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-		
-<?php
-	}
-	
-    /**
-     * starting with year
-     */
-    private function step1_yearprog()
-    {
-     ?>
-    <div id="step11" style="float: left; margin-bottom: 1.5em;">
-    <table id="phenotypeSelTab" class="tableclass1">
-    <tr>
-    <th>Year</th>
-    </tr>
-    <tr><td>
-    <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-    <?php
-    $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-    WHERE e.experiment_type_uid = et.experiment_type_uid
-    AND et.experiment_type_name = 'phenotype'
-    GROUP BY e.experiment_year ASC";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res))
-    {
-    ?>
-    <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-    <?php
-    }
-    ?>
-    </select>
-    </td>
-    </table>
-    </div>
-    <?php
-    }
-    
-    /**
-     * starting with breeding program display breeding program and year
-     */
-	private function step1_breedprog()
-	{
-		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
-                $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
-?>
-                <div id="step11" style="float: left; margin-bottom: 1.5em;">
-                <table>
-                <tr>
-                        <th>Breeding Program</th>
-                        <th>Year</th>
-                </tr>
-		<tr>
-                                        <td>
-                                                <select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
-                <?php
-
-                // Select breeding programs for the drop down menu
-                $sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-                                FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
-
-                $res = mysql_query($sql) or die(mysql_error());
-                while ($row = mysql_fetch_assoc($res))
-                {
-                        ?>
-                                <option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
-                        <?php
-                }
-                ?>
-                                                </select>
-                                        </td>
-					<td>
-                                                <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-                <?php
-
-                // set up drop down menu with data showing year
-                // should this be phenotype experiments only? No
-
-                $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-                                WHERE e.experiment_type_uid = et.experiment_type_uid
-                                        AND et.experiment_type_name = 'phenotype'";
-                if (!authenticate(array(USER_TYPE_PARTICIPANT,
-                                        USER_TYPE_CURATOR,
-                                        USER_TYPE_ADMINISTRATOR)))
-                        $sql .= " and data_public_flag > 0";
-                $sql .= " GROUP BY e.experiment_year ASC";
-                $res = mysql_query($sql) or die(mysql_error());
-                while ($row = mysql_fetch_assoc($res)) {
-                        ?>
-                                <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-                        <?php
-                }
-                ?>
-                                                </select>
-                                        </td>
-                                </tr>
-                        </table>
-<?php	
-	}
-	
-	/**
-	 * starting with data program display dataprogram and year
-	 */
-	private function step1_dataprog()
-	{
-		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
-                $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
-?>		
-		<table>
-		<tr>
-			<th>Data Program</th>
-			<th>Year</th>
-		</tr>
-<tr><td><select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
-<?php
-		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-                                FROM CAPdata_programs WHERE program_type='data' ORDER BY name";
-      		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
-			?>
-			<option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
-			<?php
-		}
-?>
-</select>
-	</td><td>
-<select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-<?php
-		$sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-                                WHERE e.experiment_type_uid = et.experiment_type_uid
-                                        AND et.experiment_type_name = 'phenotype'";
-                if (!authenticate(array(USER_TYPE_PARTICIPANT,
-                                        USER_TYPE_CURATOR,
-                                        USER_TYPE_ADMINISTRATOR)))
-                        $sql .= " and data_public_flag > 0";
-                $sql .= " GROUP BY e.experiment_year ASC";
-                $res = mysql_query($sql) or die(mysql_error());
-                while ($row = mysql_fetch_assoc($res)) {
-                        ?>
-                                <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-                        <?php
-                }
-                ?>
-                                                </select>
-                                        </td>
-                                </tr>
-</table>
-<?php
-	}	
-	
-	/**
-	 * main entry point when there is a line selection in session variable
-	 */
-    private function type1_lines_trial_trait()
-    {
-		?>
-		<div id="step11">
-		<?php
-	    $this->step1_lines();
-		?>
-	    </div></div>    
-	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
-	    <?php 
-	    $this->step2_lines();
-	    ?></div>
-	    <div id="step3" style="float: left; margin-bottom: 1.5em;">
-            <?php
-            $this->step4_lines();
-            ?></div>
-	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
-	    <script type="text/javascript">
-	      var mm = 10;
-	      var mmaf = 5; 
-            //window.onload = load_markers_lines( mm, mmaf);
-	    </script>
-            <?php
-            $this->step5_lines();
-            ?>
-	    </div>
-	     <?php 	
-	}
-	
-	/**
-	 * starting with lines display the selected lines
-	 */
-	private function step1_lines()
-	{
-		if (isset($_SESSION['selected_lines'])) {
-			$selectedlines= $_SESSION['selected_lines'];
-	        $count = count($_SESSION['selected_lines']);
-		?>
-	    <table id="phenotypeSelTab" class="tableclass1">
-	    <tr>
-	    <th>Lines</th>
-	    </tr>
-	    <tr><td>
-	    <select name="lines" multiple="multiple" style="height: 12em;">
-	    <?php
-	    foreach($selectedlines as $uid) {
-	      $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      $row = mysql_fetch_assoc($res)
-	      ?>
-	      <option disabled="disabled" value="
-	      <?php $uid ?>">
-	      <?php echo $row['line_record_name'] ?>
-	      </option>
-	      <?php
-	    }
-	    ?>
-	    </select>
-	    </td>
-	    </table>
-	    <?php 
-	    } else {
-	    	echo "Please select lines and a single trait before using this feature.<br>";
-	        echo "<a href=";
-	        echo $config['base_url'];
-	        echo "pedigree/line_selection.php>Select Lines by Properties</a>";
-	    }
-	}
-	
-	/**
-	 * starting with lines display trials
-	 */
-	private function step2_lines()
-	{
-	    ?>
-	    <table id="linessel" class="tableclass1">
-	    <tr>
-	    <th>Markers</th>
-	    </tr>
-	    <tr><td>
-	    <?php 
-	    if (isset($_SESSION['clicked_buttons'])) {
-	      $selected = $_SESSION['clicked_buttons'];
-		  ?>
-	      <select name="markers" multiple="multiple" style="height: 12em;">
-	      <?php
-	      foreach($selected as $uid) {
-	        $sql = "SELECT marker_name from markers where marker_uid = $uid";
-	        $res = mysql_query($sql) or die(mysql_error());
-	        $row = mysql_fetch_assoc($res)
-	        ?>
-	        <option disabled="disabled" value="
-	        <?php $uid ?>">
-	        <?php echo $row['marker_name'] ?>
-	        </option>
-	        <?php
-	      }
-	    } else {
-	      echo "All";
-	    }
-	    ?>
-	    </select>
-	    </td>
-	    </table>
-	    <?php  
-	}
-	
-	/**
-	 * starting with lines display phenotype items
-	 */
-	private function step3_lines()
-	{
-	    ?>
-	    <table id="" class="tableclass1">
-	    <tr>
-	    <th>Traits</th>
-	    </tr>
-	    <tr><td>
-	    <?php
-            if (isset($_SESSION['selected_traits'])) {
-              $selected = $_SESSION['selected_traits'];
-              ?>
-              <select name="traits" multiple="multiple" style="height: 12em;">
-              <?php
-              foreach($selected as $uid) {
-                $sql = "SELECT phenotypes_name from phenotypes where phenotype_uid = $uid";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_assoc($res)
-                ?>
-                    <option disabled="disabled" value="<?php echo $row['phenotypes_name'] ?>">
-                     <?php echo $row['phenotypes_name'] ?>
-                    </option>
-                    <?php
-                }
-            } else {
-              echo "none selected";
-            }
-            ?>
-            </select></table>
-             <?php
-        }
-
-        /**
-         * starting with lines display phenotype items
-         */
-        private function step4_lines()
-        {
-            ?>
-            <table id="" class="tableclass1">
-            <tr>
-            <th>Trials</th>
-            </tr>
-            <tr><td>
-            <?php
-            if (isset($_SESSION['selected_trials'])) {
-              $selected = $_SESSION['selected_trials'];
-              ?>
-              <select name="traits" multiple="multiple" style="height: 12em;">
-              <?php
-              foreach($selected as $uid) {
-                $sql = "SELECT trial_code from experiments where experiment_uid = $uid";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_assoc($res)
-                ?>
-                    <option disabled="disabled" value="<?php echo $row['trial_code'] ?>">
-                     <?php echo $row['trial_code'] ?>
-                    </option>
-                    <?php
-                }
-            } else {
-              echo "none selected";
-            }
-            ?>
-            </select></table>
-             <?php
-        }
-
-
-	/**
-	 * starting with lines display marker data
-	 */
-	private function step5_lines() {
-	 
-	$saved_session = "";
-	$message2 = "";
-
-	if (isset($_SESSION['phenotype'])) {
-	    $phenotype = $_SESSION['phenotype'];
-	    $message2 = "download phenotype and genotype data";
-	} else {
-	    $phenotype = "";
-	    $message2 = " download genotype data";
-	}
-	 if (isset($_SESSION['selected_lines'])) {
-	     $countLines = count($_SESSION['selected_lines']);
-	     $lines = $_SESSION['selected_lines'];
-	     $selectedlines = implode(",", $_SESSION['selected_lines']);
-	     if ($saved_session == "") {
-	      $saved_session = "$countLines lines";
-	     } else {
-	      $saved_session = $saved_session . ", $countLines lines";
-	     }
-	 } else {
-	     $countLines = 0;
-	 }
-	 if (isset($_SESSION['clicked_buttons'])) {
-	    $tmp = count($_SESSION['clicked_buttons']);
-	    $saved_session = $saved_session . ", $tmp markers";
-	    $markers = $_SESSION['clicked_buttons']; 
-	    $marker_str = implode(',',$markers);
-	 } else {
-	    $markers = "";
-	    $marker_str = "";
-	 }
-	 
-	 if ($saved_session != "") {
-	  echo "current data selection = $saved_session<br>";
-	 }
-	 
-	 // initialize markers and flags if not already set
-	 $max_missing = 10;//IN PERCENT
-	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-	  $max_missing = $_GET['mm'];
-	 if ($max_missing>100)
-	  $max_missing = 100;
-	 elseif ($max_missing<0)
-	 $max_missing = 0;
-	 $min_maf = 5.0;//IN PERCENT
-	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-	  $min_maf = $_GET['mmaf'];
-	 if ($min_maf>100)
-	  $min_maf = 100;
-	 elseif ($min_maf<0)
-	  $min_maf = 0;
-	 
-	 //$this->calculate_af($lines, $min_maf, $max_missing); 
-	 
-	 if ($saved_session != "") {
-	     if ($countLines == 0) {
-	       echo "Choose one or more lines before using a saved selection. ";
-	       echo "<a href=";
-	       echo $config['base_url'];
-	       echo "pedigree/line_selection.php> Select lines</a><br>";
-	     } else {
-               $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)); 
-	       echo "<br>Estimate phenotypes for prediction set<br>";
-	       echo "<input type=\"button\" value=\"Analyze\" onclick=\"javascript:load_genomic_prediction('$unique_str')\"><br><br>";
-	     }
-	  }
-	}
-	
-	/**
 	 * used by uasort() to order an array
 	 * @param integer $a
 	 * @param integer $b
@@ -1583,649 +1031,6 @@ class Downloads
 	    return 0;
 	  }
 	  return ($a < $b) ? -1 : 1;
-	}
-	
-	/**
-	 * display minor allele frequence and missing data using selected lines
-	 * @param array $lines
-	 * @param floats $min_maf
-	 * @param floats $max_missing
-	 */
-	function calculate_af(&$lines, $min_maf, $max_missing, $max_miss_line) {
-	 //calculate allele frequencies using 2D table
-
-	 if (isset($_SESSION['clicked_buttons'])) {
-	   $tmp = count($_SESSION['clicked_buttons']);
-	   $saved_session = $saved_session . ", $tmp markers";
-	   $markers = $_SESSION['clicked_buttons'];
-	   $marker_str = implode(',',$markers);
-	 } else {
-           $markers_filtered = array();
-	   $markers = array();
-	   $marker_str = "";
-	 }
-	 
-	 //get location information for markers
-	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	 $i=0;
-	 while ($row = mysql_fetch_array($res)) {
-          $uid = $row[0];
-	  $marker_list[$i] = $row[0];
-          $marker_list_name[$i] = $row[1];
-          $marker_list_loc[$uid] = $i;
-	  $i++;
-	 }
-  
-         //get location information for lines
-         $sql = "select line_record_uid, line_record_name from line_records";
-         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-         while ($row = mysql_fetch_array($res)) {
-          $uid = $row[0];
-          $line_list_name[$uid] = $row[1];
-         }
-	
-	 //calculate allele frequence and missing
-         $marker_misscnt = array();
-	 foreach ($lines as $line_record_uid) {
-	   $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-	   $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	   if ($row = mysql_fetch_array($res)) {
-	     $alleles = $row[0];
-	     $outarray = explode(',',$alleles);
-             $alleles_mem[$line_record_uid] = $alleles;
-	     $i=0;
-	     foreach ($outarray as $allele) {
-               if ($allele=='AA') { $marker_aacnt[$i]++; }
-               elseif (($allele=='AB') or ($allele=='BA')) { $marker_abcnt[$i]++; }
-               elseif ($allele=='BB') { $marker_bbcnt[$i]++; }
-               elseif (($allele=='--') or ($allele=='')) { $marker_misscnt[$i]++; }
-               else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>"; }
-               $i++;
-	     }
-           } else {
-             foreach ($marker_misscnt as $i=>$value) {
-               $marker_misscnt[$i]++;
-             }
-           }
-	 }
-         $i=0;
-	 $num_mark = 0;
-	 $num_maf = $num_miss = $num_removed = 0;
-	 foreach ($marker_list as $marker_uid) {
-	   $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-           $total_af = 2 * ($marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i]);
-	   if ($total_af > 0) {
-	     $maf = 100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total);
-	     $miss = 100 * $marker_misscnt[$i]/$total;
-	     if ($maf < $min_maf) $num_maf++;
-	     if ($miss > $max_missing) $num_miss++;
-	     if (($miss > $max_missing) OR ($maf < $min_maf)) {
-               $num_removed++;
-             } else {
-               $markers_filtered[] = $marker_uid;
-             }
-	     $num_mark++;
-	   }
-           $i++; 
-	 }
-         $_SESSION['filtered_markers'] = $markers_filtered;
-         $count = count($markers_filtered);
-
-         //calculate missing from each line
-         foreach ($lines as $line_record_uid) {
-           $alleles = $alleles_mem[$line_record_uid];
-           $outarray = explode(',',$alleles);
-           $line_misscnt[$line_record_uid] = 0;
-           foreach ($markers_filtered as $marker_uid) {
-              $loc = $marker_list_loc[$marker_uid];
-              $allele = $outarray[$loc];
-              if (($allele=='--') or ($allele=='')) { 
-                  $line_misscnt[$line_record_uid]++;
-              }
-           }
-         }
-         $lines_removed = 0; 
-         $lines_removed_name = "";
-         $num_line = 0;
-         foreach ($lines as $line_record_uid) {
-           $total = count($markers_filtered);
-           $miss = 100*$line_misscnt[$line_record_uid]/$total;
-           if ($miss > $max_miss_line) {
-             $lines_removed++;
-             if ($lines_removed_name == "") {
-               $lines_removed_name = $line_list_name[$line_record_uid];
-             } else {
-               $lines_removed_name = $lines_removed_name . ", $line_list_name[$line_record_uid]";
-             }
-           } else {
-             $lines_filtered[] = $line_record_uid;
-           }
-           $num_line++;
-         }
-         $_SESSION['filtered_lines'] = $lines_filtered;
-         $comm = substr($lines_removed_name, 0, 100);
-         $count2 = count($lines_filtered);
-	 
-	  ?>
-        <table>
-        <tr><td>filtered<td>remaining
-	<tr><td><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) less than </i><b><?php echo ($min_maf) ?></b><i>%
-	<br><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
-        <td><b><?php echo ("$count") ?></b><i> markers</i> 
-        <?php
-        echo "<tr><td>using<b> $count</b> markers<br>";
-        if ($lines_removed == 1) {
-          echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
-          <?php
-        } else {
-          echo ("</i><b>$lines_removed") ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
-          <?php
-        }
-        if ($lines_removed_name != "") {
-          echo "(<a title=\"$lines_removed_name\">$comm</a>).";
-        }
-        echo "<td><b>$count2</b><i> lines</a>";
-        echo ("</table>");
-	}
-	
-	/**
-	 * starting with location display all locations
-	 */
-	private function step1_locations() {
-	 ?>
-	 <table id="phenotypeSelTab" class="tableclass1">
-	 <tr>
-	 <th>Location</th>
-	 </tr>
-	 <tr><td>
-	 <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript:update_locations(this.options)">
-	 <?php
-	 $sql = "SELECT distinct location as name from phenotype_experiment_info where location is not NULL order by location";
-	 $res = mysql_query($sql) or die(mysql_error());
-	 while ($row = mysql_fetch_assoc($res)) {
-	   ?>
-	   <option value="<?php echo $row['name'] ?>"><?php echo $row['name'] ?></option>
-	   <?php 
-	 }
-	 ?>
-	 </select>
-	 </td>
-	 </table>
-	 <?php
-	}
-	
-	/**
-	 * starting with location display years
-	 */
-	private function step2_locations() {
-	 $locations = $_GET['loc'];
-	 $locations = stripslashes($locations);
-	 ?>
-	 <p><select>
-	 <option>Year</option>
-	 </select>
-	 </p>
-	 <table id="phenotypeSelTab" class="tableclass1">
-	 <tr>
-	 <th>Year</th>
-	 </tr>
-	 <tr><td>
-	 <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript:update_years(this.options)">
-	 <?php
-	 $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et, phenotype_experiment_info AS p_e
-	 WHERE e.experiment_uid = p_e.experiment_uid
-	 AND e.experiment_type_uid = et.experiment_type_uid
-	 AND et.experiment_type_name = 'phenotype'
-	 AND p_e.location IN ($locations)
-	 GROUP BY e.experiment_year ASC";
-	 $res = mysql_query($sql) or die(mysql_error());
-	 while ($row = mysql_fetch_assoc($res)) {
-	   ?>
-	   <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-	   <?php
-	 }
-	 ?>
-	 </select>
-	 </td>
-	 </table>
-	 <?php
-	}
-	
-	/**
-	 * starting with location display experiments
-	 */
-	private function step3_locations() {
-	 $locations = $_GET['loc']; //"'" . implode("','", $_GET['loc']) . "'";
-	 $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
-	 $locations = stripslashes($locations);
-	 ?>
-	 <p>3.
-	 <select name="select1">
-	 <option value="BreedingProgram">Trials</option>
-	 </select></p>
-	 <table id="phenotypeSelTab" class="tableclass1">
-	 <tr>
-	 <th>Trials</th>
-	 </tr>
-	 <tr><td>
-	 <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_experiments(this.options)">
-	 <?php
-	 $sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year
-	 FROM experiments AS e, experiment_types AS e_t, phenotype_experiment_info AS p_e
-	 WHERE e.experiment_uid = p_e.experiment_uid
-	 AND p_e.location IN ($locations)
-	 AND e.experiment_year IN ($years)
-	 AND e.experiment_type_uid = e_t.experiment_type_uid
-	 AND e_t.experiment_type_name = 'phenotype'";
-	 if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
-	 $sql .= " and data_public_flag > 0";
-	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
-	 $res = mysql_query($sql) or die(mysql_error());
-         $last_year = NULL;
-	 while ($row = mysql_fetch_assoc($res)) {
-           if ($last_year == NULL) {
-           ?>
-             <optgroup label="<?php echo $row['year'] ?>">
-           <?php 
-             $last_year = $row['year'];
-           } else if ($row['year'] != $last_year) {
-           ?>
-             </optgroup>
-             <optgroup label="<?php echo $row['year'] ?>">
-           <?php
-             $last_year = $row['year'];
-           }
-	   ?>
-	   <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
-	   <?php
-	 }
-	 ?>
-	 </optgroup>
-	 </select>
-	 </td>
-	 </table>
-	 <?php
-	}
-	
-	/**
-	 * starting with locations display marker information
-	 */
-	private function step5_locations() {
-	 // parse url
-	 $experiments = $_GET['exps'];
-	 $phen_item = $_GET['pi'];
-	 $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-     //$_SESSION['phenotype'] = $phen_item;
-	 
-	 /**
-	  * Use currently selected lines?
-	  */
-	 if (count($_SESSION['selected_lines']) > 0) {
-	   $sub_ckd = ""; $all_ckd = "checked";
-	 } else {
-	   $sub_ckd = "disabled"; $all_ckd = "checked";
-	 }
-	 if ($subset == "yes") {
-	   $sub_ckd = "checked"; $all_ckd = "";
-	 } elseif ($subset == "no") {
-	   $sub_ckd = ""; $all_ckd = "checked";
-	 } elseif ($subset == "comb") {
-	   $sub_ckd = ""; $cmb_ckd = "checked";
-	 }
-	 ?>
-	 <p>5.<select name="select1">
-	 <option value="BreedingProgram">Lines</option>
-	 </select></p>
-	 
-	 <table id="phenotypeSelTab" class="tableclass1">
-	 <tr>
-	 <th>Lines</th>
-	 </tr>
-	 <tr><td>
-	 <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
-	 <?php
-	 //if (count($_SESSION['selected_lines']) > 0) {
-	 if ($sub_ckd == "checked") {
-	 	$selected_lines = $_SESSION['selected_lines'];
-	 	foreach ($selected_lines as $line) {
-	 		$sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-	 		$res = mysql_query($sql) or die(mysql_error());
-	 		$row = mysql_fetch_assoc($res);
-	 		?>
-	 		<option selected value="<?php echo $row['id'] ?>">
-	        <?php echo $row['name'] ?>
-	        </option>
-	        <?php
-	 	}
-	 } elseif ($cmb_ckd == "checked") {
-	   $lines_list = array();
-	   $lines_new = "";
-	   $selected_lines = $_SESSION['selected_lines'];
-	   foreach ($selected_lines as $line) {
-	     $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-	     $res = mysql_query($sql) or die(mysql_error());
-	     $row = mysql_fetch_assoc($res);
-	     $temp = $row['id'];
-	     $lines_list[$temp] = 1;
-	     ?>
-	    <option selected value="<?php echo $row['id'] ?>">
-	    <?php echo $row['name'] ?>
-	    </option>
-	    <?php
-	   }
-	   $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-	   FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-	   WHERE
-	   pd.tht_base_uid = tb.tht_base_uid
-	   AND p.phenotype_uid = pd.phenotype_uid
-	   AND lr.line_record_uid = tb.line_record_uid
-	   AND pd.phenotype_uid IN ($phen_item)
-	   AND tb.experiment_uid IN ($experiments)
-	   ORDER BY lr.line_record_name";
-	   $res = mysql_query($sql) or die(mysql_error());
-	   while ($row = mysql_fetch_assoc($res))
-	   {
-	      $temp1 = $row['name'];
-	      $temp2 = $row['id'];
-	      if (isset($lines_list[$temp2])) {
-	      } else {
-	        if ($lines_new == "") {
-	           $lines_new = $temp1;
-	           ?>
-	           <option disabled="disabled">--added--
-	           </option>
-	           <?php 
-	        }
-	        ?>
-	        <option selected value="<?php echo $row['id'] ?>">
-	        <?php echo $temp1 ?>
-	        </option>
-	        <?php
-	      }
-	   }
-	 } else {
-	   $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-	   FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-	   WHERE
-	   pd.tht_base_uid = tb.tht_base_uid
-	   AND p.phenotype_uid = pd.phenotype_uid
-	   AND lr.line_record_uid = tb.line_record_uid
-	   AND pd.phenotype_uid IN ($phen_item)
-	   AND tb.experiment_uid IN ($experiments)
-	   ORDER BY lr.line_record_name";
-	   //$_SESSION['selected_lines'] = array(); // Empty the session array.
-	   //$lines = array();
-	   $res = mysql_query($sql) or die(mysql_error());
-	   while ($row = mysql_fetch_assoc($res))
-	   {
-	   //array_push($_SESSION['selected_lines'],$row['id']);
-	   //array_push($lines,$row['id']);
-	   ?>
-	   <option selected value="<?php echo $row['id'] ?>">
-	   <?php echo $row['name'] ?>
-	   </option>
-	   <?php
-	   }
-	 }
-	 ?>
-	 </select>
-	 </table>
-	 <?php 
-	 if (count($_SESSION['selected_lines']) > 0) {
-	   ?>
-	   <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently 
-selected lines</a><br>
-	   <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
-	   <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
-	   <?php
-	 } 
-	}
-	
-	/**
-	 * starting with breeding programs display marker information
-	 */
-	private function step5_programs() {
-	  $experiments = $_GET['exps'];
-	  $CAPdataprogram = $_GET['bp'];
-	  $years = $_GET['yrs'];
-	  $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-	 
-	  /** Use currently selected lines? */
-	  if (count($_SESSION['selected_lines']) > 0) {
-	    $sub_ckd = ""; $all_ckd = "checked";
-	  } else {
-	    $sub_ckd = "disabled"; $all_ckd = "checked";
-	  }
-	  if ($subset == "yes") {
-	    $sub_ckd = "checked"; $all_ckd = "";
-	  } elseif ($subset == "no") {
-	    $sub_ckd = ""; $all_ckd = "checked";
-	  } elseif ($subset == "comb") {
-	    $sub_ckd = ""; $cmb_ckd = "checked";
-	  }
-	  ?>
-	  <p>5.<select name="select1">
-	  <option value="BreedingProgram">Lines</option>
-	  </select></p>
-	  
-	  <table id="phenotypeSelTab" class="tableclass1">
-	  <tr>
-	  <th>Lines</th>
-	  </tr>
-	  <tr><td>
-	  <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
-	  <?php
-	  if ($sub_ckd == "checked") {
-	    $selected_lines = $_SESSION['selected_lines'];
-	    foreach ($selected_lines as $line) {
-	      $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      $row = mysql_fetch_assoc($res);
-	      ?>
-	      <option selected value="<?php echo $row['id'] ?>">
-	      <?php echo $row['name'] ?>
-	      </option>
-	     <?php
-	    }
-	  } elseif ($cmb_ckd == "checked") {
-	    $lines_list = array();
-	    $lines_new = "";
-	    $selected_lines = $_SESSION['selected_lines'];
-	    foreach ($selected_lines as $line) {
-	      $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      $row = mysql_fetch_assoc($res);
-	      $temp = $row['id'];
-	      $lines_list[$temp] = 1;
-	      ?>
-	      <option selected value="<?php echo $row['id'] ?>">
-	      <?php echo $row['name'] ?>
-	      </option>
-	      <?php
-	    }
-	    $sql_option = "";
-	    if (preg_match("/\d/",$experiments)) {
-	      $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
-	    }
-	    if (preg_match("/\d/",$datasets)) {
-	      $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-	    }
-	    $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
-	    FROM line_records, tht_base
-	    WHERE line_records.line_record_uid=tht_base.line_record_uid
-	    $sql_option";
-	    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	    while($row = mysql_fetch_array($res)) {
-	      $temp1 = $row['name'];
-	      $temp2 = $row['id'];
-	      if (isset($lines_list[$temp2])) {
-	      } else {
-	        if ($lines_new == "") {
-	          $lines_new = $temp1;
-	          ?>
-	          <option disabled="disabled">--added--
-	          </option>
-	          <?php
-	        }
-	        ?>
-	        <option selected value="<?php echo $row['id'] ?>">
-	        <?php echo $row['name'] ?>
-	        </option>
-	        <?php
-	      }
-	    }
-	  } else {
-	    $sql_option = "";
-	    if (preg_match("/\d/",$experiments)) {
-	      $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
-	    }
-	    if (preg_match("/\d/",$datasets)) {
-	      $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-	    }
-	    $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
-	    FROM line_records, tht_base
-	    WHERE line_records.line_record_uid=tht_base.line_record_uid
-	    $sql_option";
-	    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	    while($row = mysql_fetch_array($res)) {
-	      ?>
-	      <option selected value="<?php echo $row['id'] ?>">
-	      <?php echo $row['name'] ?>
-	      </option>
-	      <?php 
-	    }
-	  }
-	  ?>
-	  </select>
-	  </table>
-	  <?php 
-	  if (count($_SESSION['selected_lines']) > 0) {
-	    ?>
-	    <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently
-	    selected lines</a><br>
-	    <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
-	    <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
-	    <?php
-	  }
-	}
-
-	/**
-	 * allow entry of lines, this function is not used at this time
-	 */
-	private function enter_lines()
-	{
-		if($_SERVER['REQUEST_METHOD'] == "GET")
-  // Store what the user's previous selections were so we can
-  // redisplay them as the page is redrawn.
- 		{
-		    $name = $_GET['LineSearchInput'];
-		    echo "$names<br>";
-		}
-		?>
-		<form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="GET">
-                <input type="hidden" name="function" value="enterlines">
-
-      		<b>Name</b> <br/><br/>
-      		<textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
-      		<br> Eg: Cayuga, Doyce<br>
-      		Synonyms will be translated.
-		<input type="submit" value=Search>
-		</form>
-		<?php
-		if (isset($_GET['LineSearchInput'])) {
-			$linenames = $_POST['LineSearchInput'];
-			echo "made it here\n";
-			if (strlen($linenames) != 0)
-    
-        if (strpos($linenames, ',') > 0 ) {
-                        $linenames = str_replace(", ",",", $linenames);
-                        $lineList = explode(',',$linenames);
-                } elseif (preg_match("/\t/", $linenames)) {
-                        $lineList = explode("\t",$linenames);
-                } else {
-                        $lineList = explode('\r\n',$linenames);
-                }
-
-        $items = implode("','", $lineList);
-        $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
-
-        $res = mysql_query($mStatment) or die(mysql_error());
-
-        if (mysql_num_rows($res) != 0) {
-        while($myRow = mysql_fetch_assoc($res)) {
-          array_push ($lineArr,$myRow['line_record_name']);
-        }
-        // Generate the translated line names
-        $linenames =  implode("','", $lineArr);
-      } else {
-        $linenames = '';
-      }
-	}
-	}
-	
-	/**
-	 * display a list of experiments
-	 */
-	private function type1_experiments()
-	{
-		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
-		$years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
-?>
-<p>3. 
-<select>
-  <option>Trials</option>
-</select></p>
-<div>
-
-<table>
-	<tr><th>Trials</th></tr>
-	<tr><td>
-		<select name="experiments" multiple="multiple"
-		  style="height: 12em" onchange="javascript: update_experiments(this.options)">
-<?php
-//	List phenotype experiments associated with a list of breeding programs and years selected by the user,
-//  needs to used datasets/experiments 
-//	linking table.
-
-		$sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year
-				FROM experiments AS e, datasets AS ds, datasets_experiments AS d_e, experiment_types AS e_t
-				WHERE e.experiment_uid = d_e.experiment_uid
-				AND d_e.datasets_uid = ds.datasets_uid
-				AND ds.breeding_year IN ($years)
-				AND ds.CAPdata_programs_uid IN ($CAPdata_programs)
-				AND e.experiment_type_uid = e_t.experiment_type_uid
-				AND e_t.experiment_type_name = 'phenotype'";
-		        if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
-		        $sql .= " and data_public_flag > 0";
-				$sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
-				
-		$res = mysql_query($sql) or die(mysql_error());
-		$last_year = NULL;
-		while ($row = mysql_fetch_assoc($res)) {			
-			if ($last_year == NULL) {
-?>
-			<optgroup label="<?php echo $row['year'] ?>">
-<?php
-				$last_year = $row['year'];
-			} else if ($row['year'] != $last_year) {
-?>
-			</optgroup>
-			<optgroup label="<?php echo $row['year'] ?>">
-<?php
-				$last_year = $row['year'];
-			}
-?>
-				<option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
-<?php
-		}
-?>
-			</optgroup>
-		</select>
-	</td></tr>
-</table>
-</div>
-<?php
 	}
 	
 	/**
@@ -2391,7 +1196,7 @@ selected lines</a><br>
 		elseif ($min_maf<0)
 			$min_maf = 0;
 		
-		$this->calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+		calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
 		
 		?>
 		<table> <tr> <td COLSPAN="3">
@@ -2508,7 +1313,7 @@ selected lines</a><br>
 	 elseif ($min_maf<0)
 	   $min_maf = 0;
 	
-	$this->calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+	 calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
 	
 	?>
 	<table> <tr> <td COLSPAN="3">

@@ -27,13 +27,14 @@ date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
 require_once $config['root_dir'].'includes/File_Archive/Archive.php';
+require_once $config['root_dir'].'downloads/marker_filter.php';
 
 // connect to database
 connect();
 
-new Downloads($_GET['function']);
+new DownloadsJNLP($_GET['function']);
 
-/** Using a PHP class to implement the "Download Gateway" feature
+/** creaate temporary files use by TASSEL and JNLP
  * 
  * @category PHP
  * @package  T3
@@ -41,7 +42,7 @@ new Downloads($_GET['function']);
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
-class Downloads
+class DownloadsJNLP
 {   
     /**
      * delimiter used for output files
@@ -519,7 +520,7 @@ class Downloads
             <?php
             $this->step4_lines();
             ?></div>
-	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
+	    <div id="step4b" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
 	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 	    <script type="text/javascript">
 	      var mm = 10;
@@ -695,12 +696,11 @@ class Downloads
 
 	if (isset($_SESSION['phenotype'])) {
 	    $phenotype = $_SESSION['phenotype'];
-	    $message2 = "transfer phenotype and genotype data";
+	    $message2 = "create phenotype and genotype data files";
 	} else {
 	    $phenotype = "";
-	    $message2 = "transfer genotype data";
+	    $message2 = "create genotype data file";
 	}
-        $message2 = $message2 . " to Tassel";
 	 if (isset($_SESSION['selected_lines'])) {
 	     $countLines = count($_SESSION['selected_lines']);
 	     $lines = $_SESSION['selected_lines'];
@@ -742,21 +742,31 @@ class Downloads
 	  $min_maf = 100;
 	 elseif ($min_maf<0)
 	  $min_maf = 0;
-	
+         $max_miss_line = 10;
+         if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml']))
+           $max_miss_line = $_GET['mml'];
+         ?>
+        <p>
+        Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove markers missing &gt; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />% of data
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove lines missing &gt <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+        <?php
          if ($use_database) {
            $this->calculate_db($lines, $min_maf, $max_missing);
          } else { 
-	   $this->calculate_af($lines, $min_maf, $max_missing); 
+	   calculate_af($lines, $min_maf, $max_missing, $max_miss_line); 
          }
-	 
+
 	 if ($saved_session != "") {
 	     if ($countLines == 0) {
 	       echo "Choose one or more lines before using a saved selection. ";
 	       echo "<a href=";
 	       echo $config['base_url'];
 	       echo "pedigree/line_selection.php> Select lines</a><br>";
-	     } else {
-	       echo "<br>Use existing selection to $message2<br>";
+	     } elseif ($use_database) {
+	       echo "<br>Filter markers and lines then $message2<br><br>";
 	       ?>
 	       <input type="button" value="Create Tassel Import" onclick="javascript:use_session('v4');"  />
 	       <?php    
@@ -777,6 +787,12 @@ class Downloads
 	  return ($a < $b) ? -1 : 1;
 	}
 
+	/**
+	 * calculate allele frequencies using allele_frequencies table
+	 * @param array $lines
+	 * @param array $min_maf
+	 * @param array $max_missing
+	 */
         function calculate_db(&$lines, $min_maf, $max_missing) {
          //calculate allele frequencies using allele_frequencies table
 
@@ -820,93 +836,7 @@ class Downloads
           if (($miss > $max_missing) OR ($maf < $min_maf))
            $num_removed++;
          }
-         $_SESSION['filtered_markers'] = $marker_uid;
-
-         ?>
-        <p>
-        Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />&nbsp;&nbsp;
-        Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />
-        <br><input type="button" value="Filter markers" onclick="javascript:mrefresh();" /><br>
-        <?php
-
         }
-	
-	/**
-	 * display minor allele frequence and missing data using selected lines
-	 * @param array $lines
-	 * @param floats $min_maf
-	 * @param floats $max_missing
-	 */
-	function calculate_af(&$lines, $min_maf, $max_missing) {
-	 //calculate allele frequencies using 2D table
-
-         $markers_filtered = array();
-	
-	 if (isset($_SESSION['clicked_buttons'])) {
-	   $markers = $_SESSION['clicked_buttons'];
-	   $marker_str = implode(',',$markers);
-           $sql_option = "where marker_uid in ($marker_str)";
-	 } else {
-	   $sql_option = "";
-	 }
-	 
-	 //get location information for markers
-	 $sql = "select marker_uid from allele_byline_idx $sql_option order by marker_uid";
-	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	 $i=0;
-	 while ($row = mysql_fetch_array($res)) {
-	  $marker_list[$i] = $row[0];
-	  $i++;
-	 }
-	
-	 //calculate allele frequence and missing
-	 foreach ($lines as $line_record_uid) {
-	  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-	  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	  if ($row = mysql_fetch_array($res)) {
-	    $alleles = $row[0];
-	    $outarray = explode(',',$alleles);
-	    foreach ($outarray as $i=>$allele) {
-              $marker_cnt[$i][$allele]++;
-	    }
-          } else {
-            $marker_cnt[$i][$allele]++;
-          }
-	 }
-         $i=0;
-	 $num_mark = 0;
-	 $num_maf = $num_miss = $num_removed = 0;
-	 foreach ($marker_list as $marker_uid) {
-           $total = $marker_cnt[$i]["AA"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"] + $marker_cnt[$i]["BB"] + $marker_cnt["mis"] + $marker_cnt[$i]["--"] + $marker_cnt[$i][""];
-           $total_af = 2 * ($marker_cnt[$i]["AA"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"] + $marker_cnt[$i]["BB"]);
-	   if ($total_af > 0) {
-             $maf = round(100 * min((2 * $marker_cnt[$i]["AA"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"]) /$total_af, (2 * $marker_cnt[$i]["BB"] + $marker_cnt[$i]["AB"] + $marker_cnt[$i]["BA"]) / $total_af),1);
-             $miss = round(100*($marker_cnt[$i]["--"] + $marker_cnt["mis"] + $marker_cnt[$i][""])/$total,1);
-	     if ($maf >= $min_maf) $num_maf++;
-	     if ($miss > $max_missing) $num_miss++;
-	     if (($miss > $max_missing) OR ($maf < $min_maf)) {
-               $num_removed++;
-             } else {
-               $markers_filtered[] = $marker_uid;
-             }
-	     $num_mark++;
-	   }
-           $i++; 
-	 }
-         $_SESSION['filtered_markers'] = $markers_filtered;
-	 
-	  ?>
-	<p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
-	&nbsp;&nbsp;&nbsp;&nbsp;
-	Maximum missing data &le; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%
-	<i>
-	<br></i><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) at least </i><b><?php echo ($min_maf) ?></b><i>%.
-	<br></i><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of measurements.
-	<br></i><b><?php echo ($num_removed) ?></b><i> of </i><b><?php echo ($num_mark) ?></b><i> distinct markers will be removed.
-	</i>
-	<br><input type="button" value="Refresh" onclick="javascript:mrefresh();" /><br>
-	<?php
-	}
 	
 	/**
 	 * starting with breeding programs display marker information

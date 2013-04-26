@@ -48,9 +48,9 @@ require_once $config['root_dir'].'includes/File_Archive/Archive.php';
 // connect to database
 connect();
 
-new Downloads($_GET['function']);
+new SelectPhenotypeExp($_GET['function']);
 
-/** Using a PHP class to implement the "Download Gateway" feature
+/** functions specific to phenotype experiments
  * 
  * @category PHP
  * @package  T3
@@ -58,7 +58,7 @@ new Downloads($_GET['function']);
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
-class Downloads
+class SelectPhenotypeExp
 {   
     /**
      * delimiter used for output files
