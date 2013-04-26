@@ -294,7 +294,14 @@ EOD;
    } else {
      echo "All";
    }
-   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits:</a> ". count($_SESSION['selected_traits']);
+   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits:</a> ";
+   if (isset($_SESSION['selected_traits'])) {
+     echo count($_SESSION['selected_traits']);
+   } elseif (isset($_SESSION['phenotype'])) {
+     echo count($_SESSION['phenotype']);
+   } else {
+     echo "0";
+   }
    echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Trials:</a> " . count($_SESSION['selected_trials']);
 ?>
 			

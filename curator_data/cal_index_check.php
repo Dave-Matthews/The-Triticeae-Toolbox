@@ -64,6 +64,14 @@
   } else {
     die("must specify W2");
   }
+  if (isset($_POST['W3']) && !empty($_POST['W3'])) {
+    $w3 = $_POST['W3'];
+  } elseif (preg_match("/W3/", $index)) {
+    die("must specify W3");
+  } else {
+    $w3 = "NA";
+  }
+  $zoom = $_POST['xrange'];
   
   $dir = $config['root_dir'] . "raw/phenotype";
   $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
@@ -89,7 +97,9 @@
   $cmd5 = "setwd(\"/tmp/tht/$unique_str\")\n";
   $cmd6 = "W1wav <- $w1\n";
   $cmd7 = "W2wav <- $w2\n";
-  $cmd8 = "smooth <- $smooth\n";
+  $cmd8 = "W3wav <- $w3\n";
+  $cmd9 = "smooth <- $smooth\n";
+  $cmd10 = "zoom <- \"$zoom\"\n";
   fwrite($h, $png1); fwrite($h, $png2); fwrite($h, $png3);
   fwrite($h, $cmd1);
   fwrite($h, $cmd2); fwrite($h, $cmd2a); fwrite($h, $cmd2b); fwrite($h, $cmd2c); fwrite($h, $cmd2d);
@@ -99,32 +109,14 @@
   fwrite($h, $cmd6);
   fwrite($h, $cmd7);
   fwrite($h, $cmd8);
+  fwrite($h, $cmd9);
+  fwrite($h, $cmd10);
   fclose($h);
   $h = fopen("/tmp/tht/$unique_str/$filename5","w");
-  fwrite($h, "calIndex <- function(data, idx1, idx2) {\n");
-  #if ($smooth == 0) {
-    fwrite($h, "W1 <- data[idx1]\n");
-  /*} elseif ($smooth == 5) {
-  	fwrite($h, "idx1a <- idx1 - 5\n");
-  	fwrite($h, "idx1b <- idx1 + 5\n");
-  	fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 11)\n");
-  } elseif ($smooth == 10) {
-  	fwrite($h, "idx1a <- idx1 - 10\n");
-  	fwrite($h, "idx1b <- idx1 + 10\n");
-    fwrite($h, "W1 <- (sum(data[idx1a:idx1b]) / 21)\n");
-  } */
-  #if ($smooth == 0) {
-    fwrite($h, "W2 <- data[idx2]\n");
-  /*} elseif ($smooth == 5) {
-  	fwrite($h, "idx2a <- idx2 - 5\n");
-  	fwrite($h, "idx2b <- idx2 + 5\n");
-    fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 11)\n");
-  } elseif ($smooth == 10) {
-  	fwrite($h, "idx2a <- idx2 - 10\n");
-  	fwrite($h, "idx2b <- idx2 + 10\n");
-  	fwrite($h, "W2 <- (sum(data[idx2a:idx2b]) / 21)\n");
-  }
-  */
+  fwrite($h, "calIndex <- function(data, idx1, idx2, idx3) {\n");
+  fwrite($h, "W1 <- data[idx1]\n");
+  fwrite($h, "W2 <- data[idx2]\n");
+  fwrite($h, "W3 <- data[idx3]\n");
   fwrite($h, "value <- $index\n");
   fwrite($h, "value\n");
   fwrite($h, "}\n");
@@ -143,7 +135,6 @@
     fclose($h);
   }
   if (file_exists("/tmp/tht/$unique_str/$filename6")) {
-    print "Plot of CSR Data File, x and y axes are scaled according to W1 and W2 parameters<br>";
     print "<img src=\"/tmp/tht/$unique_str/$filename6\" /><br>";
   }
   print "<img src=\"/tmp/tht/$unique_str/$filename7\" /><br>";
