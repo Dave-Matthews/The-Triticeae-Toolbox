@@ -342,6 +342,9 @@ $rowNum = 0;
 $line_name = "qwerty";
 $errLines = 0;
 $data = array();
+
+$sql = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
+$res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
     
 while (!feof($reader))  {
     // If we have too many errors stop processing - something is wrong

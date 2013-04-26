@@ -140,3 +140,12 @@ function load_genomic_gwas() {
 function update_fixed(option) {
   fixed2 = option;
 }
+
+function filterDesc(min_maf, max_missing, max_miss_line) {
+  alert("1. Marker allele frequency is calculated for the selected lines.\n2. Markers are removed that have MAF less than " +  min_maf + "% or are missing in more than " + max_missing + "% of the lines.\n3. Lines are removed if they are missing more than " + max_miss_line + "% of the marker data.\nAfter changing the default settings for the filter, select Analyze to use the new paramaters");
+}
+
+function linesRemoved(lineRemovedName) {
+  alert("Lines Removed\n" + lineRemovedName);
+}
+

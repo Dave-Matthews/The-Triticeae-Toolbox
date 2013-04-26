@@ -19,6 +19,8 @@ if (class(mrkRelMat) == "list"){ # Do this if you have missing marker data
         mrkData.imputed <- mrkRelMat$imputed # We will use the imputed markers later on
         mrkRelMat <- mrkRelMat$A
 }
+write.csv(mrkRelMat, file=fileK, quote=FALSE)
+
 eig.result <- eigen(mrkRelMat)
 lambda <- eig.result$values
 mainTitle <- paste("Principal Component analysis of ", phenolabel)
