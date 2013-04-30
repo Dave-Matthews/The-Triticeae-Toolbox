@@ -156,7 +156,8 @@ class LineNames_Check
 	    //if (DEBUG) echo "Input File Name: ".$datafile."\n";
 
 	    // Read the Breeding Program from row 3.
-	    if ($linedata['cells'][3][1] != "*Breeding Program") 
+	    /* if ($linedata['cells'][3][1] != "*Breeding Program")  */
+	    if (stripos($linedata['cells'][3][1],"*Breeding Program") === FALSE) 
 	      die("Cell A3 must be <b>*Breeding Program</b>.");
 	    $bp = $linedata['cells'][3][2];
 	    // Test whether this program is already in the database.
@@ -669,7 +670,7 @@ $lud = count($line_update_data);
       $rows = $reader->sheets[0]['numRows'];
 	
       // Read the Breeding Program from row 3.
-      if ($linedata['cells'][3][1] != "*Breeding Program") 
+      if (stripos($linedata['cells'][3][1],"*Breeding Program") === FALSE) 
 	die("Cell A3 must be <b>*Breeding Program</b>.");
       $bp = $linedata['cells'][3][2];
 
@@ -925,18 +926,20 @@ $lud = count($line_update_data);
 	      }
 	      // Update synonyms.
 	      if (!empty($synonyms)) {
-		// Is there already a value?  If so delete.
-		$sql = "delete from line_synonyms where line_record_uid = $line_uids";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error());
+		// Don't add the synonym if it's already there.
+		$res = mysql_query("select line_synonym_name from line_synonyms where line_record_uid = $line_uids") 
+		  or die(mysql_error());
+		while ($row = mysql_fetch_row($res))
+		  $oldsyns[] = $row[0];
 		foreach ($synonyms as $syn) {
-		  if (!empty($syn)) {
+		  if (!empty($syn) AND !in_array($syn, $oldsyns)) {
 		    $sql = "insert into line_synonyms 
 	  	      (line_record_uid, line_synonym_name, updated_on, created_on) values 
 		      ('$line_uids', '$syn', NOW(),NOW())";
 		    $res = mysql_query($sql) or errmsg($sql, mysql_error());
-		  }
-		}
-	      }
+		  }  
+		}  // end foreach ($synonyms as $syn)
+	      }  // end if (!empty($synonyms))
 	      // Update GRIN accession.
 	      if (!empty($grin)) {
 		// Is there already a GRIN accession for this line?  If so, replace.
