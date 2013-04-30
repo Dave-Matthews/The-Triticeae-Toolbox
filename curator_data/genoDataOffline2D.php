@@ -49,6 +49,7 @@ $curTrialCode = '';
 $gName = '';
 
 echo "Start time - ". date("m/d/y : H:i:s", time()) ."\n"; 
+echo "Start time - " . microtime(true) ."\n";
 echo "Translate File - ". $lineTransFile. "\n";
 echo "Genotype Data File - ". $gDataFile. "\n";
 echo "URL - " . $urlPath . "\n";
@@ -162,7 +163,8 @@ function convert2Illumina ($alleles)
     return $results;
 } 
 
-$linkID = connect(); 
+connect(); 
+$mysqli = connecti();
 
 $target_Path = substr($lineTransFile, 0, strrpos($lineTransFile, '/')+1);
 $tPath = str_replace('./', '', $target_Path);
@@ -176,21 +178,19 @@ if (($errFile = fopen($errorFile, "w")) === false) {
 
 //get marker seq
 $sql = "SELECT marker_uid, A_allele, B_allele from markers";
-$res = mysql_query($sql) or die("Database Error: setting lookup - ". mysql_error()."\n\n$sql");
-while ($row = mysql_fetch_array($res)) {
+$res = mysqli_query($mysqli,$sql) or die("Database Error: setting lookup - ". mysqli_error($mysqli)."\n\n$sql");
+while ($row = mysqli_fetch_array($res)) {
     $marker_uid = $row['marker_uid'];
     $marker_snp[$marker_uid] = $row['A_allele'] . $row['B_allele'];
 }
 
-// Testing for non-processing
-//exit (1);
 // ******* Email Stuff *********
 //senders name
 $Name = "Genotype Data Importer"; 
 //senders e-mail adress
 $sql ="SELECT value FROM  settings WHERE  name = 'capmail'";
-$res = mysql_query($sql) or die("Database Error: setting lookup - ". mysql_error()."\n\n$sql");
-$rdata = mysql_fetch_assoc($res);
+$res = mysqli_query($mysqli,$sql) or die("Database Error: setting lookup - ". mysqli_error($mysqli)."\n\n$sql");
+$rdata = mysqli_fetch_assoc($res);
 $myEmail=$rdata['value'];
 $mailheader = "From: ". $Name . " <" . $myEmail . ">\r\n"; //optional headerfields
 $subject = "Genotype import results";
@@ -275,18 +275,18 @@ while(($line = fgets($reader)) !== false) {
     // Trial Code processing
     if (($curTrialCode != $trialCodeStr) && ($trialCodeStr != '')) {
         $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'";
-	$res = mysql_query($sql)
-            or exitFatal($errFile, "Database Error: Experiment uid lookup - ".mysql_error());
-        if ($row = mysql_fetch_assoc($res)) {
+	$res = mysqli_query($mysqli,$sql)
+            or exitFatal($errFile, "Database Error: Experiment uid lookup - ".mysqli_error($mysqli));
+        if ($row = mysqli_fetch_assoc($res)) {
           $exp_uid = implode(",",$row);
         } else {
 	  exitFatal($errFile, "not found - $sql");
         }
         
 	$sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
-	$res = mysql_query($sql)
+	$res = mysqli_query($mysqli,$sql)
             or exitFatal($errFile, "Database Error: Dataset experiment uid lookup - ".mysql_error());
-        if ($row = mysql_fetch_assoc($res)) {
+        if ($row = mysqli_fetch_assoc($res)) {
           $de_uid=implode(",",$row);
 	} else {
           exitFatal($errFile, "not found - $sql");
@@ -297,6 +297,29 @@ while(($line = fgets($reader)) !== false) {
     }
     $lineExpHash[$lineStr] = $exp_uid;
     $lineDsHash[$lineStr] = $de_uid;
+
+    $line_uid = get_lineuid($lineStr);
+    if ($line_uid == false) {
+         echo "$line\n$lineStr can not be found\n";
+    } else {
+        $line_uid = implode(",",$line_uid);
+        $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
+        $rtht = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
+        $rqtht = mysqli_fetch_assoc($rtht);
+        $tht_uid = $rqtht['tht_base_uid'];
+        if (empty($tht_uid)) {
+            $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
+                                        VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
+            $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
+            $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
+            $rtht=mysqli_query($sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysqli_error($mysqli). ".\n\n$sql");
+            $rqtht=mysql_fetch_assoc($rtht);
+            $tht_uid=$rqtht['tht_base_uid'];
+            //echo "created new tht_base entry\n";
+        }
+        $thtuid_lookup[$lineStr] = $tht_uid;
+        //echo "good $lineStr $line_uid $trialCodeStr $exp_uid\n";
+    }
 }    
 fclose($reader);   
 echo "Line translation file processing done. $num\n";
@@ -330,11 +353,22 @@ if (feof($reader)) {
 $header = str_getcsv($line,"\t");
 $num = count($header);
 for ($x = 0; $x < $num; $x++) {
-  switch ($header[$x] ) {
+  $line_name = $header[$x];
+  switch ($line_name) {
 	case 'SNP':
 	 	$nameIdx = $x;
 		$dataIdx = $x + 1;
 		break;
+        default:
+               $line_uid = get_lineuid($line_name);
+               if ($line_uid == false) {
+                 $msg = $header[$x] . " cannot be found, upload stopped\n";
+                 exitFatal($errFile, $msg);
+               } else {
+                 $line_uid = implode(",",$line_uid);
+                 $lineuid_lookup[$line_name] = $line_uid;
+               }
+               break;
   }
 }
                      
@@ -344,7 +378,7 @@ $errLines = 0;
 $data = array();
 
 $sql = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
-$res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     
 while (!feof($reader))  {
     // If we have too many errors stop processing - something is wrong
@@ -362,22 +396,22 @@ while (!feof($reader))  {
     
     /* check if marker is EST synonym, if not found, then check name */
     $sql ="SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE ms.value='$marker'";
-    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: Marker synonym lookup - ". mysql_error()."\n\n$sql");
+    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: Marker synonym lookup - ". mysqli_error($mysqli)."\n\n$sql");
     // fwrite($errFile,$sql);
-    $rdata = mysql_fetch_assoc($res);
+    $rdata = mysqli_fetch_assoc($res);
     $marker_uid=$rdata['marker_uid'];
     if (empty($marker_uid)) {
     	$sql = "SELECT m.marker_uid FROM  markers AS m WHERE m.marker_name ='$marker'";
-    	$res = mysql_query($sql) or exitFatal($errFile, "Database Error: Marker lookup - ". mysql_error()."\n\n$sql");
+    	$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: Marker lookup - ". mysqli_error($mysqli)."\n\n$sql");
     	// fwrite($errFile,$sql);
-    	if (mysql_num_rows($res) < 1) {
+    	if (mysqli_num_rows($res) < 1) {
     		$markerflag = 1;
     		$msg = 'ERROR:  marker not found '.$marker.'\n';
     		fwrite($errFile, $msg);
     		$errLines++;
     		continue;
     	} else {
-    		$rdata = mysql_fetch_assoc($res);
+    		$rdata = mysqli_fetch_assoc($res);
     		$marker_uid=$rdata['marker_uid'];
     	}
     }
@@ -391,18 +425,29 @@ while (!feof($reader))  {
       $msg = "ERROR:  marker allele information not found $marker";
       exitFatal($errFile, $msg);
     }
+
+    //if this is a new marker then we don't need to query for uid before inserting
+    $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid";
+    $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
+    $rqgen=mysqli_fetch_assoc($rgen);
+    $gen_uid=$rqgen['genotyping_data_uid'];
+    if ($gen_uid == NULL) {
+      $marker_found = 0;
+    } else { 
+      $marker_found = 1;
+    }
     
     $rowNum++;		// number of lines
     $markerflag = 0;        //flag for checking marker existence
     $data_pt = 0;
     $sql = "SET AUTOCOMMIT=0";
-    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     $sql = "SET foreign_key_checks=0";
-    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     $sql = "SET unique_checks=0";
-    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     $sql = "START TRANSACTION";
-    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
       $line_name = $header[$data_pt];
 
@@ -410,13 +455,12 @@ while (!feof($reader))  {
 	  /* get line record ID */ 
 	  //echo $line_name,"\n";
             $msg = "line name = " . $line_name. "\n";
-	    // fwrite($errFile, $msg);
-            $line_uid = get_lineuid($line_name);
-            if ($line_uid == false) {
-                $msg = $line_name . " cannot be found, upload stopped\n";
-                exitFatal($errFile, $msg);
+            if (isset($lineuid_lookup[$line_name])) {
+              $line_uid = $lineuid_lookup[$line_name];
+            } else {
+              $msg = "missing from line records $line_name\n";
+              fwrite($errFile, $msg);
             }
-            $line_uid = implode(",",$line_uid);
             if (isset($lineExpHash[$line_name])) {
               $exp_uid = $lineExpHash[$line_name];
 	    } else {
@@ -429,40 +473,48 @@ while (!feof($reader))  {
 	      $msg = "missing from dataset experiments $line_name $line_uid" . "\n";
 	      fwrite($errFile, $msg);
             }
-            //echo "de_uid = " . $exp_uid . "<br>";
-//        }
-				
-        /* get thtbase_uid. If null, then we have to create this ID */
-	    $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
-	    $rtht = mysql_query($sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysql_error() . ".\n\n$sql");
+            if (isset($thtuid_lookup[$line_name])) {				
+              $tht_uid = $thtuid_lookup[$line_name];
+            } else {
+              $msg = "missing from tht_base $line_name $exp_uid\n";
+              fwrite($errFile, $msg);
+            }
+
+	    //$sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
+	    //$rtht = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
 	    // fwrite($errFile,$sql);
-	    $rqtht = mysql_fetch_assoc($rtht);
-	    $tht_uid = $rqtht['tht_base_uid'];
+	    //$rqtht = mysqli_fetch_assoc($rtht);
+	    //$tht_uid = $rqtht['tht_base_uid'];
 				
-	    if (empty($tht_uid)) {
-            $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
-					VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
-            $res = mysql_query($sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysql_error() . ".\n\n$sql");
-            $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
-            $rtht=mysql_query($sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysql_error(). ".\n\n$sql");
-            $rqtht=mysql_fetch_assoc($rtht);
-            $tht_uid=$rqtht['tht_base_uid'];
-        }
+	    //if (empty($tht_uid)) {
+            //$sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
+	    //				VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
+            //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
+            //$sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
+            //$rtht=mysqli_query($sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysqli_error($mysqli). ".\n\n$sql");
+            // $rqtht=mysql_fetch_assoc($rtht);
+            //$tht_uid=$rqtht['tht_base_uid'];
 					
     	/* get the genotyping_data_uid */
-    	$sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid AND tht_base_uid=$tht_uid ";
-    	$rgen=mysql_query($sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysql_error(). ".\n\n$sql");
-    	$rqgen=mysql_fetch_assoc($rgen);    
-    	$gen_uid=$rqgen['genotyping_data_uid'];
-				
+        $gen_uid = NULL;
+        if ($marker_found) {
+    	  $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid AND tht_base_uid=$tht_uid ";
+    	  $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
+    	  $rqgen=mysqli_fetch_assoc($rgen);    
+    	  $gen_uid=$rqgen['genotyping_data_uid'];
+        }
     	if (empty($gen_uid)) {
     	    $sql="INSERT INTO genotyping_data (tht_base_uid, marker_uid, updated_on, created_on)
 					VALUES ($tht_uid, $marker_uid, NOW(), NOW())" ;
-            $res = mysql_query($sql) or exitFatal($errFile, "Database Error: genotype_data insert - ". mysql_error() . ".\n\n$sql");
-            $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid = $marker_uid AND tht_base_uid=$tht_uid ";
-            $rgen=mysql_query($sql) or exitFatal($errFile, "Database Error: post genotype_data lookup - ". mysql_error(). ".\n\n$sql");
-            $rqgen=mysql_fetch_assoc($rgen);
-            $gen_uid=$rqgen['genotyping_data_uid'];
+            $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data insert - ". mysqli_error($mysqli) . ".\n\n$sql");
+            $gen_uid = mysqli_insert_id($mysqli);
+            //echo "gen_uid = $gen_uid\t";
+            //$sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid = $marker_uid AND tht_base_uid=$tht_uid ";
+            //$rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: post genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
+            //$rqgen=mysqli_fetch_assoc($rgen);
+            //$gen_uid=$rqgen['genotyping_data_uid'];
+            //echo "$gen_uid\n";
+            //echo "created new genotyping_data entry\n";
         }
 		// echo "gen_uid".$gen_uid."\n";
 		/* Read in the rest of the variables */
@@ -494,7 +546,7 @@ while (!feof($reader))  {
 			  updated_on=NOW() 
 			  WHERE genotyping_data_uid = $gen_uid";
 	    }
-	    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: alleles processing - ". mysql_error() . ".\n\n$sql");
+	    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: alleles processing - ". mysqli_error($mysqli) . ".\n\n$sql");
 	    if ($res != 1) { 
                   $msg = "ERROR:  Allele not loaded! row = " . $rowNum ."\t" . $line;
                   fwrite($errFile, $msg);
@@ -508,10 +560,12 @@ while (!feof($reader))  {
       }
     }
     $sql = "SET AUTOCOMMIT=1";
-    $res = mysql_query($sql) or exitFatal($errFile, "Database Error: - ". mysql_error()."\n\n$sql");
+    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
 } // End of while data 
 fclose($reader);
 echo "Genotyping record creation completed.\n";
+echo "Stop time - ". date("m/d/y : H:i:s", time()) ."\n";
+echo "Stop time - ". microtime(true) ."\n";
 echo "Start allele frequency calculation processing...\n";
 
 // Do allele frequency calculations
