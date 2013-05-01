@@ -961,15 +961,15 @@ class Downloads
                 <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
                 <?php
               
-                //if ($training_lines == "") {
+                if ($training_lines == "") {
                 //  calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
-                //  $lines = $_SESSION['filtered_lines'];
-                //} else {
+                  $lines = $_SESSION['filtered_lines'];
+                } else {
                 //  calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
-                //  $training_lines = $_SESSION['filtered_lines'];
-                //}
+                  $training_lines = $_SESSION['filtered_lines'];
+                }
                 $markers = $_SESSION['filtered_markers'];
-                $estimate = round((count($markers) + count($lines)) / 2000,1);
+                $estimate = round((count($markers) + count($lines)) / 700,1);
                 echo "<br>Estimated analysis time is $estimate minutes.<br>";
                 if ($estimate > 1) {
                   ?>
