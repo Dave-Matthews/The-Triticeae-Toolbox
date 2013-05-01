@@ -109,6 +109,15 @@ class Downloads
 			case 'refreshtitle':
 			    echo $this->refresh_title();
 			    break;
+                        case 'gwas_status':
+                            echo $this->status_gwas();
+                            break;
+                        case 'pred_status':
+                            echo $this->status_pred();
+                            break;
+                        case 'filter_lines':
+                            echo $this->filter_lines();
+                            break;
 			default:
 				$this->type1_select();
 				break;
@@ -297,6 +306,29 @@ class Downloads
                 echo "</div>";
         }
 
+    function filter_lines() {
+      if (isset($_GET['maf'])) {
+           $min_maf = $_GET['maf'];
+      } else {
+           $min_maf = 5;
+      }
+      if (isset($_GET['mmm'])) {
+           $max_missing = $_GET['mmm'];
+      } else {
+           $max_missing = 10;
+      }
+      if (isset($_GET['mml'])) {
+           $max_miss_line = $_GET['mml'];
+      } else {
+           $max_miss_line = 10;
+      }
+      $lines = $_SESSION['selected_lines'];
+      calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+      ?>
+      <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+      <?php
+    }
+
     /**
      * 1. display a spinning activity image when a slow function is running
      * 2. show button to clear sessin data
@@ -448,21 +480,23 @@ class Downloads
         $row = mysql_fetch_array($res);
         $count = $row[0];
         echo "$count</table>";
+        $min_maf = 5;
+        $max_missing = 10;
+        $max_miss_line = 10;
+        $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
         if ($count > 0) {
-           $min_maf = 5;
-           $max_missing = 10;
-           $max_miss_line = 10;
-           $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
           ?>
           <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
-
+        &nbsp;&nbsp;&nbsp;&nbsp;
+          <input type="button" value="Filter Lines and Markers" onclick="javascript:filter_lines();"/>
           </div>
-          <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+          <div id="filter" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
           <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
+          <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
           <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 
           <table border=0>
@@ -602,6 +636,44 @@ class Downloads
                   print "<img src=\"/tmp/tht/$filename4\" /><br>";
         } else {
                   echo "Error in R script R/GShisto.R<br>\n";
+        }
+    }
+
+    private function status_gwas() {
+        $unique_str = $_GET['unq'];
+        $dir = '/tmp/tht/';
+        $filename9 = 'THTdownload_hmp_' . $unique_str. '.txt';
+        $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
+        $filename3 = 'THTdownload_gwa_' . $unique_str . '.R';
+        $filename4 = 'THTdownload_gwa1_' . $unique_str . '.png';
+        $filename7 = 'THTdownload_gwa2_' . $unique_str . '.png';
+        $filename10 = 'THTdownload_gwa3_' . $unique_str . '.png';
+        $filename5 = 'process_error_gwa_' . $unique_str . '.txt';
+        $filename6 = 'R_error_gwa_' . $unique_str . '.txt';
+        $filename1 = 'THT_result_' . $unique_str . '.csv';
+        $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
+        if (file_exists("/tmp/tht/$filename7")) {
+                  print "<img src=\"/tmp/tht/$filename7\" /><br>";
+        } else {
+                  echo "Not finished analysis.<br>\n";
+        }
+        if (file_exists("/tmp/tht/$filename10")) {
+                  print "<img src=\"/tmp/tht/$filename10\" /><br>";
+        } else {
+                  echo "Not finished analysis.<br>\n";
+        }
+        if (file_exists("/tmp/tht/$filename4")) {
+                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
+                  print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
+                  print "with columns for marker name, chromosome, position, marker score<br><br>";
+                  print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
+        }
+        if (file_exists("/tmp/tht/$filename5")) {
+           $h = fopen("/tmp/tht/$filename5", "r");
+           while ($line=fgets($h)) {
+               echo "$line<br>\n";
+           }
+           fclose($h);
         }
     }
   
@@ -889,14 +961,22 @@ class Downloads
                 <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
                 <?php
               
-                if ($training_lines == "") {
-                  calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
-                  $lines = $_SESSION['filtered_lines'];
-                } else {
-                  calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
-                  $training_lines = $_SESSION['filtered_lines'];
-                }
+                //if ($training_lines == "") {
+                //  calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+                //  $lines = $_SESSION['filtered_lines'];
+                //} else {
+                //  calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
+                //  $training_lines = $_SESSION['filtered_lines'];
+                //}
                 $markers = $_SESSION['filtered_markers'];
+                $estimate = round((count($markers) + count($lines)) / 2000,1);
+                echo "<br>Estimated analysis time is $estimate minutes.<br>";
+                if ($estimate > 1) {
+                  ?>
+                  Use this link to check status.<br>
+                  <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
+                  <?php 
+                }
 
                 //combine the training set and the prediction set for genotype data
                 $all_lines = $lines;
