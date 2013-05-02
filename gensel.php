@@ -843,7 +843,7 @@ class Downloads
         $lines = $_SESSION['filtered_lines']; 
         $markers = $_SESSION['filtered_markers'];
         $estimate = count($lines) + count($markers);
-        $estimate = round($estimate/2000,1);
+        $estimate = round($estimate/700,1);
         echo "Estimated analysis time is $estimate minutes.<br>";
         ?>
         <font color=red>Select the "Check Results" button to retreive results.<br>
