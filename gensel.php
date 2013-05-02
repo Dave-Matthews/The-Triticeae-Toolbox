@@ -67,6 +67,9 @@ class Downloads
             case 'run_gwa':
                 $this->run_gwa();
                 break;
+            case 'run_gwa2':
+                $this->run_gwa2();
+                break;
             case 'run_rscript':
                 $this->run_rscript();
                 break;
@@ -239,6 +242,8 @@ class Downloads
         }
              
                    $count = count($_SESSION['selected_lines']);
+                   $markers = $_SESSION['filtered_markers'];
+                   $estimate = count($markers) + count($lines);
                    echo "<td>$count";
                    ?>
                    <td>
@@ -292,7 +297,7 @@ class Downloads
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <table>
                   <!--tr><td><td>fixed effect (trial is always included)-->
-                  <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction('$unique_str')">
+                  <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction(<?php echo $estimate; ?>)">
                   <!-td-->
                   </table><br>
                   </div>
@@ -483,7 +488,11 @@ class Downloads
         $min_maf = 5;
         $max_missing = 10;
         $max_miss_line = 10;
-        $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+        $lines = $_SESSION['selected_lines'];
+        calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
+        $count = count(lines);
+        $markers = $_SESSION['filtered_markers'];
+        $estimate = count($markers) + count($lines);
         if ($count > 0) {
           ?>
           <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
@@ -501,7 +510,7 @@ class Downloads
 
           <table border=0>
           <tr><td>
-          <input type="button" value="Analyze" onclick="javascript:load_genomic_gwas('<?php echo $unique_str; ?>')"> GWAS
+          <input type="button" value="Analyze" onclick="javascript:load_genomic_gwas(<?php echo $estimate ?>)"> GWAS
           <td>
           <select name="model2" onchange="javascript: update_fixed(this.value)">
           <option>0</option>
@@ -642,6 +651,7 @@ class Downloads
     private function status_gwas() {
         $unique_str = $_GET['unq'];
         $dir = '/tmp/tht/';
+        $found = 1;
         $filename9 = 'THTdownload_hmp_' . $unique_str. '.txt';
         $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
         $filename3 = 'THTdownload_gwa_' . $unique_str . '.R';
@@ -655,18 +665,20 @@ class Downloads
         if (file_exists("/tmp/tht/$filename7")) {
                   print "<img src=\"/tmp/tht/$filename7\" /><br>";
         } else {
-                  echo "Not finished analysis.<br>\n";
+          $found = 0;
         }
         if (file_exists("/tmp/tht/$filename10")) {
                   print "<img src=\"/tmp/tht/$filename10\" /><br>";
         } else {
-                  echo "Not finished analysis.<br>\n";
+          $found = 0;
         }
         if (file_exists("/tmp/tht/$filename4")) {
                   print "<img src=\"/tmp/tht/$filename4\" /><br>";
                   print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
                   print "with columns for marker name, chromosome, position, marker score<br><br>";
                   print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
+        } else {
+          $found = 0;
         }
         if (file_exists("/tmp/tht/$filename5")) {
            $h = fopen("/tmp/tht/$filename5", "r");
@@ -674,6 +686,18 @@ class Downloads
                echo "$line<br>\n";
            }
            fclose($h);
+        }
+        if ($found == 0) {
+          $lines = $_SESSION['filtered_lines'];
+          $markers = $_SESSION['filtered_markers'];
+          $estimate = count($lines) + count($markers);
+          $estimate = round($estimate/2000,1);
+          echo "Estimated analysis time is $estimate minutes.<br>";
+          ?>
+          <font color=red>Select the "Check Results" button to retreive results.<br>
+          <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
+          </font>
+          <?php
         }
     }
   
@@ -757,6 +781,76 @@ class Downloads
            fclose($h);
         } 
     } 
+   
+    private function run_gwa2() {
+        $unique_str = $_GET['unq'];
+        $model_opt = $_GET['fixed2'];
+        if (isset($_SESSION['training_traits'])) {
+            $phenotype = $_SESSION['training_traits'];
+            $phenotype = $phenotype[0];
+        //} elseif (isset($_SESSION['selected_traits'])) {  use when multiple traits is working
+          } elseif (isset($_SESSION['phenotype'])) {
+            $phenotype = $_SESSION['phenotype'];
+        }
+        $sql = "select phenotypes_name, unit_name from phenotypes, units
+               where phenotypes.unit_uid = units.unit_uid
+               and phenotype_uid = $phenotype";
+        $res = mysql_query($sql) or die(mysql_error());
+        $row = mysql_fetch_array($res);
+        $phenolabel = $row[0];
+        //$unique_fld = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+        //mkdir("/tmp/tht/$unique_fld");  it would be better to put all files in directory
+        $dir = '/tmp/tht/';
+        $filename9 = 'THTdownload_hmp_' . $unique_str. '.txt';
+        $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
+        $filename3 = 'THTdownload_gwa_' . $unique_str . '.R';
+        $filename4 = 'THTdownload_gwa1_' . $unique_str . '.png';
+        $filename7 = 'THTdownload_gwa2_' . $unique_str . '.png';
+        $filename10 = 'THTdownload_gwa3_' . $unique_str . '.png';
+        $filename5 = 'process_error_gwa_' . $unique_str . '.txt';
+        $filename6 = 'R_error_gwa_' . $unique_str . '.txt';
+        $filename1 = 'THT_result_' . $unique_str . '.csv';
+        $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
+        if(!file_exists($dir.$filename3)){
+            $h = fopen($dir.$filename3, "w+");
+            $png1 = "png(\"$dir$filename4\", width=800, height=400)\n";
+            $png2 = "png(\"$dir$filename7\", width=800, height=400)\n";
+            $png3 = "png(\"$dir$filename10\", width=800, height=400)\n";
+            $png4 = "dev.set(3)\n";
+            $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
+            $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
+            $cmd5 = "phenolabel <- \"$phenolabel\"\n";
+            $cmd6 = "fileerr <- \"$dir$filename6\"\n";
+            $cmd7 = "fileout <- \"$filename1\"\n";
+            $cmd8 = "model_opt <- \"$model_opt\"\n";
+            $cmd9 = "fileK <- \"$filenameK\"\n";
+            fwrite($h, $png1);
+            fwrite($h, $png2);
+            fwrite($h, $png3);
+            fwrite($h, $png4);
+            fwrite($h, $cmd3);
+            fwrite($h, $cmd4);
+            fwrite($h, $cmd5);
+            fwrite($h, $cmd6);
+            fwrite($h, $cmd7);
+            fwrite($h, $cmd8);
+            fwrite($h, $cmd9);
+            fwrite($h, "setwd(\"/tmp/tht/\")\n");
+            fclose($h);
+        }
+        exec("cat /tmp/tht/$filename3 R/GSforGWA.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5 &");
+       
+        $lines = $_SESSION['filtered_lines']; 
+        $markers = $_SESSION['filtered_markers'];
+        $estimate = count($lines) + count($markers);
+        $estimate = round($estimate/2000,1);
+        echo "Estimated analysis time is $estimate minutes.<br>";
+        ?>
+        <font color=red>Select the "Check Results" button to retreive results.<br>
+        <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
+        </font>
+        <?php
+    }
 
     private function run_kin() {
         $unique_str = $_GET['unq'];
@@ -969,14 +1063,6 @@ class Downloads
                   $training_lines = $_SESSION['filtered_lines'];
                 }
                 $markers = $_SESSION['filtered_markers'];
-                $estimate = round((count($markers) + count($lines)) / 700,1);
-                echo "<br>Estimated analysis time is $estimate minutes.<br>";
-                if ($estimate > 1) {
-                  ?>
-                  Use this link to check status.<br>
-                  <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
-                  <?php 
-                }
 
                 //combine the training set and the prediction set for genotype data
                 $all_lines = $lines;

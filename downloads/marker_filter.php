@@ -1,5 +1,61 @@
 <?php
 
+/**
+ * calculate allele frequencies using allele_frequencies table
+ * @param array $lines
+ * @param float $min_maf
+ * @param float $max_missing
+ * @param float $max_miss_line
+ */
+
+function calculate_db($lines, $min_maf, $max_missing, $max_miss_line) {
+
+         $selectedlines = implode(",", $lines);
+
+         //get genotype experiments that correspond with the Datasets (BP and year) selected for the experiments
+         $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
+         FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
+         WHERE
+         e.experiment_type_uid = et.experiment_type_uid
+         AND lr.line_record_uid = tb.line_record_uid
+         AND e.experiment_uid = tb.experiment_uid
+         AND lr.line_record_uid in ($selectedlines)
+         AND et.experiment_type_name = 'genotype'";
+         $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
+         if (mysql_num_rows($res)>0) {
+          while ($row = mysql_fetch_array($res)){
+           $exp[] = $row["exp_uid"];
+          }
+          $exp = implode(',',$exp);
+         }
+
+         $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+         SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+         FROM allele_frequencies AS af
+         WHERE af.experiment_uid in ($exp)
+         group by af.marker_uid";
+
+         $res = mysql_query($sql_mstat) or die(mysql_error());
+         $num_mark = mysql_num_rows($res);
+         $num_maf = $num_miss = $num_removed = 0;
+
+         while ($row = mysql_fetch_array($res)){
+          $marker_uid = $row["marker"];
+          $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+          $miss = round(100*$row["summis"]/$row["total"],1);
+          if ($maf >= $min_maf)
+           $num_maf++;
+          if ($miss > $max_missing)
+           $num_miss++;
+          if (($miss > $max_missing) OR ($maf < $min_maf)) {
+             $num_removed++;
+          } else {
+             $markers_filtered[] = $marker_uid;
+          }
+         }
+         $_SESSION['filtered_markers'] = $markers_filtered;
+        }
+
     /**
      * display minor allele frequence and missing data using selected lines
      * @param array $lines
