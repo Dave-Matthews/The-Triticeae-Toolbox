@@ -1,0 +1,45 @@
+#content{
+    width:1010px;
+    float: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.imageMap{
+    width:1000px;
+    float: inherit;
+}
+
+#dTable, #dataTable_wrapper{
+    width:1000px;
+}
+
+#dataTable {
+    font-family:"Times New Roman", Times, serif;
+}
+
+#tooltip {  
+	display:none;
+    position:absolute;  
+    z-index:9999;  
+    color:#000;  
+    font-size:11px;  
+    width:100px;   
+    height:10px;
+    background-color:#66c;  
+}  
+  
+#tooltip .tipHeader {  
+    height:8px;  
+    background-color:#66c;  
+    padding:5px 5px 5px 5px;
+}  
+  
+/* IE */  
+#tooltip .tipHeader {margin-bottom:-6px;}  
+  
+#tooltip .tipBody {  
+    background-color:#66c;  
+    padding:5px 5px 5px 15px;  
+}  
+
