@@ -1,18 +1,20 @@
 <?php
+// dem 19apr13, added imagemap with line names.
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'theme/admin_header.php');
 connect();
 ?>
-
-<div id="primaryContentContainer">
-  <div id="primaryContent">
-  <h1>Cluster Lines by Genotype</h1>
-  <div class="section">
-
+<!-- imagemap code -->
+<script src='js/jquery.js'></script>
+<script src='js/interactiveMaps.js'></script>
+<script src='js/imageMaps.js'></script>
+<link rel=stylesheet type='text/css' href='R/iPlot.css'>
 <?php
+echo "<h1>Cluster Lines by Genotype</h1>";
+echo "<div class=section>";
+
 $nclusters = $_GET['clusters'];
-//echo "<h3>Clusters: $nclusters</h3>";
 
 // Timestamp for names of temporary files.
 $time = $_GET['time'];
@@ -21,32 +23,27 @@ $time = $_GET['time'];
 $linenames = $_GET['labels'];
 if ($linenames != "") {
   if (strpos($linenames, ',') > 0 ) {
-    $linenames = str_replace(", ",",", $linenames);	
+    $linenames = str_replace(", ",",", $linenames);
     $lineList = explode(',',$linenames);
-  } 
-  elseif (preg_match("/\t/", $linenames)) {$lineList = explode("\t",$linenames);}
-  else {$lineList = explode('\r\n',$linenames);}
+  }
+  elseif (preg_match("/\t/", $linenames))
+    $lineList = explode("\t",$linenames);
+  else
+    $lineList = explode('\r\n',$linenames);
 
   $labellines = "lineNames <- c(";
-  for ($i=0; $i<count($lineList); $i++) {
+  for ($i=0; $i<count($lineList); $i++)
     $labellines .= "\"$lineList[$i]\", ";
-  }
   $labellines = trim($labellines, ", ");
   $labellines .= ")\n";
- }
- else $labellines = "lineNames <-c('')\n";
+}
+else $labellines = "lineNames <-c('')\n";
 
 // Store the input parameters in file setupcluster.R.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupcluster.R".$time, "w");
-$png = "png(\"/tmp/tht/linecluster.png\", width=600, height=500)\n";
-fwrite($setup, $png);
 fwrite($setup, $labellines);
 fwrite($setup, "nClust <- $nclusters\n");
-/* fwrite($setup, "setwd(\"".$config['root_dir']."downloads\")\n"); */
-/* fwrite($setup, "mrkDataFile <-c('temp/mrkData.csv".$time."')\n"); */
-/* fwrite($setup, "clustInfoFile<-c('temp/clustInfo.txt".$time."')\n"); */
-/* fwrite($setup, "clustertableFile <-c('temp/clustertable.txt".$time."')\n"); */
 fwrite($setup, "setwd(\"/tmp/tht/\")\n");
 fwrite($setup, "mrkDataFile <-c('mrkData.csv".$time."')\n");
 fwrite($setup, "clustInfoFile<-c('clustInfo.txt".$time."')\n");
@@ -58,13 +55,11 @@ unlink("/tmp/tht/linecluster.png");
 
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
-//echo "<pre>"; system("cat /tmp/tht/setupcluster.R$time R/VisualCluster.R | R --vanilla");
-exec("cat /tmp/tht/setupcluster.R$time R/VisualCluster.R | R --vanilla");
+//echo "<pre>"; system("cat /tmp/tht/setupcluster.R$time R/iPlot.R R/VisualCluster.R | R --vanilla 2>&1");
+exec("cat /tmp/tht/setupcluster.R$time R/iPlot.R R/VisualCluster.R | R --vanilla");
 
-// IE will show the old cached image unless we make the name look different.
-$date = date("U");
-/* print "<img src=\"".$config['base_url']."downloads/temp/linecluster.png?d=$date\">"; */
-print "<img src=\"/tmp/tht/linecluster.png?d=$date\">";
+// Read in the HTML file with the <img src> png and the <map> coordinates.
+include('/tmp/tht/linecluster.html');
 
 $clustInfo = file("/tmp/tht/clustInfo.txt".$time);
 unlink("/tmp/tht/clustInfo.txt".$time);
@@ -79,7 +74,7 @@ for ($i=0; $i<count($clustInfo); $i++) {
 
 $color = array("black","red","limegreen","blue","cyan","magenta","#dddd00","gray");
 print "<table width=300 style='background-image: none; font-weight: bold'>";
-print "<thead><tr><th>Cluster</th><th>Labeled lines</th><th>Lines</th></tr></thead>";
+print "<thead><tr><th>Cluster</th><th>Sample member</th><th>Lines</th></tr></thead>";
 for ($i=1; $i<count($clustsize)+1; $i++) {
   $total = $total + $clustsize[$i];
   print "<tr style='color:".$color[$i-1]."';'>";
@@ -106,7 +101,6 @@ print "</form>";
 
 print "<p><hr><p>";
 print "<h3>Full cluster contents</h3>";
-/* $clustertable = file("downloads/temp/clustertable.txt".$time); */
 $clustertable = file("/tmp/tht/clustertable.txt".$time);
 $clustertable = preg_replace("/\n/", "", $clustertable);
 // Remove the first row, "x".
@@ -129,6 +123,6 @@ print "</table>";
 system("find /tmp/tht -mtime +1 -name 'clustertable.txt*' -delete");
 system("find /tmp/tht -mtime +1 -name 'mrkData.csv*' -delete");
 
-print "</div></div></div>";
+print "</div>";
 $footer_div=1;
 include($config['root_dir'].'theme/footer.php'); ?>
