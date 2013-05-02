@@ -5,6 +5,7 @@ var select_str = "";
 var fixed1 = "trial";
 var fixed2 = "0";
 var pc = "";
+var method = "";
 
 function load_title(command) {
     var url = php_self + "?function=refreshtitle" + '&cmd=' + command;
@@ -46,6 +47,23 @@ function run_cluster(unq_file) {
     });
 }
 
+function run_status(unq_file) {
+    var url = "";
+    if (method == "gwas") {
+      url = php_self + "?function=gwas_status&unq=" + unq_file;
+    } else {
+      url = php_self + "?function=pred_status&unq=" + unq_file;
+    }
+    var tmp = new Ajax.Updater($('step5'), url, {
+        onCreate: function() { Element.show('spinner'); },
+        onComplete : function() {
+            $('step5').show();
+            document.title = title;
+            Element.hide('spinner');
+        }
+    });
+}
+
 function run_gwa(unq_file) {
     var url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2;
     document.getElementById('step3').innerHTML = "";
@@ -76,8 +94,23 @@ function run_rscript(unq_file) {
     });
 }
 
+function filter_lines() {
+    var mmm = $('mmm').getValue();
+    var mml = $('mml').getValue();
+    var mmaf = $('mmaf').getValue();
+    var url = php_self + "?function=filter_lines" + '&mmm=' + mmm + '&mml=' + mml + '&maf=' + mmaf + "&fixed1=" + fixed1;
+    var tmp = new Ajax.Updater($('filter'), url, {
+        onCreate: function() { Element.show('spinner'); },
+        onComplete : function() {
+            $('filter').show();
+            document.title = title;
+        }
+    });
+}
+
 function load_genomic_prediction() {
     var unq_file = Date.now();
+    method = "pred";
     document.getElementById('step5').innerHTML = "";
     Element.show('spinner'); 
     document.getElementById('step3').innerHTML = "Creating Data Files";
@@ -117,14 +150,23 @@ function load_histogram(pheno) {
 // use this function to run GWA on training set 
 function load_genomic_gwas() {
     var unq_file = Date.now();
+    method = "gwas";
     document.getElementById('step5').innerHTML = "";
     Element.show('spinner');
     document.getElementById('step4').innerHTML = "Creating Data Files";
     var mmm = $('mmm').getValue();
     var mml = $('mml').getValue();
     var mmaf = $('mmaf').getValue();
-    var url = php_self + "?function=download_session_v3" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf;
-    var tmp = new Ajax.Updater($('step1'), url, {
+    var url = php_self + "?function=filter_lines" + '&mmm=' + mmm + '&mml=' + mml + '&maf=' + mmaf;
+    var tmp = new Ajax.Updater($('filter'), url, {asynchronous:false}, {
+        onCreate: function() { Element.show('spinner'); },
+        onComplete : function() {
+            $('filter').show();
+            document.title = title;
+        }
+    });
+    url = php_self + "?function=download_session_v3" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf;
+    tmp = new Ajax.Updater($('step1'), url, {
         onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
             $('step1').show();
