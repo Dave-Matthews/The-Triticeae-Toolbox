@@ -377,6 +377,8 @@ $line_name = "qwerty";
 $errLines = 0;
 $data = array();
 
+//for imports that take a long time there may be a deadlock when the allele cache does its daily refresh
+//this statement causes the locks to be released earlier
 $sql = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
 $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     
