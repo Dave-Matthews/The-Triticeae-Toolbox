@@ -7,10 +7,10 @@
  * 
  * @category PHP
  * @package  T3
- * @author   Clay Birkett <cbirkett@gmail.com>
+ * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/curator_data/genotype_data_upload.php
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/genoDataOffline2D.php
  *  
  * pieces of import code by Julie's team @ iowaStateU  
 
@@ -134,8 +134,8 @@ function findIllumina ($seq, $marker_ab)
     $strand = "";
     $a_allele = "";
     $b_allele = "";
-    $a_allele = substr($marker_ab,0,1);
-    $b_allele = substr($marker_ab,1,1);
+    $a_allele = substr($marker_ab, 0, 1);
+    $b_allele = substr($marker_ab, 1, 1);
 }
 
 /**
@@ -178,7 +178,7 @@ if (($errFile = fopen($errorFile, "w")) === false) {
 
 //get marker seq
 $sql = "SELECT marker_uid, A_allele, B_allele from markers";
-$res = mysqli_query($mysqli,$sql) or die("Database Error: setting lookup - ". mysqli_error($mysqli)."\n\n$sql");
+$res = mysqli_query($mysqli, $sql) or die("Database Error: setting lookup - ". mysqli_error($mysqli)."\n\n$sql");
 while ($row = mysqli_fetch_array($res)) {
     $marker_uid = $row['marker_uid'];
     $marker_snp[$marker_uid] = $row['A_allele'] . $row['B_allele'];
@@ -189,7 +189,7 @@ while ($row = mysqli_fetch_array($res)) {
 $Name = "Genotype Data Importer"; 
 //senders e-mail adress
 $sql ="SELECT value FROM  settings WHERE  name = 'capmail'";
-$res = mysqli_query($mysqli,$sql) or die("Database Error: setting lookup - ". mysqli_error($mysqli)."\n\n$sql");
+$res = mysqli_query($mysqli, $sql) or die("Database Error: setting lookup - ". mysqli_error($mysqli)."\n\n$sql");
 $rdata = mysqli_fetch_assoc($res);
 $myEmail=$rdata['value'];
 $mailheader = "From: ". $Name . " <" . $myEmail . ">\r\n"; //optional headerfields
@@ -233,9 +233,9 @@ if (($line = fgets($reader)) == fales) {
 
 echo "Processing line translation file...\n";
 
-$header = str_getcsv($line,"\t");
+$header = str_getcsv($line, "\t");
  // Set up header column; all columns are required
-$lineNameIdx = implode(find("Line Name", $header),"");
+$lineNameIdx = implode(find("Line Name", $header), "");
 $trialCodeIdx = implode(find("Trial Code", $header),"");
 echo "Using Line Name column = $lineNameIdx, Trial Code column = $trialCodeIdx\n";
             
@@ -246,7 +246,7 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 // Store individual records
 $num = 0;
 $linenumber = 0;
-while(($line = fgets($reader)) !== false) { 
+while (($line = fgets($reader)) !== false) { 
   $linenumber++;
   $origline = $line;
     chop($line, "\r");
@@ -313,7 +313,7 @@ while(($line = fgets($reader)) !== false) {
             $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
             $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
             $rtht=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysqli_error($mysqli). ".\n\n$sql");
-            $rqtht=mysql_fetch_assoc($rtht);
+            $rqtht=mysqli_fetch_assoc($rtht);
             $tht_uid=$rqtht['tht_base_uid'];
             //echo "created new tht_base entry\n";
         }
@@ -335,7 +335,7 @@ if (($reader = fopen($gDataFile, "r")) == false) {
 }
         
 //Advance to data header area
-while(!feof($reader))  {
+while (!feof($reader))  {
     $line = fgets($reader);
     if (preg_match("/SNP/",$line)) {
       echo "Header line found\n";
@@ -433,7 +433,7 @@ while (!feof($reader))  {
     $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
     $rqgen=mysqli_fetch_assoc($rgen);
     $gen_uid=$rqgen['genotyping_data_uid'];
-    if ($gen_uid == NULL) {
+    if ($gen_uid == null) {
       $marker_found = 0;
     } else { 
       $marker_found = 1;
@@ -498,7 +498,7 @@ while (!feof($reader))  {
             //$tht_uid=$rqtht['tht_base_uid'];
 					
     	/* get the genotyping_data_uid */
-        $gen_uid = NULL;
+        $gen_uid = null;
         if ($marker_found) {
     	  $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid AND tht_base_uid=$tht_uid ";
     	  $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
@@ -603,7 +603,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
 
     //$tstcnt = 0;
     $res = mysql_query("SHOW COLUMNS FROM allele_frequencies");
-    while($row = mysql_fetch_object($res)){
+    while ($row = mysql_fetch_object($res)){
         if(ereg(('set|enum'), $row->Type)) {
             eval(ereg_replace('set|enum', '$'.$row->Field.' = array', $row->Type).';');
         }
@@ -764,7 +764,7 @@ mysql_query($sql) or die("Database Error: Input file log entry creation failed -
 
 exit(0);
 
-//********************************************************
+/********************************************************/
 function exitFatal ($handle, $msg) {
 
     global $emailAddr;
