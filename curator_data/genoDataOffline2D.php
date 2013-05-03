@@ -312,7 +312,7 @@ while(($line = fgets($reader)) !== false) {
                                         VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
             $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
             $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
-            $rtht=mysqli_query($sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysqli_error($mysqli). ".\n\n$sql");
+            $rtht=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysqli_error($mysqli). ".\n\n$sql");
             $rqtht=mysql_fetch_assoc($rtht);
             $tht_uid=$rqtht['tht_base_uid'];
             //echo "created new tht_base entry\n";
