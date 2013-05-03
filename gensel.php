@@ -691,7 +691,7 @@ class Downloads
           $lines = $_SESSION['filtered_lines'];
           $markers = $_SESSION['filtered_markers'];
           $estimate = count($lines) + count($markers);
-          $estimate = round($estimate/2000,1);
+          $estimate = round($estimate/700,1);
           echo "Estimated analysis time is $estimate minutes.<br>";
           ?>
           <font color=red>Select the "Check Results" button to retreive results.<br>
@@ -783,6 +783,7 @@ class Downloads
     } 
    
     private function run_gwa2() {
+        global $config;
         $unique_str = $_GET['unq'];
         $model_opt = $_GET['fixed2'];
         if (isset($_SESSION['training_traits'])) {
@@ -824,6 +825,14 @@ class Downloads
             $cmd7 = "fileout <- \"$filename1\"\n";
             $cmd8 = "model_opt <- \"$model_opt\"\n";
             $cmd9 = "fileK <- \"$filenameK\"\n";
+            if (isset($_SESSION['username'])) {
+              $emailAddr = $_SESSION['username'];
+              $emailAddr = "email <- \"$emailAddr\"\n";
+              fwrite($h, $emailAddr);
+              $result_url = $config['base_url'] . "gensel.php?function=gwas_status&unq=$unique_str";
+              $result_url = "result_url <- \"$result_url\"\n";
+              fwrite($h, $result_url);
+            } 
             fwrite($h, $png1);
             fwrite($h, $png2);
             fwrite($h, $png3);
@@ -845,6 +854,12 @@ class Downloads
         $estimate = count($lines) + count($markers);
         $estimate = round($estimate/700,1);
         echo "Estimated analysis time is $estimate minutes.<br>";
+        $emailAddr = $_SESSION['username'];
+        if (isset($_SESSION['username'])) {
+          echo "An email will be sent to $emailAddr when the job is complete<br>\n";
+        } else {
+          echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
+        }
         ?>
         <font color=red>Select the "Check Results" button to retreive results.<br>
         <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>

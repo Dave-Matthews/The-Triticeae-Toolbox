@@ -67,7 +67,7 @@ function run_status(unq_file) {
 
 function run_gwa(unq_file) {
     var url = "";
-    if (analysis_count > 2000) {
+    if (analysis_count > 3000) {
       url = php_self + "?function=run_gwa2" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2; 
     } else {
       url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2;

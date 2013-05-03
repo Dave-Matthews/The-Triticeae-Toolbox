@@ -65,3 +65,5 @@ if (moreThan1Trial) {
   }
 }
 write.csv(results, file=fileout, quote=FALSE)
+command <- paste("echo \"GWAS analysis is done\n", result_url, "\" | mail -s \"Results from T3 GWAS\"", email)
+system(command)
