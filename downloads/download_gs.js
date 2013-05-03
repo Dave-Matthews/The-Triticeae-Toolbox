@@ -6,6 +6,7 @@ var fixed1 = "trial";
 var fixed2 = "0";
 var pc = "";
 var method = "";
+var analysis_count = "";
 
 function load_title(command) {
     var url = php_self + "?function=refreshtitle" + '&cmd=' + command;
@@ -65,7 +66,12 @@ function run_status(unq_file) {
 }
 
 function run_gwa(unq_file) {
-    var url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2;
+    var url = "";
+    if (analysis_count > 3000) {
+      url = php_self + "?function=run_gwa2" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2; 
+    } else {
+      url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2;
+    }
     document.getElementById('step3').innerHTML = "";
     document.getElementById('step4').innerHTML = "";
     document.getElementById('step5').innerHTML = "Running R script";
@@ -98,7 +104,7 @@ function filter_lines() {
     var mmm = $('mmm').getValue();
     var mml = $('mml').getValue();
     var mmaf = $('mmaf').getValue();
-    var url = php_self + "?function=filter_lines" + '&mmm=' + mmm + '&mml=' + mml + '&maf=' + mmaf + "&fixed1=" + fixed1;
+    var url = php_self + "?function=filter_lines" + '&mmm=' + mmm + '&mml=' + mml + '&maf=' + mmaf;
     var tmp = new Ajax.Updater($('filter'), url, {
         onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
@@ -108,9 +114,10 @@ function filter_lines() {
     });
 }
 
-function load_genomic_prediction() {
+function load_genomic_prediction(count) {
     var unq_file = Date.now();
     method = "pred";
+    analysis_count = count;
     document.getElementById('step5').innerHTML = "";
     Element.show('spinner'); 
     document.getElementById('step3').innerHTML = "Creating Data Files";
@@ -148,9 +155,10 @@ function load_histogram(pheno) {
 }
 
 // use this function to run GWA on training set 
-function load_genomic_gwas() {
+function load_genomic_gwas(count) {
     var unq_file = Date.now();
     method = "gwas";
+    analysis_count = count;
     document.getElementById('step5').innerHTML = "";
     Element.show('spinner');
     document.getElementById('step4').innerHTML = "Creating Data Files";
