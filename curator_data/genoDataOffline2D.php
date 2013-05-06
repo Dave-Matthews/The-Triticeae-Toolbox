@@ -431,12 +431,11 @@ while (!feof($reader))  {
     //if this is a new marker then we don't need to query for uid before inserting
     $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid";
     $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
-    $rqgen=mysqli_fetch_assoc($rgen);
-    $gen_uid=$rqgen['genotyping_data_uid'];
-    if ($gen_uid == null) {
-      $marker_found = 0;
-    } else { 
+    if (null !== ($rqgen=mysqli_fetch_assoc($rgen))
+    {
       $marker_found = 1;
+    } else { 
+      $marker_found = 0;
     }
     
     $rowNum++;		// number of lines
@@ -603,7 +602,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
 
     //$tstcnt = 0;
     $res = mysql_query("SHOW COLUMNS FROM allele_frequencies");
-    while ($row = mysql_fetch_object($res)){
+    while ($row = mysql_fetch_object($res)) {
         if(ereg(('set|enum'), $row->Type)) {
             eval(ereg_replace('set|enum', '$'.$row->Field.' = array', $row->Type).';');
         }
