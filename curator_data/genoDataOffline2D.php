@@ -545,6 +545,7 @@ while (!feof($reader))  {
                   fwrite($errFile, $msg);
                   $errLines++;
             }
+        } elseif ($alleles == '') {
  	} else {
  	    	$msg = "bad data at " . $line_name . " $data[$data_pt]\n";
                 fwrite($errFile, $msg);
