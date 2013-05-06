@@ -38,7 +38,9 @@
 
                 /* do not add duplicates */
                 while ($row = mysql_fetch_array($line_sql, MYSQL_ASSOC)) {
-                    if (!in_array($row["lruid"],$result)) {
+                    if ($result == null) {
+                      $result = $row["lruid"];
+                    } elseif (!in_array($row["lruid"],$result)) {
                       $result[] = $row["lruid"]; 
                     } 
                 }
