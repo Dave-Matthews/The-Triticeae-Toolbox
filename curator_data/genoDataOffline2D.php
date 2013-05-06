@@ -428,16 +428,6 @@ while (!feof($reader))  {
       exitFatal($errFile, $msg);
     }
 
-    //if this is a new marker then we don't need to query for uid before inserting
-    $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid";
-    $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
-    if (null !== ($rqgen=mysqli_fetch_assoc($rgen)))
-    {
-      $marker_found = 1;
-    } else { 
-      $marker_found = 0;
-    }
-    
     $rowNum++;		// number of lines
     $markerflag = 0;        //flag for checking marker existence
     $data_pt = 0;
@@ -481,6 +471,15 @@ while (!feof($reader))  {
               fwrite($errFile, $msg);
             }
 
+            //if this is a new marker then we don't need to query for uid before inserting
+           $gen_uid = null;
+           $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid AND tht_base_uid=$tht_uid ";
+           $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
+           if (null !== ($rqgen=mysqli_fetch_assoc($rgen)))
+           { 
+             $gen_uid=$rqgen['genotyping_data_uid'];
+           }
+
 	    //$sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
 	    //$rtht = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
 	    // fwrite($errFile,$sql);
@@ -497,13 +496,6 @@ while (!feof($reader))  {
             //$tht_uid=$rqtht['tht_base_uid'];
 					
     	/* get the genotyping_data_uid */
-        $gen_uid = null;
-        if ($marker_found) {
-    	  $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid AND tht_base_uid=$tht_uid ";
-    	  $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
-    	  $rqgen=mysqli_fetch_assoc($rgen);    
-    	  $gen_uid=$rqgen['genotyping_data_uid'];
-        }
     	if (empty($gen_uid)) {
     	    $sql="INSERT INTO genotyping_data (tht_base_uid, marker_uid, updated_on, created_on)
 					VALUES ($tht_uid, $marker_uid, NOW(), NOW())" ;
