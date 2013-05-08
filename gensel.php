@@ -311,6 +311,9 @@ class Downloads
                 echo "</div>";
         }
 
+    /**
+     * filters markers and lines based on settings
+     */
     function filter_lines() {
       if (isset($_GET['maf'])) {
            $min_maf = $_GET['maf'];
@@ -556,6 +559,10 @@ class Downloads
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
         <?php
     }
+    
+    /**
+     * call R program for displaying histograms
+     */
     private function run_histo() {
         $unique_str = $_GET['unq'];
         $dir = '/tmp/tht/';
@@ -648,6 +655,9 @@ class Downloads
         }
     }
 
+    /**
+     * displa gwas results
+     */
     private function status_gwas() {
         $unique_str = $_GET['unq'];
         $dir = '/tmp/tht/';
@@ -692,15 +702,18 @@ class Downloads
           $markers = $_SESSION['filtered_markers'];
           $estimate = count($lines) + count($markers);
           $estimate = round($estimate/700,1);
-          echo "Estimated analysis time is $estimate minutes.<br>";
+          echo "Results not ready yet. Estimated analysis time is $estimate minutes.<br>";
           ?>
-          <font color=red>Select the "Check Results" button to retreive results.<br>
+          <font color=red>Select the "Check Results" button to retrieve results.<br>
           <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
           </font>
           <?php
         }
     }
   
+    /**
+     * display results from GWAS
+     */
     private function run_gwa() {
         $unique_str = $_GET['unq'];
         $model_opt = $_GET['fixed2'];
@@ -782,6 +795,9 @@ class Downloads
         } 
     } 
    
+    /**
+     * display GWAS results if they are complete
+     */
     private function run_gwa2() {
         global $config;
         $unique_str = $_GET['unq'];
@@ -861,76 +877,15 @@ class Downloads
           echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
         }
         ?>
-        <font color=red>Select the "Check Results" button to retreive results.<br>
+        <font color=red>Select the "Check Results" button to retrieve results.<br>
         <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
         </font>
         <?php
     }
 
-    private function run_kin() {
-        $unique_str = $_GET['unq'];
-        $dir = '/tmp/tht/';
-        if (isset($_SESSION['training_traits'])) {
-            $phenotype = $_SESSION['training_traits'];
-            $phenotype = $phenotype[0];
-        } elseif (isset($_SESSION['selected_traits'])) {
-            $phenotype = $_SESSION['selected_traits'];
-            $phenotype = $phenotype[0];
-        }
-
-        $filename1 = 'THTdownload_snp_t_' . $unique_str . '.txt';
-        $filename9 = 'THTdownload_hmp_' . $unique_str. '.txt';
-        $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
-        $filename3 = 'THTdownload_kin_' . $unique_str . '.R';
-        $filename4 = 'THTdownload_kin_' . $unique_str . '.png';
-        $filename5 = 'process_error_kin_' . $unique_str . '.txt';
-        $filename6 = 'R_error_kin_' . $unique_str . '.txt';
-        $filename10 = 'THTdownload_traits_u' . $unique_str . '.txt';
-
-        $sql = "select phenotypes_name, unit_name from phenotypes, units
-               where phenotypes.unit_uid = units.unit_uid
-               and phenotype_uid = $phenotype";
-        $res = mysql_query($sql) or die(mysql_error());
-        $row = mysql_fetch_array($res);
-        $phenolabel = $row[0];
-        $phenounit = $row[1];
-
-        if(!file_exists($dir.$filename3)){
-            $h = fopen($dir.$filename3, "w+");
-            $png1 = "png(\"$dir$filename4\", width=800, height=400)\n";
-            $png3 = "dev.set(2)\n";
-            $cmd1 = "snpData <- read.table(\"$dir$filename1\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
-            $cmd2 = "phenolabel <- \"$phenolabel\"\n";
-            $cmd3 = "phenoData <- read.table(\"$dir$filename10\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
-            $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
-            $cmd5 = "fileerr <- \"$dir$filename6\"\n";
-            fwrite($h, $png1);
-            fwrite($h, $png2);
-            fwrite($h, $png3);
-            fwrite($h, $cmd1);
-            fwrite($h, $cmd2);
-            fwrite($h, $cmd3);
-            fwrite($h, $cmd4);
-            fwrite($h, $cmd5);
-            fclose($h);
-        }
-        //exec("cat /tmp/tht/$filename3 R/GSforKIN.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
-        //if (file_exists("/tmp/tht/$filename4")) {
-        //          print "<img src=\"/tmp/tht/$filename4\" /><br>";
-        //} else {
-        //          echo "Error in R script<br>\n";
-        //          echo "cat /tmp/tht/$filename3 R/GSforKIN.R | R --vanilla <br>";
-        //}
-        if (file_exists("/tmp/tht/$filename5")) {
-           $h = fopen("/tmp/tht/$filename5", "r");
-           while ($line=fgets($h)) {
-               echo "$line<br>\n";
-           }
-           fclose($h);
-        }
-    }
-
-        
+    /**
+     * run rrBLUP R script for genomic prediction
+     */
     private function run_rscript() {
         $unique_str = $_GET['unq'];
         $filename1 = 'THTdownload_hapmap_' . $unique_str . '.txt';
@@ -2965,7 +2920,8 @@ class Downloads
 
 	/**
 	 * create map file for tassel V3
-	 * @param string $experiments
+	 * @param array $lines
+	 * @param array $markers
 	 * @return string
 	 */
 	function type1_build_geneticMap($lines,$markers)
