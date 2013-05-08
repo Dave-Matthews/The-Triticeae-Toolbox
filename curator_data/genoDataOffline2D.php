@@ -324,6 +324,11 @@ while (($line = fgets($reader)) !== false) {
 fclose($reader);   
 echo "Line translation file processing done. $num\n";
 
+//send email so user can check on status of import
+$body = "The offline genotype data import has started.\n".
+            "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
+mail($emailAddr, $subject, $body, $mailheader);
+
 echo "Start genotyping record creation process...\n";
 //Process Genotype data
 /* start reading the input */
