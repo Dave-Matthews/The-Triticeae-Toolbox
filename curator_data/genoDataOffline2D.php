@@ -31,7 +31,7 @@ require "$progPath" . "includes/bootstrap_curator.inc";
 require "$progPath" . "curator_data/lineuid.php";
 require_once "$progPath" . "includes/email.inc";
 
-ini_set('auto_detect_line_endings', 1);
+ini_set("auto_detect_line_endings", true);
 
 $num_args = $_SERVER["argc"];
 $fnames = $_SERVER["argv"];
@@ -257,7 +257,6 @@ while (($line = fgets($reader)) !== false) {
       $line = preg_replace('/ /','',$line);
     }
     if (strlen($line) < 2) continue;
-    if (feof($reader)) break;
     if (empty($line)) continue;
                 
     $data = str_getcsv($line,"\t");
@@ -307,19 +306,20 @@ while (($line = fgets($reader)) !== false) {
         $rtht = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
         $rqtht = mysqli_fetch_assoc($rtht);
         $tht_uid = $rqtht['tht_base_uid'];
-        if (empty($tht_uid)) {
-            $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
-                                        VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
-            $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
-            $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
-            $rtht=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysqli_error($mysqli). ".\n\n$sql");
-            $rqtht=mysqli_fetch_assoc($rtht);
-            $tht_uid=$rqtht['tht_base_uid'];
-            //echo "created new tht_base entry\n";
-        }
-        $thtuid_lookup[$lineStr] = $tht_uid;
-        //echo "good $lineStr $line_uid $trialCodeStr $exp_uid\n";
+        //if (empty($tht_uid)) {
+        //    $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
+        //                                VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
+        //    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
+        //    $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
+        //    $rtht=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysqli_error($mysqli). ".\n\n$sql");
+        //    $rqtht=mysqli_fetch_assoc($rtht);
+        //    $tht_uid=$rqtht['tht_base_uid'];
+        //    //echo "created new tht_base entry\n";
+        //}
+        //$thtuid_lookup[$lineStr] = $tht_uid;
+        echo "good $lineStr $line_uid $trialCodeStr $exp_uid\n";
     }
+    if (feof($reader)) break;
 }    
 fclose($reader);   
 echo "Line translation file processing done. $num\n";
@@ -431,14 +431,14 @@ while (!feof($reader))  {
     $rowNum++;		// number of lines
     $markerflag = 0;        //flag for checking marker existence
     $data_pt = 0;
-    $sql = "SET AUTOCOMMIT=0";
-    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
-    $sql = "SET foreign_key_checks=0";
-    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
-    $sql = "SET unique_checks=0";
-    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
-    $sql = "START TRANSACTION";
-    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+    //$sql = "SET AUTOCOMMIT=0";
+    //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+    //$sql = "SET foreign_key_checks=0";
+    //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+    //$sql = "SET unique_checks=0";
+    //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+    //$sql = "START TRANSACTION";
+    //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
       $line_name = $header[$data_pt];
 
@@ -464,11 +464,28 @@ while (!feof($reader))  {
 	      $msg = "missing from dataset experiments $line_name $line_uid" . "\n";
 	      fwrite($errFile, $msg);
             }
-            if (isset($thtuid_lookup[$line_name])) {				
-              $tht_uid = $thtuid_lookup[$line_name];
-            } else {
-              $msg = "missing from tht_base $line_name $exp_uid\n";
-              fwrite($errFile, $msg);
+            //if (isset($thtuid_lookup[$line_name])) {				
+            //  $tht_uid = $thtuid_lookup[$line_name];
+            //} else {
+            //  $msg = "missing from tht_base $line_name $exp_uid\n";
+            //  fwrite($errFile, $msg);
+            //}
+
+            /* get thtbase_uid. If null, then we have to create this ID */
+            $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
+            $rtht = mysql_query($sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysql_error() . ".\n\n$sql");
+            // fwrite($errFile,$sql);
+            $rqtht = mysql_fetch_assoc($rtht);
+            $tht_uid = $rqtht['tht_base_uid'];
+
+            if (empty($tht_uid)) {
+            $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
+                                        VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
+            $res = mysql_query($sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysql_error() . ".\n\n$sql");
+            $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
+            $rtht=mysql_query($sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysql_error(). ".\n\n$sql");
+            $rqtht=mysql_fetch_assoc($rtht);
+            $tht_uid=$rqtht['tht_base_uid'];
             }
 
             //if this is a new marker then we don't need to query for uid before inserting
@@ -545,6 +562,7 @@ while (!feof($reader))  {
                   fwrite($errFile, $msg);
                   $errLines++;
             }
+        } elseif ($alleles == '') {
  	} else {
  	    	$msg = "bad data at " . $line_name . " $data[$data_pt]\n";
                 fwrite($errFile, $msg);
@@ -755,9 +773,16 @@ mysql_query($sql) or die("Database Error: Input file log entry creation failed -
 
 exit(0);
 
-/********************************************************/
-function exitFatal ($handle, $msg) {
-
+/**
+ * Fatal error - send message then exit
+ * 
+ * @param file   $handle error file
+ * @param string $msg    contains error message
+ * 
+ * @return NULL
+ */
+function exitFatal ($handle, $msg)
+{
     global $emailAddr;
     global $mailheader;
     global $tPath; 
