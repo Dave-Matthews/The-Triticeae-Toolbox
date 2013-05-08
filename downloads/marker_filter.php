@@ -1,4 +1,17 @@
 <?php
+/**
+ * Library used for marker and line filtering
+ * 
+ * * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/downloads/marker_filter.php
+ */
 
 /**
  * calculate allele frequencies using allele_frequencies table
@@ -61,6 +74,7 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line) {
      * @param array $lines
      * @param floats $min_maf
      * @param floats $max_missing
+     * @param floats $max_miss_line
     */
         function calculate_af($lines, $min_maf, $max_missing, $max_miss_line) {
          //calculate allele frequencies using 2D table
