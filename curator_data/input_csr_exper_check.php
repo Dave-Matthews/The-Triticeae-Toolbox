@@ -267,7 +267,6 @@ public function save_raw_file($wavelength) {
              while ($line = fgets($reader)) {
                $size_t = 0;
                $temp = str_getcsv($line,"\t");
-               $wavelength[$i] = $temp;
                $count = count($temp);
                if (preg_match("/[0-9]/",$line)) {
                  if(is_numeric($temp[0])) {
