@@ -267,7 +267,6 @@ public function save_raw_file($wavelength) {
              while ($line = fgets($reader)) {
                $size_t = 0;
                $temp = str_getcsv($line,"\t");
-               $wavelength[$i] = $temp;
                $count = count($temp);
                if (preg_match("/[0-9]/",$line)) {
                  if(is_numeric($temp[0])) {
@@ -415,6 +414,21 @@ public function save_raw_file($wavelength) {
                  echo "expected \"Growth Stage name\" found $data[6]<br>";
                  $error_flag = 1;
                }
+               if (preg_match("/[0-9]/",$value[7])) {
+                 $start_time = "'$value[7]'";
+               } else {
+                 $start_time = "NULL";
+               }
+               if (preg_match("/[0-9]/",$value[8])) {
+                 $end_time = "'$value[8]'";
+               } else {
+                 $end_time = "NULL";
+               }
+               if (preg_match("/[0-9]/",$value[9])) {
+                 $int_time = $value[9];
+               } else {
+                 $int_time = "NULL";
+               }
                if ($data[11] != "Spectrometer System") {
                  echo "expected \"Spectormeter System\" found $data[11]<br>";
                  $error_flag = 1;
@@ -463,7 +477,7 @@ public function save_raw_file($wavelength) {
 
                if ($error_flag == 0) {
                  if ($new_record) {
-                   $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
+                   $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]',$start_time,$end_time,$int_time,'$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
                  } else {
