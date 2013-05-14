@@ -125,6 +125,29 @@ connect();
       <td><?php filelink("Gene function","Marker_import_sample4.txt", "") ?>
       <td>Marker annotations and synonyms
     </tr>
+ <tr>
+      <td><b>Canopy Spectral Reflectance (CSR)</b>
+      <td><?php filelink("CSR System Descriptions","CSRinT3_SpectrometerSystem.xlsx", "T3") ?>
+      <td>Instrument annotation
+    </tr>
+    <tr>
+      <td>
+      <td><?php filelink("Field Book","fieldbook_template.xlsx", "T3") ?>
+      <td>Field map 
+    </tr>
+ <tr>
+      <td>
+      <td><?php filelink("CSR Annotation","CSRinT3_Sp1_Annotation.xlsx", "T3") ?>
+      <td>Description of the CSR experiment
+    </tr>
+    <tr>
+      <td>
+      <td><?php filelink("CSR Data","CSR_Data_template.txt", "T3") ?>								    
+      <td>Data file format
+    </tr>
+   
+
+
   </table>
 </div></div>
 
