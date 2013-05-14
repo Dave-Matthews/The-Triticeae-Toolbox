@@ -36,9 +36,12 @@
                 
                 }
 
-
+                /* do not add duplicates */
+                $result = array();
                 while ($row = mysql_fetch_array($line_sql, MYSQL_ASSOC)) {
-                    $result[] = $row["lruid"];  
+                    if (!in_array($row["lruid"],$result)) {
+                      $result[] = $row["lruid"]; 
+                    } 
                 }
             return $result;
 
