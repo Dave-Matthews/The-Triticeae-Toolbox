@@ -5,8 +5,7 @@ include($config['root_dir'].'theme/normal_header.php');
 connect();
 ?>
 
-
-    <h2>Breeders Toybox, Wheat</h2>
+<h2>The Wheat Breeder&apos;s Seed Catalog</h2>
     <h3 style="color: #de5414; margin-left: 30px;"><i>Making breeding fun!</i></h3>
     <br>
     <div class="section">
