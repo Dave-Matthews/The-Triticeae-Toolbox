@@ -130,7 +130,11 @@ EOD;
 	    Lines by Haplotype</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
             Lines by Genotype Experiment</a>
-  <?php if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
+  <?php 
+  /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
+  /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
+  if( loginTest2() ): 
+?>
 	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=green>My Line Panels</font></a>
  <?php endif ?>
 	<li>
