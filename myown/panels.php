@@ -8,7 +8,7 @@ if (loginTest2()) {
   $myname = $row['users_name'];
   $myid = $row['users_uid'];
  }
-authenticate_redirect(array(USER_TYPE_PARTICIPANT,USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
+authenticate_redirect(array(USER_TYPE_PUBLIC,USER_TYPE_PARTICIPANT,USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 include($config['root_dir'].'theme/admin_header.php');
 ?>
 
