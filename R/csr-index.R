@@ -46,6 +46,7 @@ nFalse <- apply(isnaMat, 2, sum)
 for (i in ncol(csrData):2) {
   if (nFalse[i] == 0){
     csrFilt <- csrFilt[,-i]
+    pltData <- pltData[,-i]
     print(paste("Column ",i," removed"))
   }
 }
@@ -54,8 +55,8 @@ for (i in ncol(csrData):2) {
 if (smooth > 0) {
   flt2 <- (2*smooth) + 1
   csrFilt <- apply(csrFilt, 2, runmed,k=flt2)
-} else {
-  csrFilt <- csrData
+#} else {
+#  csrFilt <- csrData
 }
 
 #read in formula to calculate index
