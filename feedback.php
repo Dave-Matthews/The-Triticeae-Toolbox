@@ -65,6 +65,8 @@ $us_email=isset($_POST['email']) ? $_POST['email']:'';
 $us_feedback=isset($_POST['feedback']) ? $_POST['feedback']:'';
 // Note: Doublequotes (") required; singlequotes fail:
 $us_feedback = str_replace('\r\n', "\n", $us_feedback);
+// Try to remove the \ being inserted before all ' characters.
+$us_feedback = stripslashes($us_feedback);
 
 $footer_div = 1;
 $securimage = new Securimage();
