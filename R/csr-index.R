@@ -93,7 +93,7 @@ if ((W3idx == 1) || (W3idx == length(wavelength))) {
 }
 
 # apply formula to calculate index for each column then write to file
-csrFilt <- csrData[,-(1)]      
+csrFilt <- csrFilt[,-(1)]      
 results <- apply(csrFilt, 2, calIndex,idx1= W1idx, idx2=W2idx,  idx3=W3idx);
 pltData <- pltData[-(1)]
 pltData <- t(pltData)
