@@ -170,18 +170,20 @@ include($config['root_dir'].'theme/footer.php');
 
 function delete_trial($uid) {
   $sql = "delete from phenotype_experiment_info where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<br>Query was: $sql");
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   $sql = "delete from datasets_experiments where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<br>Query was: $sql");
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   $sql = "delete from  phenotype_mean_data where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<br>Query was: $sql");
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   $sql = "delete from phenotype_data where tht_base_uid in
           (select tht_base_uid from tht_base where experiment_uid = $uid)";
-  $r = mysql_query($sql) or die(mysql_error() . "<br>Query was: $sql");
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   $sql = "delete from tht_base where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<br>Query was: $sql");
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+  $sql = "delete from cr_measurement where experiment_uid = $uid";
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   $sql = "delete from experiments where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<br>Query was: $sql");
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   echo "Trial deleted.";
   return;
 }
