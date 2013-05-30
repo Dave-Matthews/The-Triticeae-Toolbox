@@ -47,6 +47,7 @@ class Experiments
 
 private function typeDisplay() {
   global $config;
+  global $mysqli;
   include($config['root_dir'] . 'theme/admin_header.php');
   if (isset($_GET['uid'])) {
     $experiment_uid = $_GET['uid'];
@@ -54,7 +55,7 @@ private function typeDisplay() {
     die("Error - no experiment found<br>\n");
   }
   $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
-  $res = mysql_query($sql) or die (mysql_error());
+  $res = mysqli_query($mysqli,$sql) or die (mysql_error());
   if ($row = mysql_fetch_assoc($res)) {
     $trial_code = $row["trial_code"];
   } else {
@@ -63,7 +64,7 @@ private function typeDisplay() {
 
   //get line names
   $sql = "select line_record_uid, line_record_name from line_records";
-  $res = mysql_query($sql) or die (mysql_error());
+  $res = mysqli_query($mysqli,$sql) or die (mysql_error());
   while ($row = mysql_fetch_assoc($res)) {
     $uid = $row["line_record_uid"];
     $line_name = $row["line_record_name"];
@@ -72,8 +73,8 @@ private function typeDisplay() {
 
 
   $count = 0;
-  $sql = "select * from fieldbook order by plot";
-  $res = mysql_query($sql) or die (mysql_error());
+  $sql = "select * from fieldbook wher experiment_uid = $experiment_uid order by plot";
+  $res = mysqli_query($mysqli,$sql) or die (mysql_error());
   echo "<h2>Field Book for $trial_code</h2>\n";
   echo "<table>";
   echo "<tr><td>plot<td>line_name<td>row<td>column<td>entry<td>replication<td>block<td>subblock<td>treatment<td>block_tmt<td>subblock_tmt<td>check<td>Field_ID<td>note";
