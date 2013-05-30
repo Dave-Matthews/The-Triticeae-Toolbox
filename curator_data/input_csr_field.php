@@ -71,9 +71,8 @@ private function typeDisplay() {
     $line_list[$uid] = $line_name;
   } 
 
-
   $count = 0;
-  $sql = "select * from fieldbook wher experiment_uid = $experiment_uid order by plot";
+  $sql = "select * from fieldbook where experiment_uid = $experiment_uid order by plot";
   $res = mysqli_query($mysqli,$sql) or die (mysql_error());
   echo "<h2>Field Book for $trial_code</h2>\n";
   echo "<table>";
