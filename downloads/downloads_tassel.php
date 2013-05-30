@@ -78,15 +78,6 @@ class DownloadsJNLP
 			case 'step1yearprog':
 			    $this->step1_yearprog();
 			    break;
-			case 'type1traits':
-				$this->type1_traits();
-				break;
-			case 'type1markers':
-				$this->type1_markers();
-				break;
-			case 'type2markers':
-			    $this->type2_markers();
-			    break;
 			case 'type1build_qtlminer':
 				$this->type1_build_qtlminer();
 				break;
@@ -350,6 +341,7 @@ class DownloadsJNLP
                 $filename1 = 'download_tassel_hapmap_' . $unique_str . '.txt';
                 $filename2 = 'download_tassel_' . $unique_str . '.jnlp';
                 $filename3 = 'download_tassel_traits_' . $unique_str . '.txt';
+                $filename5 = 'download_tassel_large_' . $unique_str . '.jnlp';
 
                 if(!file_exists($dir.$filename1)){
                         $h = fopen($dir.$filename1, "w+");
@@ -366,6 +358,7 @@ class DownloadsJNLP
                 }
                 if(!file_exists($dir.$filename2)) {
                         $h = fopen($dir.$filename2, "w+");
+                        $h2 = fopen($dir.$filename5, "w+");
                 }
                 $hi = fopen($filename4, "r");
                 $contents = fread($hi, filesize($filename4));
@@ -376,10 +369,18 @@ class DownloadsJNLP
                 $contents = str_replace("genotype_hapmap.txt","$filename1",$contents);
                 $contents = str_replace("traits.txt","$filename3",$contents);
                 fwrite($h,"$contents");
+                $contents = str_replace("2048m","950m",$contents);
+                $contents = str_replace("$filename2","$filename5",$contents);
+                fwrite($h2,"$contents");
                 fclose($h);
+                fclose($h2);
                 $temp = $dir.$filename2;
+                $temp2 = $dir.$filename5;
           echo "<form method=\"LINK\" action=\"$temp\">";
           echo "<input type=\"submit\" value=\"Open file with TASSEL\">";
+          echo "</form><br>";
+          echo "<form method=\"LINK\" action=\"$temp2\">";
+          echo "<input type=\"submit\" value=\"Open file with TASSEL\"> (950Mb Heap Size) Use if Error Creating Java Virtual Machine";
           echo "</form><br>";
           echo "TASSEL (Trait Analysis by Association, Evolution and Linkage)<br>";
           echo "provided by Buckler Lab for Maize Genetics and Diversity<br>";
@@ -966,301 +967,6 @@ class DownloadsJNLP
 	  }
 	}
 
-	/**
-	 * display traits given a list of experiments
-	 */
-	private function type1_traits()
-	{
-		$experiments = $_GET['exps'];
-		
-		if (empty($experiments))
-		{
-			echo "
-				4. <select><option>Traits</option></select>
-				<div>
-					<p><em>No Trials Selected</em></p>
-				</div>";
-		}
-		else
-		{
-?>
-<p>4. 
-<select><option>Traits</option></select></p>
-<div>
-<?php
-// List all traits associated with a list of experiments
-
-
-			$sql = "SELECT p.phenotype_uid AS id, p.phenotypes_name AS name
-					FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
-					WHERE pd.tht_base_uid = t.tht_base_uid
-					AND p.phenotype_uid = pd.phenotype_uid
-					AND t.experiment_uid IN ($experiments)
-					GROUP BY p.phenotype_uid";
-
-			$res = mysql_query($sql) or die(mysql_error());
-			if (mysql_num_rows($res) >= 1)
-			{
-?>
-<table>
-	<tr><th>Trait</th></tr>
-	<tr><td>
-		<select id="traitsbx" name="traits" multiple="multiple" style="height: 12em" onchange="javascript: update_phenotype_items(this.options)">
-<?php
-				while ($row = mysql_fetch_assoc($res))
-				{
-?>
-			<option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
-<?php
-				}
-?>
-		</select>
-	</td></tr>
-</table>
-<?php
-			}
-			else
-			{
-?>
-		<p style="font-weight: bold;">No Data</p>
-<?php
-			}
-?>
-</div>
-<?php
-		}
-	}
-
-	/**
-	 * displays key marker data for the selected breeding programs
-	 */
-	function type1_markers()
-	{
-		// parse url
-        $experiments = $_GET['exps'];
-		$CAPdataprogram = $_GET['bp'];
-		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-		
-		if (empty($_GET['lines'])) {
-		if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
-		  $lines = $_SESSION['selected_lines'];
-		  $lines_str = implode(",", $lines);
-		  $count = count($_SESSION['selected_lines']);
-		} else {
-		  $sql_option = "";
-		  $lines = array();
-		  if ($subset == "yes" && count($_SESSION['selected_lines']) > 0) {
-		    $selectedlines = implode(",", $_SESSION['selected_lines']);
-		    $sql_option = " AND line_records.line_record_uid IN ($selectedlines)";
-		  }
-		  if (preg_match("/\d/",$experiments)) {
-		    $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
-		  }
-		  if (preg_match("/\d/",$datasets)) {
-		    $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-		  }
-		  $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid FROM line_records, tht_base
-		  WHERE line_records.line_record_uid=tht_base.line_record_uid $sql_option";
-		  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		  while($row = mysql_fetch_array($res)) {
-		    $lines[] = $row['line_record_uid'];
-		  }
-		  $lines_str = implode(",", $lines);
-		  $count = count($lines);
-		}
-		//overide these setting is radio button checked
-		if ($subset == "no") {
-		  $sql_option = "";
-		  $lines = array();
-		  if (preg_match("/\d/",$experiments)) {
-		    $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
-		  }
-		  if (preg_match("/\d/",$datasets)) {
-		    $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-		  }
-		  $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid FROM line_records, tht_base
-		  WHERE line_records.line_record_uid=tht_base.line_record_uid $sql_option";
-		  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		  while($row = mysql_fetch_array($res)) {
-		    $lines[] = $row['line_record_uid'];
-		  }
-		  $lines_str = implode(",", $lines);
-		  $count = count($lines);
-		} elseif ($subset == "comb") {
-		  if (preg_match("/\d/",$experiments)) {
-		    $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
-		  }
-		  if (preg_match("/\d/",$datasets)) {
-		    $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-		  }
-		  $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid FROM line_records, tht_base
-		  WHERE line_records.line_record_uid=tht_base.line_record_uid $sql_option";
-		  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		  while($row = mysql_fetch_array($res)) {
-		    $lines[] = $row['line_record_uid'];
-		  }
-		  $lines_str = implode(",", $lines);
-		  $count = count($lines);
-		}
-		} else {
-	      $lines_str = $_GET['lines'];
-	      $lines = explode(',', $lines_str);
-	      $count = count($lines);
-		}
-		echo "current data selection = $count lines<br>";
-		?>
-        <h3>6. Markers</h3>
-		<div>
-		<?php
-		    		
-		// initialize markers and flags if not already set
-        $max_missing = 99.9;//IN PERCENT
-        if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-            $max_missing = $_GET['mm'];
-		if ($max_missing>100)
-			$max_missing = 100;
-		elseif ($max_missing<0)
-			$max_missing = 0;
-        $min_maf = 0.01;//IN PERCENT
-        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-            $min_maf = $_GET['mmaf'];
-		if ($min_maf>100)
-			$min_maf = 100;
-		elseif ($min_maf<0)
-			$min_maf = 0;
-		
-		$this->calculate_af($lines, $min_maf, $max_missing);
-		
-		?>
-		<table> <tr> <td COLSPAN="3">
-		<input type="hidden" name="subset" id="subset" value="yes" /><br>
-		<input type="button" value="Download for Tassel V3" onclick="javascript:getdownload_tassel('v3');" />
-		<h4> or </h4>
-		<input type="button" value="Download for Tassel V4" onclick="javascript:getdownload_tassel('v4');" /> <br>
-		</td> </tr> </table>
-		<?php
-		
-		?></div><?php
-			
-	}
-	
-	/**
-	 * displays key marker data when given a set of experiments and phenotypes
-	 */
-	function type2_markers()
-	{
-	 // parse url
-	 $experiments = $_GET['exps'];
-	 $phen_item = $_GET['pi'];
-	 $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-	 
-	 if (empty($_GET['lines'])) {
-	   if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
-	   	 $lines = $_SESSION['selected_lines'];
-	     $lines_str = implode(",", $lines);
-	     $count = count($_SESSION['selected_lines']);
-	   } else {
-	   	 $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-	   	 FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-	   	 WHERE
-	   	 pd.tht_base_uid = tb.tht_base_uid
-	   	 AND p.phenotype_uid = pd.phenotype_uid
-	   	 AND lr.line_record_uid = tb.line_record_uid
-	   	 AND pd.phenotype_uid IN ($phen_item)
-	   	 AND tb.experiment_uid IN ($experiments)
-	   	 ORDER BY lr.line_record_name";
-	   	 $lines = array();
-	   	 $res = mysql_query($sql) or die(mysql_error() . $sql);
-	   	 while ($row = mysql_fetch_assoc($res))
-	   	 {
-	   		array_push($lines,$row['id']);
-	     }
-	     $lines_str = implode(",", $lines);
-	     $count = count($lines);
-	     //$_SESSION['selected_lines'] = $lines;
-	   }
-	   //overide these setting is radio button checked
-	   if ($subset == "no") {
-	   	 $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-	   	 FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-	   	 WHERE
-	   	 pd.tht_base_uid = tb.tht_base_uid
-	   	 AND p.phenotype_uid = pd.phenotype_uid
-	   	 AND lr.line_record_uid = tb.line_record_uid
-	   	 AND pd.phenotype_uid IN ($phen_item)
-	   	 AND tb.experiment_uid IN ($experiments)
-	   	 ORDER BY lr.line_record_name";
-	   	 $lines = array();
-	   	 $res = mysql_query($sql) or die(mysql_error() . $sql);
-	   	 while ($row = mysql_fetch_assoc($res))
-	   	 {
-	   	 	array_push($lines,$row['id']);
-	   	 }
-	   	 $lines_str = implode(",", $lines);
-	   	 $count = count($lines);
-	   } elseif ($subset == "comb") {
-	     $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-	     FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-	     WHERE
-	     pd.tht_base_uid = tb.tht_base_uid
-	     AND p.phenotype_uid = pd.phenotype_uid
-	     AND lr.line_record_uid = tb.line_record_uid
-	     AND pd.phenotype_uid IN ($phen_item)
-	     AND tb.experiment_uid IN ($experiments)
-	     ORDER BY lr.line_record_name";
-	     $res = mysql_query($sql) or die(mysql_error() . $sql);
-	     while ($row = mysql_fetch_assoc($res))
-	     {
-	       array_push($lines,$row['id']);
-	     }
-	     $lines_str = implode(",", $lines);
-	     $count = count($lines);
-	   }
-	 } else {
-	   $lines_str = $_GET['lines'];
-	   $lines = explode(',', $lines_str);
-	   $count = count($lines);
-	   //$_SESSION['selected_lines'] = $lines;
-	 }
-	 echo "current data selection = $count lines<br>";
-	
-	 ?>
-	
-	 <h3>6. Markers</h3>
-	 <div>
-	 <?php
-	
-	 // initialize markers and flags if not already set
-	 $max_missing = 99.9;//IN PERCENT
-	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-	 $max_missing = $_GET['mm'];
-	 if ($max_missing>100)
-	   $max_missing = 100;
-	 elseif ($max_missing<0)
-	  $max_missing = 0;
-	 $min_maf = 0.01;//IN PERCENT
-	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-	   $min_maf = $_GET['mmaf'];
-	 if ($min_maf>100)
-	   $min_maf = 100;
-	 elseif ($min_maf<0)
-	   $min_maf = 0;
-	
-	$this->calculate_af($lines, $min_maf, $max_missing);
-	
-	?>
-	<table> <tr> <td COLSPAN="3">
-	<input type="hidden" name="subset" id="subset" value="yes" /><br>
-	<input type="button" value="Download for Tassel V3" onclick="javascript:get_download_loc('v3');" /> <br>
-	<h4> or </h4>
-	<input type="button" value="Download for Tassel V4" onclick="javascript:get_download_loc('v4');" /> <br>
-	</td> </tr> </table>
-	<?php
-	
-	?></div><?php
-	
-	}
-	
 	/**
 	 * creates output files in qtlminer format
 	 */
