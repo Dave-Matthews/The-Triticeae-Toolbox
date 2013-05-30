@@ -134,6 +134,7 @@ public function save_raw_file($wavelength) {
     error(1, "No File Upoaded");
     print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
   } else {
+    umask(0);
     if (!empty($_FILES['file']['name'][1])) {
          if (move_uploaded_file($_FILES['file']['tmp_name'][1], $raw_path) !== TRUE) {
              echo "<font color=red><b>Oops!</b></font> Your raw data file <b>"
@@ -310,7 +311,6 @@ public function save_raw_file($wavelength) {
              #$objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
              #$objWriter->save('/tmp/tht/testfile.xls');
          }
-         umask(0);
     } else {
       print "using $filename1<br>\n";
     }
