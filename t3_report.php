@@ -35,8 +35,10 @@ if (isset($_GET['output'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 if (isset($_GET['query'])) {
   $query = $_GET['query'];
+  $opt = $_GET['opt'];
 } else {
   $query = "";
+  $opt = "";
 }
 } else {
 if (isset($_POST['query'])) {
@@ -162,7 +164,15 @@ if ($query == 'geno') {
   }
 } elseif ($query == 'Markers') {
   include($config['root_dir'].'theme/normal_header.php');
-  print "Top 100 Marker names ordered by creation date<br><br>\n";
+  if ($opt == "") {
+    $msg_opt = "";
+  } else {
+    $sql = "select marker_type_name from marker_types where marker_type_uid = $opt";
+    $res = mysql_query($sql) or die(mysql_error());
+    $row =  mysql_fetch_row($res);
+    $msg_opt = $row[0];
+  }
+  print "Top 100 $msg_opt names ordered by creation date<br><br>\n";
   print "<form action=t3_report.php method='POST'>";
   print "<input type=hidden name=query value=Markers />";
   print "Start Date: <input type=text name=startdate />";
@@ -171,10 +181,15 @@ if ($query == 'geno') {
   print "</form><br>";
   print "<table border=0>";
   $sql = "select marker_name, date_format(markers.created_on,'%m-%d-%y'), marker_type_name from markers, marker_types";
-  if (empty($startdate) || empty($enddate)) {
-    $sql .= " where markers.marker_type_uid = marker_types.marker_type_uid order by markers.created_on desc limit 100";
+  if ($opt == "") {
+    $sql_opt = "";
   } else {
-    $sql .= " where (markers.created_on > '$startdate') and (markers.created_on < '$enddate')";
+    $sql_opt = " and markers.marker_type_uid = $opt";
+  }
+  if (empty($startdate) || empty($enddate)) {
+    $sql .= " where markers.marker_type_uid = marker_types.marker_type_uid $sql_opt order by markers.created_on desc limit 100";
+  } else {
+    $sql .= " where (markers.created_on > '$startdate') and (markers.created_on < '$enddate') $sql_opt";
     $sql .= " and markers.marker_type_uid = marker_types.marker_type_uid order by markers.created_on desc";
   }
   print "<tr><td>Line name<td>type<td>created on\n";
@@ -503,22 +518,23 @@ if ($query == 'geno') {
     print "<b>Genotype Data</b>\n";
     print "<table>\n";
   }
-  $sql = "select count(marker_uid), marker_type_name from markers, marker_types
+  $sql = "select count(marker_uid), marker_type_name, markers.marker_type_uid from markers, marker_types
     where markers.marker_type_uid = marker_types.marker_type_uid
     and marker_type_name like '%SNP%'";
   $res = mysql_query($sql) or die(mysql_error());
   while ($row=mysql_fetch_row($res)) {
     $count = $row[0];
     $name = $row[1];
+    $marker_type_uid = $row[2];
     if ($output == "excel") {
       $worksheet->write($index, 0, "Markers $name");
       $worksheet->write($index, 1, $count);
       $index++;
     } else {
-      print "<tr><td>Markers $name<td>$count<td><a href=t3_report.php?query=Markers>List or query markers by creation date</a>\n";
+      print "<tr><td>Markers $name<td>$count<td><a href=t3_report.php?query=Markers&opt=$marker_type_uid>List or query markers by creation date</a>\n";
     }
   }
-  $sql = "select count(marker_uid), marker_type_name from markers, marker_types
+  $sql = "select count(marker_uid), marker_type_name, markers.marker_type_uid from markers, marker_types
     where markers.marker_type_uid = marker_types.marker_type_uid
     and marker_type_name not like '%SNP%'
     group by markers.marker_type_uid";
@@ -526,12 +542,13 @@ if ($query == 'geno') {
   while ($row=mysql_fetch_row($res)) {
     $count = $row[0];
     $name = $row[1];
+    $marker_type_uid = $row[2];
     if ($output == "excel") {
       $worksheet->write($index, 0, "Markers $name");
       $worksheet->write($index, 1, $count);
       $index++;
     } else {
-      print "<tr><td>Markers $name<td>$count<td><a href=t3_report.php?query=Markers>List or query markers by creation date</a>\n";
+      print "<tr><td>Markers $name<td>$count<td><a href=t3_report.php?query=Markers&opt=$marker_type_uid>List or query markers by creation date</a>\n";
     }
   }
   if ($output == "excel") {
