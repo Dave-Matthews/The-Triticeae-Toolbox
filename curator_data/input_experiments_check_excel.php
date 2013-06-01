@@ -99,7 +99,7 @@ private function typeExperimentCheck()
 <?php
          global $config;
 	 $row = loadUser($_SESSION['username']);
-	 ini_set("memory_limit","24M");
+	 //ini_set("memory_limit","24M");
 	 $username=$row['name'];
 	 $tmp_dir="uploads/tmpdir_".$username."_".rand();
 	 $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
