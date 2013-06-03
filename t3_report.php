@@ -309,7 +309,7 @@ if ($query == 'geno') {
      }
      $sql = "select count(distinct(markers.marker_uid)) from markers, genotyping_data where (markers.marker_uid = genotyping_data.marker_uid)";
      $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-     if ($row=mysql_fetch_row($res)) {
+     if ($row=mysqli_fetch_row($res)) {
       $MarkersWithGeno = $row[0];
      }
      $sql = "select distinct count(marker_uid) from markers where not exists (select genotyping_data_uid from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
