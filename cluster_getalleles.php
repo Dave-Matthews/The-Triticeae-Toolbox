@@ -93,7 +93,7 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
   }
   else {
     // Update cache table if necessary. Empty?
-    if(mysql_num_rows(mysql_query("select * from allele_byline_clust")) == 0)
+    if(mysql_num_rows(mysql_query("select line_record_uid from allele_byline_clust")) == 0)
       $update = TRUE;
     // Out of date?
     $sql = "select if( datediff(
@@ -103,9 +103,9 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
     $need = mysql_grab($sql);
     if ($need == 'need_update') $update = TRUE;
   }
+  set_time_limit(3000);  // Default 30sec runs out in ca. line 105. So does 300.
   if ($update) {
     echo "Updating table allele_byline_clust...<p>";
-    set_time_limit(3000);  // Default 30sec runs out in ca. line 105. So does 300.
     mysql_query("truncate table allele_byline_clust") or die(mysql_error());
     $lookup = array('AA' => '1',
 		    'BB' => '0',
