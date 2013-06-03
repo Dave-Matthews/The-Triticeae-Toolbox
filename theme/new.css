@@ -124,6 +124,7 @@ html>body #logo
 
 #footer
 {
+    margin-left: 230px;
     margin-top: 50px;
     padding-top: 25px;
     background: #85cacf url('images/foothdg.png') repeat-x;
