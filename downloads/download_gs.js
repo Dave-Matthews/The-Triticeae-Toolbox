@@ -10,27 +10,27 @@ var analysis_count = "";
 
 function load_title(command) {
     var url = php_self + "?function=refreshtitle" + '&cmd=' + command;
-    var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
-        onCreate: function() { Element.show('spinner'); },
-        onComplete : function() {
+    var tmp = new Ajax.Updater($('title'), url, {asynchronous: false}, {
+        onCreate: function () { Element.show('spinner'); },
+        onComplete : function () {
             $('title').show();
             document.title = title;
         }
     });
     url = "side_menu.php";
     tmp = new Ajax.Updater($('quicklinks'), url, {
-    onComplete : function() {
-      $('quicklinks').show();
-      document.title = title;
-    }
+        onComplete : function () {
+            $('quicklinks').show();
+            document.title = title;
+        }
     });
 }
 
 function run_histo(unq_file, pheno) {
     var url = php_self + "?function=run_histo" + "&unq=" + unq_file + "&pheno=" + pheno;
-    var tmp = new Ajax.Updater($('step3'), url, {
-        onCreate: function() { Element.show('spinner'); },
-        onComplete : function() {
+    new Ajax.Updater($('step3'), url, {
+        onCreate: function () { Element.show('spinner'); },
+        onComplete : function () {
             $('step3').show();
             document.title = title;
         }
@@ -39,9 +39,9 @@ function run_histo(unq_file, pheno) {
 
 function run_cluster(unq_file) {
     var url = php_self + "?function=run_cluster" + "&unq=" + unq_file;
-    var tmp = new Ajax.Updater($('step3'), url, {
-        onCreate: function() { Element.show('spinner'); },
-        onComplete : function() {
+    new Ajax.Updater($('step3'), url, {
+        onCreate: function () { Element.show('spinner'); },
+        onComplete : function () {
             $('step3').show();
             document.title = title;
         }
@@ -50,14 +50,14 @@ function run_cluster(unq_file) {
 
 function run_status(unq_file) {
     var url = "";
-    if (method == "gwas") {
-      url = php_self + "?function=gwas_status&unq=" + unq_file;
+    if (method === "gwas") {
+        url = php_self + "?function=gwas_status&unq=" + unq_file;
     } else {
-      url = php_self + "?function=pred_status&unq=" + unq_file;
+        url = php_self + "?function=pred_status&unq=" + unq_file;
     }
     var tmp = new Ajax.Updater($('step5'), url, {
-        onCreate: function() { Element.show('spinner'); },
-        onComplete : function() {
+        onCreate: function () { Element.show('spinner'); },
+        onComplete : function () {
             $('step5').show();
             document.title = title;
             Element.hide('spinner');
@@ -68,16 +68,16 @@ function run_status(unq_file) {
 function run_gwa(unq_file) {
     var url = "";
     if (analysis_count > 3000) {
-      url = php_self + "?function=run_gwa2" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2; 
+        url = php_self + "?function=run_gwa2" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2;
     } else {
-      url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2;
+        url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2;
     }
     document.getElementById('step3').innerHTML = "";
     document.getElementById('step4').innerHTML = "";
     document.getElementById('step5').innerHTML = "Running R script";
     var tmp = new Ajax.Updater($('step5'), url, {
-        onCreate: function() { Element.show('spinner'); },
-        onComplete : function() {
+        onCreate: function () { Element.show('spinner'); },
+        onComplete : function () {
             $('step5').show();
             document.title = title;
             Element.hide('spinner');
@@ -91,8 +91,8 @@ function run_rscript(unq_file) {
     document.getElementById('step4').innerHTML = "";
     document.getElementById('step5').innerHTML = "Running R script";
     var tmp = new Ajax.Updater($('step5'), url, {
-        onCreate: function() { Element.show('spinner'); },
-        onComplete : function() {
+        onCreate: function () { Element.show('spinner'); },
+        onComplete : function () {
             $('step5').show();
             document.title = title;
             Element.hide('spinner');
@@ -106,8 +106,8 @@ function filter_lines() {
     var mmaf = $('mmaf').getValue();
     var url = php_self + "?function=filter_lines" + '&mmm=' + mmm + '&mml=' + mml + '&maf=' + mmaf;
     var tmp = new Ajax.Updater($('filter'), url, {
-        onCreate: function() { Element.show('spinner'); },
-        onComplete : function() {
+        onCreate: function () { Element.show('spinner'); },
+        onComplete : function () {
             $('filter').show();
             document.title = title;
         }
@@ -119,15 +119,23 @@ function load_genomic_prediction(count) {
     method = "pred";
     analysis_count = count;
     document.getElementById('step5').innerHTML = "";
-    Element.show('spinner'); 
+    Element.show('spinner');
     document.getElementById('step3').innerHTML = "Creating Data Files";
     var mmm = $('mmm').getValue();
     var mml = $('mml').getValue();
     var mmaf = $('mmaf').getValue();
-    var url = php_self + "?function=download_session_v4" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf + "&fixed1=" + fixed1;
-    var tmp = new Ajax.Updater($('step1'), url, {
+    var url = php_self + "?function=filter_lines" + '&mmm=' + mmm + '&mml=' + mml + '&maf=' + mmaf;
+    var tmp = new Ajax.Updater($('filter'), url, {asynchronous: false}, {
         onCreate: function() { Element.show('spinner'); },
         onComplete : function() {
+            $('filter').show();
+            document.title = title;
+        }
+    });
+    url = php_self + "?function=download_session_v4" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf + "&fixed1=" + fixed1;
+    tmp = new Ajax.Updater($('step1'), url, {
+        onCreate: function () { Element.show('spinner'); },
+        onComplete : function () {
             $('step1').show();
             document.title = title;
             document.getElementById('step5').innerHTML = "Finished Data Files";
