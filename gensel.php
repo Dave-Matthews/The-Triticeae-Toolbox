@@ -295,6 +295,7 @@ class Downloads
         Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+                  <div id="filter" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
                   <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
@@ -1123,10 +1124,10 @@ class Downloads
                 <?php
               
                 if ($training_lines == "") {
-                //  calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+                  calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
                   $lines = $_SESSION['filtered_lines'];
                 } else {
-                //  calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
+                  calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
                   $training_lines = $_SESSION['filtered_lines'];
                 }
                 $markers = $_SESSION['filtered_markers'];
