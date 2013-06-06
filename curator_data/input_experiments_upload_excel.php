@@ -8,6 +8,7 @@ require 'config.php';
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 connect();
+$mysqli = connecti();
 loginTest();
 //$row = loadUser($_SESSION['username']);
 
@@ -31,6 +32,7 @@ class Experiments {
 
   private function typeExperiments() {
     global $config;
+    global $mysqli;
     include($config['root_dir'] . 'theme/admin_header.php');
 ?>
 <style type="text/css">
@@ -68,6 +70,7 @@ h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 // $_GET['delete']
   private function type_Experiment_Name() {
     global $config;
+    global $mysqli;
 ?>
 
 <p>Here you can load the results of a single field or greenhouse Trial.  The Annotation describing
@@ -415,8 +418,36 @@ if ($_GET['delete']) {
 
 <?php
     } // end editing form for previous raw files
-
   } /* end of else*/
+  ?>
+  <div class=section>
+  <h3>Add Plot Level File</h3>
+  <table>
+  <form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">
+  <tr><td><strong>Trial Name:</strong><td>
+  <select name="exper_uid">
+  <?php
+  echo "<option>select a trial</option>\n";
+  $sql = "select trial_code, experiment_uid, experiment_year from experiments where experiment_type_uid = 1 order by experiment_year desc, trial_code";
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+  while ($row = mysqli_fetch_assoc($res)) {
+    $tc = $row['trial_code'];
+    $uid = $row['experiment_uid'];
+    $trial_list[$uid] = $tc;
+    echo "<option value='$uid'>$tc</option>\n";
+  }
+  echo "</select>\n";
+  ?>
+
+  <input type="hidden" id="plot" name="plot" value="-1" />
+  <tr><td><br><strong>Plot file:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls">Example Plot file</a>
+  </table>
+  <p><input type="submit" value="Upload" /></p>
+  </form>
+
+  </div>
+  <?php
   } /* end of type_Experiment_Name function*/
 } /* end of class */
 ?>
