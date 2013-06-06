@@ -90,7 +90,8 @@ class Haplotype
 
    $i = 0;
    $markers = array();
-   while ($i < 4) {
+   if ($num_markers > 1) { $loop1 = 4; } else { $loop1 = 1; }
+   while ($i < $loop1) {
      $j = 0;
      $marker_idx[$sub] = 0;
      while ($j < 4) {
@@ -160,7 +161,7 @@ class Haplotype
   $this->dispHaplo();
   ?>
   </div>
-  <div id="step2"></div>
+  <div id="step2"></div></div>
   <?php 
   include($config['root_dir'].'theme/footer.php');
  }
