@@ -292,7 +292,7 @@ class Haplotype
 				
 				
 				</tbody>
-			</table></div>
+			</table>
 		<?php
 		if ($dispMissing) {
 		 echo "<input type='submit' name='hideMissing' value='Hide missing'> Hide haplotypes with missing data";
@@ -311,7 +311,7 @@ class Haplotype
 						 echo "<td>No markers selected";
 						 echo "</table><p><a href=genotyping/marker_selection.php>Select markers</a></p>";
 						}
-
+     echo "</div>";
  }
 
  function step2() {
