@@ -180,7 +180,7 @@ function delete_trial($uid) {
   $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   $sql = "delete from tht_base where experiment_uid = $uid";
   $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  $sql = "delete from cr_measurement where experiment_uid = $uid";
+  $sql = "delete from csr_measurement where experiment_uid = $uid";
   $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   $sql = "delete from experiments where experiment_uid = $uid";
   $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
