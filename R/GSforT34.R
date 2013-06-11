@@ -185,3 +185,7 @@ if (yesPredPheno) {
 }#END no prediction set
 dev.off()
 
+if (exists("email")) {
+  command <- paste("echo \"kin.blup analysis is done\n", result_url, "\" | mail -s \"Results from T3 rrBLUP\"", email)
+  system(command)
+}
