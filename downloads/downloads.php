@@ -199,12 +199,12 @@ class Downloads
                     echo "<a href=";
                     echo $config['base_url'];
                     echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>.";
+                    echo "</div>";
                 } else {
                    $this->type1_lines_trial_trait(); 
                 }
                 ?>
                 </div>
-                </div> 
                 <?php
         }
 

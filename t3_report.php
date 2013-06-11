@@ -111,8 +111,8 @@ if ($query == 'geno') {
   print "<table border=0>";
   print "<tr><td>breeding program code<td>count\n";
   $sql = "select distinct(breeding_program_code) from line_records";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+  while ($row = mysqli_fetch_row($res)) {
     $program_code = $row[0];
     if (preg_match("/[A-Z0-9]+/",$program_code)) {
     $sql2 = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid) and (line_records.breeding_program_code = '$program_code')";
@@ -148,7 +148,7 @@ if ($query == 'geno') {
   print "End Date: <input type=text name=enddate />";
   print "<input type=submit /> Use date format 2012-08-27";
   print "</form><br>";
-  $sql = "select line_record_name, date_format(created_on,'%m-%d-%y') from line_records";
+  $sql = "select line_record_uid, line_record_name, date_format(created_on,'%m-%d-%y') from line_records";
   if (empty($startdate) || empty($enddate)) {
     $sql .= " order by created_on desc limit 100";
   } else {
@@ -156,11 +156,12 @@ if ($query == 'geno') {
     $sql .= " order by created_on desc";
   }
   print "<table border=0>"; print "<tr><td>Line name<td>created on\n";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_row($res)) {
-    $name = $row[0];
-    $date = $row[1];
-    print "<tr><td>$name<td>$date\n";
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+  while ($row = mysqli_fetch_row($res)) {
+    $uid = $row[0];
+    $name = $row[1];
+    $date = $row[2];
+    print "<tr><td><a href=view.php?table=line_records&uid=$uid>$name</a><td>$date\n";
   }
 } elseif ($query == 'Markers') {
   include($config['root_dir'].'theme/normal_header.php');
@@ -168,8 +169,8 @@ if ($query == 'geno') {
     $msg_opt = "";
   } else {
     $sql = "select marker_type_name from marker_types where marker_type_uid = $opt";
-    $res = mysql_query($sql) or die(mysql_error());
-    $row =  mysql_fetch_row($res);
+    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+    $row =  mysqli_fetch_row($res);
     $msg_opt = $row[0];
   }
   print "Top 100 $msg_opt names ordered by creation date<br><br>\n";
@@ -180,7 +181,7 @@ if ($query == 'geno') {
   print "<input type=submit /> Use date format 2012-08-27";
   print "</form><br>";
   print "<table border=0>";
-  $sql = "select marker_name, date_format(markers.created_on,'%m-%d-%y'), marker_type_name from markers, marker_types";
+  $sql = "select markers.marker_uid, marker_name, date_format(markers.created_on,'%m-%d-%y'), marker_type_name from markers, marker_types";
   if ($opt == "") {
     $sql_opt = "";
   } else {
@@ -193,12 +194,13 @@ if ($query == 'geno') {
     $sql .= " and markers.marker_type_uid = marker_types.marker_type_uid order by markers.created_on desc";
   }
   print "<tr><td>Line name<td>type<td>created on\n";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_row($res)) {
-    $name = $row[0];
-    $date = $row[1];
-    $type = $row[2];
-    print "<tr><td>$name<td>$type<td>$date\n";
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+  while ($row = mysqli_fetch_row($res)) {
+    $uid = $row[0];
+    $name = $row[1];
+    $date = $row[2];
+    $type = $row[3];
+    print "<tr><td><a href=view.php?table=markers&uid=$uid>$name</a><td>$type<td>$date\n";
   }
 } elseif ($query == 'Trials') {
   include($config['root_dir'].'theme/normal_header.php');
@@ -211,13 +213,13 @@ if ($query == 'geno') {
                                         USER_TYPE_ADMINISTRATOR)))
                         $sql .= " and data_public_flag > 0";
   $sql .= " order by experiments.created_on desc limit 100";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+  while ($row = mysqli_fetch_row($res)) {
     $trial_code = $row[0];
     $short_name = $row[1];
     $date = $row[2];
     $type = $row[3];
-    print "<tr><td>$trial_code<td>$short_name<td>$type<td>$date\n";
+    print "<tr><td><a href=display_phenotype.php?trial_code=$trial_code>$trial_code</a><td>$short_name<td>$type<td>$date\n";
   }
 } elseif ($query == 'cache') {
      $sql = "select count(genotyping_data_uid) from genotyping_data";
