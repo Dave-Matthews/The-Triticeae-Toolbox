@@ -66,7 +66,7 @@ class gLineNames_Check
 		$username=$row['name'];
 
         $username = str_replace(" ", "", $username);
-		$tmp_dir="./uploads/tmpdir_".$username."_".rand();
+		$tmp_dir="./uploads/".$username."_".rand();
 		$url = $root;
         //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
         //	copy($_FILES['file']['tmp_name'][1], $raw_path);
