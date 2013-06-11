@@ -73,6 +73,9 @@ class Downloads
             case 'run_rscript':
                 $this->run_rscript();
                 break;
+            case 'run_rscript2':
+                $this->run_rscript2();
+                break;
 			case 'type1traits':
 				$this->type1_traits();
 				break;
@@ -292,6 +295,7 @@ class Downloads
         Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+                  <div id="filter" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
                   <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
@@ -513,7 +517,7 @@ class Downloads
 
           <table border=0>
           <tr><td>
-          <input type="button" value="Analyze" onclick="javascript:load_genomic_gwas(<?php echo $estimate ?>)"> GWAS
+          <input type="button" value="Analyze" onclick="javascript:load_genomic_gwas(<?php echo $estimate; ?>)"> GWAS
           <td>
           <select name="model2" onchange="javascript: update_fixed(this.value)">
           <option>0</option>
@@ -524,7 +528,7 @@ class Downloads
           <option>5</option>
           </select>principal components
           <!--td><input type="checkbox" value="PC3D">PC3D -->
-          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $unique_str; ?>')"> rrBLUP
+          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $estimate; ?>')"> rrBLUP
           <td>
           <!--td><input type="checkbox" name="model3" value="reduce">reduce -->
           </table><br>
@@ -656,7 +660,7 @@ class Downloads
     }
 
     /**
-     * displa gwas results
+     * display gwas results
      */
     private function status_gwas() {
         $unique_str = $_GET['unq'];
@@ -696,6 +700,67 @@ class Downloads
                echo "$line<br>\n";
            }
            fclose($h);
+        }
+        if ($found == 0) {
+          $lines = $_SESSION['filtered_lines'];
+          $markers = $_SESSION['filtered_markers'];
+          $estimate = count($lines) + count($markers);
+          $estimate = round($estimate/700,1);
+          echo "Results not ready yet. Estimated analysis time is $estimate minutes.<br>";
+          ?>
+          <font color=red>Select the "Check Results" button to retrieve results.<br>
+          <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
+          </font>
+          <?php
+        }
+    }
+
+    /**
+     * display genomic prediction results
+     */
+    private function status_pred() {
+        $unique_str = $_GET['unq'];
+        $dir = '/tmp/tht/';
+        $found = 1;
+        $filename1 = 'THTdownload_hapmap_' . $unique_str . '.txt';
+        $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
+        $filename3 = 'THTdownload_gensel_' . $unique_str . '.R';
+        $filename10 = 'THTdownload_gensel2_' . $unique_str . '.png';
+        $filename4 = 'THTdownload_gensel_' . $unique_str . '.png';
+        $filename5 = 'THT_process_error_' . $unique_str . '.txt';
+        $filename6 = 'THT_R_error_' . $unique_str . '.txt';
+        $filename7 = 'THT_result_' . $unique_str . '.csv';
+        if (file_exists("/tmp/tht/$filename10")) {
+                  print "<img src=\"/tmp/tht/$filename10\" /><br>";
+        } else {
+            $found = 0;
+        }
+        if (file_exists("/tmp/tht/$filename4")) {
+             print "<img src=\"/tmp/tht/$filename4\" /><br>";
+             //if (isset($_SESSION['selected_traits'])) { use when multiple traits is supported
+             if (isset($_SESSION['phenotype'])) {
+                  print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export prediction to CSV file</a><br><br>";
+             } else {
+                  print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
+                  print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export Cross-validated prediction to CSV file</a><br><br>";
+             }
+        } else {
+            $found = 0;
+        }
+
+        if (file_exists("/tmp/tht/$filename5")) {
+                  $h = fopen("/tmp/tht/$filename5", "r");
+                  while ($line=fgets($h)) {
+                   echo "$line<br>\n";
+                  }
+                  fclose($h);
+        }
+        if (file_exists("/tmp/tht/$filename6")) {
+                  $h = fopen("/tmp/tht/$filename6", "r");
+                  while ($line=fgets($h)) {
+                    echo "$line<br>\n";
+                  }
+                  fclose($h);
         }
         if ($found == 0) {
           $lines = $_SESSION['filtered_lines'];
@@ -796,7 +861,7 @@ class Downloads
     } 
    
     /**
-     * display GWAS results if they are complete
+     * run GWAS results in background and notify when complete
      */
     private function run_gwa2() {
         global $config;
@@ -935,6 +1000,39 @@ class Downloads
     }
     
     /**
+     * run rrBLUP R script in background and notify when complete
+     */
+    private function run_rscript2() {
+    	$unique_str = $_GET['unq'];
+    	$filename1 = 'THTdownload_hapmap_' . $unique_str . '.txt';
+    	$filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
+    	$filename3 = 'THTdownload_gensel_' . $unique_str . '.R';
+    	$filename10 = 'THTdownload_gensel2_' . $unique_str . '.png';
+    	$filename4 = 'THTdownload_gensel_' . $unique_str . '.png';
+    	$filename5 = 'THT_process_error_' . $unique_str . '.txt';
+    	$filename6 = 'THT_R_error_' . $unique_str . '.txt';
+    	$filename7 = 'THT_result_' . $unique_str . '.csv';
+    	exec("cat /tmp/tht/$filename3 R/GSforT34.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5 &");
+    	$lines = $_SESSION['filtered_lines'];
+    	$markers = $_SESSION['filtered_markers'];
+    	$estimate = count($lines) + count($markers);
+    	$estimate = round($estimate/700,1);
+    	echo "Estimated analysis time is $estimate minutes.<br>";
+    	$emailAddr = $_SESSION['username'];
+    	if (isset($_SESSION['username'])) {
+    		echo "An email will be sent to $emailAddr when the job is complete<br>\n";
+    	} else {
+    		echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
+        }
+    	?>
+    	<font color=red>Select the "Check Results" button to retrieve results.<br>
+    	<input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
+    	</font>
+    	<?php
+    }
+    
+    
+    /**
      * use this download when selecting program and year
      * @param string $version Tassel version of output
      */
@@ -1026,10 +1124,10 @@ class Downloads
                 <?php
               
                 if ($training_lines == "") {
-                //  calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+                  calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
                   $lines = $_SESSION['filtered_lines'];
                 } else {
-                //  calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
+                  calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
                   $training_lines = $_SESSION['filtered_lines'];
                 }
                 $markers = $_SESSION['filtered_markers'];
@@ -1131,6 +1229,15 @@ class Downloads
                     $cmd7 = "phenolabel <- \"$phenolabel\"\n";
                     $cmd8 = "common_code <- \"" . $config['root_dir'] . "R/AmatrixStructure.R\"\n";
                     $cmd9 = $triallabel;
+                    if (isset($_SESSION['username'])) {
+                      $emailAddr = $_SESSION['username'];
+                      $emailAddr = "email <- \"$emailAddr\"\n";
+                      fwrite($h, $emailAddr);
+                      $result_url = $config['base_url'] . "gensel.php?function=pred_status&unq=$unique_str";
+                      $result_url = "result_url <- \"$result_url\"\n";
+                      fwrite($h, $result_url);
+                    }
+
                     fwrite($h, $png);
                     fwrite($h, $png2);
                     if ($training_lines != "") {
