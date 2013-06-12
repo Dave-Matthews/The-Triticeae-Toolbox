@@ -19,6 +19,7 @@ require 'config.php';
 //include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'includes/bootstrap_curator.inc');
 include($config['root_dir'].'downloads/marker_filter.php');
+set_time_limit(3000);
 
 connect();
 
@@ -103,7 +104,6 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
     $need = mysql_grab($sql);
     if ($need == 'need_update') $update = TRUE;
   }
-  set_time_limit(3000);  // Default 30sec runs out in ca. line 105. So does 300.
   if ($update) {
     echo "Updating table allele_byline_clust...<p>";
     mysql_query("truncate table allele_byline_clust") or die(mysql_error());
