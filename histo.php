@@ -149,7 +149,7 @@ class Downloads
         if(!file_exists($dir.$filename3)){
             $h = fopen($dir.$filename3, "w+");
             $png = "png(\"$dir$filename4\", width=$histo_width, height=300)\n";
-            $cmd1 = "phenoData <- as.matrix(read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=1))\n";
+            $cmd1 = "phenoData <- as.matrix(read.delim(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=1))\n";
             $cmd1 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd2 = "phenolabel <- \"$phenolabel\"\n";
             $cmd3 = "phenounit <- \"$phenounit\"\n";
