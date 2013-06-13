@@ -182,6 +182,7 @@ while ($resp = mysql_fetch_row($res)) {
       foreach ($lineList as $word) {
 	$found = FALSE;
 	$word = str_replace('*', '%', $word);  // Handle "*" wildcards.
+	$word = str_replace('&amp;', '&', $word);  // Allow "&" character in line names.
 	// First check line_records.line_record_name.
 	$hits = mysql_query("select line_record_name from line_records 
                 where line_record_name like '$word'") or die(mysql_error());
