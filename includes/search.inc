@@ -51,6 +51,9 @@ function generalTermSearch(array $tableTree, $searchQ) {
   $searchQ = preg_replace('/\[/', '\\\\\[', $searchQ);
   $searchQ = preg_replace('/\]/', '\\\\\]', $searchQ);
 
+  // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
+  $searchQ = str_replace('&amp;', '&', $searchQ);  
+
 	$tablenames = array_keys($tableTree);
 	$tables = count($tablenames);
 
