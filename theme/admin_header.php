@@ -130,7 +130,11 @@ EOD;
 	    Lines by Haplotype</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
             Lines by Genotype Experiment</a>
- <?php if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): ?>
+  <?php 
+  /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
+  /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
+  if( loginTest2() ): 
+?>
 	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=green>My Line Panels</font></a>
  <?php endif ?>
 	<li>
@@ -312,7 +316,13 @@ EOD;
   <form style="margin-bottom:3px" action="search.php" method="post">
   <div style="margin: 0; padding: 0;">
   <input type="hidden" value="Search" >
-  <input style="width:170px" type="text" name="keywords" value="Quick search..." onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
+  <input style="width:170px" type="text" name="keywords" value="Quick search..."
+   title="This search will match on any part of the word. These regular expression modify the search
+   ^ - begining of string
+   $ - end of string
+   . - any singel character
+   * - zero or more instances of preceding element
+   + - one or more instances of preceding element" onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
   </div>
   </form>
   <br></div>
