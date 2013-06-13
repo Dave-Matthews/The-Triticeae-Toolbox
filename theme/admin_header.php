@@ -317,10 +317,11 @@ EOD;
   <div style="margin: 0; padding: 0;">
   <input type="hidden" value="Search" >
   <input style="width:170px" type="text" name="keywords" value="Quick search..."
-   title="This search will match on any part of the word. These regular expression modify the search
+   title="This search term will match on any part of a string.
+These regular expression modify the search
    ^ - begining of string
    $ - end of string
-   . - any singel character
+   . - any single character
    * - zero or more instances of preceding element
    + - one or more instances of preceding element" onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
   </div>
