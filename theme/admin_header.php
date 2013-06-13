@@ -318,8 +318,8 @@ EOD;
   <input type="hidden" value="Search" >
   <input style="width:170px" type="text" name="keywords" value="Quick search..."
    title="This search term will match on any part of a string.
-These regular expression modify the search
-   ^ - begining of string
+These regular expressions modify the search
+   ^ - beginning of string
    $ - end of string
    . - any single character
    * - zero or more instances of preceding element
