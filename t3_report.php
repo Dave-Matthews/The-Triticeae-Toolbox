@@ -202,12 +202,31 @@ if ($query == 'geno') {
     $type = $row[3];
     print "<tr><td><a href=view.php?table=markers&uid=$uid>$name</a><td>$type<td>$date\n";
   }
-} elseif ($query == 'Trials') {
+} elseif ($query == 'PTrials') {
   include($config['root_dir'].'theme/normal_header.php');
   print "Trials ordered by creation date<br><br>\n";
   print "<table border=0>"; print "<tr><td>Trial Code<td>Experiment Name<td>type<td>created on\n";
   $sql = "select trial_code, experiment_short_name, date_format(experiments.created_on, '%m-%d-%y'), experiment_type_name from experiments, experiment_types
-    where experiments.experiment_type_uid = experiment_types.experiment_type_uid";
+    where experiments.experiment_type_uid = experiment_types.experiment_type_uid and experiment_types.experiment_type_name = 'phenotype'";
+  if (!authenticate(array(USER_TYPE_PARTICIPANT,
+                                        USER_TYPE_CURATOR,
+                                        USER_TYPE_ADMINISTRATOR)))
+                        $sql .= " and data_public_flag > 0";
+  $sql .= " order by experiments.created_on desc limit 100";
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+  while ($row = mysqli_fetch_row($res)) {
+    $trial_code = $row[0];
+    $short_name = $row[1];
+    $date = $row[2];
+    $type = $row[3];
+    print "<tr><td><a href=display_phenotype.php?trial_code=$trial_code>$trial_code</a><td>$short_name<td>$type<td>$date\n";
+  }
+} elseif ($query == 'GTrials') {
+  include($config['root_dir'].'theme/normal_header.php');
+  print "Trials ordered by creation date<br><br>\n";
+  print "<table border=0>"; print "<tr><td>Trial Code<td>Experiment Name<td>type<td>created on\n";
+  $sql = "select trial_code, experiment_short_name, date_format(experiments.created_on, '%m-%d-%y'), experiment_type_name from experiments, experiment_types
+    where experiments.experiment_type_uid = experiment_types.experiment_type_uid and experiment_types.experiment_type_name = 'genotype'";
   if (!authenticate(array(USER_TYPE_PARTICIPANT,
                                         USER_TYPE_CURATOR,
                                         USER_TYPE_ADMINISTRATOR)))
@@ -367,7 +386,7 @@ if ($query == 'geno') {
     $worksheet->write(2, 0, "Phenotype Trials submitted");
     $worksheet->write(2, 1, "$count");
   } elseif ($output == "") {
-    print "<tr><td>Phenotype Trials submitted</td><td>$count<td><a href=t3_report.php?query=Trials>List all trials</a></td></tr>\n";
+    print "<tr><td>Phenotype Trials submitted</td><td>$count<td><a href=t3_report.php?query=PTrials>List all trials</a></td></tr>\n";
   }
   $sql = "select count(experiment_uid) from experiments where experiment_type_uid = 2";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
@@ -380,7 +399,7 @@ if ($query == 'geno') {
     $worksheet->write(3, 0, "Genotype Trials submitted");
     $worksheet->write(3, 1, "$count");
   } elseif ($output == "") {
-    print "<tr><td>Genotype Trials submitted</td><td>$count<td><a href=t3_report.php?query=Trials>List all trials</a></td></tr>\n";
+    print "<tr><td>Genotype Trials submitted</td><td>$count<td><a href=t3_report.php?query=GTrials>List all trials</a></td></tr>\n";
   }
 
   $sql = "select count(distinct(capdata_programs_uid)) from experiments";
