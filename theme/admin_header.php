@@ -316,7 +316,14 @@ EOD;
   <form style="margin-bottom:3px" action="search.php" method="post">
   <div style="margin: 0; padding: 0;">
   <input type="hidden" value="Search" >
-  <input style="width:170px" type="text" name="keywords" value="Quick search..." onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
+  <input style="width:170px" type="text" name="keywords" value="Quick search..."
+   title="This search term will match on any part of a string.
+These regular expression modify the search
+   ^ - begining of string
+   $ - end of string
+   . - any single character
+   * - zero or more instances of preceding element
+   + - one or more instances of preceding element" onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
   </div>
   </form>
   <br></div>
