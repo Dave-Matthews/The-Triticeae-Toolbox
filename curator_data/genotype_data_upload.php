@@ -72,8 +72,11 @@ class GenotypeData {
 	<tr><td><strong>Line Translation File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
 	<tr><td><td><a href="curator_data/examples/LinesTrialCode_Sample.txt">Example Line Translation File</a></p>
  	<tr><td><strong>Genotype Data File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
-        <tr><td><strong>Data File Format:</strong><td><input type="radio" name="data_format" value="1D"> 1D <a href="curator_data/examples/genotypeData_T3.txt">Example Genotype Data File</a>
-                          <tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D <a href="curator_data/examples/TCAPbarley9K-sample.txt">Example Genotype Data File</a></p>
+        <tr><td><strong>Data File Format:</strong><td><input type="radio" name="data_format" value="1D"> 1D Example
+<a href="curator_data/examples/genotypeData_T3.txt">Genotype Data File</a>
+                          <tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D Example
+<a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina_Genotype_sample.txt</a>, 
+<a href="curator_data/examples/DArT_Genotype_sample.txt">DArT_Genotype_sample.txt</a></p>
 	</table>
     <p><input type="submit" value="Upload Line Translation and Genotype Data File" /></p>
  
