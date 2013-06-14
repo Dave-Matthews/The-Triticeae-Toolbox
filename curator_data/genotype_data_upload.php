@@ -78,8 +78,11 @@ Trial Code: Unique code for each site's data, as defined in the Genotype Annotat
  	<tr><td><strong>Genotype Data File:</strong><td><input id="file[]" type="file" name="file[]">
 	    <br>May be compressed in .zip format.
         <tr><td style=vertical-align:text-top><strong>Data File Format:</strong>
-	  <td><input type="radio" name="data_format" value="1D"> 1D <a href="curator_data/examples/genotypeData_T3.txt">Example Genotype Data file</a>
-            <br><input type="radio" name="data_format" value="2D" checked> 2D <a href="curator_data/examples/TCAPbarley9K-sample.txt">Example Genotype Data file</a></p>
+	  <td><input type="radio" name="data_format" value="1D"> 1D Example
+<a href="curator_data/examples/genotypeData_T3.txt">Genotype Data file</a>
+            <br><input type="radio" name="data_format" value="2D" checked> 2D Example
+<a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina Genotype sample.txt</a>,
+<a href="curator_data/examples/DArT_Genotype_sample.txt">DArT_Genotype_sample.txt</a></p>
 	</table>
 
     <p><b>Note: Both files (Line Translation and Genotype Data) are required.</b>

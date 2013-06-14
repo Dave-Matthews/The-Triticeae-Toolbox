@@ -177,7 +177,7 @@ while ($resp = mysql_fetch_row($res)) {
     if (strlen($linenames) != 0)  {
       // Assume input is punctuated either with commas, tabs or linebreaks.
       // Change to commas.
-      $linenames = str_replace(array('\r\n', ', '), ",", $linenames);
+      $linenames = str_replace(array('\r\n', ', '), '\t', $linenames);
       $lineList = explode('\t', $linenames);
       foreach ($lineList as $word) {
 	$found = FALSE;
