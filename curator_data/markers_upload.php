@@ -59,7 +59,7 @@ class Markers {
 	<style type="text/css">
 			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
 			table {background: none; border-collapse: collapse}
-			td {border: 0px solid #eee !important;}
+                        td {border: 0px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 	</style>
 		
@@ -73,14 +73,20 @@ class Markers {
  	<tr><td><strong>SNP Sequence File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
         <tr><td><td><a href="curator_data/examples/SNP_assay.txt">Illumina Manifest (opa) Format</a>
  , <a href="curator_data/examples/Marker_import_sample5.txt">Illumina Manifest (Infinium) Format</a>
- or <a href="curator_data/examples/Generic_SNP.txt">Generic Format(txt)</a>
+ , <a href="curator_data/examples/Generic_SNP.txt">Generic Format(csv)</a>
+ , or <a href="curator_data/examples/DArT.csv">DArT Format(csv)</a>
         </table><br>
 	<p><input type="submit" value="Upload Marker Import Files" /></p>
     </form>
 	<br>
 	<br>
 	<p>
-	NOTE: Use Illumina format for files with AB base calls. Use Generic format for ACTG base calls. Different marker SNP files can be submitted as long as their marker names had been previously defined in the marker annotation file.
+        </style>
+        <table><tr><td>File format<td>allowed entries
+        <tr><td>Illumina<td>AB base calls
+        <tr><td>DArT format<td>0, 1, or -
+        <tr><td>Generic format<td>ACTG base calls
+        </table>
 	</p>
 <?php
  
