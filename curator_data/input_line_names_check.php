@@ -353,7 +353,7 @@ class LineNames_Check
 		    //convert line name to upper case and replace spaces with an underscore
 		    $line = strtoupper(str_replace(" ","_",$line));
 		    $line_inserts[] = $line;
-		    $line_inserts_str = implode(",",$line_inserts);
+		    $line_inserts_str = implode("\t",$line_inserts);
 		    // $line_inserts_str == $line_inserts == $line.  All are a single line name.
 		  } 
 		  elseif (count($line_uid) == 1) { 
@@ -430,7 +430,7 @@ class LineNames_Check
 		$line_update_data = $line_update_names;
 	      }
 	      else $line_update_data = array();
-	      $line_insert_data = explode(",",$line_inserts_str);
+	      $line_insert_data = explode("\t",$line_inserts_str);
 	      // $line_insert_data is a string containing a single line name.  See line 374.
 
 	      // If any errors, show what we read and stop.
