@@ -19,7 +19,6 @@ require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap.inc');
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
-
 connect();
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -43,7 +42,6 @@ class Pedigree {
     }
   }
 	
-  //
   // The wrapper action for the type1 download. Handles outputting the header
   // and footer and calls the first real action of the type1 download.
   private function typeLine() {
@@ -62,6 +60,17 @@ class Pedigree {
       $linelist = $_SESSION['linesfound'];
     else 
       $linelist = $_SESSION['selected_lines'];
+    // Find which Properties this set of lines has any values for.
+    $ourprops = array(); 
+    foreach ($linelist as $lineuid) {
+      $propresult = mysql_query("select property_uid
+	 from line_properties lp, property_values pv
+	 where lp.property_value_uid = pv.property_values_uid
+	 and lp.line_record_uid = $lineuid");
+      while ($pr = mysql_fetch_assoc($propresult)) 
+	if (!in_array($pr['property_uid'], $ourprops)) 
+	  $ourprops[] = $pr['property_uid'];  // array of uids
+    }
 ?>
 
 <script type="text/javascript">
@@ -112,7 +121,6 @@ function sm(exbx, id) {
     else
         sellineids = sellineids.without(id);
 }
-            
 // Select All
 function exclude_all() {
     for (var i=0; i<line.length; ++i) {
@@ -120,7 +128,6 @@ function exclude_all() {
     }
     sellineids = line; // all
 }
-            
 // select none
 function exclude_none() {
     for (var i=0; i<line.length; ++i) {
@@ -128,93 +135,99 @@ function exclude_none() {
     }
     sellineids = new Array(); // empty
 }
-
 </script>
-
 
 <style type="text/css">
     th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
     table {background: none; border-collapse: collapse}
     td {border: 1px solid #eee !important;}
-    h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-</style>
-
-<style type="text/css">
     table.marker {background: none; border-collapse: collapse}
     th.marker {background: #5b53a6; color: #fff; padding: 5px 0; border: 0; border-color: #fff}
     td.marker {padding: 5px 0; border: 0 !important;}
+    h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
 
 <div style="width: 940px;">
-  <table >
+  <table style="table-layout:fixed; width: 940px">
     <tr> 
-      <th class="marker" style="width: 80px; text-align: left"> &nbsp;&nbsp;Check <br/>
+      <th class="marker" style="width: 50px; text-align: left"> &nbsp;&nbsp;Check <br/>
 	<input type="radio" name="btn1" value="" onclick="javascript:exclude_all();"/>All<br>
 	<input type="radio" name="btn1" value="" onclick="javascript:exclude_none();"/>None</th>
-      <th style="width: 380px;" class="marker"> Line Name </th>
-      <th style="width: 120px;" class="marker"> Species </th>
-      <th style="width: 100px;" class="marker"> Breeding Program </th>
-      <th style="width: 90px;" class="marker"> Hard-<br>ness </th>
-      <th style="width: 90px;" class="marker"> Color </th>
-      <th style="width: 90px;" class="marker"> Growth Habit </th>
-      <th style="width: 240px;" class="marker"> Synonyms </th>
-      <th style="width: 310px;" class="marker"> Pedigree </th>
-      <th style="width: 150px;" class="marker"> Data<br>Available </th>
+      <th style="width: 80px;" class="marker">Name</th>
+      <th style="width: 50px;" class="marker">GRIN</th>
+      <th style="width: 80px;" class="marker">Synonym</th>
+      <th style="width: 40px;" class="marker">Breeding Program</th>
+      <th style="width: 80px;" class="marker">Pedigree</th>
+      <th style="width: 40px;" class="marker">Gener ation</th>
+      <th style="width: 50px;" class="marker">Species</th>
+      <th style="width: 80px;" class="marker">Comment</th>
+<?php 
+ foreach ($ourprops as $pr) {
+      $prname = mysql_grab("select name from properties where properties_uid = $pr");
+      echo "<th style='width: 50px; word-wrap: break-word' class=marker>".$prname."</th>";
+    }
+?>
+      <th style="width: 80px;" class="marker">Data<br>Available</th>
     </tr>
   </table>
  </div>
 
-<div style="padding: 0; width: 938px; height: 400px; overflow: scroll; border: 1px solid #5b53a6; clear: both">
-<table style="table-layout:fixed; width: 920px">	
-
+<div style="padding: 0; height: 400px; overflow-y: scroll; border: 1px solid #5b53a6; clear: both">
+<table style="table-layout:fixed; width: 940px">	
 <?php
+    // Get the data for each line.
     foreach ($linelist as $lineuid) {
-      $result=mysql_query("select line_record_name, species, breeding_program_code, hardness, color, growth_habit, pedigree_string from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+      $result=mysql_query("select line_record_name, species, breeding_program_code, pedigree_string, generation, description from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
       $syn_result=mysql_query("select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
       $syn_names=""; $sn = "";
       while ($syn_row = mysql_fetch_assoc($syn_result)) 
 	$syn_names[] = $syn_row['line_synonym_name'];
       if (is_array($syn_names))
 	$sn = implode(', ', $syn_names);
+
+      $grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
+           where line_record_uid=$lineuid") or die(mysql_error());
+      $grin_names=""; $gr = "";
+      while ($grin_row = mysql_fetch_assoc($grin_result)) 
+	$grin_names[] = $grin_row['barley_ref_number'];
+      if (is_array($grin_names))
+	$gr = implode(', ', $grin_names);
+
       while ($row=mysql_fetch_assoc($result)) {
 ?>
 	<tr>
-        <td style="width: 57px;" class="marker">
+        <td style="width: 50px;" class="marker">
 	  <input type="checkbox" checked name="btn1" value="<?php echo $lineuid ?>" id="exbx_<?php echo $lineuid ?>" onchange="sm(this, <?php echo $lineuid ?>);" class="exbx"/>&nbsp;&nbsp;&nbsp;
         <input type="hidden" id="muids" name="muids" value="<?php echo $lineuid ?>" />
-        </td>
-        <td style="width: 172px; text-align: center" class="marker">
+        <td style="width: 80px; text-align: center" class="marker">
         <?php $line_name = $row['line_record_name'];
-	echo "<a href='pedigree/show_pedigree.php?line=$line_name'>$line_name</a>" 
-	  ?>
-        </td>
-        <td style="width: 72px; text-align: center" class="marker">
-        <?php echo $row['species'] ?>
-        </td>
-        <td style="width: 72px; text-align: center" class="marker">
-        <?php echo $row['breeding_program_code'] ?>
-        </td>
-        <td style="width: 56px; text-align: center" class="marker">
-        <?php echo $row['hardness'] ?>
-        </td>
-        <td style="width: 56px; text-align: center" class="marker">
-        <?php echo $row['color'] ?>
-        </td>
-        <td style="width: 60px; text-align: center" class="marker">
-        <?php echo $row['growth_habit'] ?>
-        </td>
-        <td style="width: 130px; text-align: center" class="marker">
+	echo "<a href='pedigree/show_pedigree.php?line=$line_name'>$line_name</a>" ?>
+        <td style="width: 50px; text-align: center" class="marker">
+        <?php echo $gr ?>
+        <td style="width: 80px; text-align: center" class="marker">
         <?php echo $sn ?>
-        </td>
-        <td style="width: 155px; text-align: center; word-wrap: break-word" class="marker">
+        <td style="width: 40px; text-align: center" class="marker">
+        <?php echo $row['breeding_program_code'] ?>
+        <td style="width: 80px; text-align: center; word-wrap: break-word" class="marker">
         <?php
-        $line_name =  $row['line_record_name'];
-	//Don't need this crude approach, CSS "word-wrap: break-word" works to prevent IE8's ugliness.
-        //$pedigree_string = wordwrap($row['pedigree_string'], 20, "<br>", true);
-	$pedigree_string = $row['pedigree_string'];
-        echo "<a href='pedigree/pedigree_tree.php?line_name= $line_name '>  $pedigree_string </a> " ?>
-        </td>
-        <td style="width: 65px; text-align: center" class="marker">
+        echo $row['pedigree_string'] ?>
+        <td style="width: 40px; text-align: center" class="marker">
+        <?php echo $row['generation'] ?>
+        <td style="width: 50px; text-align: center" class="marker">
+        <?php echo $row['species'] ?>
+        <td style="width: 80px; text-align: center" class="marker">
+        <?php echo $row['description'] ?>
+	  <?php
+	  foreach ($ourprops as $pr) {
+	  $propval = mysql_grab("select value
+	     from line_properties lp, property_values pv
+	     where lp.property_value_uid = pv.property_values_uid
+	     and pv.property_uid = $pr
+	     and lp.line_record_uid = $lineuid");
+	  echo "<td style='width: 50px;text-align: center' class='marker'>".$propval."</td>";
+	}
+	?>
+        <td style="width: 80px; text-align: center" class="marker">
         <?php $phenotype = lineHasPhenotypeData($lineuid);
 	$genotype = lineHasGenotypeData($lineuid);
 	if($phenotype AND $genotype) echo "Phenotype<br>Genotype";
@@ -222,7 +235,6 @@ function exclude_none() {
 	if($genotype AND !$phenotype) echo "Genotype";
 	if(!$phenotype AND !$genotype) echo "None";
 	 ?>
-        </td>
   </tr>
 <?php
         } //end while
@@ -238,9 +250,8 @@ function exclude_none() {
   
 private function type_Line_Excel() {
 
-  if (!empty($_POST['mxls1'])) {
+  if (!empty($_POST['mxls1'])) 
     $sample = $_POST['mxls1'];
-  }
   else {
     // If we clicked on the button for Lines Found, retrieve that cookie instead.
     if ($_GET['lf'] == "yes") 
@@ -249,108 +260,113 @@ private function type_Line_Excel() {
       $linelist = $_SESSION['selected_lines'];
     $sample = implode(",", $linelist);
   }
+  $linelist = explode(",", $sample);
+  $ourprops = array();
+  foreach ($linelist as $lineuid) {
+    $propresult = mysql_query("select property_uid                                                   
+         from line_properties lp, property_values pv                                                   
+         where lp.property_value_uid = pv.property_values_uid                                          
+         and lp.line_record_uid = $lineuid");
+    while ($pr = mysql_fetch_assoc($propresult))
+      if (!in_array($pr['property_uid'], $ourprops))
+	$ourprops[] = $pr['property_uid'];  // array of uids                                         
+  }
   $tok = strtok($sample, ",");
 
-    $objPHPExcel = new PHPExcel();
-    $objPHPExcel->setActiveSheetIndex(0); 
+  $objPHPExcel = new PHPExcel();
+  $objPHPExcel->setActiveSheetIndex(0); 
 
-    $style_header = array(
-        'font' => array(
-            'bold' => true,
-        ),
-    );
-    $objPHPExcel->getDefaultStyle()->getFont()->setSize(9);
-    $objPHPExcel->getActiveSheet()->freezePane('A2');
-    $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(7);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(7);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(7);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(7);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(7);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(7);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(7);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(20);
-    $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(20);
-    $objPHPExcel->getActiveSheet()->getStyle('A1:N1')->applyFromArray($style_header);
- 
-    // Freeze row 1 and column 1 from scrolling.
-    // Set columns 0 to 3 wider.
- 
-    $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Name');
-    $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'GRIN');
-    $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Synonyms');
-    $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Pedigree');
-    $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Program');
-    $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Hardness');
-    $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Color');
-    $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Growth Habit');
-    $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Awned');
-    $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Chaff');
-    $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Height');
-    $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Description');
-    $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Data Available');
-    $objPHPExcel->getActiveSheet()->SetCellValue('N1', 'Species');
-    
-    $i = 2;
-    # start by opening a query string
+  $style_header = array(
+			'font' => array(
+					'bold' => true,
+					),
+			);
+  $objPHPExcel->getDefaultStyle()->getFont()->setSize(9);
+  // Freeze row 1 and column 1 from scrolling. Set some columns wider.
+  /* $objPHPExcel->getActiveSheet()->freezePane('A2'); */
+  $objPHPExcel->getActiveSheet()->freezePane('B2');
+  $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(7);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(7);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(7);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(20);
+  $objPHPExcel->getActiveSheet()->getStyle('A1:N1')->applyFromArray($style_header);
+  $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Name');
+  $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'GRIN');
+  $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Synonym');
+  $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Program');
+  $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Pedigree');
+  $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Generation');
+  $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Species');
+  $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Comment');
+  // Add columns for line Properties.
+  $firstprop = ord(I);  // First property column is "I".
+  for ($i = 0; $i < count($ourprops); $i++) {
+    $colname = chr($firstprop + $i);
+    $prname = mysql_grab("select name from properties where properties_uid = $ourprops[$i]");
+    $objPHPExcel->getActiveSheet()->getColumnDimension($colname)->setWidth(7);
+    $objPHPExcel->getActiveSheet()->SetCellValue($colname.'1', "$prname");
+  }
 
+  $i = 2;
+  # start by opening a query string
     while ($tok !== false) {
-        $lineuid = (int)$tok;
-        $result=mysql_query("select line_record_name, breeding_program_code, 
-           hardness, color, growth_habit, awned, chaff, height, description, pedigree_string, species
-           from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
-        $tok = strtok(",");
-	
-	while ($row = mysql_fetch_assoc($result)) {
-            $objPHPExcel->getActiveSheet()->SetCellValue("A$i", "$row[line_record_name]",$format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("D$i", "$row[pedigree_string]",$format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("E$i", "$row[breeding_program_code]",$format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("F$i", "$row[hardness]",$format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("G$i", "$row[color]",format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("H$i", "$row[growth_habit]",$format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("I$i", "$row[awned]",$format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("J$i", "$row[chaff]",$format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("K$i", "$row[height]",$format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("L$i", "$row[description]",$format_row);
-            $objPHPExcel->getActiveSheet()->SetCellValue("N$i", "$row[species]",$format_row);
-        }
-	$grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
+      $lineuid = (int)$tok;
+      $result=mysql_query("select line_record_name, species, breeding_program_code, pedigree_string, generation, 
+           description from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
+      $tok = strtok(",");
+      while ($row = mysql_fetch_assoc($result)) {
+	$objPHPExcel->getActiveSheet()->SetCellValue("A$i", "$row[line_record_name]",$format_row);
+	$objPHPExcel->getActiveSheet()->SetCellValue("D$i", "$row[breeding_program_code]",$format_row);
+	$objPHPExcel->getActiveSheet()->SetCellValue("E$i", "$row[pedigree_string]",$format_row);
+	$objPHPExcel->getActiveSheet()->SetCellValue("F$i", "$row[generation]",$format_row);
+	$objPHPExcel->getActiveSheet()->SetCellValue("G$i", "$row[species]",$format_row);
+	$objPHPExcel->getActiveSheet()->SetCellValue("H$i", "$row[description]",$format_row);
+      }
+
+      // GRIN Accession
+      $grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
            where line_record_uid=$lineuid") or die(mysql_error());
-	$grin_names=""; $gr = "";
-	while ($grin_row = mysql_fetch_assoc($grin_result)) 
-	  $grin_names[] = $grin_row['barley_ref_number'];
-	if (is_array($grin_names))
-	  $gr = implode(', ', $grin_names);
-          $objPHPExcel->getActiveSheet()->SetCellValue("B$i", "$gr",$format_row);
+      $grin_names=""; $gr = "";
+      while ($grin_row = mysql_fetch_assoc($grin_result)) 
+	$grin_names[] = $grin_row['barley_ref_number'];
+      if (is_array($grin_names))
+	$gr = implode(', ', $grin_names);
+      $objPHPExcel->getActiveSheet()->SetCellValue("B$i", "$gr",$format_row);
 
-	$syn_result=mysql_query("select line_synonym_name from line_synonyms 
+      // Synonyms
+      $syn_result=mysql_query("select line_synonym_name from line_synonyms 
             where line_record_uid=$lineuid") or die(mysql_error());
-	$syn_names=""; $sn="";
-	while ($syn_row = mysql_fetch_assoc($syn_result)) 
-	  $syn_names[] = $syn_row['line_synonym_name'];
-	if (is_array($syn_names))
-	  $sn = implode(', ', $syn_names);
-          $objPHPExcel->getActiveSheet()->SetCellValue("C$i", "$sn",$format_row);
-	// Data Available:
-	$phenotype = lineHasPhenotypeData($lineuid);
-	$genotype = lineHasGenotypeData($lineuid);
-	if($phenotype AND $genotype) $hasdata = "Phenotype, Genotype";
-	if($phenotype AND !$genotype) $hasdata = "Phenotype only";
-	if($genotype AND !$phenotype) $hasdata = "Genotype only";
-	if(!$phenotype AND !$genotype) $hasdata = "None";
-        $objPHPExcel->getActiveSheet()->SetCellValue("M$i", "$hasdata",$format_row);
+      $syn_names=""; $sn="";
+      while ($syn_row = mysql_fetch_assoc($syn_result)) 
+	$syn_names[] = $syn_row['line_synonym_name'];
+      if (is_array($syn_names))
+	$sn = implode(', ', $syn_names);
+      $objPHPExcel->getActiveSheet()->SetCellValue("C$i", "$sn",$format_row);
 
-        $i++;
-    }
-    header('Content-type: application/vnd.ms-excel');
-    header('Content-Disposition: attachment;filename="Line_Details.xls"');
-    $objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
-    $objWriter->save('php://output');
-    $objPHPExcel->disconnectWorksheets();
-    unset($objPHPExcel);
-    }
+      // Properties
+      for ($j = 0; $j < count($ourprops); $j++) {
+	$propval = mysql_grab("select value                                                                                      
+             from line_properties lp, property_values pv
+             where lp.property_value_uid = pv.property_values_uid
+             and pv.property_uid = $ourprops[$j]
+             and lp.line_record_uid = $lineuid");
+	$colname = chr($firstprop + $j);
+	$objPHPExcel->getActiveSheet()->SetCellValue($colname.$i, "$propval",$format_row);
+      }
+      $i++;
+    } // end of while ($tok !== false)
+
+  header('Content-type: application/vnd.ms-excel');
+  header('Content-Disposition: attachment;filename="Line_Details.xls"');
+  $objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
+  $objWriter->save('php://output');
+  $objPHPExcel->disconnectWorksheets();
+  unset($objPHPExcel);
+}
+
 } /* End of class Pedigree */
 ?>
