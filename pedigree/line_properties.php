@@ -188,8 +188,8 @@ echo "</div><div class='boxContent'><table ><tr><td>";
     // the Name box
     if (strlen($linenames) != 0)  {
       // Assume input is punctuated either with commas, tabs or linebreaks. Change to commas.
-      $linenames = str_replace(array('\t', '\r\n', ', '), ",", $linenames);
-      $lineList = explode(',', $linenames);
+      $linenames = str_replace(array('\r\n', ', '), '\t', $linenames);
+      $lineList = explode('\t', $linenames);
       foreach ($lineList as $word) {
 	$found = FALSE;
 	$word = str_replace('*', '%', $word);  // Handle "*" wildcards.
@@ -261,7 +261,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 	  $where .= "line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
 	else    	
 	  $where .= " AND line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
-      $count++;
+	$count++;
       }
     }
     if (count($panel) != 0)    {
@@ -286,7 +286,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     else  {
       $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
       $result=mysql_query($TheQuery) or die(mysql_error()."<br>Query was:<br>".$TheQuery);
-    $linesfound = mysql_num_rows($result);
+      $linesfound = mysql_num_rows($result);
     }
 
     /* Search Results: */
@@ -314,14 +314,14 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 
       // If any Currently Selected, offer to combine.
       if (isset($_SESSION['selected_lines']) AND count($_SESSION['selected_lines']) != 0) {   
-?>
-  <td style="width: 130px; padding: 8px">Combine with <font color=blue>currently<br>selected lines</font>:<br>
-    <input type="radio" name="selectWithin" value="Replace" checked>Replace<br>
-    <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
-    <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
-    <input type="submit" name='WhichBtn' value="Combine" style='color:blue'></td>
-<?php 
-      } // end if(isset($_SESSION['selected_lines'])...
+	?>
+	<td style="width: 130px; padding: 8px">Combine with <font color=blue>currently<br>selected lines</font>:<br>
+	  <input type="radio" name="selectWithin" value="Replace" checked>Replace<br>
+	  <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
+	  <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
+	  <input type="submit" name='WhichBtn' value="Combine" style='color:blue'></td>
+	  <?php 
+	  } // end if(isset($_SESSION['selected_lines'])...
     } // end if ($linesfound > 0)
     print "</form>";
   } // end if(!empty($_POST))
@@ -348,11 +348,11 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
       $_SESSION['selected_lines'] = $selected_lines;
     }
     ?>
-<script type="text/javascript">
-  update_side_menu();
-</script>
-    <?php
-  }
+    <script type="text/javascript">
+       update_side_menu();
+    </script>
+	<?php
+	}
   // Deselect highlighted cookie lines.
   if (isset($_POST['deselLines'])) {
     $selected_lines = $_SESSION['selected_lines'];
@@ -367,12 +367,12 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
     $stored = retrieve_session_variables('selected_lines', $username);
     if (-1 != $stored)
       $_SESSION['selected_lines'] = $stored;
-      ?>
+    ?>
     <script type="text/javascript">
-      update_side_menu();
+       update_side_menu();
     </script>
-      <?php
-  }
+	<?php
+	}
   // Show "Currently selected lines" box.
   $selectedcount = count($_SESSION['selected_lines']);
   $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";

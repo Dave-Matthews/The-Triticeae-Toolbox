@@ -286,8 +286,8 @@ class Markers_Check {
 	?>
 	<script type="text/javascript">
 	
-        function update_databaseSNP(filepath, filename, username)  {
-            var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabaseSNP&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
+        function update_databaseSNP(filepath, filename, username, filetype)  {
+            var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabaseSNP&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&file_type=' + filetype;
 			// Opens the url in the same window
 			window.open(url, "_self");
         }
@@ -336,17 +336,20 @@ class Markers_Check {
           $fileFormat = 0;
           while(!feof($reader)) {
             $line = fgets($reader);
-            if (stripos($line, 'Golden Gate') != false) {
+            if (stripos($line, 'Golden Gate') !== false) {
               $fileFormat = 1;
               echo "$line\n";
-            } elseif (stripos($line, 'Infinium HD') != false) {
+            } elseif (stripos($line, 'Infinium HD') !== false) {
               echo "$line\n";
               $fileFormat = 2;
+            } elseif (stripos($line, 'DArT') !== false) {
+              echo "$line\n";
+              $fileFormat = 3;
             }
           }
           if ($fileFormat == 0) {
             echo "Warning, using generic file format.<br>\n";
-            echo "Generic format is for ACTG base calls\n";
+            echo "Generic format is for ACTG base calls. Use Illumina format for AB base calls\n";
           }
           fclose($reader);
         } else {
@@ -376,6 +379,10 @@ class Markers_Check {
                   error(1, "Conversion of manifest file failed.");
                   exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
             }   
+   
+        // DArT format
+        } elseif ($fileFormat == 3) {
+            $infile = $target_path.$uploadfile;
 
         // Generic SNP format
         } else {
@@ -408,11 +415,20 @@ class Markers_Check {
         $sequenceIdx = implode(find("sequence", $header),"");
  
         // Check if a required col is missing
-        if (($nameIdx == "")||($alleleAIdx == "")||($alleleBIdx == "")|| ($sequenceIdx == "")) {
+        if ($fileFormat == 3) {  //only require name
+            if ($nameIdx == "") {
+              echo "ERROR: Missing One of these required Columns. Please correct it and upload again: <br> marker_name - ".$nameIdx.
+                    "<br>"." A_allele - ".$alleleAIdx."<br>"." B_allele - ". $alleleBIdx.
+                    "<br>"." sequence - ".$sequenceIdx."<br>";
+              exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            }
+        } else {
+          if (($nameIdx == "")||($alleleAIdx == "")||($alleleBIdx == "")|| ($sequenceIdx == "")) {
             echo "ERROR: Missing One of these required Columns. Please correct it and upload again: <br> marker_name - ".$nameIdx.
                     "<br>"." A_allele - ".$alleleAIdx."<br>"." B_allele - ". $alleleBIdx.
                     "<br>"." sequence - ".$sequenceIdx."<br>";
             exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+          }
         }
           
         // Store header
@@ -422,10 +438,7 @@ class Markers_Check {
         }
         // Store individual records
         $i = 1;
-        while(($line = fgets($reader)) !== FALSE) { 
-            if (feof($reader)) {
-                break;
-            }
+        while (($line = fgets($reader)) !== FALSE) { 
             if (strlen($line) < 2) continue;
             
             if (empty($line)) {
@@ -441,7 +454,7 @@ class Markers_Check {
             if (count($data) != 4) {
                 echo "ERROR DETECT: Line does not contain 4 columns.". "<br/>". $line . "<br/>" ;
                 exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-            }    
+            } 
                                     
             foreach ($data as $value)  {
                 //echo $value."<br>";
@@ -450,7 +463,11 @@ class Markers_Check {
                 }
                 $storageArr[$i][$j++] = $value;   
             }
-            $i ++;
+            if (feof($reader)) {
+                break;
+            } else {
+                $i ++;
+            }
         }  
         unset ($value);
         fclose($reader);   
@@ -497,7 +514,7 @@ class Markers_Check {
             </table>
             <br>
             <input type="Button" value="Accept" 
-            onclick="javascript: update_databaseSNP('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>')"/>
+            onclick="javascript: update_databaseSNP('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"/>
             <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
             <?php
         }
@@ -821,6 +838,7 @@ class Markers_Check {
         $datafile = $_GET['linedata'];
         $filename = $_GET['file_name'];
         $username = $_GET['user_name'];
+        $fileFormat = $_GET['file_type'];
         
         //echo "datafile = ".  $datafile  . "<br>";
         //echo "filename = " . $filename . "<br>";
@@ -852,9 +870,6 @@ class Markers_Check {
          // Store individual records
         $i = 1;
         while(($line = fgets($reader)) !== FALSE) { 
-            if (feof($reader)) {
-                break;
-            }
             if ( trim($line) == '') {
                 continue;
             }
@@ -867,12 +882,17 @@ class Markers_Check {
                                                 
             foreach ($data as $value)  {
                 //echo $value."<br>";
-                if (empty($value)) {
+                if ($fileFormat == 3) {
+                } elseif (empty($value)) {
                     $error_flag = 1;
                 }
                 $storageArr[$i][$j++] = trim($value);   
             }
-            $i ++;
+            if (feof($reader)) {
+                break;
+            } else {
+              $i ++;
+            }
         }  
         unset ($value);
         fclose($reader);   
@@ -925,9 +945,9 @@ class Markers_Check {
                             WHERE marker_uid = '$marker_uid'";
                 $res = mysql_query($sql) or die("Database Error: SNP sequence update failed - ". mysql_error() ."<br>".$sql);
             }
+            echo " <b>The Data is inserted/updated successfully </b><br>";
+            echo "<br/><br/>";
         }
-        echo " <b>The Data is inserted/updated successfully </b><br>";
-        echo "<br/><br/>";
 ?>
         <a href="./curator_data/markers_upload.php"> Go Back To Main Page </a>
 <?php
