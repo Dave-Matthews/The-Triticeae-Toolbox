@@ -325,7 +325,7 @@ if ($query == 'geno') {
      }
      $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
      $res = mysqli_query($mysqli,$sql) or die(mysqli_error());
-     if ($row = mysql_fetch_row($res)) {
+     if ($row = mysqli_fetch_row($res)) {
         $LinesWithGeno = $row[0];
      }
      $sql = "select count(distinct(markers.marker_uid)) from markers, genotyping_data where (markers.marker_uid = genotyping_data.marker_uid)";
