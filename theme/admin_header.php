@@ -121,7 +121,8 @@ EOD;
 	<li>
           <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
             Wizard (Lines, Traits, Trials)</a>
-	  <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters">
+	  <!-- <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters"> -->
+	  <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php" title="Select by name, source, or simply-inherited characters">
 	    Lines by Properties</a>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/compare.php" title="Select within a range of trait values">
@@ -316,8 +317,8 @@ EOD;
   <input type="hidden" value="Search" >
   <input style="width:170px" type="text" name="keywords" value="Quick search..."
    title="This search term will match on any part of a string.
-These regular expression modify the search
-   ^ - begining of string
+These regular expressions modify the search
+   ^ - beginning of string
    $ - end of string
    . - any single character
    * - zero or more instances of preceding element
