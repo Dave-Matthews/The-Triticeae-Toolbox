@@ -188,7 +188,7 @@ echo "</div><div class='boxContent'><table ><tr><td>";
     // the Name box
     if (strlen($linenames) != 0)  {
       // Assume input is punctuated either with commas, tabs or linebreaks. Change to commas.
-      $linenames = str_replace(array('\r\n', ', '), "\t", $linenames);
+      $linenames = str_replace(array('\r\n', ', '), '\t', $linenames);
       $lineList = explode('\t', $linenames);
       foreach ($lineList as $word) {
 	$found = FALSE;
