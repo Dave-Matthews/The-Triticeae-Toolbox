@@ -425,21 +425,6 @@ if ($_GET['delete']) {
   <h3>Add Plot Level File</h3>
   <table>
   <form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">
-  <tr><td><strong>Trial Name:</strong><td>
-  <select name="exper_uid">
-  <?php
-  echo "<option>select a trial</option>\n";
-  $sql = "select trial_code, experiment_uid, experiment_year from experiments where experiment_type_uid = 1 order by experiment_year desc, trial_code";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-  while ($row = mysqli_fetch_assoc($res)) {
-    $tc = $row['trial_code'];
-    $uid = $row['experiment_uid'];
-    $trial_list[$uid] = $tc;
-    echo "<option value='$uid'>$tc</option>\n";
-  }
-  echo "</select>\n";
-  ?>
-
   <input type="hidden" id="plot" name="plot" value="-1" />
   <tr><td><br><strong>Plot file:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
   <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls">Example Plot file</a>

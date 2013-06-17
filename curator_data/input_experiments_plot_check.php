@@ -145,11 +145,9 @@ private function typeExperimentCheck()
       $last_col = "A";
       $error_flag = 0;
       $trial_code = "";
+      $trial_code_array = array();
       while ($found) {
-        if ($sheetData[$i]["A"] == "Trial Code") {
-          $trial_code = $sheetData[$i]["B"];
-          //echo "found trial_code line $i<br>\n";
-        } elseif ($sheetData[$i]["A"] == "Plot") {
+        if ($sheetData[$i]["B"] == "Plot") {
            for ($j = "A"; $j <= "Z"; $j++) {
              $tmp = $sheetData[$i]["$j"];
              if (preg_match("/[A-Za-z0-9]/",$tmp)) {
@@ -167,6 +165,20 @@ private function typeExperimentCheck()
               $data[$data_line]["$j"] = $tmp;
               //echo "save $data_line $j $tmp<br>\n";
             }
+            $trial_code = $sheetData[$i]["A"];
+            $sql = "select experiment_uid from experiments where trial_code = '$trial_code'";
+            $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+            if ($row = mysqli_fetch_array($res)) {
+              $experiment_uid = $row[0];
+              echo "found $trial_code<br>\n";
+              if (in_array($trial_code, $trial_code_array)) {
+              } else {
+                $trial_code_array[] = $trial_code;
+              }
+            } else {
+              echo "<font color=red>Error: Trial code \"$trial_code\" not found in the database</font><br>\n";
+              $error_flag = 1;
+            }
           } else {
             $found = 0;
           }
@@ -174,43 +186,9 @@ private function typeExperimentCheck()
         }
         $i++;
       }
-      //echo "Using data from  A:1 to $last_col:$lines_found<br>\n";
-      $tmp = $_POST['exper_uid'];
-      //echo "post $tmp<br>\n";
-      if (preg_match("/[0-9]/",$_POST['exper_uid'])) {
-          $uid = $_POST['exper_uid'];
-          $sql = "select trial_code from experiments where experiment_uid = $uid";
-          $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-          if ($row = mysqli_fetch_array($res)) {
-            $tmp = $row[0];
-          }
-          if ($trial_code == "") {
-            $trial_code = $tmp;
-          } else {
-            if ($trial_code != $tmp) {
-              echo "<font color=red>Error: Trial code in spreedsheet must match the selections from drop-down menu</font><br>\n";
-              $error_flag = 1;
-             }
-          }
-          echo "Trial: <strong>$trial_code</strong><br>\n";
-          //check if trial code matches spredsheet
-          
-      } elseif ($trial_code != "") {
-          echo "Trial: <strong>$trial_code</strong><br>\n";
-      } else {
-          echo "<font color=red>Error: Trial must be specified with either the drop down list or in the first line of the Plot file</font><br>\n";
-          die();
-      }
 
-       $sql = "select experiment_uid from experiments where trial_code = \"$trial_code\"";
-       $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-       if ($row = mysqli_fetch_array($res)) {
-         $experiment_uid = $row[0];
-       } else {
-         echo "<font color=red>Error: Trial Name \"$trial_code\" in the Plot Data File was not found in the database<br></font\n";
-         //echo "sql = $sql";
-         $error_flag = 1;
-       }
+       $trial_code_list = implode(",", $trial_code_array);
+       echo "Trial: <strong>$trial_code_list</strong><br>\n";
 
        //get list of valid plot numbers
        $found = 0;
@@ -231,7 +209,7 @@ private function typeExperimentCheck()
 
        //check for valid plot numbers
        for ($i = 1; $i <= $lines_found; $i++) {
-         $plot = $data[$i]["A"];
+         $plot = $data[$i]["B"];
          if (isset($plot_list[$plot])) {
            //echo "plot $plot found<br>\n";
          } else {
@@ -243,7 +221,7 @@ private function typeExperimentCheck()
        //check for valid trait names
        $done = 0;
        $error = 0;
-       $j = "B";
+       $j = "C";
        $pheno_found = "";
        while (!$done) {
          $tmp = $header[$j];
@@ -270,7 +248,9 @@ private function typeExperimentCheck()
          }
          $j++;
        }
-       echo "Traits: <strong>$pheno_found</strong><br>\n";
+       if ($pheno_found != "") {
+         echo "Traits: <strong>$pheno_found</strong><br>\n";
+       }
 
        //check for duplicate data
        $error = 0;
@@ -283,7 +263,7 @@ private function typeExperimentCheck()
          while (!$done) {
            if (isset($phenotype_list[$j])) {
              $uid = $phenotype_list[$j];
-             $plot = $data[$i]["A"];
+             $plot = $data[$i]["B"];
              $plot_uid = $plot_list[$plot];
              $sql = "select phenotype_data_uid from phenotype_plot_data where phenotype_uid = $uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
              $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -327,12 +307,12 @@ private function typeExperimentCheck()
          $j = "B";
          for ($i = 1; $i <= $lines_found; $i++) {
            $done = 0;
-           $j = "B";
+           $j = "C";
            while (!$done) {
              $phenotype_uid = $phenotype_list[$j];
              if (preg_match("/[A-Za-z0-9]/",$data[$i]["$j"])) {
                $val = $data[$i]["$j"];
-               $plot = $data[$i]["A"];
+               $plot = $data[$i]["B"];
                $plot_uid = $plot_list[$plot];
                $sql = "select phenotype_data_uid from phenotype_plot_data where phenotype_uid = $uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -366,7 +346,7 @@ private function typeExperimentCheck()
          $count_new = 0;
          $count_upd = 0;
          $found_mean_data = 0;
-         for ($j = "B"; $j <= $last_col; $j++) {
+         for ($j = "C"; $j <= $last_col; $j++) {
            $uid = $phenotype_list[$j];
            $sql = "select phenotype_mean_data_uid from phenotype_mean_data where phenotype_uid = $uid";
            $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
