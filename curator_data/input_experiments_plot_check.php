@@ -166,17 +166,28 @@ private function typeExperimentCheck()
               //echo "save $data_line $j $tmp<br>\n";
             }
             $trial_code = $sheetData[$i]["A"];
+            $plot = $sheetData[$i]["B"];
             $sql = "select experiment_uid from experiments where trial_code = '$trial_code'";
             $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
             if ($row = mysqli_fetch_array($res)) {
               $experiment_uid = $row[0];
-              echo "found $trial_code<br>\n";
+              //echo "found $trial_code<br>\n";
               if (in_array($trial_code, $trial_code_array)) {
               } else {
                 $trial_code_array[] = $trial_code;
               }
             } else {
               echo "<font color=red>Error: Trial code \"$trial_code\" not found in the database</font><br>\n";
+              $error_flag = 1;
+            }
+            //get list of valid plot numbers
+            $sql = "select plot_uid, plot from fieldbook where experiment_uid = $experiment_uid and plot = $plot";
+            $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+            if ($row = mysqli_fetch_array($res)) {
+              $uid = $row[0];
+              $plot_list[$plot] = $uid;
+            } else {
+              echo "Error: Did not find any fieldbook entries for $trial_code<br>$sql<br>\n";
               $error_flag = 1;
             }
           } else {
@@ -189,23 +200,6 @@ private function typeExperimentCheck()
 
        $trial_code_list = implode(",", $trial_code_array);
        echo "Trial: <strong>$trial_code_list</strong><br>\n";
-
-       //get list of valid plot numbers
-       $found = 0;
-       $sql = "select plot_uid, plot from fieldbook where experiment_uid = $experiment_uid";
-       $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-       while ($row = mysqli_fetch_array($res)) {
-               $found = 1;
-               $uid = $row[0];
-               $plot = $row[1];
-               $plot_list[$plot] = $uid;
-       }
-       $count = count($plot_list);
-       if ($found) {
-         //echo "found $count plots in fieldbook for experiment $trial_code<br>\n";
-       } else {
-         echo "Error: Did not find any fieldbook entries for $trial_code<br>\n";
-       }
 
        //check for valid plot numbers
        for ($i = 1; $i <= $lines_found; $i++) {
