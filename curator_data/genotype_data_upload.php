@@ -80,9 +80,10 @@ Trial Code: Unique code for each site's data, as defined in the Genotype Annotat
         <tr><td style=vertical-align:text-top><strong>Data File Format:</strong>
 	  <td><input type="radio" name="data_format" value="1D"> 1D Example
 <a href="curator_data/examples/genotypeData_T3.txt">Genotype Data file</a>
-            <br><input type="radio" name="data_format" value="2D" checked> 2D Example
-<a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina Genotype sample.txt</a>,
-<a href="curator_data/examples/DArT_Genotype_sample.txt">DArT_Genotype_sample.txt</a></p>
+<tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D Example
+<a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina Genotype sample.txt</a>
+<tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example
+<a href="curator_data/examples/DArT_Genotype_sample.txt">DArT_Genotype_template.txt</a> (Present = 1, Absent = 0, missing = "-")</p>
 	</table>
 
     <p><b>Note: Both files (Line Translation and Genotype Data) are required.</b>

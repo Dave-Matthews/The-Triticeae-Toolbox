@@ -1,1 +1,4 @@
-Assay Format,DArT,,marker_name,A_allele,B_allele,sequence[222528],1,0,[223928],1,0,
+Assay Format,DArT,,
+marker_name,A_allele,B_allele,sequence
+bPb-2121,1,0,
+bPb-7983,1,0,
