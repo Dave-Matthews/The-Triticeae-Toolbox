@@ -82,11 +82,8 @@ class Markers {
 	<br>
 	<p>
         </style>
-        <table><tr><td>File format<td>allowed entries
-        <tr><td>Illumina<td>AB base calls
-        <tr><td>DArT format<td>0, 1, or -
-        <tr><td>Generic format<td>ACTG base calls
-        </table>
+        NOTE: Use Illumina format for files with AB base calls. Use Generic format for ACTG base calls. Use A_allele = 1 and B_allele = 0 for DArT markers.<br>
+        The marker names should already be defined by importing the marker annotation file.
 	</p>
 <?php
  
