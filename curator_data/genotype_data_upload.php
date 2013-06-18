@@ -75,9 +75,11 @@ class GenotypeData {
         <tr><td><strong>Data File Format:</strong><td><input type="radio" name="data_format" value="1D"> 1D Example
 <a href="curator_data/examples/genotypeData_T3.txt">Genotype Data File</a>
                           <tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D Example
-<a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina_Genotype_template.txt</a> 
+<a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina_Genotype_template.txt</a>
+                          <tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example
+<a href="curator_data/examples/GBS_Genotype_template.txt">GBS_Genotype_template.txt</a> (ACTG) 
                           <tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example 
-<a href="curator_data/examples/DArT_Genotype_sample.txt">DArT_Genotype_template.txt</a> (Present = 1, Absent = 0, missing = "-")</p>
+<a href="curator_data/examples/DArT_Genotype_template.txt">DArT_Genotype_template.txt</a> (Present = 1, Absent = 0, missing = "-")</p>
 	</table>
     <p><input type="submit" value="Upload Line Translation and Genotype Data File" /></p>
  
