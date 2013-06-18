@@ -83,6 +83,8 @@ Trial Code: Unique code for each site's data, as defined in the Genotype Annotat
 <tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D Example
 <a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina Genotype sample.txt</a>
 <tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example
+<a href="curator_data/examples/GBS_Genotype_template.txt">GBS_Genotype_template.txt</a> (ACTG)
+<tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example
 <a href="curator_data/examples/DArT_Genotype_sample.txt">DArT_Genotype_template.txt</a> (Present = 1, Absent = 0, missing = "-")</p>
 	</table>
 
