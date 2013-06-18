@@ -25,7 +25,6 @@ connect();
   <?php 
 
 /****************************************************************************************/
-
 /* Quick Search */
 if(isset($_REQUEST['keywords']) ) {	//sidebar general search term has been submitted
 //generic keyword search has been made
@@ -58,12 +57,31 @@ if(isset($_REQUEST['keywords']) ) {	//sidebar general search term has been submi
     if(count($names) > 0) 
       $searchTree[$table] = $names;
   }  // end foreach($allTables)
+  // Cool! Here are all the unique keys in the database:
+  //print_h($searchTree); 
 
-  /* Break Apart the Keywords and query */
-  $words = explode(" ", $_REQUEST['keywords']);
-  for($i=0; $i<count($words); $i++) {
-    if(trim($words[$i]) != "") 
-      $found = array_merge($found, generalTermSearch($searchTree, $words[$i]));
+  // Remove the \ characters inserted before quotes by magic_quotes_gpc.
+  $_REQUEST[keywords] = stripslashes($_REQUEST[keywords]);
+  // If the input is doublequoted, don't split at <space>s.
+  if (preg_match('/^".*"$/', $_REQUEST['keywords'])) {
+    $_REQUEST[keywords] = trim($_REQUEST[keywords], "\"");
+    $found = generalTermSearch($searchTree, $_REQUEST['keywords']);
+  }
+  else {
+    /* Break into separate words and query for each. */
+    $words = explode(" ", $_REQUEST['keywords']);
+    for($i=0; $i<count($words); $i++) {
+      if(trim($words[$i]) != "") 
+	/* $found = array_merge($found, generalTermSearch($searchTree, $words[$i])); */
+	// Return only items that contain _all_ words (AND) instead of _any_ of them (OR). 
+	$partial[$i] = generalTermSearch($searchTree, $words[$i]);
+    }
+    $found = $partial[0];
+    for ($i = 1; $i < count($words); $i++) {
+      $found = array_intersect($found, $partial[$i]);
+      // Reset the (numeric) key of the array to start at [0].
+      $found = array_merge($found);
+    }
   }
 
  if(count($found) < 1)
@@ -88,7 +106,7 @@ if (count($found) == 1) {
   else 
     echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."view.php?table=".urlencode($line[0])."&uid=$line[2]\">";
 }
-elseif(count($found) > 0) 
+elseif(count($found) > 1) 
   displayTermSearchResults($found);
 else {
   print <<<_SEARCHFORM
