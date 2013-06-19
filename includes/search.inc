@@ -43,58 +43,39 @@
  * This functionality is very simple. 1 query per table. 
  */
 function generalTermSearch(array $tableTree, $searchQ) {
-
-	//Special % escape. PHP does not have a function to do this for us.
-	//$searchQ = preg_replace('/%/', '\\%', $searchQ);
-
+  //Special % escape. PHP does not have a function to do this for us.
+  //$searchQ = preg_replace('/%/', '\\%', $searchQ);
   // Square brackets don't work in a regexp search, must be escaped.
   $searchQ = preg_replace('/\[/', '\\\\\[', $searchQ);
   $searchQ = preg_replace('/\]/', '\\\\\]', $searchQ);
-
   // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
   $searchQ = str_replace('&amp;', '&', $searchQ);  
-
-	$tablenames = array_keys($tableTree);
-	$tables = count($tablenames);
-
-	$ret = array();
-
-	for($i=0; $i<$tables; $i++) {
-
-		$table = $tablenames[$i];
-		if(is_array($tableTree[$table])) { 	//proper tree format
-			
-			$pkey = get_pkey($table);	
-
-			for($j=0; $j<count($tableTree[$table]); $j++) {
-
-				$field = $tableTree[$table][$j];
-
- 				/*echo "SELECT $pkey 
-						     FROM $table 
-						     WHERE $field LIKE '$searchQ%'
-						    <br />";*/
-
- 				//echo "SELECT $pkey FROM $table WHERE $field REGEXP \"$searchQ\"";
-
-				$find = mysql_query("SELECT $pkey 
-						     FROM $table 
-						     WHERE $field REGEXP '$searchQ'
-						    ") or die(mysql_error());
-	
-				while($row = mysql_fetch_assoc($find)) {
-					$str = $table . "@@" . $field . "@@" . $row[$pkey];
-					array_push($ret, $str);
-				}
-				
-			}
-
-		} 
-
+  $tablenames = array_keys($tableTree);
+  $tables = count($tablenames);
+  $ret = array();
+  for($i=0; $i<$tables; $i++) {
+    $table = $tablenames[$i];
+    if(is_array($tableTree[$table])) { 	//proper tree format
+      $pkey = get_pkey($table);	
+      for($j=0; $j<count($tableTree[$table]); $j++) {
+	$field = $tableTree[$table][$j];
+	/*echo "SELECT $pkey 
+	  FROM $table 
+	  WHERE $field LIKE '$searchQ%'
+	  <br />";*/
+	//echo "SELECT $pkey FROM $table WHERE $field REGEXP \"$searchQ\"";
+	$find = mysql_query("SELECT $pkey 
+		       FROM $table 
+		       WHERE $field REGEXP '$searchQ'
+		      ") or die("Error in includes/search.inc:generalTermSearch()<br>".mysql_error());
+	while($row = mysql_fetch_assoc($find)) {
+	  $str = $table . "@@" . $field . "@@" . $row[$pkey];
+	  array_push($ret, $str);
 	}
-
-	return $ret;
-
+      }
+    } 
+  }
+  return $ret;
 }
 
 
