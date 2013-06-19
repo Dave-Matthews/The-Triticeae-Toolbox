@@ -391,12 +391,12 @@ class Downloads
       if (empty($_SESSION['selected_lines']) || empty($_SESSION['training_lines'])) {
         ?>
         <p><b>Genome Wide Association</b><br>
-        1. Select a <a href="downloads/select_all.php">set of lines</a> for one or more trials and one trait.<br>
+        1. Select a <a href="downloads/select_all.php">set of lines, trait, and trials</a> (one trait).<br>
         2. Select the <a href="maps/select_map.php">genetic map</a> which has the best coverage for this set.<br>
         3. Return to this page and select model options then GWAS Analysis<br>
 
         <p><b>Genomic Prediction</b><br>
-        1. Select a <a href="downloads/select_all.php">set of lines</a> for one or more trials and one trait.<br>
+        1. Select a <a href="downloads/select_all.php">set of lines, trait, and trials</a> (one trait).<br>
         2. Return to this page and select rrBLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
         3. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
         4. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
@@ -632,7 +632,7 @@ class Downloads
         if(!file_exists($dir.$filename3)){
             $h = fopen($dir.$filename3, "w+");
             $png = "png(\"$dir$filename4\", width=$histo_width, height=300)\n";
-            $cmd1 = "phenoData <- as.matrix(read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=1))\n";
+            $cmd1 = "phenoData <- as.matrix(read.delim(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=1))\n";
             $cmd1 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd2 = "phenolabel <- \"$phenolabel\"\n";
             $cmd3 = "phenounit <- \"$phenounit\"\n";
