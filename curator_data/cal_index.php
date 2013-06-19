@@ -167,15 +167,17 @@ private function typeExperiments()
   <select id="trial" name="trial" onchange="javascript: update_trial()">
 <?php
 /*echo "<option value=''>select a trial</option>\n";*/
-$sql = "select trial_code, measurement_uid, date_format(measure_date,'%m-%d-%y') from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid"; 
+$sql = "select trial_code, measurement_uid, date_format(measure_date,'%m-%d-%y'), time_format(start_time, '%H:%I') from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid"; 
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+echo "$sql<br>\n";
 echo "<option>select a trial</option>\n";
 while ($row = mysqli_fetch_row($res)) {
   $tc = $row[0];
   $mid = $row[1];
   $date = $row[2];
+  $time = $row[3];
   $trial_list[$uid] = $tc;
-  echo "<option value=\"$mid\">$tc $date</option>";
+  echo "<option value=\"$mid\">$tc $date $time</option>";
 }
 ?>
 </select>
