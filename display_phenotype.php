@@ -32,16 +32,16 @@ include($config['root_dir'].'theme/normal_header.php');
 $delimiter = "\t";
 connect();
 
-    $trial_code=$_GET['trial_code'];
-    $sql_auth="SELECT data_public_flag FROM experiments WHERE trial_code='$trial_code'";
-    $res_auth=mysql_query($sql_auth) or die(mysql_error());
-    $row_auth=mysql_fetch_array($res_auth);
-    
-    // if data is public or if the user is CAP certified, then show data
-    $data_public_flag=$row_auth['data_public_flag'];
-    if ( ($data_public_flag == 1) OR (authenticate(array(USER_TYPE_PARTICIPANT,
-	USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) )  {
-
+$trial_code=$_GET['trial_code'];
+// Display Header information about the experiment
+$display_name=ucwords($trial_code); //used to display a beautiful name as the page header
+echo "<h1>Trial ".$display_name."</h1>";
+        
+// Restrict if private data.
+$data_public_flag = mysql_grab("SELECT data_public_flag FROM experiments WHERE trial_code='$trial_code'");
+if ( ($data_public_flag == 0) AND (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) )
+  echo "Results of this trial are restricted to project participants.";
+else {
       $sql="SELECT experiment_uid, experiment_set_uid, experiment_desc_name, experiment_year
             FROM experiments WHERE trial_code='$trial_code'";
       $result=mysql_query($sql);
@@ -52,10 +52,6 @@ connect();
       $exptname=$row['experiment_desc_name'];
       $year=$row['experiment_year'];
 
-        
-      // Display Header information about the experiment
-      $display_name=ucwords($trial_code); //used to display a beautiful name as the page header
-      echo "<h1>Trial ".$display_name."</h1>";
         
       $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'"; 
       $result_pei=mysql_query($query) or die(mysql_error());
