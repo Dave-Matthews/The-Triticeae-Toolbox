@@ -3,7 +3,7 @@
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
-include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
+include($config['root_dir'] . 'lib/PHPExcel/Classes/PHPExcel/IOFactory.php');
 
 connect();
 $mysqli = connecti();
@@ -120,6 +120,8 @@ public function save_raw_file($wavelength) {
     die("Error: Must select a trial name<br>\n");
   }
   $replace_flag = $_POST['replace'];
+  $start_time = $_POST['start_time'];
+  $end_time = $_POST['end_time'];
   if (empty($_FILES['file']['name'][0])) {
     if (empty($_POST['filename0'])) {
       echo "missing Annotation file\n";
@@ -221,6 +223,8 @@ public function save_raw_file($wavelength) {
                echo "Error - Plot line had illegal value<br>\n";
              }
              //read in Start time / Stop time and check
+             $start_time = "";
+             $end_time = "";
              for ($j=1; $j<=2; $j++){
                if ($line = fgets($reader)) {
                  $temp = str_getcsv($line,"\t");
@@ -235,7 +239,13 @@ public function save_raw_file($wavelength) {
                  $time_pattern = '/\d+:\d+:\d+/';
                  $i = 1;
                  while ($i<$size) {
-                   if (preg_match($time_pattern, $temp[$i])) {
+                   if (preg_match($time_pattern, $temp[$i], $matches)) {
+                     if (($j == 1) && ($start_time == "")) {	//check for case where start time is not specified in annotation file
+                       $start_time = $matches[0];
+                     }
+                     if ($j == 2) {    //check for case where end time is not specified in annotation file
+                       $end_time = $matches[0];
+                     }
                    } elseif ($temp[$i] == "") {
                    } else {
                      $error_flag = 1;
@@ -245,6 +255,8 @@ public function save_raw_file($wavelength) {
                  }
                }
              }
+             echo "Start time from data file = $start_time<br>\n";
+             echo "Stop time from data file = $end_time<br>\n";
 
              //read in Integration Time and check
              if ($line = fgets($reader)) {
@@ -415,14 +427,10 @@ public function save_raw_file($wavelength) {
                  $error_flag = 1;
                }
                if (preg_match("/[0-9]/",$value[7])) {
-                 $start_time = "'$value[7]'";
-               } else {
-                 $start_time = "NULL";
+                 $start_time = $value[7];
                }
                if (preg_match("/[0-9]/",$value[8])) {
-                 $end_time = "'$value[8]'";
-               } else {
-                 $end_time = "NULL";
+                 $end_time = $value[8];
                }
                if (preg_match("/[0-9]/",$value[9])) {
                  $int_time = $value[9];
@@ -448,7 +456,8 @@ public function save_raw_file($wavelength) {
                //check for unique record
                //multiple raw files are allowed if they use a different time
 
-               $sql = "select measurement_uid from csr_measurement where experiment_uid = $experiment_uid and spect_sys_uid  = $spect_sys_uid and measure_date = str_to_date('$value[4]','%m/%d/%Y')";
+               $sql = "select measurement_uid from csr_measurement where experiment_uid = $experiment_uid and spect_sys_uid  = $spect_sys_uid and
+                       measure_date = str_to_date('$value[4]','%m/%d/%Y') and start_time = str_to_date('$start_time','%h:%i')";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                $row = mysqli_fetch_array($res);
                if (mysqli_num_rows($res) == 0) {
@@ -457,7 +466,7 @@ public function save_raw_file($wavelength) {
                } else {
                  $measurement_uid = $row[0];
                  if (!$replace_flag && ($error_flag == 0)) {
-                   echo "<font color=red>Warning - record with trial name = $value[2], Upwelling/Downwelling = $value[3], and Measurement data time = $value[4]  already exist. ";
+                   echo "<font color=red>Warning - record with trial name = $value[2], Upwelling/Downwelling = $value[3], and Measurement data time = $value[4] $start_time already exist. ";
                    echo "Do you want to overwrite?</font>";
                    ?>
                    <form action="curator_data/input_csr_exper_check.php" method="post" enctype="multipart/form-data">
@@ -465,6 +474,8 @@ public function save_raw_file($wavelength) {
                    <input id="replace" type="hidden" name="replace" value="Yes">
                    <input id="filename0" type="hidden" name="filename0" value="<?php echo $filename0; ?>">
                    <input id="filename1" type="hidden" name="filename1" value="<?php echo $unq_file_name; ?>">
+                   <input id="start_time" type="hidden" name="start_time" value="<?php echo $start_time; ?>">
+                   <input id="end_time" type="hidden" name="end_time" value="<?php echo $end_time; ?>">
                    <input type="submit" value="Yes">
                    </form>
                    <?php
@@ -477,14 +488,15 @@ public function save_raw_file($wavelength) {
 
                if ($error_flag == 0) {
                  if ($new_record) {
-                   $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]',$start_time,$end_time,$int_time,'$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
+                   $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$start_time','$end_time',$int_time,'$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
+                   //echo "$sql<br>\n";
                  } else {
                    $sql = "delete from csr_measurement where measurement_uid  = $measurement_uid";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "deleted old entries from database where measurement_uid = $measurement_uid<br>\n";
-                   $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$value[7]','$value[8]','$value[9]','$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
+                   $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$start_time','$end_time',$int_time,'$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
                  }
@@ -496,7 +508,7 @@ public function save_raw_file($wavelength) {
                  $row = mysqli_fetch_array($res);
                  echo "<br>Check results by viewing <a href=display_csr_exp.php?uid=$row[0]>data stored in database</a><br>";
                } else {
-                 echo "<br><font color=red>Error - data not saved</font><br>\n";
+                 echo "<br><font color=red>data not saved to database</font><br>\n";
                }
                echo "<br>Data read from import file<table>\n";
                for ($i=1; $i<=$lines_found; $i++) {
