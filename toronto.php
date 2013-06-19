@@ -16,8 +16,8 @@ Datasets that are currently released but have not yet been published include:<br
   <tr>
     <td>9K wheat iSelect assay
     <td>Eduard Akhunov
-    <td><a href="http://triticeaetoolbox.org/wheat/search.php?keywords=NSGCwheat9K">NSGCwheat9K*</a>
-      <br>[link to be made functional by DEM]
+    <td><a href="<?php echo $config[base_url] ?>search.php?keywords=NSGCwheat9K">NSGCwheat9K*</a>
+      <br>[link is now functional, though wheatplus doesn't have these datasets.]
     <td>Oct 2011
   <tr>
     <td>Stem solidness trial

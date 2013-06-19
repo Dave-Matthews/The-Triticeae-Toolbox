@@ -162,7 +162,8 @@ function showTableOptions($table, $selected="null", $orderby="uid") {
  * @param $pkey - the primary key of the table
  */
 function get_pkey ($tablename) {
-  $result = mysql_query("DESC $tablename") or die("Error in function get_pkey():<br>".mysql_error());
+  $result = mysql_query("DESC $tablename") or die("Error in includes/common.inc:get_pkey():<br>".mysql_error().
+"<br>Query was: 'DESC ".$tablename."'");
   $pkey="";
   while($row = mysql_fetch_assoc($result)) {
     foreach($row as $k=>$v) {
