@@ -457,7 +457,7 @@ while ($row = mysql_fetch_array($res)) {
   $tmp2 = $config['base_url'] . "raw/phenotype/" . $raw_file;
   echo "<tr><td>$date";
   echo "<td><a href=".$config['base_url'].$trial.">View</a>";
-  echo "<td><a href=$tmp2>Open File</a>";
+  echo "<td><a href=\"$tmp2\">Open File</a>";
 
   $sql="SELECT system_name from csr_system where system_uid = $sys_uid";
   $res2 = mysql_query($sql) or die(mysql_error(). $sql);
