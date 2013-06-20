@@ -258,14 +258,15 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	      else {
 		// print "$linename no marker information\n";
 	      }
-              if ($mkrtyp=="GBS") {
+              if (($mkrtyp=="GBS") || ($mkrtyp=="DArT Marker")) {
                 if ($mkrval=='AA') { $mkrval = substr($allele,0,1) . substr($allele,0,1); }
                 elseif ($mkrval=='BB') { $mkrval = substr($allele,1,1) . substr($allele,1,1); } 
                 elseif ($mkrval=='AB') { $mkrval = substr($allele,0,1) . substr($allele,1,1); }
                 elseif ($mkrval=='BA') { $mkrval = substr($allele,1,1) . substr($allele,0,1); }
                 elseif ($mkrval=='--') {}
                 else { echo "$mkrval error"; }
-                $cls=array('AA'=>'im_tomato', 'CC'=>'im_grayblue', 'TT'=>'im_purple', 'GG'=>'im_green', '--'=>'im_whitesmoke', 'N'=>'im_gray');
+                $cls=array('AA'=>'im_tomato', 'CC'=>'im_grayblue', 'TT'=>'im_purple', 'GG'=>'im_green', '--'=>'im_whitesmoke', 'N'=>'im_gray',
+                           '11'=>'im_tomato', '00'=>'im_grayblue');
               } else {
                 $cls=array('AA'=>'im_tomato', 'BB'=>'im_grayblue', 'AB'=>'im_purple', '--'=>'im_whitesmoke', 'N'=>'im_gray');
               } 
