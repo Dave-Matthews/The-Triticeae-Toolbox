@@ -230,7 +230,7 @@ class Haplotype
 						   while ($row = mysql_fetch_assoc($allele)) {
 						    $alleles = $row[allele_1].$row[allele_2];
                             $alleles_c = $alleles;
-                            if ($mkrtyp == "GBS") {
+                            if (($mkrtyp == "GBS") || ($mkrtyp == "DArT Marker")) {
                               if ($alleles=='AA') {
                                 $alleles_c = substr($marker_ab,0,1) . substr($marker_ab,0,1);
                               }
