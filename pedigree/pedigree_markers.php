@@ -398,7 +398,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 
 }
 else if(count($_SESSION['selected_lines']) < 1) {
-        echo "<p>No lines have been selected</p><ul><li><a href=\"pedigree/line_selection.php\">Select Lines</a></li><li><a href=\"phenotype/compare.php\">Select Lines by Phenotype</a></li></ul>";
+        echo "<p>No lines have been selected</p><ul><li><a href=\"pedigree/line_properties.php\">Select Lines</a></li><li><a href=\"phenotype/compare.php\">Select Lines by Phenotype</a></li></ul>";
 }
 else if(count($_SESSION['clicked_buttons']) < 1){
        echo "<p>No markers selected - <a href='genotyping/marker_selection.php'>Select Markers</a></p>";

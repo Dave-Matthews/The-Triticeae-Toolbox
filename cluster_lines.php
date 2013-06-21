@@ -53,7 +53,7 @@ if (isset($_SESSION['selected_lines'])) {
   <div class="section">
 
   <p>  This R program will cluster the 
-  <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">
+  <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php">
   <font color=blue>currently selected lines</font></a> according to their 
   alleles for all markers, using "pam" (Partitioning Around Medoids).  
 
