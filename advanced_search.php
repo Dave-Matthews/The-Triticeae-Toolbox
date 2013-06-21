@@ -224,7 +224,7 @@ connect();
 				//print_r($_POST);
 			}
 		} elseif (count($_SESSION['selected_lines']) > 0) {
-                  print "<a href=pedigree/line_selection.php>Currently Selected Lines:</a> " . count($_SESSION['selected_lines']) . "<br>\n";
+                  print "<a href=pedigree/line_properties.php>Currently Selected Lines:</a> " . count($_SESSION['selected_lines']) . "<br>\n";
                   print "Currently Selected Markers: " . count($_SESSION['clicked_buttons']) . "<br>\n";
                   if (isset($_SESSION['phenotype'])) {
                     $ntraits=substr_count($_SESSION['phenotype'], ',')+1;

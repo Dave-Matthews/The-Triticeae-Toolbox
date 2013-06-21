@@ -122,7 +122,7 @@ function showLineForMarker($markername, $order="ORDER BY line_record_name") {
     echo "No genotype data found<br />";
   }
   else {
-    if ($marker_type == "GBS") {
+    if (($marker_type == "GBS") || ($marker_type == "DArT Marker")) {
       $lookup = array(
         'A' => substr($allele,0,1),
         'B' => substr($allele,1,1),

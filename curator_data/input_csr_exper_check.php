@@ -243,6 +243,9 @@ public function save_raw_file($wavelength) {
                      if (($j == 1) && ($start_time == "")) {	//check for case where start time is not specified in annotation file
                        $start_time = $matches[0];
                      }
+                     if (($j == 2) && ($start_time == "")) {	//check for case where start time is empty in both files
+                       $start_time = $matches[0];
+                     }
                      if ($j == 2) {    //check for case where end time is not specified in annotation file
                        $end_time = $matches[0];
                      }
@@ -255,8 +258,16 @@ public function save_raw_file($wavelength) {
                  }
                }
              }
-             echo "Start time from data file = $start_time<br>\n";
-             echo "Stop time from data file = $end_time<br>\n";
+             if ($start_time == "") {
+               echo "Error: a start time is required in either the annotation file or the data file<br>\n";
+             } else {
+               echo "Start time from data file = $start_time<br>\n";
+             }
+             if ($end_time == "") {
+               echo "Error: a stop time is required in either the annotation file or the data file<br>\n";
+             } else {
+               echo "Stop time from data file = $end_time<br>\n";
+             }
 
              //read in Integration Time and check
              if ($line = fgets($reader)) {

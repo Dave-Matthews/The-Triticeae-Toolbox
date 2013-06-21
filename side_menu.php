@@ -16,7 +16,7 @@ require $config['root_dir'].'includes/bootstrap.inc';
 
    <?php
    echo "<p><li><b>Current selections:</b>";
-   echo "<li><a href='".$config['base_url']."pedigree/line_selection.php'>Lines</a>: ". count($_SESSION['selected_lines']);
+   echo "<li><a href='".$config['base_url']."pedigree/line_properties.php'>Lines</a>: ". count($_SESSION['selected_lines']);
    echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers</a>: ";
    if (isset($_SESSION['clicked_buttons'])) {
      echo count($_SESSION['clicked_buttons']);
