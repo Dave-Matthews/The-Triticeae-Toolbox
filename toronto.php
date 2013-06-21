@@ -5,53 +5,47 @@ include($config['root_dir'].'theme/admin_header.php');
 connect();
 ?>
 
+<style type=text/css>
+p { width:90% }
+</style>
+
+
 <h2>Data Usage Policy</h2>
 
-The data on this database is shared according to the Toronto agreement (see below). 
+<p>In 2009 the Toronto International Data Release
+Workshop agreed on a policy statement about prepublication data sharing
+(<a href="http://www.nature.com/nature/journal/v461/n7261/full/461168a.html"><i>Nature</i> 
+<b>461</b>, 168-170</a>).  Prepublication data release was
+recommended for genetic association studies involving "genomewide
+association analysis of thousands of samples", among other kinds of
+studies.
 
-Datasets that are currently released but have not yet been published include:<br /><br />
+<p>Accordingly, many of the datasets in T3 are being made available prior to
+publication of a global analysis by the data producers.  Guidelines for
+appropriate sharing of these data are given in the excerpt from
+the <a href="http://www.nature.com/nature/journal/v461/n7261/box/461168a_BX1.html">Toronto
+Statement</a> below.
+
+<p><h3>Producers' information about specific datasets</h3>
 
 <table>
-  <tr><th>Description<th>Source<th>Datasets<th>Date submitted
+  <tr><th>Description<th>Source<th>Datasets<th>Publication plan<th>Date submitted
   <tr>
     <td>9K wheat iSelect assay
     <td>Eduard Akhunov
-    <td><a href="<?php echo $config[base_url] ?>search.php?keywords=NSGCwheat9K">NSGCwheat9K*</a>
-      <br>[link is now functional, though wheatplus doesn't have these datasets.]
+    <td><a href="http://triticeaetoolbox.org/wheat/search.php?keywords=NSGCwheat9K">NSGCwheat9K*</a>
+    <td>Genetic diversity and genetic maps, June 30, 2012  
     <td>Oct 2011
   <tr>
     <td>Stem solidness trial
     <td>Luther Talbert
     <td><a href="http://triticeaetoolbox.org/wheat/display_phenotype.php?trial_code=6x4x_2012_Bozeman">6x4x_2012_Bozeman</a>
-      <br>[Clicking when not signed in should give a 
-      <br>"private" message instead of blank page.]
+    <td>
     <td>May 2013
 </table>
 
 
-<h3>Toronto Agreement</h3>
-
-<h4>Rapid prepublication data release should be encouraged for projects with the following attributes:</h4>
-
-<ul>
-<li>Large scale (requiring significant resources over time)</li>
-<li>Broad utility</li>
-<li>Creating reference data sets</li>
-
-<li>Associated with community buy-in</li>
-</ul>
-
-<h4>Funding agencies should facilitate the specification of data-release policies for relevant projects by:</h4>
-
-<ul>
-<li>Explicitly informing applicants of data-release requirements, especially mandatory prepublication data release</li>
-<li>Ensuring that evaluation of data release plans is part of the peer-review process</li>
-<li>Proactively establishing analysis plans and timelines for projects releasing data prepublication</li>
-<li>Fostering investigator-initiated prepublication data release</li>
-<li>Helping to develop appropriate consent, security, access and governance mechanisms that protect research participants while encouraging prepublication data release</li>
-
-<li>Providing long-term support of databases</li>
-</ul>
+<h3>Toronto Statement</h3>
 
 <h4>Data producers should state their intentions and enable analyses of their data by:</h4>
 

@@ -220,7 +220,7 @@ class Downloads
                     echo "Select prediction set without trait measurements to predict the traits. ";
                     echo "<a href=";
                     echo $config['base_url'];
-                    echo "pedigree/line_selection.php>Lines by Properties</a><br>";
+                    echo "pedigree/line_properties.php>Lines by Properties</a><br>";
                 } elseif (empty($_SESSION['phenotype']) && empty($_SESSION['training_traits'])) {
                     echo "Please select traits before using this feature.<br><br>";
                     echo "<a href=";
