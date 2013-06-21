@@ -49,7 +49,7 @@ class Pedigree {
     include($config['root_dir'].'theme/normal_header.php');
     echo " <h2> Line Information</h2>";
     $this->type_LineInformation();
-    echo "<h3> <a href='pedigree/line_selection.php'> New Line Search</a></h3>";
+    echo "<h3> <a href='pedigree/line_properties.php'> New Line Search</a></h3>";
     $footer_div = 1;
     include($config['root_dir'].'theme/footer.php');
   }

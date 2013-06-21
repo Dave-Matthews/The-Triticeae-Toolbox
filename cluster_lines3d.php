@@ -67,7 +67,7 @@ $selectedcount = count($_SESSION['selected_lines']);
 echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
 if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
   // No lines selected so prompt to get some.
-  echo "<a href=".$config['base_url']."pedigree/line_selection.php>Select lines.</a> ";
+  echo "<a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
   echo "(Patience required for more than a few hundred lines.)";
  }
 else {
