@@ -1,11 +1,24 @@
-<?php session_start();
+<?php
+/**
+ * Display phenotype information for experiment
+ *
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/display_phenotype.php
+ * 
+ */
 
-/*
 //A php script to dynamically read data related to a particular experiment from the database and to 
 //display it in a nice table format. Utilizes the the tableclass Class by Manuel Lemos to display the 
 //table.
 
-//Author: Kartic Ramesh; drastically rewritten by Julie Dickerson, 2009 to make usable and use sessions
+// author Kartic Ramesh; drastically rewritten by Julie Dickerson, 2009 to make usable and use sessions
 
 // 08/22/2012 DEM  Display multiple raw files, table rawfiles. 
 // 08/17/2012 DEM  Display GRIN Accession instead of Line Synonym, for Jorge Dubcovsky.
@@ -24,13 +37,14 @@
 // 6/24/2010 J.Lee Merged with Julie's changes 
 // 3/01/2010 J.Lee Handle missing Raw Data files 
 // 2/18/2010 J.Lee Fix "Download Raw Data" button not showing with IE browser 
-*/
 
+session_start();
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/normal_header.php';
 $delimiter = "\t";
-connect();
+$mysql = connect();
+$mysqli = connecti();
 
 $trial_code=$_GET['trial_code'];
 // Display Header information about the experiment
@@ -44,8 +58,8 @@ if ( ($data_public_flag == 0) AND (!authenticate(array(USER_TYPE_PARTICIPANT, US
 else {
       $sql="SELECT experiment_uid, experiment_set_uid, experiment_desc_name, experiment_year
             FROM experiments WHERE trial_code='$trial_code'";
-      $result=mysql_query($sql);
-      $row=mysql_fetch_array($result);
+      $result=mysqli_query($mysqli,$sql);
+      $row=mysqli_fetch_array($result);
       $experiment_uid=$row['experiment_uid'];
       $set_uid=$row['experiment_set_uid'];
       $datasets_exp_uid=$experiment_uid;
@@ -54,8 +68,8 @@ else {
 
         
       $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'"; 
-      $result_pei=mysql_query($query) or die(mysql_error());
-      $row_pei=mysql_fetch_array($result_pei);
+      $result_pei=mysqli_query($mysqli,$query) or die(mysqli_error($mysqli));
+      $row_pei=mysqli_fetch_array($result_pei);
 
       // Get Experiment (experiment_set) too.   
       if ($set_uid)
@@ -66,8 +80,8 @@ else {
 	  from CAPdata_programs, experiments
 	  where experiment_uid = $experiment_uid
 	  and experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid";
-      $result_cdp=mysql_query($query) or die(mysql_error());
-      $row_cdp=mysql_fetch_array($result_cdp);
+      $result_cdp=mysqli_query($mysqli,$query) or die(mysqli_error($mysqli));
+      $row_cdp=mysqli_fetch_array($result_cdp);
       $dataprogram = $row_cdp['data_program_name'];
 
         echo "<table>";
@@ -438,20 +452,21 @@ if ($rawrow = mysql_fetch_assoc($rawres)) {
 if (empty($fieldbook)) echo "none";  
 
 $found = 0;
-$sql="SELECT date_format(measure_date, '%m-%d-%Y'), spect_sys_uid, raw_file_name, measurement_uid from csr_measurement where experiment_uid = $experiment_uid";
+$sql="SELECT date_format(measure_date, '%m-%d-%Y'), date_format(start_time, '%H:%i'), spect_sys_uid, raw_file_name, measurement_uid from csr_measurement where experiment_uid = $experiment_uid order by measure_date";
 $res = mysql_query($sql) or die(mysql_error());
 while ($row = mysql_fetch_array($res)) {
   if ($found == 0) {
-    echo "<table><tr><td>Date<td>CSR Annotation<td>CSR Data<td>Spectrometer<br>System<td>CSR Data\n";
+    echo "<table><tr><td>Measured Date<td>CSR Annotation<td>CSR Data<td>Spectrometer<br>System<td>CSR Data\n";
     $found = 1;
   }
   $date = $row[0];
-  $sys_uid = $row[1];
-  $raw_file = $row[2];
-  $measurement_uid = $row[3];
+  $time = $row[1];
+  $sys_uid = $row[2];
+  $raw_file = $row[3];
+  $measurement_uid = $row[4];
   $trial="display_csr_exp.php?function=display&uid=$measurement_uid";
   $tmp2 = $config['base_url'] . "raw/phenotype/" . $raw_file;
-  echo "<tr><td>$date";
+  echo "<tr><td>$date $time";
   echo "<td><a href=".$config['base_url'].$trial.">View</a>";
   echo "<td><a href=\"$tmp2\">Open File</a>";
 
@@ -473,7 +488,7 @@ echo "</table>";
   
     //-----------------------------------------------------------------------------------
     $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php'); 
+    require $config['root_dir'].'theme/footer.php'; 
     ?>
 
 

@@ -1,11 +1,24 @@
 <?php
-// uploading it to main server
+/**
+ * Import CSR fieldbook
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_field.php
+ * 
+ */
 
 require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
 connect();
 $mysqli = connecti();
@@ -23,13 +36,21 @@ ob_end_flush();
 
 new Experiments($_GET['function']);
 
+/** Using a PHP class to implement Field Book import 
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_field.php
+ **/
+
 class Experiments
 {
-    
-    private $delimiter = "\t";
-    
-	
-	// Using the class's constructor to decide which action to perform
+        /** 
+         * Using the class's constructor to decide which action to perform
+         * @param string $function action to perform
+         */
 	public function __construct($function = null)
 	{	
 		switch($function)
@@ -45,6 +66,9 @@ class Experiments
 		}	
 	}
 
+/**
+ * display database fieldbook value for a specified experiment 
+ */
 private function typeDisplay() {
   global $config;
   global $mysqli;
@@ -55,7 +79,7 @@ private function typeDisplay() {
     die("Error - no experiment found<br>\n");
   }
   $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
-  $res = mysqli_query($mysqli,$sql) or die (mysql_error());
+  $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
   if ($row = mysqli_fetch_assoc($res)) {
     $trial_code = $row["trial_code"];
   } else {
@@ -64,7 +88,7 @@ private function typeDisplay() {
 
   //get line names
   $sql = "select line_record_uid, line_record_name from line_records";
-  $res = mysqli_query($mysqli,$sql) or die (mysql_error());
+  $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
   while ($row = mysqli_fetch_assoc($res)) {
     $uid = $row["line_record_uid"];
     $line_name = $row["line_record_name"];
@@ -73,7 +97,7 @@ private function typeDisplay() {
 
   $count = 0;
   $sql = "select * from fieldbook where experiment_uid = $experiment_uid order by plot";
-  $res = mysqli_query($mysqli,$sql) or die (mysql_error());
+  $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
   echo "<h2>Field Book for $trial_code</h2>\n";
   echo "<table>";
   echo "<tr><td>plot<td>line_name<td>row<td>column<td>entry<td>replication<td>block<td>subblock<td>treatment<td>block_tmt<td>subblock_tmt<td>check<td>Field_ID<td>note";
@@ -100,6 +124,9 @@ private function typeDisplay() {
   echo "</table>";
 }
 
+/**
+ * wrapper to load header and footer
+ */
 private function typeExperiments()
 	{
 		global $config;
@@ -115,12 +142,14 @@ private function typeExperiments()
         include($config['root_dir'].'theme/footer.php');
 	}
 	
-	
-	private function type_Experiment_Name()
-	{
-            global $config;
-            global $mysqli;
-	?>
+/**
+ * form to load fieldbook data
+ */	
+private function type_Experiment_Name()
+{
+    global $config;
+    global $mysqli;
+?>
 
 <style type="text/css">
   th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
