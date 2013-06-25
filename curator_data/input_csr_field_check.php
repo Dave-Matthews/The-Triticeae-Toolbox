@@ -15,9 +15,9 @@
  */
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
-include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
+require '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 connect();
 $mysqli = connecti();
@@ -34,9 +34,13 @@ ob_end_flush();
 
 new Data_Check($_GET['function']);
 
-/**
+/** Using a PHP class to implement Field Book import
  * 
- * CSR Field Book
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_field_check.php
  *
  */
 
@@ -222,7 +226,7 @@ private function typeExperimentCheck()
                for ($i = 2; $i <= $lines_found; $i++) {
                  $tmp = $data[$i]["B"];
                  $sql = "select experiment_uid from experiments where trial_code = \"$tmp\"";
-                 $res = mysqli_query($mysqli,$sql) or die(mysql_error() . "<br>$sql");
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                  if ($row = mysqli_fetch_assoc($res)) {
                     $exp_uid = $row['experiment_uid'];
                     if (in_array($exp_uid, $experiment_list)) {
@@ -241,12 +245,12 @@ private function typeExperimentCheck()
                  } 
                  $tmp = $data[$i]["C"];
                  $sql = "select line_record_uid from line_records where line_record_name = '$tmp'";
-                 $res = mysqli_query($mysqli,$sql) or die(mysql_error() . "<br>$sql");
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                  if ($row = mysqli_fetch_assoc($res)) {
                     $data[$i]["Q"] = $row['line_record_uid'];
                  } else {
                     $sql = "select line_record_uid from line_synonyms where line_synonym_name= '$tmp'";
-                    $res = mysqli_query($mysqli,$sql) or die(mysql_error() . "<br>$sql");
+                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                     if ($row = mysqli_fetch_assoc($res)) {
                       $data[$i]["Q"] = $row['line_record_uid'];
                     } else {
@@ -337,7 +341,7 @@ private function typeExperimentCheck()
                  $tmpQ = $data[$i]["Q"];   //*line_uid from database*//
 
                  $sql = "select experiment_uid from experiments where trial_code = \"$tmpB\"";
-                 $res = mysqli_query($mysqli,$sql) or die(mysql_error() . "<br>$sql");
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                  if ($row = mysqli_fetch_assoc($res)) {
                     $experiment_uid = $row['experiment_uid'];
                  } else {
@@ -393,7 +397,7 @@ private function typeExperimentCheck()
                  }
 
                  $sql = "insert into fieldbook (experiment_uid, plot, line_uid, row_id, column_id, entry, replication, block, subblock, treatment, block_tmt, subblock_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,$tmpQ,$tmpD,$tmpE,$tmpF,$tmpG,$tmpH,$tmpI,'$tmpJ','$tmpK','$tmpL',$tmpM,'$tmpN','$tmpO')";
-                 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                }
                echo "saved to database<br>\n";
                echo "<br>Check results by viewing <a href=display_fieldbook.php?uid=$experiment_uid>data stored in database</a><br>";
