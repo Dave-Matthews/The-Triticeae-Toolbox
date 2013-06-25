@@ -136,22 +136,23 @@ private function typeExperiments()
 
 <form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
   <table>
-  <tr><td><strong>Trial Name:</strong><td>
-  <select name="exper_uid">
+  <!-- tr><td><strong>Trial Name:</strong><td-->
+  <!-- select name="exper_uid"-->
 <?php
-echo "<option>select a trial</option>\n";
+//echo "<option>select a trial</option>\n";
 $sql = "select trial_code, experiment_uid, experiment_year from experiments where experiment_type_uid = 1 order by experiment_year desc, trial_code";
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
 while ($row = mysqli_fetch_assoc($res)) {
   $tc = $row['trial_code'];
   $uid = $row['experiment_uid'];
   $trial_list[$uid] = $tc;
-  echo "<option value='$uid'>$tc</option>\n";
+  //echo "<option value='$uid'>$tc</option>\n";
 }
-echo "</select>\n";
+//echo "</select>\n";
 ?>
   <tr><td><strong>Field Book File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
   <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/fieldbook_template.xlsx">Field Book Template</a>
+  <td><font color=red>Updated 06-24-2013</font>
   </table>
   <p><input type="submit" value="Upload" /></p>
 </form>
