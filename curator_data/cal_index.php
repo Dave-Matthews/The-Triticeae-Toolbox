@@ -169,7 +169,7 @@ private function typeExperiments()
   <tr><td><strong>CSR Data File:</strong><td>
   <select id="trial" name="trial" onchange="javascript: update_trial()">
 <?php
-/*echo "<option value=''>select a trial</option>\n";*/
+/*echo "<option value=''>select a data file</option>\n";*/
 $sql = "select trial_code, measurement_uid, date_format(measure_date,'%m-%d-%y'), time_format(start_time, '%H:%I') from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid"; 
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
 echo "$sql<br>\n";
