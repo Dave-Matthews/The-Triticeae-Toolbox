@@ -79,10 +79,13 @@ private function typeExperimentCheck()
 ?>
    <script type="text/javascript">
      function update_database(filepath, filename, username, rawdatafile) {
-     var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&expdata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&raw_data_file=' + rawdatafile;
-     // Opens the url in the same window
-     window.open(url, "_self");
-   }
+       var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&expdata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&raw_data_file=' + rawdatafile;
+       // Opens the url in the same window
+       window.open(url, "_self");
+     }
+     function goBack() {
+       window.history.back()
+     }
    </script>
    <!-- style type="text/css">
      th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
@@ -95,22 +98,22 @@ private function typeExperimentCheck()
   $row = loadUser($_SESSION['username']);
   $username=$row['name'];
   $tmp_dir="uploads/tmpdir_".$username."_".rand();
-  $experiment_uid = $_POST['exper_uid'];
-  if (preg_match("/[0-9]/",$experiment_uid)) {
-  } else {
-    die("Error: Must select a trial name<br>\n");
-  }
+  //$experiment_uid = $_POST['exper_uid'];
+  //if (preg_match("/[0-9]/",$experiment_uid)) {
+  //} else {
+  //  die("Error: Must select a trial name<br>\n");
+  //}
   $replace_flag = $_POST['replace'];
   $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
   $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
-  $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-  if ($row = mysqli_fetch_assoc($res)) {
-    $trial_code = $row['trial_code'];
-  } else {
-    echo "$sql<br>\n";
-    die("Error: could not find trial code in database $experiment_uid<br>\n");
-  }
+  //$sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
+  //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+  //if ($row = mysqli_fetch_assoc($res)) {
+  //  $trial_code = $row['trial_code'];
+  //} else {
+  //  echo "$sql<br>\n";
+  //  die("Error: could not find trial code in database $experiment_uid<br>\n");
+  //}
   if (file_exists($raw_path)) {
     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
     $tmp1 = $_FILES['file']['name'][0];
@@ -185,37 +188,58 @@ private function typeExperimentCheck()
                }
                $lines_found = $i - 1;
 
+               //check for old style format
+               if ($data[1]["A"] == "Trial:") {
+                 echo "<font color=red>Error in column header - You are using an old verion of the template. Please
+                       download the current version.<br>\n";
+                 $error_flag = 1;
+                 $msg = "<input type=\"button\" value=\"Back\" onclick=\"goBack()\">";
+                 die("<br>$msg<br>");
                //check data format
-               if ($data[1]["A"] != "Trial:") {
+               } elseif ($data[1]["B"] != "trial") {
+                 $tmp = $data[1]["B"];
+                 echo "<font color=red>Error in column header - expected \"trial\" in column B found $tmp</font><br>\n";
+                 $error_flag = 1;
+               }
+               if ($data[1]["A"] != "plot") {
                  $tmp = $data[1]["A"];
-                 echo "<font color=red>Error in column header - expected \"Trial:\" found $tmp</font><br>\n";
-                 $error_flag = 1;
-               }
-               if ($data[2]["A"] != "plot") {
-                 $tmp = $data[2]["A"];
-                 echo "<font color=red>Error in column header - expected \"plot\" found $tmp</font><br>\n";
+                 echo "<font color=red>Error in column header - expected \"plot\" in column A found $tmp</font><br>\n";
                  $error_flag = 1;
                }
 
-               $tmp = $data[1]["B"];
-               $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
-               $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-               $row = mysqli_fetch_array($res);
-               if ($row[0] != $tmp) {
-                 echo "<font color=red>Error: Trial Name in the Field Book File \"$tmp\" does not match the Trial Name selected in the drop-down list<br></font>\n";
-                 $error_flag = 1;
-                 die();
-               }
+               //$sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
+               //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+               //$row = mysqli_fetch_array($res);
+               //if ($row[0] != $tmp) {
+               //  echo "<font color=red>Error: Trial Name in the Field Book File \"$tmp\" does not match the Trial Name selected in the drop-down list<br></font>\n";
+               //  $error_flag = 1;
+               //  die();
+               //}
 
-               if (preg_match("/[0-9]/",$experiment_uid)) {
-               } else {
-                 echo "<font color=red>Error - missing Trial Name</font><br>\n";
-                 $error_flag = 1;
-               }
-
-               //check line names
-               for ($i = 3; $i <= $lines_found; $i++) {
+               //check trial and line names
+               $experiment_list = array();
+               $trial_code_list = "";
+               for ($i = 2; $i <= $lines_found; $i++) {
                  $tmp = $data[$i]["B"];
+                 $sql = "select experiment_uid from experiments where trial_code = \"$tmp\"";
+                 $res = mysqli_query($mysqli,$sql) or die(mysql_error() . "<br>$sql");
+                 if ($row = mysqli_fetch_assoc($res)) {
+                    $exp_uid = $row['experiment_uid'];
+                    if (in_array($exp_uid, $experiment_list)) {
+                    } else {
+                      if ($trial_code_list == "") {
+                        $trial_code_list = $tmp;
+                      } else {
+                        $trial_code_list = $trial_code_list . ", $tmp";
+                      }
+                      $experiment_list[] = $row['experiment_uid'];
+                    }
+                 } else {
+                   echo "<font color=red>Error: The entry for trial \"$tmp\" is not valid<br></font>\n";
+                   $error_flag = 1;
+                   die();
+                 } 
+                 $tmp = $data[$i]["C"];
                  $sql = "select line_record_uid from line_records where line_record_name = '$tmp'";
                  $res = mysqli_query($mysqli,$sql) or die(mysql_error() . "<br>$sql");
                  if ($row = mysqli_fetch_assoc($res)) {
@@ -247,7 +271,8 @@ private function typeExperimentCheck()
                     }
                }
 
-               $sql = "select fieldbook_info_uid from fieldbook_info where experiment_uid = '$experiment_uid'";
+               $experiment_str = implode(',', $experiment_list);
+               $sql = "select fieldbook_info_uid from fieldbook_info where experiment_uid IN ($experiment_str)";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                //echo "found mysql_num_rows($rew)<br>\n";
                if (mysqli_num_rows($res)==0) {
@@ -255,7 +280,11 @@ private function typeExperimentCheck()
                  //echo "new record<br>\n";
                } else {
                  if (!$replace_flag && ($error_flag == 0)) {
-                   echo "<font color=red>Warning - record with Trial Name = $trial_code already exist, do you want to overwrite?</font>";
+                   if (count($experiment_list) > 1) {
+                     echo "<font color=red>Warning - fieldbook entries with Trial Names = $trial_code_list already exist, do you want to overwrite?</font>";
+                   } else {
+                     echo "<font color=red>Warning - fieldbook entries  with Trial Name = $trial_code_list already exist, do you want to overwrite?</font>";
+                   }
                    ?>
                    <form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">
                    <input id="fieldbook" type="hidden" name="exper_uid" value="<?php echo $experiment_uid; ?>">
@@ -273,18 +302,22 @@ private function typeExperimentCheck()
            if ($error_flag == 0) {
 
                if ($new_record) {
-                   $sql = "insert into fieldbook_info (experiment_uid, fieldbook_file_name, updated_on, created_on) values ($experiment_uid, '$meta_path', NOW(), NOW())";
-                   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                   echo "saved to file system<br>\n";
+                   foreach ($experiment_list as $experiment_uid) {
+                     $sql = "insert into fieldbook_info (experiment_uid, fieldbook_file_name, updated_on, created_on) values ($experiment_uid, '$meta_path', NOW(), NOW())";
+                     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                     echo "saved to file system $experiment_uid<br>\n";
+                   }
                } else {
-                   $sql = "update fieldbook_info set fieldbook_file_name = '$meta_path', updated_on = NOW() where experiment_uid = $experiment_uid";
-                   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                   $sql = "delete from fieldbook where experiment_uid = $experiment_uid";
-                   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                   echo "deleted old entries from database where experiment_uid = $experiment_uid<br>\n";
+                   foreach ($experiment_list as $experiment_uid) {
+                     $sql = "update fieldbook_info set fieldbook_file_name = '$meta_path', updated_on = NOW() where experiment_uid = $experiment_uid";
+                     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                     $sql = "delete from fieldbook where experiment_uid = $experiment_uid";
+                     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                     echo "deleted old entries from fieldbook database where experiment_uid = $experiment_uid<br>\n";
+                   }
                }
 
-               for ($i=3; $i<=$lines_found; $i++) {
+               for ($i=2; $i<=$lines_found; $i++) {
                  $tmpA = $data[$i]["A"];
                  $tmpB = $data[$i]["B"];
                  $tmpC = $data[$i]["C"];
@@ -303,30 +336,33 @@ private function typeExperimentCheck()
                  $tmpP = $data[$i]["P"];
                  $tmpQ = $data[$i]["Q"];   //*line_uid from database*//
 
-                 //correct missing data to avoid sql error
-                 if ($tmpC == "") {
-                   $tmpC = "NULL";
-                 } elseif (preg_match("/\d+/",$tmpC,$match)) {
+                 $sql = "select experiment_uid from experiments where trial_code = \"$tmpB\"";
+                 $res = mysqli_query($mysqli,$sql) or die(mysql_error() . "<br>$sql");
+                 if ($row = mysqli_fetch_assoc($res)) {
+                    $experiment_uid = $row['experiment_uid'];
                  } else {
-                   die("Error - row field should be integer, found $tmpC in line $i<br>");
+                    echo "Error - could not find trial_code $tmpB<br>\n";
+                    die();
                  }
+
+                 //correct missing data to avoid sql error
                  if ($tmpD == "") {
                    $tmpD = "NULL";
-                 } elseif (preg_match("/[0-9]/",$tmpD,$match)) {
+                 } elseif (preg_match("/\d+/",$tmpD,$match)) {
                  } else {
-                   die("Error - column field should be integer, found $tmpD in line $i<br>");
+                   die("Error - row field should be integer, found $tmpD in line $i<br>");
                  }
                  if ($tmpE == "") {
                    $tmpE = "NULL";
                  } elseif (preg_match("/[0-9]/",$tmpE,$match)) {
                  } else {
-                   die("Error - entry field should be integer, found $tmpE in line $i<br>");
+                   die("Error - column field should be integer, found $tmpE in line $i<br>");
                  }
                  if ($tmpF == "") {
                    $tmpF = "NULL";
                  } elseif (preg_match("/[0-9]/",$tmpF,$match)) {
                  } else {
-                   die("Error - replication field should be integer, found $tmpF in line $i<br>");
+                   die("Error - entry field should be integer, found $tmpF in line $i<br>");
                  }
                  if ($tmpG == "") {
                    $tmpG = "NULL";
@@ -340,17 +376,23 @@ private function typeExperimentCheck()
                  } else {
                    die("Error - replication field should be integer, found $tmpH in line $i<br>");
                  }
-
-
-                 if (preg_match("/([01])/",$tmpL,$match)) {
-                   $tmpL = $match[1];
-                 } elseif ($tmpL == "") {
-                   $tmpL = "NULL";
+                 if ($tmpI == "") {
+                   $tmpI = "NULL";
+                 } elseif (preg_match("/[0-9]/",$tmpI,$match)) {
                  } else {
-                   die("Error - check field should be 0 or 1, found $tmpL in line $i<br>");
+                   die("Error - replication field should be integer, found $tmpI in line $i<br>");
                  }
 
-                 $sql = "insert into fieldbook (experiment_uid, plot, line_uid, row_id, column_id, entry, replication, block, subblock, treatment, block_tmt, subblock_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,$tmpQ,$tmpC,$tmpD,$tmpE,$tmpF,$tmpG,$tmpH,'$tmpI','$tmpJ','$tmpK',$tmpL,'$tmpM','$tmpN')";
+
+                 if (preg_match("/([01])/",$tmpM,$match)) {
+                   $tmpM = $match[1];
+                 } elseif ($tmpL == "") {
+                   $tmpM = "NULL";
+                 } else {
+                   die("Error - check field should be 0 or 1, found $tmpM in line $i<br>");
+                 }
+
+                 $sql = "insert into fieldbook (experiment_uid, plot, line_uid, row_id, column_id, entry, replication, block, subblock, treatment, block_tmt, subblock_tmt, check_id, field_id, note ) values ($experiment_uid,$tmpA,$tmpQ,$tmpD,$tmpE,$tmpF,$tmpG,$tmpH,$tmpI,'$tmpJ','$tmpK','$tmpL',$tmpM,'$tmpN','$tmpO')";
                  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                }
                echo "saved to database<br>\n";
