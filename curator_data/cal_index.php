@@ -9,7 +9,6 @@
 * @package  T3
 * @author   Clay Birkett <clb343@cornell.edu>
 * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
-* @version  GIT: 2
 * @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index.php
 *
 */
@@ -41,7 +40,6 @@ new Experiments($_GET['function']);
  * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index.php
  *
  */
@@ -168,7 +166,7 @@ private function typeExperiments()
 
 <form action="curator_data/cal_index_check.php" enctype="multipart/form-data">
   <table>
-  <tr><td><strong>Trial:</strong><td>
+  <tr><td><strong>CSR Data File:</strong><td>
   <select id="trial" name="trial" onchange="javascript: update_trial()">
 <?php
 /*echo "<option value=''>select a trial</option>\n";*/

@@ -15,15 +15,16 @@
  */
   require_once 'config.php';
   require $config['root_dir'].'includes/bootstrap.inc';
-  connect();
+  $mysql = connect();
+  $mysqli = connecti();
   ?>
   <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
   <?php
   if (isset($_POST['trial']) && !empty($_POST['trial'])) {
     $trial = $_POST['trial'];
     $sql = "select raw_file_name from csr_measurement where measurement_uid = $trial";
-    $res = mysql_query($sql) or die(mysql_error());
-    if ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
       $filename3 = $row[0];
     } else {
       die("trial $trial not found<br>\n");
