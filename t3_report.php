@@ -91,19 +91,19 @@ if ($query == 'geno') {
   include $config['root_dir'].'theme/normal_header.php';
   print "<h1>Genotyping data by experiment</h1>\n";
   print "<table border=0>";
-  print "<tr><td>experiment name<td>genotyping data\n";
+  print "<tr><td>Trial Code<td>experiment name<td>genotyping data\n";
   if (preg_match('/THT/',$db)) {
     $sql = "select experiment_short_name, count(marker_uid) from experiments as e, tht_base as tb, genotyping_data as gd where e.experiment_uid = tb.experiment_uid AND gd.tht_base_uid = tb.tht_base_uid group by e.experiment_uid";
   } else {
-    $sql = "select experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
+    $sql = "select trial_code, experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
   }
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   while ($row = mysqli_fetch_row($res)) {
-    $count=$count+$row[1];
-    print "<tr><td>$row[0]<td>$row[1]\n";
+    $count=$count+$row[2];
+    print "<tr><td><a href=display_genotype.php?trial_code=$row[0]>$row[0]</a><td>$row[1]<td>$row[2]\n";
   }
   $count = number_format($count);
-  print "<tr><td>total<td>$count\n";
+  print "<tr><td>total<td><td>$count\n";
   print "</table>";
 } elseif ($query == 'linegeno') {
   include($config['root_dir'].'theme/normal_header.php');
