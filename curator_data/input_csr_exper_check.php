@@ -259,11 +259,13 @@ public function save_raw_file($wavelength) {
                }
              }
              if ($start_time == "") {
+               $error_flag = 1;
                echo "Error: a start time is required in either the annotation file or the data file<br>\n";
              } else {
                echo "Start time from data file = $start_time<br>\n";
              }
              if ($end_time == "") {
+               $error_flag = 1;
                echo "Error: a stop time is required in either the annotation file or the data file<br>\n";
              } else {
                echo "Stop time from data file = $end_time<br>\n";
