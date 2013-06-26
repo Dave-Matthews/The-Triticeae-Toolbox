@@ -9,7 +9,6 @@
 * @package  T3
 * @author   Clay Birkett <clb343@cornell.edu>
 * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
-* @version  GIT: 2
 * @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index.php
 *
 */
@@ -18,7 +17,7 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
+require $config['root_dir'] . 'includes/bootstrap.inc';
 
 connect();
 $mysqli = connecti();
@@ -36,8 +35,12 @@ $row = loadUser($_SESSION['username']);
 new Experiments($_GET['function']);
 
 /** CSR phenotype experiment
- * 
- * @author claybirkett
+ *
+ * @category PHP 
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index.php
  *
  */
 
@@ -75,8 +78,8 @@ private function typeDisplay() {
     die("Error - no experiment found<br>\n");
   }
   $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
-  $res = mysql_query($sql) or die (mysql_error());
-  if ($row = mysql_fetch_assoc($res)) {
+  $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
+  if ($row = mysqli_fetch_assoc($res)) {
     $trial_code = $row["trial_code"];
   } else {
     die("Error - invalid uid $uid<br>\n");
@@ -84,8 +87,8 @@ private function typeDisplay() {
 
   //get line names
   $sql = "select line_record_uid, line_record_name from line_records";
-  $res = mysql_query($sql) or die (mysql_error());
-  while ($row = mysql_fetch_assoc($res)) {
+  $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
+  while ($row = mysqli_fetch_assoc($res)) {
     $uid = $row["line_record_uid"];
     $line_name = $row["line_record_name"];
     $line_list[$uid] = $line_name;
@@ -93,11 +96,11 @@ private function typeDisplay() {
 
   $count = 0;
   $sql = "select * from fieldbook order by plot";
-  $res = mysql_query($sql) or die (mysql_error());
+  $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
   echo "<h2>Field Book for $trial_code</h2>\n";
   echo "<table>";
   echo "<tr><td>plot<td>line_name<td>row<td>column<td>entry<td>replication<td>block<td>subblock<td>treatment<td>block_tmt<td>subblock_tmt<td>check<td>Field_ID<td>note";
-  while ($row = mysql_fetch_assoc($res)) {
+  while ($row = mysqli_fetch_assoc($res)) {
     $expr = $row["experiment_uid"];
     $range = $row["range_id"];
     $plot = $row["plot"];
@@ -163,14 +166,13 @@ private function typeExperiments()
 
 <form action="curator_data/cal_index_check.php" enctype="multipart/form-data">
   <table>
-  <tr><td><strong>Trial:</strong><td>
+  <tr><td><strong>CSR Data File:</strong><td>
   <select id="trial" name="trial" onchange="javascript: update_trial()">
 <?php
-/*echo "<option value=''>select a trial</option>\n";*/
 $sql = "select trial_code, measurement_uid, date_format(measure_date,'%m-%d-%y'), time_format(start_time, '%H:%I') from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid"; 
 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-echo "$sql<br>\n";
-echo "<option>select a trial</option>\n";
+//echo "$sql<br>\n";
+echo "<option>select a data file</option>\n";
 while ($row = mysqli_fetch_row($res)) {
   $tc = $row[0];
   $mid = $row[1];
