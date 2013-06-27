@@ -201,7 +201,8 @@ function exclude_none() {
         <input type="hidden" id="muids" name="muids" value="<?php echo $lineuid ?>" />
         <td style="width: 80px; text-align: center" class="marker">
         <?php $line_name = $row['line_record_name'];
-	echo "<a href='pedigree/show_pedigree.php?line=$line_name'>$line_name</a>" ?>
+	   $GETable_name = str_replace('#', '%23', $line_name);
+	echo "<a href='pedigree/show_pedigree.php?line=$GETable_name'>$line_name</a>" ?>
         <td style="width: 50px; text-align: center" class="marker">
         <?php echo $gr ?>
         <td style="width: 80px; text-align: center" class="marker">
