@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * Content Status
  *
@@ -91,19 +91,19 @@ if ($query == 'geno') {
   include $config['root_dir'].'theme/normal_header.php';
   print "<h1>Genotyping data by experiment</h1>\n";
   print "<table border=0>";
-  print "<tr><td>experiment name<td>genotyping data\n";
+  print "<tr><td>Trial Code<td>experiment name<td>genotyping data\n";
   if (preg_match('/THT/',$db)) {
     $sql = "select experiment_short_name, count(marker_uid) from experiments as e, tht_base as tb, genotyping_data as gd where e.experiment_uid = tb.experiment_uid AND gd.tht_base_uid = tb.tht_base_uid group by e.experiment_uid";
   } else {
-    $sql = "select experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
+    $sql = "select trial_code, experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
   }
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   while ($row = mysqli_fetch_row($res)) {
-    $count=$count+$row[1];
-    print "<tr><td>$row[0]<td>$row[1]\n";
+    $count=$count+$row[2];
+    print "<tr><td><a href=display_genotype.php?trial_code=$row[0]>$row[0]</a><td>$row[1]<td>$row[2]\n";
   }
   $count = number_format($count);
-  print "<tr><td>total<td>$count\n";
+  print "<tr><td>total<td><td>$count\n";
   print "</table>";
 } elseif ($query == 'linegeno') {
   include($config['root_dir'].'theme/normal_header.php');
@@ -116,8 +116,8 @@ if ($query == 'geno') {
     $program_code = $row[0];
     if (preg_match("/[A-Z0-9]+/",$program_code)) {
     $sql2 = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid) and (line_records.breeding_program_code = '$program_code')";
-    $res2 = mysql_query($sql2) or die(mysql_error());
-    $row2 = mysql_fetch_row($res2);
+    $res2 = mysqli_query($mysqli,$sql2) or die(mysqli_error($mysqli));
+    $row2 = mysqli_fetch_row($res2);
     $count = $row2[0];
     print "<tr><td>$program_code<td>$count\n";
     }
@@ -128,13 +128,13 @@ if ($query == 'geno') {
   print "Lines with phenotype data\n";
   print "<table border=0>";  print "<tr><td>breeding program code<td>count\n";
   $sql = "select distinct(breeding_program_code) from line_records";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+  while ($row = mysqli_fetch_row($res)) {
     $program_code = $row[0];
     if (preg_match("/[A-Z0-9]+/", $program_code)) {  
     $sql2 = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, phenotype_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = phenotype_data.tht_base_uid) and (line_records.breeding_program_code = '$program_code')";
-    $res2 = mysql_query($sql2) or die(mysql_error());
-    $row2 = mysql_fetch_row($res2);
+    $res2 = mysqli_query($mysqli,$sql2) or die(mysqli_error($mysqli));
+    $row2 = mysqli_fetch_row($res2);
     $count = $row2[0];
     print "<tr><td>$program_code<td>$count\n";
     }
@@ -238,7 +238,7 @@ if ($query == 'geno') {
     $short_name = $row[1];
     $date = $row[2];
     $type = $row[3];
-    print "<tr><td><a href=display_phenotype.php?trial_code=$trial_code>$trial_code</a><td>$short_name<td>$type<td>$date\n";
+    print "<tr><td><a href=display_genotype.php?trial_code=$trial_code>$trial_code</a><td>$short_name<td>$type<td>$date\n";
   }
 } elseif ($query == 'cache') {
      $sql = "select count(genotyping_data_uid) from genotyping_data";
@@ -607,6 +607,6 @@ if ($output == "excel") {
     $workbook->close();
 } else {
     print "</div></div>";
-    include($config['root_dir'] . 'theme/footer.php');
+    include $config['root_dir'] . 'theme/footer.php';
 }
 }
