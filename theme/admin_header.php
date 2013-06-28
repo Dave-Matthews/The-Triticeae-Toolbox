@@ -97,7 +97,6 @@ EOD;
   </div>
   <a href="./feedback.php">Contact Us</a>
   </div>
- <!-- <br><font color=white size=+1><h1>&nbsp;&nbsp;Breeders Datafarm</h1></font> -->
  <br><font color=white size=+1><h1 style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;Breeders Datafarm</h1></font>
 
 <?php
@@ -151,6 +150,7 @@ EOD;
       </ul>
     <li><a href="" title="<?php echo $lang["desc_sc6"]; ?>">Analyze</a>
       <ul>
+	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
 	<li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
         <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
  	<li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
