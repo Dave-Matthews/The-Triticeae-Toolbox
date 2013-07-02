@@ -72,20 +72,20 @@ $triallist = implode(',', $trialids);
 if (empty($_REQUEST)) { // Initial entry to the script.
 ?>
 Choose relative weights and a scaling method to combine the traits into an index.
-<br>If smaller values of a trait are better, invert the scale.
+<br>If smaller values of a trait are better, reverse the scale.
 <br>Data will come from the <a href=<?php echo $config[base_url]?>phenotype/phenotype_selection.php>currently selected trials</a>.
 <br><br>
 <form>
 <table>
-<tr><th>Trait<th>Weight<th>Inverted scale
+<tr><th>Trait<th>Weight<th>Reverse scale
 
 <?php
   // User hasn't yet specified the relative weights.  Divide equally by default.
 foreach ($traitnames as $tn) { 
   $weight[$tn] = intval(100 / $traitcount);
   echo "<tr><td>$tn";
-  echo "<td><input type=text name='wt[$tn]' value=$weight[$tn] size=4>";
-  echo "<td style=text-align:center><input type=checkbox name='invert[$tn]'>";
+  echo "<td><input type=text name='wt[$tn]' value=$weight[$tn] size=3>";
+  echo "<td style=text-align:center><input type=checkbox name='reverse[$tn]'>";
 }
 ?>
 </table>
@@ -103,7 +103,7 @@ foreach ($traitnames as $tn) {
 else { // Submit button was clicked.
   $weight = $_REQUEST[wt];
   $totalwt = array_sum($weight); // Needn't add up to 100.
-  $invert = $_REQUEST[invert];
+  $reverse = $_REQUEST[reverse];
   $scaling = $_REQUEST[scaling];
   echo "Scaling method: <b>$scaling</b><p>";
   $lines = array();
@@ -141,13 +141,12 @@ else { // Submit button was clicked.
       // Otherwise calculate.
       if (!$missing) {
         foreach ($traitnames as $tn) {
-	  /* $weightedval = ($weight[$tn] * $actual[$tn][$trial][$line]) / $totalwt; */
 	  $weightedval = ($weight[$tn] * scaled($actual[$tn][$trial][$line])) / $totalwt;
-	  if ($invert[$tn] == 'on')
+	  if ($reverse[$tn] == 'on')
 	    $weightedval = - $weightedval;
 	  $wv[$tn] = $weightedval;
 	}
-	$Index[$trial][$line] = round(array_sum($wv), 1);
+	$Index[$trial][$line] = round(array_sum($wv), 2);
       }
     }
   }
@@ -160,39 +159,12 @@ else { // Submit button was clicked.
 	$trialct[$line]++;
       }
       if (!empty($sumndx[$line])) {
-	$avgndx[$line] = round($sumndx[$line] / $trialct[$line], 1);
+	$avgndx[$line] = round($sumndx[$line] / $trialct[$line], 2);
 	// Sort with highest first.
 	arsort($avgndx);
       }
     }
   }
-
-  /* // Scale the measured phenotype values according to user's chosen method. */
-  /* function scaled($rawvalue) { */
-  /*   global $scaling, $traitnames, $trialnames, $lines, $actual; */
-  /*   if ($scaling == 'actual') { */
-  /*     return ($rawvalue); */
-  /*   } */
-  /*   if ($scaling == 'normalized') { */
-  /*     // For each trait, subtract the trial mean from $actual and divide by SD. */
-  /*     foreach ($traitnames as $tn) { */
-  /* 	foreach ($trialnames as $trial) { */
-  /* 	  $sum = 0; $linecount = 0;  */
-  /* 	  foreach ($lines as $line) { */
-  /* 	    $sum += $actual[$tn][$trial][$line]; */
-  /* 	    $linecount++; */
-  /* 	  }  */
-  /* 	  $mean = $sum / $linecount; */
-  /* 	  // Get the sum of (deviations from mean)^2. */
-  /* 	  foreach ($lines as $line)  */
-  /* 	    $devsq += pow($mean - $actual[$tn][$trial][$line], 2); */
-  /* 	  $SD = sqrt($devsq / $linecount); */
-  /* 	  $normalized = ($rawvalue - $mean) / $SD; */
-  /* 	  return $normalized; */
-  /* 	} */
-  /*     } */
-  /*   } */
-  /* } */
 
   // Display.
   echo "<h3>Selection Index values</h3>";
@@ -208,27 +180,16 @@ else { // Submit button was clicked.
   foreach ($traitnames as $tn)
     echo "<th>$tn";
   // table body
-  foreach ($trialnames as $trial) {
-    foreach ($lines as $line) {
-      // If the value of any trait is missing for this line and trial, ignore.
-      $missing = FALSE;
-      foreach ($traitnames as $tn) {
-	if (empty($actual[$tn][$trial][$line]))
-	  $missing = TRUE;
-      }
-      // Otherwise show them.
-      if (!$missing) {
-	$ndx = $Index[$trial][$line];
-	echo "<tr><td>$trial<td>$line<td>".$Index[$trial][$line];
-	foreach ($traitnames as $tn) 
-	  echo "<td style=text-align:center>".$actual[$tn][$trial][$line];
-      }
+  foreach ($Index as $trial => $linendx) {
+    // Re-sort by Index value within this trial.
+    arsort($linendx);
+    foreach ($linendx as $line => $ndx) {
+      echo "<tr><td>$trial<td>$line<td>$ndx";
+      foreach ($traitnames as $tn)
+	echo "<td style=text-align:center>".$actual[$tn][$trial][$line];
     }
   }
-  echo "</table>";
 
-  /* print_h($weight); */
-  /* print_h($invert); */
 } // end of else Submit button was clicked. 
 
 finish('');
