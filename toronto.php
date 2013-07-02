@@ -29,7 +29,7 @@ Statement</a> below.
 <p><h3>Producers' information about specific datasets</h3>
 
 <table>
-  <tr><th>Description<th>Source<th>Datasets<th>Publication plan<th>Date submitted
+  <tr><th>Description<th>Source<th>Datasets<th>Publication plan<th>Date in T3
   <tr>
     <td>9K wheat iSelect assay
     <td>Eduard Akhunov
