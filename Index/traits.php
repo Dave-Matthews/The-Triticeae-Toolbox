@@ -10,37 +10,23 @@ connect();
 $mysqli = connecti();
 $row = loadUser($_SESSION['username']);
 
-  // Scale the measured phenotype values according to user's chosen method.
-  function scaled($rawvalue) {
-    global $scaling, $traitnames, $trialnames, $lines, $actual;
-    if ($scaling == 'actual') {
-      return ($rawvalue);
-    }
-    if ($scaling == 'normalized') {
-      // For each trait, subtract the trial mean from $actual and divide by SD.
-      foreach ($traitnames as $tn) {
-	foreach ($trialnames as $trial) {
-	  $sum = 0; $linecount = 0; 
-	  foreach ($lines as $line) {
-	    $sum += $actual[$tn][$trial][$line];
-	    $linecount++;
-	  } 
-	  $mean = $sum / $linecount;
-	  // Get the sum of (deviations from mean)^2.
-	  foreach ($lines as $line) 
-	    $devsq += pow($mean - $actual[$tn][$trial][$line], 2);
-	  $SD = sqrt($devsq / $linecount);
-	  $normalized = ($rawvalue - $mean) / $SD;
-	  return $normalized;
-	}
-      }
-    }
+// Scale the measured phenotype values according to user's chosen method.
+function scaled($rawvalue, $trait, $trial) {
+  global $scaling, $mean, $SD;
+  if ($scaling == 'actual') {
+    return ($rawvalue);
   }
+  if ($scaling == 'normalized') {
+    // For each trait, subtract the trial mean from $actual and divide by SD.
+    $normalized = ($rawvalue - $mean[$trait][$trial]) / $SD[$trait][$trial];
+    return $normalized;
+  }
+}
 
 ?>
 <style type="text/css">
 /* Make the tables more compact. */
-table td { padding: 4px; }
+  table td { padding-top: 2px; padding-bottom: 2px;}
 </style>
 
 <h2>Selection Index</h2>
@@ -90,10 +76,10 @@ foreach ($traitnames as $tn) {
 ?>
 </table>
 <br><h3>Scaling of trait values</h3>
-<input type=radio name=scaling value=normalized>Normalized, subtracting the trial mean and dividing by the standard deviation
-<br><input type=radio name=scaling value=check disabled>Percent of trial check(s)
+<input type=radio name=scaling value=normalized checked>Normalized, subtracting the trial mean and dividing by the standard deviation
+<br><input type=radio name=scaling value=actual>Actual measured value
 <br><input type=radio name=scaling value=rank disabled>Rank in trial
-<br><input type=radio name=scaling value=actual checked>Actual measured value
+<br><input type=radio name=scaling value=check disabled>Percent of trial check(s)
 <p><input type=submit value="Submit">
 </form>
 
@@ -129,6 +115,24 @@ else { // Submit button was clicked.
       $lines[] = $row[5];
   }
 
+  if ($scaling == 'normalized') {
+    // To normalize we need the mean and SD of each trait/trial combination.
+    foreach ($traitnames as $tn) {
+      foreach ($trialnames as $trial) {
+	$sum = 0; $linecount = 0; 
+	foreach ($lines as $line) {
+	  $sum += $actual[$tn][$trial][$line];
+	  $linecount++;
+	} 
+	$mean[$tn][$trial] = $sum / $linecount;
+	// Get the sum of (deviations from mean)^2.
+	foreach ($lines as $line) 
+	  $devsq += pow($mean[$tn][$trial] - $actual[$tn][$trial][$line], 2);
+	$SD[$tn][$trial] = sqrt($devsq / $linecount);
+      }
+    }
+  }
+
   // Calculate Index.
   foreach ($trialnames as $trial) {
     foreach ($lines as $line) {
@@ -141,7 +145,7 @@ else { // Submit button was clicked.
       // Otherwise calculate.
       if (!$missing) {
         foreach ($traitnames as $tn) {
-	  $weightedval = ($weight[$tn] * scaled($actual[$tn][$trial][$line])) / $totalwt;
+	  $weightedval = ($weight[$tn] * scaled($actual[$tn][$trial][$line], $tn, $trial)) / $totalwt;
 	  if ($reverse[$tn] == 'on')
 	    $weightedval = - $weightedval;
 	  $wv[$tn] = $weightedval;
@@ -187,8 +191,10 @@ else { // Submit button was clicked.
       echo "<tr><td>$trial<td>$line<td>$ndx";
       foreach ($traitnames as $tn)
 	echo "<td style=text-align:center>".$actual[$tn][$trial][$line];
+	/* echo "<td style=text-align:center>".scaled($actual[$tn][$trial][$line], $tn, $trial); */
     }
   }
+  echo "</table>";
 
 } // end of else Submit button was clicked. 
 
