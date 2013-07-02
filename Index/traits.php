@@ -10,6 +10,33 @@ connect();
 $mysqli = connecti();
 $row = loadUser($_SESSION['username']);
 
+  // Scale the measured phenotype values according to user's chosen method.
+  function scaled($rawvalue) {
+    global $scaling, $traitnames, $trialnames, $lines, $actual;
+    if ($scaling == 'actual') {
+      return ($rawvalue);
+    }
+    if ($scaling == 'normalized') {
+      // For each trait, subtract the trial mean from $actual and divide by SD.
+      foreach ($traitnames as $tn) {
+	foreach ($trialnames as $trial) {
+	  $sum = 0; $linecount = 0; 
+	  foreach ($lines as $line) {
+	    $sum += $actual[$tn][$trial][$line];
+	    $linecount++;
+	  } 
+	  $mean = $sum / $linecount;
+	  // Get the sum of (deviations from mean)^2.
+	  foreach ($lines as $line) 
+	    $devsq += pow($mean - $actual[$tn][$trial][$line], 2);
+	  $SD = sqrt($devsq / $linecount);
+	  $normalized = ($rawvalue - $mean) / $SD;
+	  return $normalized;
+	}
+      }
+    }
+  }
+
 ?>
 <style type="text/css">
 /* Make the tables more compact. */
@@ -63,7 +90,7 @@ foreach ($traitnames as $tn) {
 ?>
 </table>
 <br><h3>Scaling of trait values</h3>
-<input type=radio name=scaling value=normal disabled>Normalized, subtracting the trial mean and dividing by the standard deviation
+<input type=radio name=scaling value=normalized>Normalized, subtracting the trial mean and dividing by the standard deviation
 <br><input type=radio name=scaling value=check disabled>Percent of trial check(s)
 <br><input type=radio name=scaling value=rank disabled>Rank in trial
 <br><input type=radio name=scaling value=actual checked>Actual measured value
@@ -114,13 +141,14 @@ else { // Submit button was clicked.
       // Otherwise calculate.
       if (!$missing) {
         foreach ($traitnames as $tn) {
-	  $weightedval = ($weight[$tn] * $actual[$tn][$trial][$line]) / $totalwt;
+	  /* $weightedval = ($weight[$tn] * $actual[$tn][$trial][$line]) / $totalwt; */
+	  $weightedval = ($weight[$tn] * scaled($actual[$tn][$trial][$line])) / $totalwt;
 	  if ($invert[$tn] == 'on')
 	    $weightedval = - $weightedval;
 	  $wv[$tn] = $weightedval;
 	}
+	$Index[$trial][$line] = round(array_sum($wv), 1);
       }
-      $Index[$trial][$line] = array_sum($wv);
     }
   }
 
@@ -131,11 +159,40 @@ else { // Submit button was clicked.
 	$sumndx[$line] += $Index[$trial][$line];
 	$trialct[$line]++;
       }
+      if (!empty($sumndx[$line])) {
+	$avgndx[$line] = round($sumndx[$line] / $trialct[$line], 1);
+	// Sort with highest first.
+	arsort($avgndx);
+      }
     }
-    $avgndx[$line] = $sumndx[$line] / $trialct[$line];
-    // Sort with highest first.
-    arsort($avgndx);
   }
+
+  /* // Scale the measured phenotype values according to user's chosen method. */
+  /* function scaled($rawvalue) { */
+  /*   global $scaling, $traitnames, $trialnames, $lines, $actual; */
+  /*   if ($scaling == 'actual') { */
+  /*     return ($rawvalue); */
+  /*   } */
+  /*   if ($scaling == 'normalized') { */
+  /*     // For each trait, subtract the trial mean from $actual and divide by SD. */
+  /*     foreach ($traitnames as $tn) { */
+  /* 	foreach ($trialnames as $trial) { */
+  /* 	  $sum = 0; $linecount = 0;  */
+  /* 	  foreach ($lines as $line) { */
+  /* 	    $sum += $actual[$tn][$trial][$line]; */
+  /* 	    $linecount++; */
+  /* 	  }  */
+  /* 	  $mean = $sum / $linecount; */
+  /* 	  // Get the sum of (deviations from mean)^2. */
+  /* 	  foreach ($lines as $line)  */
+  /* 	    $devsq += pow($mean - $actual[$tn][$trial][$line], 2); */
+  /* 	  $SD = sqrt($devsq / $linecount); */
+  /* 	  $normalized = ($rawvalue - $mean) / $SD; */
+  /* 	  return $normalized; */
+  /* 	} */
+  /*     } */
+  /*   } */
+  /* } */
 
   // Display.
   echo "<h3>Selection Index values</h3>";
@@ -174,7 +231,7 @@ else { // Submit button was clicked.
   /* print_h($invert); */
 } // end of else Submit button was clicked. 
 
-finish();
+finish('');
 
 function finish($message) {
   echo $message;
