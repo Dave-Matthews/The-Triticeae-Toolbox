@@ -3,15 +3,14 @@
 // 21feb2013 dem: Use line_properties table instead of schema-coded properties.
 
 require 'config.php';
-/*
- * Logged in page initialization
- */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
-
 connect();
 loginTest();
+
+/* The Excel file must have this string in cell B2.  Modify when a new template is needed.*/
+$TemplateVersion = '1Jul13';
 $cnt = 0;  // Count of errors
 
 function die_nice($message = "") {
@@ -90,6 +89,7 @@ class LineNames_Check
     }
 	
     private function type_Line_Name() {
+      global $TemplateVersion;
       global $cnt;
       ?>
 	<script type="text/javascript">
@@ -155,11 +155,15 @@ class LineNames_Check
 	    //echo "nrows ".$rows." ncols ".$cols."<br>";
 	    //if (DEBUG) echo "Input File Name: ".$datafile."\n";
 
-	    // Read the Breeding Program from row 3.
-	    /* if ($linedata['cells'][3][1] != "*Breeding Program")  */
-	    if (stripos($linedata['cells'][3][1],"*Breeding Program") === FALSE) 
-	      die("Cell A3 must be <b>*Breeding Program</b>.");
-	    $bp = $linedata['cells'][3][2];
+	    // Read the Template Version and check it.
+	    if ($linedata['cells'][2][2] != $TemplateVersion )
+	      die ("Incorrect Submission Form version.  Cell B2 must say \"$TemplateVersion\".");
+
+	    // Read the Breeding Program from row 4.
+	    /* if ($linedata['cells'][4][1] != "*Breeding Program")  */
+	    if (stripos($linedata['cells'][4][1],"*Breeding Program") === FALSE) 
+	      die("Cell A4 must be <b>*Breeding Program</b>.");
+	    $bp = $linedata['cells'][4][2];
 	    // Test whether this program is already in the database.
 	    $sql = mysql_query("SELECT distinct data_program_code from CAPdata_programs");
 	    while ($row = mysql_fetch_row($sql))
@@ -169,11 +173,16 @@ class LineNames_Check
 	    }
 
 /* The following code allows the curator to put the columns in any order.
- * It also allows him/her to supply useless columns */
-// These are the required columns. -1 means that the column has not been found.
+ * Any unrecognized column header will be warned as an unknown line property. */
+// These are the standard columns. -1 means required, -2 means optional.
 	      $columnOffsets = array(
 			'line_name' => -1,
-			'species' => -1
+			'species' => -1,
+			'generation' => -1,
+			'synonyms' => -2,
+			'grin' => -2,
+			'pedigree' => -2,
+			'comments' => -2
 		);
 	      // Available line properties:
 	      $res = mysql_query("select name from properties") or die (mysql_error());
@@ -184,7 +193,7 @@ class LineNames_Check
 	      // First, locate the header line.
 		$firstline = 0;
 		$header = array();
-		for ($irow = 4; $irow <=$rows; $irow++) {
+		for ($irow = 5; $irow <=$rows; $irow++) {
 			$teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
 			if (empty($teststr))
 			  break; 
@@ -202,8 +211,7 @@ class LineNames_Check
 		}
 		// Now read in the data cells.
 		foreach($header as $columnOffset => $columnName) { // Loop through the columns in the header row.
-		  // Require exact match for Property names.
-		  if ($columnOffset < 6) {
+		  if ($columnOffset < 6) {  // Require exact match for Property names.
 		    //Clean up column name so that it can be matched.
 		    $columnName = strtolower(trim($columnName));
 		    $order = array("\n","\t"," ");
@@ -213,54 +221,51 @@ class LineNames_Check
 		  // Determine the column offset of "*Line Name"...
 		  if (preg_match('/^\s*\*linename\s*$/is', trim($columnName)))
 		    $columnOffsets['line_name'] = $columnOffset+1;
-
 		  // Determine the column offset of "Aliases"...
-		  if (preg_match('/^\s*aliases\s*$/is', trim($columnName)))
+		  else if (preg_match('/^\s*aliases\s*$/is', trim($columnName)))
 		    $columnOffsets['synonyms'] = $columnOffset+1;
-
 		  // Determine the column offset of "GRIN Accession"...
-		  if (preg_match('/^\s*grinaccession\s*$/is', trim($columnName)))
+		  else if (preg_match('/^\s*grinaccession\s*$/is', trim($columnName)))
 		    $columnOffsets['grin'] = $columnOffset+1;
-		
 		  // Determine the column offset of "Pedigree"...
-		  if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
+		  else if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
 		    $columnOffsets['pedigree'] = $columnOffset+1;
-		
 		  // Determine the column offset of "*Filial Generation"...
-		  if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
+		  else if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
 		    $columnOffsets['generation'] = $columnOffset+1;
-		
 		  // Determine the column offset of "*aestivum / durum / other"...
-		  if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
+		  else if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
 		    $columnOffsets['species'] = $columnOffset+1;
-		
 		  // Determine the column offset of "Comments"...
-		  if (preg_match('/^\s*comments\s*$/is', trim($columnName)))
+		  else if (preg_match('/^\s*comments\s*$/is', trim($columnName)))
 		    $columnOffsets['comments'] = $columnOffset+1;
-
-		  // Find other Properties, and determine the column offset...
-		  $pr = trim($columnName);
-		  if (in_array($pr, $properties)) {
-		    // Get this property's allowed values.
-		    $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
-		    $sql = "select value from property_values where property_uid = $propuid";
-		    $res = mysql_query($sql) or die(mysql_error());
-		    while ($r = mysql_fetch_row($res)) 
-		      $allowedvals[$pr][] = $r[0];
-		    $columnOffsets[$columnName] = $columnOffset+1;
-		    $ourprops[] = $pr;
+		  else {
+		    // Find other Properties, and determine the column offset...
+		    $pr = trim($columnName);
+		    if (in_array($pr, $properties)) {
+		      // Get this property's allowed values.
+		      $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
+		      $sql = "select value from property_values where property_uid = $propuid";
+		      $res = mysql_query($sql) or die(mysql_error());
+		      while ($r = mysql_fetch_row($res)) 
+			$allowedvals[$pr][] = $r[0];
+		      $columnOffsets[$columnName] = $columnOffset+1;
+		      $ourprops[] = $pr;
+		    }
+		    else 
+		      if (!empty($pr))
+			die_nice("Line property <b>'$pr'</b> does not exist in the database.");
 		  }
 		} // end foreach($header as $columnOffset => $columnName)
 
-		/* Now check to see if any required columns weren't found */
-		if (in_array(-1, $columnOffsets)) {
-		  echo "Some required columns were not found, indicated as -1.<br/>";
-		  echo "Please don't change the column labels in the header row, row 4.<br/>";
-		  echo "<pre>"; print_r($columnOffsets); echo "</pre>";
+		/* Check if any required columns weren't found. */
+		$reqd = array_keys($columnOffsets, -1);
+		if (!empty($reqd)) {
+		  foreach ($reqd as $r)
+		    echo "Column '$r' was not found. Please don't change the column labels in the header row, row 5.<br>";
 		  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		}
-		/* echo "<div><pre>\$columnOffsets = ".print_r($columnOffsets, true)."</pre></div>"; */
-				
+
 		$line_inserts_str = "";
 		$line_uid = "";
 		$line_uids = "";
@@ -669,10 +674,8 @@ $lud = count($line_update_data);
       $cols = $reader->sheets[0]['numCols'];
       $rows = $reader->sheets[0]['numRows'];
 	
-      // Read the Breeding Program from row 3.
-      if (stripos($linedata['cells'][3][1],"*Breeding Program") === FALSE) 
-	die("Cell A3 must be <b>*Breeding Program</b>.");
-      $bp = $linedata['cells'][3][2];
+      // Read the Breeding Program from row 4.
+      $bp = $linedata['cells'][4][2];
 
       // Available line properties:
       $res = mysql_query("select name from properties") or die (mysql_error());
@@ -683,7 +686,7 @@ $lud = count($line_update_data);
       // First, locate the header line.
       $firstline = 0;
       $header = array();
-      for ($irow = 4; $irow <=$rows; $irow++) {
+      for ($irow = 5; $irow <=$rows; $irow++) {
 	$teststr= addcslashes(trim($linedata['cells'][$irow][1]),"\0..\37!@\177..\377");
 	if (empty($teststr)){
 	  break; 
