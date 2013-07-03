@@ -129,7 +129,8 @@ $sql = "select distinct experiment_year from experiments order by experiment_yea
 	  <!-- Empty row to display the resulting choices and show the previous ones. -->
 	  <tr><td colspan=3>
 <?php
-foreach ($propvals as $pv) echo "$pv[1] = $pv[2], ";
+if (!empty($propvals))
+  foreach ($propvals as $pv) echo "$pv[1] = $pv[2], ";
 ?>
 	  </tr>
 	</table>
@@ -180,8 +181,9 @@ echo "</div><div class='boxContent'><table ><tr><td>";
     $year = $_POST['year'];
     $species = $_POST['species'];
     // just the ids, property_values.property_values_uid
-    foreach ($propvals as $pv)
-      $propvalids[] = $pv[0];
+    if (!empty($propvals))
+      foreach ($propvals as $pv)
+	$propvalids[] = $pv[0];
     $lineArr = array();
     $nonHits = array();
 
