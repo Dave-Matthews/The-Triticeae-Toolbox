@@ -121,7 +121,8 @@ EOD;
 	<li>
           <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
             Wizard (Lines, Traits, Trials)</a>
-	  <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters">
+	  <!-- <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters"> -->
+	  <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php" title="Select by name, source, or simply-inherited characters">
 	    Lines by Properties</a>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/compare.php" title="Select within a range of trait values">
@@ -156,6 +157,7 @@ EOD;
         <li><a href="<?php echo $config['base_url']; ?>histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/compare_index.php" title="Compare Trait value for 2 Trials">Compare Trials</a>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
 	    Track Alleles through Pedigree</a>
@@ -185,9 +187,11 @@ EOD;
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
     <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Traits and units used">Trait Descriptions</a>
+    <li><a href="<?php echo $config['base_url']; ?>properties.php" title="Environment-independent line properties">Genetic Character Descriptions</a>
     <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">CAP Data Programs</a>
-    <li><a href="<?php echo $config['base_url']; ?>acknowledge.php" title="Contributions from other projects">Acknowledgments</a>
-    <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of the data">Terms of Use</a>
+    <li><a href="<?php echo $config['base_url']; ?>toronto.php" title="Toronto Statement">Data Usage Policy</a>
+    <!-- <li><a href="<?php echo $config['base_url']; ?>acknowledge.php" title="Contributions from other projects">Acknowledgments</a> -->
+    <!-- <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of the data">Terms of Use</a> -->
   </ul>
 
   <?php 
