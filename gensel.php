@@ -220,7 +220,7 @@ class Downloads
                     echo "Select prediction set without trait measurements to predict the traits. ";
                     echo "<a href=";
                     echo $config['base_url'];
-                    echo "pedigree/line_selection.php>Lines by Properties</a><br>";
+                    echo "pedigree/line_properties.php>Lines by Properties</a><br>";
                 } elseif (empty($_SESSION['phenotype']) && empty($_SESSION['training_traits'])) {
                     echo "Please select traits before using this feature.<br><br>";
                     echo "<a href=";
@@ -335,7 +335,16 @@ class Downloads
            $max_miss_line = 10;
       }
       $lines = $_SESSION['selected_lines'];
-      calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+      if (isset($_SESSION['training_lines'])) {
+          $training_lines = $_SESSION['training_lines'];
+      } else {
+          $training_lines = "";
+      }
+      if ($training_lines == "") {
+          calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+      } else {
+          calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
+      }
       ?>
       <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
       <?php
@@ -1124,10 +1133,10 @@ class Downloads
                 <?php
               
                 if ($training_lines == "") {
-                  calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+                  //calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
                   $lines = $_SESSION['filtered_lines'];
                 } else {
-                  calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
+                  //calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
                   $training_lines = $_SESSION['filtered_lines'];
                 }
                 $markers = $_SESSION['filtered_markers'];
