@@ -405,7 +405,7 @@ $data = array();
 
 //for imports that take a long time there may be a deadlock when the allele cache does its daily refresh
 //this statement causes the locks to be released earlier
-$sql = "SET TRANSACTION ISOLATION LEVEL READ COMMITTED";
+$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED";
 $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     
 while (!feof($reader))  {
@@ -776,7 +776,20 @@ function mysqlq($command) {
 }
 
 // Update table allele_cache.
-mysqlq("CREATE TABLE ac_temp (select * from allele_view)");
+mysqlq("DROP TABLE IF EXISTS ac_temp");
+// This takes a while, and Quick Search freezes because it does a 'SHOW CREATE TABLE' for all tables.
+//mysqlq("CREATE TABLE ac_temp (select * from allele_view)");
+mysqlq("CREATE TABLE ac_temp (                                                    
+  marker_uid int(10) unsigned,                                                    
+  marker_name varchar(255),                                                       
+  line_record_uid int(10) unsigned,                                               
+  line_record_name varchar(255),                                                  
+  experiment_uid int(10) unsigned,                                                
+  allele_uid int(12) unsigned,                                                    
+  alleles varchar(2)                                                              
+) ");
+mysqlq("insert into ac_temp (marker_uid, marker_name, line_record_uid, line_record_name, experiment_uid, allele_uid, alleles) select * from allele_view");
+
 mysqlq("DROP TABLE IF EXISTS allele_cache");
 mysqlq("RENAME TABLE ac_temp TO allele_cache");
 mysqlq("ALTER TABLE allele_cache add index (experiment_uid), add index (line_record_uid), add index (marker_uid)");
@@ -786,22 +799,34 @@ mail($emailAddr, "Genotype import step 2", $body, $mailheader);
 
 // Update table allele_conflicts.
 mysqlq("drop table if exists acxyz");
-mysqlq("create table acxyz as
-select line_record_uid, line_record_name, marker_uid, marker_name, count(distinct alleles)
-from allele_cache
-where alleles != '--'                                                                                  
-  group by line_record_name, marker_name
-  having count(distinct alleles) > 1");
+mysqlq("create TABLE acxyz (line_record_uid int(10) unsigned, line_record_name varchar(255), marker_uid int(10) unsigned, marker_name varchar(255), count int(10))");
+//$sql = "select marker_uid, marker_name from markers order by marker_name";
+$sql = "select distinct marker_uid from allele_cache order by marker_name";
+$res = mysql_query($sql) or die(mysql_error());
+while ($row = mysql_fetch_array($res)) 
+  /* array_push($marker_uid_list, $row[0]); */
+  $marker_uid_list[] = $row[0];
+
+foreach ($marker_uid_list as $marker_uid) 
+  mysqlq("insert into acxyz (line_record_uid, line_record_name, marker_uid, marker_name, count)
+          select line_record_uid, line_record_name, marker_uid, marker_name, count(distinct alleles)
+          from allele_cache where alleles != '--'
+          and marker_uid = $marker_uid
+          group by line_record_name
+          having count(distinct alleles) > 1");
 mysqlq("ALTER TABLE acxyz add index (line_record_uid), add index (marker_uid)");
 
 mysqlq("drop table if exists allele_conflicts_temp");
-mysqlq("create table allele_conflicts_temp as
-select a.line_record_uid, a.marker_uid, a.alleles, a.experiment_uid
-from allele_cache a, acxyz
-where a.marker_uid = acxyz.marker_uid
-  and a.line_record_uid = acxyz.line_record_uid
-  and a.alleles != '--'
-  order by a.line_record_name, a.marker_uid, a.experiment_uid");
+mysqlq("create table allele_conflicts_temp (line_record_uid int(10) unsigned, marker_uid int(10) unsigned, alleles varchar(2), experiment_uid int(10) unsigned)");
+foreach ($marker_uid_list as $marker_uid) 
+  mysqlq("insert into allele_conflicts_temp (line_record_uid, marker_uid, alleles, experiment_uid)
+          select a.line_record_uid, a.marker_uid, a.alleles, a.experiment_uid
+          from allele_cache a, acxyz
+          where a.marker_uid = $marker_uid
+          and a.marker_uid = acxyz.marker_uid
+          and a.line_record_uid = acxyz.line_record_uid
+          and a.alleles != '--'
+          order by a.line_record_name, a.experiment_uid");
 
 mysqlq("drop table if exists allele_conflicts");
 mysqlq("rename table allele_conflicts_temp to allele_conflicts");
