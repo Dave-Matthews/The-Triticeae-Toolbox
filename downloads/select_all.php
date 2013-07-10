@@ -1198,9 +1198,11 @@ class SelectPhenotypeExp
 	 */
 	private function step2_lines()
 	{
-	    if (isset($_SESSION['selected_lines'])) {
-	        $selectedlines= $_SESSION['selected_lines'];
-	        $count = count($_SESSION['selected_lines']);
+	    if (!isset($_SESSION['selected_lines'])) {
+            die("Error: must select lines first");
+        }
+	    $selectedlines= $_SESSION['selected_lines'];
+	    $count = count($_SESSION['selected_lines']);
 		?>
 	    <p>2.
 	    <select name="select2">
@@ -1213,9 +1215,16 @@ class SelectPhenotypeExp
 	    <tr><td>
 	    <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_trial(this.options)">
 	    <?php
-	    $selectedlines= $_SESSION['selected_lines'];
-	    $selectedlines = implode(',', $selectedlines);
-	    $sql="SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, e.experiment_year as year
+	    $lines_array = $_SESSION['selected_lines'];
+	    $selectedlines = implode(',', $lines_array);
+	    $trait_cmb = (isset($_GET['trait_cmb']) && !empty($_GET['trait_cmb'])) ? $_GET['trait_cmb'] : null;
+	    if ($trait_cmb == "all") {
+	        $any_ckd = ""; $all_ckd = "checked";
+	    } else {
+	        $trait_cmb = "any";
+	        $any_ckd = "checked"; $all_ckd = "";
+	    }
+	    $sql="SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, e.experiment_year as year, tb.line_record_uid as lr
 	    FROM experiments as e, tht_base as tb, line_records as lr
 	    WHERE
 	    e.experiment_uid = tb.experiment_uid
@@ -1229,29 +1238,49 @@ class SelectPhenotypeExp
                 $last_year = NULL;
 		while ($row = mysql_fetch_assoc($res))
 		{
-                  if ($last_year == NULL) {
-                  ?>
-                    <optgroup label="<?php echo $row['year'] ?>">
-                  <?php
-                    $last_year = $row['year'];
-                  } else if ($row['year'] != $last_year) {
-                  ?>
-                  </optgroup>
-                  <optgroup label="<?php echo $row['year'] ?>">
-                  <?php
-                    $last_year = $row['year'];
-                  }
-                 ?>
-		    <option value="<?php echo $row['id'] ?>">
-		     <?php echo $row['name'] ?>
-		    </option>
-		    <?php
-		} 
+		    $exp_uid = $row['id'];
+		    $line = $row['lr'];
+		    $year_list[$exp_uid] = $row['year'];
+		    $name_list[$exp_uid] = $row['name'];
+		    $line_list[$exp_uid][$line] = 1;    //array of lines for each trial 
+		}
+		foreach ($name_list as $id=>$name) {
+            $year = $year_list[$id];
+            $found = 1;
+            foreach ($lines_array as $item) {
+                if (!isset($line_list[$id][$item])) {
+                    $found = 0;
+                }
+            }
+            if ($found || ($trait_cmb == "any")) {
+                if ($last_year == NULL)
+                {
+                    ?>
+                    <optgroup label="<?php echo $year ?>">
+                    <?php
+                    $last_year = $year;
+                } else if ($year != $last_year) {
+                    ?>
+                    </optgroup>
+                    <optgroup label="<?php echo $year ?>">
+                    <?php
+                    $last_year = $year;
+                }
+                ?>
+		        <option value="<?php echo $id ?>">
+		        <?php echo $name_list[$id] ?>
+		        </option>
+		        <?php
+		    } else {
+                echo "skip $id $trait_cmd";
+            }
+        }
 	    ?>
-            </optgroup>
+        </optgroup>
 	    </select></table>
+	    <input type="radio" id="trait_cmb" value="all" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with all lines<br>
+	    <input type="radio" id="trait_cmb" value="any" <?php echo "$any_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with any lines<br>
 	    <?php
-	    } 
 	}
 	
 	/**
