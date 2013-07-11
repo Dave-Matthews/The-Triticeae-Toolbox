@@ -129,16 +129,16 @@ function load_genomic_prediction(count) {
     var mmm = $('mmm').getValue();
     var mml = $('mml').getValue();
     var mmaf = $('mmaf').getValue();
-    //var url = php_self + "?function=filter_lines" + '&mmm=' + mmm + '&mml=' + mml + '&maf=' + mmaf;
-    //var tmp = new Ajax.Updater($('filter'), url, {asynchronous: false}, {
-    //    onCreate: function() { Element.show('spinner'); },
-    //    onComplete : function() {
-    //        $('filter').show();
-    //        document.title = title;
-    //    }
-    //});
-    var url = php_self + "?function=download_session_v4" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf + "&fixed1=" + fixed1;
-    var tmp = new Ajax.Updater($('step1'), url, {
+    var url = php_self + "?function=filter_lines" + '&mmm=' + mmm + '&mml=' + mml + '&maf=' + mmaf;
+    var tmp = new Ajax.Updater($('filter'), url, {asynchronous: false}, {
+        onCreate: function() { Element.show('spinner'); },
+        onComplete : function() {
+            $('filter').show();
+            document.title = title;
+        }
+    });
+    url = php_self + "?function=download_session_v4" + "&unq=" + unq_file + '&mmm=' + mmm + '&mml=' + mml + '&mmaf=' + mmaf + "&fixed1=" + fixed1;
+    tmp = new Ajax.Updater($('step1'), url, {
         onCreate: function () { Element.show('spinner'); },
         onComplete : function () {
             $('step1').show();
