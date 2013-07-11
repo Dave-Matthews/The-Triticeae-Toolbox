@@ -301,7 +301,7 @@ function load_lines() {
 }
 function load_lines2() {
     $('step2').hide();
-    var url = php_self + "?function=step2lines&bp=" + breeding_programs_str + '&yrs=' + years_str;
+    var url = php_self + "?function=step2lines&bp=" + breeding_programs_str + "&trait_cmb=" + trait_cmb;
     document.title = 'Loading Step1...';
     var tmp = new Ajax.Updater($('step2'), url, {
         onComplete : function() {
@@ -533,7 +533,11 @@ function update_phenotype_trial(options) {
 function update_phenotype_trialb(options) {
 /*used to update the trials with any/all traits */
     trait_cmb = options;
-    load_phenotypes3();
+    if (select1_str == "Lines") {
+        load_lines2();
+    } else {
+        load_phenotypes3();
+    }   
     document.getElementById('step4').innerHTML = "";
 }
 
