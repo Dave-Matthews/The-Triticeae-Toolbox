@@ -97,7 +97,7 @@ if (!empty($_GET[mapsetuid])) {
 	function pickmap(name, uid) {
 	    var r=confirm('Really delete mapset "'+name+'"?');
 	    if (r==true) {
-		window.open('<?php echo $_SERVER[PHP_SELF] ?>?mapsetuid='+uid);
+	      window.location.search = 'mapsetuid='+uid;
 	    }
 	}
 
