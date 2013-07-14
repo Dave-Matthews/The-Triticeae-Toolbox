@@ -832,6 +832,15 @@ mysqlq("drop table if exists allele_conflicts");
 mysqlq("rename table allele_conflicts_temp to allele_conflicts");
 echo "Allele Conflicts table updated.\n";
 
+$body = "Allele conflicts table updated.\nNow updating the allele_bylines and allele_bymarker tables.\n";
+echo $body;
+mail($emailAddr, "Genotype import step 3", $body, $mailheader);
+
+$cmd = "$progPath" . "cron/create-allele-byline.php";
+exec($cmd);
+$cmd = "$progPath" . "cron/create-allele-bymarker.php";
+exec($cmd);
+
 // Send out final email.
 if (filesize($errorFile)  > 0) {
     $body = "There was a problem during the offline importing process.\n".

@@ -1,7 +1,7 @@
 <?php
 /**
  * create-allele-byline.php
- * create 2D table where rows contain line names and columns contain markers
+ * create 2D table where rows contain line names and columns contain markers 
  * this script should be run whenever the alleles, genotyping_data, or markers table is modified
  *
  * PHP version 5
@@ -19,18 +19,12 @@ require $config['root_dir'].'includes/bootstrap_curator.inc';
 connect();
 set_time_limit(3600);  /* allow script up to 60 minutes */
 
-$sql = "select database()";
-$res = mysql_query($sql) or die(mysql_error());
-if ($row = mysql_fetch_row($res)) {
-    $db_name = $row[0];
-    echo "using database $db_name\n";
-} else {
-    print "error $sql<br>\n";
-}
-
 $exp_list = array();
 $line_uid_list = array();
 $line_name_list = array();
+
+$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
+$res = mysql_query($sql) or die(mysql_error());
 
 $max_exp = 0;
 $sql = "select experiment_uid from experiments order by experiment_uid";
@@ -70,7 +64,7 @@ $res = mysql_query($sql) or die(mysql_error());
 $sql = "create TABLE temp_allele (marker_uid INT NOT NULL, marker_name VARCHAR(50), PRIMARY KEY (marker_uid))";
 echo "$sql\n";
 $res = mysql_query($sql) or die(mysql_error());
-$sql = "insert into temp_allele select distinct genotyping_data.marker_uid, markers.marker_name from genotyping_data, markers where genotyping_data.marker_uid = markers.marker_uid";
+$sql = "insert into temp_allele select distinct genotyping_data.marker_uid, markers.marker_name from genotyping_data, markers where genotyping_data.marker_uid = markers.marker_uid order by genotyping_data.marker_uid";
 echo "$sql\n";
 $res = mysql_query($sql) or die(mysql_error());
 $sql = "DROP TABLE IF EXISTS allele_byline_idx";
@@ -95,9 +89,11 @@ for ($j=0; $j<$max_lines; $j++) {
     $line_uid = $line_uid_list[$j];
     $line_name = $line_name_list[$j];
     $allele = $empty;
+    $sql = "select marker_uid, alleles from allele_view where line_record_uid = $line_uid";
     $sql = "select marker_uid, alleles from allele_cache where line_record_uid = $line_uid";
     $res = mysql_query($sql) or die(mysql_error());
     $count = 0;
+    $count_dup = 0;
     $dup = array();
     $dup1 = 0;	//count of duplicate markers within a line
     while ($row = mysql_fetch_array($res)) {
@@ -106,6 +102,7 @@ for ($j=0; $j<$max_lines; $j++) {
         if ($allele[$loc] == '') {
             $allele[$loc] = $row[1];
         } else {
+            $count_dup++;
             if (isset($dup[$loc])) {
                 $dup[$loc] .= "," . $row[1];
             } else {
@@ -115,8 +112,7 @@ for ($j=0; $j<$max_lines; $j++) {
         $count++;
     }
     if ($count > 0) {
-        $dup1 = count($dup);
-        if ($dup1 > 0) {
+        if ($count_dup > 0) {
             foreach ($dup as $loc => $value) {
                 $duplicates = explode(',', $value);
                 $cntaa = $cntbb = $cntab = $cntba = 0;
@@ -163,7 +159,7 @@ for ($j=0; $j<$max_lines; $j++) {
         $length=strlen($string);
         $sql = "insert into temp_allele (line_record_uid, line_record_name, alleles) values ($line_uid, '$line_name', '$string')";
         $res = mysql_query($sql) or die(mysql_error());
-        //echo "$j $line_uid $line_name dup=$dup1\n";
+        //echo "$j $line_uid $line_name dup=$count_dup\n";
     }
 }
 $sql = "ALTER TABLE temp_allele add index (line_record_uid)";
