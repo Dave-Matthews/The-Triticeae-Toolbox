@@ -836,9 +836,9 @@ $body = "Allele conflicts table updated.\nNow updating the allele_bylines and al
 echo $body;
 mail($emailAddr, "Genotype import step 3", $body, $mailheader);
 
-$cmd = "$progPath" . "cron/create-allele-byline.php";
+$cmd = "/usr/bin/php " . $progPath . "cron/create-allele-byline.php";
 exec($cmd);
-$cmd = "$progPath" . "cron/create-allele-bymarker.php";
+$cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker.php";
 exec($cmd);
 
 // Send out final email.
