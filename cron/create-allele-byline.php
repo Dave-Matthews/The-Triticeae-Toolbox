@@ -17,7 +17,7 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap_curator.inc';
 connect();
-set_time_limit(3600);  /* allow script up to 60 minutes */
+set_time_limit(7200);  /* allow script up to 2 hours */
 
 $exp_list = array();
 $line_uid_list = array();
