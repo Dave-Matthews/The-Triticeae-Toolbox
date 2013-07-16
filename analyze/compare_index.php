@@ -70,7 +70,7 @@ class CompareTrials
         1. Use the <a href="downloads/select_all.php">Select Wizard</a> or 
         <a href="phenotype/phenotype_selection.php">Select Trial and Trait</a>
         to choose two trials and one trait.<br>
-        2. Select which trial is the normal/control condition.<br>
+        2. Select which trial is the normal or baseline condition.<br>
         3. Select the Index to be used for the calculation.<br>
         The formula may be modified from the selected index using valid R script notation.
         <br><br><?php
@@ -121,7 +121,7 @@ class CompareTrials
         <br>
         <form action="" enctype="multipart/form-data">
         <table>
-        <tr><td><td><td>Normal/Control
+        <tr><td><td><td>Normal
         <tr><td>Trial 1:<td>
         <select id="trial1" name="trial1" value="1" onchange="javascript: update_t1()">
 	    <?php 
@@ -202,10 +202,10 @@ class CompareTrials
         <tr><td>Index:<td>
         <select id="formula1" name="formula1" onchange="javascript: update_f1()">
         <option value="">Select a formula</option>
-        <option value="PD">Percent Difference</option>
-        <option value="GM">Geometric Mean</option>
-        <option value="STI">Stress Tolerance Index</option>
-        <option value="SSI">Stress Susceptibility Index</option>
+        <option value="PD">Percent Difference (PD)</option>
+        <option value="GM">Geometric Mean (GM)</option>
+        <option value="STI">Stress Tolerance Index (STI)</option>
+        <option value="SSI">Stress Susceptibility Index (SSI)</option>
         </select>
     
         <tr><td>Formula:<td><input type="text" size="50" id="formula2" name="formula2" onchange="javascript: update_f2()">
