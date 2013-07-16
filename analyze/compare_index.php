@@ -17,9 +17,9 @@ require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
 
 $mysqli = connecti();
-require $config['root_dir'] . 'downloads/download.inc';
+require $config['root_dir'] . 'downloads/downloadClass.php';
 
-new CompareTrials($_GET['function']);
+$Compare = new CompareTrials($_GET['function']);
 
 /** Using a PHP class to implement compare trait index
  * 
