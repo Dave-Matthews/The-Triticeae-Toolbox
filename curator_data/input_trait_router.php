@@ -21,7 +21,7 @@ ob_end_flush();
   h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
 
-<h2>Add / Edit Traits and Genetic Characters </h2>
+<h2>Curate Traits and Genetic Characters </h2>
 
 <h3>Traits</h3>
 
@@ -33,11 +33,11 @@ assigned to a <i>Category</i>, e.g. Agronomic, Quality.</p>
 
 <li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php">Upload</a> a file of traits
 <li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php?add=single">Enter</a> a single trait interactively
-<li><a href="<?php echo $config['base_url'] ?>login/edit_traits.php">Edit</a> existing traits
+<li><a href="<?php echo $config['base_url'] ?>login/edit_traits.php">Edit/delete</a> existing traits
 <li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php?add=category">Add</a> a new Category
 <li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php?add=unit">Add</a> a new Unit
 
-<h3>Properties</h3>
+<h3>Genetic characters</h3>
 
 <p><b>Genetic characters</b>, or <i>properties</i>, are
 environment-insensitive and usually have a small set of discrete values.

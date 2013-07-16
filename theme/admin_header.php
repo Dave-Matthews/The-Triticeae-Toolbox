@@ -181,6 +181,69 @@ EOD;
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
 
+  <?php 
+  //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  ?> 
+   <li> <a href="" title="Add, edit or delete data">Curate</a>
+      <ul>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
+      Traits</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
+      Lines</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
+      Pedigrees</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
+      Phenotype Trial Annotations</a></li>
+      <!-- <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data"> -->
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php" title="Phenotype data">
+      Phenotype Results</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_router.php" title="Phenotype CSR data">
+      CSR Data</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
+      Delete Trials / Experiments</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
+      Genotype Experiment Annotations</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
+      Genotype Results </a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
+      Maps</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
+      Markers</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>login/edit_programs.php">
+      CAP Data Programs</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php">
+      Anything!</a></li>
+      </ul>
+      <?php endif ?>
+
+      <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
+  <li>
+    <a href="" title="<?php echo $lang["desc_sc5"]; ?>">Administer</a>
+    <ul>
+      <li><a href="<?php echo $config['base_url']; ?>login/edit_users.php" title="No deletion yet">Edit Users</a>
+      <li><a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">Table Status</a>
+      <li><a href="<?php echo $config['base_url']; ?>dbtest/backupDB.php" title="Full Database Backup">Full Database Backup</a>
+      <li><a href="<?php echo $config['base_url']; ?>login/input_gateway.php" title="Data Input Gateway">Data Input Gateway</a>
+      <li><a href="<?php echo $config['base_url']; ?>login/export_gateway.php" title="Data Export Gateway">Data Export Gateway</a>
+      <li><a href="<?php echo $config['base_url']; ?>login/cleanup_temporary_dir.php" title="Clean up temporary files">Clean up temporary files</a>
+      <li><a href="http://thehordeumtoolbox.org/webalizer/" title="Webalizer old" target="_blank">Usage, wheat.pw.usda.gov</a>
+      <li><a href="http://triticeaetoolbox.org/webalizer/" title="Webalizer new" target="_blank">Usage, tcap</a>
+      <li><a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">Usage Analytics</a>
+    </ul>
+  </li>
+<?php endif; ?>
+
+  <?php  			
+//   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
+    ?>
+  <li> <a href="" title="Manage access to my data">Share data</a>
+  <ul>
+  <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a>
+  </ul>
+  <?php endif ?>
+
   <li>
   <a href="" title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
   <ul>
@@ -193,93 +256,6 @@ EOD;
     <!-- <li><a href="<?php echo $config['base_url']; ?>acknowledge.php" title="Contributions from other projects">Acknowledgments</a> -->
     <!-- <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of the data">Terms of Use</a> -->
   </ul>
-
-  <?php 
-  //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-  ?> 
-   <li> <a href="" title="Curate the Database">Curation</a>
-      <ul>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
-      Add/Edit Traits</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
-      Add/Edit Lines</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
-      Add/Edit Pedigree</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
-      Add Phenotype Experiment Annotations</a></li>
-      <!-- <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data"> -->
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php" title="Phenotype data">
-      Add Phenotype Results</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_router.php" title="Phenotype CSR data">
-      Add CSR Data</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
-      Add Genotype Experiment Annotations</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
-      Add Genotype Results </a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
-      Delete Trials / Experiments</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
-      Add Maps</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
-      Add/Edit Markers</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>login/edit_programs.php">
-      Edit/Delete CAP Data Programs</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php">
-      Edit Anything!</a></li>
-      </ul>
-      <?php endif ?>
-
-  <?php  			
-//   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-    ?>
-  <li> <a href="" title="Manage access to my data">Share data</a>
-  <ul>
-  <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a>
-  </ul>
-  <?php endif ?>
-
-      <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
-  <li>
-    <a href="" title="<?php echo $lang["desc_sc5"]; ?>">
-      Administration
-    </a>
-    <ul>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>login/edit_users.php" title="No deletion yet">
-	  Edit Users
-	</a>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">
-	  Table Status
-	</a>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>dbtest/backupDB.php" title="Full Database Backup">
-	  Full Database Backup
-	</a>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>login/input_gateway.php" title="Data Input Gateway">
-	  Data Input Gateway</a></li>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>login/export_gateway.php" title="Data Export Gateway">
-	  Data Export Gateway
-	</a>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>login/cleanup_temporary_dir.php" title="Clean up temporary files">
-	  Clean up temporary files</a>
-      <li>
-	<a href="http://thehordeumtoolbox.org/webalizer/" title="Webalizer old" target="_blank">
-	  Usage, wheat.pw.usda.gov</a>
-      <li>
-	<a href="http://triticeaetoolbox.org/webalizer/" title="Webalizer new" target="_blank">
-	  Usage, tcap</a>
-      <li>
-	<a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">
-	  Usage Analytics</a>
-    </ul>
-  </li>
-<?php endif; ?>
 			
 			
 </ul>
