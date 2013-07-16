@@ -59,9 +59,9 @@ function update_control(frm) {
 		if (formula1 == "PD") {
 			formula2 = "(data$trial1 - data$trial2)/(data$trial1 + data$trial2)";
 		} else if (formula1 == "STI") {
-			formula2 = "(data$trial1*data$trial2)/(mean(data$trial1)**2)";
+			formula2 = "(data$trial1*data$trial2)/(mean(data$trial1, na.rm = TRUE)**2)";
 		} else if (formula1 == "SSI") {
-			formula2 = "(1 - (data$trial2/data$trial1))/(1 - (mean(data$trial2)/mean(data$trial1)))";
+			formula2 = "(1 - (data$trial2/data$trial1))/(1 - (mean(data$trial2, na.rm = TRUE)/mean(data$trial1, na.rm = TRUE)))";
 		} else if (formula1 == "GM") {
 			formula2 = "sqrt(data$trial1*data$trial2)";
 		} else {
@@ -72,9 +72,9 @@ function update_control(frm) {
 		if (formula1 == "PD") {
 			formula2 = "(data$trial2 - data$trial1)/(data$trial1 + data$trial2)";
 		} else if (formula1 == "STI") {
-			formula2 = "(data$trial1*data$trial2)/(mean(data$trial2)**2)";
+			formula2 = "(data$trial1*data$trial2)/(mean(data$trial2, na.rm = TRUE)**2)";
 		} else if (formula1 == "SSI") {
-			formula2 = "(1 - (data$trial1/data$trial2))/(1 - (mean(data$trial1)/mean(data$trial2)))";
+			formula2 = "(1 - (data$trial1/data$trial2))/(1 - (mean(data$trial1, na.rm = TRUE)/mean(data$trial2, na.rm = TRUE)))";
 		} else if (formula1 == "GM") {
 			formula2 = "sqrt(data$trial1*data$trial2)";
 		} else {
