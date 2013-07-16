@@ -11,20 +11,14 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap_curator.inc';
 connect();
-set_time_limit(3600);  /* allow script up to 60 minutes */
-
-$sql = "select database()";
-$res = mysql_query($sql) or die(mysql_error());
-if ($row = mysql_fetch_row($res)) {
-    $db_name = $row[0];
-    echo "using database $db_name\n";
-} else {
-    print "error $sql<br>\n";
-}
+set_time_limit(7200);  /* allow script up to 2 hours */
 
 $exp_list = array();
 $marker_uid_list = array();
 $marker_name_list = array();
+
+$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
+$res = mysql_query($sql) or die(mysql_error());
 
 $max_exp = 0;
 $sql = "select experiment_uid from experiments order by experiment_uid";
@@ -47,7 +41,7 @@ echo "$max_markers markers\n";
 
 /* select markers with genotype data */
 $max_lines=0;
-$sql = "select distinct line_records.line_record_uid, line_records.line_record_name from genotyping_data, line_records, tht_base where line_records.line_record_uid = tht_base.line_record_uid and tht_base.tht_base_uid = genotyping_data.tht_base_uid order by line_records.line_record_uid";
+$sql = "select line_records.line_record_uid, line_records.line_record_name from line_records order by line_record_uid";
 $res = mysql_query($sql) or die(mysql_error());
 while ($row = mysql_fetch_array($res)) {
     $line_record_uid = $row[0];
@@ -56,13 +50,15 @@ while ($row = mysql_fetch_array($res)) {
     $line_name_list[$line_record_uid] = $line_record_name;
     $max_lines++;
 }
-echo "$max_lines lines with genotype data\n";
+echo "$max_lines lines\n";
 $marker_uid_list_str = implode(',', $line_list);
 $marker_name_list_str = implode(',', $line_name_list);
+$sql = "DROP TABLE if exists temp_allele";
+$res = mysql_query($sql) or die(mysql_error());
 $sql = "create TABLE temp_allele (line_record_uid INT NOT NULL, line_record_name VARCHAR(50), PRIMARY KEY (line_record_uid))";
 echo "$sql\n";
 $res = mysql_query($sql) or die(mysql_error());
-$sql = "insert into temp_allele select distinct line_records.line_record_uid, line_records.line_record_name from line_records, genotyping_data, tht_base where line_records.line_record_uid = tht_base.line_record_uid and tht_base.tht_base_uid = genotyping_data.tht_base_uid order by line_records.line_record_uid";
+$sql = "insert into temp_allele select line_records.line_record_uid, line_records.line_record_name from line_records order by line_record_uid";
 echo "$sql\n";
 $res = mysql_query($sql) or die(mysql_error());
 $sql = "DROP TABLE IF EXISTS allele_bymarker_idx";
