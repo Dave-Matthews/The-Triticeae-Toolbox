@@ -245,46 +245,6 @@ EOD;
   <?php endif ?>
 
   <li>
-    <a href="" title="<?php echo $lang["desc_sc5"]; ?>">
-      Administer
-    </a>
-    <ul>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>login/edit_users.php" title="No deletion yet">
-	  Edit Users
-	</a>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">
-	  Table Status
-	</a>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>dbtest/backupDB.php" title="Full Database Backup">
-	  Full Database Backup
-	</a>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>login/input_gateway.php" title="Data Input Gateway">
-	  Data Input Gateway</a></li>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>login/export_gateway.php" title="Data Export Gateway">
-	  Data Export Gateway
-	</a>
-      <li>
-	<a href="<?php echo $config['base_url']; ?>login/cleanup_temporary_dir.php" title="Clean up temporary files">
-	  Clean up temporary files</a>
-      <li>
-	<a href="http://thehordeumtoolbox.org/webalizer/" title="Webalizer old" target="_blank">
-	  Usage, wheat.pw.usda.gov</a>
-      <li>
-	<a href="http://triticeaetoolbox.org/webalizer/" title="Webalizer new" target="_blank">
-	  Usage, tcap</a>
-      <li>
-	<a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">
-	  Usage Analytics</a>
-    </ul>
-  </li>
-<?php endif; ?>
-			
-  <li>
   <a title="<?php echo $lang["desc_sc2"]; ?>">About..</a>
   <ul>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">About T3</a>
