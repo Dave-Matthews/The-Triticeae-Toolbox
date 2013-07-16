@@ -68,18 +68,24 @@ class GenotypeData {
 	<form action="curator_data/genotype_data_check.php" method="post" enctype="multipart/form-data">
 
 	<input type="hidden" id="mapsetID" name="MapsetID" value="-1" />
-     	<p><table>
-	<tr><td><strong>Line Translation File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
-	<tr><td><td><a href="curator_data/examples/LinesTrialCode_Sample.txt">Example Line Translation File</a></p>
- 	<tr><td><strong>Genotype Data File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
-        <tr><td><strong>Data File Format:</strong><td><input type="radio" name="data_format" value="1D"> 1D Example
-<a href="curator_data/examples/genotypeData_T3.txt">Genotype Data File</a>
-                          <tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D Example
-<a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina_Genotype_template.txt</a>
-                          <tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example
-<a href="curator_data/examples/GBS_Genotype_template.txt">GBS_Genotype_template.txt</a> (ACTG) 
-                          <tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example 
-<a href="curator_data/examples/DArT_Genotype_template.txt">DArT_Genotype_template.txt</a> (Present = 1, Absent = 0, missing = "-")</p>
+     	<p><table style="text-align:left;">
+	<tr style="min-height: 0px"><td><strong>Line Translation File:</strong></td>
+	<td><input id="file[]" type="file" name="file[]"><br>
+        <tr style="min-height: 0px"><td><td>Two columns, tab-delimited, containing:<br>
+Line Name: Sample ID names used for the experiment (can be found in the Sample Sheet files)<br>
+Trial Code: Unique code for each site's data, as defined in the Genotype Annotation file<br>
+<a href="curator_data/examples/LinesTrialCode_Sample.txt">Example Line Translation File</a></p>
+ 	<tr><td><strong>Genotype Data File:</strong><td><input id="file[]" type="file" name="file[]">
+	    <br>May be compressed in .zip format.
+        <tr><td style=vertical-align:text-top><strong>Data File Format:</strong>
+	  <td><input type="radio" name="data_format" value="1D"> 1D Example
+<a href="curator_data/examples/genotypeData_T3.txt">Genotype Data file</a>
+<tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D Example
+<a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina Genotype sample.txt</a>
+<tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example
+<a href="curator_data/examples/GBS_Genotype_template.txt">GBS_Genotype_template.txt</a> (ACTG)
+<tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example
+<a href="curator_data/examples/DArT_Genotype_sample.txt">DArT_Genotype_template.txt</a> (Present = 1, Absent = 0, missing = "-")</p>
 	</table>
 
     <p><b>Note: Both files (Line Translation and Genotype Data) are required.</b>
