@@ -12,37 +12,35 @@ authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 include($config['root_dir'].'theme/admin_header.php');
 ?>
 
-<div id="primaryContentContainer">
-  <div id="primaryContent">
   <div class="section">
   <h1>Add a Line Panel</h1>
 
 <?php
-
 // If we're re-entering the script with data, handle it.
-//print "<pre>"; print_r($_POST); print "</pre>";
-  if ( isset($_POST['panel']) && $_POST['panel'] != "" ) {
-    $panel = $_POST['panel'];
-    if ($panel == "&lt;panel name&gt;")
-      echo "<p><font color=red>Please name the panel.</font>";
-    else {
-      $sql="select linepanels_uid from linepanels where name = '$panel'";
-      $r = mysql_query($sql) or die(mysql_error());
-      if (mysql_num_rows($r) > 0)
-	echo "<p><font color=red>Panel \"$panel\" already exists.</font>";
-      else {
-	if (count($_SESSION['selected_lines']) < 2) {
-	  echo "<p><font color=red>Why would you want a panel that doesn't contain at least a few lines?</font>";
-	}
-	else {
-	  $lineids = implode(",", $_SESSION['selected_lines']);
-	  $sql = "insert into linepanels (name, line_ids) values ('$panel', '$lineids')";
-	  $r = mysql_query($sql) or die(mysql_error());
-	}
-      }
-    }  
-  }
 
+// Add a new panel.
+$panel = $_POST[panel];
+if (!empty($panel) AND $panel != "&lt;panel name&gt;") {
+  $desc = $_POST['description'];
+  if ($desc == "&lt;description&gt;")
+    $desc = "";
+  $sql="select linepanels_uid from linepanels where name = '$panel'";
+  $r = mysql_query($sql) or die(mysql_error());
+  if (mysql_num_rows($r) > 0)
+    echo "<p><font color=red>Panel \"$panel\" already exists.</font>";
+  else {
+    if (count($_SESSION['selected_lines']) < 2) 
+      echo "<p><font color=red>Why would you want a panel that doesn't contain at least a few lines?</font>";
+    else {
+      $lineids = implode(",", $_SESSION['selected_lines']);
+      $sql = "insert into linepanels (name, comment, line_ids) values ('$panel', '$desc', '$lineids')";
+      $r = mysql_query($sql) or die(mysql_error());
+      echo "Panel \"$panel\" added.<p>";
+    }
+  }
+}
+
+// Delete lines from a panel.
 if (isset($_POST['deselLines'])) {
   $selected_lines = $_SESSION['selected_lines'];
   foreach ($_POST['deselLines'] as $line_uid) {
@@ -53,20 +51,28 @@ if (isset($_POST['deselLines'])) {
   $_SESSION['selected_lines']=$selected_lines;
 }
 
-if (isset($_POST['deselPanel'])) {
-  $remove = $_POST['deselPanel'];
-  for ($i=0; $i < count($remove); $i++) {
-    $sql = "delete from linepanels
-         where linepanels_uid = $remove[$i]";
-    $r = mysql_query($sql) or die(mysql_error());
-  }
+// Delete a panel.
+if (isset($_POST[delete])) {
+  $remove = $_POST[panelist];
+  $sql = "delete from linepanels where linepanels_uid = $remove";
+  $r = mysql_query($sql) or die(mysql_error());
+  $feedback = "Panel deleted.<p>";
+ }
+
+// Edit a panel description.
+if (isset($_POST[update])) {
+  $panelid = $_POST[panelist];
+  $sql = "update linepanels set comment = '".$_POST[editdesc]."' where linepanels_uid = $panelid";
+  $r = mysql_query($sql) or die(mysql_error());
+  $feedback =  "Description updated.<p>";
  }
 // End of handling user input.
 
 print "<table><tr><td style='vertical-align:top; text-align:left;'>";
-print "<form action = \"".$_SERVER['PHP_SELF']."\" method=\"post\">";
+print "<form action = \"".$_SERVER['PHP_SELF']."\" method=\"post\" id=pform>";
 print "Add <font color=blue>current selection</font> as a panel.<br>";
 print "<input type=text name=panel value='&lt;panel name&gt;'>";
+print "<br><textarea name=description form=pform cols=30 rows=7>&lt;description&gt;</textarea>";
 print "<br><input type=submit value=\"Add\"><br>";
 print "</form>";
 
@@ -88,11 +94,11 @@ foreach ($_SESSION['selected_lines'] as $lineuid) {
   $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
   while ($row=mysql_fetch_assoc($result)) {
     $selval=$row['line_record_name'];
-    print "<option value=\"$lineuid\">$selval</option>\n";
+    print "<option value='$lineuid'>$selval</option>";
   }
 }
 print "</select>";
-print "<br><input type=\"submit\" value=\"Deselect highlighted lines\" /></p>";
+print "<br><input type=submit value='Deselect highlighted lines'>";
 print "</form>";
 print "</td></tr></table>";
 	
@@ -100,27 +106,52 @@ print "</td></tr></table>";
 if ($username)
   store_session_variables('selected_lines', $username);
 
-// Show current list of panels, if any.
+// Edit panel descriptions, or delete.
 $r = mysql_query("select * from linepanels") or die(mysql_error());
 if (mysql_num_rows($r) > 0) {
-  print "</div><div class='section'><h1>Delete Panels</h1>";
-  print "<form id=\"deselPanelForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\">";
-  print "<select name=\"deselPanel[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
+  print "</div><div class='section'><h1>Edit Panel Description</h1>";
+  // If user has sent a command and we're refreshing the page, show confirmation.
+  echo $feedback;
+  print "<form id=editform method=post>";
+  print "<table><tr><th>Name<th>Description";
+  print "<tr><td><select id=panelist name=panelist style='width: 16em' onchange='pickpanel(this)'>";
+  print "<option value=0>Which panel?...</option>";
   while ($row = mysql_fetch_assoc($r)) {
-    if (empty($row['line_ids']))
-      $count = 0;
-    else 
-      $count = count(explode(',', $row['line_ids']));
+    $count = count(explode(',', $row['line_ids']));
     $lpid = $row['linepanels_uid'];
     $lpname = $row['name'];
-    print "<option value=\"$lpid\">$lpname ($count)</option>\n";
+    print "<option value=$lpid>$lpname ($count)</option>\n";
   }
   print "</select>";
-  print "&nbsp;&nbsp;&nbsp;<br><input type=\"submit\" value=\"Delete highlighted panels\" /></p>";
+  print "<td><textarea name=editdesc id=editdesc cols=30 rows=7></textarea>";
+  print "</table>";
+  print "<input type=submit name=update value='Update'>";
+  print "<br><input type=submit name=delete value='Delete panel'>";
   print "</form>";
 }
 
-print "</div></div></div>";
+print "</div>";
 $footer_div=1;
 include($config['root_dir'].'theme/footer.php'); 
 ?>
+
+<script type=text/javascript>
+    function pickpanel(picked) {
+	// Output to textarea "Description".
+        var resp = document.getElementById("editdesc");
+        var req = getXMLHttpRequest();
+        if(!req) 
+            resp.innerHTML = "This function requires Ajax. Please report the problem.";
+        var qs = "?func=dispDesc&panelid="+picked.value; 
+        req.onreadystatechange = function() {
+            if(req.readyState == 4) {
+                resp.innerHTML = req.responseText;
+                resp.style.display="block";
+            }
+        }
+        req.open("GET", "login/ajaxfunctions.php"+qs, true);
+        req.send(null);
+    }
+</script>
+
+

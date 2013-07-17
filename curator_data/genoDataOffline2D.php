@@ -830,7 +830,6 @@ foreach ($marker_uid_list as $marker_uid)
 
 mysqlq("drop table if exists allele_conflicts");
 mysqlq("rename table allele_conflicts_temp to allele_conflicts");
-echo "Allele Conflicts table updated.\n";
 
 $body = "Allele conflicts table updated.\nNow updating the allele_bylines and allele_bymarker tables.\n";
 echo $body;
