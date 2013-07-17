@@ -147,6 +147,29 @@ function show_line_records($id) {
     echo "$kids<br><a href=\"pedigree/reverse_pedigree.php?line=".urlencode($name)."\">Descendants";
   echo "</table><br>";
   echo "</div>";
+
+  // Panels
+  $res = mysql_query("select name, line_ids, comment from linepanels") or die(mysql_error());
+  $i = 0;
+  while ($row = mysql_fetch_row($res)) {
+    $lineset = explode(",", $row[1]);
+    if (in_array($id, $lineset)) {
+      $panelset[$i][name] = $row[0];
+      $panelset[$i][desc] = $row[2];
+      $i++;
+    }
+  }
+  if (!empty($panelset)) {
+    echo "<div style='float: left; margin-left: 10px;'>";
+    echo "<h3>Panels</h3>";
+    echo "<table class='tableclass1' cellspacing=0 cellpadding=0>";
+    echo "<th>Name<th>Description";
+    $i = 0;
+    foreach ($panelset as $paname)
+      echo "<tr><td>$paname[name]<td>$paname[desc]";
+    echo "</table><br>";
+    echo "</div>";
+  }
 }
 
 /*
