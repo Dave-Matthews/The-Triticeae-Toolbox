@@ -282,7 +282,7 @@ if ($query == 'geno') {
    include $config['root_dir'].'theme/normal_header.php';
    print "<h3>Trials with Canopy Spectral Reflectance (CSR) data</h3>\n";
    print "<table border=0>";
-   print "<tr><td>Trail Code<td>Year<td>Files loaded\n";
+   print "<tr><td>Trial Code<td>Year<td>Files loaded\n";
    $sql = "select distinct(csr_measurement.experiment_uid), experiments.trial_code, experiments.experiment_year from csr_measurement, experiments where csr_measurement.experiment_uid = experiments.experiment_uid order by experiments.experiment_year";
    $res = mysql_query($sql) or die(mysql_error());
    while ($row = mysql_fetch_row($res)) {
