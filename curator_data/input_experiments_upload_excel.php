@@ -423,13 +423,11 @@ if ($_GET['delete']) {
   ?>
   <div class=section>
   <h3>Add Plot Level File</h3>
-  <table>
   <form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">
   <input type="hidden" id="plot" name="plot" value="-1" />
-  <tr><td><br><strong>Plot file:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
-  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls">Example Plot file</a>
-  </table>
-  <p><input type="submit" value="Upload" /></p>
+  <p><strong>Plot file:</strong> <input id="file[]" type="file" name="file[]" size="50%" /><br>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls">Example Plot file</a><br>
+  <input type="submit" value="Upload" /></p>
   </form>
 
   </div>
