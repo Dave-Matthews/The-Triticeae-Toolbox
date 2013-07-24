@@ -193,7 +193,7 @@ if ($query == 'geno') {
     $sql .= " where (markers.created_on > '$startdate') and (markers.created_on < '$enddate') $sql_opt";
     $sql .= " and markers.marker_type_uid = marker_types.marker_type_uid order by markers.created_on desc";
   }
-  print "<tr><td>Line name<td>type<td>created on\n";
+  print "<tr><td>Marker name<td>type<td>created on\n";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   while ($row = mysqli_fetch_row($res)) {
     $uid = $row[0];
