@@ -386,83 +386,6 @@ class Downloads
         header("Location: ".$dir.$filename);
 	}
 	
-	/**
-	 * this is the main entry point when there are no lines saved in session variable
-	 */
-    private function type1_breeding_programs_year()
-	{
-		?>	
-			<div id="step11">
-			<table>
-				<tr>
-					<th>Breeding Program</th>
-				</tr>
-				<tr>
-					<td>
-						<select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
-		<?php
-
-		// Select breeding programs for the drop down menu
-		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-				FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
-
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
-		{
-			?>
-				<option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
-			<?php
-		}
-		?>
-						</select>
-			</table>
-			</div></div>
-					
-			<div id="step2" style="float: left; margin-bottom: 1.5em;">
-			<p>2.
-		<select name="select2">
-		  <option value="BreedingProgram">Year</option>
-		</select></p>
-			<table>
-					<tr>
-					    <th>Year</th>
-					</tr>
-					<tr>
-					<td>
-						<select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-		<?php
-
-		// set up drop down menu with data showing year
-		// should this be phenotype experiments only? No
-
-		$sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-				WHERE e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'phenotype'";
-		if (!authenticate(array(USER_TYPE_PARTICIPANT,
-					USER_TYPE_CURATOR,
-					USER_TYPE_ADMINISTRATOR)))
-			$sql .= " and data_public_flag > 0";
-		$sql .= " GROUP BY e.experiment_year ASC";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
-			?>
-				<option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-			<?php
-		}
-		?>
-						</select>
-					</td>
-				</tr>
-			</table>
-		</div>
-		<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-		
-<?php
-	}
-	
     /**
      * starting with year
      */
@@ -1643,8 +1566,8 @@ class Downloads
 	 }
 	
 	 //generate an array of selected markers and add map position if available
-         $sql = "select marker_uid, marker_name, A_allele, B_allele from markers
-         where marker_uid IN ($markers_str)";
+         $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
+         where marker_uid IN ($markers_str) and markers.marker_type_uid = marker_types.marker_type_uid";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
          while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
@@ -1656,11 +1579,14 @@ class Downloads
            }
            if (preg_match("/[A-Z]/",$row[2]) && preg_match("/[A-Z]/",$row[3])) {
                 $allele = $row[2] . "/" . $row[3];
+           } elseif (preg_match("/DArT/",$row[4])) {
+                $allele = $row[2] . "/" . $row[3];
            } else {
                 $allele = "N/N";
            }
            $marker_list_name[$marker_uid] = $marker_name;
            $marker_list_allele[$marker_uid] = $allele;
+           $marker_list_type[$marker_uid] = $row[4];
          }
 
          //sort marker_list_all by map location if available
@@ -1700,6 +1626,7 @@ class Downloads
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
+          $marker_type = $marker_list_type[$marker_id];
 
           if ($dtype == "qtlminer") {
            $lookup = array(
@@ -1709,6 +1636,12 @@ class Downloads
            'AB' => '0',
             '' => 'NA'
            );
+          } elseif (preg_match("/DArT/", $marker_type)) {
+           $lookup = array(
+            'AA' => 'AA',
+            'BB' => 'BB',
+            '--' => 'NN'
+            ); 
           } else {
            $lookup = array(
            'AA' => substr($allele,0,1) . substr($allele,0,1),
@@ -1753,7 +1686,7 @@ class Downloads
                  $i++;
                }
              } else {
-               die("Error - could not find $marker_id<br>\n");
+               echo "Error - could not find $marker_id<br>\n";
              }
 	     $allele_str = implode("\t",$outarray2);
 	     $output .= "\t$allele_str\n"; 
