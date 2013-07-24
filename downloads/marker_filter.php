@@ -94,6 +94,12 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
         $marker_str = "";
     }
 
+    //create list of selected markers
+    foreach ($markers as $key=>$marker_uid) {
+        $selected_markers[$marker_uid] = 1;
+        echo "selected $marker_uid\n";
+    }
+
     //get location information for markers
     $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -144,15 +150,13 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
             }
         }
     }
-    $i=0;
     $num_mark = 0;
     $num_maf = $num_miss = $num_removed = 0;
-    if (isset($_SESSION['clicked_buttons'])) {
-         $all_list = $markers;
-    } else {
-         $all_list = $marker_list;
-    }
-    foreach ($all_list as $marker_uid) {
+    foreach ($marker_list as $i=>$marker_uid) {
+        //if there are selected markers then only calculate allele frequencies for these
+        if (isset($_SESSION['clicked_buttons']) && !isset($selected_markers[$marker_uid])) {
+            continue;
+        }
         $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
         $total_af = 2 * ($marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i]);
         if ($total_af > 0) {
@@ -167,7 +171,6 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
             }
             $num_mark++;
         }
-        $i++;
     }
     $_SESSION['filtered_markers'] = $markers_filtered;
     $count = count($markers_filtered);
