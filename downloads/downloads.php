@@ -1457,7 +1457,7 @@ class Downloads
                         $i++;
                       }
                     } else {
-                      die("error - could not find uid\n");
+                      echo "Error - could not find line_uid $line_record_uid\n";
                     }
                   }
 		  $outarray = implode($delimiter,$outarray2);
@@ -1689,7 +1689,7 @@ class Downloads
                  $i++;
                }
              } else {
-               echo "Error - could not find $marker_id<br>\n";
+               echo "Error - could not find marker_uid $marker_id<br>\n";
              }
 	     $allele_str = implode("\t",$outarray2);
 	     $output .= "\t$allele_str\n"; 
