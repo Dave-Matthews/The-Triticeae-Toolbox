@@ -697,23 +697,28 @@ function update_phenotype_linesb(options) {
                 document.getElementById('step5').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&mml=' + mml + '&use_line=yes';
                 document.title='Loading Markers...';
-                //changes are right here
                 var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
-                    //onCreate: function() { Element.show('spinner'); },
                     onComplete: function() {
                          $('step5').show();
-                        if (traits_loading === false) {
-                            document.title = title;
-                        }
-                        //Element.hide('spinner');
+                        document.title = title;
                         markers_loading = false;
                         markers_loaded = true;
                     }}
                 );
-
+                document.getElementById('step6').innerHTML = "Creating download file";
                 url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
+                document.title='Creating Download file...';
+                tmp = new Ajax.Updater($('step6'), url, {
+                    onComplete: function() {
+                        $('step6').show();
+                        document.title = title;
+                        Element.hide('spinner');
+                    }}
+                );
+            }
+
+            function download( url ) {
                 document.location = url;
-                Element.hide('spinner');
             }
 
 			function load_markers_pheno( mm, mmaf) {
