@@ -382,8 +382,10 @@ class Downloads
         $zip->newFile("allele_conflict.txt");
         $zip->writeData($this->type2_build_conflicts_download($lines,$markers));
         $zip->close();
-        
-        header("Location: ".$dir.$filename);
+       
+        ?>
+        <input type="button" value="Download Zip file of results" onclick="javascript:download('<?php echo "$dir$filename"; ?>');" />
+        <?php
 	}
 	
     /**
@@ -443,7 +445,8 @@ class Downloads
             $this->step4_lines();
             ?></div>
 	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+            <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 	    <script type="text/javascript">
 	      var mm = 10;
 	      var mmaf = 5; 
@@ -697,11 +700,11 @@ class Downloads
                <table border=0>
 	       <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
                <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
-	       <tr><td><input type="button" value="Download for Tassel" onclick="javascript:use_session('v4');"  />
+	       <tr><td><input type="button" value="Create file for Tassel" onclick="javascript:use_session('v4');"  />
                <td>genotype coded as {A,C,T,G,N} using the HapMap file format
-               <tr><td><input type="button" value="Download for R" onclick="javascript:use_session('v5');" />
+               <tr><td><input type="button" value="Create file for R" onclick="javascript:use_session('v5');" />
                <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}
-               <tr><td><input type="button" value="Download for FlapJack" onclick="javascript:use_session('v6');" />
+               <tr><td><input type="button" value="Create file for FlapJack" onclick="javascript:use_session('v6');" />
                <td>genotype coded as {AA, AB, BB}
                </table>
                <br><br>The genotype file (snpfile.txt or genotype.hmp.txt) contains one measurement for each line and marker. If the line has more than one genotype measurement then a majority rule is used. When there is no majority the measurement is set to "missing". The allele_conflict.txt file list all cases where there have been different results for the same line and marker. Documentation for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
