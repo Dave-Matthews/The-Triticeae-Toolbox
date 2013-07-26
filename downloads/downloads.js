@@ -687,6 +687,19 @@ function update_phenotype_linesb(options) {
                 document.getElementById('step4b').innerHTML = "";
                 document.getElementById('step5').innerHTML = "";
 			} 
+
+           function create_file(version) {
+                document.getElementById('step6').innerHTML = "Creating download file";
+                var url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str;
+                document.title='Creating Download file...';
+                var tmp = new Ajax.Updater($('step6'), url, {
+                    onComplete: function() {
+                        $('step6').show();
+                        document.title = title;
+                        Element.hide('spinner');
+                    }}
+                );
+            }
 	
 	function use_session(version) {
 	        var mm = $('mm').getValue();
@@ -697,26 +710,17 @@ function update_phenotype_linesb(options) {
                 document.getElementById('step5').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&mml=' + mml + '&use_line=yes';
                 document.title='Loading Markers...';
-                var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
+                var tmp = new Ajax.Updater($('step5'), url, {
                     onComplete: function() {
                          $('step5').show();
                         document.title = title;
                         markers_loading = false;
                         markers_loaded = true;
-                    }}
-                );
-                document.getElementById('step6').innerHTML = "Creating download file";
-                url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
-                document.title='Creating Download file...';
-                tmp = new Ajax.Updater($('step6'), url, {
-                    onComplete: function() {
-                        $('step6').show();
-                        document.title = title;
-                        Element.hide('spinner');
+                        create_file(version);
                     }}
                 );
             }
-
+     
             function download( url ) {
                 document.location = url;
             }
