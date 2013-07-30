@@ -708,6 +708,7 @@ function update_phenotype_linesb(options) {
                 markers_loading = true;
                 Element.show('spinner');
                 document.getElementById('step5').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
+                document.getElementById('step6').innerHTML = "";
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&mml=' + mml + '&use_line=yes';
                 document.title='Loading Markers...';
                 var tmp = new Ajax.Updater($('step5'), url, {
