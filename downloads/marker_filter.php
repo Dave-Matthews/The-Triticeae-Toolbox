@@ -25,6 +25,10 @@
  */
 function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
 {
+     $tmp = count($lines);
+     if ($tmp == 0) {
+         return;
+     }
      $selectedlines = implode(",", $lines);
 
     //get genotype experiments that correspond with the Datasets (BP and year) selected for the experiments

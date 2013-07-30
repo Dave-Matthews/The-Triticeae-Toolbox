@@ -136,12 +136,6 @@ class Downloads
 	private function type1_checksession()
     {
             ?>
-            <style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
 		<div id="title">
 		<?php
             $phenotype = "";
@@ -188,21 +182,18 @@ class Downloads
             $this->refresh_title();
          ?>        
         </div>
-		<div id="step1" style="float: left; margin-bottom: 1.5em;">
-		<script type="text/javascript" src="downloads/downloads.js"></script>
          <?php 
                 if (empty($_SESSION['selected_lines'])) {
                     echo "Download genotype, phenotype, map, and genotype conflicts. File formats are available for Tassel, R, or FlapJack.<br><br>";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "pedigree/line_selection.php>Select Lines by Properties</a> or ";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>.";
-                    echo "</div>";
-                } else {
-                   $this->type1_lines_trial_trait(); 
+                    echo "<a href=\"" . $config['base_url'];
+                    echo "pedigree/line_selection.php\">Select Lines by Properties</a> or ";
+                    echo "<a href=\"" . $config['base_url'];
+                    echo "downloads/select_all.php\">Wizard (Lines, Traits, Trials)</a><br><br>.";
                 }
+                   ?> 
+                   <div id="step1" style="float: left; margin-bottom: 1.5em;">
+                   <?php
+                   $this->type1_lines_trial_trait(); 
                 ?>
                 </div>
                 <?php
@@ -218,7 +209,7 @@ class Downloads
       ?>
       <h2>Download Genotype and Phenotype Data</h2>
       <p> 
-      <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+      <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
       <?php 
       if ($command == "save") {
         if (!empty($_GET['lines'])) {
@@ -447,6 +438,7 @@ class Downloads
 	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
 	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
             <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+            <script type="text/javascript" src="downloads/downloads.js"></script>
 	    <script type="text/javascript">
 	      var mm = 10;
 	      var mmaf = 5; 
@@ -467,15 +459,16 @@ class Downloads
 	 */
 	private function step1_lines()
 	{
+            ?>
+            <table id="phenotypeSelTab" class="tableclass1">
+            <tr>
+            <th>Lines</th>
+            <tr><td>
+            <?php
 		if (isset($_SESSION['selected_lines'])) {
 			$selectedlines= $_SESSION['selected_lines'];
 	        $count = count($_SESSION['selected_lines']);
 		?>
-	    <table id="phenotypeSelTab" class="tableclass1">
-	    <tr>
-	    <th>Lines</th>
-	    </tr>
-	    <tr><td>
 	    <select name="lines" multiple="multiple" style="height: 12em;">
 	    <?php
 	    foreach($selectedlines as $uid) {
@@ -491,14 +484,11 @@ class Downloads
 	    ?>
 	    </select>
 	    </td>
-	    </table>
 	    <?php 
 	    } else {
-	    	echo "Select lines for download<br>";
-	        echo "<a href=";
-	        echo $config['base_url'];
-	        echo "pedigree/line_selection.php>Select Lines by Properties</a>";
-	    }
+                echo "none selected";
+            }
+            echo "</table>";
 	}
 	
 	/**
@@ -529,11 +519,11 @@ class Downloads
 	        </option>
 	        <?php
 	      }
+              echo "</select>";
 	    } else {
 	      echo "All";
 	    }
 	    ?>
-	    </select>
 	    </td>
 	    </table>
 	    <?php  
@@ -545,7 +535,7 @@ class Downloads
 	private function step3_lines()
 	{
 	    ?>
-	    <table id="" class="tableclass1">
+	    <table class="tableclass1">
 	    <tr>
 	    <th>Traits</th>
 	    </tr>
@@ -566,11 +556,12 @@ class Downloads
                     </option>
                     <?php
                 }
+              echo "</select>";
             } else {
               echo "none selected";
             }
             ?>
-            </select></table>
+            </table>
              <?php
         }
 
@@ -580,7 +571,7 @@ class Downloads
         private function step4_lines()
         {
             ?>
-            <table id="" class="tableclass1">
+            <table class="tableclass1">
             <tr>
             <th>Trials</th>
             </tr>
@@ -601,11 +592,12 @@ class Downloads
                     </option>
                     <?php
                 }
+              echo "</select>";
             } else {
               echo "none selected";
             }
             ?>
-            </select></table>
+            </table>
              <?php
         }
 
@@ -700,11 +692,11 @@ class Downloads
                <table border=0>
 	       <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
                <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
-	       <tr><td><input type="button" value="Create file for Tassel" onclick="javascript:use_session('v4');"  />
+	       <tr><td><input type="button" value="Create file for Tassel" onclick="javascript:use_session('v4');">
                <td>genotype coded as {A,C,T,G,N} using the HapMap file format
-               <tr><td><input type="button" value="Create file for R" onclick="javascript:use_session('v5');" />
+               <tr><td><input type="button" value="Create file for R" onclick="javascript:use_session('v5');">
                <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}
-               <tr><td><input type="button" value="Create file for FlapJack" onclick="javascript:use_session('v6');" />
+               <tr><td><input type="button" value="Create file for FlapJack" onclick="javascript:use_session('v6');">
                <td>genotype coded as {AA, AB, BB}
                </table>
                <br><br>The genotype file (snpfile.txt or genotype.hmp.txt) contains one measurement for each line and marker. If the line has more than one genotype measurement then a majority rule is used. When there is no majority the measurement is set to "missing". The allele_conflict.txt file list all cases where there have been different results for the same line and marker. Documentation for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>

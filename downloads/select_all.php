@@ -201,12 +201,6 @@ class SelectPhenotypeExp
 	private function type1_checksession()
     {
             ?>
-            <style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
 		<div id="title">
 		<?php
             $phenotype = "";
@@ -501,7 +495,7 @@ class SelectPhenotypeExp
 	{
 		?>	
 			<div id="step11">
-			<table>
+			<table class="tableclass1">
 				<tr>
 					<th>Breeding Program</th>
 				</tr>
@@ -535,7 +529,7 @@ class SelectPhenotypeExp
 		<select name="select2">
 		  <option value="BreedingProgram">Year</option>
 		</select></p>
-			<table>
+			<table class="tableclass1">
 					<tr>
 					    <th>Year</th>
 					</tr>
@@ -944,7 +938,7 @@ class SelectPhenotypeExp
      /* $this->calculate_af($lines, $min_maf, $max_missing); */
      $traits_ary = explode(",",$phen_item);
      $count = count($traits_ary);
-     echo ", $count traits";
+     echo ", $count traits<br>";
      
      ?>
      <input type="hidden" name="subset" id="subset" value="yes" /><br>
@@ -1394,7 +1388,7 @@ class SelectPhenotypeExp
 	 /* $this->calculate_af($lines, $min_maf, $max_missing); */
          $traits_ary = explode(",",$phen_item);
          $count = count($traits_ary);
-         echo ", $count traits";
+         echo ", $count traits<br>";
 	 
 	 if ($saved_session != "") {
 	     if ($countLines == 0) {
@@ -1404,10 +1398,8 @@ class SelectPhenotypeExp
 	       echo "pedigree/line_selection.php> Select lines</a><br>";
 	     } else {
 	       ?>
-               <table> <tr> <td COLSPAN="3">
                <input type="hidden" name="subset" id="subset" value="yes" /><br>
                <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
-               </td> </tr> </table>
 	       <?php    
 	     }
 	  }
@@ -1693,7 +1685,7 @@ class SelectPhenotypeExp
 	  <option value="BreedingProgram">Lines</option>
 	  </select></p>
 	  
-	  <table id="phenotypeSelTab">
+	  <table id="phenotypeSelTab" class="tableclass1">
 	  <tr>
 	  <?php 
 	  $sql_option = "";
@@ -1716,7 +1708,7 @@ class SelectPhenotypeExp
             <td>Lines found: <?php
             echo $count;
             ?>
-            <td><td>Current selection: <?php echo count($_SESSION['selected_lines']); ?></td><td></td>
+            <td><td>Current selection: <?php echo count($_SESSION['selected_lines']); ?></td>
             <?php
           } else {
           ?>
@@ -1853,7 +1845,7 @@ class SelectPhenotypeExp
 </select></p>
 <div>
 
-<table>
+<table class="tableclass1">
 	<tr><th>Trials</th></tr>
 	<tr><td>
 		<select name="experiments" multiple="multiple"
@@ -1939,7 +1931,7 @@ class SelectPhenotypeExp
 			if (mysql_num_rows($res) >= 1)
 			{
 ?>
-<table>
+<table class="tableclass1">
 	<tr><th>Trait</th></tr>
 	<tr><td>
 		<select id="traitsbx" name="traits" multiple="multiple" style="height: 12em" onchange="javascript: update_phenotype_items(this.options)">
@@ -2091,13 +2083,11 @@ class SelectPhenotypeExp
 		/* $this->calculate_af($lines, $min_maf, $max_missing);  */
                 $traits_ary = explode(",",$traits); 
                 $count = count($traits_ary);
-                echo ", $count traits";
+                echo ", $count traits<br>";
 		
 		?>
-		<table> <tr> <td COLSPAN="3">
 		<input type="hidden" name="subset" id="subset" value="yes" /><br>
                 <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
-		</td> </tr> </table>
 		<?php
 		
 		?></div><?php
@@ -2224,13 +2214,11 @@ class SelectPhenotypeExp
 	/* $this->calculate_af($lines, $min_maf, $max_missing); */
         $traits_ary = explode(",",$phen_item);
         $count = count($traits_ary);
-        echo ", $count traits";
+        echo ", $count traits<br>";
 	
 	?>
-	<table> <tr> <td COLSPAN="3">
 	<input type="hidden" name="subset" id="subset" value="yes" /><br>
         <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
-	</td> </tr> </table>
 	<?php
 	
 	?></div><?php

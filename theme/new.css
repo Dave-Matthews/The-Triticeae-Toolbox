@@ -5,8 +5,9 @@
    ******************************************************************************/
 body
 {
-    background: #f9b738;
-    font-family: arial, helvitca, sans-serif;
+/*     background: #f9b738;
+ */    background: #f9cb73;
+    font-family: arial, helvetica, sans-serif;
     font-size: 62.5%; /* 1 em = 10px */
 }
 
@@ -123,11 +124,12 @@ html>body #logo
 
 #footer
 {
+    margin-left: 230px;
     margin-top: 50px;
     padding-top: 25px;
     background: #85cacf url('images/foothdg.png') repeat-x;
     text-align: center;
-    clear: both
+    clear: both;
 }
 #quicklinks h2
 {
@@ -194,7 +196,9 @@ html>body #logo
     margin-bottom: 1em
 }
 
+/* dem mar12: Set a minimum height to allow room for What's New. */
 #main {
+    min-height: 450px;
     margin-right: 10px;
     margin-top: 160px;
     margin-left: 245px;
@@ -240,10 +244,21 @@ table td
     text-align: left;
 }
 
-
-
-
-
+table.tableclass1 th {
+    background: #5B53A6 !important;
+    color: white !important;
+    border-left: 2px solid #5B53A6;
+}
+table.tableclass1 table {
+    background: none;
+    border-collapse: collapse;
+}
+table.tableclass1 td {
+    border: 1px white;
+    border-left: 0;
+    border-right: 0;
+    background: white;
+}
 
 #nav {position:absolute; top:99px; left:11px; height:42px;
     background:url('images/btnlt.png') no-repeat;
