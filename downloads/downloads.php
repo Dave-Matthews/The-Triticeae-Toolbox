@@ -319,63 +319,82 @@ class Downloads
 		 $experiments_g = implode(',',$exp);
 		}
 		
-		$dir = '/tmp/tht/';
-                if (($version == "V2") || ($version == "V3") || ($version == "V4")) {
-                  $filename = "T3download_tassel_";
-                } elseif ($version == "V5") {
-                  $filename = "T3download_R_";
-                } elseif ($version == "V6") {
-                  $filename = "T3download_FJ_";
-                } else {
-                  $filename = "T3download_";
-                }
-                $filename .= chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
-
-	        // File_Archive doesn't do a good job of creating files, so we'll create it first
-                if(!file_exists($dir.$filename)){
-                        $h = fopen($dir.$filename, "w+");
-                        fclose($h);
-                }
-        $zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
+                $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+                $filename = "download_" . $unique_str;
+                mkdir("/tmp/tht/$filename");
         $subset = "yes";
         $dtype = "";
         
         if (isset($_SESSION['phenotype'])) {
-		  $zip->newFile("traits.txt");
-		  $zip->writeData($this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset));
+            $filename = "traits.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset);
+            fwrite($h, $output);
+            fclose($h);
         }
         if ($version == "V2") {
-          $zip->newFile("annotated_alignment.txt");
-          $zip->writeData($this->type1_build_annotated_align($experiments_g));
+            $filename = "annotated_alignment.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_annotated_align($experiments_g);
+            fwrite($h, $output);
+            fclose($h);
         } elseif ($version == "V3") {
-          $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
-          $zip->newFile("snpfile.txt");
-          $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
+            $filename = "geneticMap.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
+            $filename = "snpfile.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
         } elseif ($version == "V4") {
-          $zip->newFile("genotype.hmp.txt");
-          $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
+            $filename = "genotype.hmp.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type3_build_markers_download($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
         } elseif ($version == "V5") { //Download for R
-          $dtype = "qtlminer";
-          $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
-          $zip->newFile("snpfile.txt");
-          $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
-          $zip->newFile("genotype.hmp.txt");
-          $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
+            $dtype = "qtlminer";
+            $filename = "geneticMap.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
+            $filename = "snpfile.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
+            $output = "genotype.hmp.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type3_build_markers_download($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
-          $dtype = "AB";
-          $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
-          $zip->newFile("snpfile.txt");
-          $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
+            $dtype = "AB";
+            $filename = "geneticMap.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
+            $filename = "snpfile.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
         }
-        $zip->newFile("allele_conflict.txt");
-        $zip->writeData($this->type2_build_conflicts_download($lines,$markers));
-        $zip->close();
+        $filename = "allele_conflict.txt";
+        $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+        $output = $this->type2_build_conflicts_download($lines,$markers);
+        fwrite($h, $output);
+        fclose($h);
+        $filename = "/tmp/tht/download_" . $unique_str . ".zip";
+        exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str"); 
        
         ?>
-        <input type="button" value="Download Zip file of results" onclick="javascript:download('<?php echo "$dir$filename"; ?>');" />
+        <input type="button" value="Download Zip file of results" onclick="javascript:download('<?php echo "$filename"; ?>');" />
         <?php
 	}
 	
