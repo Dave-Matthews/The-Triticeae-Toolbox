@@ -349,7 +349,7 @@ class Downloads
             $output = $this->type2_build_markers_download($lines,$markers,$dtype);
             fwrite($h, $output);
             fclose($h);
-        } elseif ($version == "V4") {
+        } elseif ($version == "V4") { //Download for Tassel
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
             $output = $this->type3_build_markers_download($lines,$markers,$dtype);
@@ -367,7 +367,7 @@ class Downloads
             $output = $this->type2_build_markers_download($lines,$markers,$dtype);
             fwrite($h, $output);
             fclose($h);
-            $output = "genotype.hmp.txt";
+            $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
             $output = $this->type3_build_markers_download($lines,$markers,$dtype);
             fwrite($h, $output);
@@ -1442,37 +1442,34 @@ class Downloads
 		  $sql = "select line_record_name, alleles from allele_byline where line_record_uid = $line_record_uid";
 		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		  if ($row = mysql_fetch_array($res)) {
-		    $outarray2 = array();
-                    $outarray2[] = $row[0];
+                    $line_name = $row[0];
                     $alleles = $row[1];
 		    $outarray = explode(',',$alleles);
-		    $i=0;
-		    foreach ($outarray as $allele) {
-		  	$marker_id = $marker_list[$i];
+		    foreach ($outarray as $key=>$allele) {
+		  	$marker_id = $marker_list[$key];
 		  	if (isset($marker_lookup[$marker_id])) {
-		  	  $outarray2[]=$lookup[$allele];
-		  	}
-		        $i++;
+		  	  $outarray[$key]=$lookup[$allele];
+		  	} else {
+                          unset($outarray[$key]);
+                        }
 		    }
                   } else {
                     $sql = "select line_record_name from line_records where line_record_uid = $line_record_uid";
                     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
                     if ($row = mysql_fetch_array($res)) {
-                      $outarray2 = array();
-                      $outarray2[] = $row[0];
-                      $i=0;
                       foreach ($marker_list as $marker_id) {
                         if (isset($marker_lookup[$marker_id])) {
-                          $outarray2[]=$lookup[""];
+                          $outarray[$key]=$lookup[""];
+                        } else {
+                          unset($outarray[$key]);
                         }
-                        $i++;
                       }
                     } else {
                       echo "Error - could not find line_uid $line_record_uid\n";
                     }
                   }
-		  $outarray = implode($delimiter,$outarray2);
-		  $output .= $outarray . "\n";
+		  $allele_str = implode($delimiter,$outarray);
+		  $output .= $line_name . "\t" . $allele_str . "\n";
 		}
 		$nelem = count($marker_names);
 		$num_lines = count($lines);
@@ -1685,24 +1682,24 @@ class Downloads
              } else {
 	       $output .= "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t";
              }
-	     $outarray2 = array();
              $sql = "select marker_name, alleles from allele_bymarker where marker_uid = $marker_id";
              $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
              if ($row = mysql_fetch_array($res)) {
+               $marker_name = $row[0];
                $alleles = $row[1];
                $outarray = explode(',',$alleles);
-               $i=0;
-               foreach ($outarray as $allele) {
-                 $line_id = $line_list[$i];
+               foreach ($outarray as $key=>$allele) {
+                 $line_id = $line_list[$key];
                  if (isset($line_lookup[$line_id])) {
-                   $outarray2[]=$lookup[$allele];
+                   $outarray[$key]=$lookup[$allele];
+                 } else {
+                   unset($outarray[$key]);
                  }
-                 $i++;
                }
              } else {
                echo "Error - could not find marker_uid $marker_id<br>\n";
              }
-	     $allele_str = implode("\t",$outarray2);
+	     $allele_str = implode("\t",$outarray);
 	     $output .= "\t$allele_str\n"; 
 	 }
 	 return $outputheader."\n".$output;
