@@ -346,14 +346,12 @@ class Downloads
             fclose($h);
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_markers_download($lines,$markers,$dtype);
-            fwrite($h, $output);
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         } elseif ($version == "V4") { //Download for Tassel
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type3_build_markers_download($lines,$markers,$dtype);
-            fwrite($h, $output);
+            $output = $this->type3_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         } elseif ($version == "V5") { //Download for R
             $dtype = "qtlminer";
@@ -364,13 +362,12 @@ class Downloads
             fclose($h);
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_markers_download($lines,$markers,$dtype);
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
             fwrite($h, $output);
             fclose($h);
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type3_build_markers_download($lines,$markers,$dtype);
-            fwrite($h, $output);
+            $output = $this->type3_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
             $dtype = "AB";
@@ -381,8 +378,7 @@ class Downloads
             fclose($h);
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_markers_download($lines,$markers,$dtype);
-            fwrite($h, $output);
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         }
         $filename = "allele_conflict.txt";
@@ -1353,28 +1349,12 @@ class Downloads
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	function type2_build_markers_download($lines,$markers,$dtype)
+	function type2_build_markers_download($lines,$markers,$dtype, $h)
 	{
 		$output = '';
 		$doneheader = false;
 		$delimiter ="\t";
                 $outputheader = '';
-		
-		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-			$max_missing = $_GET['mm'];
-		if ($max_missing>100)
-			$max_missing = 100;
-		elseif ($max_missing<0)
-		$max_missing = 0;
-		// $firephp->log("in sort markers2");
-		$min_maf = 0.01;//IN PERCENT
-		if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-			$min_maf = $_GET['mmaf'];
-		if ($min_maf>100)
-			$min_maf = 100;
-		elseif ($min_maf<0)
-		$min_maf = 0;
-		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
 		
 		if (count($markers)>0) {
 		  $markers_str = implode(",", $markers);
@@ -1412,7 +1392,17 @@ class Downloads
                     }
 		  }
 		}
-		
+
+                $nelem = count($marker_names);
+                $num_lines = count($lines);	
+                if ($dtype =='qtlminer')  {
+                    fwrite($h, "$outputheader\n");
+                } elseif ($dtype == 'AB') {
+                    fwrite($h, "# fjFile = GENOTYPE\n".$delimiter.$outputheader."\n");
+                } else {
+                    fwrite($h, "$num_lines.$delimiter.$nelem.:2\n".$outputheader."\n");
+                }
+
 		if ($dtype=='qtlminer') {
 		 $lookup = array(
 		   'AA' => '1',
@@ -1469,30 +1459,10 @@ class Downloads
                     }
                   }
 		  $allele_str = implode($delimiter,$outarray);
-		  $output .= $line_name . "\t" . $allele_str . "\n";
+                  fwrite($h, "$line_name\t$allele_str\n");
 		}
-		$nelem = count($marker_names);
-		$num_lines = count($lines);
 		if ($nelem == 0) {
 		   die("error - no genotype or marker data for this selection");
-		}
-		
-		// make an empty line with the markers as array keys, set default value
-		//  to the default missing value for either qtlminer or tassel
-		// places where the lines may have different values
-		
-		if ($dtype =='qtlminer')  {
-			$empty = array_combine($marker_names,array_fill(0,$nelem,'NA'));
-		} else {
-			$empty = array_combine($marker_names,array_fill(0,$nelem,'?'));
-		}
-		
-		if ($dtype =='qtlminer')  {
-			return $outputheader."\n".$output;
-                } elseif ($dtype == 'AB') {
-                        return "# fjFile = GENOTYPE\n".$delimiter.$outputheader."\n".$output;
-		} else {
-			return $num_lines.$delimiter.$nelem.":2\n".$outputheader."\n".$output;
 		}
 	}
   
@@ -1502,27 +1472,12 @@ class Downloads
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	function type3_build_markers_download($lines,$markers,$dtype)
+	function type3_build_markers_download($lines,$markers,$dtype,$h)
 	{
 	 $output = '';
 	 $outputheader = '';
 	 $delimiter ="\t";
 	
-	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-	  $max_missing = $_GET['mm'];
-	 if ($max_missing>100)
-	  $max_missing = 100;
-	 elseif ($max_missing<0)
-	 $max_missing = 0;
-	 // $firephp->log("in sort markers2");
-	 $min_maf = 0.01;//IN PERCENT
-	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-	  $min_maf = $_GET['mmaf'];
-	 if ($min_maf>100)
-	  $min_maf = 100;
-	 elseif ($min_maf<0)
-	 $min_maf = 0;
-
          if (isset($_SESSION['selected_map'])) {
            $selected_map = $_SESSION['selected_map'];
          } else {
@@ -1627,6 +1582,7 @@ class Downloads
 	  $name = $row[0];
 	  $outputheader .= "\t$name";
 	 }
+         fwrite($h, "$outputheader\n");
 	 
 	 $lookup_chrom = array(
 	   '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
@@ -1678,9 +1634,9 @@ class Downloads
 	        $pos = 0;
 	     }
              if ($dtype == "qtlminer") {
-               $output .= "$marker_name\t$allele\t$chrom\t$pos";
+               fwrite($h, "$marker_name\t$allele\t$chrom\t$pos");
              } else {
-	       $output .= "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t";
+	       fwrite($h, "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t");
              }
              $sql = "select marker_name, alleles from allele_bymarker where marker_uid = $marker_id";
              $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -1700,9 +1656,8 @@ class Downloads
                echo "Error - could not find marker_uid $marker_id<br>\n";
              }
 	     $allele_str = implode("\t",$outarray);
-	     $output .= "\t$allele_str\n"; 
+	     fwrite($h, "\t$allele_str\n"); 
 	 }
-	 return $outputheader."\n".$output;
 	}
 	
 	/**
