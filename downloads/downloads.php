@@ -26,7 +26,7 @@ set_include_path(GET_INCLUDE_PATH() . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
-require_once $config['root_dir'].'includes/File_Archive/Archive.php';
+//require_once $config['root_dir'].'includes/File_Archive/Archive.php';
 require_once $config['root_dir'].'downloads/marker_filter.php';
 
 // connect to database
@@ -208,7 +208,6 @@ class Downloads
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       ?>
       <h2>Download Genotype and Phenotype Data</h2>
-      <p> 
       <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
       <?php 
       if ($command == "save") {
@@ -249,7 +248,6 @@ class Downloads
        <?php
       }
       ?>
-      </p>
       <?php 
     }
     
@@ -390,7 +388,7 @@ class Downloads
         exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str"); 
        
         ?>
-        <input type="button" value="Download Zip file of results" onclick="javascript:download('<?php echo "$filename"; ?>');" />
+        <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
         <?php
 	}
 	
