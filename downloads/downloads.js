@@ -722,10 +722,6 @@ function update_phenotype_linesb(options) {
                 );
             }
      
-            function download( url ) {
-                document.location = url;
-            }
-
 			function load_markers_pheno( mm, mmaf) {
                 markers_loading = true;
                 $('step5').hide();
@@ -754,33 +750,18 @@ function update_phenotype_linesb(options) {
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&use_line=' + use_line;
                 document.title='Loading Markers...';
                 //changes are right here
-                var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
-                    //onCreate: function() { Element.show('spinner'); },
+                var tmp = new Ajax.Updater($('step5'), url, {
                     onComplete: function() {
                          $('step5').show();
                         if (traits_loading === false) {
                             document.title = title;
                         }
                         Element.hide('spinner');
+                        load_title();
                         markers_loading = false;
                         markers_loaded = true;
                     }}
                 );
-                url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&pi=' + phenotype_items_str + '&subset=' + subset;
-                tmp = new Ajax.Updater($('title'), url, {
-                     onComplete : function() {
-                     $('title').show();
-                     document.title = title;
-                     }
-                });
-                url = "side_menu.php";
-                tmp = new Ajax.Updater($('quicklinks'), url, {
-                    onComplete : function() {
-                    $('quicklinks').show();
-                    document.title = title;
-                    }
-                });
-
             }
 
             function mrefresh() {
