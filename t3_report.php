@@ -193,7 +193,7 @@ if ($query == 'geno') {
     $sql .= " where (markers.created_on > '$startdate') and (markers.created_on < '$enddate') $sql_opt";
     $sql .= " and markers.marker_type_uid = marker_types.marker_type_uid order by markers.created_on desc";
   }
-  print "<tr><td>Line name<td>type<td>created on\n";
+  print "<tr><td>Marker name<td>type<td>created on\n";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   while ($row = mysqli_fetch_row($res)) {
     $uid = $row[0];
@@ -278,6 +278,27 @@ if ($query == 'geno') {
      fwrite($fp,"$MarkersWithGeno\n");
      fwrite($fp,"$MarkersNoGeno\n");
      fclose($fp);
+} elseif ($query == "csr1") {
+   include $config['root_dir'].'theme/normal_header.php';
+   print "<h3>Trials with Canopy Spectral Reflectance (CSR) data</h3>\n";
+   print "<table border=0>";
+   print "<tr><td>Trial Code<td>Year<td>Files loaded\n";
+   $sql = "select distinct(csr_measurement.experiment_uid), experiments.trial_code, experiments.experiment_year from csr_measurement, experiments where csr_measurement.experiment_uid = experiments.experiment_uid order by experiments.experiment_year";
+   $res = mysql_query($sql) or die(mysql_error());
+   while ($row = mysql_fetch_row($res)) {
+       $uid = $row[0];
+       $trial_code = $row[1];
+       $year = $row[2];
+       $sql = "select count(measurement_uid) from csr_measurement where experiment_uid = $uid";
+       $res2 = mysql_query($sql) or die(mysql_error());
+       if ($row2 = mysql_fetch_row($res2)) {
+           $count = $row2[0];
+       } else {
+           $count = "";
+       }
+       print "<tr><td><a href=display_phenotype.php?trial_code=$trial_code>$trial_code</a><td>$year<td>$count\n";
+   }
+   print "</table>";
 } else {
   if ($output == 'html') {
     header('Content-Type: application/vnd.ms-excel');
@@ -528,6 +549,29 @@ if ($query == 'geno') {
   } else {
       print "<tr><td>last addition<td>$count\n";
       print "</table><br>\n";
+  }
+
+  //* CSR data */
+  $sql = "select count(distinct(experiment_uid)) from csr_measurement"; 
+  $res = mysql_query($sql) or die(mysql_error());
+  if ($row=mysql_fetch_row($res)) {
+    $count = $row[0];
+  }
+  if ($output == "excel") {
+  } else {
+    print "<b>Canopy Spectral Reflectance (CSR) Data</b>\n";
+    print "<table>\n";
+    print "<tr><td>Trials<td>$count<td><a href=t3_report.php?query=csr1>List of experiments</a>\n";
+  }
+  $sql = "select count(measurement_uid) from csr_measurement";
+  $res = mysql_query($sql) or die(mysql_error());
+  if ($row=mysql_fetch_row($res)) {
+    $count = $row[0];
+  }
+  if ($output == "excel") {
+  } else {
+    print "<tr><td>Files loaded<td>$count\n";
+    print "</table><br>\n";
   }
 
   $count = "";

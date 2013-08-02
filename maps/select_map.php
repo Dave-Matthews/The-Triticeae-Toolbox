@@ -106,7 +106,7 @@ class Maps {
       echo "This table lists the total markers in each map<br>\n";
     $res = mysql_query($sql) or die (mysql_error());
     echo "<table>\n";
-    echo "<tr><td>select<td>count<td>name<td>comment\n";
+    echo "<tr><td>select<td>count<td>name<td>comment (mouse over item for complete text)\n";
     while ($row = mysql_fetch_assoc($res)) {
       $count = $row["countm"];
       $val = $row["mapset_name"];
@@ -118,7 +118,7 @@ class Maps {
       } else {
         $checked = "";
       }
-      echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: update_map(this.value)\"><td>$count<td>$val<td><a title=\"$comment\">$comm</a>\n";
+      echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: update_map(this.value)\"><td>$count<td>$val<td><article title=\"$comment\">$comm</article>\n";
     }
     echo "</table>";
     #echo "<input type=\"submit\" name=\"function\" value=\"Save\">";

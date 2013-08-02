@@ -422,17 +422,28 @@ if ($_GET['delete']) {
   } /* end of else*/
   ?>
   <div class=section>
-  <h3>Add Plot Level File</h3>
-  <table>
-  <form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">
+  <h3>Plot Level data</h3>
+  The fieldbook file must be loaded before adding plot level data. The plot file contains columns for trial, plot number, and one or more traits.<br>
+  <div style="float: left;">
+  <h4>Add Plot File</h4>
+  <p><form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">Plot file:
   <input type="hidden" id="plot" name="plot" value="-1" />
-  <tr><td><br><strong>Plot file:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
-  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls">Example Plot file</a>
-  </table>
-  <p><input type="submit" value="Upload" /></p>
+  <input id="file[]" type="file" name="file[]" size="50%" /><br>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls">Example Plot file</a><br>
+  <input type="submit" value="Upload" /></p>
   </form>
-
   </div>
+  <div style="float: left;">
+  <h4>Add Fieldbook File</h4>
+  <p><form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">Field Book File:
+  <input type="hidden" id="plot" name="plot" value="-1" />
+  <input id="file[]" type="file" name="file[]" size="50%" /><br>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/fieldbook_template.xlsx">Example Field Book file</a><br>
+  <input type="submit" value="Upload" /></p>
+  </form>
+  </div>
+  </div>
+  <br><br>
   <?php
   } /* end of type_Experiment_Name function*/
 } /* end of class */

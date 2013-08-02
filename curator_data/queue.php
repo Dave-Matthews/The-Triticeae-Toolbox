@@ -1,8 +1,8 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap_curator.inc');
-include($config['root_dir'].'theme/admin_header.php');
-require_once($config['root_dir'] . 'includes/email.inc');
+require $config['root_dir'].'includes/bootstrap_curator.inc';
+require $config['root_dir'].'theme/admin_header.php';
+require_once $config['root_dir'] . 'includes/email.inc';
 connect();
 ?>
 
@@ -19,36 +19,56 @@ connect();
   <p>
 
 <?php 
-  if (!empty($_POST['dtype']) OR !empty($_FILES)) {
-  // The Upload button was clicked. Handle user's submission.
-  $row = loadUser($_SESSION['username']);
-  $username = $row['name'];
-  $date = date('dMY');
-  $dir= $config['root_dir']."curator_data/uploads/".str_replace(' ', '_', $username)."_".$date."/";
-  umask(0);
-  if(!file_exists($dir) || !is_dir($dir)) 
-    mkdir($dir, 0777);
-  if ($_FILES['file']['name'] == "") {
-    error(1, "No File Uploaded");
-    print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-  }
-  else {
-    $uploadfile=$_FILES['file']['name'];
-    if(move_uploaded_file($_FILES['file']['tmp_name'], $dir.$uploadfile)) {
-      // Successful upload.
-      echo "Thank you for submitting file \"<b>$uploadfile</b>\"!<br>The curators have been notified.<p>";
-      print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-      // Save info in table input_file_log.
-      $sql = "insert into input_file_log (file_name, users_name) values ('$uploadfile', '$username')";
-      mysql_query($sql) or die(mysql_error());
-      // Send email to curator.
-      $dt = $_POST['dtype'];
-      $dtype = array(lines => "germplasm lines",
-		     pannot => "phenotype experiment annotation",
-		     presult => "phenotype results",
-		     gannot => "genotype experiment annotation",
-		     gresult => "genotype results",
-		     "" => unspecified);
+if (!empty($_POST['dtype']) OR !empty($_FILES)) {
+    // The Upload button was clicked. Handle user's submission.
+    $row = loadUser($_SESSION['username']);
+    $username = $row['name'];
+    $date = date('dMY');
+    $dir= $config['root_dir']."curator_data/uploads/".str_replace(' ', '_', $username)."_".$date."/";
+    umask(0);
+    if (!file_exists($dir) || !is_dir($dir)) {
+        mkdir($dir, 0777);
+    }
+    if ($_FILES['file']['name'] == "") {
+        error(1, "No File Uploaded");
+        print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+    } else {
+        $uploadfile=$_FILES['file']['name'];
+        $error_found = 0;
+        if (preg_match("/zip/", $uploadfile)) {
+            //echo "found zip file $uploadfile<br>\n";
+            if ($zip = zip_open($dir.$uploadfile)) {
+                while ($entry = zip_read($zip)) {
+                    $name = zip_entry_name($entry);
+                    if (preg_match("/\s/", $name)) {
+                        $error_found = 1;
+                        echo "Error: Illegal file name $name<br>\n";
+                        echo "Please remove spaces from file names in zip file<br>\n";
+                    }
+                }
+                zip_close($zip);
+            } else {
+                echo "$dir.$uploadfile not found<br>\n";
+            }
+        }
+        if ($error_found) {
+            error(1, "No File Uploaded");
+            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+        } else if (move_uploaded_file($_FILES['file']['tmp_name'], $dir.$uploadfile)) {
+            // Successful upload.
+            echo "Thank you for submitting file \"<b>$uploadfile</b>\"!<br>The curators have been notified.<p>";
+            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+            // Save info in table input_file_log.
+            $sql = "insert into input_file_log (file_name, users_name) values ('$uploadfile', '$username')";
+            mysql_query($sql) or die(mysql_error());
+            // Send email to curator.
+            $dt = $_POST['dtype'];
+            $dtype = array(lines => "germplasm lines",
+                pannot => "phenotype experiment annotation",
+                presult => "phenotype results",
+                gannot => "genotype experiment annotation",
+                gresult => "genotype results",
+                "" => unspecified);
       $comments = str_replace('\r\n', "\n", $_POST['comments']);
       $tst = $_POST['tested'];
       $tested = array('DOES', 'does NOT');
@@ -63,15 +83,12 @@ $comments
 This file $tested[$tst] load successfully in the Sandbox.";
       //print_h($mesg);
       send_email(setting('capmail'), 'Data submitted to T3', $mesg);
-    }
-    else {
+    } else {
       error(1, "File not stored.");
       print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
     }
   }
-}
-
-else {
+} else {
 // Nothing submitted yet.
 // Require that the user be signed in.
 $user = $_SESSION['username'];
@@ -84,7 +101,7 @@ else if ($user == "t3user@graingenes.org")
         <button type=submit onClick=\"location.href='logout.php'\">Sign out</button>";
 else {
   echo "Please submit a data file for the curator to load
-        into the production database.";
+        into the production database. File names should not contain spaces.";
   ?>
 
 <h3>Data Type</h3>
@@ -118,7 +135,7 @@ else {
 }
 echo "</div></div></div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); 
+include $config['root_dir'].'theme/footer.php'; 
 
 // Note: For uploading multiple files see genotype_annotations_check.php.
 ?>

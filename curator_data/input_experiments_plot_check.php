@@ -1,6 +1,6 @@
 <?php
 /**
- * Canopy Spectral Reflectance, Fieldbook import
+ * Canopy Spectral Reflectance, Phenotype Results import
  * 
  * PHP version 5.3
  * Prototype version 1.5.0
@@ -15,9 +15,9 @@
  */
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
-include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
+require '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 connect();
 $mysqli = connecti();
@@ -26,7 +26,7 @@ loginTest();
 $row = loadUser($_SESSION['username']);
 
 //needed for mac compatibility
-ini_set('auto_detect_line_endings',true);
+ini_set('auto_detect_line_endings', true);
 
 ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
@@ -34,6 +34,15 @@ ob_end_flush();
 
 new Data_Check($_GET['function']);
 
+/** Using a PHP class to implement Phenotype Results import
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/input_experiment_plot_check.php
+ * 
+ */
 class Data_Check
 {
   /**
@@ -59,7 +68,7 @@ private function typeExperimentCheck()
         {
                 global $config;
                 include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>Plot Level Data Validation</h2>";
+                echo "<h2>Plot Level Data Import</h2>";
                 $this->type_Experiment_Name();
                 $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
@@ -174,7 +183,7 @@ private function typeExperimentCheck()
               //echo "found $trial_code<br>\n";
               if (in_array($trial_code, $trial_code_array)) {
               } else {
-                $trial_code_array[] = $trial_code;
+                $trial_code_array[$experiment_uid] = $trial_code;
               }
             } else {
               echo "<font color=red>Error: Trial code \"$trial_code\" not found in the database</font><br>\n";
@@ -187,7 +196,7 @@ private function typeExperimentCheck()
               $uid = $row[0];
               $plot_list[$plot] = $uid;
             } else {
-              echo "Error: Did not find any fieldbook entries for $trial_code<br>$sql<br>\n";
+              echo "Error: Did not find any fieldbook entries for $trial_code plot = $plot<br>\n";
               $error_flag = 1;
             }
           } else {
@@ -208,7 +217,7 @@ private function typeExperimentCheck()
            //echo "plot $plot found<br>\n";
          } else {
            $error_flag = 1;
-           echo "plot $plot not defined in fieldbook<br>\n";
+           echo "plot $plot not defined<br>\n";
          }
        }
 
@@ -252,21 +261,23 @@ private function typeExperimentCheck()
        $count_new = 0;
        $count_upd = 0;
        for ($i=1; $i<=$lines_found; $i++) { 
-         $j = "B";
+         $j = "C";
          $done = 0;
          while (!$done) {
            if (isset($phenotype_list[$j])) {
              $uid = $phenotype_list[$j];
              $plot = $data[$i]["B"];
-             $plot_uid = $plot_list[$plot];
-             $sql = "select phenotype_data_uid from phenotype_plot_data where phenotype_uid = $uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
-             $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-             //echo "$sql<br>\n";
-             if ($row = mysqli_fetch_array($res)) {
-               $duplicate_flag = 1;
-               $count_upd++;
-             } else {
-               $count_new++;
+             if (isset($plot_list[$plot])) {
+                 $plot_uid = $plot_list[$plot];
+                 $sql = "select phenotype_data_uid from phenotype_plot_data where phenotype_uid = $uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                 //echo "$sql<br>\n";
+                 if ($row = mysqli_fetch_array($res)) {
+                     $duplicate_flag = 1;
+                     $count_upd++;
+                 } else {
+                     $count_new++;
+                 }
              }
            } else {
              $done = 1;
@@ -276,7 +287,7 @@ private function typeExperimentCheck()
        }
 
        if ($error_flag) {
-         echo "Error in data, file not loaded<br>\n";
+         echo "Error in data, file not loaded!<br>\n";
        } elseif (!$replace_flag && $duplicate_flag) {
          if ($count_upd > 0) {
            echo "Found $count_upd trait measurements previosly loaded for plot level data<br>\n";
@@ -354,40 +365,47 @@ private function typeExperimentCheck()
          $total = $count_new + $count_upd;
 
          echo "<br>Plot file loaded successfuly<br>\n";
-         echo "<br>Check results by viewing <a href=display_plot_exp.php?uid=$experiment_uid>data stored in database</a><br>";
-         echo "<br>Check results by viewing <a href=display_map_exp.php?uid=$experiment_uid>map of trait values</a><br><br>";
 
+         echo "<br><h3>Check Results</h3>\n";
+         echo "<table>";
+         foreach ($trial_code_array as $experiment_uid=>$trial_code) {
+             echo "<tr><td>$trial_code";
+             echo "<td><form action=display_plot_exp.php target=\"_blank\">";
+             echo "<input type=hidden name=uid value=$experiment_uid>";
+             echo "<input type=submit value=\"View database entries\">";
+             //echo "<tr><td>$trial_code<td><a href=display_plot_exp.php?uid=$experiment_uid>View database entries</a>";
+             echo "</form>";
+             echo "<td><form action=display_map_exp.php target=\"_blank\">";
+             echo "<input type=hidden name=uid value=$experiment_uid>";
+             echo "<input type=submit value=\"View field layout for trait\">";
+             //echo "<td><a href=display_map_exp.php?uid=$experiment_uid>View field layout for trait</a>";
+             echo "</form>";
+         }
+         echo "</table><br>\n";
+
+         echo "<h3>Calculate then save mean data</h3>";
+         echo "The next step is to calculate the line and trial means from the plot data.";
+         echo "<br>The model is choosen base on replication and block fields of the fieldbook data";
+         echo "<ul><li>CRD: use simple averages<li>RCBC: use fixed effects and return LS means<li>blocks as random effects with no replication effect";
+         echo "<li>Incomplete block model: Replications fixed and blocks random</ul>";
+
+         echo "<table>";
+         foreach ($trial_code_array as $experiment_uid=>$trial_code) {
+             echo "<tr><td>$trial_code<td>";
              ?>
              <form action="curator_data/mean_plot_exp.php" method="post" enctype="multipart/form-data">
-             <?php
-             if ($found_mean_data) {
-                echo "Found $count_upd traits with trial mean data<br>\n";
-                if ($mean_calculation == "import") {
-                  echo "Mean data is currently from <b>imported file</b><br>\n";
-                } else {
-                  echo "Mean data is currently calculated from <b>plot data</b><br>\n";
-                }
-                echo "Do you want to overwrite trial means with calculations from plot data?";
-             } else {
-                echo "Did not find any traits with trial means<br>\n";
-                if ($total > 1) {
-                  echo "Proceed to load trial means";
-                } else {
-                  echo "Proceed to load trial mean";
-                }
-             }
-             ?>
              <input id="exper_uid" type="hidden" name="exper_uid" value="<?php echo $experiment_uid; ?>">
              <input id="replace" type="hidden" name="replace" value="Yes">
              <input id="mean" type="hidden" name="function" value="Yes">
              <input id="filename0" type="hidden" name="filename0" value="<?php echo $filename0; ?>">
-             <input type="submit" value="Yes">
+             <input type="submit" value="Calculate trial means">
              </form>
              <?php
-
+         }
+         echo "</table>";
          $sql = "SELECT input_file_log_uid from input_file_log where file_name = '$filename0'";
-         $res = mysql_query($sql) or die("Database Error: input_file lookup  - ". mysql_error() ."<br>".$sql);
-         $rdata = mysql_fetch_assoc($res);
+         $res = mysqli_query($mysqli,$sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
+         $rdata = mysqli_fetch_assoc($res);
          $input_uid = $rdata['input_file_log_uid'];
          if (empty($input_uid)) {
            $sql = "INSERT INTO input_file_log (file_name,users_name, created_on) VALUES('$filename0', '$username', NOW())";
