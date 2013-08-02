@@ -182,9 +182,14 @@ class Downloads
             $this->refresh_title();
          ?>        
         </div>
-         <?php 
+         <?php
+                echo "1. Select a set of lines, traits, and trials.<br>";
+                echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> which has the best coverage for this set.<br>";
+                echo "3. Return to this page and select the filter options.<br>";
+                echo "4. Select the Create file button with the desired file format.<br>";
+                echo "5. Select the Download Zip file button to retreive the results.<br><br>";
                 if (empty($_SESSION['selected_lines'])) {
-                    echo "Download genotype, phenotype, map, and genotype conflicts. File formats are available for Tassel, R, or FlapJack.<br><br>";
+                    echo "File formats are available for Tassel, R, or FlapJack.<br><br>";
                     echo "<a href=\"" . $config['base_url'];
                     echo "pedigree/line_selection.php\">Select Lines by Properties</a> or ";
                     echo "<a href=\"" . $config['base_url'];
@@ -630,10 +635,10 @@ class Downloads
         }
 	if (isset($_SESSION['phenotype'])) {
 	    $phenotype = $_SESSION['phenotype'];
-	    $message2 = "download phenotype and genotype data";
+	    $message2 = "create phenotype and genotype data file";
 	} else {
 	    $phenotype = "";
-	    $message2 = " download genotype data";
+	    $message2 = " create genotype data file";
 	}
 	 if (isset($_SESSION['selected_lines'])) {
 	     $countLines = count($_SESSION['selected_lines']);
@@ -679,18 +684,20 @@ class Downloads
          $max_miss_line = 10;
          if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml']))
            $max_miss_line = $_GET['mml'];
-         ?>
-        <p>
+         if ($countLines > 0) {
+             ?>
+            <p>
         Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove markers missing &gt; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove lines missing &gt <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
-        <?php
-         if ($use_database) {
-           calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
-         } else {
-           calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+            <?php
+            if ($use_database) {
+                calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
+             } else {
+                calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+             }
          }
 	 
 	 if ($saved_session != "") {
@@ -712,12 +719,19 @@ class Downloads
                <tr><td><input type="button" value="Create file for FlapJack" onclick="javascript:use_session('v6');">
                <td>genotype coded as {AA, AB, BB}
                </table>
-               <br><br>The genotype file (snpfile.txt or genotype.hmp.txt) contains one measurement for each line and marker. If the line has more than one genotype measurement then a majority rule is used. When there is no majority the measurement is set to "missing". The allele_conflict.txt file list all cases where there have been different results for the same line and marker. Documentation for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
-               , <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
-               and <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>. 
                <?php
-	     }
-	  }
+             }
+          }
+          ?><br><br>
+          The snpfile.txt file has one row for each germplasm line.<br>
+          The genotype.hmp.txt file has one row for each marker similar to the  HapMap format and contains map information.<br>
+          The allele_conflict.txt file list all cases where there have been different results for the same line and marker.<br>
+          The genotype files contains one measurement for each line and marker.
+          If the line has more than one genotype measurement then a majority rule is used. When there is no majority the measurement is set to "missing".<br> 
+          Documentation for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
+            , <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
+               and <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>.
+          <?php
 	}
 	
 	/**
@@ -1427,6 +1441,7 @@ class Downloads
 		}
 		
 		foreach ($lines as $line_record_uid) {
+                  $outarray2 = array();
 		  $sql = "select line_record_name, alleles from allele_byline where line_record_uid = $line_record_uid";
 		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		  if ($row = mysql_fetch_array($res)) {
@@ -1436,27 +1451,24 @@ class Downloads
 		    foreach ($outarray as $key=>$allele) {
 		  	$marker_id = $marker_list[$key];
 		  	if (isset($marker_lookup[$marker_id])) {
-		  	  $outarray[$key]=$lookup[$allele];
-		  	} else {
-                          unset($outarray[$key]);
+		  	  $outarray2[]=$lookup[$allele];
                         }
 		    }
                   } else {
                     $sql = "select line_record_name from line_records where line_record_uid = $line_record_uid";
                     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
                     if ($row = mysql_fetch_array($res)) {
+                      $line_name = $row[0];
                       foreach ($marker_list as $marker_id) {
                         if (isset($marker_lookup[$marker_id])) {
-                          $outarray[$key]=$lookup[""];
-                        } else {
-                          unset($outarray[$key]);
+                          $outarray2[]=$lookup[""];
                         }
                       }
                     } else {
                       echo "Error - could not find line_uid $line_record_uid\n";
                     }
                   }
-		  $allele_str = implode($delimiter,$outarray);
+		  $allele_str = implode($delimiter,$outarray2);
                   fwrite($h, "$line_name\t$allele_str\n");
 		}
 		if ($nelem == 0) {
@@ -1636,6 +1648,7 @@ class Downloads
              } else {
 	       fwrite($h, "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t");
              }
+             $outarray2 = array();
              $sql = "select marker_name, alleles from allele_bymarker where marker_uid = $marker_id";
              $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
              if ($row = mysql_fetch_array($res)) {
@@ -1645,15 +1658,13 @@ class Downloads
                foreach ($outarray as $key=>$allele) {
                  $line_id = $line_list[$key];
                  if (isset($line_lookup[$line_id])) {
-                   $outarray[$key]=$lookup[$allele];
-                 } else {
-                   unset($outarray[$key]);
+                   $outarray2[]=$lookup[$allele];
                  }
                }
              } else {
                echo "Error - could not find marker_uid $marker_id<br>\n";
              }
-	     $allele_str = implode("\t",$outarray);
+	     $allele_str = implode("\t",$outarray2);
 	     fwrite($h, "\t$allele_str\n"); 
 	 }
 	}
