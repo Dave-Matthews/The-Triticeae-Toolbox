@@ -101,7 +101,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     //create list of selected markers
     foreach ($markers as $key=>$marker_uid) {
         $selected_markers[$marker_uid] = 1;
-        echo "selected $marker_uid\n";
+        //echo "selected $marker_uid\n";
     }
 
     //get location information for markers
@@ -132,7 +132,6 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
         if ($row = mysql_fetch_array($res)) {
             $alleles = $row[0];
             $outarray = explode(',', $alleles);
-            $alleles_mem[$line_record_uid] = $alleles;
             $i=0;
             foreach ($outarray as $allele) {
                 if ($allele=='AA') {
@@ -183,7 +182,10 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     } else {
         //calculate missing from each line
         foreach ($lines as $line_record_uid) {
-            $alleles = $alleles_mem[$line_record_uid];
+            $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
+            $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+            if ($row = mysql_fetch_array($res)) {
+            $alleles = $row[0];
             $outarray = explode(',', $alleles);
             $line_misscnt[$line_record_uid] = 0;
             foreach ($markers_filtered as $marker_uid) {
@@ -192,6 +194,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 if (($allele=='--') or ($allele=='')) {
                     $line_misscnt[$line_record_uid]++;
                 }
+            }
             }
         }
         $lines_removed = 0;
