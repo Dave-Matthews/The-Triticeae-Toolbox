@@ -58,7 +58,7 @@ function use_normal() {
 
 function load_title(command) {
     var url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&pi=' + phenotype_items_str + '&subset=' + subset + '&cmd=' + command;
-    var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
+    var tmp = new Ajax.Updater($('title'), url, {
         onComplete : function() {
             $('title').show();
             document.title = title;
@@ -687,6 +687,19 @@ function update_phenotype_linesb(options) {
                 document.getElementById('step4b').innerHTML = "";
                 document.getElementById('step5').innerHTML = "";
 			} 
+
+           function create_file(version) {
+                document.getElementById('step6').innerHTML = "Creating download file";
+                var url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str;
+                document.title='Creating Download file...';
+                var tmp = new Ajax.Updater($('step6'), url, {
+                    onComplete: function() {
+                        $('step6').show();
+                        document.title = title;
+                        Element.hide('spinner');
+                    }}
+                );
+            }
 	
 	function use_session(version) {
 	        var mm = $('mm').getValue();
@@ -695,27 +708,20 @@ function update_phenotype_linesb(options) {
                 markers_loading = true;
                 Element.show('spinner');
                 document.getElementById('step5').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
+                document.getElementById('step6').innerHTML = "";
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&mml=' + mml + '&use_line=yes';
                 document.title='Loading Markers...';
-                //changes are right here
-                var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
-                    //onCreate: function() { Element.show('spinner'); },
+                var tmp = new Ajax.Updater($('step5'), url, {
                     onComplete: function() {
                          $('step5').show();
-                        if (traits_loading === false) {
-                            document.title = title;
-                        }
-                        //Element.hide('spinner');
+                        document.title = title;
                         markers_loading = false;
                         markers_loaded = true;
+                        create_file(version);
                     }}
                 );
-
-                url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str+'&mm='+mm+'&mmaf='+mmaf;
-                document.location = url;
-                Element.hide('spinner');
             }
-
+     
 			function load_markers_pheno( mm, mmaf) {
                 markers_loading = true;
                 $('step5').hide();
@@ -744,33 +750,18 @@ function update_phenotype_linesb(options) {
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&use_line=' + use_line;
                 document.title='Loading Markers...';
                 //changes are right here
-                var tmp = new Ajax.Updater($('step5'), url, {asynchronous:false}, {
-                    //onCreate: function() { Element.show('spinner'); },
+                var tmp = new Ajax.Updater($('step5'), url, {
                     onComplete: function() {
                          $('step5').show();
                         if (traits_loading === false) {
                             document.title = title;
                         }
                         Element.hide('spinner');
+                        load_title();
                         markers_loading = false;
                         markers_loaded = true;
                     }}
                 );
-                url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&pi=' + phenotype_items_str + '&subset=' + subset;
-                tmp = new Ajax.Updater($('title'), url, {
-                     onComplete : function() {
-                     $('title').show();
-                     document.title = title;
-                     }
-                });
-                url = "side_menu.php";
-                tmp = new Ajax.Updater($('quicklinks'), url, {
-                    onComplete : function() {
-                    $('quicklinks').show();
-                    document.title = title;
-                    }
-                });
-
             }
 
             function mrefresh() {

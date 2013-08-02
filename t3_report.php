@@ -193,7 +193,7 @@ if ($query == 'geno') {
     $sql .= " where (markers.created_on > '$startdate') and (markers.created_on < '$enddate') $sql_opt";
     $sql .= " and markers.marker_type_uid = marker_types.marker_type_uid order by markers.created_on desc";
   }
-  print "<tr><td>Line name<td>type<td>created on\n";
+  print "<tr><td>Marker name<td>type<td>created on\n";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   while ($row = mysqli_fetch_row($res)) {
     $uid = $row[0];
@@ -282,7 +282,7 @@ if ($query == 'geno') {
    include $config['root_dir'].'theme/normal_header.php';
    print "<h3>Trials with Canopy Spectral Reflectance (CSR) data</h3>\n";
    print "<table border=0>";
-   print "<tr><td>Trail Code<td>Year<td>Files loaded\n";
+   print "<tr><td>Trial Code<td>Year<td>Files loaded\n";
    $sql = "select distinct(csr_measurement.experiment_uid), experiments.trial_code, experiments.experiment_year from csr_measurement, experiments where csr_measurement.experiment_uid = experiments.experiment_uid order by experiments.experiment_year";
    $res = mysql_query($sql) or die(mysql_error());
    while ($row = mysql_fetch_row($res)) {

@@ -19,12 +19,12 @@ if( ($record = isRecord($_REQUEST['table'], $_REQUEST['uid'])) !== FALSE) {
 <div class="boxContent">
 
 <?php 
-   //Example:  Line records = includes/pedigree.inc/show_line_records();
-   //	    Breeding Programs = includes/general.inc/show_breeding_programs();
    $func = "show_" . $_REQUEST['table'];
-
   // Is there a custom function for that table in includes/general.inc
-  // or includes/pedigree.inc?  See examples above.
+  // or includes/pedigree.inc?  examples:
+   //  line_records = includes/pedigree.inc/show_line_records()
+   //  markers = includes/general.inc/show_markers()
+   //  breeding_programs = includes/general.inc/show_breeding_programs()
   if(function_exists($func))
     call_user_func($func, $row[$pkey]);
   else {

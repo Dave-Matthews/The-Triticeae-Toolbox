@@ -26,7 +26,7 @@ set_include_path(GET_INCLUDE_PATH() . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
-require_once $config['root_dir'].'includes/File_Archive/Archive.php';
+//require_once $config['root_dir'].'includes/File_Archive/Archive.php';
 require_once $config['root_dir'].'downloads/marker_filter.php';
 
 // connect to database
@@ -136,12 +136,6 @@ class Downloads
 	private function type1_checksession()
     {
             ?>
-            <style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
 		<div id="title">
 		<?php
             $phenotype = "";
@@ -188,21 +182,18 @@ class Downloads
             $this->refresh_title();
          ?>        
         </div>
-		<div id="step1" style="float: left; margin-bottom: 1.5em;">
-		<script type="text/javascript" src="downloads/downloads.js"></script>
          <?php 
                 if (empty($_SESSION['selected_lines'])) {
                     echo "Download genotype, phenotype, map, and genotype conflicts. File formats are available for Tassel, R, or FlapJack.<br><br>";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "pedigree/line_selection.php>Select Lines by Properties</a> or ";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>.";
-                    echo "</div>";
-                } else {
-                   $this->type1_lines_trial_trait(); 
+                    echo "<a href=\"" . $config['base_url'];
+                    echo "pedigree/line_selection.php\">Select Lines by Properties</a> or ";
+                    echo "<a href=\"" . $config['base_url'];
+                    echo "downloads/select_all.php\">Wizard (Lines, Traits, Trials)</a><br><br>.";
                 }
+                   ?> 
+                   <div id="step1" style="float: left; margin-bottom: 1.5em;">
+                   <?php
+                   $this->type1_lines_trial_trait(); 
                 ?>
                 </div>
                 <?php
@@ -217,8 +208,7 @@ class Downloads
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       ?>
       <h2>Download Genotype and Phenotype Data</h2>
-      <p> 
-      <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+      <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
       <?php 
       if ($command == "save") {
         if (!empty($_GET['lines'])) {
@@ -258,7 +248,6 @@ class Downloads
        <?php
       }
       ?>
-      </p>
       <?php 
     }
     
@@ -328,139 +317,79 @@ class Downloads
 		 $experiments_g = implode(',',$exp);
 		}
 		
-		$dir = '/tmp/tht/';
-                if (($version == "V2") || ($version == "V3") || ($version == "V4")) {
-                  $filename = "T3download_tassel_";
-                } elseif ($version == "V5") {
-                  $filename = "T3download_R_";
-                } elseif ($version == "V6") {
-                  $filename = "T3download_FJ_";
-                } else {
-                  $filename = "T3download_";
-                }
-                $filename .= chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
-
-	        // File_Archive doesn't do a good job of creating files, so we'll create it first
-                if(!file_exists($dir.$filename)){
-                        $h = fopen($dir.$filename, "w+");
-                        fclose($h);
-                }
-        $zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
+                $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+                $filename = "download_" . $unique_str;
+                mkdir("/tmp/tht/$filename");
         $subset = "yes";
         $dtype = "";
         
         if (isset($_SESSION['phenotype'])) {
-		  $zip->newFile("traits.txt");
-		  $zip->writeData($this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset));
+            $filename = "traits.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset);
+            fwrite($h, $output);
+            fclose($h);
         }
         if ($version == "V2") {
-          $zip->newFile("annotated_alignment.txt");
-          $zip->writeData($this->type1_build_annotated_align($experiments_g));
+            $filename = "annotated_alignment.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_annotated_align($experiments_g);
+            fwrite($h, $output);
+            fclose($h);
         } elseif ($version == "V3") {
-          $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
-          $zip->newFile("snpfile.txt");
-          $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
-        } elseif ($version == "V4") {
-          $zip->newFile("genotype.hmp.txt");
-          $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
+            $filename = "geneticMap.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
+            $filename = "snpfile.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
+            fclose($h);
+        } elseif ($version == "V4") { //Download for Tassel
+            $filename = "genotype.hmp.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type3_build_markers_download($lines,$markers,$dtype,$h);
+            fclose($h);
         } elseif ($version == "V5") { //Download for R
-          $dtype = "qtlminer";
-          $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
-          $zip->newFile("snpfile.txt");
-          $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
-          $zip->newFile("genotype.hmp.txt");
-          $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
+            $dtype = "qtlminer";
+            $filename = "geneticMap.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
+            $filename = "snpfile.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
+            fwrite($h, $output);
+            fclose($h);
+            $filename = "genotype.hmp.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type3_build_markers_download($lines,$markers,$dtype,$h);
+            fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
-          $dtype = "AB";
-          $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($lines,$markers,$dtype));
-          $zip->newFile("snpfile.txt");
-          $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
+            $dtype = "AB";
+            $filename = "geneticMap.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
+            $filename = "snpfile.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
+            fclose($h);
         }
-        $zip->newFile("allele_conflict.txt");
-        $zip->writeData($this->type2_build_conflicts_download($lines,$markers));
-        $zip->close();
-        
-        header("Location: ".$dir.$filename);
-	}
-	
-	/**
-	 * this is the main entry point when there are no lines saved in session variable
-	 */
-    private function type1_breeding_programs_year()
-	{
-		?>	
-			<div id="step11">
-			<table>
-				<tr>
-					<th>Breeding Program</th>
-				</tr>
-				<tr>
-					<td>
-						<select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
-		<?php
-
-		// Select breeding programs for the drop down menu
-		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-				FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
-
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
-		{
-			?>
-				<option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
-			<?php
-		}
-		?>
-						</select>
-			</table>
-			</div></div>
-					
-			<div id="step2" style="float: left; margin-bottom: 1.5em;">
-			<p>2.
-		<select name="select2">
-		  <option value="BreedingProgram">Year</option>
-		</select></p>
-			<table>
-					<tr>
-					    <th>Year</th>
-					</tr>
-					<tr>
-					<td>
-						<select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-		<?php
-
-		// set up drop down menu with data showing year
-		// should this be phenotype experiments only? No
-
-		$sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-				WHERE e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'phenotype'";
-		if (!authenticate(array(USER_TYPE_PARTICIPANT,
-					USER_TYPE_CURATOR,
-					USER_TYPE_ADMINISTRATOR)))
-			$sql .= " and data_public_flag > 0";
-		$sql .= " GROUP BY e.experiment_year ASC";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
-			?>
-				<option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-			<?php
-		}
-		?>
-						</select>
-					</td>
-				</tr>
-			</table>
-		</div>
-		<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-		
-<?php
+        $filename = "allele_conflict.txt";
+        $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+        $output = $this->type2_build_conflicts_download($lines,$markers);
+        fwrite($h, $output);
+        fclose($h);
+        $filename = "/tmp/tht/download_" . $unique_str . ".zip";
+        exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str"); 
+       
+        ?>
+        <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
+        <?php
 	}
 	
     /**
@@ -520,7 +449,9 @@ class Downloads
             $this->step4_lines();
             ?></div>
 	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+            <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+            <script type="text/javascript" src="downloads/downloads.js"></script>
 	    <script type="text/javascript">
 	      var mm = 10;
 	      var mmaf = 5; 
@@ -541,15 +472,16 @@ class Downloads
 	 */
 	private function step1_lines()
 	{
+            ?>
+            <table id="phenotypeSelTab" class="tableclass1">
+            <tr>
+            <th>Lines</th>
+            <tr><td>
+            <?php
 		if (isset($_SESSION['selected_lines'])) {
 			$selectedlines= $_SESSION['selected_lines'];
 	        $count = count($_SESSION['selected_lines']);
 		?>
-	    <table id="phenotypeSelTab" class="tableclass1">
-	    <tr>
-	    <th>Lines</th>
-	    </tr>
-	    <tr><td>
 	    <select name="lines" multiple="multiple" style="height: 12em;">
 	    <?php
 	    foreach($selectedlines as $uid) {
@@ -565,14 +497,11 @@ class Downloads
 	    ?>
 	    </select>
 	    </td>
-	    </table>
 	    <?php 
 	    } else {
-	    	echo "Select lines for download<br>";
-	        echo "<a href=";
-	        echo $config['base_url'];
-	        echo "pedigree/line_selection.php>Select Lines by Properties</a>";
-	    }
+                echo "none selected";
+            }
+            echo "</table>";
 	}
 	
 	/**
@@ -603,11 +532,11 @@ class Downloads
 	        </option>
 	        <?php
 	      }
+              echo "</select>";
 	    } else {
 	      echo "All";
 	    }
 	    ?>
-	    </select>
 	    </td>
 	    </table>
 	    <?php  
@@ -619,7 +548,7 @@ class Downloads
 	private function step3_lines()
 	{
 	    ?>
-	    <table id="" class="tableclass1">
+	    <table class="tableclass1">
 	    <tr>
 	    <th>Traits</th>
 	    </tr>
@@ -640,11 +569,12 @@ class Downloads
                     </option>
                     <?php
                 }
+              echo "</select>";
             } else {
               echo "none selected";
             }
             ?>
-            </select></table>
+            </table>
              <?php
         }
 
@@ -654,7 +584,7 @@ class Downloads
         private function step4_lines()
         {
             ?>
-            <table id="" class="tableclass1">
+            <table class="tableclass1">
             <tr>
             <th>Trials</th>
             </tr>
@@ -675,11 +605,12 @@ class Downloads
                     </option>
                     <?php
                 }
+              echo "</select>";
             } else {
               echo "none selected";
             }
             ?>
-            </select></table>
+            </table>
              <?php
         }
 
@@ -774,11 +705,11 @@ class Downloads
                <table border=0>
 	       <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
                <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
-	       <tr><td><input type="button" value="Download for Tassel" onclick="javascript:use_session('v4');"  />
+	       <tr><td><input type="button" value="Create file for Tassel" onclick="javascript:use_session('v4');">
                <td>genotype coded as {A,C,T,G,N} using the HapMap file format
-               <tr><td><input type="button" value="Download for R" onclick="javascript:use_session('v5');" />
+               <tr><td><input type="button" value="Create file for R" onclick="javascript:use_session('v5');">
                <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}
-               <tr><td><input type="button" value="Download for FlapJack" onclick="javascript:use_session('v6');" />
+               <tr><td><input type="button" value="Create file for FlapJack" onclick="javascript:use_session('v6');">
                <td>genotype coded as {AA, AB, BB}
                </table>
                <br><br>The genotype file (snpfile.txt or genotype.hmp.txt) contains one measurement for each line and marker. If the line has more than one genotype measurement then a majority rule is used. When there is no majority the measurement is set to "missing". The allele_conflict.txt file list all cases where there have been different results for the same line and marker. Documentation for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
@@ -1416,28 +1347,12 @@ class Downloads
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	function type2_build_markers_download($lines,$markers,$dtype)
+	function type2_build_markers_download($lines,$markers,$dtype, $h)
 	{
 		$output = '';
 		$doneheader = false;
 		$delimiter ="\t";
                 $outputheader = '';
-		
-		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-			$max_missing = $_GET['mm'];
-		if ($max_missing>100)
-			$max_missing = 100;
-		elseif ($max_missing<0)
-		$max_missing = 0;
-		// $firephp->log("in sort markers2");
-		$min_maf = 0.01;//IN PERCENT
-		if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-			$min_maf = $_GET['mmaf'];
-		if ($min_maf>100)
-			$min_maf = 100;
-		elseif ($min_maf<0)
-		$min_maf = 0;
-		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
 		
 		if (count($markers)>0) {
 		  $markers_str = implode(",", $markers);
@@ -1475,7 +1390,17 @@ class Downloads
                     }
 		  }
 		}
-		
+
+                $nelem = count($marker_names);
+                $num_lines = count($lines);	
+                if ($dtype =='qtlminer')  {
+                    fwrite($h, "$outputheader\n");
+                } elseif ($dtype == 'AB') {
+                    fwrite($h, "# fjFile = GENOTYPE\n".$delimiter.$outputheader."\n");
+                } else {
+                    fwrite($h, "$num_lines.$delimiter.$nelem.:2\n".$outputheader."\n");
+                }
+
 		if ($dtype=='qtlminer') {
 		 $lookup = array(
 		   'AA' => '1',
@@ -1505,60 +1430,37 @@ class Downloads
 		  $sql = "select line_record_name, alleles from allele_byline where line_record_uid = $line_record_uid";
 		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		  if ($row = mysql_fetch_array($res)) {
-		    $outarray2 = array();
-                    $outarray2[] = $row[0];
+                    $line_name = $row[0];
                     $alleles = $row[1];
 		    $outarray = explode(',',$alleles);
-		    $i=0;
-		    foreach ($outarray as $allele) {
-		  	$marker_id = $marker_list[$i];
+		    foreach ($outarray as $key=>$allele) {
+		  	$marker_id = $marker_list[$key];
 		  	if (isset($marker_lookup[$marker_id])) {
-		  	  $outarray2[]=$lookup[$allele];
-		  	}
-		        $i++;
+		  	  $outarray[$key]=$lookup[$allele];
+		  	} else {
+                          unset($outarray[$key]);
+                        }
 		    }
                   } else {
                     $sql = "select line_record_name from line_records where line_record_uid = $line_record_uid";
                     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
                     if ($row = mysql_fetch_array($res)) {
-                      $outarray2 = array();
-                      $outarray2[] = $row[0];
-                      $i=0;
                       foreach ($marker_list as $marker_id) {
                         if (isset($marker_lookup[$marker_id])) {
-                          $outarray2[]=$lookup[""];
+                          $outarray[$key]=$lookup[""];
+                        } else {
+                          unset($outarray[$key]);
                         }
-                        $i++;
                       }
                     } else {
-                      die("error - could not find uid\n");
+                      echo "Error - could not find line_uid $line_record_uid\n";
                     }
                   }
-		  $outarray = implode($delimiter,$outarray2);
-		  $output .= $outarray . "\n";
+		  $allele_str = implode($delimiter,$outarray);
+                  fwrite($h, "$line_name\t$allele_str\n");
 		}
-		$nelem = count($marker_names);
-		$num_lines = count($lines);
 		if ($nelem == 0) {
 		   die("error - no genotype or marker data for this selection");
-		}
-		
-		// make an empty line with the markers as array keys, set default value
-		//  to the default missing value for either qtlminer or tassel
-		// places where the lines may have different values
-		
-		if ($dtype =='qtlminer')  {
-			$empty = array_combine($marker_names,array_fill(0,$nelem,'NA'));
-		} else {
-			$empty = array_combine($marker_names,array_fill(0,$nelem,'?'));
-		}
-		
-		if ($dtype =='qtlminer')  {
-			return $outputheader."\n".$output;
-                } elseif ($dtype == 'AB') {
-                        return "# fjFile = GENOTYPE\n".$delimiter.$outputheader."\n".$output;
-		} else {
-			return $num_lines.$delimiter.$nelem.":2\n".$outputheader."\n".$output;
 		}
 	}
   
@@ -1568,27 +1470,12 @@ class Downloads
 	 * @param unknown_type $markers
 	 * @param unknown_type $dtype
 	 */
-	function type3_build_markers_download($lines,$markers,$dtype)
+	function type3_build_markers_download($lines,$markers,$dtype,$h)
 	{
 	 $output = '';
 	 $outputheader = '';
 	 $delimiter ="\t";
 	
-	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-	  $max_missing = $_GET['mm'];
-	 if ($max_missing>100)
-	  $max_missing = 100;
-	 elseif ($max_missing<0)
-	 $max_missing = 0;
-	 // $firephp->log("in sort markers2");
-	 $min_maf = 0.01;//IN PERCENT
-	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-	  $min_maf = $_GET['mmaf'];
-	 if ($min_maf>100)
-	  $min_maf = 100;
-	 elseif ($min_maf<0)
-	 $min_maf = 0;
-
          if (isset($_SESSION['selected_map'])) {
            $selected_map = $_SESSION['selected_map'];
          } else {
@@ -1643,8 +1530,8 @@ class Downloads
 	 }
 	
 	 //generate an array of selected markers and add map position if available
-         $sql = "select marker_uid, marker_name, A_allele, B_allele from markers
-         where marker_uid IN ($markers_str)";
+         $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
+         where marker_uid IN ($markers_str) and markers.marker_type_uid = marker_types.marker_type_uid";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
          while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
@@ -1656,11 +1543,14 @@ class Downloads
            }
            if (preg_match("/[A-Z]/",$row[2]) && preg_match("/[A-Z]/",$row[3])) {
                 $allele = $row[2] . "/" . $row[3];
+           } elseif (preg_match("/DArT/",$row[4])) {
+                $allele = $row[2] . "/" . $row[3];
            } else {
                 $allele = "N/N";
            }
            $marker_list_name[$marker_uid] = $marker_name;
            $marker_list_allele[$marker_uid] = $allele;
+           $marker_list_type[$marker_uid] = $row[4];
          }
 
          //sort marker_list_all by map location if available
@@ -1690,6 +1580,7 @@ class Downloads
 	  $name = $row[0];
 	  $outputheader .= "\t$name";
 	 }
+         fwrite($h, "$outputheader\n");
 	 
 	 $lookup_chrom = array(
 	   '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
@@ -1700,6 +1591,7 @@ class Downloads
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
+          $marker_type = $marker_list_type[$marker_id];
 
           if ($dtype == "qtlminer") {
            $lookup = array(
@@ -1709,6 +1601,12 @@ class Downloads
            'AB' => '0',
             '' => 'NA'
            );
+          } elseif (preg_match("/DArT/", $marker_type)) {
+           $lookup = array(
+            'AA' => 'AA',
+            'BB' => 'BB',
+            '--' => 'NN'
+            ); 
           } else {
            $lookup = array(
            'AA' => substr($allele,0,1) . substr($allele,0,1),
@@ -1734,31 +1632,30 @@ class Downloads
 	        $pos = 0;
 	     }
              if ($dtype == "qtlminer") {
-               $output .= "$marker_name\t$allele\t$chrom\t$pos";
+               fwrite($h, "$marker_name\t$allele\t$chrom\t$pos");
              } else {
-	       $output .= "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t";
+	       fwrite($h, "$marker_name\t$allele\t$chrom\t$pos\t\t\t\t\t\t\t");
              }
-	     $outarray2 = array();
              $sql = "select marker_name, alleles from allele_bymarker where marker_uid = $marker_id";
              $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
              if ($row = mysql_fetch_array($res)) {
+               $marker_name = $row[0];
                $alleles = $row[1];
                $outarray = explode(',',$alleles);
-               $i=0;
-               foreach ($outarray as $allele) {
-                 $line_id = $line_list[$i];
+               foreach ($outarray as $key=>$allele) {
+                 $line_id = $line_list[$key];
                  if (isset($line_lookup[$line_id])) {
-                   $outarray2[]=$lookup[$allele];
+                   $outarray[$key]=$lookup[$allele];
+                 } else {
+                   unset($outarray[$key]);
                  }
-                 $i++;
                }
              } else {
-               die("Error - could not find $marker_id<br>\n");
+               echo "Error - could not find marker_uid $marker_id<br>\n";
              }
-	     $allele_str = implode("\t",$outarray2);
-	     $output .= "\t$allele_str\n"; 
+	     $allele_str = implode("\t",$outarray);
+	     fwrite($h, "\t$allele_str\n"); 
 	 }
-	 return $outputheader."\n".$output;
 	}
 	
 	/**

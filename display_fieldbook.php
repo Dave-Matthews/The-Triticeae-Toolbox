@@ -29,12 +29,23 @@ connect();
     $line_list[$uid] = $line_name;
   }
 
+  echo "<h2>Field Book for $trial_code</h2>\n";
 
+  $sql = "select fieldbook_file_name from fieldbook_info where experiment_uid = $experiment_uid";
+  $res = mysql_query($sql) or die (mysql_error());
+  if ($row = mysql_fetch_array($res)) {
+      $raw_file = $row[0];
+      echo "<a href=\"$raw_file\">Fieldbook file (Download)</a>";
+  } else {
+      echo "Error: could not find import file for this fieldbook\n";
+  }
+
+  
   $count = 0;
   $sql = "select * from fieldbook where experiment_uid = $experiment_uid order by plot";
   $res = mysql_query($sql) or die (mysql_error());
-  echo "<h2>Field Book for $trial_code</h2>\n";
-  echo "<table>";
+
+  echo "<br><br><table>";
   echo "<tr><td>plot<td>line_name<td>row<td>column<td>entry<td>replication<td>block<td>subblock<td>treatment<td>block_tmt<td>subblock_tmt<td>check<td>Field_ID<td>note";
   while ($row = mysql_fetch_assoc($res)) {
     $expr = $row["experiment_uid"];
