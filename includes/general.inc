@@ -167,12 +167,10 @@ function show_experiments($id) {
  * Show markers with view.php.  Example marker 11_11346.
  */
 function show_markers($id) {
-
   show_general("markers", $id);
-
   echo "<p><h3>Annotations</h3>";
-  echo "<table><thead><tr><th>Dataset<th>Entry</tr></thead>";
-  $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation 
+  echo "<table><thead><tr><th>Dataset<th>Entry<th>Dataset Description</tr></thead>";
+  $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation, mat.comments 
           FROM  markers m, marker_annotations ma, marker_annotation_types mat
           WHERE m.marker_uid = $id AND
 	    m.marker_uid = ma.marker_uid AND
@@ -186,9 +184,9 @@ function show_markers($id) {
     $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
     $url = "<a href=\"$linkString\" target=\"_blank\">";
     if ($linkString == "")
-      echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."</tr>";
+      echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['comments']."</tr>";
     else 
-      echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."</a></tr>";    
+      echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['comments']."</a></tr>";    
   }
   echo "</table>";
 
@@ -366,67 +364,46 @@ function show_experiment_set ($id) {
  * 		querying the database again.
  */
 function show_general($tabl, $id, $resource="") {
-
-	$pkey = get_pkey($tabl);
-
-	// Get foreign keys
-	$foreign_tables = chk_tbl_references($tabl);
-	$foreign_keys = array();
-
-	foreach($foreign_tables as $table) {
-		$foreign_keys[$table] = get_pkey($table);
-	}
-
-	if($resource == "") {	//if there is no resource, get a resource
-
-		$resource = mysql_query("
+  $pkey = get_pkey($tabl);
+  // Get foreign keys
+  $foreign_tables = chk_tbl_references($tabl);
+  $foreign_keys = array();
+  foreach($foreign_tables as $table) 
+    $foreign_keys[$table] = get_pkey($table);
+  if($resource == "") {	//if there is no resource, get a resource
+    $resource = mysql_query("
 				SELECT *
 				FROM $tabl
 				WHERE $pkey = '$id'
 			") or die(mysql_error());
 
-		if(mysql_num_rows($resource) < 1)
-			error(1, "No Record Found");
+    if(mysql_num_rows($resource) < 1)
+      error(1, "No Record Found");
+  }
+  while($row = mysql_fetch_assoc($resource)) {
+    // Display the main table
+    echo "<table class=\"tableclass1\">\n";				
+    foreach($row as $k=>$v) {
+      if(!in_array($k, $foreign_keys)) {
+	// Omit the _uid and created_on columns.
+	if (! strpos($k, "_uid") && ($k != "created_on")) {
+	  echo "\t<tr>\n";
+	  echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
+	  echo "\t\t<td>$v</td>\n";
+	  echo "\t</tr>\n";
 	}
-
-	while($row = mysql_fetch_assoc($resource)) {
-		// Display the main table
-
-		echo "<table class=\"tableclass1\">\n";				
-		foreach($row as $k=>$v) {
-
-			if(!in_array($k, $foreign_keys)) {
-			  // Omit the _uid and created_on columns.
-			  if (! strpos($k, "_uid") && ($k != "created_on")) {
-			  //if ( ($k != "created_on")) {
-				echo "\t<tr>\n";
-				echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
-				echo "\t\t<td>$v</td>\n";
-				echo "\t</tr>\n";
-			}
-			}
-
-		}
-		echo "</table>";
-
-		// Display the associated tables
-		foreach($foreign_tables as $table) {
-
-			//echo "<h3>Associated " . beautifulTableName($table, 1) . "</h3><br />";
-			$fpkey = $foreign_keys[$table];
-
-			$qstring = getQueryJoin($table, $tabl, $fpkey, $id);
-
-			//echo $qstring;
-
-			$q = mysql_query($qstring) or die(mysql_error());
-
-			//Display the table
-			
-			echo viewTable($q, $table);
-		}
-	}
-
+      }
+    }
+    echo "</table>";
+    // Display the associated tables
+    foreach($foreign_tables as $table) {
+      $fpkey = $foreign_keys[$table];
+      $qstring = getQueryJoin($table, $tabl, $fpkey, $id);
+      $q = mysql_query($qstring) or die(mysql_error());
+      //Display the table
+      echo viewTable($q, $table);
+    }
+  }
 }
 
 /**
@@ -473,46 +450,34 @@ function getQueryJoin($foreign_table, $main_table, $foreign_key, $main_id) {
  * @return a string containing the HTML table. This does not echo its result.
  */
 function viewTable($resource, $table) {
-
-	$pkey = get_pkey($table);
-
-	// DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
-	//$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
-       $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
-
-	if(mysql_num_rows($resource) < 1) {
-		return $ret  .=  "<p>No Records Found </p>";
-	}
-
-	$first = TRUE;
-	$ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n";
-
-	while($row = mysql_fetch_assoc($resource)) {
-		if($first) {
-
-			foreach($row as $k=>$v) {
-				if($k != $pkey)
-					$ret .= "\t\t<td><strong>" . ucwords(str_replace("_", " ", $k)) . "</strong></td>\n";
-			}
-
-			//$ret.= "\t\t<td><strong>View</strong></td>\n\t</tr>\n</thead><tbody>\n";		
-			$ret.= "</tr></thead><tbody>\n";
-			$first = FALSE;
-		}
-
-		$ret .= "\t<tr>\n";
-		foreach($row as $k=>$v) {
-			if($k != $pkey)
-				$ret .= "\t<td>$v</td>\n";
-		}
-
-		$ret .= "\t<td><a href=\"view.php?table=$table&uid=$row[$pkey]\">View</a></td>\n\t</tr>\n";
-	}
-
-	$ret .= "</tbody>\n</table>\n";
-
-	return $ret;
-
+  $pkey = get_pkey($table);
+  // DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
+  //$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
+  $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
+  if(mysql_num_rows($resource) < 1) 
+    return $ret  .=  "<p>No Records Found </p>";
+  $first = TRUE;
+  /* dem aug2013: Change style of all tables controlled by this function! Hope it's okay. */  
+  /* $ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n"; */                         
+  $ret .= "<table><thead><tr>";                                                               
+  while($row = mysql_fetch_assoc($resource)) {
+    if($first) {
+      foreach($row as $k=>$v) {
+	if($k != $pkey)
+	  $ret .= "<th>" . ucwords(str_replace("_", " ", $k)) . "</th>";
+      }
+      $ret.= "<th></tr></thead><tbody>";
+      $first = FALSE;
+    }
+    $ret .= "\t<tr>\n";
+    foreach($row as $k=>$v) {
+      if($k != $pkey)
+	$ret .= "\t<td>$v</td>\n";
+    }
+    $ret .= "\t<td><a href=\"view.php?table=$table&uid=$row[$pkey]\">View</a></td>\n\t</tr>\n";
+  }
+  $ret .= "</tbody>\n</table>\n";
+  return $ret;
 }
 
 

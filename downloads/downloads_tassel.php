@@ -382,87 +382,12 @@ class DownloadsJNLP
           echo "<form method=\"LINK\" action=\"$temp2\">";
           echo "<input type=\"submit\" value=\"Open file with TASSEL\"> (950Mb Heap Size) Use if Error Creating Java Virtual Machine";
           echo "</form><br>";
+          echo "For Safari and other browsers that will not execute programs from the internet,<br>";
+          echo "Go to your download folder and open the .jnlp file<br><br>";
           echo "TASSEL (Trait Analysis by Association, Evolution and Linkage)<br>";
           echo "provided by Buckler Lab for Maize Genetics and Diversity<br>";
           echo "<a href=\"http://www.maizegenetics.net/tassel\">www.maizegenetics.net/tassel</a>";
         
-	}
-	
-	/**
-	 * this is the main entry point when there are no lines saved in session variable
-	 */
-    private function type1_breeding_programs_year()
-	{
-		?>	
-			<div id="step11">
-			<table>
-				<tr>
-					<th>Breeding Program</th>
-				</tr>
-				<tr>
-					<td>
-						<select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
-		<?php
-
-		// Select breeding programs for the drop down menu
-		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-				FROM CAPdata_programs WHERE program_type='breeding' ORDER BY name";
-
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
-		{
-			?>
-				<option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
-			<?php
-		}
-		?>
-						</select>
-			</table>
-			</div></div>
-					
-			<div id="step2" style="float: left; margin-bottom: 1.5em;">
-			<p>2.
-		<select name="select2">
-		  <option value="BreedingProgram">Year</option>
-		</select></p>
-			<table>
-					<tr>
-					    <th>Year</th>
-					</tr>
-					<tr>
-					<td>
-						<select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-		<?php
-
-		// set up drop down menu with data showing year
-		// should this be phenotype experiments only? No
-
-		$sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-				WHERE e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'phenotype'";
-		if (!authenticate(array(USER_TYPE_PARTICIPANT,
-					USER_TYPE_CURATOR,
-					USER_TYPE_ADMINISTRATOR)))
-			$sql .= " and data_public_flag > 0";
-		$sql .= " GROUP BY e.experiment_year ASC";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
-			?>
-				<option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-			<?php
-		}
-		?>
-						</select>
-					</td>
-				</tr>
-			</table>
-		</div>
-		<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-		
-<?php
 	}
 	
     /**
