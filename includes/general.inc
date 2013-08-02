@@ -169,7 +169,6 @@ function show_experiments($id) {
 function show_markers($id) {
   show_general("markers", $id);
   echo "<p><h3>Annotations</h3>";
-  echo "<table><thead><tr><th>Dataset<th>Entry<th>Dataset Description</tr></thead>";
   $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation, mat.comments 
           FROM  markers m, marker_annotations ma, marker_annotation_types mat
           WHERE m.marker_uid = $id AND
@@ -177,18 +176,23 @@ function show_markers($id) {
 	    ma.marker_annotation_type_uid = mat.marker_annotation_type_uid 
           ORDER BY mat.name_annotation";
   $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_assoc($res)) {
-    $reg_pattern = "XXXX";
-    $replace_string = $row['value'];
-    $source_string = $row['linkout_string_for_annotation'];
-    $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
-    $url = "<a href=\"$linkString\" target=\"_blank\">";
-    if ($linkString == "")
-      echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['comments']."</tr>";
-    else 
-      echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['comments']."</a></tr>";    
+  if (mysql_num_rows($res) == 0) 
+    echo "None";
+  else {
+    echo "<table><thead><tr><th>Dataset<th>Entry<th>Dataset Description</tr></thead>";
+    while ($row = mysql_fetch_assoc($res)) {
+      $reg_pattern = "XXXX";
+      $replace_string = $row['value'];
+      $source_string = $row['linkout_string_for_annotation'];
+      $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
+      $url = "<a href=\"$linkString\" target=\"_blank\">";
+      if ($linkString == "")
+	echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['comments']."</tr>";
+      else 
+	echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['comments']."</a></tr>";    
+    }
+    echo "</table>";
   }
-  echo "</table>";
 
   // Marker Synonyms
   $sql = "select ms.marker_synonym_uid, ms.value, mst.name
@@ -213,14 +217,20 @@ function show_markers($id) {
   $mapname = $row[0];
   // Don't do it if the marker isn't mapped.
   if (!empty($mapname)) {
-    echo "<h3>Selection List</h3>";
-    echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
-    echo "<input type='hidden' name='selMkrs[]' value='$id'>";
-    echo "<input type='hidden' name='mapname' value='$mapname'>";
-    echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
-    echo "</form>";
-    
     echo "<h3>Map locations</h3>";
+    // Display in table
+    $sql = "select map_name, chromosome, start_position, end_position
+	from map, markers_in_maps
+	where marker_uid = $id and markers_in_maps.map_uid = map.map_uid
+	";
+    $r = mysql_query($sql) or die(mysql_error());
+    if (mysql_num_rows($r) > 0) {
+      echo "<table><thead><tr><th>Map<th>Chromosome<th>Start<th>End";
+      while ($row = mysql_fetch_assoc($r)) 
+	echo "<tr><td>$row[map_name]<td>$row[chromosome]<td>$row[start_position]<td>$row[end_position]";
+      echo "</table>";
+    }
+    // View in GBrowse
     $sql = "select marker_name from markers where marker_uid = $id";
     $r = mysql_query($sql);
     $row = mysql_fetch_row($r);
@@ -228,6 +238,13 @@ function show_markers($id) {
     echo "<form method='GET' action=http://".$_SERVER['HTTP_HOST']."/cgi-bin/gbrowse/tht>";
     echo "<input type='hidden' name='name' value='$markername'>";
     echo "<input type='submit' value='View in GBrowse'></p>";
+    echo "</form>";
+    // add to Selection List
+    echo "<h3>Selection List</h3>";
+    echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
+    echo "<input type='hidden' name='selMkrs[]' value='$id'>";
+    echo "<input type='hidden' name='mapname' value='$mapname'>";
+    echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
     echo "</form>";
   }
 }
