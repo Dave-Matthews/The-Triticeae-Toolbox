@@ -652,6 +652,17 @@ class Downloads
 	 } else {
 	     $countLines = 0;
 	 }
+         if (isset($_SESSION['selected_map'])) {
+            $selected_map = $_SESSION['selected_map'];
+         } else {
+            $selected_map = 1;
+         }
+         $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
+         $res = mysql_query($sql) or die(mysql_error());
+         $row = mysql_fetch_assoc($res);
+         $map_name = $row['mapset_name'];
+         $saved_session = $saved_session . ", map set = $map_name";
+         
 	 if (isset($_SESSION['clicked_buttons'])) {
 	    $tmp = count($_SESSION['clicked_buttons']);
 	    $saved_session = $saved_session . ", $tmp markers";
