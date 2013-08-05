@@ -43,7 +43,7 @@ new Downloads($_GET['function']);
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
 class Downloads
-{   
+{
     /**
      * delimiter used for output files
      */
@@ -51,31 +51,32 @@ class Downloads
     
     /** 
      * Using the class's constructor to decide which action to perform
+     *
      * @param string $function action to perform
      */
     public function __construct($function = null)
     {	
         switch($function)
         {
-            case 'step1lines':
-                $this->step1_lines();
-                break;
-			case 'step2lines':
-				$this->step2_lines();
-				break;
-			case 'step3lines':
-				$this->step3_lines();
-				break;
-		 	case 'step4lines':
-				$this->step4_lines();
-				break;
-                        case 'step5lines':
-                                $this->step5_lines();
-                                break;
-			case 'step1yearprog':
-			    $this->step1_yearprog();
-			    break;
-			case 'type1build_qtlminer':
+        case 'step1lines':
+            $this->step1_lines();
+            break;
+        case 'step2lines':
+            $this->step2_lines();
+            break;
+        case 'step3lines':
+            $this->step3_lines();
+            break;
+        case 'step4lines':
+            $this->step4_lines();
+            break;
+        case 'step5lines':
+            $this->step5_lines();
+            break;
+        case 'step1yearprog':
+            $this->step1_yearprog();
+            break;
+        case 'type1build_qtlminer':
 				$this->type1_build_qtlminer();
 				break;
 			case 'type1build_tassel':
@@ -121,13 +122,13 @@ class Downloads
 	private function type1_select()
 	{
 		global $config;
-                include($config['root_dir'].'theme/normal_header.php');
+                include $config['root_dir'].'theme/normal_header.php';
 		$phenotype = "";
                 $lines = "";
 		$markers = "";
 		$saved_session = "";
 		$this->type1_checksession();
-		include($config['root_dir'].'theme/footer.php');
+		include $config['root_dir'].'theme/footer.php';
 	}	
 	
 	/**
@@ -292,6 +293,10 @@ class Downloads
 		}
  
                 if (!preg_match('/[0-9]/',$markers_str)) {
+                  //show have markers selected
+                  echo "<font color=red>Error: no markers selected</font><br>\n";
+                  return;
+
                   //get genotype markers that correspond with the selected lines
                   $sql_exp = "SELECT DISTINCT marker_uid
                   FROM allele_cache
