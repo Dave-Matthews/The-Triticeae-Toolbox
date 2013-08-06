@@ -728,8 +728,8 @@ class Downloads
                <table border=0>
 	       <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
                <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
-	       <tr><td><input type="button" value="Create file for Tassel" onclick="javascript:use_session('v4');">
-               <td>genotype coded as {A,C,T,G,N} using the HapMap file format
+	       <tr><td><input type="button" value="Create file for TASSEL" onclick="javascript:use_session('v4');">
+               <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>will work with TASSEL Version 3 or 4 
                <tr><td><input type="button" value="Create file for R" onclick="javascript:use_session('v5');">
                <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}
                <tr><td><input type="button" value="Create file for FlapJack" onclick="javascript:use_session('v6');">
@@ -1631,9 +1631,9 @@ class Downloads
            );
           } elseif (preg_match("/DArT/", $marker_type)) {
            $lookup = array(
-            'AA' => 'AA',
-            'BB' => 'BB',
-            '--' => 'NN'
+            'AA' => '+',
+            'BB' => '-',
+            '--' => 'N'
             ); 
           } else {
            $lookup = array(
