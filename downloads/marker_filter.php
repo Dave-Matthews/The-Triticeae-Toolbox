@@ -25,13 +25,14 @@
  */
 function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
 {
-     $tmp = count($lines);
-     if ($tmp == 0) {
-         return;
-     }
-     $selectedlines = implode(",", $lines);
+    $tmp = count($lines);
+    if ($tmp == 0) {
+        return;
+    }
+    $selectedlines = implode(",", $lines);
 
-    //get genotype experiments that correspond with the Datasets (BP and year) selected for the experiments
+    //get genotype experiments that correspond with the Datasets (BP and year)
+    //selected for the experiments
     $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
     FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
     WHERE
@@ -48,7 +49,8 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
         $exp = implode(',', $exp);
     }
 
-    $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+    $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa,
+         SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
          SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
          FROM allele_frequencies AS af
          WHERE af.experiment_uid in ($exp)
@@ -60,12 +62,16 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
 
     while ($row = mysql_fetch_array($res)) {
         $marker_uid = $row["marker"];
-        $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]), ($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])), 1);
+        $maf1 = (2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]);
+        $maf2 = ($row["sumab"]+2*$row["sumbb"])/(2*$row["total"]);
+        $maf = round(100*min($maf1, $maf2), 1);
         $miss = round(100*$row["summis"]/$row["total"], 1);
-        if ($maf >= $min_maf)
+        if ($maf >= $min_maf) {
             $num_maf++;
-        if ($miss > $max_missing)
+        }
+        if ($miss > $max_missing) {
             $num_miss++;
+        }
         if (($miss > $max_missing) OR ($maf < $min_maf)) {
             $num_removed++;
         } else {
@@ -101,7 +107,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     //create list of selected markers
     foreach ($markers as $key=>$marker_uid) {
         $selected_markers[$marker_uid] = 1;
-        echo "selected $marker_uid\n";
+        //echo "selected $marker_uid\n";
     }
 
     //get location information for markers
@@ -132,7 +138,6 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
         if ($row = mysql_fetch_array($res)) {
             $alleles = $row[0];
             $outarray = explode(',', $alleles);
-            $alleles_mem[$line_record_uid] = $alleles;
             $i=0;
             foreach ($outarray as $allele) {
                 if ($allele=='AA') {
@@ -183,14 +188,18 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     } else {
         //calculate missing from each line
         foreach ($lines as $line_record_uid) {
-            $alleles = $alleles_mem[$line_record_uid];
-            $outarray = explode(',', $alleles);
-            $line_misscnt[$line_record_uid] = 0;
-            foreach ($markers_filtered as $marker_uid) {
-                $loc = $marker_list_loc[$marker_uid];
-                $allele = $outarray[$loc];
-                if (($allele=='--') or ($allele=='')) {
-                    $line_misscnt[$line_record_uid]++;
+            $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
+            $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+            if ($row = mysql_fetch_array($res)) {
+                $alleles = $row[0];
+                $outarray = explode(',', $alleles);
+                $line_misscnt[$line_record_uid] = 0;
+                foreach ($markers_filtered as $marker_uid) {
+                    $loc = $marker_list_loc[$marker_uid];
+                    $allele = $outarray[$loc];
+                    if (($allele=='--') or ($allele=='')) {
+                        $line_misscnt[$line_record_uid]++;
+                    }
                 }
             }
         }
