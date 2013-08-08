@@ -107,7 +107,7 @@ $sql = "select distinct experiment_year from experiments order by experiment_yea
   <table width=650px>
     <tr><td style="text-align:left;">
 	<h3>Genetic characters</h3>
-	<table id="PropertySelTable" class="tableclass1" style="table-layout: fixed; width: 350px;">
+	<table id="PropertySelTable" style="table-layout: fixed; width: 350px;">
 	  <tr>
 	    <th width=120px>Category
 	    <th width=150px>Property/Gene
