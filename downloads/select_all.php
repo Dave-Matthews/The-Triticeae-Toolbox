@@ -1266,7 +1266,6 @@ class SelectPhenotypeExp
 		        </option>
 		        <?php
 		    } else {
-                echo "skip $id $trait_cmd";
             }
         }
 	    ?>

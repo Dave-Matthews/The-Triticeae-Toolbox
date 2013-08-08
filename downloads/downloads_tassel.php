@@ -680,7 +680,7 @@ class DownloadsJNLP
         Remove lines missing &gt <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
         <?php
          if ($use_database) {
-           $this->calculate_db($lines, $min_maf, $max_missing);
+           calculate_db($lines, $min_maf, $max_missing);
          } else { 
 	   calculate_af($lines, $min_maf, $max_missing, $max_miss_line); 
          }
@@ -713,57 +713,6 @@ class DownloadsJNLP
 	  return ($a < $b) ? -1 : 1;
 	}
 
-	/**
-	 * calculate allele frequencies using allele_frequencies table
-	 * @param array $lines
-	 * @param array $min_maf
-	 * @param array $max_missing
-	 */
-        function calculate_db(&$lines, $min_maf, $max_missing) {
-         //calculate allele frequencies using allele_frequencies table
-
-         $selectedlines = implode(",", $lines);
-
-         //get genotype experiments that correspond with the Datasets (BP and year) selected for the experiments
-         $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-         FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
-         WHERE
-         e.experiment_type_uid = et.experiment_type_uid
-         AND lr.line_record_uid = tb.line_record_uid
-         AND e.experiment_uid = tb.experiment_uid
-         AND lr.line_record_uid in ($selectedlines)
-         AND et.experiment_type_name = 'genotype'";
-         $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-         if (mysql_num_rows($res)>0) {
-          while ($row = mysql_fetch_array($res)){
-           $exp[] = $row["exp_uid"];
-          }
-          $exp = implode(',',$exp);
-         }
-
-         $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
-         SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
-         FROM allele_frequencies AS af
-         WHERE af.experiment_uid in ($exp)
-         group by af.marker_uid";
-
-         $res = mysql_query($sql_mstat) or die(mysql_error());
-         $num_mark = mysql_num_rows($res);
-         $num_maf = $num_miss = $num_removed = 0;
-
-         while ($row = mysql_fetch_array($res)){
-          $marker_uid[] = $row["marker"];
-          $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
-          $miss = round(100*$row["summis"]/$row["total"],1);
-          if ($maf >= $min_maf)
-           $num_maf++;
-          if ($miss > $max_missing)
-           $num_miss++;
-          if (($miss > $max_missing) OR ($maf < $min_maf))
-           $num_removed++;
-         }
-        }
-	
 	/**
 	 * starting with breeding programs display marker information
 	 */
@@ -2000,8 +1949,8 @@ class DownloadsJNLP
 	 }
 	
 	 //generate an array of selected markers and add map position if available
-         $sql = "select marker_uid, marker_name, A_allele, B_allele from markers
-         where marker_uid IN ($markers_str)";
+         $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
+         where marker_uid IN ($markers_str) and markers.marker_type_uid = marker_types.marker_type_uid";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
          while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
@@ -2013,11 +1962,14 @@ class DownloadsJNLP
            }
            if (preg_match("/[A-Z]/",$row[2]) && preg_match("/[A-Z]/",$row[3])) {
                 $allele = $row[2] . "/" . $row[3];
+           } elseif (preg_match("/[0-9]/",$row[2]) && preg_match("/[0-9]/",$row[3])) {
+                $allele = $row[2] . "/" . $row[3];
            } else {
                 $allele = "N/N";
            }
            $marker_list_name[$marker_uid] = $marker_name;
            $marker_list_allele[$marker_uid] = $allele;
+           $marker_list_type[$marker_uid] = $row[4];
          }
 
          //sort marker_list_all by map location if available
@@ -2026,15 +1978,6 @@ class DownloadsJNLP
            die("could not sort marker list\n");
          }
 
-	 $lookup = array(
-	   'AA' => 'AA',
-	   'BB' => 'CC',
-	   '--' => 'NN',
-	   'AB' => 'AC',
-           'BA' => 'CA',
-	   '' => 'NN'
-	 );
-	 
 	 //get location in allele_byline for each marker
 	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -2062,15 +2005,24 @@ class DownloadsJNLP
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
+          $marker_type = $marker_list_type[$marker_id];
 
-          $lookup = array(
-           'AA' => substr($allele,0,1) . substr($allele,0,1),
-           'BB' => substr($allele,2,1) . substr($allele,2,1),
-           '--' => 'NN',
-           'AB' => substr($allele,0,1) . substr($allele,2,1),
-           'BA' => substr($allele,2,1) . substr($allele,0,1),
-           '' => 'NN'
-          );
+          if (preg_match("/DArT/", $marker_type)) {
+              $lookup = array(
+              'AA' => '+',
+              'BB' => '-',
+              '--' => 'N'
+              );
+          } else {
+              $lookup = array(
+              'AA' => substr($allele,0,1) . substr($allele,0,1),
+              'BB' => substr($allele,2,1) . substr($allele,2,1),
+              '--' => 'NN',
+              'AB' => substr($allele,0,1) . substr($allele,2,1),
+              'BA' => substr($allele,2,1) . substr($allele,0,1),
+              '' => 'NN'
+              );
+          }
 
 	     $sql = "select A_allele, B_allele, mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset where markers.marker_uid = $marker_id
 	         AND mim.marker_uid = markers.marker_uid

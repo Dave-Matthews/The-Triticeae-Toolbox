@@ -37,7 +37,7 @@ class Maps {
   public function __construct($function = null) {
     switch($function) {
     case 'Save':
-      $this->typeMapSave();
+      $this->type_MapSet_Display();
       break;
     case 'Markers':
       $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
@@ -58,7 +58,6 @@ class Maps {
     include($config['root_dir'].'theme/normal_header.php');
 
     echo "<h2>Map Sets</h2>";
-    echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
     echo "<div id=\"step1\">";
     $this->type_MapSet_Display();
     echo "</div>";
@@ -82,6 +81,11 @@ class Maps {
    */
   private function type_MapSet_Display()
   {
+      if (isset($_GET['map'])) {
+          $map = $_GET['map'];
+          $_SESSION['selected_map'] = $map;
+          echo "Map selection saved.<br><br>\n";
+      }
   ?>
   <style type="text/css">
          th {background: #5B53A6 !important; color: white !important; }
@@ -91,22 +95,21 @@ class Maps {
   </style>
   <script type="text/javascript" src="maps/select_map.js">
   </script>
-  <form action="maps/select_map.php">
+  <form name="myForm" action="maps/select_map.php">
   <?php
     if (isset($_SESSION['selected_map'])) {
       $selected_map = $_SESSION['selected_map'];
-    } else {
-      $selected_map = 1;
     }
     $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
       WHERE mim.marker_uid = markers.marker_uid
       AND mim.map_uid = map.map_uid
       AND map.mapset_uid = mapset.mapset_uid
       GROUP BY mapset.mapset_uid";
-      echo "This table lists the total markers in each map<br>\n";
+      echo "This table lists the total markers in each map.\n";
+      echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
     $res = mysql_query($sql) or die (mysql_error());
     echo "<table>\n";
-    echo "<tr><td>select<td>count<td>name<td>comment (mouse over item for complete text)\n";
+    echo "<tr><td>select<td>markers<br>(total)<td>map name<td>comment (mouse over item for complete text)\n";
     while ($row = mysql_fetch_assoc($res)) {
       $count = $row["countm"];
       $val = $row["mapset_name"];
@@ -118,7 +121,7 @@ class Maps {
       } else {
         $checked = "";
       }
-      echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: update_map(this.value)\"><td>$count<td>$val<td><article title=\"$comment\">$comm</article>\n";
+      echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: save_map(this.value)\"><td>$count<td>$val<td><article title=\"$comment\">$comm</article>\n";
     }
     echo "</table>";
     #echo "<input type=\"submit\" name=\"function\" value=\"Save\">";
@@ -153,7 +156,7 @@ class Maps {
             }
            $marker_str = implode(',',$markers);
            $num_mark = count($markers);
-      $msg = "There  are $num_mark markers that have genotype data for the selected $num_line lines. This table lists the portion of the $num_mark markers included in each map";
+      $msg = "There  are $num_mark markers that have genotype data for the selected $num_line lines.<br>This table lists the portion of markers included in each map.<br>Selecting the map with the largest count will give the best coverage.<br><br>";
     } else {
       die("Error - must select lines or markers<br>\n");
     }
@@ -168,7 +171,7 @@ class Maps {
     while ($row = mysql_fetch_assoc($res)) {
       if ($found == 0 ) {
         echo "<br><br>$msg\n";
-        echo "<table><tr><td>count<td>name\n";
+        echo "<table><tr><td>markers<br>(in selected lines)<td>map name\n";
         $found = 1;
       }
       $count = $row["countm"];
