@@ -190,12 +190,17 @@ class Downloads
                 echo "4. Select the Create file button with the desired file format.<br>";
                 echo "5. Select the Download Zip file button to retreive the results.<br><br>";
                 if (empty($_SESSION['selected_lines'])) {
-                    echo "File formats are available for Tassel, R, or FlapJack.<br><br>";
+                    echo "<font color=red>No lines selected. </font>";
                     echo "<a href=\"" . $config['base_url'];
                     echo "pedigree/line_selection.php\">Select Lines by Properties</a> or ";
                     echo "<a href=\"" . $config['base_url'];
                     echo "downloads/select_all.php\">Wizard (Lines, Traits, Trials)</a><br><br>.";
+                } else if (empty($_SESSION['selected_map'])) {
+                    echo "<font color=red>No map selected. </font>";
+                    echo "<a href=\"" . $config['base_url'];
+                    echo "maps/select_map.php\">Select genetic map</a><br><br>.";
                 }
+   
                    ?> 
                    <div id="step1" style="float: left; margin-bottom: 1.5em;">
                    <?php
@@ -659,14 +664,16 @@ class Downloads
 	 }
          if (isset($_SESSION['selected_map'])) {
             $selected_map = $_SESSION['selected_map'];
-         } else {
-            $selected_map = 1;
+            $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
+            $res = mysql_query($sql) or die(mysql_error());
+            $row = mysql_fetch_assoc($res);
+            $map_name = $row['mapset_name'];
+            if ($saved_session == "") {
+             $saved_session = "map set = $map_name";
+            } else {
+             $saved_session = $saved_session . ", map set = $map_name";
+            }
          }
-         $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
-         $res = mysql_query($sql) or die(mysql_error());
-         $row = mysql_fetch_assoc($res);
-         $map_name = $row['mapset_name'];
-         $saved_session = $saved_session . ", map set = $map_name";
          
 	 if (isset($_SESSION['clicked_buttons'])) {
 	    $tmp = count($_SESSION['clicked_buttons']);
@@ -728,8 +735,8 @@ class Downloads
                <table border=0>
 	       <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
                <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
-	       <tr><td><input type="button" value="Create file for Tassel" onclick="javascript:use_session('v4');">
-               <td>genotype coded as {A,C,T,G,N} using the HapMap file format
+	       <tr><td><input type="button" value="Create file for TASSEL" onclick="javascript:use_session('v4');">
+               <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>will work with TASSEL Version 3 or 4 
                <tr><td><input type="button" value="Create file for R" onclick="javascript:use_session('v5');">
                <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}
                <tr><td><input type="button" value="Create file for FlapJack" onclick="javascript:use_session('v6');">
@@ -1507,13 +1514,13 @@ class Downloads
          if (isset($_SESSION['selected_map'])) {
            $selected_map = $_SESSION['selected_map'];
          } else {
-           $selected_map = 1;
+           die("<font color=red>Error - map should be selected before download</font>");
          }
 	
 	 if (count($markers)>0) {
 	  $markers_str = implode(",", $markers);
 	 } else {
-	  die("error - markers should be selected before download");
+	  die("<font color=red>Error - markers should be selected before download</font>");
 	 }
 	 if (count($lines)>0) {
 	  $lines_str = implode(",", $lines);
@@ -1631,9 +1638,9 @@ class Downloads
            );
           } elseif (preg_match("/DArT/", $marker_type)) {
            $lookup = array(
-            'AA' => 'AA',
-            'BB' => 'BB',
-            '--' => 'NN'
+            'AA' => '+',
+            'BB' => '-',
+            '--' => 'N'
             ); 
           } else {
            $lookup = array(
