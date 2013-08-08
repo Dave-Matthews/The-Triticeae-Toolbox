@@ -149,7 +149,15 @@ function show_line_records($id) {
   echo "</div>";
 
   // Panels
-  $res = mysql_query("select name, line_ids, comment from linepanels") or die(mysql_error());
+  $myid = 0;
+  if (loginTest2()) {
+    $mysession = loadUser($_SESSION['username']);
+    $myid = $mysession['users_uid'];
+  }
+  $sql = "select name, line_ids, comment 
+	from linepanels
+	where users_uid = $myid or users_uid IS NULL";
+  $res = mysql_query($sql) or die(mysql_error());
   $i = 0;
   while ($row = mysql_fetch_row($res)) {
     $lineset = explode(",", $row[1]);
@@ -162,7 +170,7 @@ function show_line_records($id) {
   if (!empty($panelset)) {
     echo "<div style='float: left; margin-left: 10px;'>";
     echo "<h3>Panels</h3>";
-    echo "<table class='tableclass1' cellspacing=0 cellpadding=0>";
+    echo "<table cellspacing=0 cellpadding=0>";
     echo "<th>Name<th>Description";
     $i = 0;
     foreach ($panelset as $paname)

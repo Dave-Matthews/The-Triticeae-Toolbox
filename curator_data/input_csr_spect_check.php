@@ -182,6 +182,11 @@ class Instrument_Check
                }
 
                //check for unique record
+               if (preg_match("/[0-9]/",$value[9])) {
+                   $slit_aperature = $value[9];
+               } else {
+                   $slit_aperature = "NULL";
+               }
 
 	       $sql = "select system_uid from csr_system where system_name = \"$value[2]\"";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -206,6 +211,9 @@ class Instrument_Check
                  }
                  $new_record = 0;
                }
+        
+               //check for missing entries
+
 
                if ($error_flag == 0) {
                  if ($new_record) {
@@ -216,7 +224,7 @@ class Instrument_Check
                    $sql = "delete from csr_system where system_uid  = $system_uid";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "deleted old entries from database where system_uid = $system_uid<br>\n";
-                   $sql = "insert into csr_system (system_name, instrument, serial_num, serial_num2, grating, collection_lens, longpass_filter, slit_aperture, reference, cable_type, wavelengths, bandwidths, comments) values ('$value[2]','$value[3]','$value[4]','$value[5]','$value[6]','$value[7]','$value[8]',$value[9],'$value[10]','$value[11]','$value[12]','$value[13]','$value[14]')";
+                   $sql = "insert into csr_system (system_name, instrument, serial_num, serial_num2, grating, collection_lens, longpass_filter, slit_aperture, reference, cable_type, wavelengths, bandwidths, comments) values ('$value[2]','$value[3]','$value[4]','$value[5]','$value[6]','$value[7]','$value[8]',$slit_aperature,'$value[10]','$value[11]','$value[12]','$value[13]','$value[14]')";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
                  }
