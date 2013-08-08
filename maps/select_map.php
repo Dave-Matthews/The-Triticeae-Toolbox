@@ -58,7 +58,6 @@ class Maps {
     include($config['root_dir'].'theme/normal_header.php');
 
     echo "<h2>Map Sets</h2>";
-    echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
     echo "<div id=\"step1\">";
     $this->type_MapSet_Display();
     echo "</div>";
@@ -85,6 +84,7 @@ class Maps {
       if (isset($_GET['map'])) {
           $map = $_GET['map'];
           $_SESSION['selected_map'] = $map;
+          echo "Map selection saved.<br><br>\n";
       }
   ?>
   <style type="text/css">
@@ -99,18 +99,17 @@ class Maps {
   <?php
     if (isset($_SESSION['selected_map'])) {
       $selected_map = $_SESSION['selected_map'];
-    } else {
-      $selected_map = 1;
     }
     $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
       WHERE mim.marker_uid = markers.marker_uid
       AND mim.map_uid = map.map_uid
       AND map.mapset_uid = mapset.mapset_uid
       GROUP BY mapset.mapset_uid";
-      echo "This table lists the total markers in each map<br>\n";
+      echo "This table lists the total markers in each map.\n";
+      echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
     $res = mysql_query($sql) or die (mysql_error());
     echo "<table>\n";
-    echo "<tr><td>select<td>count<td>map name<td>comment (mouse over item for complete text)\n";
+    echo "<tr><td>select<td>markers<br>(total)<td>map name<td>comment (mouse over item for complete text)\n";
     while ($row = mysql_fetch_assoc($res)) {
       $count = $row["countm"];
       $val = $row["mapset_name"];
@@ -172,7 +171,7 @@ class Maps {
     while ($row = mysql_fetch_assoc($res)) {
       if ($found == 0 ) {
         echo "<br><br>$msg\n";
-        echo "<table><tr><td>count<td>map name\n";
+        echo "<table><tr><td>markers<br>(in selected lines)<td>map name\n";
         $found = 1;
       }
       $count = $row["countm"];
