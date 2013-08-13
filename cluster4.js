@@ -39,12 +39,25 @@ function recluster(unq_file) {
   mmm = $('mmm').getValue();
   mml = $('mml').getValue();
   mmaf = $('mmaf').getValue();
+  var i = document.myForm.elements.length;
+  var j = document.myForm.elements;
+  var k = 0;
+  var param = "function=recluster";
+  for (k=0; k<i; k++) {
+    if (document.myForm.elements[k].checked === true) {
+      param += '&' + document.myForm.elements[k].name + '=' + document.myForm.elements[k].value;
+    } else if (document.myForm.elements[k].name == 'time') {
+      param += '&' + document.myForm.elements[k].name + '=' + document.myForm.elements[k].value;
+    }
+  }
   clusters = $('clusters').getValue();
   window.scrollTo(0,0);
   document.getElementById('primaryContent').innerHTML = "Creating data file";
   Element.show('spinner');
   var url = "cluster_lines4d.php";
   var tmp = new Ajax.Request(url, {
+        method: 'post',
+        postBody: param,
         onComplete : function() {
             document.title = title;
             get_alleles2(unq_file);
