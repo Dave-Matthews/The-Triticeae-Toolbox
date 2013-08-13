@@ -93,8 +93,8 @@ class Downloads
         Display a histogram of the selected phenotype data for each trial<br><br>
         <?php
         if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
-            echo "Select a set of <a href=\"downloads/select_all.php\">lines, trials, and traits.</a><br></div>\n";
-            die();
+            echo "Select a set of <a href=\"downloads/select_all.php\">lines, trials, and traits.</a><br></div></div>\n";
+            return FALSE;
         }
         if (isset($_SESSION['selected_traits'])) {
             $phenotype = $_SESSION['selected_traits'];
