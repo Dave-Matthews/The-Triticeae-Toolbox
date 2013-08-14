@@ -2797,7 +2797,6 @@ class Downloads
 	        $pos = $pos_index;
                 $pos_index += 10;
 	     }
-	     $output .= "$marker_name\t$allele\t$chrom\t$pos";
              $outarray2 = array();
              $sql = "select marker_name, alleles from allele_bymarker where marker_uid = $marker_id";
              $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -2812,11 +2811,12 @@ class Downloads
                  }
                  $i++;
                }
+               $allele_str = implode("\t",$outarray2);
+               $output .= "$marker_name\t$allele\t$chrom\t$pos";
+               $output .= "\t$allele_str\n";
              } else {
-               die("Error - could not find $marker_id<br>\n");
+               echo "Error - could not find marker_uid $marker_id<br>\n";
              }
-	     $allele_str = implode("\t",$outarray2);
-	     $output .= "\t$allele_str\n";
 	 }
 	 return $outputheader."\n".$output;
 	}
