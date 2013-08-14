@@ -1097,9 +1097,9 @@ class Downloads
                 } else {
                         $training_lines = "";
                 }
-		if (isset($_SESSION['selected_lines'])) {
-			$selectedlinescount = count($_SESSION['selected_lines']);
-			$lines = $_SESSION['selected_lines'];
+		if (isset($_SESSION['filtered_lines'])) {
+			$selectedlinescount = count($_SESSION['filtered_lines']);
+			$lines = $_SESSION['filtered_lines'];
 		} else {
 			$lines = "";
 		}
@@ -2713,8 +2713,8 @@ class Downloads
 	 }
 	
 	 //generate an array of selected markers and add map position if available
-         $sql = "select marker_uid, marker_name, A_allele, B_allele from markers
-         where marker_uid IN ($markers_str)";
+         $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
+         where marker_uid IN ($markers_str) and markers.marker_type_uid = marker_types.marker_type_uid";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
          while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
@@ -2731,6 +2731,7 @@ class Downloads
            }
            $marker_list_name[$marker_uid] = $marker_name;
            $marker_list_allele[$marker_uid] = $allele;
+           $marker_list_type[$marker_uid] = $row[4];
          }
 
          //sort marker_list_all by map location if available
@@ -2766,15 +2767,24 @@ class Downloads
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
+          $marker_type = $marker_list_type[$marker_id];
 
+          if (preg_match("/DArT/", $marker_type)) {
+           $lookup = array(
+            'AA' => '+',
+            'BB' => '-',
+            '--' => 'N'
+            );
+          } else {
           $lookup = array(
-           'AA' => -1,
-           'BB' =>  1,
+           'AA' => 1,
+           'BB' => -1,
            '--' => 'NA',
            'AB' =>  0,
            'BA' =>  0,
            '' => 'NA'
           );
+          }
 
 	     $sql = "select A_allele, B_allele, mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset where markers.marker_uid = $marker_id
 	         AND mim.marker_uid = markers.marker_uid
@@ -2803,13 +2813,11 @@ class Downloads
              if ($row = mysql_fetch_array($res)) {
                $alleles = $row[1];
                $outarray = explode(',',$alleles);
-               $i=0;
-               foreach ($outarray as $allele) {
-                 $line_id = $line_list[$i];
+               foreach ($outarray as $key=>$allele) {
+                 $line_id = $line_list[$key];
                  if (isset($line_lookup[$line_id])) {
                    $outarray2[]=$lookup[$allele];
                  }
-                 $i++;
                }
                $allele_str = implode("\t",$outarray2);
                $output .= "$marker_name\t$allele\t$chrom\t$pos";
