@@ -149,15 +149,16 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 } elseif ($allele=='--') {
                     $marker_misscnt[$i]++;
                 } elseif ($allele=='') {
+                    $marker_misscnt[$i]++;
                 } else {
                     echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
                 }
                 $i++;
             }
         } else {
-            //foreach ($marker_misscnt as $i=>$value) {
-            //    $marker_misscnt[$i]++;
-            //}
+            foreach ($marker_list as $i=>$value) {
+                $marker_misscnt[$i]++;
+            }
         }
     }
     $num_mark = 0;
