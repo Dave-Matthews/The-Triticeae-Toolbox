@@ -197,9 +197,8 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 foreach ($markers_filtered as $marker_uid) {
                     $loc = $marker_list_loc[$marker_uid];
                     $allele = $outarray[$loc];
-                    if ($allele=='--') {
+                    if (($allele=='--') or ($allele=='')) {
                         $line_misscnt[$line_record_uid]++;
-                    } elseif ($allele=='') {
                     }
                 }
             }
