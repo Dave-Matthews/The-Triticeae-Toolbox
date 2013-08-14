@@ -275,9 +275,9 @@ class Downloads
                 } else {
                         $experiments_t = "";
                 }
-		if (isset($_SESSION['selected_lines'])) {
-			$selectedcount = count($_SESSION['selected_lines']);
-			$lines = $_SESSION['selected_lines'];
+		if (isset($_SESSION['filtered_lines'])) {
+			$selectedcount = count($_SESSION['filtered_lines']);
+			$lines = $_SESSION['filtered_lines'];
 			$lines_str = implode(",", $lines);
 		} else {
 			$lines = "";
@@ -1619,7 +1619,7 @@ class Downloads
 	 
 	 $lookup_chrom = array(
 	   '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
-	   '6H' => '6','7H' => '7','UNK'  => '10');
+	   '6H' => '6','7H' => '7','UNK'  => '0');
 	
 	 //using a subset of markers so we have to translate into correct index
 	 foreach ($marker_list_all as $marker_id => $rank) {
