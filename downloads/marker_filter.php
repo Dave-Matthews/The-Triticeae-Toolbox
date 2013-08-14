@@ -168,8 +168,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
             continue;
         }
         $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-        $total_af = 2 * ($marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i]);
-        if ($total_af > 0) {
+        if ($total > 0) {
             $maf = 100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total);
             $miss = 100 * $marker_misscnt[$i]/$total;
             if ($maf < $min_maf) $num_maf++;
