@@ -202,7 +202,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                     }
                 }
             } else {
-                $line_misscnt[$line_record_uit] = 100;
+                $line_misscnt[$line_record_uid] = $count;
             }
         }
         $lines_removed = 0;
