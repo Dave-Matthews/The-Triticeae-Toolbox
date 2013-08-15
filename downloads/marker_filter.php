@@ -146,9 +146,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                     $marker_abcnt[$i]++;
                 } elseif ($allele=='BB') {
                     $marker_bbcnt[$i]++;
-                } elseif ($allele=='--') {
-                    $marker_misscnt[$i]++;
-                } elseif ($allele=='') {
+                } elseif (($allele=='--') or ($allele=='')) {
                     $marker_misscnt[$i]++;
                 } else {
                     echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
@@ -203,6 +201,8 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                         $line_misscnt[$line_record_uid]++;
                     }
                 }
+            } else {
+                $line_misscnt[$line_record_uit] = 100;
             }
         }
         $lines_removed = 0;

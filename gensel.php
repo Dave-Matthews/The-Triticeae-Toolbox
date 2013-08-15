@@ -203,15 +203,11 @@ class Downloads
 				}
 			}	
             $this->refresh_title();
-                if (empty($_SESSION['training_traits'])) {
-                   if (empty($_SESSION['phenotype'])) { 
-                     echo "Select training set using ";
-                     //echo $config['base_url'];
-                     //echo "phenotype/phenotype_selection.php>Trials and Traits</a> or ";
-                     echo "<a href=";
-                     echo $config['base_url'];
-                     echo "downloads/select_all.php>Wizard</a>.<br><br>";
-                   }
+                if (empty($_SESSION['phenotype'])) { 
+                    echo "<font color=red>Select training set using ";
+                    echo "<a href=";
+                    echo $config['base_url'];
+                    echo "downloads/select_all.php>Wizard</a></font><br><br>";
                 } elseif (empty($_SESSION['selected_lines'])) {
                     echo "<br>Select validation set containing trait measurements to plot prediction vs observed. ";
                     echo "<a href=";
@@ -229,6 +225,10 @@ class Downloads
                     echo "<a href=";
                     echo $config['base_url'];
                     echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
+                } elseif (empty($_SESSION['selected_map'])) {
+                    echo "<font color=red>Select map set using ";
+                    echo "<a href=\"" . $config['base_url'];
+                    echo "maps/select_map.php\">Genetic Map</a></font><br><br>.";
                 } 
                 if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
                    if (empty($_SESSION['selected_trials'])) {
@@ -460,8 +460,7 @@ class Downloads
         if (empty($_SESSION['selected_lines'])) {
             echo "</table>";
         }
-      //} elseif (!empty($_SESSION['selected_traits']) && !empty($_SESSION['selected_trials'])) { use when I get this working for multiple traits
-      } elseif (!empty($_SESSION['phenotype']) && !empty($_SESSION['selected_trials'])) {
+      } elseif (!empty($_SESSION['phenotype']) && !empty($_SESSION['selected_trials']) && !empty($_SESSION['selected_map'])) {
         ?>
         <table>
         <tr><td>Traits<td>Trials<td>Lines
@@ -2668,7 +2667,7 @@ class Downloads
 	 if (count($markers)>0) {
 	  $markers_str = implode(",", $markers);
 	 } else {
-	  die("error - markers should be selected before download");
+	  die("<font color=red>Error - markers should be selected before analysis</font>");
 	 }
 	 if (count($lines)>0) {
 	  $lines_str = implode(",", $lines);
