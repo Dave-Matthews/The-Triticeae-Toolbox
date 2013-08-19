@@ -1,5 +1,4 @@
 <?php
-
 // 21feb2013 dem: Use line_properties table instead of schema-coded properties.
 
 require 'config.php';
@@ -8,6 +7,11 @@ include($config['root_dir'] . 'curator_data/lineuid.php');
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 connect();
 loginTest();
+
+$row = loadUser($_SESSION['username']);
+ob_start();
+authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
+ob_end_flush();
 
 /* The Excel file must have this string in cell B2.  Modify when a new template is needed.*/
 $TemplateVersion = '1Jul13';
@@ -36,141 +40,111 @@ function errmsg($sql, $err) {
     $msg .= "<br>Command: ".$sql."<br>";
     die_nice($msg);
   }
-  elseif (preg_match('/^Duplicate entry/', $err)) {
-//   die_nice($err.". Aliases and GRIN Accessions must be unique.");
-  die_nice($err."<br>".$sql);
-  }
+  elseif (preg_match('/^Duplicate entry/', $err)) 
+    die_nice($err."<br>".$sql);
   else die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql."<br>");
 }
 
-
-/* ******************************* */
-$row = loadUser($_SESSION['username']);
-
-////////////////////////////////////////////////////////////////////////////////
-ob_start();
-
-authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
-ob_end_flush();
-
-
 new LineNames_Check($_GET['function']);
 
-class LineNames_Check
-{
-    private $delimiter = "\t";
-    // Using the class's constructor to decide which action to perform
-    public function __construct($function = null)
-    {	
-      switch($function)
-	{
-	case 'typeDatabase':
-	  $this->type_Database(); /* update database */
-	  break;
-	case 'typeLineData':
-	  $this->type_Line_Data(); /* Handle Line Data */
-	  break;
-	default:
-	  $this->typeLineNameCheck(); /* intial case*/
-	  break;
-	}	
-    }
+class LineNames_Check {
+  // Using the class's constructor to decide which action to perform
+  public function __construct($function = null)
+  {	
+    switch($function)	{
+    case 'typeDatabase':
+      $this->type_Database(); /* update database */
+      break;
+      /* case 'typeLineData': */
+      /*   $this->type_Line_Data(); /\* Handle Line Data *\/ */
+      /*   break; */
+    default:
+      $this->typeLineNameCheck(); /* intial case*/
+      break;
+    }	
+  }
 
-    private function typeLineNameCheck() {
-      global $config;
-      include($config['root_dir'] . 'theme/admin_header.php');
-
-      echo "<h2>Line information: Validation</h2>"; 
-			
-      $this->type_Line_Name();
-
-      $footer_div = 1;
-      include($config['root_dir'].'theme/footer.php');
-    }
+  private function typeLineNameCheck() {
+    global $config;
+    include($config['root_dir'] . 'theme/admin_header.php');
+    echo "<h2>Line information: Validation</h2>"; 
+    $this->type_Line_Name();
+    $footer_div = 1;
+    include($config['root_dir'].'theme/footer.php');
+  }
 	
-    private function type_Line_Name() {
-      global $TemplateVersion;
-      global $cnt;
-      ?>
-	<script type="text/javascript">
-	function update_database(filepath, filename, username) {
-	  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
-	  // Opens the url in the same window
-	  window.open(url, "_self");
-	}
-	</script>
-	
-	<style type="text/css">
-	    th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-		table {background: none; border-collapse: collapse}
-		td {border: 0px solid #eee !important;}
-		h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-		
-		<style type="text/css">
-                   table.marker
-                   {background: none; border-collapse: collapse}
-                    th.marker
-                    { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
-                    td.marker
-                    { padding: 5px 0; border: 0 !important; }
-                </style>
+  private function type_Line_Name() {
+    global $TemplateVersion;
+    global $cnt;
+?>
+
+<script type="text/javascript">
+  function update_database(filepath, filename, username) {
+  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
+  // Opens the url in the same window
+  window.open(url, "_self");
+  }
+</script>
+
+<style type="text/css">
+  h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+  th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+  table {background: none; border-collapse: collapse}
+  td {border: 0px solid #eee !important;}
+  table.marker {background: none; border-collapse: collapse}
+  th.marker { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
+  td.marker { padding: 5px 0; border: 0 !important; }
+</style>
 		
 <?php
-
-		    //DEM 19oct11: This runs out of memory.
-	/* ini_set("memory_limit","24M"); */
-        $row = loadUser($_SESSION['username']);
-	$username=$row['name'];
+  //DEM 19oct11: This runs out of memory.
+  /* ini_set("memory_limit","24M"); */
+  $row = loadUser($_SESSION['username']);
+  $username=$row['name'];
 	
-	if ($_FILES['file']['name'] == ""){
-		error(1, "No File Uploaded");
-		print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-	}
-	else {
-	//$tmp_dir="uploads/tmpdir_".$username."_".rand();
-        $tmp_dir="uploads/".str_replace(' ', '_', $username)."_".date('yMd_G:i');
-	umask(0);
-	if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
-		mkdir($tmp_dir, 0777);
-	}
-	$target_path=$tmp_dir."/";
-	$uploadfile=$_FILES['file']['name'];
-	$uftype=$_FILES['file']['type'];
-	//	if (strpos($uploadfile, ".xls") === FALSE) {
-	if (preg_match('/\.xls$/', $uploadfile) == 0) {
-	  error(1, "Only xls format is accepted. <br>");
-	  print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-	}
-	else {
-	  if(move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
-	    /* start reading the excel */
-	    $datafile = $target_path.$uploadfile;
-	    $reader = & new Spreadsheet_Excel_Reader();
-	    $reader->setOutputEncoding('CP1251');
-	    $reader->read($datafile);
-	    $linedata = $reader->sheets[0];
-	    $cols = $reader->sheets[0]['numCols'];
-	    $rows = $reader->sheets[0]['numRows'];
-	    //echo "nrows ".$rows." ncols ".$cols."<br>";
-	    //if (DEBUG) echo "Input File Name: ".$datafile."\n";
+  if ($_FILES['file']['name'] == ""){
+    error(1, "No File Uploaded");
+    print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
+  }
+  else {
+    //$tmp_dir="uploads/tmpdir_".$username."_".rand();
+    $tmp_dir="uploads/".str_replace(' ', '_', $username)."_".date('yMd_G:i');
+    umask(0);
+    if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) 
+      mkdir($tmp_dir, 0777);
+    $target_path=$tmp_dir."/";
+    $uploadfile=$_FILES['file']['name'];
+    $uftype=$_FILES['file']['type'];
+    //	if (strpos($uploadfile, ".xls") === FALSE) {
+    if (preg_match('/\.xls$/', $uploadfile) == 0) {
+      error(1, "Only xls format is accepted. <br>");
+      print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
+    }
+    else {
+      if(move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
+	/* Start reading the excel */
+	$datafile = $target_path.$uploadfile;
+	$reader = & new Spreadsheet_Excel_Reader();
+	$reader->setOutputEncoding('CP1251');
+	$reader->read($datafile);
+	$linedata = $reader->sheets[0];
+	$cols = $reader->sheets[0]['numCols'];
+	$rows = $reader->sheets[0]['numRows'];
+	// Read the Template Version and check it.
+	if ($linedata['cells'][2][2] != $TemplateVersion )
+	  die ("Incorrect Submission Form version.  Cell B2 must say \"$TemplateVersion\".");
 
-	    // Read the Template Version and check it.
-	    if ($linedata['cells'][2][2] != $TemplateVersion )
-	      die ("Incorrect Submission Form version.  Cell B2 must say \"$TemplateVersion\".");
-
-	    // Read the Breeding Program from row 4.
-	    /* if ($linedata['cells'][4][1] != "*Breeding Program")  */
-	    if (stripos($linedata['cells'][4][1],"*Breeding Program") === FALSE) 
-	      die("Cell A4 must be <b>*Breeding Program</b>.");
-	    $bp = $linedata['cells'][4][2];
-	    // Test whether this program is already in the database.
-	    $sql = mysql_query("SELECT distinct data_program_code from CAPdata_programs");
-	    while ($row = mysql_fetch_row($sql))
-	      $bpcodes[] = $row[0];
-	    if ((in_array($bp, $bpcodes) === FALSE) OR (strlen($bp) == 0) ) {
-	      die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br><br>");
-	    }
+	// Read the Breeding Program from row 4.
+	if (stripos($linedata['cells'][4][1],"*Breeding Program") === FALSE) 
+	  die("Cell A4 must be <b>*Breeding Program</b>.");
+	$bp = $linedata['cells'][4][2];
+	// Test whether this program is already in the database.
+	$sql = mysql_query("SELECT distinct data_program_code from CAPdata_programs");
+	while ($row = mysql_fetch_row($sql))
+	  $bpcodes[] = $row[0];
+	if ((in_array($bp, $bpcodes) === FALSE) OR (strlen($bp) == 0) ) {
+	  die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br><br>");
+	}
 
 /* The following code allows the curator to put the columns in any order.
  * Any unrecognized column header will be warned as an unknown line property. */
@@ -189,7 +163,6 @@ class LineNames_Check
 	      while ($r = mysql_fetch_row($res))
 		$properties[] = $r[0];
 
-	      /* Attempt to find each required column */
 	      // First, locate the header line.
 		$firstline = 0;
 		$header = array();
@@ -210,6 +183,7 @@ class LineNames_Check
 			else { die("The header row must begin with '*Line Name'.");}
 		}
 		// Now read in the data cells.
+		/* Attempt to find each required column */
 		foreach($header as $columnOffset => $columnName) { // Loop through the columns in the header row.
 		  if ($columnOffset < 6) {  // Require exact match for Property names.
 		    //Clean up column name so that it can be matched.
@@ -282,8 +256,11 @@ class LineNames_Check
 		//Extract and validate data.
 		$line = strtoupper(trim($linedata['cells'][$irow][$columnOffsets['line_name']]));
 		if (empty($line)) die_nice("Row $irow: Line name is required."); 
-		elseif (strpos($line, ' ')) die_nice("Row $irow: Line name contains a blank. Replace with _ or remove.") ;
-		elseif (strlen($line) < 3)  echo "Warning: '$line' is a short name and may not be unique.<br>";
+		if (strpos($line, ' ')) die_nice("Row $irow: Line name contains a blank. Replace with _ or remove.") ;
+		if (strlen($line) < 3)  echo "Warning: '$line' is a short name and may not be unique.<br>";
+		// 8-bit ASCII characters break us in nasty ways.
+		if (preg_match("/[\x80-\xff]/" , $line) == 1) 
+		  die_nice("Line name '$line' contains an 8-bit character code, possibly invisible.");
 		$synonyms = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['synonyms']]),"\0..\37!@\177..\377");
 		// Strip out any single-quotes.
 		$synonyms = str_replace('\'', '', $synonyms);
