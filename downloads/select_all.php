@@ -42,9 +42,6 @@ require $config['root_dir'].'includes/bootstrap.inc';
 set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
-require_once $config['root_dir'].'includes/MIME/Type.php';
-require_once $config['root_dir'].'includes/File_Archive/Archive.php';
-
 // connect to database
 connect();
 
@@ -59,7 +56,7 @@ new SelectPhenotypeExp($_GET['function']);
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
 class SelectPhenotypeExp
-{   
+{
     /**
      * delimiter used for output files
      */
@@ -67,51 +64,52 @@ class SelectPhenotypeExp
     
     /** 
      * Using the class's constructor to decide which action to perform
+     *
      * @param string $function action to perform
      */
     public function __construct($function = null)
     {	
         switch($function)
         {
-            case 'type1':
-                $this->type1();
-                break;
-            case 'type1experiments':
-                $this->type1_experiments();
-                break;
-            case 'step1dataprog':
-                $this->step1_dataprog();
-                break;
-            case 'step1lines':
-                $this->step1_lines();
-                break;
-            case 'step1locations':
-                $this->step1_locations();
-                break;
-            case 'step2locations':
-                $this->step2_locations();
-                break;
-			case 'step3locations':
-			    $this->step3_locations();
-			    break;
-			case 'step5locations':
-			    $this->step5_locations();
-			    break;
-			case 'step5programs':
-			     $this->step5_programs();
-			     break;
-			case 'step2lines':
-				$this->step2_lines();
-				break;
-			case 'step3lines':
-				$this->step3_lines();
-				break;
-		 	case 'step4lines':
-				$this->step4_lines();
-				break;
-			case 'step1breedprog':
-				$this->step1_breedprog();
-				break;
+        case 'type1':
+            $this->type1();
+            break;
+        case 'type1experiments':
+            $this->type1_experiments();
+            break;
+        case 'step1dataprog':
+            $this->step1_dataprog();
+            break;
+        case 'step1lines':
+            $this->step1_lines();
+            break;
+        case 'step1locations':
+            $this->step1_locations();
+            break;
+        case 'step2locations':
+            $this->step2_locations();
+            break;
+        case 'step3locations':
+            $this->step3_locations();
+            break;
+        case 'step5locations':
+            $this->step5_locations();
+            break;
+        case 'step5programs':
+            $this->step5_programs();
+            break;
+        case 'step2lines':
+            $this->step2_lines();
+            break;
+        case 'step3lines':
+            $this->step3_lines();
+            break;
+        case 'step4lines':
+            $this->step4_lines();
+            break;
+        case 'step1breedprog':
+            $this->step1_breedprog();
+            break;
 			case 'step1phenotype':
 				$this->step1_phenotype();
 				break;
@@ -161,7 +159,7 @@ class SelectPhenotypeExp
 		$markers = "";
 		$saved_session = "";
 		$this->type1_checksession();
-		include($config['root_dir'].'theme/footer.php');
+		include $config['root_dir'].'theme/footer.php';
 	}	
 	
 	/**
@@ -170,11 +168,6 @@ class SelectPhenotypeExp
 	private function type1()
 	{
 		global $config;
-		#include($config['root_dir'].'theme/normal_header.php');
-
-		#echo "<h2>Tassel Download</h2>";
-		#echo "<p><em>Select multiple options by holding down the Ctrl key while clicking.
-		#</em></p>";
 		unset($_SESSION['selected_lines']);
 		unset($_SESSION['phenotype']);
                 unset($_SESSION['selected_traits']);
@@ -192,7 +185,6 @@ class SelectPhenotypeExp
 		<?php 
 		$this->step1_breedprog();
 		$footer_div = 1;
-        #	include($config['root_dir'].'theme/footer.php');
 	}
 	
 	/**
@@ -277,7 +269,7 @@ class SelectPhenotypeExp
       <p>
       Select genotype and phenotype data for analysis or download.
       <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
-      <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+      <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;">
       <?php 
       $selection_ready = 0;
       if (isset($_SESSION['selected_lines'])) {
@@ -408,86 +400,6 @@ class SelectPhenotypeExp
       <?php 
     }
     
-    /**
-     * use this download when selecting program and year
-     * @param string $version Tassel version of output
-     */
-    private function type1_session($version)
-	{
-	    $experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
-	    $datasets_exp = "";
-		if (isset($_SESSION['selected_lines'])) {
-			$selectedcount = count($_SESSION['selected_lines']);
-			$lines = $_SESSION['selected_lines'];
-			$lines_str = implode(",", $lines);
-		} else {
-			$lines = "";
-			$lines_str = "";
-		}
-		if (isset($_SESSION['clicked_buttons'])) {
-		    $selectcount = $_SESSION['clicked_buttons'];
-		    $markers = $_SESSION['clicked_buttons'];
-		    //$markers = implode(",", $_SESSION['clicked_buttons']);
-		} else {
-		    $markers = array();
-		}
-		if (isset($_SESSION['phenotype'])) {
-		    $phenotype = $_SESSION['phenotype'];
-		} else {
-		    $phenotype = "";
-		}
-		
-		//get genotype experiments
-		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-		FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
-		WHERE
-		e.experiment_type_uid = et.experiment_type_uid
-		AND lr.line_record_uid = tb.line_record_uid
-		AND e.experiment_uid = tb.experiment_uid
-		AND lr.line_record_uid in ($lines_str)
-		AND et.experiment_type_name = 'genotype'";
-		$res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-		if (mysql_num_rows($res)>0) {
-		 while ($row = mysql_fetch_array($res)){
-		  $exp[] = $row["exp_uid"];
-		 }
-		 $experiments_g = implode(',',$exp);
-		}
-		
-		$dir = '/tmp/tht/';
-                $filename = 'THTdownload_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
-
-	        // File_Archive doesn't do a good job of creating files, so we'll create it first
-                if(!file_exists($dir.$filename)){
-                        $h = fopen($dir.$filename, "w+");
-                        fclose($h);
-                }
-        $zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
-        $subset = "yes";
-        
-        if (isset($_SESSION['phenotype'])) {
-		  $zip->newFile("traits.txt");
-		  $zip->writeData($this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset));
-        }
-        if ($version == "V2") {
-          $zip->newFile("annotated_alignment.txt");
-          $zip->writeData($this->type1_build_annotated_align($experiments_g));
-        } elseif ($version == "V3") {
-          $zip->newFile("geneticMap.txt");
-          $zip->writeData($this->type1_build_geneticMap($experiments_g));
-          $zip->newFile("snpfile.txt");
-          $zip->writeData($this->type2_build_markers_download($lines,$markers,$dtype));
-        } elseif ($version == "V4") {
-          $zip->newFile("genotype_hapmap.txt");
-          $zip->writeData($this->type3_build_markers_download($lines,$markers,$dtype));
-        }
-        $zip->newFile("allele_conflict.txt");
-        $zip->writeData($this->type2_build_conflicts_download($lines,$markers));
-        $zip->close();
-        
-        header("Location: ".$dir.$filename);
-	}
-	
 	/**
 	 * this is the main entry point when there are no lines saved in session variable
 	 */
@@ -506,12 +418,10 @@ class SelectPhenotypeExp
 
 		// Select breeding programs for the drop down menu
                 $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-                  FROM experiments AS e, experiment_types AS et, datasets AS ds, datasets_experiments AS d_e, CAPdata_programs AS dp
-                  WHERE e.experiment_type_uid = et.experiment_type_uid
-                  AND e.experiment_uid = d_e.experiment_uid
-                  AND d_e.datasets_uid = ds.datasets_uid
+                  FROM experiments AS e, CAPdata_programs AS dp
+                  WHERE program_type = 'breeding'
                   AND dp.CAPdata_programs_uid = e.CAPdata_programs_uid
-                  AND et.experiment_type_name = 'phenotype'";
+                  order by data_program_name asc";
 		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res))
 		{
