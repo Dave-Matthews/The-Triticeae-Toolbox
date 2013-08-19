@@ -154,22 +154,22 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 $i++;
             }
         } else {
-            foreach ($marker_misscnt as $i=>$value) {
+            foreach ($marker_list as $i=>$value) {
                 $marker_misscnt[$i]++;
             }
         }
     }
     $num_mark = 0;
     $num_maf = $num_miss = $num_removed = 0;
+    $total = count($lines);
     foreach ($marker_list as $i=>$marker_uid) {
         //if there are selected markers then only calculate allele frequencies for these
         if (isset($_SESSION['clicked_buttons']) && !isset($selected_markers[$marker_uid])) {
             continue;
         }
-        $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-        $total_af = 2 * ($marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i]);
+        $total_af = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i];
         if ($total_af > 0) {
-            $maf = 100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total);
+            $maf = 100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total_af, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total_af);
             $miss = 100 * $marker_misscnt[$i]/$total;
             if ($maf < $min_maf) $num_maf++;
             if ($miss > $max_missing) $num_miss++;
@@ -201,6 +201,8 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                         $line_misscnt[$line_record_uid]++;
                     }
                 }
+            } else {
+                $line_misscnt[$line_record_uid] = $count;
             }
         }
         $lines_removed = 0;

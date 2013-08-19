@@ -10,8 +10,8 @@ file_out <- "mean-output.txt"
 dataCols <- which(!(names(plotData) %in% c("line", "plot", "replication", "block", "subblock", "treatment")))
 df <- data.frame(line=as.factor(plotData$line), rep=as.factor(plotData$replication), block=as.factor(paste(plotData$replication, plotData$block, sep=".")), plotData[,dataCols])
 dataCols <- names(plotData)[dataCols]
-hasRep <- all(!is.na(plotData$replication))
-hasBlk <- all(!is.na(plotData$block))
+hasRep <- all(!is.na(plotData$replication)) & (length(unique(plotData$replication)) > 1)
+hasBlk <- all(!is.na(plotData$block)) & (length(unique(plotData$block)) > 1)
 result <- NULL
 stdErr <- NULL
 trialMean <- NULL
@@ -49,8 +49,9 @@ if (!hasBlk){ # Fixed effects models
     }
   }
 } else{
-  library(lme4)
+  library(lme4, warn.conflicts = FALSE)
   if (!hasRep){
+    message("no-name model: blocks as random effects with no replication effect")
     for (trait in dataCols){
       model <- paste(trait, "~ line + (1 | block)")
       test <- lmer(model, data=df)
@@ -65,6 +66,7 @@ if (!hasBlk){ # Fixed effects models
       trialReps <- c(trialReps, round(averageReps, 1))
     }
   } else{
+    message("Incomplete block model: Replications fixed and blocks random")
     for (trait in dataCols){
       model <- paste(trait, "~ rep + line + (1 | block)")
       test <- lmer(model, data=df)

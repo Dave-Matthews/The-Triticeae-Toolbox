@@ -58,7 +58,7 @@ if (isset($_SESSION['selected_lines'])) {
   <font color=blue>Currently selected lines and traits</font> will be clustered according to their 
   distance computed from markers and trait values, using the R procedure <b>hclust()</b> (Hierarchical cluster analysis on a set of dissimilarities).  
   The clusters will be displayed in three dimensions calculated by <b>Singular
-  Value Decomposition</b>, R procedure <b>svd()</b>.<p>
+  Value Decomposition</b>, R procedure <b>svd()</b>. This method of clustering typically requires at least 25 lines for the execution to complete.<p>
   When you have examined the results you can select the clusters you want to use
   as your new <font color=blue>Currently selected lines</font>.
 
