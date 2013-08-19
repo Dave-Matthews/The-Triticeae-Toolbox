@@ -172,7 +172,7 @@ for ($i=0; $i<count($clustertable); $i++) {
 // Modify yellow a bit to show up better in text.
 $color = array('black','red','green','blue','cyan','magenta','orange','#cccc00');
 
-print "<form action='cluster_lines4d.php' method='POST'>";
+print "<form action='cluster_lines4d.php' method='POST' name='myForm'>";
 print "<table width=700 style='background-image: none; font-weight: bold;'>";
 print "<thead><tr><th>&nbsp;</th><th>Cluster</th><th>Count</th><th>Lines</th></tr></thead>";
 for ($i=1; $i<count($clustsize)+1; $i++) {
