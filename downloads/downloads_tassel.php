@@ -27,10 +27,12 @@ date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
 require_once $config['root_dir'].'includes/File_Archive/Archive.php';
-require_once $config['root_dir'].'downloads/marker_filter.php';
 
 // connect to database
 connect();
+$mysqli = connecti();
+
+require_once $config['root_dir'].'downloads/marker_filter.php';
 
 new DownloadsJNLP($_GET['function']);
 
@@ -680,7 +682,7 @@ class DownloadsJNLP
         Remove lines missing &gt <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
         <?php
          if ($use_database) {
-           calculate_db($lines, $min_maf, $max_missing);
+           calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
          } else { 
 	   calculate_af($lines, $min_maf, $max_missing, $max_miss_line); 
          }

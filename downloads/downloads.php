@@ -26,11 +26,12 @@ set_include_path(GET_INCLUDE_PATH() . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
-//require_once $config['root_dir'].'includes/File_Archive/Archive.php';
-require_once $config['root_dir'].'downloads/marker_filter.php';
 
 // connect to database
 connect();
+$mysqli = connecti();
+
+require_once $config['root_dir'].'downloads/marker_filter.php';
 
 new Downloads($_GET['function']);
 
