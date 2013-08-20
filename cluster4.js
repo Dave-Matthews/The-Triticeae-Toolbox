@@ -18,9 +18,13 @@ function get_alleles(unq_file) {
   Element.show('spinner');
   var url = "cluster_getallelesp.php?time=" + unq_file + "&mmaf=" + mmaf + "&mmm=" + mmm + "&mml=" + mml;
   var tmp = new Ajax.Request(url, {
-        onComplete : function() {
+        onSuccess : function() {
             document.title = title;
             run_rscript(unq_file);
+        },
+        onFailure : function() {
+            document.title = title;
+            document.getElementById('primaryContent').innerHTML = "Failed to create data file";
         }
     });
 }
@@ -28,9 +32,13 @@ function get_alleles(unq_file) {
 function get_alleles2(unq_file) {
   var url = "cluster_getallelesp.php?time=" + unq_file + "&mmaf=" + mmaf + "&mmm=" + mmm + "&mml=" + mml;
   var tmp = new Ajax.Request(url, {
-        onComplete : function() {
+        onSuccess : function() {
             document.title = title;
             run_rscript(unq_file);
+        },
+        onFailure : function() {
+            document.title = title;
+            document.getElementById('primaryContent').innerHTML = "Failed to create data file";
         }
     });
 }
