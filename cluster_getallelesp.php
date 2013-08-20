@@ -18,10 +18,12 @@ require 'config.php';
 //Need write access to update the cache table.
 //include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'includes/bootstrap_curator.inc');
-include($config['root_dir'].'downloads/marker_filter.php');
 set_time_limit(3000);
 
 connect();
+$mysqli = connecti();
+
+include($config['root_dir'].'downloads/marker_filter.php');
 
   foreach ($_SESSION['selected_lines'] as $lineuid) {
     $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
@@ -39,7 +41,7 @@ calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
 
 if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
   // No lines selected so prompt to get some.
-  echo "<a href=".$config['base_url']."pedigree/line_selection.php>Select lines.</a> ";
+  echo "<a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
   echo "(Patience required for more than a few hundred lines.)";
 }
 else {
