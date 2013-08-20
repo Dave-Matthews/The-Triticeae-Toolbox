@@ -21,6 +21,14 @@ $max_missing = $_GET['mmm'];
 $max_miss_line = $_GET['mml'];
 $querytime = $_SESSION['timmer'];
 
+// Check the results of filtering before running R script
+$count = count($_SESSION['filtered_markers']);
+if ($count == 0) {
+    echo "<font color=red>Error: No markers selected<br>";
+    echo "Reselect markers with less filtering</font>";
+    echo "<p><input type='Button' value='Back' onClick='history.go(-1)'>";
+} else {
+
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
@@ -85,7 +93,9 @@ for ($i=1; $i <= count($color); $i++) {
   echo "<material diffuseColor='$color[$i]' specularColor='.2 .2 .2' transparency='0.3'></material>";
   echo "</appearance>";
 }
+}
 
+if (file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
 $coords = file("/tmp/tht/clust3dCoords.csv".$time);
 $coords = preg_replace("/\n/", "", $coords);
 
@@ -149,7 +159,6 @@ Analysis time = <?php echo $elapsed ?> s<br>
   table td {text-align: center;}
 </style>
 
-<script type="text/javascript" src="cluster3.js"></script>
 <?php
 /* Show table of cluster members.  */
 $clustInfo = file("/tmp/tht/clustInfo.txt".$time);
@@ -185,8 +194,10 @@ for ($i=1; $i<count($clustsize)+1; $i++) {
   print "</tr>";
  }
 print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
+}
 ?>
 </table>
+<script type="text/javascript" src="cluster3.js"></script>
 <p>
     How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1">
     &nbsp;&nbsp;&nbsp;&nbsp;
