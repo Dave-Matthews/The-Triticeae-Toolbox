@@ -20,6 +20,12 @@ $max_missing = $_GET['mmm'];
 $max_miss_line = $_GET['mml'];
 $querytime = $_SESSION['timmer'];
 
+// Check the results of filtering before running R script
+$count = $_SESSION['filtered_markers'];
+if ($count == 0) {
+    echo "<font color=red>Error: No markers selected</font>";
+} else {
+
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
@@ -51,6 +57,7 @@ if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
   }
   fclose($h);
   die();
+}
 }
 ?>
     <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
