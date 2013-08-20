@@ -92,7 +92,7 @@ class Instrument
         <table>
         <tr><td><strong>CSR System Description File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" />
         <td><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3_SpectrometerSystem.xlsx">Example File</a> JAZ<br>
-        <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3_SpectormeterSystemCropScan.xlsx">Example File</a> CropScan
+        <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3_SpectrometerSystemCropScan.xlsx">Example File</a> CropScan
         <td><font color=red>Updated 02/15/2013</font></tr>
         </table>
         <p><input type="submit" value="Upload" /></p>
