@@ -21,7 +21,7 @@ $max_miss_line = $_GET['mml'];
 $querytime = $_SESSION['timmer'];
 
 // Check the results of filtering before running R script
-$count = $_SESSION['filtered_markers'];
+$count = count($_SESSION['filtered_markers']);
 if ($count == 0) {
     echo "<font color=red>Error: No markers selected</font>";
 } else {
