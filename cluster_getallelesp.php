@@ -18,10 +18,12 @@ require 'config.php';
 //Need write access to update the cache table.
 //include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'includes/bootstrap_curator.inc');
-include($config['root_dir'].'downloads/marker_filter.php');
 set_time_limit(3000);
 
 connect();
+$mysqli = connecti();
+
+include($config['root_dir'].'downloads/marker_filter.php');
 
   foreach ($_SESSION['selected_lines'] as $lineuid) {
     $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
