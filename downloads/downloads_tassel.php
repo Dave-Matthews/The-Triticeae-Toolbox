@@ -682,7 +682,7 @@ class DownloadsJNLP
         Remove lines missing &gt <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
         <?php
          if ($use_database) {
-           calculate_db($lines, $min_maf, $max_missing);
+           calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
          } else { 
 	   calculate_af($lines, $min_maf, $max_missing, $max_miss_line); 
          }
