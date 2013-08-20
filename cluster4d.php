@@ -23,7 +23,7 @@ $querytime = $_SESSION['timmer'];
 // Check the results of filtering before running R script
 $count = count($_SESSION['filtered_markers']);
 if ($count == 0) {
-    echo "<font color=red>Error: No markers selected</font>";
+    echo "<font color=red>Error: No markers selected</font><br>";
 } else {
 
 // Store the input parameters in file setupclust3d.txt.
