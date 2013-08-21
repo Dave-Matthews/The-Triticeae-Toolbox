@@ -65,3 +65,16 @@ function recluster(unq_file) {
     });
 }
 
+function filter_lines() {
+    var mmm = $('mmm').getValue();
+    var mml = $('mml').getValue();
+    var mmaf = $('mmaf').getValue();
+    var url = "cluster_getalleles.php?mmaf=" + mmaf + "&mmm=" + mmm + "&mml=" + mml;
+    var tmp = new Ajax.Updater($('filter'), url, {
+        onCreate: function () { Element.show('spinner'); },
+        onComplete : function () {
+            Element.hide('spinner');
+            document.title = title;
+        }
+    });
+}
