@@ -94,6 +94,9 @@ else {
         Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+        &nbsp;&nbsp;&nbsp;&nbsp;
+          <input type="button" value="Filter Lines and Markers" onclick="javascript:filter_lines();"/>
+        <div id='filter'></div>
   <br><br>
   <input type=button value="Cluster Analysis" onclick="javascript:get_alleles(<?php echo ($time) ?>)">
   <div id='ajaxresult'></div>
