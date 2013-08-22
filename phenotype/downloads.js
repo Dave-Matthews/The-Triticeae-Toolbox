@@ -1,5 +1,5 @@
-/*global alert,$,$$,$A,$H,Prototype,Ajax,Template,Element*/
-var php_self = document.location;
+/*global alert,$,$$,$A,$H,Prototype,Ajax,Template,Element,getXMLHttpRequest*/
+var php_self = document.location.href;
 var breeding_programs_str = "";
 var phenotype_categories_str = "";
 var phenotype_items_str = "";
@@ -61,7 +61,7 @@ function use_normal() {
 
 function load_title(command) {
     var url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&pi=' + phenotype_items_str + '&subset=' + subset + '&cmd=' + command;
-    var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
+    var tmp = new Ajax.Updater($('title'), url, {
         onComplete : function() {
             $('title').show();
             document.title = title;
@@ -560,7 +560,13 @@ function update_lines_within(options) {
       lines_within = "no";
     }
     select1_str = "Phenotypes";
-    load_phenotypes();
+    if (phenotype_categories_str === "") {
+    } else {
+      load_phenotypes2();
+      document.getElementById('step3').innerHTML = "";
+      document.getElementById('step4').innerHTML = "";
+      document.getElementById('step5').innerHTML = "";
+    }
 }
 function update_phenotype_linesb(options) {
 /*used when updating radio button for line selection (session, all, combine) */
