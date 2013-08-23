@@ -25,6 +25,7 @@
  */
 function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
 {
+    global $mysqli;
     $tmp = count($lines);
     if ($tmp == 0) {
         return;
@@ -41,9 +42,9 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
     AND e.experiment_uid = tb.experiment_uid
     AND lr.line_record_uid in ($selectedlines)
     AND et.experiment_type_name = 'genotype'";
-    $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-    if (mysql_num_rows($res)>0) {
-        while ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql_exp) or die(mysqli_error($mysqli) . "<br>" . $sql_exp);
+    if (mysqli_num_rows($res)>0) {
+        while ($row = mysqli_fetch_array($res)) {
             $exp[] = $row["exp_uid"];
         }
         $exp = implode(',', $exp);
@@ -56,11 +57,11 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
          WHERE af.experiment_uid in ($exp)
          group by af.marker_uid";
 
-         $res = mysql_query($sql_mstat) or die(mysql_error());
-         $num_mark = mysql_num_rows($res);
+         $res = mysqli_query($mysqli, $sql_mstat) or die(mysqli_error($mysqli));
+         $num_mark = mysqli_num_rows($res);
          $num_maf = $num_miss = $num_removed = 0;
 
-    while ($row = mysql_fetch_array($res)) {
+    while ($row = mysqli_fetch_array($res)) {
         $marker_uid = $row["marker"];
         $maf1 = (2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]);
         $maf2 = ($row["sumab"]+2*$row["sumbb"])/(2*$row["total"]);
@@ -93,6 +94,7 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
     */
 function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
 {
+    global $mysqli;
     if (isset($_SESSION['clicked_buttons'])) {
         $tmp = count($_SESSION['clicked_buttons']);
         $saved_session = $saved_session . ", $tmp markers";
@@ -112,9 +114,9 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
 
     //get location information for markers
     $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
     $i=0;
-    while ($row = mysql_fetch_array($res)) {
+    while ($row = mysqli_fetch_array($res)) {
         $uid = $row[0];
         $marker_list[$i] = $row[0];
         $marker_list_name[$i] = $row[1];
@@ -124,8 +126,8 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
 
     //get location information for lines
     $sql = "select line_record_uid, line_record_name from line_records";
-    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-    while ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+    while ($row = mysqli_fetch_array($res)) {
         $uid = $row[0];
         $line_list_name[$uid] = $row[1];
     }
@@ -134,8 +136,8 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     $marker_misscnt = array();
     foreach ($lines as $line_record_uid) {
         $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-        $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-        if ($row = mysql_fetch_array($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+        if ($row = mysqli_fetch_array($res)) {
             $alleles = $row[0];
             $outarray = explode(',', $alleles);
             $i=0;
@@ -189,8 +191,8 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
         //calculate missing from each line
         foreach ($lines as $line_record_uid) {
             $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-            $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-            if ($row = mysql_fetch_array($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+            if ($row = mysqli_fetch_array($res)) {
                 $alleles = $row[0];
                 $outarray = explode(',', $alleles);
                 $line_misscnt[$line_record_uid] = 0;
