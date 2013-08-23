@@ -60,7 +60,7 @@ if (isset($_SESSION['selected_lines'])) {
   The clusters will be displayed in three dimensions calculated by <b>Singular
   Value Decomposition</b>, R procedure <b>svd()</b>. This method of clustering typically requires at least 25 lines for the execution to complete.<p>
   When you have examined the results you can select the clusters you want to use
-  as your new <font color=blue>Currently selected lines</font>.
+  as your new <font color=blue>Currently selected lines</font>. Reclustering a group of lines requires at least 25 members in a cluster.
 
 <?php
 $selectedcount = count($_SESSION['selected_lines']);
@@ -95,6 +95,9 @@ else {
         Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+        &nbsp;&nbsp;&nbsp;&nbsp;
+          <input type="button" value="Filter Lines and Markers" onclick="javascript:filter_lines();"/>
+        <div id='filter'></div>
   <br><br>
   <input type=button value="Cluster Analysis" onclick="javascript:get_alleles(<?php echo ($time) ?>)">
   <div id='ajaxresult'></div>

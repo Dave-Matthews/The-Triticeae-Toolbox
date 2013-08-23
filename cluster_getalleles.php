@@ -50,11 +50,6 @@ if (isset($_GET['mml'])) {
   $max_miss_line = 10;
 }
 ?>
-<p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
 <script type="text/javascript" src="downloads/download_gs.js"></script>
 <?php
 calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);

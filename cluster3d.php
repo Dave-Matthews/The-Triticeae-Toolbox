@@ -199,9 +199,9 @@ print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
 </table>
 <script type="text/javascript" src="cluster3.js"></script>
 <p>
-    How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1">
+    How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1"><br>
     &nbsp;&nbsp;&nbsp;&nbsp;
-    Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+    <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
