@@ -53,7 +53,7 @@ if (isset($_SESSION['selected_lines'])) {
   <div class="section">
 
   <p>  This R program will cluster the 
-  <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">
+  <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php">
   <font color=blue>currently selected lines</font></a> according to their 
   alleles for all markers, using "pam" (Partitioning Around Medoids).  
 
@@ -71,15 +71,29 @@ if (isset($_SESSION['selected_lines'])) {
   E.g. MERIT, FEG148-16, ND24205, VA07B-54
   <input type='hidden' name='time' value=<?php echo $time ?> >
 
-  <div id='ajaxresult'></div>
-  <script type="text/javascript" src="downloads/download_gs.js"></script>
+  <script type="text/javascript" src="cluster.js"></script>
+  <?php
+        $min_maf = 5;
+        $max_missing = 10;
+        $max_miss_line = 10;
+        ?>
+        <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
+        &nbsp;&nbsp;&nbsp;&nbsp;
+          <input type="button" value="Filter Lines and Markers" onclick="javascript:filter_lines();"/>
+        <div id='filter'></div>
+        <div id='ajaxresult'></div>
+        
   <script type="text/javascript">
         var req= getXMLHttpRequest();
  	var resp=document.getElementById('ajaxresult');
  	if(!req) {
 	  alert("Browser not supporting Ajax");
 	}
-	resp.innerHTML = "<img src='./images/progress.gif' alt='Working...'><br>\
+	resp.innerHTML = "<img id='spinner' src='./images/progress.gif' alt='Working...'><br>\
 Retrieving all marker alleles for <b><?php echo $linecount ?><\/b> lines.<br>\
 Retrieval rate is ca. one minute for 500 lines (1.5 million alleles).";
   	req.onreadystatechange = function(){
