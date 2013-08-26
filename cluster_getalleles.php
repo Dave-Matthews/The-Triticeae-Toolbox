@@ -50,11 +50,6 @@ if (isset($_GET['mml'])) {
   $max_miss_line = 10;
 }
 ?>
-<p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
 <script type="text/javascript" src="downloads/download_gs.js"></script>
 <?php
 calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
@@ -87,7 +82,7 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
     $sql = "create table allele_byline_clust (
 	      line_record_uid int(11) NOT NULL,
               line_record_name varchar(50),
-	      alleles TEXT  COMMENT 'Up to 2^16 (65K) characters. Use MEDIUMTEXT for 2^24.',
+	      alleles MEDIUMTEXT  COMMENT 'TEXT up to 2^16 (65K) characters. Use MEDIUMTEXT for 2^24.',
               updated_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	      PRIMARY KEY (line_record_uid)
 	    ) COMMENT 'Cache created from table allele_byline.'";

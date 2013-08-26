@@ -65,7 +65,7 @@ else {
     $sql = "create table allele_byline_clust (
 	      line_record_uid int(11) NOT NULL,
               line_record_name varchar(50),
-	      alleles TEXT  COMMENT 'Up to 2^16 (65K) characters. Use MEDIUMTEXT for 2^24.',
+	      alleles MEDIUMTEXT  COMMENT 'TEXT up to 2^16 (65K) characters. Use MEDIUMTEXT for 2^24.',
               updated_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	      PRIMARY KEY (line_record_uid)
 	    ) COMMENT 'Cache created from table allele_byline.'";
