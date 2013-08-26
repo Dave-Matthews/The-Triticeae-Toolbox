@@ -22,6 +22,7 @@ date_default_timezone_set('America/Los_Angeles');
 
 // connect to database
 connect();
+$mysqli = connecti();
 
 new Downloads($_GET['function']);
 
@@ -127,6 +128,7 @@ class Downloads
      * 3. show button to save current selection
      */    
     private function refresh_title() {
+      global $mysqli;
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       ?>
       <h2>Select Phenotypes</h2>
@@ -195,8 +197,8 @@ class Downloads
         //if ($ntraits > 1) {
           $phenotype_ary = explode(",",$_SESSION['phenotype']);
           foreach ($phenotype_ary as $uid) {
-            $result=mysql_query("select phenotypes_name from phenotypes where phenotype_uid=$uid") or die("invalid line uid\n");
-            while ($row=mysql_fetch_assoc($result)) {
+            $result=mysqli_query($mysqli, "select phenotypes_name from phenotypes where phenotype_uid=$uid") or die("invalid line uid\n");
+            while ($row=mysqli_fetch_assoc($result)) {
               $selval=$row['phenotypes_name'];
               print "<option value=\"$uid\" >$selval</option>\n";
             }
@@ -216,8 +218,8 @@ class Downloads
         if (isset($_SESSION['selected_trials'])) {
           $trials_ary = $_SESSION['selected_trials'];
           foreach ($trials_ary as $uid) {
-            $result=mysql_query("select trial_code from experiments where experiment_uid=$uid") or die("invalid line uid\n");
-            while ($row=mysql_fetch_assoc($result)) {
+            $result=mysqli_query($mysqli, "select trial_code from experiments where experiment_uid=$uid") or die("invalid line uid\n");
+            while ($row=mysqli_fetch_assoc($result)) {
               $selval=$row['trial_code'];
               print "<option value=\"$uid\" >$selval</option>\n";
             }
@@ -249,6 +251,7 @@ class Downloads
 	 */
 	private function step1_phenotype()
 	{
+                global $mysqli;
                 $lines_within = $_GET['lw'];
                 if ($lines_within == "yes") {
                   $sub_ckd = "checked";
@@ -270,8 +273,8 @@ class Downloads
 			<select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
                 <?php
 		$sql = "SELECT phenotype_category_uid AS id, phenotype_category_name AS name from phenotype_category";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		 ?>
 				<option value="<?php echo $row['id'] ?>">
@@ -294,6 +297,7 @@ class Downloads
 
         private function step1_lines()
         {
+            global $mysqli;
             $lines_within = $_GET['lw'];
             if (count($_SESSION['selected_lines']) > 0) {
                 $selectedlines= $_SESSION['selected_lines'];
@@ -314,8 +318,8 @@ class Downloads
             <?php
             foreach($selectedlines as $uid) {
               $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
-              $res = mysql_query($sql) or die(mysql_error());
-              $row = mysql_fetch_assoc($res)
+              $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+              $row = mysqli_fetch_assoc($res)
               ?>
               <option disabled="disabled" value="
               <?php $uid ?>">
@@ -337,6 +341,7 @@ class Downloads
 	 */
 	private function step2_phenotype()
     {  
+                global $mysqli;
 		$phen_cat = $_GET['pc'];
                 $lines_within = $_GET['lw'];
                 if (isset($_SESSION['selected_lines'])) {
@@ -364,8 +369,8 @@ class Downloads
 		  $sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
 		 where phenotypes.phenotype_category_uid = phenotype_category.phenotype_category_uid and phenotype_category.phenotype_category_uid in ($phen_cat)";
                 }
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		 ?>
 		    <option value="<?php echo $row['id'] ?>">
@@ -384,6 +389,7 @@ class Downloads
      */
 	private function step3_phenotype()
     {  
+                global $mysqli;
 		$phen_item = $_GET['pi'];
                 $lines_within = $_GET['lw'];
 		$trait_cmb = (isset($_GET['trait_cmb']) && !empty($_GET['trait_cmb'])) ? $_GET['trait_cmb'] : null;
@@ -429,8 +435,8 @@ class Downloads
 	 $sql .= " and data_public_flag > 0";
 	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
                 $sel_list = array();
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		  $exp_uid = $row['id'];
 		  $pi = $row['phenotype_uid'];
@@ -470,7 +476,8 @@ class Downloads
      * starting with phenotype display lines
      */
 	private function step4_phenotype()
-    {  
+    { 
+        global $mysqli; 
     	$phen_item = $_GET['pi'];
 		$experiments = $_GET['e'];
 		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
@@ -508,8 +515,8 @@ class Downloads
           $selected_lines = $_SESSION['selected_lines'];
           foreach ($selected_lines as $line) {
             $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-            $res = mysql_query($sql) or die(mysql_error());
-            $row = mysql_fetch_assoc($res);
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_assoc($res);
             ?>
             <option selected value="<?php echo $row['id'] ?>">
             <?php echo $row['name'] ?>
@@ -520,8 +527,8 @@ class Downloads
           $selected_lines = $_SESSION['selected_lines'];
           foreach ($selected_lines as $line) {
             $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-            $res = mysql_query($sql) or die(mysql_error());
-            $row = mysql_fetch_assoc($res);
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_assoc($res);
             ?>
            <option selected value="<?php echo $row['id'] ?>">
            <?php echo $row['name'] ?>
@@ -537,8 +544,8 @@ class Downloads
          AND pd.phenotype_uid IN ($phen_item)
          AND tb.experiment_uid IN ($experiments)
          ORDER BY lr.line_record_name";
-         $res = mysql_query($sql) or die(mysql_error());
-         while ($row = mysql_fetch_assoc($res))
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+         while ($row = mysqli_fetch_assoc($res))
          {
            $temp1 = $row['name'];
            $temp2 = $row['id'];
@@ -569,8 +576,8 @@ class Downloads
 	 AND tb.experiment_uid IN ($experiments)
 	 ORDER BY lr.line_record_name";
 		//$_SESSION['selected_lines'] = array(); // Empty the session array.
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		 //array_push($_SESSION['selected_lines'],$row['id']);
 		 ?>
@@ -599,6 +606,7 @@ class Downloads
      */
     private function step5_phenotype()
     {
+     global $mysqli;
      $phen_item = $_GET['pi'];
      $experiments = $_GET['e'];
      $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
@@ -613,13 +621,13 @@ class Downloads
         echo "<table><tr><td>Traits<td>Trials<td>Number of Lines";    
      	foreach ($sel_phen as $p_uid) {
      		$sql = "select phenotypes_name from phenotypes where phenotype_uid = $p_uid";
-     		$res1 = mysql_query($sql) or die(mysql_error());
-     		while ($row1 = mysql_fetch_array($res1)) {
+     		$res1 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+     		while ($row1 = mysqli_fetch_array($res1)) {
      			$p_name = $row1[0];
      			foreach ($sel_expr as $e_uid) {
      			  $sql = "select trial_code from experiments where experiment_uid = $e_uid";
-     			  $res2 = mysql_query($sql) or die(mysql_error());
-     			  while ($row2 = mysql_fetch_array($res2)) {
+     			  $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+     			  while ($row2 = mysqli_fetch_array($res2)) {
      			    $e_name = $row2[0];
      			    $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
      			    FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
@@ -629,9 +637,9 @@ class Downloads
      			    AND lr.line_record_uid = tb.line_record_uid
      			    AND pd.phenotype_uid = $p_uid
      			    AND tb.experiment_uid = $e_uid";
-     			    $res3 = mysql_query($sql) or die(mysql_error());
+     			    $res3 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
      			    $l_count = 0;
-     			    while ($row3 = mysql_fetch_array($res3)) {
+     			    while ($row3 = mysqli_fetch_array($res3)) {
      			      $l_count++;
      			    }
      			    echo "<tr><td>$p_name<td>$e_name<td>$l_count";

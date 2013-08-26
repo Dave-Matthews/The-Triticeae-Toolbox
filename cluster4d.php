@@ -200,9 +200,9 @@ print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
 </table>
 <script type="text/javascript" src="cluster4.js"></script>
 <p>
-    How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1">
+    How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1"><br>
     &nbsp;&nbsp;&nbsp;&nbsp;
-    Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+    <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -215,6 +215,7 @@ echo "<tr><td>markers<td>$count\n";
 $count = count($_SESSION['filtered_lines']);
 echo "<tr><td>lines<td>$count\n";
 echo "</table>";
+echo "<br>Reclustering a group of lines requires at least 25 members in a cluster<br>\n";
 print "<p>Select the clusters you want to use. ";
 print "<input type = 'hidden' name = 'time' value = $time>";
 print "<input type=button value='Re-cluster' onclick='javascript:recluster($time)'>";
