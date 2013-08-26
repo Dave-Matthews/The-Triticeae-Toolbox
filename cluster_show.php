@@ -39,6 +39,13 @@ if ($linenames != "") {
 }
 else $labellines = "lineNames <-c('')\n";
 
+$count = count($_SESSION['filtered_markers']);
+if ($count == 0) {
+    echo "<font color=red>Error: No markers selected<br>";
+    echo "Reselect markers with less filtering</font>";
+    echo "<p><input type='Button' value='Back' onClick='history.go(-1)'>";
+} else {
+
 // Store the input parameters in file setupcluster.R.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupcluster.R".$time, "w");
@@ -85,6 +92,7 @@ for ($i=1; $i<count($clustsize)+1; $i++) {
  }
 print "<tr><td>Total:</td><td></td><td>$total</td></tr>";
 print "</table>";
+}
 
 
 print "<P>Select the clusters you want to use.";
