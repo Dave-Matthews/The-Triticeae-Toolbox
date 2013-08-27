@@ -76,6 +76,7 @@ if (isset($_SESSION['selected_lines'])) {
         $min_maf = 5;
         $max_missing = 10;
         $max_miss_line = 10;
+        $arg = "$time,$linecount";
         ?>
         <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -83,7 +84,7 @@ if (isset($_SESSION['selected_lines'])) {
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
-          <input type="button" value="Filter Lines and Markers" onclick="javascript:filter_lines();"/>
+          <input type="button" value="Filter Lines and Markers" onclick="javascript:filter_lines(<?php echo $arg; ?>);"/>
         <div id='filter'></div>
         <div id='ajaxresult'></div>
         
