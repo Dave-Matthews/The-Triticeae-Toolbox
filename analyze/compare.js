@@ -11,7 +11,7 @@ var control = "";
 
 function run_compare(unq_file) {
 	var url = php_self + "?function=calculate" + "&unq=" + unq_file + "&formula=" + formula2;
-    new Ajax.Updater($('step3'), url, {
+    var tmp = new Ajax.Updater($('step3'), url, {
         onComplete : function () {
             $('step3').show();
             document.title = title;
@@ -29,7 +29,7 @@ function cal_index() {
         pheno = e.options[e.selectedIndex].value;
 
 	var url = php_self + "?function=download_session_v4&unq=" + unq_file + "&pheno=" + pheno + "&trial1=" + trial1 + "&trial2=" + trial2;
-	new Ajax.Updater($('step2'), url, {
+	var tmp = new Ajax.Updater($('step2'), url, {
         onComplete : function() {
             $('step2').show();
             document.title = title;
