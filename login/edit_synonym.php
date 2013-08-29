@@ -1,38 +1,28 @@
 <?php
 // login/edit_synonym.php, dem 13feb2012
+// dem 26aug13 Add merging of lines.
 
 require 'config.php';
-/*
- * Logged in page initialization
- */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 
 connect();
 loginTest();
-
 ob_start();
 include($config['root_dir'] . 'theme/admin_header.php');
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 ?>
-
-<div id="primaryContentContainer">
-  <div id="primaryContent">
-    <div class="box">
-      <h2>Edit Line Synonyms</h2>
-      <div class="boxContent">
-
-        <!-- Select which line to edit. -->
-	<form action="<?php echo $config['base_url']; ?>login/edit_synonym.php" method="get">
-	  <p><strong>Line Name</strong><br>
-	    <input type="text" name="line" value="<?php echo $_REQUEST['line']; ?>">
-	  <input type="submit" value="Search" /></p>
-	</form>
-
+<!-- Start of Synonyms section -->
+<div class="boxContent">
+<h2>Edit Line Synonyms</h2>
+  <!-- Select which line to edit. -->
+  <form method="get">
+    <p><strong>Line Name</strong><br>
+      <input type="text" name="line" value="<?php echo $_REQUEST['line']; ?>">
+      <input type="submit" value="Search" /></p>
+  </form>
 <?php
-/*
- * Has a Synonym update been submitted?
- */
+// Has a Synonym update been submitted?
 if(!is_null($_REQUEST['newsyn'])) {
   $input = $_REQUEST;
   foreach($input as $k=>$v)
@@ -67,12 +57,10 @@ if(!is_null($_REQUEST['newsyn'])) {
       }
     }
   }
-  echo "Database <font color=red><b>$changed[$flag]</b></font>.<p>";
+  echo "Database <font color=green><b>$changed[$flag]</b></font>.<p>";
 }
 
-/*
- * Has a GRIN Accession update been submitted?
- */
+// Has a GRIN Accession update been submitted?
 if(!is_null($_REQUEST['newgrin'])) {
   $input = $_REQUEST;
   foreach($input as $k=>$v)
@@ -111,40 +99,35 @@ if(!is_null($_REQUEST['newgrin'])) {
   echo "Database <font color=green><b>$changed[$flag]</b></font>.<p>";
 }
 
-/*
- * Have we searched?
- */
+// Have we searched?
 if(isset($_REQUEST['line'])) {
-  $self = $_SERVER['PHP_SELF'];
   $line = $_REQUEST['line'];
   $line_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$line'");
   if (empty($line_uid))
     echo "Line name not found.<p>";
   else {
     echo "<table><tr><td style='vertical-align:top'>";
-    echo "<form action=$self>";
+    echo "<form>";
     echo "<b>Synonyms</b><br>";
     $sql = "select line_synonyms_uid, line_synonym_name
             from line_synonyms where line_record_uid = $line_uid";
     $res = mysql_query($sql) or die(mysql_error());
-    while($row = mysql_fetch_row($res)) {
+    while($row = mysql_fetch_row($res)) 
       echo "<input type=text name='$row[0]' value='$row[1]'><br>";
-    }
     echo "<input type=text name='newsyn'><br>";
     echo "<input type=hidden name='line_uid' value='$line_uid'>";
     echo "<input type=hidden name='line' value=$line>";
     echo "<input type=submit value='Accept'>";
     echo "</form></td>";
 
-    echo "<td style='vertical-align:top'><form action=$self>";
+    echo "<td style='vertical-align:top'><form>";
     echo "<b>GRIN Accessions</b><br>";
     $sql = "select barley_pedigree_catalog_ref_uid, barley_ref_number
             from barley_pedigree_catalog_ref where line_record_uid = $line_uid
             and barley_pedigree_catalog_uid = 2";
     $res = mysql_query($sql) or die(mysql_error());
-    while($row = mysql_fetch_row($res)) {
+    while($row = mysql_fetch_row($res)) 
       echo "<input type=text name='$row[0]' value='$row[1]'><br>";
-    }
     echo "<input type=text name='newgrin'><br>";
     echo "<input type=hidden name='line_uid' value='$line_uid'>";
     echo "<input type=hidden name='line' value=$line>";
@@ -152,15 +135,198 @@ if(isset($_REQUEST['line'])) {
     echo "</form></td></tr></table>";
   }
 }
+echo "</div>";
+// end of Synonyms section
 
+// start of Merge section
 ?>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
+<div class="boxContent">
+<h2>Merge Two Lines</h2>
+  <!-- Select which lines to merge. -->
+  <form method="get">
+    <p><strong>Line to keep</strong><br>
+      <input type="text" name="keepline" value="<?php echo $_REQUEST['keepline']; ?>">
+    <p><strong>Line to merge into it</strong><br>
+      <input type="text" name="oldline" value="<?php echo $_REQUEST['oldline']; ?>">
+      <input type="submit" value="Search" /></p>
+  </form>
+<?php
+  // Have we Seached for the two lines?  Show what data they have.
+  if (isset($_REQUEST[keepline]) AND isset($_REQUEST[oldline])) {
+    $keepline = $_REQUEST[keepline];
+    $oldline = $_REQUEST[oldline];
+    $kline_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$keepline'");
+    $oline_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$oldline'");
+    $notfound = "";
+    if (empty($kline_uid))
+      $notfound = "Line name '$keepline' not found.<br>";
+    echo $notfound;
+    if (empty($oline_uid))
+      $notfound = "Line name '$oldline' not found.<br>";
+    echo $notfound;
+    if (empty($notfound)) {
+      // Show details about these lines.
+      // Get the properly capitalized names.
+      $keepline = mysql_grab("select line_record_name from line_records where line_record_uid = $kline_uid");
+      $oldline = mysql_grab("select line_record_name from line_records where line_record_uid = $oline_uid");
+      $ids = array($kline_uid, $oline_uid);
+      echo "<table><tr>";
+      echo "<th><th><a href='".$config['base_url']."view.php?table=line_records&name=$keepline'>$keepline";
+      echo "<th><a href='".$config['base_url']."view.php?table=line_records&name=$oldline'>$oldline";
+      // Some passport info:
+      // Direct parents
+      echo "<tr><td><strong>Parents</strong>";
+      foreach ($ids as $lnid) {
+	echo "<td>";
+	$res = mysql_query("select line_record_name
+			    from line_records
+			    where line_record_uid in (
+			      select parent_id
+			      from pedigree_relations
+			      where line_record_uid = $lnid)");
+	$r = array();
+	while ($row = mysql_fetch_row($res)) 
+	  $r[] = $row[0];
+	$parents[$lnid] = implode(", ", $r);
+	echo $parents[$lnid];
+      }
+      // A validation test:
+      if ($parents[$kline_uid] != $parents[$oline_uid] 
+	  and (!empty($parents[$kline_uid])) 
+	  and (!empty($parents[$oline_uid])))
+	$refuse .= "<br>their parents are different. <a href=$config[base_url]login/edit_pedigree.php?line=$oldline>Edit</a>";
+      // Pedigree string
+      echo "<tr><td><strong>Pedigree</strong>";
+      foreach ($ids as $lnid) {
+	$ped = mysql_grab("select pedigree_string from line_records where line_record_uid=$lnid");
+	echo "<td>$ped";
+      }
+      // Description
+      echo "<tr><td><strong>Description</strong>";
+      foreach ($ids as $lnid) {
+	$desc = mysql_grab("select description from line_records where line_record_uid=$lnid");
+	echo "<td>$desc";
+      }
+      // Panels
+      $sql = "select linepanels_uid, name, line_ids from linepanels";
+      $res = mysql_query($sql) or die(mysql_error());
+      while ($row = mysql_fetch_row($res)) {
+	$panelid = $row[0];
+	$members[$panelid] = explode(",", $row[2]);
+	foreach ($ids as $lnid) {
+	  $inpanel[$panelid][$lnid] = array_search($lnid, $members[$panelid]);
+	  if ($inpanel[$panelid][$lnid]) {
+	    $panels[$lnid][] = $row[0];
+	    $panelnames[$lnid][] = $row[1];
+	  }
+	}
+      }
+      echo "<tr><td><strong>Panels</strong>";
+      foreach ($ids as $lnid) {
+	$panelist = implode(", ", $panelnames[$lnid]);
+        echo "<td>$panelist";
+      }
+      // Phenotype data
+      echo "<tr><td><strong>Phenotype Trials</strong>";
+      foreach ($ids as $lnid) {
+	$sql = "select trial_code
+	 from tht_base tb, experiments e, experiment_types et
+	 where tb.experiment_uid = e.experiment_uid
+	 and e.experiment_type_uid = et.experiment_type_uid
+	 and experiment_type_name = 'phenotype'
+	 and line_record_uid = $lnid";
+	$res = mysql_query($sql) or die(mysql_error());
+	while ($tr = mysql_fetch_row($res))
+	  $trials[$lnid][] = $tr[0];
+	$triallist = implode(", ", $trials[$lnid]);
+	echo "<td>$triallist";
+      }
+      // Validation: Can't both be in the same trial.
+      foreach ($trials[$oline_uid] as $tr)
+	if (in_array($tr, $trials[$kline_uid]))
+	  $refuse .= "<br>they were both tested in trial <b>$tr</b>.";
+      // Genotype data
+      echo "<tr><td><strong>Genotype Experiments</strong>";
+      foreach ($ids as $lnid) {
+	$sql = "select trial_code
+	 from tht_base tb, experiments e, experiment_types et
+	 where tb.experiment_uid = e.experiment_uid
+	 and e.experiment_type_uid = et.experiment_type_uid
+	 and experiment_type_name = 'genotype'
+	 and line_record_uid = $lnid";
+	$res = mysql_query($sql) or die(mysql_error());
+	while ($ge = mysql_fetch_row($res))
+	  $gexpts[$lnid][] = $ge[0];
+	$gexptlist = implode(", ", $gexpts[$lnid]);
+	echo "<td>$gexptlist";
+      }
+      // Validation: Can't both be in the same genotyping experiment.
+      foreach ($gexpts[$oline_uid] as $ge)
+	if (in_array($ge, $gexpts[$kline_uid]))
+	  $refuse .= "<br>they were both tested in experiment <b>$ge</b>.";
+      echo "</table>";
+      // Show allele differences!!
+      $keepalllist = mysql_grab("select alleles from allele_byline where line_record_uid = $kline_uid");
+      $oldalllist  = mysql_grab("select alleles from allele_byline where line_record_uid = $oline_uid");
+      $keepalleles = explode(",", $keepalllist);
+      $oldalleles  = explode(",", $oldalllist);
+      $markerct = 0; $allelediff = 0;
+      for ($i = 0; $i < count($keepalleles); $i++) {
+	if (!empty($keepalleles[$i]) and !empty($oldalleles[$i])) {
+	  $markerct++;
+	  if ($keepalleles[$i] != $oldalleles[$i])
+	    $allelediff++;
+	}
+      }
+      $percent = round( (($allelediff / $markerct) * 100), 2);
+      echo "<p>$keepline and $oldline alleles differ for <b>$allelediff</b> of <b>$markerct</b> markers, <b>$percent</b>%.<p>";
 
-<?php include($config['root_dir'] . '/theme/footer.php');?>
+      // Validate.
+      if (!empty($refuse))
+	echo "<p><b>$keepline and $oldline cannot be merged because:</b> $refuse";
+      else {
+	// Ask for confirmation.
+	echo "<form method=GET>";
+	echo "<p>Move the phenotype and genotype data <b>to</b> $keepline <b>from</b> $oldline, and 
+           <font color=red><b>delete $oldline</b></font>?<br>";
+	echo "<input type=hidden name=keepline value=$keepline>";
+	echo "<input type=hidden name=oldline value=$oldline>";
+	echo "<input type=submit name=confirm value=Yes> <input type=submit name=confirm value=No> ";
+	echo "<br>There is no Undo.</form>";
+	// Confirmed?  I.e. "Yes" button clicked?
+	if ($_REQUEST[confirm] == "Yes") {
+	  // No action, since old line can't be accessed.  Will go away when alleles next added:
+	  // allele_cache, allele_byline, allele_byline_clust, allele_conflicts
+	  // ?: What about allele_bymarker, allele_bymarker_idx?
+	  // Remove oldline from all panels it's in.
+	  foreach ($panels[$oline_uid] as $panelid) {
+	    unset($members[$panelid][$inpanel[$panelid][$oline_uid]]);
+	    $memberlist = implode(',', $members[$panelid]);
+	    $sql = "update linepanels set line_ids = '$memberlist' where linepanels_uid = $panelid";
+	    $res = mysql_query($sql) or die("<p><b>Error: </b>".mysql_error()."<br>Command was:<br>$sql");
+	  }
+	  // Move phenotype and genotype data from oldline to keepline by replacing tht_base.line_record_uid and fieldbook.line_uid.
+	  // Delete from pedigree_relations both as line_record_uid and parent_id.
+	  $commands = array("update tht_base set line_record_uid = $kline_uid where line_record_uid = $oline_uid",
+			    "update fieldbook set line_uid = $kline_uid where line_uid = $oline_uid",
+			    "delete from pedigree_relations where line_record_uid = $oline_uid",
+			    "delete from pedigree_relations where parent_id = $oline_uid",
+			    "delete from line_synonyms where line_record_uid = $oline_uid",
+			    "delete from barley_pedigree_catalog_ref where line_record_uid = $oline_uid",
+			    "delete from line_properties where line_record_uid = $oline_uid",
+			    "delete from line_records where line_record_uid = $oline_uid");
+	  foreach ($commands as $sql) {
+	    $res = mysql_query($sql) or die("<p><b>Error: </b>".mysql_error()."<br>Command was:<br>$sql");
+	  }
+	  echo "<p>Line <b>$oldline</b> deleted. Phenotype and genotype data merged into <b>$keepline</b>.";
+	} // end of confirm = Yes
+	if ($_REQUEST[confirm] == "No")
+	  echo "<p><b>Merge canceled!</b>";
+      } // end of else ($refuse is empty.)
+    } // end if (empty($notfound))
+  }
+echo "</div>";
+// end of Merge section
 
-
-
+echo "</div>";
+include($config['root_dir'] . '/theme/footer.php');?>
