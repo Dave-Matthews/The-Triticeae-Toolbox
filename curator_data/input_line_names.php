@@ -53,19 +53,15 @@ include($config['root_dir'] . 'theme/admin_header.php');
 <div class="box">
   <div class="boxContent">
     <h2>Edit Lines</h2>
-    <ul>
-      <li><a href="<?php echo $config['base_url'] ?>login/edit_line.php">Line names and properties</a>
-      <li><a href="<?php echo $config['base_url'] ?>login/edit_synonym.php">Synonyms and GRIN Accessions</a>
-    </ul>
+<a href="<?php echo $config['base_url'] ?>login/edit_line.php">Line names and properties</a><p>
+<a href="<?php echo $config['base_url'] ?>login/edit_synonym.php">Identity</a>: Merging, synonyms, GRIN accessions
   </div>
 </div>
 		
 <div class="box">
   <div class="boxContent">
     <h2>Line Panels</h2>
-    <ul>
-      <li><a href="<?php echo $config['base_url'] ?>login/line_panels.php">Add/delete line panels</a>
-    </ul>
+    <a href="<?php echo $config['base_url'] ?>login/line_panels.php">Add, edit, or delete</a>
   </div>
 </div>
 		
