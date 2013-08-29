@@ -68,7 +68,7 @@ class CompareTrials
         ?>
         <h2>Compare the trait values for 2 trials</h2>
         1. Use the <a href="downloads/select_all.php">Select Wizard</a> or 
-        <a href="phenotype/phenotype_selection.php">Select Trial and Trait</a>
+        <a href="phenotype/phenotype_selection.php">Select Traits and Trials</a>
         to choose two trials and one trait.<br>
         2. Select which trial is the normal or baseline condition.<br>
         3. Select the Index to be used for the calculation.<br>
