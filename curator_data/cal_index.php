@@ -353,7 +353,7 @@ class Experiments
             if ($row = mysqli_fetch_row($res)) {
                 $raw_file = $row[0];
                 $experiment_uid = $row[1];
-                $raw_path = $config['base_url'] . "raw/phenotype/" . $raw_file;
+                $raw_path = $config['root_dir'] . "raw/phenotype/" . $raw_file;
             }
         }
         if (!empty($_GET['subset'])) {
