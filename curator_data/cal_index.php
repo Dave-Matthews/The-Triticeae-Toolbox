@@ -138,7 +138,9 @@ class Experiments
             $main_plot_tmt = $row["block_tmt"];
             $subblock_tmt = $row["subblock_tmt"];
             $check = $row["check_id"];
-            echo "<tr><td>$plot<td>$line_list[$line_uid]<td>$row_id<td>$col_id<td>$entry<td>$rep<td>$block<td>$subblock<td>$treatment<td>$main_plot_tmt<td>$subblock_tmt<td>$check<td>$field_id<td>$note\n";
+            echo "<tr><td>$plot<td>$line_list[$line_uid]<td>$row_id<td>$col_id<td>$entry<td>$rep
+                  <td>$block<td>$subblock<td>$treatment<td>$main_plot_tmt<td>$subblock_tmt
+                  <td>$check<td>$field_id<td>$note\n";
             $count++;
         }
         echo "</table>";
@@ -155,7 +157,7 @@ class Experiments
         global $mysqli;
         include $config['root_dir'] . 'theme/admin_header.php';
 
-        echo "<h2>Calculate Canopy Spectral Reflectance (CSR) Index</h2>";
+        echo "<h2>Canopy Spectral Reflectance (CSR)</h2>";
         echo "Select a Trial and Date/Time. ";
         echo "The line selection can be saved for use in other analysis or download functions.<br>";
         echo "Either All Lines or only the Check Lines can be used based on the information from the fieldbook.<br><br>";
@@ -225,7 +227,8 @@ class Experiments
         <tr><th>Trial</th>
         <tr><td style="height:100px; vertical-align:text-top"><select id="trial" name="trial" onchange="javascript: update_trial()">
         <?php
-        $sql = "select distinct(trial_code), experiments.experiment_uid from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid";
+        $sql = "select distinct(trial_code), experiments.experiment_uid from experiments, csr_measurement
+            where experiments.experiment_uid = csr_measurement.experiment_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         //echo "$sql<br>\n";
         echo "<option>select a trial</option>\n";
@@ -300,7 +303,24 @@ class Experiments
                 $line_name = $row[1];
                 echo "<option value=\"$uid\" disabled=\"disabled\">$line_name</option>\n";
         }
-        echo "</select></table>";
+        if (!empty($_GET['subset'])) {
+            $subset = $_GET['subset'];
+        } else {
+            $subset = "all";
+        }
+        if ($subset == "check") {
+            $checked_all = "";
+            $checked_chk = "checked";
+        } else {
+            $checked_all = "checked";
+            $checked_chk = "";
+        }
+        ?>
+        </select><br>
+        <input type="radio" <?php echo $checked_all; ?> name="subset" value="All" onclick="javascript: update_subset(this.form)">All Lines<br>
+        <input type="radio" <?php echo $checked_chk; ?> name="subset" value="Check" onclick="javascript: update_subset(this.form)">Check Lines
+        </table>
+        <?php
     }
 
     /**
@@ -346,9 +366,9 @@ class Experiments
         $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
 
         $raw_path = "";
-        if (!empty($_GET['trial'])) {
-            $uid = $_GET['trial'];
-            $sql = "select raw_file_name, experiment_uid from csr_measurement where measurement_uid = $uid";
+        if (!empty($_GET['muid'])) {
+            $muid = $_GET['muid'];
+            $sql = "select raw_file_name, experiment_uid from csr_measurement where measurement_uid = $muid";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
             if ($row = mysqli_fetch_row($res)) {
                 $raw_file = $row[0];
@@ -356,37 +376,28 @@ class Experiments
                 $raw_path = $config['base_url'] . "raw/phenotype/" . $raw_file;
             }
         }
-        if (!empty($_GET['subset'])) {
+        if (!empty($_GET['trial'])) {
+            $trial = $_GET['trial'];
             $subset = $_GET['subset'];
-        } else {
-            $subset = "all";
         }
-        if ($subset == "check") {
-            $checked_all = "";
-            $checked_chk = "checked";
-        } else {
-            $checked_all = "checked";
-            $checked_chk = "";
-        }
-        ?>
-        <br>
-        <table>
-        <tr><td><strong>Line Selection:</strong><td>
-        <input type="radio" <?php echo $checked_all; ?> name="subset" value="All" onclick="javascript: update_subset(this.form)">All Lines
-        <input type="radio" <?php echo $checked_chk; ?> name="subset" value="Check" onclick="javascript: update_subset(this.form)">Check Lines<br>
-        <?php
+
         if ($raw_path == "") {
-            echo "</table><br>";
+            echo "<br><input type=\"button\" value=\"Download CSR Data\" disabled><br><br>";
             return;
         }
         if (($reader = fopen($raw_path, "r")) == false) {
             die("error - can not read file $raw_path");
         }
         $out_path = "/tmp/tht/csr_data_" . $unique_str . ".txt";
+        $url_path = $root . $out_path;
         if (($writer = fopen($out_path, "w")) == false) {
             die("error - can not write file $out_path");
         }
-        echo "<tr><td colspan=2><a target=\"_blank\" href=\"$out_path\">Download CSR Data</a>";
+        echo "<br><input type=\"button\" value=\"Download CSR Data\"
+            onclick=\"javascript: start_download('$url_path');\">";
+        echo "<br><br>";
+        //echo "<input type=\"button\" value=\"Download CSR Data\" onclick=\"window.location='$url_path'\";>";
+        //echo "<a target=\"_blank\" href=\"$out_path\">Download CSR Data</a>";
 
         //get list of line names for each plot
         if ($subset == "all") {
@@ -473,7 +484,6 @@ class Experiments
         }
         fclose($reader);
         fclose($writer);
-        echo "</table><br>";
     }
 
     /**
@@ -497,8 +507,9 @@ class Experiments
     function calculateIndex()
     {
         ?>
-        The CSR indices are calculated from plot phenotype data and may be used to predict plant performance.<br>
-        Select an Index then click the Calculate Index button.
+        <h3>Calculate CSR Index</h3>
+        The CSR indices are calculated from plot phenotype data.
+        Select an Index then click the Calculate Index button.<br>
         The wavelength paramaters (W1, W2) and the formula may be modified from their default values.<br><br>
         <table>
         <tr><td><strong>Smoothing:</strong><td>

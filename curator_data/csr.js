@@ -82,6 +82,10 @@ function download() {
 	});
 }
 
+function start_download(url) {
+	window.open(url, 'Download');
+}
+
 function update_trial() {
   var e = document.getElementById("trial");
   trial = e.options[e.selectedIndex].value;
@@ -94,6 +98,7 @@ function update_trial() {
     });
     muid = "";
     document.getElementById("col3").innerHTML = "";
+    document.getElementById("download").innerHTML = "";
     document.getElementById("status").innerHTML = "";
 }
 
@@ -114,7 +119,7 @@ function update_DateTime() {
 	          document.title = title;
 	    }
 	});
-	url = php_self + "?function=selectDownload&trial=" + muid + "&subset=" + subset;
+	url = php_self + "?function=selectDownload&muid=" + muid + "&trial=" + trial + "&subset=" + subset;
 	new Ajax.Updater($('download'), url, {
 	      onComplete : function() {
 	          $('download').show();
