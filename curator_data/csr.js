@@ -3,6 +3,8 @@
 var php_self = document.location.href;
 var title = document.title;
 var trial = "";
+var muid = "";
+var subset = "all";
 var formula1 = "";
 var formula2 = "";
 var w1 = "";
@@ -34,7 +36,7 @@ function update_zoom(frm) {
   param += '&xrange=' + xrange;
   var url = "curator_data/cal_index_check.php";
   Element.show('spinner');
-  var tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
+  new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
         onComplete : function() {
             $('step2').show();
             document.title = title;
@@ -48,7 +50,7 @@ function display2(option) {
   var uid = option;
   document.getElementById("step2").innerHTML = "";
   var url = php_self + "?function=display&uid=" + uid;
-  var tmp = new Ajax.Updater($('step2'), url, {
+  new Ajax.Updater($('step2'), url, {
         onComplete : function() {
             $('step2').show();
             document.title = title;
@@ -56,17 +58,85 @@ function display2(option) {
     });
 }
 
-function update_trial() {
-  var e = document.getElementById("trial");
-  trial = e.options[e.selectedIndex].value;
-  var url = php_self + "?function=selTrial&trial=" + trial;
-  /*var tmp = new Ajax.Updater($('step2'), url, {
+function save_session() {
+	var url = php_self + "?function=save&trial=" + trial + "&subset=" + subset;
+	new Ajax.Updater($('status'), url, {asynchronous:false}, {
         onComplete : function() {
-            $('step2').show();
+            $('status').show();
             document.title = title;
         }
     });
-  */
+	url = "side_menu.php";
+	new Ajax.Updater($('quicklinks'), url, {
+        onComplete : function() {
+            $('quicklinks').show();
+            document.title = title;
+        }
+    });
+}
+
+function download() {
+	var url = php_self + "?function=download";
+	new Ajax.Updater($('step2'),url, {
+		
+	});
+}
+
+function start_download(url) {
+	window.open(url, 'Download');
+}
+
+function update_trial() {
+  var e = document.getElementById("trial");
+  trial = e.options[e.selectedIndex].value;
+  var url = php_self + "?function=selDateTime&trial=" + trial;
+  new Ajax.Updater($('col2'), url, {
+        onComplete : function() {
+            $('col2').show();
+            document.title = title;
+        }
+    });
+    muid = "";
+    document.getElementById("col3").innerHTML = "";
+    document.getElementById("download").innerHTML = "";
+    document.getElementById("status").innerHTML = "";
+}
+
+function update_DateTime() {
+	var e = document.getElementById("muid");
+	muid = e.options[e.selectedIndex].value;
+	var url = php_self + "?function=selLines&trial=" + trial + "&subset=" + subset;
+	new Ajax.Updater($('col3'), url, {
+	      onComplete : function() {
+	          $('col3').show();
+	          document.title = title;
+	    }
+	});
+	url = php_self + "?function=statusLines&trial=" + trial + "&subset=" + subset;
+	new Ajax.Updater($('status'), url, {
+	      onComplete : function() {
+	          $('status').show();
+	          document.title = title;
+	    }
+	});
+	url = php_self + "?function=selectDownload&muid=" + muid + "&trial=" + trial + "&subset=" + subset;
+	new Ajax.Updater($('download'), url, {
+	      onComplete : function() {
+	          $('download').show();
+	          document.title = title;
+	    }
+	});
+}
+
+function update_subset(frm) {
+	if (frm.subset[0].checked) {
+		subset = "all";
+	} else {
+		subset = "check";
+	}
+	if (muid !== "") {
+	    update_DateTime();
+	}
 }
 
 function update_w1() {
@@ -177,7 +247,7 @@ function update_smooth() {
 }
 
 function cal_index() {
-  var param = 'trial=' + trial;
+  var param = 'trial=' + muid;
   param += '&W1=' + w1;
   param += '&W2=' + w2;
   param += '&W3=' + w3;
@@ -188,7 +258,7 @@ function cal_index() {
   var url = "curator_data/cal_index_check.php?trial=" + trial + "&W1=" + w1 + "&W2=" + w2 + "&formula1=" + formula1 + "&formula2=" + formula2;
   url = "curator_data/cal_index_check.php";
   Element.show('spinner');
-  var tmp = new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
+  new Ajax.Updater($('step2'), url, {method: 'post', postBody: param}, {
         onComplete : function() {
             $('step2').show();
             document.title = title;
