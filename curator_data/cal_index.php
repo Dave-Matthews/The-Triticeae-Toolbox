@@ -373,7 +373,7 @@ class Experiments
             if ($row = mysqli_fetch_row($res)) {
                 $raw_file = $row[0];
                 $experiment_uid = $row[1];
-                $raw_path = $config['base_url'] . "raw/phenotype/" . $raw_file;
+                $raw_path = $config['root_dir'] . "raw/phenotype/" . $raw_file;
             }
         }
         if (!empty($_GET['trial'])) {
@@ -396,7 +396,6 @@ class Experiments
         echo "<br><input type=\"button\" value=\"Download CSR Data\"
             onclick=\"javascript: start_download('$url_path');\">";
         echo "<br><br>";
-        //echo "<input type=\"button\" value=\"Download CSR Data\" onclick=\"window.location='$url_path'\";>";
         //echo "<a target=\"_blank\" href=\"$out_path\">Download CSR Data</a>";
 
         //get list of line names for each plot
