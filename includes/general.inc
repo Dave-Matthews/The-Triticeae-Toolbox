@@ -134,8 +134,21 @@ function show_datasets($id) {
 
 // Security mechanism
 function show_users($id) {
-	error(1, "Restricted");
+// dem 6sep13: We decided to unrestrict.  Just omit the users.pass field.
+	/* error(1, "Restricted"); */
+  echo "<table>";
+  $sql = "select name, email, institution, lastaccess from users where users_uid = $id";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($r = mysql_fetch_row($res)) {
+    echo "<tr><td>Name<td>$r[0]";
+    echo "<tr><td>Email<td>$r[1]";
+    echo "<tr><td>Institution<td>$r[2]";
+    echo "<tr><td>Last login<td>$r[3]";
+  }
+  echo "</table>";
 }
+
+
 
 /* *
  * This is a special case function used in view.php to view the experimetns table. This will select all the 
