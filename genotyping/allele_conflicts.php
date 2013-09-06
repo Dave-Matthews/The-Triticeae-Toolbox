@@ -27,6 +27,7 @@ $result = mysql_query($query) or die(mysql_error());
 // Downloading?
 if (!empty($_REQUEST[download])) {
   header('Content-disposition: attachment;filename=allele_conflicts.csv');
+  header('Content-Type: text/csv');
   print "Line,Marker,Alleles,Experiment\n";
   while ($row=mysql_fetch_row($result)) {
     $rowstring = implode(",", $row);
