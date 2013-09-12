@@ -5,6 +5,8 @@
 if (!((isset($config['base_url']))&(isset($config['root_dir'])))) {
 	require 'config.php';
 }
+set_time_limit(3000);
+
 /*
  * This is a library for ajax related functions. This file is reffered to by the ajax function
  * giving it at least 1 parameter "func" which is the function in this library to call.
@@ -938,6 +940,100 @@ function DispMapSel ($arr) {
 	}
 
 }
+
+function DispExperiment ($arr) {
+    if (! isset($arr['platform'])) {
+        print "Invalid input of platform";
+        return;
+    } else {
+        $platform = $arr['platform'];
+    }
+    print "<table><tr><th>Experiment<tr><td><select name='expt[]' size=10 multiple onchange=\"javascript: update_exper(this.options)\">";
+    $result=mysql_query("select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
+        where experiments.experiment_uid = genotype_experiment_info.experiment_uid
+        and genotype_experiment_info.platform_uid IN ($platform)") or die(mysql_error);
+    while ($row=mysql_fetch_assoc($result)) {
+        $uid=$row['experiment_uid'];
+        $val=$row['trial_code'];
+        print "<option value=$val>$val</option>\n";
+    }
+    ?>
+    </select>
+    <td>Choose experiments.
+    <p><input type=button value=Select style=color:blue onclick="javascript: select_exper()">
+    </table>
+    <?php
+}
+
+function SelcExperiment ($arr) {
+    if (! isset($arr['experiment'])) {
+        print "Invalid input of experiment";
+        return;
+    } else {
+        $expt_str = $arr['experiment'];
+        $expt = explode(",", $expt_str);
+    }
+    echo "<h3>Currently selected markers</h3>"; 
+    if (isset($_SESSION['clicked_buttons'])) {
+        $clkmkrs=$_SESSION['clicked_buttons'];
+    } else {
+        $clkmkrs=array();
+    }
+  foreach ($expt as $ex)
+    $exptquoted[] = "'$ex'";
+  $exptlist = implode(",", $exptquoted);
+  echo "Markers added from experiment(s) <b>$exptlist</b><p>";
+  $sql = "select distinct marker_uid
+        from tht_base t, genotyping_data gd, experiments e
+        where trial_code in ($exptlist)
+        and gd.tht_base_uid = t.tht_base_uid
+        and e.experiment_uid = t.experiment_uid";
+  $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
+  while ($row = mysql_fetch_row($res)) {
+    $selmkrs[] = $row[0];
+    if (! in_array($row[0], $clkmkrs))
+      $clkmkrs[] = $row[0];
+  }
+  $_SESSION['clicked_buttons'] = $clkmkrs;
+  if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
+    print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
+  print "<table><tr><td>\n";
+  print "<select id='mlist' name='deselMkrs[]' multiple='multiple' size=10>";
+  $mapids = $_SESSION['mapids'];
+  if (!isset($mapids) || !is_array($mapids))
+    $mapids = array();
+  reset($mapids);
+
+  $chrlist = array();
+  $markerlist = array();
+  $count_markers = 0;
+  foreach ($_SESSION['clicked_buttons'] as $mkruid) {
+    $count_markers++;
+    $mapid = current($mapids);
+    next($mapids);
+    $sql = "select marker_name from markers where marker_uid=$mkruid";
+    $result=mysql_query($sql)
+      //        or die("invalid marker uid\n");
+      or die(mysql_error());
+    while ($row=mysql_fetch_assoc($result)) {
+      $selval=$row['marker_name'];
+      $selchr=$row['chromosome'];
+      if(! in_array($selval,$markerlist)) {
+        array_push($markerlist, $selval);
+        array_push($chrlist, $selchr);
+        print "<option value='$mkruid'>$selval</option>\n";
+      }
+    }
+  }
+  $chrlist = array_unique($chrlist);
+ print "</select></table>";
+ //print "</td><td>\n";
+  } elseif ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) >= 1000)) {
+      $count = count($_SESSION['clicked_buttons']); 
+       print "$count markers selected<br>";
+  }
+}
+
 /**
  * Display markers in marker_selection.php
  */
@@ -1006,7 +1102,6 @@ function DispPhenotypeSel($arr) {
 		echo "Please Select A Trait";
 		return;
 	}
-
 	// make local the array variables please.
 	extract($arr);
 
@@ -1015,28 +1110,41 @@ function DispPhenotypeSel($arr) {
 	// No experiments selected yet so unset the cookie.
 	unset($_SESSION['experiments']);
 
-	// query please
 	$pquery = mysql_query("SELECT phenotypes_name from phenotypes where phenotype_uid = $id") or die(mysql_error());
 	$pname = mysql_fetch_row($pquery);
 	$pn = $pname[0];
+	// Show only public trials unless signed in as at least Participant.
+	if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
+	  $filter = "";
+	else
+	  $filter = " AND data_public_flag = 1";
         if ((count($_SESSION['selected_lines']) > 0) && ($_SESSION['selectWithin'] == "Yes")) {
-          $sql = "SELECT DISTINCT experiments.experiment_uid, trial_code FROM experiments, line_records as lr, tht_base
-            WHERE experiments.experiment_uid = tht_base.experiment_uid
-            AND lr.line_record_uid = tht_base.line_record_uid
-            AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")" .
-            "AND experiments.traits like '%$pn%' ORDER By trial_code";
-            $errMsg = "There are no trials for this trait within selected lines.";
+	  $sql = "SELECT DISTINCT experiments.experiment_uid, trial_code
+		    FROM experiments, line_records as lr, tht_base, phenotype_data pd
+		    WHERE experiments.experiment_uid = tht_base.experiment_uid
+		    and tht_base.tht_base_uid = pd.tht_base_uid
+		    AND lr.line_record_uid = tht_base.line_record_uid
+		    AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")" .
+		    "AND pd.phenotype_uid = $id $filter ORDER BY trial_code";
+            $errMsg = "There are no public trials for this trait within selected lines.";
           $query = mysql_query($sql) or die(mysql_error());
         } else {
-	  $query = mysql_query("SELECT DISTINCT experiment_uid, trial_code FROM experiments WHERE experiments.traits like '%$pn%' ORDER BY trial_code") or die(mysql_error());
-          $errMsg = "There are no trials for this trait.";
+	  $query = mysql_query("select distinct e.experiment_uid, trial_code
+		    from tht_base tb, phenotype_data pd, experiments e
+		    where pd.phenotype_uid = $id
+		    and tb.tht_base_uid = pd.tht_base_uid
+		    and tb.experiment_uid =  e.experiment_uid
+		    $filter ORDER BY trial_code") or die(mysql_error());
+          $errMsg = "There are no public trials for this trait.";
         }
 
 	// display in selection box please
 	if(mysql_num_rows($query) > 0) {
-		echo "<select name='trial[]' id='trialoptions' multiple size=10 onfocus=\"DispPhenoSel(this.value, 'Trial', $id)\" onchange=\"DispPhenoSel(this.value, 'Trial', $id)\" onmouseover=\"DispPhenoSel(this.value, 'Trial', $id)\">";
+		/* echo "<select name='trial[]' id='trialoptions' multiple size=10 onfocus=\"DispPhenoSel(this.value, 'Trial', $id)\" onchange=\"DispPhenoSel(this.value, 'Trial', $id)\" onmouseover=\"DispPhenoSel(this.value, 'Trial', $id)\">"; */
+		echo "<select name='trial[]' id='trialoptions' multiple size=10 onfocus=\"DispPhenoSel(this.value, 'Trial', $id)\" onchange=\"DispPhenoSel(this.value, 'Trial', $id)\" >";
 		while($row = mysql_fetch_row($query)) {
-			echo "\n\t<option value=$row[0] selected>$row[1]</option>";
+			/* echo "\n\t<option value=$row[0] selected>$row[1]</option>"; */
+			echo "\n\t<option value=$row[0]>$row[1]</option>";
 		}  
 		echo "</select>";
 	}
@@ -1087,7 +1195,7 @@ and experiments.experiment_uid IN ($trialsSelected)
 	  $min = number_format($row['min'],1);
 	  $max = number_format($row['max'],1);
 
-	  echo "<p><b>Values</b><br>";
+	  echo "<b>Values</b><br>";
 	  echo "Mean: $avg &plusmn; $std, n = $num<br>";
 	  echo "Range: " . $min . " - " . $max;
 	  // number_format adds commas for thousands, and rounds. Better be inclusive by default.
@@ -1125,6 +1233,69 @@ and experiments.experiment_uid IN ($trialsSelected)
 	else {
 	  echo "<p style='color: red;'>There is no data available for this phenotype</p>";
 	}
+}
+
+// Modified DispCategorySel() for Select Lines by Properties.
+// $arr is a one-pair array('id' => phenotype_category_uid).
+// Called by includes/core.js function DispPropSel(val, middle).
+function DispPropCategorySel($arr) {
+  if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
+    echo "Please select a category.";
+  else {
+    extract($arr);
+    $query = mysql_query("SELECT properties_uid, name 
+     FROM properties 
+     WHERE category_uid = $id 
+     order by name") or die(mysql_error());
+    if(mysql_num_rows($query) > 0) {
+      echo "<select name='property' size=5 
+     onfocus=\"DispPropSel(this.value, 'Property')\" 
+     onchange=\"DispPropSel(this.value, 'Property')\">";
+      while($row = mysql_fetch_row($query)) 
+	echo "<option value=$row[0]>$row[1]</option>";
+      echo "</select>";
+    }
+    else
+      echo "<p style='color: red;'>No properties available in this category.</p>";
+  }
+}
+
+// Modified DispTrialSel() for Select Lines by Properties.
+function DispPropertySel($arr) {
+  if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
+    echo "Please select a property.";
+  else {
+    extract($arr);
+    $query = mysql_query("SELECT property_values_uid, property_values.value 
+     FROM property_values 
+     WHERE property_uid = $id") or die(mysql_error());
+    if(mysql_num_rows($query) > 0) {
+      // Strange.  (this.value..) works in IE and Chrome in DispPropCategorySel() but not here.
+      echo "<select size=3 onchange=\"DispPropSel(this.options[this.selectedIndex].value, 'PropValue')\">";
+      while($row = mysql_fetch_row($query)) 
+	echo "<option value='$row[0]'>$row[1]</option>";
+      echo "</select>";
+    }
+  }
+}
+
+// Modified DispPhenotypeSel() for Select Lines by Properties.
+function DispPropValueSel($arr) {
+  if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
+    echo "Please select a value.";
+  else {
+  extract($arr);
+  $query = mysql_query("select name, value
+     from property_values pv, properties pr
+     where property_values_uid = $id
+     and pr.properties_uid = pv.property_uid") or die (mysql_error());
+  $row = mysql_fetch_row($query);
+  echo "$row[0] = $row[1], ";
+  // Doesn't work:
+  //echo "<input type=hidden name='charlie' value='bill'>";
+  // All I can think of to return this value to line_properties.php is via cookie.
+  $_SESSION['propvals'][] = array($id, $row[0], $row[1]);
+  }
 }
 
 /**

@@ -23,7 +23,7 @@ include($config['root_dir'].'theme/admin_header.php');
   <script type="text/javascript" src="theme/new.js"></script>
   <h2> Select Markers</h2>
   <br>
-  <div class="boxContent">
+  <div id= "current" class="boxContent">
   <h3>Currently selected markers</h3>
   <?php
 
@@ -38,6 +38,37 @@ where map_name='" . mysql_real_escape_string($us_mapname) . "'";
   $sqlr = mysql_fetch_assoc(mysql_query($sql));
   return $sqlr['map_uid'];
 }  
+
+$expt = $_REQUEST[expt];
+if (!empty($expt)) {
+  // "Select by genotyping experiment" was clicked.
+  if (isset($_SESSION['clicked_buttons'])) {
+    $clkmkrs=$_SESSION['clicked_buttons'];
+  } else {
+    $clkmkrs=array();
+  }
+  foreach ($expt as $ex)
+    $exptquoted[] = "'$ex'";
+  $exptlist = implode(",", $exptquoted);
+  echo "Markers added from experiment(s) <b>$exptlist</b><p>";
+  $sql = "select distinct marker_uid
+        from tht_base t, genotyping_data gd, experiments e
+        where trial_code in ($exptlist)
+        and gd.tht_base_uid = t.tht_base_uid
+        and e.experiment_uid = t.experiment_uid";
+  $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
+  while ($row = mysql_fetch_row($res)) {
+    $selmkrs[] = $row[0];
+    if (! in_array($row[0], $clkmkrs))
+      $clkmkrs[] = $row[0];
+  }
+  $_SESSION['clicked_buttons'] = $clkmkrs;
+  ?>
+  <script type="text/javascript">
+     update_side_menu();
+  </script>
+  <?php
+}
 
 if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
   // Handle <space>- and <tab-separated words.
@@ -144,7 +175,7 @@ if (isset($_POST['deselMkrs'])) {
  }
 
 // If anything is Currently Selected, show.
-if (isset($_SESSION['clicked_buttons']) && count($_SESSION['clicked_buttons']) > 0) { 
+if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) { 
   print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
   print "<table><tr><td>\n";
   print "<select id='mlist' name='deselMkrs[]' multiple='multiple' size=10>";
@@ -250,6 +281,9 @@ EOD;
  if (! isset($username) || strlen($username)<1) $username="Public";
  store_session_variables('clicked_buttons', $username);
  store_session_variables('mapids',$username);
+ } elseif (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) >= 1000)) {
+   $count = count($_SESSION['clicked_buttons']);
+   print "$count markers selected<br>";
  } // end of if Currently Selected
  else print "None<br>";
 ?>
@@ -292,7 +326,29 @@ while ($row=mysql_fetch_assoc($result)) {
 </form>
 </div>
 
-<div class="boxContent">
+<h3>Select by genotyping platform and experiment</h3>
+<form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
+<div class="boxContent" style="float: left; margin-buttom: 1.5em;">
+  <table>
+  <thead>
+  <tr><th>Platform
+  <tbody>
+  <tr><td>
+  <select name='platform[]' size=10 multiple onchange="javascript: update_platform(this.options)">
+<?php
+$result=mysql_query("select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysql_error);
+while ($row=mysql_fetch_assoc($result)) {
+  $uid = $row['platform_uid'];
+  $val = $row['platform_name'];
+  print "<option value='$uid'>$val</option>\n";
+}
+?>
+</select>
+</table>
+</form>
+</div>
+<div class="boxContent" id="col2" style="float: left; margin-buttom: 1.5em;"></div>
+<div class="boxContent" style="clear: both; float: left; width: 100%">
   <h3> Select using GBrowse</h3>
 Hover over a marker and click "Select in THT" in the popup balloon.
 <br><a href="/cgi-bin/gbrowse/tht">GBrowse</a><br><br>
@@ -301,4 +357,5 @@ Hover over a marker and click "Select in THT" in the popup balloon.
 </div>
 </div>
 </div>
+<script type="text/javascript" src="genotyping/marker.js"></script>
   <?php include($config['root_dir'].'theme/footer.php'); ?>
