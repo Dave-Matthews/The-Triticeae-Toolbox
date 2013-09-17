@@ -1,6 +1,7 @@
-/*global $,$A,Ajax,Element*/
+/*global $,$A,Ajax,Element,window*/
 
 var php_self = document.location.href;
+var title = document.title;
 var platform_str = "";
 var expt_str = "";
 
@@ -41,7 +42,10 @@ function update_side() {
     });
 }
 
-function select_exper(options) {
+function select_exper() {
+    if (expt_str !== "") {
+    window.scrollTo(0, 0);
+    document.title='Loading Markers...';
     document.getElementById('current').innerHTML = "<img id=\"spinner\" src=\"images/ajax-loader.gif\"> Calculating which markers are in selected experiment(s)";
     var url = "includes/ajaxlib?func=SelcExperiment&experiment=" + expt_str;
     new Ajax.Updater($('current'), url, {
@@ -51,4 +55,5 @@ function select_exper(options) {
             update_side();
         }
     });
+    }
 }
