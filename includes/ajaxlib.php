@@ -974,11 +974,7 @@ function SelcExperiment ($arr) {
         $expt = explode(",", $expt_str);
     }
     echo "<h3>Currently selected markers</h3>"; 
-    if (isset($_SESSION['clicked_buttons'])) {
-        $clkmkrs=$_SESSION['clicked_buttons'];
-    } else {
-        $clkmkrs=array();
-    }
+    $clkmkrs=array();
   foreach ($expt as $ex)
     $exptquoted[] = "'$ex'";
   $exptlist = implode(",", $exptquoted);
@@ -996,9 +992,7 @@ function SelcExperiment ($arr) {
         and e.experiment_uid = t.experiment_uid";
   $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
   while ($row = mysql_fetch_row($res)) {
-    $selmkrs[] = $row[0];
-    if (! in_array($row[0], $clkmkrs))
-      $clkmkrs[] = $row[0];
+    $clkmkrs[] = $row[0];
   }
   $_SESSION['clicked_buttons'] = $clkmkrs;
   if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
