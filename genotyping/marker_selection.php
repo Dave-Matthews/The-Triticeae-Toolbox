@@ -39,37 +39,6 @@ where map_name='" . mysql_real_escape_string($us_mapname) . "'";
   return $sqlr['map_uid'];
 }  
 
-$expt = $_REQUEST[expt];
-if (!empty($expt)) {
-  // "Select by genotyping experiment" was clicked.
-  if (isset($_SESSION['clicked_buttons'])) {
-    $clkmkrs=$_SESSION['clicked_buttons'];
-  } else {
-    $clkmkrs=array();
-  }
-  foreach ($expt as $ex)
-    $exptquoted[] = "'$ex'";
-  $exptlist = implode(",", $exptquoted);
-  echo "Markers added from experiment(s) <b>$exptlist</b><p>";
-  $sql = "select distinct marker_uid
-        from tht_base t, genotyping_data gd, experiments e
-        where trial_code in ($exptlist)
-        and gd.tht_base_uid = t.tht_base_uid
-        and e.experiment_uid = t.experiment_uid";
-  $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
-  while ($row = mysql_fetch_row($res)) {
-    $selmkrs[] = $row[0];
-    if (! in_array($row[0], $clkmkrs))
-      $clkmkrs[] = $row[0];
-  }
-  $_SESSION['clicked_buttons'] = $clkmkrs;
-  ?>
-  <script type="text/javascript">
-     update_side_menu();
-  </script>
-  <?php
-}
-
 if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
   // Handle <space>- and <tab-separated words.
   //$selmkrnames = preg_split("/\r\n/", $_POST['selMarkerstring']);
