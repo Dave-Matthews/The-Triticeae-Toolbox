@@ -377,8 +377,11 @@ private function typeExperimentCheck()
              echo "</form>";
              echo "<td><form action=display_map_exp.php target=\"_blank\">";
              echo "<input type=hidden name=uid value=$experiment_uid>";
-             echo "<input type=submit value=\"View field layout for trait\">";
-             //echo "<td><a href=display_map_exp.php?uid=$experiment_uid>View field layout for trait</a>";
+             echo "View field layout <input type=submit value=\"trait values\">";
+             echo "</form>";
+             echo "<td><form action=display_heatmap_exp.php target=\"_blank\">";
+             echo "<input type=hidden name=uid value=$experiment_uid>";
+             echo "<input type=submit value=\"trait heatmap\">";
              echo "</form>";
          }
          echo "</table><br>\n";
