@@ -447,9 +447,18 @@ $rawsql="SELECT experiment_uid from fieldbook where experiment_uid = $experiment
 $rawres=mysql_query($rawsql) or die(mysql_error());
 if ($rawrow = mysql_fetch_assoc($rawres)) {
   $fieldbook="display_fieldbook.php?function=display&uid=$experiment_uid";
-  echo "<a href=".$config['base_url'].$fieldbook.">$trial_code</a>\n";
+  echo "<a href=".$config['base_url'].$fieldbook.">$trial_code</a><br>\n";
 }
 if (empty($fieldbook)) echo "none";  
+$pheno_str = "";
+$rawsql="SELECT distinct(phenotypes_name) from phenotype_plot_data, phenotypes where phenotype_plot_data.phenotype_uid = phenotypes.phenotype_uid and experiment_uid = $experiment_uid";
+$rawres=mysql_query($rawsql) or die(mysql_error());
+while ($rawrow = mysql_fetch_assoc($rawres)) {
+    $pheno_str = $pheno_str . $rawrow['phenotypes_name'] . "<br>";
+}
+if ($pheno_str != "") {
+    echo "<b>Plot level data:</b><br><a href=".$config['base_url']."display_map_exp.php?uid=$experiment_uid>$pheno_str</a>\n";
+}
 
 $found = 0;
 $sql="SELECT date_format(measure_date, '%m-%d-%Y'), date_format(start_time, '%H:%i'), spect_sys_uid, raw_file_name, measurement_uid from csr_measurement where experiment_uid = $experiment_uid order by measure_date";
