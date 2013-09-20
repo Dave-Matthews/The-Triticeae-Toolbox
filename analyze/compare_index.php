@@ -78,6 +78,7 @@ class CompareTrials
         ?>
         <div id="step2"></div>
         <div id="step3"></div>
+        <div id="step4"></div>
         </div>
         <?php 
         include $config['root_dir'].'theme/footer.php';
@@ -284,6 +285,11 @@ class CompareTrials
         $h = fopen($file_r, "w+");
         fwrite($h, "tmp <- read.delim(\"$file_traits\")\n");
         fwrite($h, "data <- data.frame(trial1=tmp[,2], trial2=tmp[,3])\n");
+        $png = "png(\"/tmp/tht/$unique_str/compare.png\", width=500, height=500)\n";
+        fwrite($h, "$png");
+        fwrite($h, "cn <- colnames(tmp)\n");
+        fwrite($h, "plot(tmp[,2], tmp[,3], xlab=cn[2], ylab=cn[3])\n");
+        fwrite($h, "dev.off()\n");
         fwrite($h, "formula <- $formula\n");
         fwrite($h, "index <- formula\n");
         fwrite($h, "results <- data.frame(line=tmp[,1], trial1=tmp[,2], trial2=tmp[,3], index=index)\n");
@@ -300,6 +306,9 @@ class CompareTrials
                 echo "$line<br>\n";
             }
             fclose($h);
+        }
+        if (file_exists("/tmp/tht/$unique_str/compare.png")) {
+            echo "<img src=\"/tmp/tht/$unique_str/compare.png\" /><br>";
         }
         if (file_exists("/tmp/tht/$unique_str/results.csv")) {
             echo "calculated index, \n";

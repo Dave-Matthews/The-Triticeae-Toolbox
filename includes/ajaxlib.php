@@ -5,6 +5,8 @@
 if (!((isset($config['base_url']))&(isset($config['root_dir'])))) {
 	require 'config.php';
 }
+set_time_limit(3000);
+
 /*
  * This is a library for ajax related functions. This file is reffered to by the ajax function
  * giving it at least 1 parameter "func" which is the function in this library to call.
@@ -938,6 +940,100 @@ function DispMapSel ($arr) {
 	}
 
 }
+
+function DispExperiment ($arr) {
+    if (! isset($arr['platform'])) {
+        print "Invalid input of platform";
+        return;
+    } else {
+        $platform = $arr['platform'];
+    }
+    print "<table><tr><th>Experiment<tr><td><select name='expt[]' size=10 multiple onchange=\"javascript: update_exper(this.options)\">";
+    $result=mysql_query("select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
+        where experiments.experiment_uid = genotype_experiment_info.experiment_uid
+        and genotype_experiment_info.platform_uid IN ($platform)") or die(mysql_error);
+    while ($row=mysql_fetch_assoc($result)) {
+        $uid=$row['experiment_uid'];
+        $val=$row['trial_code'];
+        print "<option value=$val>$val</option>\n";
+    }
+    ?>
+    </select>
+    <td>Choose experiments.
+    <p><input type=button value=Select style=color:blue onclick="javascript: select_exper()">
+    </table>
+    <?php
+}
+
+function SelcExperiment ($arr) {
+    if (! isset($arr['experiment'])) {
+        print "Invalid input of experiment";
+        return;
+    } else {
+        $expt_str = $arr['experiment'];
+        $expt = explode(",", $expt_str);
+    }
+    echo "<h3>Currently selected markers</h3>"; 
+    $clkmkrs=array();
+  foreach ($expt as $ex)
+    $exptquoted[] = "'$ex'";
+  $exptlist = implode(",", $exptquoted);
+  echo "Markers added from experiment(s) <b>$exptlist</b><p>";
+  $sql = "select distinct marker_uid
+        from tht_base t, genotyping_data gd, experiments e
+        where trial_code in ($exptlist)
+        and gd.tht_base_uid = t.tht_base_uid
+        and e.experiment_uid = t.experiment_uid";
+  // faster query but my include markers with not data
+  $sql = "select distinct marker_uid
+        from tht_base t, experiments e, allele_frequencies af
+        where trial_code in ($exptlist)
+        and af.experiment_uid = t.experiment_uid
+        and e.experiment_uid = t.experiment_uid";
+  $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
+  while ($row = mysql_fetch_row($res)) {
+    $clkmkrs[] = $row[0];
+  }
+  $_SESSION['clicked_buttons'] = $clkmkrs;
+  if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
+    print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
+  print "<table><tr><td>\n";
+  print "<select id='mlist' name='deselMkrs[]' multiple='multiple' size=10>";
+  $mapids = $_SESSION['mapids'];
+  if (!isset($mapids) || !is_array($mapids))
+    $mapids = array();
+  reset($mapids);
+
+  $chrlist = array();
+  $markerlist = array();
+  $count_markers = 0;
+  foreach ($_SESSION['clicked_buttons'] as $mkruid) {
+    $count_markers++;
+    $mapid = current($mapids);
+    next($mapids);
+    $sql = "select marker_name from markers where marker_uid=$mkruid";
+    $result=mysql_query($sql)
+      //        or die("invalid marker uid\n");
+      or die(mysql_error());
+    while ($row=mysql_fetch_assoc($result)) {
+      $selval=$row['marker_name'];
+      $selchr=$row['chromosome'];
+      if(! in_array($selval,$markerlist)) {
+        array_push($markerlist, $selval);
+        array_push($chrlist, $selchr);
+        print "<option value='$mkruid'>$selval</option>\n";
+      }
+    }
+  }
+  $chrlist = array_unique($chrlist);
+ print "</select></table>";
+ //print "</td><td>\n";
+  } elseif ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) >= 1000)) {
+      $count = count($_SESSION['clicked_buttons']); 
+       print "$count markers selected<br>";
+  }
+}
+
 /**
  * Display markers in marker_selection.php
  */

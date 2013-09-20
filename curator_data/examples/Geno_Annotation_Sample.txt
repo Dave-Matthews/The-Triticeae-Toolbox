@@ -1,7 +1,7 @@
-Breeding Program	CAPdata Program	Year	Short Name	Trial Code	Traits	Processing Date	Manifest File	Cluster File	OPA Name	Analysis Software	Software Version	Sample Sheet	Comments
-AB	NDG	2010	AB_BOPA1	2009BOPA1_AB_Plate5	SNP calls, r, theta, x, y,xraw, yraw	04/28/2010	GS0007511-OPA.opa	BOPA1PooledSamples2009.EGT	BOPA1	Illumina Genome Studio	2010.3	Sample_Sheet_2009plate5AB.csv
-AB	NDG	2010	AB_BOPA2	2009BOPA2_AB_Plate5	SNP calls, r, theta, x, y,xraw, yraw	04/28/2010	GS0010598-OPA.opa	BOPA2PooledSamples2009.EGT	BOPA2	Illumina Genome Studio	2010.3	2009CAPplate5ABSampleSheetBOPA2rev.csv
-MN	NDG	2010	MN_BOPA1	2009BOPA1_MN_Plate3	SNP calls, r, theta, x, y,xraw, yraw	4/16/2010	GS0007511-OPA.opa	BOPA1PooledSamples2009.EGT	BOPA1	Illumina Genome Studio	2010.3	Sample_Sheet_2009plate3MN.csv
+Breeding Program	CAPdata Program	Year	Short Name	Trial Code	Traits	Platform	Processing Date	Manifest File	Cluster File	OPA Name	Analysis Software	Software Version	Sample Sheet	Comments
+AB	NDG	2010	AB_BOPA1	2009BOPA1_AB_Plate5	SNP calls, r, theta, x, y,xraw, yraw	GoldenGate	04/28/2010	GS0007511-OPA.opa	BOPA1PooledSamples2009.EGT	BOPA1	Illumina Genome Studio	2010.3	Sample_Sheet_2009plate5AB.csv
+AB	NDG	2010	AB_BOPA2	2009BOPA2_AB_Plate5	SNP calls, r, theta, x, y,xraw, yraw	GoldenGate	04/28/2010	GS0010598-OPA.opa	BOPA2PooledSamples2009.EGT	BOPA2	Illumina Genome Studio	2010.3	2009CAPplate5ABSampleSheetBOPA2rev.csv
+MN	NDG	2010	MN_BOPA1	2009BOPA1_MN_Plate3	SNP calls, r, theta, x, y,xraw, yraw	GoldenGate	4/16/2010	GS0007511-OPA.opa	BOPA1PooledSamples2009.EGT	BOPA1	Illumina Genome Studio	2010.3	Sample_Sheet_2009plate3MN.csv
 -------------------- cut -----------------------												
 												
 ADDITION INFORMATION												
@@ -13,6 +13,7 @@ Year	2008
 Short_Name	VT_Plate1 (Plate number stays the same year to year)											
 Trial_code	2008BOPA1_VT_Plate1  (This is the basic code, CAPYEAR, BOPA #_CAPCODE_Plate#)											
 Traits	SNP calls, r, theta, x, y,xraw, yraw											
+Platform	GoldenGate
 Processing_date	8/9/2008											
 manifest_file	GS0007511-OPA.opa  (need to set for each BOPA)											
 cluster_file	BOPA1PooledSamples2009.EGT  (need to set for each BOPA)											
