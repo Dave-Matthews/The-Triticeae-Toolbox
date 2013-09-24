@@ -1,4 +1,5 @@
 <?php
+global $config;
 $root = str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
 $pos1 = strripos($root, '/', -2);
 $parent_dir = substr($root, 0, $pos1+1);//realpath("$root../");

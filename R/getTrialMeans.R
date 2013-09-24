@@ -20,13 +20,21 @@ if (!hasBlk){ # Fixed effects models
   if (!hasRep){
     message("CRD model: use simple averages");
     for (trait in dataCols){
+      notMiss <- tapply(df[,trait], df$line, function(vec) !all(is.na(vec)))
+      notMiss <- levels(df$line)[notMiss]
+      
       model <- paste(trait, "~ line")
       test <- lm(model, data=df)
       beta <- test$coefficients
-      nLine <- length(test$xlevels$line)
+      names(beta) <- gsub("line", "", names(beta))
+      nLine <- length(notMiss)
       grandMean <- beta[1] + sum(beta[2:nLine]) / nLine
-      result <- cbind(result, beta[1] + c(0, beta[2:nLine]))
-      averageReps <- sum(!is.na(df[, trait])) / nLine
+      resTrait <- rep(NA, nlevels(df$line))
+      names(resTrait) <- levels(df$line)
+      resTrait[c(min(notMiss), names(beta)[2:nLine])] <- beta[1] + c(0, beta[2:nLine])
+      result <- cbind(result, resTrait)
+
+      averageReps <- sum(!is.na(df[,trait])) / nLine
       stdErr <- c(stdErr, sqrt(anova(test)[2,"Mean Sq"] / averageReps))
       trialMean <- c(trialMean, grandMean)
       trialReps <- c(trialReps, round(averageReps, 1))
@@ -34,14 +42,22 @@ if (!hasBlk){ # Fixed effects models
   } else{
     message("RCBC model: use fixed effects and return LS means");
     for (trait in dataCols){
+      notMiss <- tapply(df[,trait], df$line, function(vec) !all(is.na(vec)))
+      notMiss <- levels(df$line)[notMiss]
+
       model <- paste(trait, "~ rep + line")
       test <- lm(model, data=df)
       beta <- test$coefficients
+      names(beta) <- gsub("line", "", names(beta))
       # Adjust to a recognizable mean
       nRep <- length(test$xlevels$rep)
-      nLine <- length(test$xlevels$line)
+      nLine <- length(notMiss)
       grandMean <- beta[1] + sum(beta[2:nRep]) / nRep + sum(beta[(nRep + 1):length(beta)]) / nLine
-      result <- cbind(result, beta[1] + sum(beta[2:nRep]) / nRep + c(0, beta[(nRep + 1):length(beta)]))
+      resTrait <- rep(NA, nlevels(df$line))
+      names(resTrait) <- levels(df$line)
+      resTrait[c(min(notMiss), names(beta)[(nRep + 1):length(beta)])] <- beta[1] + sum(beta[2:nRep]) / nRep + c(0, beta[(nRep + 1):length(beta)])
+      result <- cbind(result, resTrait)
+
       averageReps <- sum(!is.na(df[, trait])) / nLine
       stdErr <- c(stdErr, sqrt(anova(test)[3,"Mean Sq"] / averageReps))
       trialMean <- c(trialMean, grandMean)
@@ -49,17 +65,25 @@ if (!hasBlk){ # Fixed effects models
     }
   }
 } else{
-  library(lme4, warn.conflicts = FALSE)
+  library(lme4)
   if (!hasRep){
     message("no-name model: blocks as random effects with no replication effect")
     for (trait in dataCols){
+      notMiss <- tapply(df[,trait], df$line, function(vec) !all(is.na(vec)))
+      notMiss <- levels(df$line)[notMiss]
+
       model <- paste(trait, "~ line + (1 | block)")
       test <- lmer(model, data=df)
       beta <- fixef(test)
+      names(beta) <- gsub("line", "", names(beta))
       # Adjust to a recognizable mean
-      nLine <- length(grep("line", names(beta)))+1
+      nLine <- length(notMiss)
       grandMean <- beta[1] + sum(beta[2:nLine]) / nLine
-      result <- cbind(result, beta[1] + c(0, beta[2:nLine]))
+      resTrait <- rep(NA, nlevels(df$line))
+      names(resTrait) <- levels(df$line)
+      resTrait[c(min(notMiss), names(beta)[2:nLine])] <- beta[1] + c(0, beta[2:nLine])
+      result <- cbind(result, resTrait)
+
       averageReps <- sum(!is.na(df[, trait])) / nLine
       stdErr <- c(stdErr, attr(VarCorr(test), "sc")^2 / averageReps)
       trialMean <- c(trialMean, grandMean)
@@ -68,14 +92,22 @@ if (!hasBlk){ # Fixed effects models
   } else{
     message("Incomplete block model: Replications fixed and blocks random")
     for (trait in dataCols){
+      notMiss <- tapply(df[,trait], df$line, function(vec) !all(is.na(vec)))
+      notMiss <- levels(df$line)[notMiss]
+
       model <- paste(trait, "~ rep + line + (1 | block)")
       test <- lmer(model, data=df)
       beta <- fixef(test)
+      names(beta) <- gsub("line", "", names(beta))
       # Adjust to a recognizable mean
       nRep <- length(grep("rep", names(beta)))+1
-      nLine <- length(grep("line", names(beta)))+1
+      nLine <- length(notMiss)
       grandMean <- beta[1] + sum(beta[2:nRep]) / nRep + sum(beta[(nRep + 1):length(beta)]) / nLine
-      result <- cbind(result, beta[1] + sum(beta[2:nRep]) / nRep + c(0, beta[(nRep + 1):length(beta)]))
+      resTrait <- rep(NA, nlevels(df$line))
+      names(resTrait) <- levels(df$line)
+      resTrait[c(min(notMiss), names(beta)[(nRep + 1):length(beta)])] <- beta[1] + sum(beta[2:nRep]) / nRep + c(0, beta[(nRep + 1):length(beta)])
+      result <- cbind(result, resTrait)
+
       averageReps <- sum(!is.na(df[, trait])) / nLine
       stdErr <- c(stdErr, attr(VarCorr(test), "sc")^2 / averageReps)
       trialMean <- c(trialMean, grandMean)
