@@ -1,74 +1,78 @@
 <?php
-// 3/20/2011 JLee	Enable write privilege to DB 
-
-
-if (!((isset($config['base_url']))&(isset($config['root_dir'])))) {
-	require 'config.php';
-}
-set_time_limit(3000);
-
-/*
+/**
  * This is a library for ajax related functions. This file is reffered to by the ajax function
  * giving it at least 1 parameter "func" which is the function in this library to call.
- *
  * These functions are only called by javascript functions located in core.js
  *
  * Note: Not all of these functions are documented, it would be redundant. Check core.js concerning what these do.
+ * 3/20/2011 JLee	Enable write privilege to DB
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/includes/ajaxlib.php
  */
+
+if (!((isset($config['base_url']))&(isset($config['root_dir'])))) {
+    include 'config.php';
+}
+set_time_limit(3000);
 
 //does the function exist?
-if(!function_exists($_GET['func'])) {
-	echo ""; 	//if not then just echo nothing as an appropriate ajax return.
+if (!function_exists($_GET['func'])) {
+    echo ""; 	//if not then just echo nothing as an appropriate ajax return.
+} else {
+    $function = $_GET['func'];
+    unset($_GET['func']);	//removing function name
+
+    //global includes to load all functions in all other libraries
+    //note this also runs all of the input validation on the $_GET array, so they should not be hostile.
+    include "bootstrap_curator.inc";
+
+    //give function database access
+    $link = connect();
+
+    //execute function
+    call_user_func($function, $_GET);
+
+    //close mysql connection to prevent overloading.
+    mysql_close($link);
 }
-else {
-	$function = $_GET['func'];
-	unset($_GET['func']);	//removing function name
-
-	//global includes to load all functions in all other libraries
-	//note this also runs all of the input validation on the $_GET array, so they should not be hostile.
-	include("bootstrap_curator.inc");
-
-	//give function database access
-	$link = connect();
-
-	//execute function
-	call_user_func($function, $_GET);
-
-	//close mysql connection to prevent overloading.
-	mysql_close($link);
-}
 
 
-/*
+/**
  * This function shows the contents of a particular mapset entry in table format
  *
- * @param arr - ajax is a bit restricting so we simply pass it the entire array as parameters.
+ * @param array $arr ajax is a bit restricting so we simply pass it the entire array as parameters.
+ * 
  * @return nothing - it echos the table.
  */
-function showMapsetContents($arr) {
+function showMapsetContents($arr)
+{
+    if ($arr['id'] == "") {
+        echo "Wrong Function: showMapsetContents()";
+    }
 
-	if($arr['id'] == "") {
-		echo "Wrong Function: showMapsetContents()";
-	}
+    $res = mysql_query("SELECT * FROM mapset WHERE mapset_uid = $arr[id]")
+        or die(mysql_error());
 
-	$res = mysql_query("
-		SELECT *
-		FROM mapset
-		WHERE mapset_uid = $arr[id]
-	") or die(mysql_error());
-
-	if(mysql_num_rows($res) > 1) {
-		echo "Number of Rows Exceeds 1, we have a database problem";
-	}
+    if (mysql_num_rows($res) > 1) {
+        echo "Number of Rows Exceeds 1, we have a database problem";
+    }
 
 
-	echo "<table class=\"tableclass1\">\n";
-	$row = mysql_fetch_assoc($res);
-	foreach($row as $k=>$v) {
-		echo "\t<tr>\n";
-		echo "\t\t<td><strong>$k</strong></td>\n";
-		echo "\t\t<td>$v</td>\n";
-		echo "\t</tr>\n";
+    echo "<table class=\"tableclass1\">\n";
+    $row = mysql_fetch_assoc($res);
+    foreach ($row as $k=>$v) {
+        echo "\t<tr>\n";
+        echo "\t\t<td><strong>$k</strong></td>\n";
+        echo "\t\t<td>$v</td>\n";
+        echo "\t</tr>\n";
 	}
 	echo "</table>\n";
 }
@@ -948,7 +952,9 @@ function DispExperiment ($arr) {
     } else {
         $platform = $arr['platform'];
     }
-    print "<table><tr><th>Experiment<tr><td><select name='expt[]' size=10 multiple onchange=\"javascript: update_exper(this.options)\">";
+    ?>
+    <table><tr><th>Experiment<tr><td><select name='expt[]' size=10 multiple onchange="javascript: update_exper(this.options)">
+    <?php
     $result=mysql_query("select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
         where experiments.experiment_uid = genotype_experiment_info.experiment_uid
         and genotype_experiment_info.platform_uid IN ($platform)") or die(mysql_error);
@@ -984,7 +990,7 @@ function SelcExperiment ($arr) {
         where trial_code in ($exptlist)
         and gd.tht_base_uid = t.tht_base_uid
         and e.experiment_uid = t.experiment_uid";
-  // faster query but my include markers with not data
+  // faster query but may include markers with no data
   $sql = "select distinct marker_uid
         from tht_base t, experiments e, allele_frequencies af
         where trial_code in ($exptlist)
