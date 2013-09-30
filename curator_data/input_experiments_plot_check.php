@@ -290,7 +290,7 @@ private function typeExperimentCheck()
          echo "Error in data, file not loaded!<br>\n";
        } elseif (!$replace_flag && $duplicate_flag) {
          if ($count_upd > 0) {
-           echo "Found $count_upd trait measurements previosly loaded for plot level data<br>\n";
+           echo "Found $count_upd trait measurements previously loaded for plot level data<br>\n";
          } 
          if ($count_new > 0) {
            echo "Found $count_new new trait measurements for plot level data<br>\n";
@@ -315,7 +315,7 @@ private function typeExperimentCheck()
            $j = "C";
            while (!$done) {
              $phenotype_uid = $phenotype_list[$j];
-             if (preg_match("/[A-Za-z0-9]/",$data[$i]["$j"])) {
+             //if (preg_match("/[A-Za-z0-9]/",$data[$i]["$j"])) {
                $val = $data[$i]["$j"];
                $plot = $data[$i]["B"];
                $plot_uid = $plot_list[$plot];
@@ -328,9 +328,9 @@ private function typeExperimentCheck()
                }
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                //echo "$sql<br>\n";
-             } else {
-               echo "$i $j no data<br>\n";
-             }
+             //} else {
+             //  echo "$i $j no data<br>\n";
+             //}
              if ($j < $last_col) {
                $j++;
              } else {
