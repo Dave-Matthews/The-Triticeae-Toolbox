@@ -45,7 +45,7 @@ new DownloadsJNLP($_GET['function']);
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
 class DownloadsJNLP
-{   
+{
     /**
      * delimiter used for output files
      */
@@ -53,74 +53,71 @@ class DownloadsJNLP
     
     /** 
      * Using the class's constructor to decide which action to perform
+     *
      * @param string $function action to perform
      */
     public function __construct($function = null)
     {	
         switch($function)
         {
-            case 'step1lines':
-                $this->step1_lines();
-                break;
-			case 'step5programs':
-			     $this->step5_programs();
-			     break;
-			case 'step2lines':
-				$this->step2_lines();
-				break;
-			case 'step3lines':
-				$this->step3_lines();
-				break;
-		 	case 'step4lines':
-				$this->step4_lines();
-				break;
-                        case 'step5lines':
-                                $this->step5_lines();
-                                break;
-			case 'step1yearprog':
-			    $this->step1_yearprog();
-			    break;
-			case 'type1build_qtlminer':
-				$this->type1_build_qtlminer();
-				break;
-			case 'type1build_tassel':
-				echo $this->type1_build_tassel();
-				break;
-			case 'type1build_tassel_v3':
-				echo $this->type1_build_tassel_v3();
-				break;
-			case 'step2lines':
-				echo $this->step2_lines();
-				break;
-			case 'searchLines':
-				echo $this->step1_search_lines();
-				break;
-			case 'download_session_v2':
-			    echo $this->type1_session(V2);
-			    break;
-			case 'download_session_v3':
-			    echo $this->type1_session(V3);
-			    break;
-			case 'download_session_v4':
-			    echo $this->type1_session(V4);
-			    break;
-			case 'type2_build_tassel_v2':
-			    echo $this->type2_build_tassel(V2);
-			    break;
-			case 'type2_build_tassel_v3':
-			    echo $this->type2_build_tassel(V3);
-			    break;
-			case 'type2_build_tassel_v4':
-			    echo $this->type2_build_tassel(V4);
-			    break;
-			case 'refreshtitle':
-			    echo $this->refresh_title();
-			    break;
-			default:
-				$this->type1_select();
-				break;
-				
-		}	
+        case 'step1lines':
+            $this->step1_lines();
+            break;
+        case 'step5programs':
+            $this->step5_programs();
+            break;
+        case 'step2lines':
+            $this->step2_lines();
+            break;
+        case 'step3lines':
+            $this->step3_lines();
+            break;
+        case 'step4lines':
+            $this->step4_lines();
+	     break;
+        case 'step5lines':
+             $this->step5_lines();
+             break;
+        case 'step1yearprog':
+             $this->step1_yearprog();
+	     break;
+        case 'type1build_tassel':
+	     echo $this->type1_build_tassel();
+	     break;
+        case 'type1build_tassel_v3':
+	     echo $this->type1_build_tassel_v3();
+	     break;
+        case 'step2lines':
+	     echo $this->step2_lines();
+	     break;
+        case 'searchLines':
+	     echo $this->step1_search_lines();
+	     break;
+        case 'download_session_v2':
+	     echo $this->type1_session(V2);
+	     break;
+        case 'download_session_v3':
+	     echo $this->type1_session(V3);
+	     break;
+        case 'download_session_v4':
+	     echo $this->type1_session(V4);
+	     break;
+        case 'type2_build_tassel_v2':
+	     echo $this->type2_build_tassel(V2);
+	     break;
+        case 'type2_build_tassel_v3':
+	     echo $this->type2_build_tassel(V3);
+	     break;
+        case 'type2_build_tassel_v4':
+	     echo $this->type2_build_tassel(V4);
+	     break;
+        case 'refreshtitle':
+	     echo $this->refresh_title();
+	     break;
+        default:
+	     $this->type1_select();
+	     break;
+	}	
 	}
 
 	/**
@@ -199,9 +196,7 @@ class DownloadsJNLP
 		<div id="step1" style="float: left; margin-bottom: 1.5em;">
 		<script type="text/javascript" src="downloads/downloads_tassel.js"></script>
          <?php 
-                if (isset($_SESSION['selected_lines'])) {
-                    $this->type1_lines_trial_trait();
-                } else {
+                if (empty($_SESSION['selected_lines'])) {
                     echo "Please select lines before using this feature.<br><br>";
                     echo "<a href=";
                     echo $config['base_url'];
@@ -210,6 +205,12 @@ class DownloadsJNLP
                     echo $config['base_url'];
                     echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
                     echo "</div>";
+                } elseif (empty($_SESSION['selected_map'])) {
+                    echo "Select map before using this feature.<br><br>";
+                    echo "<a href=\"" . $config['base_url'];
+                    echo "maps/select_map.php\">Genetic Map</a><br><br></div>";
+                } else {
+                    $this->type1_lines_trial_trait();
                 }
                 ?>
                 </div>
@@ -650,10 +651,18 @@ class DownloadsJNLP
 	    $markers = "";
 	    $marker_str = "";
 	 }
+         if (isset($_SESSION['selected_map'])) {
+             $selected_map = $_SESSION['selected_map'];
+         } else {
+             $selected_map = 1;
+         }
+         $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
+         $res = mysql_query($sql) or die(mysql_error());
+         $row = mysql_fetch_assoc($res);
+         $map_name = $row['mapset_name'];
 	 
-	 if ($saved_session != "") {
-	  echo "current data selection = $saved_session<br>";
-	 }
+	 echo "selected data = $saved_session<br>";
+         echo "selected map = $map_name<br>";
 	 
 	 // initialize markers and flags if not already set
 	 $max_missing = 99.9;//IN PERCENT
@@ -843,84 +852,6 @@ class DownloadsJNLP
 	  }
 	}
 
-	/**
-	 * creates output files in qtlminer format
-	 */
-	function type1_build_qtlminer()
-	{
-		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
-		$traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
-		$CAPdataprogram = (isset($_GET['bp']) && !empty($_GET['bp'])) ? $_GET['bp'] : null;
-		$years = (isset($_GET['yrs']) && !empty($_GET['yrs'])) ? $_GET['yrs'] : null;
-		
-		$dtype = "qtlminer";	
-		// Get dataset-exp IDs
-			$sql_exp = "SELECT DISTINCT dse.datasets_experiments_uid as id
-							FROM  datasets as ds, CAPdata_programs as cd, datasets_experiments as dse
-							WHERE cd.CAPdata_programs_uid = ds.CAPdata_programs_uid
-								AND dse.datasets_uid = ds.datasets_uid
-								AND ds.breeding_year IN ($years)
-								AND ds.CAPdata_programs_uid IN ($CAPdataprogram)";
-			$res = mysql_query($sql_exp) or die(mysql_error());
-			
-			while ($row = mysql_fetch_array($res)){
-				$datasets[] = $row["id"];
-			}
-			
-			$datasets_exp = implode(',',$datasets);		
-		
-		// Get genotype experiments
-		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-				FROM experiments e, experiment_types et, datasets_experiments as dse
-				WHERE
-					e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'genotype'
-					AND e.experiment_uid = dse.experiment_uid
-					AND dse.datasets_experiments_uid IN ($datasets_exp)";
-		$res = mysql_query($sql_exp) or die(mysql_error());
-			
-		while ($row = mysql_fetch_array($res)){
-				$exp[] = $row["exp_uid"];
-		}
-		$experiments_g = implode(',',$exp);
-		// $firephp = FirePHP::getInstance(true);
-		
-		
-		//set up download file name in temp directory
-		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
-		$dir = '/tmp/tht/';
-		$filename = 'thtdownload_qtlminer'.chr(rand(65,90)).chr(rand(65,90)).chr(rand(65,90)).'.zip';
-		// $firephp->log($dir.$filename);
-		
-        // File_Archive doesn't do a good job of creating files, so we'll create it first
-		if(!file_exists($dir.$filename)){
-			$h = fopen($dir.$filename, "w+");
-			// $firephp->log($h);
-			fclose($h);
-		}
-		// $firephp->log("before traits".$datasets_exp);
-        // Now let File_Archive do its thing
-		$zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
-		
-		$zip->newFile("traits.txt");
-		// $firephp->log("before traits".$experiments_t);
-		$zip->writeData($this->type1_build_traits_download($experiments_t, $traits, $datasets_exp));
-			// $firephp->log("after traits".$experiments_g."  ".$dtype);
-		$zip->newFile("markers.txt");
-		$zip->writeData($this->type1_build_markers_download($experiments_g,$dtype));
-		// $firephp->log("after markers".$experiments_g);
-		$zip->newFile("pedigree.txt");
-		$zip->writeData($this->type1_build_pedigree_download($experiments_g));
-		// $firephp->log(" after pedigree".$experiments_g);
-		$zip->newFile("inbreds.txt");
-		$zip->writeData($this->type1_build_inbred_download($experiments_g));
-		// $firephp->log(" after inbreds".$experiments_g);
-		$zip->close();
-	
-		header("Location: ".$dir.$filename);
-	
-	}
-	
 	/**
 	 * build download files for tassel V2
 	 */
