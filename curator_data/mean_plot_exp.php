@@ -196,10 +196,10 @@ class Data_Check
                          //echo "$sql<br>\n";
                          $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql<br>$count_item");
                          if ($row = mysqli_fetch_array($res)) {
-                             $sql = "update phenotype_data set phenotype_uid = $phenotype_uid, tht_base_uid = $tht_base_uid, value = $line_item, updated_on = NOW() where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
+                             $sql = "update phenotype_data set phenotype_uid = $phenotype_uid, tht_base_uid = $tht_base_uid, value = '$line_item', updated_on = NOW() where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
                              $msg = "<td>update<td>$line_item\n";
                          } else {
-                             $sql = "insert into phenotype_data (phenotype_uid, tht_base_uid, value, updated_on, created_on) values ($phenotype_uid, $tht_base_uid, $line_item, NOW(), NOW())";
+                             $sql = "insert into phenotype_data (phenotype_uid, tht_base_uid, value, updated_on, created_on) values ($phenotype_uid, $tht_base_uid, '$line_item', NOW(), NOW())";
                              $msg = "<td>insert<td>$line_item\n";
                          }
                          $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
