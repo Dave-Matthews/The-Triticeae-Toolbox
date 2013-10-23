@@ -5,12 +5,31 @@ var title = document.title;
 var trial1 = "";
 var trial2 = "";
 var pheno = "";
-var formula1 = "";
-var formula2 = "";
-var control = "";
+var index = "Difference";
+var formula1 = "DI";
+var formula2 = "(data$trial1 - data$trial2)";
+var control = 1;
+
+function disp_index(pheno_uid) {
+    var off_switch = "off_switch" + pheno_uid;
+    var on_switch = "on_switch" + pheno_uid;
+    var content = "content" + pheno_uid;
+    Element.hide(on_switch);
+    Element.show(off_switch);
+    Element.show(content);
+}
+
+function hide_index(pheno_uid) {
+    var off_switch = "off_switch" + pheno_uid;
+    var on_switch = "on_switch" + pheno_uid;
+    var content = "content" + pheno_uid;
+    Element.hide(off_switch);
+    Element.show(on_switch);
+    Element.hide(content);
+}
 
 function run_compare(unq_file) {
-	var url = php_self + "?function=calculate" + "&unq=" + unq_file + "&formula=" + formula2;
+    var url = php_self + "?function=calculate" + "&unq=" + unq_file + "&index=" + index + "&formula=" + formula2;
     var tmp = new Ajax.Updater($('step3'), url, {
         onComplete : function () {
             $('step3').show();
@@ -56,21 +75,31 @@ function update_pheno() {
 function update_control(frm) {
 	document.getElementById("step2").innerHTML = "";
 	if (frm.control[0].checked) {
-		if (formula1 == "PD") {
-			formula2 = "(data$trial1 - data$trial2)/(data$trial1 + data$trial2)";
+                if (formula1 == "DI") {
+                        index = "Difference";
+                        formula2 = "(data$trial1 - data$trial2)";
+		} else if (formula1 == "PD") {
+                        index = "Percent Difference";
+			formula2 = "(data$trial1 - data$trial2)/((data$trial1 + data$trial2)/2)";
 		} else if (formula1 == "STI") {
+                        index = "Stress Tolerance Index";
 			formula2 = "(data$trial1*data$trial2)/(mean(data$trial1, na.rm = TRUE)**2)";
 		} else if (formula1 == "SSI") {
+                        index = "Stress Susceptibility Index";
 			formula2 = "(1 - (data$trial2/data$trial1))/(1 - (mean(data$trial2, na.rm = TRUE)/mean(data$trial1, na.rm = TRUE)))";
 		} else if (formula1 == "GM") {
+                        index = "Geometric Mean";
 			formula2 = "sqrt(data$trial1*data$trial2)";
 		} else {
-                        formula2 = "";
+                        index = "Difference";
+                        formula2 = "(data$trial1 - data$trial2)";
                 }
 		control = 1;
 	} else if (frm.control[1].checked) {
-		if (formula1 == "PD") {
-			formula2 = "(data$trial2 - data$trial1)/(data$trial1 + data$trial2)";
+                if (formula1 == "DI") {
+                        formula2 = "(data$trial2 - data$trial1)";
+		} else if (formula1 == "PD") {
+			formula2 = "(data$trial2 - data$trial1)/((data$trial1 + data$trial2)/2)";
 		} else if (formula1 == "STI") {
 			formula2 = "(data$trial1*data$trial2)/(mean(data$trial2, na.rm = TRUE)**2)";
 		} else if (formula1 == "SSI") {
@@ -78,7 +107,7 @@ function update_control(frm) {
 		} else if (formula1 == "GM") {
 			formula2 = "sqrt(data$trial1*data$trial2)";
 		} else {
-                        formula2 = "";
+                        formula2 = "(data$trial2 - data$trial1)";
                 }
 		control = 2;
 	} else {
@@ -93,7 +122,9 @@ function update_f1() {
 	  formula1 = e.options[e.selectedIndex].value;
 	  document.getElementById("step2").innerHTML = "";
 	  document.getElementById("step3").innerHTML = "";
-	  if (formula1 == "PD") {
+          if (formula1 == "DI") {
+                  formula2 = "(data$trial1 - data$trial2)";
+	  } else if (formula1 == "PD") {
 		  if (control == 1) {
 		      formula2 = "(data$trial1 - data$trial2)/(data$trial1 + data$trial2)";
 		  } else if (control == 2) {

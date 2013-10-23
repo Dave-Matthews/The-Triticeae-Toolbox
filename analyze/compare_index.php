@@ -69,7 +69,7 @@ class CompareTrials
         <h2>Compare the trait values for 2 trials</h2>
         1. Use the <a href="downloads/select_all.php">Select Wizard</a> or 
         <a href="phenotype/phenotype_selection.php">Select Traits and Trials</a>
-        to choose two trials and one trait.<br>
+        to choose two trials and one or more traits.<br>
         2. Select which trial is the normal or baseline condition.<br>
         3. Select the Index to be used for the calculation.<br>
         The formula may be modified from the selected index using valid R script notation.
@@ -111,13 +111,13 @@ class CompareTrials
             return false;
         }
         ?>
-    
+   
         <style type="text/css">
         th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
         table {background: none; border-collapse: collapse}
         td {border: 0px solid #eee !important;}
         h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-        </style>
+        </style> 
         <script type="text/javascript" src="analyze/compare.js"></script>
         <br>
         <form action="" enctype="multipart/form-data">
@@ -152,7 +152,7 @@ class CompareTrials
             }
         }
         ?>
-        </select><td><input type="radio" name="control" onchange="javascript: update_control(this.form)">
+        </select><td><input type="radio" checked name="control" onchange="javascript: update_control(this.form)">
         <tr><td>Trial 2:<td>
         <select id="trial2" name="trial2" onchange="javascript: update_t2()">
         <?php 
@@ -202,17 +202,17 @@ class CompareTrials
         </select>
         <tr><td>Index:<td>
         <select id="formula1" name="formula1" onchange="javascript: update_f1()">
-        <option value="">Select a formula</option>
+        <option value="DI" selected>Difference</option>
         <option value="PD">Percent Difference (PD)</option>
         <option value="GM">Geometric Mean (GM)</option>
         <option value="STI">Stress Tolerance Index (STI)</option>
         <option value="SSI">Stress Susceptibility Index (SSI)</option>
         </select>
     
-        <tr><td>Formula:<td><input type="text" size="50" id="formula2" name="formula2" onchange="javascript: update_f2()">
+        <tr><td>Formula:<td><input type="text" size="50" id="formula2" name="formula2" value="(data$trial1 - data$trial2)" onchange="javascript: update_f2()">
         </table><br><br>
     
-        <p><input type="button" value="Calculate" onclick="javascript:cal_index()"/></p>
+        <p><input type="button" value="Scatterplot and Calculate Index" onclick="javascript:cal_index()"/></p>
         </form>
         <?php
     }
@@ -228,18 +228,31 @@ class CompareTrials
         $exp1 = $_GET['trial1'];
         $exp2 = $_GET['trial2'];
         $trait = $_GET['pheno'];
+        $trait_ary = $_SESSION['selected_traits'];
         $unique_str = $_GET['unq'];
-        
-        $unique_str = filter_var($unique_str, FILTER_SANITIZE_NUMBER_INT);
-        mkdir("/tmp/tht/$unique_str");
-        $filename = "traits.txt";
-        $fullfilename = "/tmp/tht/$unique_str/traits.txt";
-    
-        if (!file_exists($fullfilename)) {
-            $datasets = "";
-            $subset = "yes";
-            $experiments[] = $exp1;
-            $experiments[] = $exp2;
+        if (preg_match("/([A-Z0-9]+)/", $unique_str, $matches)) {
+            $unique_str = $matches[0]; 
+            mkdir("/tmp/tht/$unique_str");
+        }
+        $datasets = "";
+        $subset = "yes";
+        $experiments[] = $exp1;
+        $experiments[] = $exp2;
+        $trait_cnt = count($trait_ary);
+        if ($trait_cnt > 1) {
+            foreach ($trait_ary as $trait) {
+                $filename = "traits" . $trait . ".txt";
+                $fullfilename = "/tmp/tht/$unique_str/$filename";
+                $output = $Download->type1BuildTasselTraitsDownload($experiments, $trait, $datasets, $subset);
+                if ($output != null) {
+                    $h = fopen($fullfilename, "w+");
+                    fwrite($h, $output);
+                    fclose($h);
+                }
+            }    
+        } else {
+            $filename = "traits" . $trait . ".txt";
+            $fullfilename = "/tmp/tht/$unique_str/$filename";
             $output = $Download->type1BuildTasselTraitsDownload($experiments, $trait, $datasets, $subset);
             if ($output != null) {
                 $h = fopen($fullfilename, "w+");
@@ -255,7 +268,9 @@ class CompareTrials
      */
     function calculateIndex()
     {
+        global $mysqli;
         $unique_str = $_GET['unq'];
+        $index = $_GET['index'];
         $formula = $_GET['formula'];
         
         //check for illegal entry
@@ -275,58 +290,128 @@ class CompareTrials
             echo "<font color=red>Error: Illegal formula</font>";
             return false;
         } elseif ($formula == "") {
-            echo "<font color=red>Error: missing formuls</font>";
+            echo "<font color=red>Error: missing formula</font>";
             return false;
+        }
+
+        if (!empty($_SESSION['selected_traits'])) {
+            $selected_traits = $_SESSION['selected_traits'];
+            $trait = $selected_traits[0];
+            $query = "select phenotypes_name from phenotypes where phenotype_uid = $trait";
+            $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($result)) {
+                $trait = $row[0];
+            }
+        } else {
+            die("must select trait first");
         }
         
         //create R script file
-        $file_traits = "/tmp/tht/$unique_str/traits.txt";
-        $file_r = "/tmp/tht/$unique_str/compare.R";
-        $h = fopen($file_r, "w+");
-        fwrite($h, "tmp <- read.delim(\"$file_traits\")\n");
-        fwrite($h, "data <- data.frame(trial1=tmp[,2], trial2=tmp[,3])\n");
-        $png = "png(\"/tmp/tht/$unique_str/compare.png\", width=500, height=500)\n";
-        fwrite($h, "$png");
-        fwrite($h, "cn <- colnames(tmp)\n");
-        fwrite($h, "plot(tmp[,2], tmp[,3], xlab=cn[2], ylab=cn[3])\n");
-        fwrite($h, "dev.off()\n");
-        fwrite($h, "formula <- $formula\n");
-        fwrite($h, "index <- formula\n");
-        fwrite($h, "results <- data.frame(line=tmp[,1], trial1=tmp[,2], trial2=tmp[,3], index=index)\n");
-        fwrite($h, "colnames(results)[2] <- colnames(tmp)[2]\n");
-        fwrite($h, "colnames(results)[3] <- colnames(tmp)[3]\n");
-        fwrite($h, "file_out <- \"/tmp/tht/$unique_str/results.csv\"\n");
-        fwrite($h, "write.csv(results, file_out)\n");
-        fclose($h); 
-        exec("cat /tmp/tht/$unique_str/compare.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/error.txt");
+        $files = scandir("/tmp/tht/$unique_str");
+        foreach ($files as $file_traits) {
+            if (!preg_match("/traits(\d+)\.txt/", $file_traits, $match)) {
+                continue;
+            }
+            $pheno_uid = $match[1];
+            $query = "select phenotypes_name from phenotypes where phenotype_uid = $pheno_uid";
+            $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($result)) {
+                $trait = $row[0];
+            }
+
+            $pattern[0] = "/traits/";
+            $pattern[1] = "/txt/";
+            $replace[0] = "compare";
+            $replace[1] = "png";
+            $file_img = preg_replace($pattern, $replace, "$file_traits");
+            $replace[0] = "results";
+            $replace[1] = "csv";
+            $file_out = preg_replace($pattern, $replace, "$file_traits");
+            $file_traits = "/tmp/tht/$unique_str/" . $file_traits;
+            $file_r = "/tmp/tht/$unique_str/compare.R";
+            $h = fopen($file_r, "w+");
+            fwrite($h, "tmp <- read.delim(\"$file_traits\", check.names = FALSE)\n");
+            fwrite($h, "data <- data.frame(trial1=tmp[,2], trial2=tmp[,3])\n");
+            $png = "png(\"/tmp/tht/$unique_str/compare.png\", width=500, height=500)\n";
+            $png = "png(\"/tmp/tht/$unique_str/$file_img\", width=500, height=500)\n";
+            fwrite($h, "$png");
+            fwrite($h, "cn <- colnames(tmp)\n");
+            fwrite($h, "plot(tmp[,2], tmp[,3], xlab=cn[2], ylab=cn[3], main=\"Scatterplot of $trait\")\n");
+            fwrite($h, "dev.off()\n");
+            fwrite($h, "formula <- $formula\n");
+            fwrite($h, "index <- formula\n");
+            fwrite($h, "results <- data.frame(line=tmp[,1], trial1=tmp[,2], trial2=tmp[,3], index=index)\n");
+            fwrite($h, "colnames(results)[2] <- colnames(tmp)[2]\n");
+            fwrite($h, "colnames(results)[3] <- colnames(tmp)[3]\n");
+            fwrite($h, "file_out <- \"/tmp/tht/$unique_str/$file_out\"\n");
+            fwrite($h, "write.csv(results, file_out)\n");
+            fclose($h); 
+            exec("cat /tmp/tht/$unique_str/compare.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/error.txt");
         
-        if (file_exists("/tmp/tht/$unique_str/error.txt")) {
-            $h = fopen("/tmp/tht/$unique_str/error.txt", "r");
-            while ($line=fgets($h)) {
-                echo "$line<br>\n";
-            }
-            fclose($h);
-        }
-        if (file_exists("/tmp/tht/$unique_str/compare.png")) {
-            echo "<img src=\"/tmp/tht/$unique_str/compare.png\" /><br>";
-        }
-        if (file_exists("/tmp/tht/$unique_str/results.csv")) {
-            echo "calculated index, \n";
-            print "<a href=\"/tmp/tht/$unique_str/results.csv\" target=\"_blank\" type=\"text/csv\">download results file</a><br><br>\n";
-            $h = fopen("/tmp/tht/$unique_str/results.csv", "r");
-            echo "<table>";
-            while ($line=fgetcsv($h)) {
-                if (is_numeric($line[4])) {
-                    $index = number_format($line[4], 3, '.', ',');
-                } else {
-                    $index = $line[4];
+            if (file_exists("/tmp/tht/$unique_str/error.txt")) {
+                $h = fopen("/tmp/tht/$unique_str/error.txt", "r");
+                while ($line=fgets($h)) {
+                    echo "$line<br>\n";
                 }
-                echo "<tr><td>$line[1]<td>$line[2]<td>$line[3]<td>$index\n";
+                fclose($h);
             }
-            fclose($h);
-            echo "</table>";
-        } else {
-            echo "Error: calculation of index failed<br>\n";
+            if (file_exists("/tmp/tht/$unique_str/$file_img")) {
+                echo "<img style=\"float: left\" src=\"/tmp/tht/$unique_str/$file_img\" />\n";
+            }
         }
+
+        echo "<br style=\"clear: both\">\n";
+        echo "Index Calculation (<b>$index</b>)<br>\n";
+        echo "<table cellspacing=0 cellpadding=0 class=\"infosectionhead\">";
+        foreach ($files as $file_traits) {
+            if (!preg_match("/traits(\d+)\.txt/", $file_traits, $match)) {
+                continue;
+            }
+            $pheno_uid = $match[1];
+            $query = "select phenotypes_name from phenotypes where phenotype_uid = $pheno_uid";
+            $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($result)) {
+                $trait = $row[0];
+            }
+
+            $pattern[0] = "/traits/";
+            $pattern[1] = "/txt/";
+            $replace[0] = "results";
+            $replace[1] = "csv";
+            $file_out = preg_replace($pattern, $replace, "$file_traits");
+            $file_traits = "/tmp/tht/$unique_str/" . $file_traits;
+            if (file_exists("/tmp/tht/$unique_str/$file_out")) {
+                $link = "<a href=\"/tmp/tht/$unique_str/$file_out\" target=\"_blank\" type=\"text/csv\">download results</a>";
+                $h = fopen("/tmp/tht/$unique_str/$file_out", "r");
+                ?>
+                <tr><td>
+                <a class="collapser" id="on_switch<?php echo $pheno_uid; ?>" style="border-bottom:none" onclick="javascript:disp_index(<?php echo $pheno_uid;?>);return false;">
+                <img src="images/collapser_plus.png" /> <?php echo "$trait"; ?></a>
+                <a class="collapser" id="off_switch<?php echo $pheno_uid; ?>" style="display:none; border-bottom:none" onclick="javascript:hide_index(<?php echo $pheno_uid;?>);return false;">
+                <img src="images/collapser_minus.png"> <?php echo "$trait"; ?></a>
+                <td><?php echo $link; ?>
+                <tr><td><table id="content<?php echo $pheno_uid; ?>" style="display:none">
+                <?php
+                while ($line=fgetcsv($h)) {
+                    if (is_numeric($line[4])) {
+                        $calindex = number_format($line[4], 2, '.', ',');
+                    } else {
+                        $calindex = $line[4];
+                    }
+                    if (is_numeric($line[2])) {
+                        $line[2] = round($line[2], 2);
+                    }
+                    if (is_numeric($line[3])) {
+                        $line[3] = round($line[3], 2);
+                    }
+                    echo "<tr><td>$line[1]<td>$line[2]<td>$line[3]<td>$calindex\n";
+                }
+                fclose($h);
+                echo "</table>";
+            } else {
+                echo "Error: calculation of index failed<br>\n";
+            }
+        }
+        echo "</table>";
     }
 }
