@@ -134,9 +134,9 @@ function update_f1() {
 	  } else if (formula1 == "PD") {
                   index = "Percent Difference";
 		  if (control == 1) {
-		      formula2 = "(data$trial1 - data$trial2)/(data$trial1 + data$trial2)";
+		      formula2 = "(data$trial1 - data$trial2)/((data$trial1 + data$trial2)/2)";
 		  } else if (control == 2) {
-			  formula2 = "(data$trial2 - data$trial1)/(data$trial1 + data$trial2)";
+			  formula2 = "(data$trial2 - data$trial1)/((data$trial1 + data$trial2)/2)";
 		  } else {
 			  formula2 = "";
 			  document.getElementById("step2").innerHTML = "<font color=red>Error: select which trial is Normal/Control</font>";
