@@ -33,7 +33,7 @@ $row = loadUser($_SESSION['username']);
 //ob_end_flush();
 
 
-new Experiments($_GET['function']);
+$Experiment = new Experiments($_GET['function']);
 
 /** CSR phenotype experiment
  *
