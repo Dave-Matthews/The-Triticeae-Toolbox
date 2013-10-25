@@ -1,9 +1,23 @@
 <?php
+/**
+ * Curator Import
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_exper_check.php
+ * 
+ */
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
-include($config['root_dir'] . 'lib/PHPExcel/Classes/PHPExcel/IOFactory.php');
+require $config['root_dir'] . 'lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 connect();
 $mysqli = connecti();
@@ -14,7 +28,7 @@ $userid = $user['users_uid'];
 $username = $user['name'];
 
 //needed for mac compatibility
-ini_set('auto_detect_line_endings',true);
+ini_set('auto_detect_line_endings', true);
 
 ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
@@ -23,9 +37,13 @@ ob_end_flush();
 new Data_Check($_GET['function']);
 
 /**
- * 
  * Phenotype Experiment Results
  *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/downloads/input_csr_exper_check.php
  */
 
 class Data_Check
@@ -58,16 +76,6 @@ private function typeExperimentCheck()
                 $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
         }
-
-public function save_raw_file($wavelength) {
-  try {
-      $dbh = new PDO('sqlite:../raw/phenotype/foo.db');
-      echo "saving raw file<br>\n";
-      $stmt = $dbh->prepare("INSERT INTO raw (line_name, value) VALUED (:name, : value)");
-  } catch (PDOException $e) {
-      print "Error!: " . $e->getMessage() . "<br/>";
-  }
-}
 
 /**
  * check experiment data before loading into database
@@ -257,18 +265,6 @@ public function save_raw_file($wavelength) {
                    $i++;
                  }
                }
-             }
-             if ($start_time == "") {
-               $error_flag = 1;
-               echo "Error: a start time is required in either the annotation file or the data file<br>\n";
-             } else {
-               echo "Start time from data file = $start_time<br>\n";
-             }
-             if ($end_time == "") {
-               $error_flag = 1;
-               echo "Error: a stop time is required in either the annotation file or the data file<br>\n";
-             } else {
-               echo "Stop time from data file = $end_time<br>\n";
              }
 
              //read in Integration Time and check
@@ -466,6 +462,19 @@ public function save_raw_file($wavelength) {
                  }
                }
 
+               if ($start_time == "") {
+                   $error_flag = 1;
+                   echo "<font color=red>Error: a start time is required in either the annotation file or the data file</font><br>\n";
+               } else {
+                   echo "Start time from data file = $start_time<br>\n";
+               }
+               if ($end_time == "") {
+                   $error_flag = 1;
+                   echo "<font color=red>Error: a stop time is required in either the annotation file or the data file</font><br>\n";
+               } else {
+                   echo "Stop time from data file = $end_time<br>\n";
+               }
+
                //check for unique record
                //multiple raw files are allowed if they use a different time
 
@@ -501,7 +510,7 @@ public function save_raw_file($wavelength) {
 
                if ($error_flag == 0) {
                  if ($new_record) {
-                   $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$start_time','$end_time',$int_time,'$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name')";
+                   $sql = "insert into csr_measurement (experiment_uid, radiation_dir_uid, measure_date, growth_stage, growth_stage_name, start_time, end_time, integration_time, weather, spect_sys_uid, num_measurements, height_from_canopy, incident_adj, comments, raw_file_name, created_on) values ($experiment_uid,$dir_uid,str_to_date('$value[4]','%m/%d/%Y'),'$value[5]','$value[6]','$start_time','$end_time',$int_time,'$value[10]',$spect_sys_uid,'$value[12]','$value[13]','$value[14]','$value[15]','$unq_file_name', NOW())";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
                    //echo "$sql<br>\n";

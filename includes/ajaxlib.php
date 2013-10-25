@@ -1,72 +1,78 @@
 <?php
-// 3/20/2011 JLee	Enable write privilege to DB 
-
-
-if (!((isset($config['base_url']))&(isset($config['root_dir'])))) {
-	require 'config.php';
-}
-/*
+/**
  * This is a library for ajax related functions. This file is reffered to by the ajax function
  * giving it at least 1 parameter "func" which is the function in this library to call.
- *
  * These functions are only called by javascript functions located in core.js
  *
  * Note: Not all of these functions are documented, it would be redundant. Check core.js concerning what these do.
+ * 3/20/2011 JLee	Enable write privilege to DB
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/includes/ajaxlib.php
  */
+
+if (!((isset($config['base_url']))&(isset($config['root_dir'])))) {
+    include 'config.php';
+}
+set_time_limit(3000);
 
 //does the function exist?
-if(!function_exists($_GET['func'])) {
-	echo ""; 	//if not then just echo nothing as an appropriate ajax return.
+if (!function_exists($_GET['func'])) {
+    echo ""; 	//if not then just echo nothing as an appropriate ajax return.
+} else {
+    $function = $_GET['func'];
+    unset($_GET['func']);	//removing function name
+
+    //global includes to load all functions in all other libraries
+    //note this also runs all of the input validation on the $_GET array, so they should not be hostile.
+    include "bootstrap_curator.inc";
+
+    //give function database access
+    $link = connect();
+
+    //execute function
+    call_user_func($function, $_GET);
+
+    //close mysql connection to prevent overloading.
+    mysql_close($link);
 }
-else {
-	$function = $_GET['func'];
-	unset($_GET['func']);	//removing function name
-
-	//global includes to load all functions in all other libraries
-	//note this also runs all of the input validation on the $_GET array, so they should not be hostile.
-	include("bootstrap_curator.inc");
-
-	//give function database access
-	$link = connect();
-
-	//execute function
-	call_user_func($function, $_GET);
-
-	//close mysql connection to prevent overloading.
-	mysql_close($link);
-}
 
 
-/*
+/**
  * This function shows the contents of a particular mapset entry in table format
  *
- * @param arr - ajax is a bit restricting so we simply pass it the entire array as parameters.
+ * @param array $arr ajax is a bit restricting so we simply pass it the entire array as parameters.
+ * 
  * @return nothing - it echos the table.
  */
-function showMapsetContents($arr) {
+function showMapsetContents($arr)
+{
+    if ($arr['id'] == "") {
+        echo "Wrong Function: showMapsetContents()";
+    }
 
-	if($arr['id'] == "") {
-		echo "Wrong Function: showMapsetContents()";
-	}
+    $res = mysql_query("SELECT * FROM mapset WHERE mapset_uid = $arr[id]")
+        or die(mysql_error());
 
-	$res = mysql_query("
-		SELECT *
-		FROM mapset
-		WHERE mapset_uid = $arr[id]
-	") or die(mysql_error());
-
-	if(mysql_num_rows($res) > 1) {
-		echo "Number of Rows Exceeds 1, we have a database problem";
-	}
+    if (mysql_num_rows($res) > 1) {
+        echo "Number of Rows Exceeds 1, we have a database problem";
+    }
 
 
-	echo "<table class=\"tableclass1\">\n";
-	$row = mysql_fetch_assoc($res);
-	foreach($row as $k=>$v) {
-		echo "\t<tr>\n";
-		echo "\t\t<td><strong>$k</strong></td>\n";
-		echo "\t\t<td>$v</td>\n";
-		echo "\t</tr>\n";
+    echo "<table class=\"tableclass1\">\n";
+    $row = mysql_fetch_assoc($res);
+    foreach ($row as $k=>$v) {
+        echo "\t<tr>\n";
+        echo "\t\t<td><strong>$k</strong></td>\n";
+        echo "\t\t<td>$v</td>\n";
+        echo "\t</tr>\n";
 	}
 	echo "</table>\n";
 }
@@ -938,6 +944,102 @@ function DispMapSel ($arr) {
 	}
 
 }
+
+function DispExperiment ($arr) {
+    if (! isset($arr['platform'])) {
+        print "Invalid input of platform";
+        return;
+    } else {
+        $platform = $arr['platform'];
+    }
+    ?>
+    <table><tr><th>Experiment<tr><td><select name='expt[]' size=10 multiple onchange="javascript: update_exper(this.options)">
+    <?php
+    $result=mysql_query("select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
+        where experiments.experiment_uid = genotype_experiment_info.experiment_uid
+        and genotype_experiment_info.platform_uid IN ($platform)") or die(mysql_error);
+    while ($row=mysql_fetch_assoc($result)) {
+        $uid=$row['experiment_uid'];
+        $val=$row['trial_code'];
+        print "<option value=$val>$val</option>\n";
+    }
+    ?>
+    </select>
+    <td>Choose experiments.
+    <p><input type=button value=Select style=color:blue onclick="javascript: select_exper()">
+    </table>
+    <?php
+}
+
+function SelcExperiment ($arr) {
+    if (! isset($arr['experiment'])) {
+        print "Invalid input of experiment";
+        return;
+    } else {
+        $expt_str = $arr['experiment'];
+        $expt = explode(",", $expt_str);
+    }
+    echo "<h3>Currently selected markers</h3>"; 
+    $clkmkrs=array();
+  foreach ($expt as $ex)
+    $exptquoted[] = "'$ex'";
+  $exptlist = implode(",", $exptquoted);
+  echo "Markers added from experiment(s) <b>$exptlist</b><p>";
+  $sql = "select distinct marker_uid
+        from tht_base t, genotyping_data gd, experiments e
+        where trial_code in ($exptlist)
+        and gd.tht_base_uid = t.tht_base_uid
+        and e.experiment_uid = t.experiment_uid";
+  // faster query but may include markers with no data
+  $sql = "select distinct marker_uid
+        from tht_base t, experiments e, allele_frequencies af
+        where trial_code in ($exptlist)
+        and af.experiment_uid = t.experiment_uid
+        and e.experiment_uid = t.experiment_uid";
+  $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
+  while ($row = mysql_fetch_row($res)) {
+    $clkmkrs[] = $row[0];
+  }
+  $_SESSION['clicked_buttons'] = $clkmkrs;
+  if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
+    print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
+  print "<table><tr><td>\n";
+  print "<select id='mlist' name='deselMkrs[]' multiple='multiple' size=10>";
+  $mapids = $_SESSION['mapids'];
+  if (!isset($mapids) || !is_array($mapids))
+    $mapids = array();
+  reset($mapids);
+
+  $chrlist = array();
+  $markerlist = array();
+  $count_markers = 0;
+  foreach ($_SESSION['clicked_buttons'] as $mkruid) {
+    $count_markers++;
+    $mapid = current($mapids);
+    next($mapids);
+    $sql = "select marker_name from markers where marker_uid=$mkruid";
+    $result=mysql_query($sql)
+      //        or die("invalid marker uid\n");
+      or die(mysql_error());
+    while ($row=mysql_fetch_assoc($result)) {
+      $selval=$row['marker_name'];
+      $selchr=$row['chromosome'];
+      if(! in_array($selval,$markerlist)) {
+        array_push($markerlist, $selval);
+        array_push($chrlist, $selchr);
+        print "<option value='$mkruid'>$selval</option>\n";
+      }
+    }
+  }
+  $chrlist = array_unique($chrlist);
+ print "</select></table>";
+ //print "</td><td>\n";
+  } elseif ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) >= 1000)) {
+      $count = count($_SESSION['clicked_buttons']); 
+       print "$count markers selected<br>";
+  }
+}
+
 /**
  * Display markers in marker_selection.php
  */

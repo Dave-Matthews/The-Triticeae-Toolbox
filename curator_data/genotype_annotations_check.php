@@ -140,6 +140,7 @@ class Annotations_Check {
                     $shortNameIdx = implode(find("Short Name", $header),"");
                     $trialCodeIdx = implode(find("Trial Code", $header),"");
                     $traitsIdx = implode(find("Traits", $header),"");
+                    $platformIdx = implode(find("Platform", $header),"");
                     $processingDateIdx = implode(find("Processing Date", $header),"");
                     $manifestFileIdx = implode(find("Manifest File", $header),"");
                     $clusterFileIdx = implode(find("Cluster File", $header),"");
@@ -221,6 +222,7 @@ class Annotations_Check {
                         echo "<th >" . $storageArr[0][$shortNameIdx] . "</th>";
                         echo "<th >" . $storageArr[0][$trialCodeIdx] . "</th>";
                         echo "<th >" . $storageArr[0][$traitsIdx] . "</th>";
+                        echo "<th >" . $storageArr[0][$platformIdx] . "</th>";
                         echo "<th >" . $storageArr[0][$processingDateIdx] . "</th>";
                         echo "<th >" . $storageArr[0][$manifestFileIdx] . "</th>";
                         echo "<th >" . $storageArr[0][$clusterFileIdx] . "</th>";
@@ -256,6 +258,9 @@ class Annotations_Check {
                             <td >
                             <?php $newtext = wordwrap($storageArr[$i][$traitsIdx], 10, "<br>", true); echo $newtext ?>
                             </td> 
+                            <td >
+                            <?php $newtext = wordwrap($storageArr[$i][$platformIdx], 10, "<br>", true); echo $newtext ?>
+                            </td>
                             <td >
                             <?php $newtext = wordwrap($storageArr[$i][$processingDateIdx], 10, "<br>", true); echo $newtext ?>
                             </td> 
@@ -352,6 +357,7 @@ class Annotations_Check {
         $shortNameIdx = implode(find("Short Name", $header),"");
         $trialCodeIdx = implode(find("Trial Code", $header),"");
         $traitsIdx = implode(find("Traits", $header),"");
+        $platformIdx = implode(find("Platform", $header),"");
         $processingDateIdx = implode(find("Processing Date", $header),"");
         $manifestFileIdx = implode(find("Manifest File", $header),"");
         $clusterFileIdx = implode(find("Cluster File", $header),"");
@@ -424,6 +430,7 @@ class Annotations_Check {
                 $trialCode = $storageArr[$i][$trialCodeIdx];
                 $shortName = $storageArr[$i][$shortNameIdx];
                 $traits = $storageArr[$i][$traitsIdx];
+                $platform = $storageArr[$i][$platformIdx];
                 $processDate = $storageArr[$i][$processingDateIdx];
                 $manifestF = $storageArr[$i][$manifestFileIdx];
                 $clusterF =$storageArr[$i][$clusterFileIdx];
@@ -485,7 +492,18 @@ class Annotations_Check {
                 $rdata = mysql_fetch_assoc($res);
                 $datasets_uid=$rdata['datasets_uid'];
                 //echo " datasets_uid ".$datasets_uid."<br>";
-               
+              
+                $sql = "SELECT platform_uid 
+                        FROM platform
+                        WHERE platform_name = '$platform'";
+                $res = mysql_query($sql) or die("Database Error: Dataset lookup - ". mysql_error());
+                $rdata = mysql_fetch_assoc($res);
+                $platform_uid = $rdata['platform_uid'];
+                if (empty($platform_uid)) {
+                  error(1, "Genotype platform $platform is not in the database.");
+                  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+                }
+ 
                 $tmp = str_split($storageArr[$i][$yearIdx],2);
                 $year_last2 = $tmp[1]; 
 
@@ -503,7 +521,7 @@ class Annotations_Check {
 		    $res = mysql_query($sql) or die("Database Error: Experiment record update failed - ". mysql_error());
                     //echo "$sql<br>\n";
                     $sql = "UPDATE genotype_experiment_info set processing_date = '$processDate', manifest_file_name = '$manifestF', cluster_file_name = '$clusterF', OPA_name = '$opaName', 
-                        sample_sheet_filename = '$sampleSht', comments = '$comment'
+                        sample_sheet_filename = '$sampleSht', comments = '$comment', platform_uid = $platform_uid
                         WHERE experiment_uid = '$exp_uid'";
 		    $res = mysql_query($sql) or die("Database Error: Genotype record update failed - ". mysql_error());
                     //echo "$sql<br>\n";
@@ -550,9 +568,9 @@ class Annotations_Check {
                 //echo " de_uid ".$de_uid."\n"; 
                     
                 /*  Fill in genotype_experiments table */
-                $sql = "INSERT INTO genotype_experiment_info (experiment_uid, processing_date, manifest_file_name, cluster_file_name, OPA_name,
+                $sql = "INSERT INTO genotype_experiment_info (experiment_uid, platform_uid, processing_date, manifest_file_name, cluster_file_name, OPA_name,
                     analysis_software, BGST_version_number, sample_sheet_filename, raw_datafile_archive, comments, updated_on, created_on)
-                    VALUES ('$exp_uid', '$processDate', '$manifestF', '$clusterF',
+                    VALUES ('$exp_uid', $platform_uid, '$processDate', '$manifestF', '$clusterF',
                         '$opaName', '$analysisSW', '$swVer', '$sampleSht',NULL , '$comment', NOW(), NOW())";
                 $res = mysql_query($sql) or die("Database Error: Genotype record insertion failed - ". mysql_error());
                 //echo "result code for exp info table:".$res."\n"; 
