@@ -46,7 +46,7 @@ private function typeExperimentCheck()
       {
                 global $config;
                 include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>Display map of trait value</h2>";
+                echo "<h2>Heatmap of trait values by field position</h2>";
                 $this->type_Experiment_Name();
                 $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
@@ -72,6 +72,14 @@ private function type_Experiment_Name() {
      die();
    } 
    $exp_uid = $_GET['uid'];
+
+   $sql = "select trial_code from experiments where experiment_uid = $exp_uid";
+   $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
+   if ($row = mysqli_fetch_assoc($res)) {
+       $name = $row["trial_code"];
+   }
+   echo "$name<br>\n";
+
    $sql = "select distinct phenotype_uid from phenotype_plot_data where experiment_uid = $exp_uid";  
    $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
    while ($row = mysqli_fetch_assoc($res)) {
@@ -98,14 +106,28 @@ private function type_Experiment_Name() {
        if ($col_id > $max_col) { $max_col = $col_id; }
    }
    if ($found) {
+     //echo "max_row $max_row<br>\n";
+     //echo "max_col $max_col<br>\n";
    } else {
      echo "$sql<br>\n";
      die("Error: no fieldbook entries found");
    }
    echo "<br>\n";
 
+   $inputFile = "plotMap.txt";
+   $filename1 = "setup.R";
+   $errFile = "HeatMapErr.txt";
+   $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+   mkdir("/tmp/tht/$unique_str");
    foreach ($trait_list as $key => $val) { 
-     echo "$val<br>\n";
+     echo "<h3>Trait = $val</h3><br>\n";
+     $outputFile = "HeatMap" . $key . ".png";
+     for ($i=1; $i<=$max_row; $i++) {
+         for ($j=1; $j<=$max_col; $j++) {
+             $pheno_val[$i][$j] = "NA";
+         }
+     } 
+     $max_val = 0;
      $sql = "select plot_uid, value from phenotype_plot_data where experiment_uid = $exp_uid and phenotype_uid = $key";
      $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
      while ($row = mysqli_fetch_assoc($res)) {
@@ -113,23 +135,42 @@ private function type_Experiment_Name() {
        $row_id = $row_list[$plot_uid];
        $col_id = $col_list[$plot_uid];
        $value = $row["value"];
+       if ($value > $max_val) $max_val = $value;
        $pheno_val[$row_id][$col_id] = $value;
      }
 
-     echo "<table><tr><td>";
+     $h = fopen("/tmp/tht/$unique_str/$inputFile", "w");
      for ($j=1; $j<=$max_col; $j++) {
-       echo "<td>$j\n";
+       fwrite($h,"$j\t");
      }
+     fwrite($h,"\n");
      for ($i=1; $i<=$max_row; $i++) {
-        echo "<tr><td>$i\n";
+        fwrite($h,"$i\t");
         for ($j=1; $j<=$max_col; $j++) {
            $value = $pheno_val[$i][$j];
-           echo "<td>$value"; 
+           fwrite($h,"$value\t"); 
         }
-        echo "<br>\n";
+        fwrite($h,"\n");
      }
-     echo "</table>";
-     echo "<br><br>\n";
+     fclose($h);
+     $png1 = "png(\"/tmp/tht/$unique_str/$outputFile\", width=600, height=600)\n";
+     $h = fopen("/tmp/tht/$unique_str/$filename1", "w");
+     fwrite($h,"setwd(\"/tmp/tht/$unique_str\")\n");
+     fwrite($h,$png1);
+     fclose($h);
+     exec("cat /tmp/tht/$unique_str/$filename1 R/PlotHeatMap.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$errFile");
+     if (file_exists("/tmp/tht/$unique_str/$errFile")) {
+         $h = fopen("/tmp/tht/$unique_str/$errFile", "r");
+         while ($line=fgets($h)) {
+             echo "$line<br>\n";
+         }
+         fclose($h);
+     }
+     if (file_exists("/tmp/tht/$unique_str/$outputFile")) {
+         print "<img src=\"/tmp/tht/$unique_str/$outputFile\" /><br>";
+     } else {
+         echo "Error in R script R/PlotHeatMap.R<br>\n";
+     }
    }
 }
 }
