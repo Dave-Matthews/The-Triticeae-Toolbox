@@ -309,8 +309,8 @@ class Data_Check
                } else {
                  $sql = "insert into phenotype_plot_data (phenotype_uid, experiment_uid, plot_uid, value, updated_on, created_on) values ( $phenotype_uid, $experiment_uid, $plot_uid, '$val', now(), now())";
                }
-               //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-               echo "$sql<br>\n";
+               $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+               //echo "$sql<br>\n";
              //} else {
              //  echo "$i $j no data<br>\n";
              }
