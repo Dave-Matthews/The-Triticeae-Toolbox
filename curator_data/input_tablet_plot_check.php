@@ -279,7 +279,7 @@ class Data_Check
            echo "Found $count_new new trait measurements for plot level data<br>\n";
          }
                    ?>
-                   <form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">
+                   <form action="curator_data/input_tablet_plot_check.php" method="post" enctype="multipart/form-data">
                    Do you want to overwrite previously loaded plot level data?
                    <input id="exper_uid" type="hidden" name="exper_uid" value="<?php echo $experiment_uid; ?>">
                    <input id="replace" type="hidden" name="replace" value="Yes">
