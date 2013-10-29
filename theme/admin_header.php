@@ -200,6 +200,7 @@ EOD;
       Phenotype Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_router.php" title="Phenotype CSR data">
       CSR Data</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/fieldbook_export.php" title="Phenotype Tablet tools">Tablet Tools</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
       Delete Trials / Experiments</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
