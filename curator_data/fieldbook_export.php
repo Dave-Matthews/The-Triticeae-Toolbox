@@ -55,7 +55,7 @@ class Tablet
 		include($config['root_dir'] . 'theme/admin_header.php');
                 ?>
 		<h2>Tablet Tools</h2>
-                These tools provide a interface to the Andoid Field Book program created by the
+                These tools provide a interface to the Android Field Book program created by the
                 <a href="http://www.wheatgenetics.org/bioinformatics/22-android-field-book.html">Poland Lab</a>.
                 Before using these tools it is necessary to <a href="curator_data/input_experiments_upload_excel.php">import a field layout</a> into the database.
                 In the Field Book program the range is the first level division and refers to the row of the field. 
