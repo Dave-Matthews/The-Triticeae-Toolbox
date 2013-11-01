@@ -1953,7 +1953,11 @@ class Downloads
 		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		while ($row = mysql_fetch_array($res)) {
 		  $uid = $row[0];
-		  $chr = $lookup_chrom[$row[1]];
+                  if (isset($lookup_chrom[$row[1]])) {
+		    $chr = $lookup_chrom[$row[1]];
+                  } else {
+                    $chr = "0";
+                  }
 		  $pos = $row[2];
 		  $marker_list_mapped[$uid] = "$chr\t$pos";
 		  if (preg_match("/(\d+)/",$chr,$match)) {
