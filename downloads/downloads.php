@@ -736,12 +736,12 @@ class Downloads
                <table border=0>
 	       <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
                <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
-	       <tr><td><input type="button" value="Create file for TASSEL" onclick="javascript:use_session('v4');">
-               <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>will work with TASSEL Version 3 or 4 
-               <tr><td><input type="button" value="Create file for R" onclick="javascript:use_session('v5');">
-               <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}
-               <tr><td><input type="button" value="Create file for FlapJack" onclick="javascript:use_session('v6');">
-               <td>genotype coded as {AA, AB, BB}
+	       <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
+               <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>used with <b>TASSEL</b> Version 3 or 4 
+               <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
+               <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
+               <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
+               <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b> and <b>synbreed</b>
                </table>
                <?php
              }
@@ -754,7 +754,8 @@ class Downloads
           If the line has more than one genotype measurement then a majority rule is used. When there is no majority the measurement is set to "missing".<br> 
           Documentation for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
             , <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
-               and <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>.
+            , <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>
+            , <a href="downloads/synbreed.doc">synbreed</a>.
           <?php
 	}
 	
