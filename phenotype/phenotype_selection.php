@@ -193,8 +193,7 @@ class Downloads
         $ntraits=substr_count($_SESSION['phenotype'], ',')+1;
         echo "<table>";
         echo "<tr><th>Currently selected traits</th><td><th>Currently selected trials</th>";
-        print "<tr><td><select name=\"deselLines[]\" multiple=\"multiple\" style=\"width: 13em\" onchange=\"javascript: remove_phenotype_items(this.options)\">";
-        //if ($ntraits > 1) {
+        print "<tr><td><select name=\"deselLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_phenotype_items(this.options)\">";
           $phenotype_ary = explode(",",$_SESSION['phenotype']);
           foreach ($phenotype_ary as $uid) {
             $result=mysqli_query($mysqli, "select phenotypes_name from phenotypes where phenotype_uid=$uid") or die("invalid line uid\n");
@@ -203,18 +202,8 @@ class Downloads
               print "<option value=\"$uid\" >$selval</option>\n";
             }
           }
-        //} else {
-        //  $uid = $_SESSION['phenotype'];
-        //  $result=mysql_query("select phenotypes_name from phenotypes where phenotype_uid=$uid") or die("invalid line uid\n");
-        //  if ($row=mysql_fetch_assoc($result)) {
-        //    $selval=$row['phenotypes_name'];
-        //    print "<option value=\"$lineuid\">$selval</option>\n";
-        //  } else {
-        //    die("$uid not found\n");
-        //  }
-       // }
         print "</select>";
-        echo "<td><td><select name=\"deseLines[]\" multiple=\"multiple\" style=\"width: 13em\" onchange=\"javascript: remove_trial_items(this.options)\">";
+        echo "<td><td><select name=\"deseLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_trial_items(this.options)\">";
         if (isset($_SESSION['selected_trials'])) {
           $trials_ary = $_SESSION['selected_trials'];
           foreach ($trials_ary as $uid) {
