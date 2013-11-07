@@ -15,7 +15,7 @@
  */
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-connecti();
+$mysqli = connecti();
 session_start();
 require $config['root_dir'].'theme/admin_header.php';
 ?>
@@ -27,8 +27,8 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
     foreach ($_SESSION['clicked_buttons'] as $mkruid) {
         $count_markers++;
         $sql = "select marker_name, A_allele, B_allele from markers where marker_uid=$mkruid";
-        $result=mysql_query($sql) or die(mysql_error());
-        while ($row=mysql_fetch_assoc($result)) {
+        $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row=mysqli_fetch_assoc($result)) {
             $selval=$row['marker_name'];
             $a_allele=$row['A_allele'];
             $b_allele=$row['B_allele'];
