@@ -1036,7 +1036,8 @@ function SelcExperiment ($arr) {
  //print "</td><td>\n";
   } elseif ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) >= 1000)) {
       $count = count($_SESSION['clicked_buttons']); 
-       print "$count markers selected<br>";
+       print "$count markers selected. ";
+       print "<a href=genotyping/display_markers.php>Display Markers</a><br>\n";
   }
 }
 
