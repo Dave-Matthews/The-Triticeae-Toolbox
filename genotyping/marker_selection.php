@@ -270,7 +270,7 @@ EOD;
   </form>
   </div>
 
-  <div id="markerSel" class="boxContent">
+  <div id="markerSel" class="boxContent" style="float: left; margin-bottom: 1.5em;">
   <h3> Select markers in a range of map positions</h3>
   <form id="markerSelForm" action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
   <table id="markeSelTab">
@@ -296,12 +296,39 @@ while ($row=mysql_fetch_assoc($result)) {
 </form>
 </div>
 
+<div class="boxContent" style="float: left; margin-botton: 1.5em;">
+<?php
+$result=mysql_query("select markerpanels_uid, name, marker_ids from markerpanels");
+if (mysql_num_rows($result) > 0) {
+    ?>
+    <h3> Preselected marker sets</h3>
+    <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
+    <table id="markeSetTab">
+    <thead><tr><th>Panel</th><th>Markers</th></tr></thead>
+    <tbody>
+    <tr><td>
+    <select name='mapset' size=10 onchange="javascript: DispMarkerSet(this.options)">
+    <?php
+    while ($row=mysql_fetch_assoc($result)) {
+        $uid = $row['markerpanels_uid'];
+        $name = $row['name'];
+        print "<option value='$name'>$name</option>";
+    }
+    ?>
+    </select>
+    <td id="markerSet">Choose set.
+    </td></tbody></table></form>
+    <?php
+}
+?>
+</div>
+<div class="boxContent" style="clear: both;"></div>
 <h3>Select by genotyping platform and experiment</h3>
 <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
 <div class="boxContent" style="float: left; margin-buttom: 1.5em;">
   <table>
   <thead>
-  <tr><th>Platform
+  <tr><th>Platform</th><th>Experiment
   <tbody>
   <tr><td>
   <select name='platform[]' size=10 multiple onchange="javascript: update_platform(this.options)">
@@ -314,10 +341,11 @@ while ($row=mysql_fetch_assoc($result)) {
 }
 ?>
 </select>
+<td id="col2">Choose platform
 </table>
 </form>
 </div>
-<div class="boxContent" id="col2" style="float: left; margin-buttom: 1.5em;"></div>
+<div class="boxContent" style="float: left; margin-buttom: 1.5em;"></div>
 <div class="boxContent" style="clear: both; float: left; width: 100%">
   <h3> Select using GBrowse</h3>
 Hover over a marker and click "Select in THT" in the popup balloon.
