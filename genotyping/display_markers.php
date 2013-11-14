@@ -26,12 +26,14 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         $count_markers++;
         $sql = "select marker_name, A_allele, B_allele, sequence from markers where marker_uid=$mkruid";
         $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row=mysqli_fetch_assoc($result)) {
+        if ($row=mysqli_fetch_assoc($result)) {
             $selval=$row['marker_name'];
             $a_allele=$row['A_allele'];
             $b_allele=$row['B_allele'];
             $seq = $row['sequence'];
-            fwrite($h, "$selval,$a_allele,$b_allele,$seq<br>\n");
+            fwrite($h, "$selval,$a_allele,$b_allele,$seq\n");
+        } else {
+            fwrite($h, "$mkruid,not found\n";
         }
     }
 }
