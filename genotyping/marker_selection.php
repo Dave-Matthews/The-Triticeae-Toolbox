@@ -1,94 +1,103 @@
 <?php
 /**
  * select markers and save in session variable
+ *
+ * PHP version 5.3
+ * Prototype version 1.5.0
  * 
  * @category PHP
- * @package T3
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/genotyping/marker_selection.php
  * 
  * 16mar12 dem Allow selecting markers that are not in maps.
  *             Un-require all marker names to also be in marker_synonyms.value.
  * 9/2/2010   J.Lee modify to add new snippet Gbrowse tracks
  * 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse   
  */
-$usegbrowse = False;
+$usegbrowse = false;
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
+require $config['root_dir'].'includes/bootstrap.inc';
 connect();
 session_start();
-include($config['root_dir'].'theme/admin_header.php');
+require $config['root_dir'].'theme/admin_header.php';
 ?>
 
 <div id="primaryContentContainer">
-  <div id="primaryContent">
-  <script type="text/javascript" src="theme/new.js"></script>
-  <h2> Select Markers</h2>
-  <br>
-  <div id= "current" class="boxContent">
-  <h3>Currently selected markers</h3>
-  <?php
+<div id="primaryContent">
+<script type="text/javascript" src="theme/new.js"></script>
+<h2> Select Markers</h2>
+<br>
+<div id= "current" class="boxContent">
+<h3>Currently selected markers</h3>
+<?php
 
-  /**
-   * get map_uid for given mapname
-   * @return integer
-   */
-  function get_submitted_mapid() {
-  $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
-  $sql = "select map_uid from map
-where map_name='" . mysql_real_escape_string($us_mapname) . "'";
-  $sqlr = mysql_fetch_assoc(mysql_query($sql));
-  return $sqlr['map_uid'];
+/**
+ * get map_uid for given mapname
+ *
+ * @return integer
+ */
+function getSubmittedMapid()
+{
+    $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
+    $sql = "select map_uid from map
+    where map_name='" . mysql_real_escape_string($us_mapname) . "'";
+    $sqlr = mysql_fetch_assoc(mysql_query($sql));
+    return $sqlr['map_uid'];
 }  
 
 if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
-  // Handle <space>- and <tab-separated words.
-  //$selmkrnames = preg_split("/\r\n/", $_POST['selMarkerstring']);
-  $s = preg_replace("/\\s+/", "\\r\\n", $_POST['selMarkerstring']);
-  $selmkrnames = explode("\\r\\n", $s);
-  // Get the marker uids.
-  $selmkrs = array();
-  foreach ($selmkrnames as $mkrnm) {
-    //$sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm'";
-    $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
-            select marker_uid from markers where marker_name = '$mkrnm'";
-    $r = mysql_query($sql);
-    if (mysql_num_rows($r) == 0)
-      echo "<font color=red>\"$mkrnm\" not found.</font><br>";
-    else {
-      $row = mysql_fetch_row($r);
-      // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
-      if (! in_array($row[0], $selmkrs))
-	array_push($selmkrs, $row[0]);
+    // Handle <space>- and <tab-separated words.
+    //$selmkrnames = preg_split("/\r\n/", $_POST['selMarkerstring']);
+    $s = preg_replace("/\\s+/", "\\r\\n", $_POST['selMarkerstring']);
+    $selmkrnames = explode("\\r\\n", $s);
+    // Get the marker uids.
+    $selmkrs = array();
+    foreach ($selmkrnames as $mkrnm) {
+        //$sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm'";
+        $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
+          select marker_uid from markers where marker_name = '$mkrnm'";
+        $r = mysql_query($sql);
+        if (mysql_num_rows($r) == 0)
+            echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+        else {
+            $row = mysql_fetch_row($r);
+            // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
+            if (! in_array($row[0], $selmkrs))
+                array_push($selmkrs, $row[0]);
+        }
     }
-  }
-  $clkmkrs=$_SESSION['clicked_buttons'];
-  if (!isset($clkmkrs) || ! is_array($clkmkrs)) $clkmkrs=array();
-  foreach($selmkrs as $mkruid) {
-    if (! in_array($mkruid, $clkmkrs)) 
-      array_push($clkmkrs, $mkruid);
-  }
-  $_SESSION['clicked_buttons'] = $clkmkrs;
-  // Get the uid of a map each of the markers is on.
+    $clkmkrs=$_SESSION['clicked_buttons'];
+    if (!isset($clkmkrs) || ! is_array($clkmkrs)) $clkmkrs=array();
+    foreach ($selmkrs as $mkruid) {
+        if (! in_array($mkruid, $clkmkrs)) 
+            array_push($clkmkrs, $mkruid);
+    }
+    $_SESSION['clicked_buttons'] = $clkmkrs;
+    // Get the uid of a map each of the markers is on.
     $mapids = $_SESSION['mapids'];
     if (!isset($mapids) || !is_array($mapids))
-      $mapids = array();
-  foreach ($selmkrs as $mkr) {
-    $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
-    //$sql = "select distinct map_uid from markers where marker_uid = $mkr";
-    $r = mysql_query($sql);
-    $row = mysql_fetch_row($r);
-    if (! in_array($row[0], $mapids))
-      array_push($mapids, $row[0]);
-  }
-  $_SESSION['mapids'] = $mapids;
-  ?>
-  <script type="text/javascript">
+        $mapids = array();
+    foreach ($selmkrs as $mkr) {
+        $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
+        //$sql = "select distinct map_uid from markers where marker_uid = $mkr";
+        $r = mysql_query($sql);
+        $row = mysql_fetch_row($r);
+        if (! in_array($row[0], $mapids))
+            array_push($mapids, $row[0]);
+    }
+    $_SESSION['mapids'] = $mapids;
+    ?>
+    <script type="text/javascript">
     update_side_menu();
-  </script>
-  <?php
- }
+    </script>
+    <?php
+}
 
 if (isset($_POST['selMkrs']) || isset($_POST['selbyname'])) {
-  $mapid = get_submitted_mapid();
+    $mapid = getSubmittedMapid();
     if (isset($_POST['selMkrs'])) 
       $selmkrs=$_POST['selMkrs'];
     else {
