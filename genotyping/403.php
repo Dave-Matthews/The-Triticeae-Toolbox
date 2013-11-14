@@ -1,7 +1,8 @@
 <?php
-include("includes/bootstrap.inc");
+require 'config.php';
+require $config['root_dir'].'includes/bootstrap.inc';
 connect();
-include("theme/normal_header.php");
+require $config['root_dir'].'theme/normal_header.php';
 ?>
 
 <div id="primaryContentContainer">
@@ -20,5 +21,5 @@ include("theme/normal_header.php");
 </div>
 </div>
 
-
-<?php include("theme/footer.php"); ?>
+<?php
+require $config['root_dir'].'theme/footer.php'; ?>
