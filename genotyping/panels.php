@@ -69,7 +69,7 @@ print "<table><tr>";
 $username=$_SESSION['username'];
 if ($username && !isset($_SESSION['clicked_buttons'])) {
   $stored = retrieve_session_variables('selected_markers', $username);
-  if (-1 != $stored)
+  if (is_array($stored))
     $_SESSION['clicked_buttons'] = $stored;
  }
 // Show nothing if empty.
@@ -77,11 +77,13 @@ $display = $_SESSION['clicked_buttons'] ? "":" style='display: none;'";
 ?>
 
 <td><font color=blue><b>Currently selected markers</b></font>: 
-<?php echo count($_SESSION['clicked_buttons']) ?>
+<?php echo count($_SESSION['clicked_buttons']);
+ ?>
 
 <form id='deselLinesForm' action='<?php echo $_SERVER['PHP_SELF'] ?>' method='post' <?php echo $display ?>>
 <select name='deselLines[]' multiple='multiple' style='height: 13em;width: 16em'>
 <?php
+if (isset($_SESSION['clicked_buttons'])) {
 foreach ($_SESSION['clicked_buttons'] as $markeruid) {
   $result=mysql_query("select marker_name from markers where marker_uid=$markeruid") 
   or die("invalid marker uid\n");
@@ -89,6 +91,7 @@ foreach ($_SESSION['clicked_buttons'] as $markeruid) {
     $selval=$row['marker_name'];
     print "<option value='$markeruid'>$selval</option>\n";
   }
+}
 }
 ?>
 
