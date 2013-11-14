@@ -307,7 +307,7 @@ while ($row=mysql_fetch_assoc($result)) {
 
 <div class="boxContent" style="float: left; margin-botton: 1.5em;">
 <?php
-$result=mysql_query("select markerpanels_uid, name, marker_ids from markerpanels");
+$result=mysql_query("select markerpanels_uid, name, marker_ids, comment from markerpanels");
 if (mysql_num_rows($result) > 0) {
     ?>
     <h3> Preselected marker sets</h3>
@@ -321,7 +321,8 @@ if (mysql_num_rows($result) > 0) {
     while ($row=mysql_fetch_assoc($result)) {
         $uid = $row['markerpanels_uid'];
         $name = $row['name'];
-        print "<option value='$name'>$name</option>";
+        $desc = $row['comment'];
+        print "<option value='$name' title='$desc'>$name</option>";
     }
     ?>
     </select>
