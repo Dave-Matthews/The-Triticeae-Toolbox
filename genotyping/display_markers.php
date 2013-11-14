@@ -33,7 +33,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
             $seq = $row['sequence'];
             fwrite($h, "$selval,$a_allele,$b_allele,$seq\n");
         } else {
-            fwrite($h, "$mkruid,not found\n";
+            fwrite($h, "$mkruid,not found\n");
         }
     }
 }
