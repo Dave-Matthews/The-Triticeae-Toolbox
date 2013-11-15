@@ -259,7 +259,8 @@ EOD;
  if (! isset($username) || strlen($username)<1) $username="Public";
  store_session_variables('clicked_buttons', $username);
  store_session_variables('mapids',$username);
- } elseif (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) >= 1000)) {
+ }
+ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
    $count = count($_SESSION['clicked_buttons']);
    print "$count markers selected. ";
    print "<a href=genotyping/display_markers.php>Download list of markers</a><br>\n";
