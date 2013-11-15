@@ -1078,7 +1078,8 @@ function SelcExperiment ($arr) {
   $chrlist = array_unique($chrlist);
  print "</select></table>";
  //print "</td><td>\n";
-  } elseif ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) >= 1000)) {
+  }
+  if ((count($_SESSION['clicked_buttons']) > 0)) {
       $count = count($_SESSION['clicked_buttons']); 
        print "$count markers selected. ";
        print "<a href=genotyping/display_markers.php>Download selected markers</a><br>\n";
