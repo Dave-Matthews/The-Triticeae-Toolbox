@@ -996,7 +996,7 @@ function SelcMarkerSet ($arr) {
     }
     $markerlist = array();
     if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
-        print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
+        print "<form id='deselMkrsForm' action='genotyping/marker_selection.php' method='post'>";
         print "<table><tr><td>\n";
         print "<select name='deselMkrs[]' multiple='multiple' size=10>";
         foreach ($_SESSION['clicked_buttons'] as $mkruid) {
@@ -1011,8 +1011,15 @@ function SelcMarkerSet ($arr) {
               }
             }
          }
-         print "</select></table></form";
+         print "</select></table>";
+         print "<p><input type='submit' value='Remove marker' style='color: blue' /></p>";
+         print "</form>";
     }
+    if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
+        $count = count($_SESSION['clicked_buttons']);
+        print "$count markers selected. ";
+        print "<a href=genotyping/display_markers.php>Download list of markers</a><br>\n";
+    } 
 }
 
 function SelcExperiment ($arr) {
