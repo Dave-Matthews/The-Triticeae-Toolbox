@@ -319,7 +319,21 @@ if (mysql_num_rows($result) > 0) {
     <tr><td>
     <select name='mapset' size=10 onchange="javascript: DispMarkerSet(this.options)">
     <?php
-    while ($row=mysql_fetch_assoc($result)) {
+    if (loginTest2()) {
+        $row = loadUser($_SESSION['username']);
+        $myid = $row['users_uid'];
+        $sql = "SELECT markerpanels_uid, name FROM markerpanels where users_uid = $myid";
+        $res = mysql_query($sql) or die(mysql_error());
+        while ($row=mysql_fetch_assoc($res)) {
+            $name = $row['name'];
+            $desc = $row['comment'];
+            print "<option value='$name' title='$desc'>$name</option>";
+        }
+        print "<option disabled>Everybody's:</option>";
+    }
+    $sql = "select markerpanels_uid, name, marker_ids, comment from markerpanels where users_uid is NULL";
+    $res = mysql_query($sql) or die(mysql_error());
+    while ($row=mysql_fetch_assoc($res)) {
         $uid = $row['markerpanels_uid'];
         $name = $row['name'];
         $desc = $row['comment'];
