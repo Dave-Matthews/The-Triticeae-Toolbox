@@ -335,7 +335,6 @@ if ($query == 'geno') {
      $MarkersWithGeno = fgets($fp);
      $MarkersNoGeno = fgets($fp);
      fclose($fp);
-     $allele_count = number_format($allele_count);
   } else {
      $sql = "select count(genotyping_data_uid) from genotyping_data";
      $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
@@ -343,6 +342,11 @@ if ($query == 'geno') {
        $allele_count = $row[0];
      } else {
        print "error $sql<br>\n";
+     }
+     $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
+     $res = mysql_query($sql) or die(mysql_error());
+     if ($row = mysql_fetch_row($res)) {
+       $allele_update = $row[0];
      }
      $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
      $res = mysqli_query($mysqli,$sql) or die(mysqli_error());
@@ -362,11 +366,13 @@ if ($query == 'geno') {
 
      $fp = fopen($cachefile,'w');
      fwrite($fp,"$allele_count\n");
+     fwrite($fp,"$allele_update\n");
      fwrite($fp,"$LinesWithGeno\n");
      fwrite($fp,"$MarkersWithGeno\n");
      fwrite($fp,"$MarkersNoGeno\n");
      fclose($fp);
   }
+  $allele_count = number_format($allele_count);
   $date = date_create(date('Y-m-d'));
   $date = $date->format('Y-m-d');
   if ($output == "excel") {
