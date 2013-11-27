@@ -68,8 +68,20 @@ function update_t2() {
 }
 
 function update_pheno() {
-	var e= document.getElementById("pheno");
-	pheno = e.options[e.selectedIndex].value;
+        pheno = "";
+        $A(options).each(
+            function(traits){
+                if (traits.selected) {
+                    pheno += (pheno === "" ? "" : ",") + traits.value;
+                }
+            });
+        var url = php_self + "?function=status&pheno=" + pheno;
+        var tmp = new Ajax.Updater($('step2'), url, {
+        onComplete : function() {
+            $('step2').show();
+            document.title = title;
+        }
+        });
 }
 
 function update_control(frm) {
