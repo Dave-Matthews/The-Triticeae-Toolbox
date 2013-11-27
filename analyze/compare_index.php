@@ -246,26 +246,31 @@ class CompareTrials
         }
 
         //check if selection is valid
-        foreach ($trait_ary as $trait) {
+        foreach ($trait_ary as $t) {
+            $query = "select phenotypes_name from phenotypes where phenotype_uid = $t";
+            $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($result)) {
+                $trait_name = $row[0];
+            } 
             $query = "select p.phenotype_uid, phenotypes_name
             FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
             WHERE pd.tht_base_uid = t.tht_base_uid
             AND p.phenotype_uid = pd.phenotype_uid
-            AND pd.phenotype_uid = $trait
+            AND pd.phenotype_uid = $t
             AND t.experiment_uid = $exp1";
             $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
             if (mysqli_num_rows($result) == 0) { 
-                echo "Error: trait $trait has no measurements for experiment $exp1<br>$query<br>\n";
+                echo "Error: trait $trait_name has no measurements for experiment $exp1<br>\n";
             }
             $query = "select p.phenotype_uid, phenotypes_name
             FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
             WHERE pd.tht_base_uid = t.tht_base_uid
             AND p.phenotype_uid = pd.phenotype_uid
-            AND pd.phenotype_uid = $trait
+            AND pd.phenotype_uid = $t
             AND t.experiment_uid = $exp2"; 
             $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
             if (mysqli_num_rows($result) == 0) {
-                echo "Error: trait $trait has no measurements for experiment $exp2<br>$query<br>\n";
+                echo "Error: trait $trait_name has no measurements for experiment $exp2<br>\n";
             }
         }
 
