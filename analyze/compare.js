@@ -67,7 +67,7 @@ function update_t2() {
 	trial2 = e.options[e.selectedIndex].value;
 }
 
-function update_pheno() {
+function update_pheno(options) {
         pheno = "";
         $A(options).each(
             function(traits){
