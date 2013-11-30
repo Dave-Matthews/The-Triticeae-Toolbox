@@ -1870,7 +1870,8 @@ class Downloads
                   if (isset($lookup_chrom[$row[1]])) {
 		    $chr = $lookup_chrom[$row[1]];
                   } else {
-                    $chr = "0";
+                    /* $chr = "0"; */
+                    $chr = $row[1];
                   }
 		  $pos = $row[2];
 		  $marker_list_mapped[$uid] = "$chr\t$pos";
