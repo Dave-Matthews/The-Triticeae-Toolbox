@@ -164,9 +164,16 @@ function convert2Illumina ($alleles)
     return $results;
 }
 
+/**
+ * convert 0,1 to Illumina AB format
+ * 
+ * @param string $alleles 0,1 base calls
+ * 
+ * @return string converted base calls
+ */
 function convertDArT2Illumina ($alleles)
 {
-  global $a_allele, $b_allele;
+    global $a_allele, $b_allele;
     $results = "";
     if (($a_allele == "") || ($b_allele == "")) {
         echo "Error: A allele and B allele undetermined\n";
@@ -215,9 +222,9 @@ $mailheader = "From: ". $Name . " <" . $myEmail . ">\r\n"; //optional headerfiel
 $subject = "Genotype import results";
 
 //Check inputs
- if ($lineTransFile == "") {
+if ($lineTransFile == "") {
     exitFatal($errFile,  "No Line Translation File Uploaded.");
-}  
+}
   
 if ($gDataFile == "") {
     exitFatal($errFile, "No Genotype Data Uploaded.");
@@ -230,14 +237,14 @@ if ($emailAddr == "") {
 
 // Check for zip file
 if (strpos($gDataFile, ".zip") == true) {
-	echo "Unzipping the genotype data file...\n";
-	$zip = new ZipArchive;
-	$zip->open($gDataFile) || exitFatal($errFile, "Unable to open zip file, please check zip format.");
-	$gName = $zip->getNameIndex(0);
-	$zip->extractTo($target_Path) || exitFatal($errFile, "Failed to extract file from the zip file.");
-	$zip->close()  || exitFatal($errFile, "Failed to close zip file.");
-	$gDataFile = $target_Path . $gName;
-	echo "Genotype data unzipping done.\n";
+    echo "Unzipping the genotype data file...\n";
+    $zip = new ZipArchive;
+    $zip->open($gDataFile) || exitFatal($errFile, "Unable to open zip file, please check zip format.");
+    $gName = $zip->getNameIndex(0);
+    $zip->extractTo($target_Path) || exitFatal($errFile, "Failed to extract file from the zip file.");
+    $zip->close()  || exitFatal($errFile, "Failed to close zip file.");
+    $gDataFile = $target_Path . $gName;
+    echo "Genotype data unzipping done.\n";
 }
 
 /* Read the file */
@@ -255,36 +262,36 @@ echo "\nProcessing line translation file...\n";
 $header = str_getcsv($inputrow, "\t");
  // Set up header column; all columns are required
 $lineNameIdx = implode(find("Line Name", $header), "");
-$trialCodeIdx = implode(find("Trial Code", $header),"");
+$trialCodeIdx = implode(find("Trial Code", $header), "");
 echo "Using Line Name column = $lineNameIdx, Trial Code column = $trialCodeIdx\n";
             
 if (($lineNameIdx == "")||($trialCodeIdx == "")) {
-   exitFatal($errFile,"ERROR: Missing one of the required columns in Line Translation file. Please correct it and try upload again.");
+    exitFatal($errFile, "ERROR: Missing one of the required columns in Line Translation file. Please correct it and try upload again.");
 }
   
 // Store individual records
 $num = 0;
 $linenumber = 0;
 while (($line = fgets($reader)) !== false) { 
-  $linenumber++;
-  $origline = $line;
+    $linenumber++;
+    $origline = $line;
     chop($line, "\r");
     if ((stripos($line, '- cut -') > 0 )) break;
 
-    if (preg_match('/ /',$line)) {
-      echo "removing illegal blank character from $line";
-      $line = preg_replace('/ /','',$line);
+    if (preg_match('/ /', $line)) {
+        echo "removing illegal blank character from $line";
+        $line = preg_replace('/ /', '', $line);
     }
     if (strlen($line) < 2) continue;
     if (empty($line)) continue;
                 
-    $data = str_getcsv($line,"\t");
+    $data = str_getcsv($line, "\t");
                         
     //Check for junk line
     if (count($data) != 2) {
-      //exitFatal ($errFile, "ERROR: Invalid entry in Line Translation file - '$line' ");
-      $parsed = print_r($data, true);
-      exitFatal($errFile, "ERROR: Invalid entry in line number $linenumber of Line Translation file.\n Text of line: '$origline'\nContents parsed as: $parsed");
+        //exitFatal ($errFile, "ERROR: Invalid entry in Line Translation file - '$line' ");
+        $parsed = print_r($data, true);
+        exitFatal($errFile, "ERROR: Invalid entry in line number $linenumber of Line Translation file.\n Text of line: '$origline'\nContents parsed as: $parsed");
     }
     $trialCodeStr = $data[$trialCodeIdx];
     $lineStr = $data[$lineNameIdx];
@@ -293,7 +300,7 @@ while (($line = fgets($reader)) !== false) {
     // Trial Code processing
     if (($curTrialCode != $trialCodeStr) && ($trialCodeStr != '')) {
         $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'";
-	$res = mysqli_query($mysqli,$sql)
+    $res = mysqli_query($mysqli,$sql)
             or exitFatal($errFile, "Database Error: Experiment uid lookup - ".mysqli_error($mysqli));
         if ($row = mysqli_fetch_assoc($res)) {
           $exp_uid = implode(",",$row);
@@ -408,15 +415,14 @@ $data = array();
 $sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED";
 $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     
-while (!feof($reader))  {
+while ($inputrow= fgets($reader))  {
   // If we have too many errors stop processing - something is wrong
   If ($errLines > 1000) {
     exitFatal($errFile, "ERROR: Too many import lines have problem."); 
   }    
-  $inputrow = fgets($reader);
   if (strlen($inputrow) < 2) continue;
   if (empty($inputrow)) continue;
-  if (feof($reader)) break;
+  if ($inputrow===false) break;
   $data = str_getcsv($inputrow,"\t");
   $marker = $data[$nameIdx];
   $num = count($data);		// number of fields

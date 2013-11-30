@@ -77,12 +77,6 @@ class Downloads
         case 'step1yearprog':
             $this->step1_yearprog();
             break;
-        case 'type1build_qtlminer':
-				$this->type1_build_qtlminer();
-				break;
-			case 'type1build_tassel':
-				echo $this->type1_build_tassel();
-				break;
 			case 'type1build_tassel_v3':
 				echo $this->type1_build_tassel_v3();
 				break;
@@ -339,13 +333,6 @@ class Downloads
         $subset = "yes";
         $dtype = "";
         
-        if (isset($_SESSION['phenotype'])) {
-            $filename = "traits.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset);
-            fwrite($h, $output);
-            fclose($h);
-        }
         if ($version == "V2") {
             $filename = "annotated_alignment.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
@@ -363,12 +350,31 @@ class Downloads
             $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         } elseif ($version == "V4") { //Download for Tassel
+            if (isset($_SESSION['phenotype'])) {
+                $filename = "traits.txt";
+                $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+                $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset);
+                fwrite($h, $output);
+                fclose($h);
+            }
+            $filename = "geneticMap.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
             $output = $this->type3_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         } elseif ($version == "V5") { //Download for R
             $dtype = "qtlminer";
+            if (isset($_SESSION['phenotype'])) {
+                $filename = "traits.txt";
+                $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+                $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
+                fwrite($h, $output);
+                fclose($h);
+            }
             $filename = "geneticMap.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
             $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
@@ -385,6 +391,13 @@ class Downloads
             fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
             $dtype = "AB";
+            if (isset($_SESSION['phenotype'])) {
+                $filename = "traits.txt";
+                $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+                $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
+                fwrite($h, $output);
+                fclose($h);
+            }
             $filename = "geneticMap.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
             $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
@@ -752,7 +765,7 @@ class Downloads
           The allele_conflict.txt file list all cases where there have been different results for the same line and marker.<br>
           The genotype files contains one measurement for each line and marker.
           If the line has more than one genotype measurement then a majority rule is used. When there is no majority the measurement is set to "missing".<br> 
-          Documentation for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
+          Documentation and loading instructions for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
             , <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
             , <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>
             , <a href="downloads/synbreed.doc">synbreed</a>.
@@ -770,84 +783,6 @@ class Downloads
 	    return 0;
 	  }
 	  return ($a < $b) ? -1 : 1;
-	}
-	
-	/**
-	 * creates output files in qtlminer format
-	 */
-	function type1_build_qtlminer()
-	{
-		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
-		$traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
-		$CAPdataprogram = (isset($_GET['bp']) && !empty($_GET['bp'])) ? $_GET['bp'] : null;
-		$years = (isset($_GET['yrs']) && !empty($_GET['yrs'])) ? $_GET['yrs'] : null;
-		
-		$dtype = "qtlminer";	
-		// Get dataset-exp IDs
-			$sql_exp = "SELECT DISTINCT dse.datasets_experiments_uid as id
-							FROM  datasets as ds, CAPdata_programs as cd, datasets_experiments as dse
-							WHERE cd.CAPdata_programs_uid = ds.CAPdata_programs_uid
-								AND dse.datasets_uid = ds.datasets_uid
-								AND ds.breeding_year IN ($years)
-								AND ds.CAPdata_programs_uid IN ($CAPdataprogram)";
-			$res = mysql_query($sql_exp) or die(mysql_error());
-			
-			while ($row = mysql_fetch_array($res)){
-				$datasets[] = $row["id"];
-			}
-			
-			$datasets_exp = implode(',',$datasets);		
-		
-		// Get genotype experiments
-		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-				FROM experiments e, experiment_types et, datasets_experiments as dse
-				WHERE
-					e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'genotype'
-					AND e.experiment_uid = dse.experiment_uid
-					AND dse.datasets_experiments_uid IN ($datasets_exp)";
-		$res = mysql_query($sql_exp) or die(mysql_error());
-			
-		while ($row = mysql_fetch_array($res)){
-				$exp[] = $row["exp_uid"];
-		}
-		$experiments_g = implode(',',$exp);
-		// $firephp = FirePHP::getInstance(true);
-		
-		
-		//set up download file name in temp directory
-		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
-		$dir = '/tmp/tht/';
-		$filename = 'thtdownload_qtlminer'.chr(rand(65,90)).chr(rand(65,90)).chr(rand(65,90)).'.zip';
-		// $firephp->log($dir.$filename);
-		
-        // File_Archive doesn't do a good job of creating files, so we'll create it first
-		if(!file_exists($dir.$filename)){
-			$h = fopen($dir.$filename, "w+");
-			// $firephp->log($h);
-			fclose($h);
-		}
-		// $firephp->log("before traits".$datasets_exp);
-        // Now let File_Archive do its thing
-		$zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
-		
-		$zip->newFile("traits.txt");
-		// $firephp->log("before traits".$experiments_t);
-		$zip->writeData($this->type1_build_traits_download($experiments_t, $traits, $datasets_exp));
-			// $firephp->log("after traits".$experiments_g."  ".$dtype);
-		$zip->newFile("markers.txt");
-		$zip->writeData($this->type1_build_markers_download($experiments_g,$dtype));
-		// $firephp->log("after markers".$experiments_g);
-		$zip->newFile("pedigree.txt");
-		$zip->writeData($this->type1_build_pedigree_download($experiments_g));
-		// $firephp->log(" after pedigree".$experiments_g);
-		$zip->newFile("inbreds.txt");
-		$zip->writeData($this->type1_build_inbred_download($experiments_g));
-		// $firephp->log(" after inbreds".$experiments_g);
-		$zip->close();
-	
-		header("Location: ".$dir.$filename);
-	
 	}
 	
 	/**
@@ -1005,68 +940,46 @@ class Downloads
 	}
 	
 	/**
-	 * generate download files in qltminer format
+	 * generate download files in R format
 	 * @param unknown_type $experiments
 	 * @param unknown_type $traits
 	 * @param unknown_type $datasets
 	 */
 	function type1_build_traits_download($experiments, $traits, $datasets)
 	{
-		
-		$output = 'Experiment' . $this->delimiter . 'Inbred';
-		$traits = explode(',', $traits);
-		
-		
-		$select = "SELECT experiments.trial_code, line_records.line_record_name";
-		$from = " FROM tht_base
-				JOIN experiments ON experiments.experiment_uid = tht_base.experiment_uid
-				JOIN line_records ON line_records.line_record_uid = tht_base.line_record_uid ";
-		foreach ($traits as $trait) {
-			$from .= " JOIN (
-					SELECT p.phenotypes_name, pd.value, pd.tht_base_uid, pmd.number_replicates, pmd.experiment_uid
-					FROM phenotypes AS p, phenotype_data AS pd, phenotype_mean_data AS pmd               
-					WHERE pd.phenotype_uid = p.phenotype_uid
-					    AND pmd.phenotype_uid = p.phenotype_uid
-					    AND p.phenotype_uid = ($trait)) AS t$trait
-						
-					    ON t$trait.tht_base_uid = tht_base.tht_base_uid AND t$trait.experiment_uid = tht_base.experiment_uid";
-			$select .= ", t$trait.phenotypes_name as name$trait, t$trait.value as value$trait, t$trait.number_replicates as nreps$trait";
-			}
-		$where = " WHERE tht_base.experiment_uid IN ($experiments)
-					AND tht_base.check_line = 'no'
-					AND tht_base.datasets_experiments_uid in ($datasets)";
-		
-		$res = mysql_query($select.$from.$where) or die(mysql_error());
+            $delimiter = "\t";
 
-		$namevaluekeys = null;
-		$valuekeys = array();
-		while($row = mysql_fetch_assoc($res)) {
-			if ($namevaluekeys == null)
-			{
-				$namevaluekeys = array_keys($row);
-				unset($namevaluekeys[array_search('trial_code', $namevaluekeys)]);
-				//unset($namevaluekeys[array_search('number_replications', $namevaluekeys)]);
-				unset($namevaluekeys[array_search('line_record_name', $namevaluekeys)]);
-				
-				foreach($namevaluekeys as $namevaluekey) {
-					if (stripos($namevaluekey, 'name') !== FALSE) {
-						$output .= $this->delimiter . "{$row[$namevaluekey]}" . $this->delimiter . "N";
-					} else {
-						array_push($valuekeys, $namevaluekey);
-					}
-				}
-				$output .= "\n";
-			}
-			$output .= "{$row['trial_code']}" . $this->delimiter . "{$row['line_record_name']}";
-			foreach($valuekeys as $valuekey) {
-				if (is_null($row[$valuekey]))
-					$row[$valuekey] = 'N/A';
-				$output .= $this->delimiter . "{$row[$valuekey]}" ;
-			}
-			$output .= "\n";
-		}
-		
-		return $output;
+            $sql = "select line_record_name, line_record_uid from line_records";
+            $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
+            while ($row = mysql_fetch_array($res)) {
+               $line_name = $row[0];
+               $line_uid = $row[1];
+               $line_list[$line_uid] = $line_name;
+            }
+
+            $trait_name = "";
+            $sql = "select phenotypes_name from phenotypes where phenotype_uid = $traits";
+            $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
+            if ($row = mysql_fetch_array($res)) {
+               $trait_name = $row[0];
+            }
+        
+            $output = 'line' . $delimiter . 'trial' . $delimiter . $trait_name . "\n";
+
+            $sql = "select tb.line_record_uid, tb.experiment_uid, pd.value as value
+                from tht_base as tb, phenotype_data as pd
+                where tb.experiment_uid IN ($experiments) AND
+                pd.tht_base_uid = tb.tht_base_uid
+                and pd.phenotype_uid IN ($traits)";
+            $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
+            while ($row = mysql_fetch_array($res)) {
+               $line_uid = $row[0];
+               $expr_uid = $row[1];
+               $value = $row[2];
+               $line_name = $line_list[$line_uid];
+               $output .= $line_name.$delimiter.$expr_uid.$delimiter.$value."\n";
+            }
+	    return $output;
 	}
 
     /**
@@ -1957,7 +1870,8 @@ class Downloads
                   if (isset($lookup_chrom[$row[1]])) {
 		    $chr = $lookup_chrom[$row[1]];
                   } else {
-                    $chr = "0";
+                    /* $chr = "0"; */
+                    $chr = $row[1];
                   }
 		  $pos = $row[2];
 		  $marker_list_mapped[$uid] = "$chr\t$pos";
