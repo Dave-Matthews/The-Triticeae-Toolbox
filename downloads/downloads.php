@@ -1575,7 +1575,7 @@ class Downloads
 	         AND mapset.mapset_uid = $selected_map";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	     if ($row = mysql_fetch_array($res)) {
-	        $chrom = $lookup_chrom[$row[2]];
+	        $chrom = $row[2];
 	        $pos = 100 * $row[3];
 	     } else {
 	        $chrom = 0;
@@ -1773,7 +1773,7 @@ class Downloads
 				if ($cnt==0) {
 					$last_marker = $row['mname'];
 					$pos = $row['start_position'];
-					$chrom = $lookup_chrom[$row['chromosome']];
+					$chrom = $row['chromosome'];
 				}
 				
 			if ($last_marker != $row['mname']){  
@@ -1787,7 +1787,7 @@ class Downloads
 					$outarray[$lname] = $lookup[$row['value']];
 					$last_marker = $row['mname'];
 					$pos = $row['start_position'];
-					$chrom = $lookup_chrom[$row['chromosome']];
+					$chrom = $row['chromosome'];
 					$num_markers++;
 			} else {
 					 $lname = $row['lname'];				
@@ -1867,12 +1867,7 @@ class Downloads
 		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		while ($row = mysql_fetch_array($res)) {
 		  $uid = $row[0];
-                  if (isset($lookup_chrom[$row[1]])) {
-		    $chr = $lookup_chrom[$row[1]];
-                  } else {
-                    /* $chr = "0"; */
-                    $chr = $row[1];
-                  }
+		  $chr = $row[1];
 		  $pos = $row[2];
 		  $marker_list_mapped[$uid] = "$chr\t$pos";
 		  if (preg_match("/(\d+)/",$chr,$match)) {
