@@ -953,7 +953,7 @@ function DispExperiment ($arr) {
         $platform = $arr['platform'];
     }
     ?>
-    <table><tr><th>Experiment<tr><td><select name='expt[]' size=10 multiple onchange="javascript: update_exper(this.options)">
+    <table><tr><td><select name='expt[]' size=10 multiple onchange="javascript: update_exper(this.options)">
     <?php
     $result=mysql_query("select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
         where experiments.experiment_uid = genotype_experiment_info.experiment_uid
@@ -969,6 +969,57 @@ function DispExperiment ($arr) {
     <p><input type=button value=Select style=color:blue onclick="javascript: select_exper()">
     </table>
     <?php
+}
+
+function SelcMarkerSet ($arr) {
+    if (! isset($arr['set'])) {
+        print "Invalid input of marker panel";
+        return;
+    } else {
+        $panel_str = $arr['set'];
+    }
+    echo "<h3>Currently selected markers</h3>";
+    $sql = "select marker_ids from markerpanels where name = \"$panel_str\"";
+    $res = mysql_query($sql) or die(mysql_error());
+    if ($row = mysql_fetch_array($res)) {
+        $mkruid=$row[0];
+        $marker_list = explode(',', $mkruid);
+        foreach ($marker_list as $uid) {
+            $clkmkrs[] = $uid;
+            $sql = "select marker_name from markers where marker_uid=$uid";
+            $res=mysql_query($sql) or die("invalid marker $sql\n");
+            if ($row = mysql_fetch_array($res)) {
+                $name = $row[0];
+            }
+        }
+        $_SESSION['clicked_buttons'] = $clkmkrs;
+    }
+    $markerlist = array();
+    if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
+        print "<form id='deselMkrsForm' action='genotyping/marker_selection.php' method='post'>";
+        print "<table><tr><td>\n";
+        print "<select name='deselMkrs[]' multiple='multiple' size=10>";
+        foreach ($_SESSION['clicked_buttons'] as $mkruid) {
+            $count_markers++;
+            $sql = "select marker_name from markers where marker_uid=$mkruid";
+            $result=mysql_query($sql) or die(mysql_error());
+            while ($row=mysql_fetch_assoc($result)) {
+              $selval=$row['marker_name'];
+              if(! in_array($selval,$markerlist)) {
+                 array_push($markerlist, $selval);
+                 print "<option value='$mkruid'>$selval</option>\n";
+              }
+            }
+         }
+         print "</select></table>";
+         print "<p><input type='submit' value='Remove marker' style='color: blue' /></p>";
+         print "</form>";
+    }
+    if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
+        $count = count($_SESSION['clicked_buttons']);
+        print "$count markers selected. ";
+        print "<a href=genotyping/display_markers.php>Download list of markers</a><br>\n";
+    } 
 }
 
 function SelcExperiment ($arr) {
@@ -1034,9 +1085,11 @@ function SelcExperiment ($arr) {
   $chrlist = array_unique($chrlist);
  print "</select></table>";
  //print "</td><td>\n";
-  } elseif ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) >= 1000)) {
+  }
+  if ((count($_SESSION['clicked_buttons']) > 0)) {
       $count = count($_SESSION['clicked_buttons']); 
-       print "$count markers selected<br>";
+       print "$count markers selected. ";
+       print "<a href=genotyping/display_markers.php>Download selected markers</a><br>\n";
   }
 }
 
@@ -1070,6 +1123,35 @@ function DispMarkers ($arr) {
 		print "<p><input type='submit' value='Select markers' style='color: blue'>";
 
 	}
+}
+
+function DispMarkerSet ($arr) {
+    if (! isset($arr)) {
+        print "Invalid inputs";
+        return;
+    }
+    $set = $arr["set"];
+    ?>
+    <p><input type=button value=Select style=color:blue onclick="javascript: select_set()">
+    <?php
+    $sql = "select marker_ids from markerpanels where name = \"$set\"";
+    $res = mysql_query($sql) or die(mysql_error());
+    if ($row = mysql_fetch_array($res)) {
+        $mkruid=$row[0];
+        $marker_list = explode(',', $mkruid);
+        //print "<textarea disabled rows=10>";
+        foreach ($marker_list as $uid) {
+            $sql = "select marker_name from markers where marker_uid=$uid";
+            $res=mysql_query($sql) or die("invalid marker $sql\n");
+            if ($row = mysql_fetch_array($res)) {
+                $name = $row[0];
+         //       print "$name\n";
+            }
+        }
+        //print "</textarea>";
+    } else {
+      print "$sql\n";
+    }
 }
 
 /**

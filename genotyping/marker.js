@@ -4,6 +4,7 @@ var php_self = document.location.href;
 var title = document.title;
 var platform_str = "";
 var expt_str = "";
+var panel_str = "";
 
 function update_platform(options) {
     platform_str = "";
@@ -17,6 +18,23 @@ function update_platform(options) {
     new Ajax.Updater($('col2'), url, {
         onComplete : function() {
             $('col2').show();
+            document.title = title;
+        }
+    });
+}
+
+function DispMarkerSet(options) {
+        panel_str = "";
+        $A(options).each(
+            function(markers) {
+                    if (markers.selected) {
+                panel_str += (panel_str === "" ? "" : ",") + markers.value;
+            }
+        });
+    var url = "includes/ajaxlib?func=DispMarkerSet&set=" + panel_str;
+    new Ajax.Updater($('markerSet'), url, {
+        onComplete : function() {
+            $('MarkerSet').show();
             document.title = title;
         }
     });
@@ -42,10 +60,7 @@ function update_side() {
     });
 }
 
-function select_exper() {
-    if (expt_str !== "") {
-    window.scrollTo(0, 0);
-    document.title='Loading Markers...';
+function select_exper(options) {
     document.getElementById('current').innerHTML = "<img id=\"spinner\" src=\"images/ajax-loader.gif\"> Calculating which markers are in selected experiment(s)";
     var url = "includes/ajaxlib?func=SelcExperiment&experiment=" + expt_str;
     new Ajax.Updater($('current'), url, {
@@ -55,5 +70,16 @@ function select_exper() {
             update_side();
         }
     });
-    }
+}
+
+function select_set(options) {
+    document.getElementById('current').innerHTML = "<img id=\"spinner\" src=\"images/ajax-loader.gif\"> Calculating which markers are in selected experiment(s)";
+    var url = "includes/ajaxlib?func=SelcMarkerSet&set=" + panel_str;
+    new Ajax.Updater($('current'), url, {
+        onComplete : function() {
+            $('current').show();
+            document.title = title;
+            update_side();
+        }
+    });
 }
