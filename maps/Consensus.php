@@ -28,7 +28,9 @@ Number of markers shared on each map
 <table>
 <tr><td><td>markers
 <tr><td>only on 1 map<td>22,794
-<tr><td>shared on 2 maps<td>1,741
+<tr><td>shared on 2 maps<br>
+(BinMap and AntMap)
+<td>1,741
 <tr><td>shared on 3 maps<td>0
 </table><br>
 
