@@ -101,6 +101,9 @@ class Downloads
                         case 'download_session_v6':
                             echo $this->type1_session(V6);
                             break;
+                        case 'download_session_v6':
+                            echo $this->type1_session(V7);
+                            break;
 			case 'refreshtitle':
 			    echo $this->refresh_title();
 			    break;
@@ -390,6 +393,24 @@ class Downloads
             $output = $this->type3_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
+            $dtype = "AB";
+            if (isset($_SESSION['phenotype'])) {
+                $filename = "traits.txt";
+                $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+                $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp, $subset);
+                fwrite($h, $output);
+                fclose($h);
+            }
+            $filename = "geneticMap.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            fwrite($h, $output);
+            fclose($h);
+            $filename = "snpfile.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
+            fclose($h);
+        } elseif ($version == "V7") {  //Download for synbreed 
             $dtype = "AB";
             if (isset($_SESSION['phenotype'])) {
                 $filename = "traits.txt";
@@ -754,7 +775,9 @@ class Downloads
                <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
                <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
                <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
-               <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b> and <b>synbreed</b>
+               <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b>
+               <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v7');">
+               <td>genotype coded as {AA, AB, BB}<br>used by <b>synbreed</b>
                </table>
                <?php
              }
@@ -958,26 +981,56 @@ class Downloads
             }
 
             $trait_name = "";
-            $sql = "select phenotypes_name from phenotypes where phenotype_uid = $traits";
+            $sql = "select phenotype_uid, phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
             $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
-            if ($row = mysql_fetch_array($res)) {
-               $trait_name = $row[0];
+            while ($row = mysql_fetch_array($res)) {
+               $uid = $row[0];
+               $trait_name = $row[1];
+               $trait_list[$uid] = $trait_name;
+               $empty[$uid] = "";
             }
-        
-            $output = 'line' . $delimiter . 'trial' . $delimiter . $trait_name . "\n";
 
-            $sql = "select tb.line_record_uid, tb.experiment_uid, pd.value as value
+            $sql = "select experiment_uid, trial_code from experiments where experiment_uid IN ($experiments)";
+            $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
+            while ($row = mysql_fetch_array($res)) {
+              $uid = $row[0];
+              $expr_name = $row[1];
+              $expr_list[$uid] = $expr_name;
+            }
+
+            $sql = "select distinct(tb.line_record_uid)
                 from tht_base as tb, phenotype_data as pd
                 where tb.experiment_uid IN ($experiments) AND
                 pd.tht_base_uid = tb.tht_base_uid
                 and pd.phenotype_uid IN ($traits)";
             $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
             while ($row = mysql_fetch_array($res)) {
-               $line_uid = $row[0];
-               $expr_uid = $row[1];
-               $value = $row[2];
-               $line_name = $line_list[$line_uid];
-               $output .= $line_name.$delimiter.$expr_uid.$delimiter.$value."\n";
+                $lines[] = $row[0];
+            }
+
+            $output = implode($delimiter, $trait_list) ;
+            $output = 'line' . $delimiter . 'trial' . $delimiter . $output . "\n"; 
+
+            $ncols = count($empty);
+            foreach ($lines as $key=>$line_uid) {
+                $line_name = $line_list[$line_uid];
+                foreach ($expr_list as $expr_uid=>$expr_name) {
+                    $outarray = $empty;
+                    $sql = "select pd.phenotype_uid, pd.value as value
+                    from tht_base as tb, phenotype_data as pd
+                    where tb.line_record_uid = $line_uid AND
+                    tb.experiment_uid = $expr_uid AND
+                    pd.tht_base_uid = tb.tht_base_uid
+                    and pd.phenotype_uid IN ($traits)";
+                    $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
+                    while ($row = mysql_fetch_array($res)) {
+                      $trait_uid = $row[0];
+                      $value = $row[1];
+                      $outarray[$trait_uid]= $row['value'];
+                    }
+                    $tmp = implode($delimiter, $outarray);
+                    $output .= $line_name.$delimiter.$expr_name.$delimiter.$tmp."\n";
+                }
             }
 	    return $output;
 	}
