@@ -26,12 +26,13 @@ Input maps
 
 Number of markers shared on each map
 <table>
-<tr><td><td>markers
-<tr><td>only on 1 map<td>22,794
-<tr><td>shared on 2 maps<br>
-(BinMap and AntMap)
-<td>1,741
-<tr><td>shared on 3 maps<td>0
+<tr><td><td>SynOP_GBS_antmap<td>SynOP_GBS_binmap<td>wsnp2013<td>KPxKC_2012<td>Aegilops2009
+<tr><td>SynOP_GBS_antmap
+<tr><td>SynOP_GBS_binmap<td>1429<td>
+<tr><td>wsnp2013<td>0<td>0
+<tr><td>KPxKC_2012<td>0<td>0<td>296
+<tr><td>Aegilops2009<td>0<td>0<td>5<td>1
+<tr><td>
 </table><br>
 
 Summary of LPmerge output for generating composite map
