@@ -266,13 +266,24 @@ private function typeExperimentCheck()
 
                //check unique plot#
                for ($i = 3; $i <= $lines_found; $i++) {
-                 $tmp = $data[$i]["A"];
+                    $tmp = $data[$i]["A"];
                     if (isset($unique_plot[$tmp])) {
                       echo "Error: duplicate plot number $tmp<br>\n";
                       $error_flag = 1;
                     } else {
                       $unique_plot{$tmp} = 1;
                     }
+               }
+
+               //check unique row column
+               for ($i = 3; $i <= $lines_found; $i++) {
+                   $tmp = $data[$i]["D"] . ":" . $data[$i]["E"];
+                   if (isset($unique_rc[$tmp])) {
+                     echo "Error: duplicate row column $tmp<br>\n";
+                     $error_flag = 1;
+                   } else {
+                     $unique_rc[$tmp] = 1;
+                   }
                }
 
                $experiment_str = implode(',', $experiment_list);
