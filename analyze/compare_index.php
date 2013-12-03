@@ -198,7 +198,6 @@ class CompareTrials
             AND t.experiment_uid IN ($experiments)
             GROUP by p.phenotype_uid";
         $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
-        echo "<option value=''>Select a trait</option>\n";
         while ($row = mysqli_fetch_row($result)) {
             $uid = $row[0];
             $pheno = $row[1];
