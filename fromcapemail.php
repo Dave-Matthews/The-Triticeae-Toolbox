@@ -17,6 +17,7 @@ $email = AESDecryptCtr($token, setting('capencryptionkey'), 128);
 $sql_email = mysql_real_escape_string($email);
 
 $user_type_participant = USER_TYPE_PARTICIPANT;
+$user_type_curator = USER_TYPE_CURATOR;
 //$sql = "select users_uid, name, institution from users where users_name='$sql_email' and user_types_uid<>$user_type_participant";
 $sql = "select users_uid, name, institution from users where users_name='$sql_email'";
 $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
@@ -59,7 +60,10 @@ HTML;
  }
  else {
    if (isset($_GET['yes'])) {
-     $sql = "update users set user_types_uid=$user_type_participant
+     // DEM dec13: For BDfunny, every registered user is a Curator.
+/*      $sql = "update users set user_types_uid=$user_type_participant */
+/* where users_uid=$users_uid"; */
+     $sql = "update users set user_types_uid=$user_type_curator
 where users_uid=$users_uid";
      mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
      echo "<h3>User was marked as CAP participant</h3>";

@@ -1,4 +1,4 @@
-<?php
+11;rgb:ffff/fafa/f0f0<?php
 /**
  * Header and Menu
  *
@@ -46,7 +46,7 @@
    // Create <title> for browser to show.
    $title = mysql_grab("select value from settings where name='title'");
    if (empty($title))
-     $title = "Breeders Database";
+     $title = "Breeders Funnyfarm";
    echo "<title>$title</title>";
    global $usegbrowse;
 
@@ -97,7 +97,7 @@ EOD;
   </div>
   <a href="./feedback.php">Contact Us</a>
   </div>
- <br><font color=white size=+1><h1 style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;Breeders Datafarm</h1></font>
+ <br><font color=white size=+1><h1 style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;Breeders Funnyfarm</h1></font>
 
 <?php
   //The navigation tab menus 
