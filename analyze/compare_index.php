@@ -219,9 +219,13 @@ class CompareTrials
         </select>
     
         <tr><td>Formula:<td><input type="text" size="50" id="formula2" name="formula2" value="(data$trial1 - data$trial2)" onchange="javascript: update_f2()">
+
+        <tr><td>Plot type:<td>
+        Scatter<input type="radio" checked name="ptype" onchange="javascript: update_ptype(this.form)">
+        Line<input type="radio" name="ptype" onchange="javascript: update_ptype(this.form)">
         </table><br><br>
     
-        <p><input type="button" value="Scatterplot and Calculate Index" onclick="javascript:cal_index()"/></p>
+        <p><input type="button" value="Plot and Calculate Index" onclick="javascript:cal_index()"/></p>
         </form>
         <?php
     }
@@ -328,6 +332,7 @@ class CompareTrials
         $unique_str = $_GET['unq'];
         $index = $_GET['index'];
         $formula = $_GET['formula'];
+        $type = $_GET['type'];
         
         //check for illegal entry
         if (preg_match("/system/", $formula)) {
@@ -392,7 +397,23 @@ class CompareTrials
             $png = "png(\"/tmp/tht/$unique_str/$file_img\", width=500, height=500)\n";
             fwrite($h, "$png");
             fwrite($h, "cn <- colnames(tmp)\n");
-            fwrite($h, "plot(tmp[,2], tmp[,3], xlab=cn[2], ylab=cn[3], main=\"Scatterplot of $trait\")\n");
+            if ($type == "line") {
+              fwrite($h, "tmp1 <- cbind(1, tmp[,2])\n");
+              fwrite($h, "tmp2 <- cbind(2, tmp[,3])\n");
+              fwrite($h, "tmp3 <- rbind(tmp1, tmp2)\n");
+              fwrite($h, "plot(tmp3, xlab=expression(\"Trial\"), ylab=\"$trait\", main=\"$trait\", axes=FALSE)\n");
+              fwrite($h, "axis(2)\n");
+              fwrite($h, "axis(1, 1:2, label=c(\"Trial 1\",\"Trial 2\"))\n");
+              fwrite($h, "axis(4)\n");
+              fwrite($h, "for (i in 1:length(tmp[,2])) {\n");
+              fwrite($h, "  tmp1 <- cbind(1, tmp[i,2])\n");
+              fwrite($h, "  tmp2 <- cbind(2, tmp[i,3])\n");
+              fwrite($h, "  tmp3 <- rbind(tmp1, tmp2)\n");
+              fwrite($h, "  lines(tmp3)\n");
+              fwrite($h, "}\n");
+            } else {
+              fwrite($h, "plot(tmp[,2], tmp[,3], xlab=cn[2], ylab=cn[3], main=\"Scatterplot of $trait\")\n");
+            }
             fwrite($h, "dev.off()\n");
             fwrite($h, "formula <- $formula\n");
             fwrite($h, "index <- formula\n");
