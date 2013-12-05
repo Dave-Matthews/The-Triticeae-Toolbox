@@ -31,50 +31,24 @@ if ($count == 0) {
     echo "<p><input type='Button' value='Back' onClick='history.go(-1)'>";
 } else {
 
-// Store the input parameters in file setupclust3d.txt.
-if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
-$setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
-fwrite($setup, "lineNames <-c('')\n");
-fwrite($setup, "nClust <- $nclusters\n");
-fwrite($setup, "setwd(\"/tmp/tht/\")\n");
-fwrite($setup, "mrkDataFile <-c('mrkData.csv".$time."')\n");
-fwrite($setup, "clustInfoFile<-c('clustInfo.txt".$time."')\n");
-fwrite($setup, "clustertableFile <-c('clustertable.txt".$time."')\n");
-fwrite($setup, "clust3dCoords<-c('clust3dCoords.csv".$time."')\n");
-fclose($setup);
-
-$starttime = time();
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
 
 $estimate = count($_SESSION['filtered_markers']) + count($_SESSION['filtered_lines']);
 $estimate = round($estimate/1000,0);
-if ($estimate < 2) {
-    exec("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster3d.txt$time");
-} else {
-    exec("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster3d.txt$time &");
-    echo "Estimated analysis time is $estimate minutes.<br>";
-    $emailAddr = $_SESSION['username'];
-    if (isset($_SESSION['username'])) {
-        echo "An email will be sent to $emailAddr when the job is complete<br>\n";
-    } else {
-        echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
-    }
-    ?>
-    <font color=red>Select the "Check Results" button to retrieve results.<br>
-    <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $time; ?>');"/>
-    </font>
-    <?php
-    die();
 }
-$elapsed = time() - $starttime;
 
 /*
  * Show the graphic.
  */
 if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
-  echo "Error - R script failed<br>\n";
+  echo "Estimated analysis time is $estimate minutes.<br>";
+  ?>
+  <font color=red>Select the "Check Results" button to retrieve results.<br>
+    <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $time; ?>');"/>
+    </font>
+  <?php
   $h = fopen("/tmp/tht/cluster3d.txt".$time,"r");
   while ($line=fgets($h)) {
     echo "$line<br>\n";
@@ -114,7 +88,6 @@ for ($i=1; $i <= count($color); $i++) {
   echo "<appearance DEF='_$i'>";
   echo "<material diffuseColor='$color[$i]' specularColor='.2 .2 .2' transparency='0.3'></material>";
   echo "</appearance>";
-}
 }
 
 if (file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
