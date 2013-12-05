@@ -1,7 +1,8 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/admin_header.php';
+set_time_limit(3000);
 connect();
 ?>
 
@@ -225,5 +226,5 @@ system("find /tmp/tht -mtime +1 -name 'mrkData.csv*' -delete");
 
 print "</div></div></div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php');
+require $config['root_dir'].'theme/footer.php';
 ?>
