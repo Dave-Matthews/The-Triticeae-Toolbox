@@ -55,6 +55,9 @@ if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
   }
   fclose($h);
   die();
+} else {
+  $filetime = filemtime("/tmp/tht/clust3dCoords.csv".$time); 
+  $elapsed = date("U", $filetime) - $time;
 }
 ?>
     <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
