@@ -1,7 +1,7 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/admin_header.php';
 connect();
 ?>
 
@@ -31,6 +31,15 @@ if ($count == 0) {
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
+if (isset($_SESSION['username'])) {
+    $emailAddr = $_SESSION['username'];
+    $emailAddr = "email <- \"$emailAddr\"\n";
+    fwrite($setup, $emailAddr);
+    $result_url = $config['base_url'] . "cluster3_status.php?time=$time";
+    $result_url = "result_url <- \"$result_url\"\n";
+    fwrite($setup, $result_url);
+}
+
 fwrite($setup, "lineNames <-c('')\n");
 fwrite($setup, "nClust <- $nclusters\n");
 fwrite($setup, "setwd(\"/tmp/tht/\")\n");
