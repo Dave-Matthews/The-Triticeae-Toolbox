@@ -34,6 +34,15 @@ if ($count == 0) {
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
+if (isset($_SESSION['username'])) {
+    $emailAddr = $_SESSION['username'];
+    $emailAddr = "email <- \"$emailAddr\"\n";
+    fwrite($setup, $emailAddr);
+    $result_url = $config['base_url'] . "cluster3_status.php?time=$time";
+    $result_url = "result_url <- \"$result_url\"\n";
+    fwrite($setup, $result_url);
+}
+
 fwrite($setup, "lineNames <-c('')\n");
 fwrite($setup, "nClust <- $nclusters\n");
 fwrite($setup, "setwd(\"/tmp/tht/\")\n");
@@ -49,7 +58,7 @@ $starttime = time();
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
 
 $estimate = count($_SESSION['filtered_markers']) + count($_SESSION['filtered_lines']);
-$estimate = round($estimate/1000,0);
+$estimate = round($estimate/2000,0);
 if ($estimate < 2) {
     exec("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster3d.txt$time");
 } else {

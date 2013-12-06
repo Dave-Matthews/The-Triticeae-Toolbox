@@ -139,3 +139,8 @@ if (length(extraLegend) > 0){ # Garbage out if no extra legend needed
 nInClust <- sapply(lineCol, function(clustNum) return(sum(whichClust == clustNum)))
 clustInfo <- paste(lineCol, lineNames, nInClust, sep=", ")
 write(clustInfo, clustInfoFile)
+
+if (exists("email")) {
+  command <- paste("echo \"kin.blup analysis is done\n", result_url, "\" | mail -s \"Results from T3 rrBLUP\"", email)
+  system(command)
+}
