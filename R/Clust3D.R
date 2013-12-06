@@ -9,8 +9,6 @@
 #system("rm setupclust3d.txt*")
 
 mrkData <- read.csv(mrkDataFile)
-lineNames2 <- as.matrix(rownames(mrkData))
-
 # DEM oct11: Now this line is breaking the script. Wonder why.
 #system2("rm", mrkDataFile)
 
@@ -85,8 +83,6 @@ for (i in 1:4){
 }
 
 # Output coordinates and cluster number for X3DOM.
-whichClust <- as.matrix(whichClust)
-rownames(whichClust) <- lineNames2
 write.table(cbind(whichClust, eigVec1, eigVec2, eigVec3), file = clust3dCoords, col.names = FALSE, sep = "\t")
 
 # The legend says where those lines are that the user is interested
@@ -102,3 +98,8 @@ write(clustInfo, clustInfoFile)
 
 # Flush the output graph to the file.
 dev.off()
+
+if (exists("email")) {
+  command <- paste("echo \"kin.blup analysis is done\n", result_url, "\" | mail -s \"Results from T3 rrBLUP\"", email)
+  system(command)
+}
