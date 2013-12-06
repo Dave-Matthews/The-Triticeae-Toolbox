@@ -141,6 +141,6 @@ clustInfo <- paste(lineCol, lineNames, nInClust, sep=", ")
 write(clustInfo, clustInfoFile)
 
 if (exists("email")) {
-  command <- paste("echo \"kin.blup analysis is done\n", result_url, "\" | mail -s \"Results from T3 rrBLUP\"", email)
+  command <- paste("echo \"cluster analysis is done\n", result_url, "\" | mail -s \"Results from T3 cluster hclust\"", email)
   system(command)
 }
