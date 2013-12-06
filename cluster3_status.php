@@ -25,18 +25,13 @@ $querytime = $_SESSION['timmer'];
 
 // Check the results of filtering before running R script
 $count = count($_SESSION['filtered_markers']);
-if ($count == 0) {
-    echo "<font color=red>Error: No markers selected<br>";
-    echo "Reselect markers with less filtering</font>";
-    echo "<p><input type='Button' value='Back' onClick='history.go(-1)'>";
-} else {
-
+if ($count > 0) {
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
 
 $estimate = count($_SESSION['filtered_markers']) + count($_SESSION['filtered_lines']);
-$estimate = round($estimate/1000,0);
+$estimate = round($estimate/2000,0);
 }
 
 /*
