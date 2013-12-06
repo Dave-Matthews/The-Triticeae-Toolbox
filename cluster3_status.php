@@ -8,12 +8,14 @@ connect();
 <div id="primaryContentContainer">
   <img id='spinner' src='./images/progress.gif' alt='Working...' style='display:none;'>
   <div id="primaryContent">
-  <h1>Cluster Lines 3D, hclust</h1>
-  <script type="text/javascript" src="cluster4.js"></script>
+  <h1>Cluster Lines 3D, pam</h1>
+  <script type="text/javascript" src="cluster3.js"></script>
   <div class="section">
 
 <?php
 $nclusters = $_GET['clusters'];
+$estimate = $_GET['anal'];
+
 // Timestamp for names of temporary files.
 $time = $_GET['time'];
 $min_maf = $_GET['mmaf'];
@@ -23,74 +25,35 @@ $querytime = $_SESSION['timmer'];
 
 // Check the results of filtering before running R script
 $count = count($_SESSION['filtered_markers']);
-if ($count == 0) {
-    echo "<font color=red>Error: No markers selected<br>";
-    echo "Reselect markers with less filtering</font>";
-    echo "<p><input type='Button' value='Back' onClick='history.go(-1)'>";
-} else {
-
-// Store the input parameters in file setupclust3d.txt.
-if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
-$setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
-if (isset($_SESSION['username'])) {
-    $emailAddr = $_SESSION['username'];
-    $emailAddr = "email <- \"$emailAddr\"\n";
-    fwrite($setup, $emailAddr);
-    $result_url = $config['base_url'] . "cluster3_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
-    $result_url = "result_url <- \"$result_url\"\n";
-    fwrite($setup, $result_url);
-}
-
-fwrite($setup, "lineNames <-c('')\n");
-fwrite($setup, "nClust <- $nclusters\n");
-fwrite($setup, "setwd(\"/tmp/tht/\")\n");
-fwrite($setup, "mrkDataFile <-c('mrkData.csv".$time."')\n");
-fwrite($setup, "phenoDataFile <-c('phenoData.csv".$time."')\n");
-fwrite($setup, "clustInfoFile<-c('clustInfo.txt".$time."')\n");
-fwrite($setup, "clustertableFile <-c('/tmp/tht/clustertable.txt".$time."')\n");
-fwrite($setup, "clust3dCoords<-c('/tmp/tht/clust3dCoords.csv".$time."')\n");
-fclose($setup);
-
-$starttime = time();
+if ($count > 0) {
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
 
 $estimate = count($_SESSION['filtered_markers']) + count($_SESSION['filtered_lines']);
 $estimate = round($estimate/2000,0);
-if ($estiamate < 2) {
-  exec("cat /tmp/tht/setupclust3d.txt$time R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time");
-} else {
-    exec("cat /tmp/tht/setupclust3d.txt$time R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time &");
-    echo "Estimated analysis time is $estimate minutes.<br>";
-    $emailAddr = $_SESSION['username'];
-    if (isset($_SESSION['username'])) {
-        echo "An email will be sent to $emailAddr when the job is complete<br>\n";
-    } else {
-        echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
-    }
-    ?>
-    <font color=red>Select the "Check Results" button to retrieve results.<br>
-    <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $time; ?>');"/>
-    </font>
-    <?php
-    die();
 }
-$elapsed = time() - $starttime;
 
 /*
  * Show the graphic.
  */
 if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
-  echo "Error - R script failed<br>\n";
-  $h = fopen("/tmp/tht/cluster4d.txt".$time,"r");
+  echo "Estimated analysis time is $estimate minutes.<br>";
+  ?>
+  <font color=red>Select the "Check Results" button to retrieve results.<br>
+    <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $time; ?>');"/>
+    </font>
+  <?php
+  $h = fopen("/tmp/tht/cluster3d.txt".$time,"r");
   while ($line=fgets($h)) {
     echo "$line<br>\n";
   }
   fclose($h);
   die();
+} else {
+  $filetime = filemtime("/tmp/tht/clust3dCoords.csv".$time); 
+  $elapsed = date("U", $filetime) - $time;
 }
-
 ?>
     <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
     <link rel="stylesheet" type="text/css" href="X3DOM/x3dom.css" />
@@ -124,11 +87,11 @@ for ($i=1; $i <= count($color); $i++) {
   echo "<material diffuseColor='$color[$i]' specularColor='.2 .2 .2' transparency='0.3'></material>";
   echo "</appearance>";
 }
-}
 
 if (file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
 $coords = file("/tmp/tht/clust3dCoords.csv".$time);
 $coords = preg_replace("/\n/", "", $coords);
+
 // Get the ranges of the PCA values.
 for ($i=0; $i<count($coords); $i++) {
   $coords[$i] = explode("\t", $coords[$i]);
@@ -184,7 +147,6 @@ for ($i=0; $i<count($coords); $i++) {
 <!-- For testing only: Show elapsed times. -->
 Query time = <?php echo $querytime ?> s<br>
 Analysis time = <?php echo $elapsed ?> s<br>
-
 <style type="text/css">
   table th {text-align: center;}
   table td {text-align: center;}
@@ -212,7 +174,7 @@ for ($i=0; $i<count($clustertable); $i++) {
 // Modify yellow a bit to show up better in text.
 $color = array('black','red','green','blue','cyan','magenta','orange','#cccc00');
 
-print "<form action='cluster_lines4d.php' method='POST' name='myForm'>";
+print "<form action='cluster_lines3d.php' method='POST' name='myForm'>";
 print "<table width=700 style='background-image: none; font-weight: bold;'>";
 print "<thead><tr><th>&nbsp;</th><th>Cluster</th><th>Count</th><th>Lines</th></tr></thead>";
 for ($i=1; $i<count($clustsize)+1; $i++) {
@@ -244,7 +206,6 @@ echo "<tr><td>markers<td>$count\n";
 $count = count($_SESSION['filtered_lines']);
 echo "<tr><td>lines<td>$count\n";
 echo "</table>";
-echo "<br>Reclustering a group of lines requires at least 25 members in a cluster<br>\n";
 print "<p>Select the clusters you want to use. ";
 print "<input type = 'hidden' name = 'time' value = $time>";
 print "<input type=button value='Re-cluster' onclick='javascript:recluster($time)'>";
@@ -256,5 +217,5 @@ system("find /tmp/tht -mtime +1 -name 'mrkData.csv*' -delete");
 
 print "</div></div></div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php');
+require $config['root_dir'].'theme/footer.php';
 ?>
