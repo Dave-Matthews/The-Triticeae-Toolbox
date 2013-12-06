@@ -92,6 +92,7 @@ if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
 }
 
 ?>
+    <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
     <link rel="stylesheet" type="text/css" href="X3DOM/x3dom.css" />
     <!-- Box for line names to appear in -->
     <style type="text/css">
@@ -227,7 +228,6 @@ print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
 }
 ?>
 </table>
-<script type="text/javascript" src="cluster4.js"></script>
 <p>
     How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1"><br>
     &nbsp;&nbsp;&nbsp;&nbsp;
