@@ -103,13 +103,13 @@ EOD;
   //The navigation tab menus 
   //Tooltips:
   $lang = array(
-		"desc_sc1" => "Search by germplasm and phenotype information",
-		"desc_sc2" => "Credits, data status ... ",
-		"desc_sc3" => "Search by genotyping information",
-		"desc_sc4" => "Search by Expression Related information.",
-		"desc_sc5" => "Database administration",
-		"desc_sc6" => "Visualization tools",
-		);
+      "desc_sc1" => "Search by germplasm and phenotype information",
+      "desc_sc2" => "Credits, data status ... ",
+      "desc_sc3" => "Search by genotyping information",
+      "desc_sc4" => "Search by Expression Related information.",
+      "desc_sc5" => "Database administration",
+      "desc_sc6" => "Visualization tools",
+  );
 ?>
 <div id="nav">
   <ul>
@@ -136,6 +136,7 @@ EOD;
   if( loginTest2() ): 
 ?>
 	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=green>My Line Panels</font></a>
+        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><font color=green>My Marker Panels</font></a>
  <?php endif ?>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
@@ -198,6 +199,7 @@ EOD;
       Phenotype Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_router.php" title="Phenotype CSR data">
       CSR Data</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/fieldbook_export.php" title="Phenotype Tablet tools">Tablet Tools</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
       Delete Trials or Experiments</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">

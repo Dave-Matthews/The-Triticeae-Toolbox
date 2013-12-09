@@ -46,6 +46,9 @@ class CompareTrials
         case 'calculate':
             $this->calculateIndex();
             break;
+        case 'status':
+            $this->updatePheno();
+            break;
         default:
             $this->displayPage();
             break;
@@ -73,7 +76,8 @@ class CompareTrials
         2. Select which trial is the normal or baseline condition.<br>
         3. Select the Index to be used for the calculation.<br>
         The formula may be modified from the selected index using valid R script notation.
-        <br><br><?php
+        <br><br>
+        <?php
         $this->displayForm();
         ?>
         <div id="step2"></div>
@@ -95,6 +99,7 @@ class CompareTrials
         $message = "";
         if (!empty($_SESSION['selected_trials'])) {
             $selected_trials = $_SESSION['selected_trials'];
+            $experiments = implode(",", $selected_trials);
             $trial1 = $selected_trials[0];
             $trial2 = $selected_trials[1];
         } else {
@@ -184,15 +189,19 @@ class CompareTrials
         ?>
         </select><td><input type="radio" name="control" value="2" onchange="javascript: update_control(this.form)">
         <tr><td>Trait:<td>
-        <select id="pheno" name="pheno" onchange="javascript: update_pheno()">
+        <select id="pheno" name="pheno" multiple="multiple" onchange="javascript: update_pheno(this.options)">
         <?php 
-        $query = "select phenotype_uid, phenotypes_name from phenotypes";
+        $query = "select p.phenotype_uid, phenotypes_name
+            FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
+            WHERE pd.tht_base_uid = t.tht_base_uid
+            AND p.phenotype_uid = pd.phenotype_uid
+            AND t.experiment_uid IN ($experiments)
+            GROUP by p.phenotype_uid";
         $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
-        echo "<option value=''>Select a trait</option>\n";
         while ($row = mysqli_fetch_row($result)) {
             $uid = $row[0];
             $pheno = $row[1];
-            if ($uid == $trait) {
+            if (in_array($uid, $selected_traits)) {
                 echo "<option value='$uid' selected>$pheno</option>\n";
             } else {
                 echo "<option value='$uid'>$pheno</optoion>\n";
@@ -210,9 +219,13 @@ class CompareTrials
         </select>
     
         <tr><td>Formula:<td><input type="text" size="50" id="formula2" name="formula2" value="(data$trial1 - data$trial2)" onchange="javascript: update_f2()">
+
+        <tr><td>Plot type:<td>
+        <input type="radio" checked name="ptype" onchange="javascript: update_ptype(this.form)">Trial 1 vs. Trial 2<br>
+        <input type="radio" name="ptype" onchange="javascript: update_ptype(this.form)">Trait vs. Trial
         </table><br><br>
     
-        <p><input type="button" value="Scatterplot and Calculate Index" onclick="javascript:cal_index()"/></p>
+        <p><input type="button" value="Plot and Calculate Index" onclick="javascript:cal_index()"/></p>
         </form>
         <?php
     }
@@ -234,6 +247,36 @@ class CompareTrials
             $unique_str = $matches[0]; 
             mkdir("/tmp/tht/$unique_str");
         }
+
+        //check if selection is valid
+        foreach ($trait_ary as $t) {
+            $query = "select phenotypes_name from phenotypes where phenotype_uid = $t";
+            $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($result)) {
+                $trait_name = $row[0];
+            } 
+            $query = "select p.phenotype_uid, phenotypes_name
+            FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
+            WHERE pd.tht_base_uid = t.tht_base_uid
+            AND p.phenotype_uid = pd.phenotype_uid
+            AND pd.phenotype_uid = $t
+            AND t.experiment_uid = $exp1";
+            $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            if (mysqli_num_rows($result) == 0) { 
+                echo "Error: trait $trait_name has no measurements for experiment $exp1<br>\n";
+            }
+            $query = "select p.phenotype_uid, phenotypes_name
+            FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
+            WHERE pd.tht_base_uid = t.tht_base_uid
+            AND p.phenotype_uid = pd.phenotype_uid
+            AND pd.phenotype_uid = $t
+            AND t.experiment_uid = $exp2"; 
+            $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            if (mysqli_num_rows($result) == 0) {
+                echo "Error: trait $trait_name has no measurements for experiment $exp2<br>\n";
+            }
+        }
+
         $datasets = "";
         $subset = "yes";
         $experiments[] = $exp1;
@@ -262,6 +305,23 @@ class CompareTrials
         }
     }
 
+    /** save trait selection
+     *
+     * @return null
+     */
+    function updatePheno()
+    {
+        if (!empty($_GET['pheno'])) {
+            $traits = $_GET['pheno'];
+            $traits = explode(",", $traits);
+            $_SESSION['selected_traits'] = $traits;
+            $count = count($traits);
+            echo "$count traits selected<br>\n";
+        } else {
+            echo "Error: no traits selected<br>\n";
+        }
+    }
+
     /** calculate index from two traits
      * 
      * @return null
@@ -272,6 +332,7 @@ class CompareTrials
         $unique_str = $_GET['unq'];
         $index = $_GET['index'];
         $formula = $_GET['formula'];
+        $type = $_GET['type'];
         
         //check for illegal entry
         if (preg_match("/system/", $formula)) {
@@ -336,7 +397,23 @@ class CompareTrials
             $png = "png(\"/tmp/tht/$unique_str/$file_img\", width=500, height=500)\n";
             fwrite($h, "$png");
             fwrite($h, "cn <- colnames(tmp)\n");
-            fwrite($h, "plot(tmp[,2], tmp[,3], xlab=cn[2], ylab=cn[3], main=\"Scatterplot of $trait\")\n");
+            if ($type == "line") {
+              fwrite($h, "tmp1 <- cbind(1, tmp[,2])\n");
+              fwrite($h, "tmp2 <- cbind(2, tmp[,3])\n");
+              fwrite($h, "tmp3 <- rbind(tmp1, tmp2)\n");
+              fwrite($h, "plot(tmp3, xlab=expression(\"Trial\"), ylab=\"$trait\", main=\"$trait\", axes=FALSE)\n");
+              fwrite($h, "axis(2)\n");
+              fwrite($h, "axis(1, 1:2, label=c(\"Trial 1\",\"Trial 2\"))\n");
+              fwrite($h, "axis(4)\n");
+              fwrite($h, "for (i in 1:length(tmp[,2])) {\n");
+              fwrite($h, "  tmp1 <- cbind(1, tmp[i,2])\n");
+              fwrite($h, "  tmp2 <- cbind(2, tmp[i,3])\n");
+              fwrite($h, "  tmp3 <- rbind(tmp1, tmp2)\n");
+              fwrite($h, "  lines(tmp3)\n");
+              fwrite($h, "}\n");
+            } else {
+              fwrite($h, "plot(tmp[,2], tmp[,3], xlab=cn[2], ylab=cn[3], main=\"Scatterplot of $trait\")\n");
+            }
             fwrite($h, "dev.off()\n");
             fwrite($h, "formula <- $formula\n");
             fwrite($h, "index <- formula\n");
@@ -346,14 +423,22 @@ class CompareTrials
             fwrite($h, "file_out <- \"/tmp/tht/$unique_str/$file_out\"\n");
             fwrite($h, "write.csv(results, file_out)\n");
             fclose($h); 
-            exec("cat /tmp/tht/$unique_str/compare.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/error.txt");
-        
-            if (file_exists("/tmp/tht/$unique_str/error.txt")) {
+            $file_err = "/tmp/tht/$unique_str/error.txt";
+            exec("cat /tmp/tht/$unique_str/compare.R | R --vanilla > /dev/null 2> $file_err");
+      
+            $found = 0; 
+            if (file_exists($file_err)) {
+                $pattern2 = "/[A-Za-z]/";
                 $h = fopen("/tmp/tht/$unique_str/error.txt", "r");
                 while ($line=fgets($h)) {
-                    echo "$line<br>\n";
+                    if (preg_match($pattern2, $line)) { 
+                        $found = 1;
+                    }
                 }
                 fclose($h);
+                if ($found) {
+                    echo "<img style=\"float: left\" alt=\"Error: in processing $trait\" />\n";
+                }
             }
             if (file_exists("/tmp/tht/$unique_str/$file_img")) {
                 echo "<img style=\"float: left\" src=\"/tmp/tht/$unique_str/$file_img\" />\n";
@@ -409,7 +494,7 @@ class CompareTrials
                 fclose($h);
                 echo "</table>";
             } else {
-                echo "Error: calculation of index failed<br>\n";
+                echo "Error: calculation of index for $trait<br>\n";
             }
         }
         echo "</table>";
