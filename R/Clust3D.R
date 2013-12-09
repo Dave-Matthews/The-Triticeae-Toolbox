@@ -98,3 +98,8 @@ write(clustInfo, clustInfoFile)
 
 # Flush the output graph to the file.
 dev.off()
+
+if (exists("email")) {
+  command <- paste("echo \"cluster analysis is done\n", result_url, "\" | mail -s \"Results from T3 cluster pam\"", email)
+  system(command)
+}

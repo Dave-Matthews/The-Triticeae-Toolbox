@@ -295,6 +295,14 @@ private function typeAnnotationCheck()
 	  }
 	}
 
+        // get list of current locations in database
+        $sql = "select location from phenotype_experiment_info";
+        $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+        while ($row = mysql_fetch_assoc($res)) {
+          $loc = $row['location'];
+          $valid_loc[$loc] = 1;
+        }
+
 	// Create the array to hold the data, $experiments[$index]:
 	$experiments = array();
 	for ($i = 0; $i < $n_trials; $i++) {
@@ -360,7 +368,9 @@ private function typeAnnotationCheck()
 	  if (!$location) {
 	    echo "Column <b>$colname</b>: Location (city, state/province/country) is required.<br>";
 	    $error_flag = ($error_flag) | (2);
-}
+          } elseif (!isset($valid_loc[$location])) {
+            echo "<font color=red>Warning: $location is not defined in the database, is the spelling correct?</font><br>";
+          }
 
 	  $collab = $experiments[$index]->collaborator;
 	  if (!$collab) {

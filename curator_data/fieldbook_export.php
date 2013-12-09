@@ -65,7 +65,8 @@ class Tablet
                 2. Download and save the fieldbook file.<br>
                 3. Connect your tablet to this computer and move this file into field_import folder of the SD card of the tablet.<br>
                 4. Import this file into the Field Book App.<br>
-                5. Define the set of traits to be measured in the Field Book App then record measurements.<br><br>
+                5. Define the set of traits to be measured in the Field Book App using the exact spelling as on the T3 database.<br>
+                6. Record measurements using the tablet.<br><br>
 
 		<div style="float: left">
 		Fieldbook:
