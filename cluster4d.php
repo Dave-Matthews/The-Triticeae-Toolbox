@@ -56,8 +56,8 @@ $starttime = time();
 //   (Regardless, R error messages will be in the Apache error.log.)
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
 
-$estimate = count($_SESSION['filtered_markers']) + count($_SESSION['filtered_lines']);
-$estimate = round($estimate/2000,0);
+$estimate = count($_SESSION['filtered_markers']) * count($_SESSION['filtered_lines']);
+$estimate = round($estimate/400000,0);
 if ($estiamate < 2) {
   exec("cat /tmp/tht/setupclust3d.txt$time R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time");
 } else {
