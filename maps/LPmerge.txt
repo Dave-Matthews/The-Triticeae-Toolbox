@@ -1,0 +1,595 @@
+[1] "1 1  chr= 1A  map= KPxKC_2012_1A"
+[1] "1 2  chr= 1A  map= SynOp_GBS_antmap_1A"
+[1] "1 3  chr= 1A  map= SynOp_GBS_binmap_1A"
+[1] "1 4  chr= 1A  map= wsnp2013_1A"
+      KPxKC_2012_1A SynOp_GBS_antmap_1A SynOp_GBS_binmap_1A         wsnp2013_1A 
+             130.20              170.12              267.00              280.95 
+[1] 212.0675
+[1] "# markers: 1016"
+[1] "# bins: 303"
+[1] "# constraints: 425"
+[1] "Finding maximum feasible subsystem."
+[1] "Linkage maps had no ordering conflicts."
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 271.25"
+                  map  RMSE
+1       KPxKC_2012_1A  0.00
+2 SynOp_GBS_antmap_1A 24.21
+3 SynOp_GBS_binmap_1A 33.90
+4         wsnp2013_1A 78.38
+5                mean 34.12
+6                  sd 32.77
+[1] "2 1  chr= 1B  map= KPxKC_2012_1B"
+[1] "2 2  chr= 1B  map= SynOp_GBS_antmap_1B"
+[1] "2 3  chr= 1B  map= SynOp_GBS_binmap_1B"
+[1] "2 4  chr= 1B  map= wsnp2013_1B"
+      KPxKC_2012_1B SynOp_GBS_antmap_1B SynOp_GBS_binmap_1B         wsnp2013_1B 
+             138.90              148.04              295.00              220.22 
+[1] 200.54
+[1] "# markers: 1519"
+[1] "# bins: 328"
+[1] "# constraints: 528"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map KPxKC_2012_1B: IWA8281 < IWA6259"
+[1] "Map SynOp_GBS_antmap_1B: synopGBS967 < synopGBS1149 synopGBS1150"
+[1] "Map SynOp_GBS_antmap_1B: synopGBS664 < synopGBS828"
+[1] "Map SynOp_GBS_antmap_1B: synopGBS56 < synopGBS222 synopGBS223"
+[1] "Map SynOp_GBS_antmap_1B: synopGBS56 < synopGBS320 synopGBS321"
+[1] "Map SynOp_GBS_antmap_1B: synopGBS664 < synopGBS688"
+[1] "Map SynOp_GBS_antmap_1B: synopGBS1238 synopGBS1395 synopGBS1396 synopGBS1397 < synopGBS1407 synopGBS1409"
+[1] "Map SynOp_GBS_antmap_1B: synopGBS1168 synopGBS1169 < synopGBS225 synopGBS752"
+[1] "Map SynOp_GBS_binmap_1B: synopGBS1346 < synopGBS104160 synopGBS101658"
+[1] "Map SynOp_GBS_antmap_1B: synopGBS434 < synopGBS664"
+[1] "Map SynOp_GBS_antmap_1B: synopGBS56 < synopGBS188 synopGBS189"
+[1] "Map SynOp_GBS_binmap_1B: synopGBS981 < synopGBS1274"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 295"
+                  map  RMSE
+1       KPxKC_2012_1B 59.75
+2 SynOp_GBS_antmap_1B 17.32
+3 SynOp_GBS_binmap_1B 73.98
+4         wsnp2013_1B 27.26
+5                mean 44.58
+6                  sd 26.69
+[1] "3 1  chr= 1D  map= Aegilops2009_1D"
+[1] "3 2  chr= 1D  map= KPxKC_2012_1D"
+[1] "3 3  chr= 1D  map= SynOp_GBS_antmap_1D"
+[1] "3 4  chr= 1D  map= SynOp_GBS_binmap_1D"
+[1] "3 5  chr= 1D  map= wsnp2013_1D"
+    Aegilops2009_1D       KPxKC_2012_1D SynOp_GBS_antmap_1D SynOp_GBS_binmap_1D 
+             180.47              102.70              154.66              239.00 
+        wsnp2013_1D 
+             110.89 
+[1] 157.544
+[1] "# markers: 610"
+[1] "# bins: 271"
+[1] "# constraints: 335"
+[1] "Finding maximum feasible subsystem."
+[1] "Linkage maps had no ordering conflicts."
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 180.47"
+                  map  RMSE
+1     Aegilops2009_1D  1.22
+2       KPxKC_2012_1D 12.34
+3 SynOp_GBS_antmap_1D 14.34
+4 SynOp_GBS_binmap_1D 49.20
+5         wsnp2013_1D  7.83
+6                mean 16.99
+7                  sd 18.70
+[1] "4 1  chr= 2A  map= KPxKC_2012_2A"
+[1] "4 2  chr= 2A  map= SynOp_GBS_antmap_2A"
+[1] "4 3  chr= 2A  map= SynOp_GBS_binmap_2A"
+[1] "4 4  chr= 2A  map= wsnp2013_2A"
+      KPxKC_2012_2A SynOp_GBS_antmap_2A SynOp_GBS_binmap_2A         wsnp2013_2A 
+             110.20              122.03              242.00              375.84 
+[1] 212.5175
+[1] "# markers: 919"
+[1] "# bins: 286"
+[1] "# constraints: 472"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map wsnp2013_2A: IWA5092 < IWA7429"
+[1] "Map wsnp2013_2A: IWA3761 < IWA3842"
+[1] "Map KPxKC_2012_2A: IWA8328 < IWA2971 IWA4623 IWA7001"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS979 < synopGBS1148"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS1082 < synopGBS1148"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS1206 synopGBS1207 < synopGBS1297 synopGBS1298 synopGBS1299"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS1206 synopGBS1207 < synopGBS1289 synopGBS1290"
+[1] "Map wsnp2013_2A: IWA4562 < IWA2612"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS1398 synopGBS1432 < synopGBS1475"
+[1] "Map SynOp_GBS_binmap_2A: synopGBS129706 synopGBS108746 synopGBS108747 synopGBS108748 synopGBS108749 synopGBS114997 synopGBS128586 synopGBS129765 synopGBS106389 < synopGBS104136 synopGBS101651"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS820 < synopGBS179"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS820 < synopGBS1328"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS884 < synopGBS994"
+[1] "Map SynOp_GBS_binmap_2A: synopGBS122913 synopGBS122914 synopGBS117401 synopGBS108616 < synopGBS979"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS136 < synopGBS635 synopGBS659"
+[1] "Map SynOp_GBS_antmap_2A: synopGBS820 < synopGBS44 synopGBS45"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 368.05"
+                  map   RMSE
+1       KPxKC_2012_2A  57.68
+2 SynOp_GBS_antmap_2A  22.53
+3 SynOp_GBS_binmap_2A  40.90
+4         wsnp2013_2A 102.80
+5                mean  55.98
+6                  sd  34.36
+[1] "5 1  chr= 2B  map= KPxKC_2012_2B"
+[1] "5 2  chr= 2B  map= SynOp_GBS_antmap_2B"
+[1] "5 3  chr= 2B  map= SynOp_GBS_binmap_2B"
+[1] "5 4  chr= 2B  map= wsnp2013_2B"
+      KPxKC_2012_2B SynOp_GBS_antmap_2B SynOp_GBS_binmap_2B         wsnp2013_2B 
+             135.40              156.35              258.00              395.92 
+[1] 236.4175
+[1] "# markers: 1888"
+[1] "# bins: 406"
+[1] "# constraints: 637"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_antmap_2B: synopGBS1175 < synopGBS1188 synopGBS1320"
+[1] "Map SynOp_GBS_binmap_2B: synopGBS1412 < synopGBS1352"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS728 < synopGBS1101"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS987 < synopGBS256"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS561 < synopGBS636 synopGBS798"
+[1] "Map SynOp_GBS_binmap_2B: synopGBS116352 synopGBS116353 synopGBS116354 synopGBS116355 < synopGBS789 synopGBS790 synopGBS791"
+[1] "Map SynOp_GBS_binmap_2B: synopGBS812 synopGBS813 < synopGBS693 synopGBS9"
+[1] "Map SynOp_GBS_binmap_2B: synopGBS812 synopGBS813 < synopGBS100307 synopGBS100507 synopGBS102916 synopGBS110024 synopGBS112741 synopGBS113865 synopGBS117556 synopGBS122219 synopGBS122697 synopGBS126972 synopGBS127822 synopGBS127823 synopGBS105537 synopGBS117354 synopGBS117355 synopGBS100435 synopGBS110818 synopGBS110819 synopGBS118129"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS616 < synopGBS1083"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS987 < synopGBS265"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS207 synopGBS880 < synopGBS1163"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS496 < synopGBS636 synopGBS798"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS801 synopGBS802 < synopGBS1188 synopGBS1320"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS1456 < synopGBS13"
+[1] "Map SynOp_GBS_antmap_2B: synopGBS257 < synopGBS1268"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 395.4"
+                  map   RMSE
+1       KPxKC_2012_2B   6.63
+2 SynOp_GBS_antmap_2B   1.56
+3 SynOp_GBS_binmap_2B  73.58
+4         wsnp2013_2B 135.68
+5                mean  54.36
+6                  sd  63.37
+[1] "6 1  chr= 2D  map= Aegilops2009_2D"
+[1] "6 2  chr= 2D  map= KPxKC_2012_2D"
+[1] "6 3  chr= 2D  map= SynOp_GBS_antmap_2D"
+[1] "6 4  chr= 2D  map= SynOp_GBS_binmap_2D"
+[1] "6 5  chr= 2D  map= wsnp2013_2D"
+    Aegilops2009_2D       KPxKC_2012_2D SynOp_GBS_antmap_2D SynOp_GBS_binmap_2D 
+             186.89               83.00              104.30              193.00 
+        wsnp2013_2D 
+             150.81 
+[1] 143.6
+[1] "# markers: 947"
+[1] "# bins: 243"
+[1] "# constraints: 298"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_binmap_2D: synopGBS115878 synopGBS115879 synopGBS115880 synopGBS106295 synopGBS106603 synopGBS106604 < synopGBS102651 synopGBS116815 synopGBS116816 synopGBS110928 synopGBS102351 synopGBS105003 synopGBS105004"
+[1] "Map SynOp_GBS_antmap_2D: synopGBS216 < synopGBS1288 synopGBS1434 synopGBS1436"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 186.89"
+                  map  RMSE
+1     Aegilops2009_2D  0.00
+2       KPxKC_2012_2D 65.14
+3 SynOp_GBS_antmap_2D  2.29
+4 SynOp_GBS_binmap_2D 55.92
+5         wsnp2013_2D  3.03
+6                mean 25.27
+7                  sd 32.37
+[1] "7 1  chr= 3A  map= KPxKC_2012_3A"
+[1] "7 2  chr= 3A  map= SynOp_GBS_antmap_3A"
+[1] "7 3  chr= 3A  map= SynOp_GBS_binmap_3A"
+[1] "7 4  chr= 3A  map= wsnp2013_3A"
+      KPxKC_2012_3A SynOp_GBS_antmap_3A SynOp_GBS_binmap_3A         wsnp2013_3A 
+             170.50              207.07              330.00              282.88 
+[1] 247.6125
+[1] "# markers: 1231"
+[1] "# bins: 367"
+[1] "# constraints: 741"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map wsnp2013_3A: IWA7350 < IWA7114"
+[1] "Map wsnp2013_3A: IWA2156 < IWA5005"
+[1] "Map SynOp_GBS_antmap_3A: synopGBS1392 < synopGBS1463 synopGBS1464"
+[1] "Map KPxKC_2012_3A: IWA4794 < IWA1536 IWA1700 IWA1701 IWA3512 IWA3999"
+[1] "Map SynOp_GBS_antmap_3A: synopGBS236 synopGBS60 < synopGBS771 synopGBS832"
+[1] "Map SynOp_GBS_antmap_3A: synopGBS1024 < synopGBS1463 synopGBS1464"
+[1] "Map SynOp_GBS_binmap_3A: synopGBS607 < synopGBS198"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 281.22"
+                  map  RMSE
+1       KPxKC_2012_3A  0.16
+2 SynOp_GBS_antmap_3A 25.36
+3 SynOp_GBS_binmap_3A 59.27
+4         wsnp2013_3A 77.45
+5                mean 40.56
+6                  sd 34.52
+[1] "8 1  chr= 3B  map= KPxKC_2012_3B"
+[1] "8 2  chr= 3B  map= SynOp_GBS_antmap_3B"
+[1] "8 3  chr= 3B  map= SynOp_GBS_binmap_3B"
+[1] "8 4  chr= 3B  map= wsnp2013_3B"
+      KPxKC_2012_3B SynOp_GBS_antmap_3B SynOp_GBS_binmap_3B         wsnp2013_3B 
+             115.90              161.73              291.00              328.76 
+[1] 224.3475
+[1] "# markers: 2023"
+[1] "# bins: 402"
+[1] "# constraints: 630"
+[1] "Finding maximum feasible subsystem."
+[1] "Linkage maps had no ordering conflicts."
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 328.18"
+                  map  RMSE
+1       KPxKC_2012_3B 20.28
+2 SynOp_GBS_antmap_3B  1.00
+3 SynOp_GBS_binmap_3B 90.12
+4         wsnp2013_3B 76.10
+5                mean 46.87
+6                  sd 42.96
+[1] "9 1  chr= 3D  map= Aegilops2009_3D"
+[1] "9 2  chr= 3D  map= KPxKC_2012_3D"
+[1] "9 3  chr= 3D  map= SynOp_GBS_antmap_3D"
+[1] "9 4  chr= 3D  map= SynOp_GBS_binmap_3D"
+    Aegilops2009_3D       KPxKC_2012_3D SynOp_GBS_antmap_3D SynOp_GBS_binmap_3D 
+             197.04              253.40              159.73              286.00 
+[1] 224.0425
+[1] "# markers: 1211"
+[1] "# bins: 330"
+[1] "# constraints: 414"
+[1] "Finding maximum feasible subsystem."
+[1] "Linkage maps had no ordering conflicts."
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 286"
+                  map  RMSE
+1     Aegilops2009_3D  0.00
+2       KPxKC_2012_3D  0.00
+3 SynOp_GBS_antmap_3D 29.28
+4 SynOp_GBS_binmap_3D 56.32
+5                mean 21.40
+6                  sd 27.06
+[1] "10 1  chr= 3D2  map= wsnp2013_3D2"
+wsnp2013_3D2 
+        1.62 
+[1] 1.62
+[1] "11 1  chr= 3D3  map= wsnp2013_3D3"
+wsnp2013_3D3 
+       21.44 
+[1] 21.44
+[1] "12 1  chr= 4A  map= KPxKC_2012_4A"
+[1] "12 2  chr= 4A  map= SynOp_GBS_antmap_4A"
+[1] "12 3  chr= 4A  map= SynOp_GBS_binmap_4A"
+[1] "12 4  chr= 4A  map= wsnp2013_4A"
+      KPxKC_2012_4A SynOp_GBS_antmap_4A SynOp_GBS_binmap_4A         wsnp2013_4A 
+              67.70              141.34              252.00              221.75 
+[1] 170.6975
+[1] "# markers: 1151"
+[1] "# bins: 248"
+[1] "# constraints: 355"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map wsnp2013_4A: IWA5200 IWA1720 < IWA8432"
+[1] "Map wsnp2013_4A: IWA5363 < IWA603"
+[1] "Map wsnp2013_4A: IWA4261 < IWA5363"
+[1] "Map SynOp_GBS_antmap_4A: synopGBS1184 synopGBS1308 synopGBS1309 synopGBS1369 synopGBS1370 synopGBS1371 < synopGBS1164"
+[1] "Map SynOp_GBS_antmap_4A: synopGBS699 < synopGBS689 synopGBS690"
+[1] "Map SynOp_GBS_antmap_4A: synopGBS500 synopGBS515 synopGBS516 synopGBS525 < synopGBS325"
+[1] "Map SynOp_GBS_antmap_4A: synopGBS327 < synopGBS325"
+[1] "Map SynOp_GBS_antmap_4A: synopGBS699 < synopGBS587 synopGBS588"
+[1] "Map SynOp_GBS_antmap_4A: synopGBS1003 synopGBS1004 synopGBS1005 < synopGBS699"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 264.16"
+                  map   RMSE
+1       KPxKC_2012_4A 196.46
+2 SynOp_GBS_antmap_4A  15.67
+3 SynOp_GBS_binmap_4A  59.11
+4         wsnp2013_4A  24.16
+5                mean  73.85
+6                  sd  83.87
+[1] "13 1  chr= 4B  map= SynOp_GBS_antmap_4B"
+[1] "13 2  chr= 4B  map= SynOp_GBS_binmap_4B"
+[1] "13 3  chr= 4B  map= wsnp2013_4B"
+SynOp_GBS_antmap_4B SynOp_GBS_binmap_4B         wsnp2013_4B 
+             130.73              200.00              148.50 
+[1] 159.7433
+[1] "# markers: 926"
+[1] "# bins: 174"
+[1] "# constraints: 253"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_antmap_4B: synopGBS199 < synopGBS631"
+[1] "Map SynOp_GBS_antmap_4B: synopGBS118 synopGBS119 synopGBS181 synopGBS227 < synopGBS336 synopGBS677 synopGBS782 synopGBS932"
+[1] "Map SynOp_GBS_antmap_4B: synopGBS1384 synopGBS1465 synopGBS1490 synopGBS1491 < synopGBS1364"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 148.5"
+                  map  RMSE
+1 SynOp_GBS_antmap_4B  2.27
+2 SynOp_GBS_binmap_4B 47.37
+3         wsnp2013_4B  0.00
+4                mean 16.55
+5                  sd 26.71
+[1] "14 1  chr= 4D  map= Aegilops2009_4D"
+[1] "14 2  chr= 4D  map= SynOp_GBS_antmap_4D"
+[1] "14 3  chr= 4D  map= SynOp_GBS_binmap_4D"
+[1] "14 4  chr= 4D  map= wsnp2013_4D"
+    Aegilops2009_4D SynOp_GBS_antmap_4D SynOp_GBS_binmap_4D         wsnp2013_4D 
+             127.36               66.83              129.00               50.67 
+[1] 93.465
+[1] "# markers: 345"
+[1] "# bins: 152"
+[1] "# constraints: 168"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_binmap_4D: synopGBS877 synopGBS878 < synopGBS114514"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 127.36"
+                  map  RMSE
+1     Aegilops2009_4D  0.00
+2 SynOp_GBS_antmap_4D 14.69
+3 SynOp_GBS_binmap_4D 26.96
+4         wsnp2013_4D 25.43
+5                mean 16.77
+6                  sd 12.44
+[1] "15 1  chr= 5A  map= SynOp_GBS_antmap_5A"
+[1] "15 2  chr= 5A  map= SynOp_GBS_binmap_5A"
+[1] "15 3  chr= 5A  map= wsnp2013_5A"
+SynOp_GBS_antmap_5A SynOp_GBS_binmap_5A         wsnp2013_5A 
+             127.94              236.00              244.88 
+[1] 202.94
+[1] "# markers: 947"
+[1] "# bins: 269"
+[1] "# constraints: 339"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_antmap_5A: synopGBS984 < synopGBS1174 synopGBS1176 synopGBS707"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 244.88"
+                  map  RMSE
+1 SynOp_GBS_antmap_5A  0.97
+2 SynOp_GBS_binmap_5A 80.97
+3         wsnp2013_5A  0.00
+4                mean 27.31
+5                  sd 46.47
+[1] "16 1  chr= 5B  map= SynOp_GBS_antmap_5B"
+[1] "16 2  chr= 5B  map= SynOp_GBS_binmap_5B"
+[1] "16 3  chr= 5B  map= wsnp2013_5B"
+SynOp_GBS_antmap_5B SynOp_GBS_binmap_5B         wsnp2013_5B 
+             171.68              317.00              312.64 
+[1] 267.1067
+[1] "# markers: 1415"
+[1] "# bins: 395"
+[1] "# constraints: 546"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_binmap_5B: synopGBS126348 synopGBS126349 synopGBS127530 synopGBS124315 synopGBS109687 synopGBS109688 synopGBS117860 synopGBS114908 synopGBS114909 synopGBS114910 synopGBS116694 < synopGBS1236"
+[1] "Map SynOp_GBS_antmap_5B: synopGBS1446 synopGBS876 < synopGBS1236"
+[1] "Map SynOp_GBS_antmap_5B: synopGBS1100 synopGBS1208 synopGBS475 < synopGBS442"
+[1] "Map SynOp_GBS_antmap_5B: synopGBS1100 synopGBS1208 synopGBS475 < synopGBS435"
+[1] "Map SynOp_GBS_antmap_5B: synopGBS1411 synopGBS1481 synopGBS985 < synopGBS442"
+[1] "Map SynOp_GBS_antmap_5B: synopGBS1411 synopGBS1481 synopGBS985 < synopGBS435"
+[1] "Map SynOp_GBS_antmap_5B: synopGBS1032 < synopGBS1277 synopGBS65"
+[1] "Map SynOp_GBS_antmap_5B: synopGBS1126 < synopGBS1018"
+[1] "Map SynOp_GBS_antmap_5B: synopGBS1400 < synopGBS442"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 317"
+                  map  RMSE
+1 SynOp_GBS_antmap_5B 23.64
+2 SynOp_GBS_binmap_5B 64.39
+3         wsnp2013_5B  0.55
+4                mean 29.53
+5                  sd 32.33
+[1] "17 1  chr= 5D  map= Aegilops2009_5D"
+[1] "17 2  chr= 5D  map= SynOp_GBS_antmap_5D"
+[1] "17 3  chr= 5D  map= SynOp_GBS_binmap_5D"
+    Aegilops2009_5D SynOp_GBS_antmap_5D SynOp_GBS_binmap_5D 
+            169.411             226.880             324.000 
+[1] 240.097
+[1] "# markers: 824"
+[1] "# bins: 246"
+[1] "# constraints: 327"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_antmap_5D: synopGBS520 synopGBS521 < synopGBS218"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 324"
+                  map  RMSE
+1     Aegilops2009_5D  0.00
+2 SynOp_GBS_antmap_5D 11.86
+3 SynOp_GBS_binmap_5D 54.10
+4                mean 21.98
+5                  sd 28.43
+[1] "18 1  chr= 5D1cult  map= wsnp2013_5D1cult"
+wsnp2013_5D1cult 
+           47.04 
+[1] 47.04
+[1] "19 1  chr= 5D2cult  map= wsnp2013_5D2cult"
+wsnp2013_5D2cult 
+           11.02 
+[1] 11.02
+[1] "20 1  chr= 5D3cult  map= wsnp2013_5D3cult"
+wsnp2013_5D3cult 
+           41.45 
+[1] 41.45
+[1] "21 1  chr= 6A  map= SynOp_GBS_antmap_6A"
+[1] "21 2  chr= 6A  map= SynOp_GBS_binmap_6A"
+[1] "21 3  chr= 6A  map= wsnp2013_6A"
+SynOp_GBS_antmap_6A SynOp_GBS_binmap_6A         wsnp2013_6A 
+             135.82              240.00              257.71 
+[1] 211.1767
+[1] "# markers: 990"
+[1] "# bins: 255"
+[1] "# constraints: 339"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_antmap_6A: synopGBS362 < synopGBS173"
+[1] "Map SynOp_GBS_antmap_6A: synopGBS890 < synopGBS28 synopGBS911"
+[1] "Map SynOp_GBS_antmap_6A: synopGBS24 synopGBS889 < synopGBS478"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 256.6"
+                  map  RMSE
+1 SynOp_GBS_antmap_6A  0.28
+2 SynOp_GBS_binmap_6A 72.15
+3         wsnp2013_6A  1.11
+4                mean 24.51
+5                  sd 41.26
+[1] "22 1  chr= 6B  map= SynOp_GBS_antmap_6B"
+[1] "22 2  chr= 6B  map= SynOp_GBS_binmap_6B"
+[1] "22 3  chr= 6B  map= wsnp2013_6B"
+SynOp_GBS_antmap_6B SynOp_GBS_binmap_6B         wsnp2013_6B 
+             139.16              236.00              243.25 
+[1] 206.1367
+[1] "# markers: 1390"
+[1] "# bins: 277"
+[1] "# constraints: 417"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_antmap_6B: synopGBS1334 < synopGBS1461"
+[1] "Map SynOp_GBS_antmap_6B: synopGBS567 synopGBS568 < synopGBS599"
+[1] "Map SynOp_GBS_antmap_6B: synopGBS331 synopGBS332 synopGBS345 synopGBS400 < synopGBS401"
+[1] "Map SynOp_GBS_antmap_6B: synopGBS653 < synopGBS673"
+[1] "Map SynOp_GBS_binmap_6B: synopGBS121057 synopGBS129470 synopGBS129471 synopGBS129472 synopGBS129473 synopGBS105368 synopGBS119992 synopGBS119993 synopGBS108255 synopGBS123141 synopGBS123142 synopGBS123143 synopGBS123144 synopGBS127504 synopGBS127505 synopGBS127506 synopGBS127733 synopGBS121257 synopGBS121258 synopGBS105052 < synopGBS710 synopGBS711 synopGBS712"
+[1] "Map SynOp_GBS_antmap_6B: synopGBS673 < synopGBS710 synopGBS711 synopGBS712"
+[1] "Map SynOp_GBS_antmap_6B: synopGBS1235 synopGBS592 synopGBS686 < synopGBS619"
+[1] "Map SynOp_GBS_antmap_6B: synopGBS331 synopGBS332 synopGBS345 synopGBS400 < synopGBS471 synopGBS472"
+[1] "Map SynOp_GBS_antmap_6B: synopGBS1235 synopGBS592 synopGBS686 < synopGBS637"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 243.25"
+                  map  RMSE
+1 SynOp_GBS_antmap_6B 23.91
+2 SynOp_GBS_binmap_6B 36.87
+3         wsnp2013_6B  0.00
+4                mean 20.26
+5                  sd 18.71
+[1] "23 1  chr= 6D  map= Aegilops2009_6D"
+[1] "23 2  chr= 6D  map= SynOp_GBS_antmap_6D"
+[1] "23 3  chr= 6D  map= SynOp_GBS_binmap_6D"
+    Aegilops2009_6D SynOp_GBS_antmap_6D SynOp_GBS_binmap_6D 
+             149.33              160.94              278.00 
+[1] 196.09
+[1] "# markers: 888"
+[1] "# bins: 235"
+[1] "# constraints: 315"
+[1] "Finding maximum feasible subsystem."
+[1] "Linkage maps had no ordering conflicts."
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 161.39"
+                  map  RMSE
+1     Aegilops2009_6D  0.00
+2 SynOp_GBS_antmap_6D  0.45
+3 SynOp_GBS_binmap_6D 74.75
+4                mean 25.07
+5                  sd 43.03
+[1] "24 1  chr= 6D1  map= wsnp2013_6D1"
+wsnp2013_6D1 
+       12.23 
+[1] 12.23
+[1] "25 1  chr= 6D2  map= wsnp2013_6D2"
+wsnp2013_6D2 
+      161.94 
+[1] 161.94
+[1] "26 1  chr= 6D3  map= wsnp2013_6D3"
+wsnp2013_6D3 
+       11.21 
+[1] 11.21
+[1] "27 1  chr= 7A  map= SynOp_GBS_antmap_7A"
+[1] "27 2  chr= 7A  map= SynOp_GBS_binmap_7A"
+[1] "27 3  chr= 7A  map= wsnp2013_7A"
+SynOp_GBS_antmap_7A SynOp_GBS_binmap_7A         wsnp2013_7A 
+             184.91              324.00              295.91 
+[1] 268.2733
+[1] "# markers: 1509"
+[1] "# bins: 330"
+[1] "# constraints: 447"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_binmap_7A: synopGBS102600 synopGBS115378 synopGBS115379 < synopGBS1474"
+[1] "Map SynOp_GBS_antmap_7A: synopGBS348 synopGBS349 synopGBS350 < synopGBS954"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 324"
+                  map  RMSE
+1 SynOp_GBS_antmap_7A 44.17
+2 SynOp_GBS_binmap_7A 49.38
+3         wsnp2013_7A  0.00
+4                mean 31.18
+5                  sd 27.13
+[1] "28 1  chr= 7B  map= SynOp_GBS_antmap_7B"
+[1] "28 2  chr= 7B  map= SynOp_GBS_binmap_7B"
+[1] "28 3  chr= 7B  map= wsnp2013_7B"
+SynOp_GBS_antmap_7B SynOp_GBS_binmap_7B         wsnp2013_7B 
+             179.55              270.00              275.06 
+[1] 241.5367
+[1] "# markers: 1673"
+[1] "# bins: 280"
+[1] "# constraints: 408"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_antmap_7B: synopGBS356 synopGBS357 synopGBS485 synopGBS595 < synopGBS1039 synopGBS1040 synopGBS1041 synopGBS1042 synopGBS1085"
+[1] "Map SynOp_GBS_antmap_7B: synopGBS606 < synopGBS1391"
+[1] "Map SynOp_GBS_antmap_7B: synopGBS891 < synopGBS1326"
+[1] "Map SynOp_GBS_antmap_7B: synopGBS1333 < synopGBS947"
+[1] "Map SynOp_GBS_antmap_7B: synopGBS393 < synopGBS487"
+[1] "Map SynOp_GBS_antmap_7B: synopGBS606 < synopGBS1190 synopGBS1191 synopGBS628"
+[1] "Map SynOp_GBS_antmap_7B: synopGBS487 < synopGBS1391"
+[1] "Map SynOp_GBS_antmap_7B: synopGBS113 < synopGBS356 synopGBS357 synopGBS485 synopGBS595"
+[1] "Map SynOp_GBS_antmap_7B: synopGBS589 synopGBS590 synopGBS591 < synopGBS1326"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 275.06"
+                  map  RMSE
+1 SynOp_GBS_antmap_7B  5.47
+2 SynOp_GBS_binmap_7B 56.98
+3         wsnp2013_7B  0.00
+4                mean 20.81
+5                  sd 31.44
+[1] "29 1  chr= 7D  map= Aegilops2009_7D"
+[1] "29 2  chr= 7D  map= SynOp_GBS_antmap_7D"
+[1] "29 3  chr= 7D  map= SynOp_GBS_binmap_7D"
+    Aegilops2009_7D SynOp_GBS_antmap_7D SynOp_GBS_binmap_7D 
+             154.52              193.72              339.00 
+[1] 229.08
+[1] "# markers: 1123"
+[1] "# bins: 286"
+[1] "# constraints: 361"
+[1] "Finding maximum feasible subsystem."
+[1] "Eliminated following constraints to resolve marker order conflicts: "
+[1] "Map SynOp_GBS_binmap_7D: synopGBS120297 < synopGBS101992 synopGBS101993 synopGBS100977 synopGBS101043 synopGBS103161 synopGBS106268 synopGBS106403 synopGBS109459 synopGBS110366 synopGBS115495 synopGBS117470 synopGBS117471 synopGBS120077 synopGBS120078 synopGBS120284 synopGBS121746 synopGBS122983 synopGBS127289 synopGBS124142 synopGBS101130 synopGBS101131 synopGBS104584 synopGBS106355 synopGBS106388 synopGBS108803 synopGBS109833 synopGBS113537 synopGBS121011 synopGBS123917 synopGBS124879 synopGBS129580 synopGBS101304 synopGBS108271 synopGBS108802 synopGBS110032 synopGBS115118 synopGBS115884 synopGBS116959 synopGBS117726 synopGBS117727 synopGBS120283 synopGBS121919 synopGBS125188 synopGBS125235 synopGBS122488 synopGBS104998 synopGBS123823 synopGBS116102 synopGBS118083"
+[1] "Generating composite map."
+[1] "Max.Interval = 3"
+[1] "Composite map length: 221.24"
+                  map  RMSE
+1     Aegilops2009_7D  0.00
+2 SynOp_GBS_antmap_7D 27.52
+3 SynOp_GBS_binmap_7D 70.92
+4                mean 32.81
+5                  sd 35.76
+[1] "30 1  chr= 7D1  map= wsnp2013_7D1"
+wsnp2013_7D1 
+        1.65 
+[1] 1.65
+[1] "31 1  chr= 7D2  map= wsnp2013_7D2"
+wsnp2013_7D2 
+       46.67 
+[1] 46.67
+[1] "32 1  chr= 7D3  map= wsnp2013_7D3"
+wsnp2013_7D3 
+        3.01 
+[1] 3.01
+

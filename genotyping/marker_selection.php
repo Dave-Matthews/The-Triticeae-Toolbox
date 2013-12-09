@@ -1,94 +1,103 @@
 <?php
 /**
  * select markers and save in session variable
+ *
+ * PHP version 5.3
+ * Prototype version 1.5.0
  * 
  * @category PHP
- * @package T3
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/genotyping/marker_selection.php
  * 
  * 16mar12 dem Allow selecting markers that are not in maps.
  *             Un-require all marker names to also be in marker_synonyms.value.
  * 9/2/2010   J.Lee modify to add new snippet Gbrowse tracks
  * 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse   
  */
-$usegbrowse = False;
+$usegbrowse = false;
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
+require $config['root_dir'].'includes/bootstrap.inc';
 connect();
 session_start();
-include($config['root_dir'].'theme/admin_header.php');
+require $config['root_dir'].'theme/admin_header.php';
 ?>
 
 <div id="primaryContentContainer">
-  <div id="primaryContent">
-  <script type="text/javascript" src="theme/new.js"></script>
-  <h2> Select Markers</h2>
-  <br>
-  <div id= "current" class="boxContent">
-  <h3>Currently selected markers</h3>
-  <?php
+<div id="primaryContent">
+<script type="text/javascript" src="theme/new.js"></script>
+<h2> Select Markers</h2>
+<br>
+<div id= "current" class="boxContent">
+<h3>Currently selected markers</h3>
+<?php
 
-  /**
-   * get map_uid for given mapname
-   * @return integer
-   */
-  function get_submitted_mapid() {
-  $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
-  $sql = "select map_uid from map
-where map_name='" . mysql_real_escape_string($us_mapname) . "'";
-  $sqlr = mysql_fetch_assoc(mysql_query($sql));
-  return $sqlr['map_uid'];
+/**
+ * get map_uid for given mapname
+ *
+ * @return integer
+ */
+function getSubmittedMapid()
+{
+    $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
+    $sql = "select map_uid from map
+    where map_name='" . mysql_real_escape_string($us_mapname) . "'";
+    $sqlr = mysql_fetch_assoc(mysql_query($sql));
+    return $sqlr['map_uid'];
 }  
 
 if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
-  // Handle <space>- and <tab-separated words.
-  //$selmkrnames = preg_split("/\r\n/", $_POST['selMarkerstring']);
-  $s = preg_replace("/\\s+/", "\\r\\n", $_POST['selMarkerstring']);
-  $selmkrnames = explode("\\r\\n", $s);
-  // Get the marker uids.
-  $selmkrs = array();
-  foreach ($selmkrnames as $mkrnm) {
-    //$sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm'";
-    $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
-            select marker_uid from markers where marker_name = '$mkrnm'";
-    $r = mysql_query($sql);
-    if (mysql_num_rows($r) == 0)
-      echo "<font color=red>\"$mkrnm\" not found.</font><br>";
-    else {
-      $row = mysql_fetch_row($r);
-      // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
-      if (! in_array($row[0], $selmkrs))
-	array_push($selmkrs, $row[0]);
+    // Handle <space>- and <tab-separated words.
+    //$selmkrnames = preg_split("/\r\n/", $_POST['selMarkerstring']);
+    $s = preg_replace("/\\s+/", "\\r\\n", $_POST['selMarkerstring']);
+    $selmkrnames = explode("\\r\\n", $s);
+    // Get the marker uids.
+    $selmkrs = array();
+    foreach ($selmkrnames as $mkrnm) {
+        //$sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm'";
+        $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
+          select marker_uid from markers where marker_name = '$mkrnm'";
+        $r = mysql_query($sql);
+        if (mysql_num_rows($r) == 0)
+            echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+        else {
+            $row = mysql_fetch_row($r);
+            // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
+            if (! in_array($row[0], $selmkrs))
+                array_push($selmkrs, $row[0]);
+        }
     }
-  }
-  $clkmkrs=$_SESSION['clicked_buttons'];
-  if (!isset($clkmkrs) || ! is_array($clkmkrs)) $clkmkrs=array();
-  foreach($selmkrs as $mkruid) {
-    if (! in_array($mkruid, $clkmkrs)) 
-      array_push($clkmkrs, $mkruid);
-  }
-  $_SESSION['clicked_buttons'] = $clkmkrs;
-  // Get the uid of a map each of the markers is on.
+    $clkmkrs=$_SESSION['clicked_buttons'];
+    if (!isset($clkmkrs) || ! is_array($clkmkrs)) $clkmkrs=array();
+    foreach ($selmkrs as $mkruid) {
+        if (! in_array($mkruid, $clkmkrs)) 
+            array_push($clkmkrs, $mkruid);
+    }
+    $_SESSION['clicked_buttons'] = $clkmkrs;
+    // Get the uid of a map each of the markers is on.
     $mapids = $_SESSION['mapids'];
     if (!isset($mapids) || !is_array($mapids))
-      $mapids = array();
-  foreach ($selmkrs as $mkr) {
-    $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
-    //$sql = "select distinct map_uid from markers where marker_uid = $mkr";
-    $r = mysql_query($sql);
-    $row = mysql_fetch_row($r);
-    if (! in_array($row[0], $mapids))
-      array_push($mapids, $row[0]);
-  }
-  $_SESSION['mapids'] = $mapids;
-  ?>
-  <script type="text/javascript">
+        $mapids = array();
+    foreach ($selmkrs as $mkr) {
+        $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
+        //$sql = "select distinct map_uid from markers where marker_uid = $mkr";
+        $r = mysql_query($sql);
+        $row = mysql_fetch_row($r);
+        if (! in_array($row[0], $mapids))
+            array_push($mapids, $row[0]);
+    }
+    $_SESSION['mapids'] = $mapids;
+    ?>
+    <script type="text/javascript">
     update_side_menu();
-  </script>
-  <?php
- }
+    </script>
+    <?php
+}
 
 if (isset($_POST['selMkrs']) || isset($_POST['selbyname'])) {
-  $mapid = get_submitted_mapid();
+    $mapid = getSubmittedMapid();
     if (isset($_POST['selMkrs'])) 
       $selmkrs=$_POST['selMkrs'];
     else {
@@ -250,9 +259,11 @@ EOD;
  if (! isset($username) || strlen($username)<1) $username="Public";
  store_session_variables('clicked_buttons', $username);
  store_session_variables('mapids',$username);
- } elseif (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) >= 1000)) {
+ }
+ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
    $count = count($_SESSION['clicked_buttons']);
-   print "$count markers selected<br>";
+   print "$count markers selected. ";
+   print "<a href=genotyping/display_markers.php>Download list of markers</a><br>\n";
  } // end of if Currently Selected
  else print "None<br>";
 ?>
@@ -269,7 +280,7 @@ EOD;
   </form>
   </div>
 
-  <div id="markerSel" class="boxContent">
+  <div id="markerSel" class="boxContent" style="float: left; margin-bottom: 1.5em;">
   <h3> Select markers in a range of map positions</h3>
   <form id="markerSelForm" action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
   <table id="markeSelTab">
@@ -295,12 +306,54 @@ while ($row=mysql_fetch_assoc($result)) {
 </form>
 </div>
 
+<div class="boxContent" style="float: left; margin-botton: 1.5em;">
+<?php
+$result=mysql_query("select markerpanels_uid, name, marker_ids, comment from markerpanels");
+if (mysql_num_rows($result) > 0) {
+    ?>
+    <h3> Preselected marker sets</h3>
+    <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
+    <table id="markeSetTab">
+    <thead><tr><th>Panel</th><th>Markers</th></tr></thead>
+    <tbody>
+    <tr><td>
+    <select name='mapset' size=10 onchange="javascript: DispMarkerSet(this.options)">
+    <?php
+    if (loginTest2()) {
+        $row = loadUser($_SESSION['username']);
+        $myid = $row['users_uid'];
+        $sql = "SELECT markerpanels_uid, name FROM markerpanels where users_uid = $myid";
+        $res = mysql_query($sql) or die(mysql_error());
+        while ($row=mysql_fetch_assoc($res)) {
+            $name = $row['name'];
+            $desc = $row['comment'];
+            print "<option value='$name' title='$desc'>$name</option>";
+        }
+        print "<option disabled>Everybody's:</option>";
+    }
+    $sql = "select markerpanels_uid, name, marker_ids, comment from markerpanels where users_uid is NULL";
+    $res = mysql_query($sql) or die(mysql_error());
+    while ($row=mysql_fetch_assoc($res)) {
+        $uid = $row['markerpanels_uid'];
+        $name = $row['name'];
+        $desc = $row['comment'];
+        print "<option value='$name' title='$desc'>$name</option>";
+    }
+    ?>
+    </select>
+    <td id="markerSet">Choose set.
+    </td></tbody></table></form>
+    <?php
+}
+?>
+</div>
+<div class="boxContent" style="clear: both;"></div>
 <h3>Select by genotyping platform and experiment</h3>
 <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
 <div class="boxContent" style="float: left; margin-buttom: 1.5em;">
   <table>
   <thead>
-  <tr><th>Platform
+  <tr><th>Platform</th><th>Experiment
   <tbody>
   <tr><td>
   <select name='platform[]' size=10 multiple onchange="javascript: update_platform(this.options)">
@@ -313,10 +366,11 @@ while ($row=mysql_fetch_assoc($result)) {
 }
 ?>
 </select>
+<td id="col2">Choose platform
 </table>
 </form>
 </div>
-<div class="boxContent" id="col2" style="float: left; margin-buttom: 1.5em;"></div>
+<div class="boxContent" style="float: left; margin-buttom: 1.5em;"></div>
 <div class="boxContent" style="clear: both; float: left; width: 100%">
   <h3> Select using GBrowse</h3>
 Hover over a marker and click "Select in THT" in the popup balloon.
