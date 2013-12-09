@@ -6,6 +6,7 @@ var trial1 = "";
 var trial2 = "";
 var pheno = "";
 var index = "Difference";
+var ptype = "scatter";
 var formula1 = "DI";
 var formula2 = "(data$trial1 - data$trial2)";
 var control = 1;
@@ -29,7 +30,7 @@ function hide_index(pheno_uid) {
 }
 
 function run_compare(unq_file) {
-    var url = php_self + "?function=calculate" + "&unq=" + unq_file + "&index=" + index + "&formula=" + formula2;
+    var url = php_self + "?function=calculate" + "&unq=" + unq_file + "&index=" + index + "&formula=" + formula2 + "&type=" + ptype;
     var tmp = new Ajax.Updater($('step3'), url, {
         onComplete : function () {
             $('step3').show();
@@ -65,6 +66,14 @@ function update_t1() {
 function update_t2() {
 	var e= document.getElementById("trial2");
 	trial2 = e.options[e.selectedIndex].value;
+}
+
+function update_ptype(frm) {
+        if (frm.ptype[1].checked) {
+            ptype = "line";
+        } else {
+            ptype = "scatter";
+        }
 }
 
 function update_pheno(options) {

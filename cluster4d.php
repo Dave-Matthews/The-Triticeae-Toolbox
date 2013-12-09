@@ -1,7 +1,7 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/admin_header.php';
 connect();
 ?>
 
@@ -9,6 +9,7 @@ connect();
   <img id='spinner' src='./images/progress.gif' alt='Working...' style='display:none;'>
   <div id="primaryContent">
   <h1>Cluster Lines 3D, hclust</h1>
+  <script type="text/javascript" src="cluster4.js"></script>
   <div class="section">
 
 <?php
@@ -31,6 +32,15 @@ if ($count == 0) {
 // Store the input parameters in file setupclust3d.txt.
 if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
 $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
+if (isset($_SESSION['username'])) {
+    $emailAddr = $_SESSION['username'];
+    $emailAddr = "email <- \"$emailAddr\"\n";
+    fwrite($setup, $emailAddr);
+    $result_url = $config['base_url'] . "cluster3_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
+    $result_url = "result_url <- \"$result_url\"\n";
+    fwrite($setup, $result_url);
+}
+
 fwrite($setup, "lineNames <-c('')\n");
 fwrite($setup, "nClust <- $nclusters\n");
 fwrite($setup, "setwd(\"/tmp/tht/\")\n");
@@ -45,7 +55,27 @@ $starttime = time();
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
-exec("cat /tmp/tht/setupclust3d.txt$time R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time");
+
+$estimate = count($_SESSION['filtered_markers']) * count($_SESSION['filtered_lines']);
+$estimate = round($estimate/400000,0);
+if ($estiamate < 2) {
+  exec("cat /tmp/tht/setupclust3d.txt$time R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time");
+} else {
+    exec("cat /tmp/tht/setupclust3d.txt$time R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time &");
+    echo "Estimated analysis time is $estimate minutes.<br>";
+    $emailAddr = $_SESSION['username'];
+    if (isset($_SESSION['username'])) {
+        echo "An email will be sent to $emailAddr when the job is complete<br>\n";
+    } else {
+        echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
+    }
+    ?>
+    <font color=red>Select the "Check Results" button to retrieve results.<br>
+    <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $time; ?>');"/>
+    </font>
+    <?php
+    die();
+}
 $elapsed = time() - $starttime;
 
 /*
@@ -198,7 +228,6 @@ print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
 }
 ?>
 </table>
-<script type="text/javascript" src="cluster4.js"></script>
 <p>
     How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1"><br>
     &nbsp;&nbsp;&nbsp;&nbsp;
