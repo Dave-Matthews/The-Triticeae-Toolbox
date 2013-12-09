@@ -221,8 +221,8 @@ class CompareTrials
         <tr><td>Formula:<td><input type="text" size="50" id="formula2" name="formula2" value="(data$trial1 - data$trial2)" onchange="javascript: update_f2()">
 
         <tr><td>Plot type:<td>
-        Scatter<input type="radio" checked name="ptype" onchange="javascript: update_ptype(this.form)">
-        Line<input type="radio" name="ptype" onchange="javascript: update_ptype(this.form)">
+        <input type="radio" checked name="ptype" onchange="javascript: update_ptype(this.form)">Trial 1 vs. Trial 2<br>
+        <input type="radio" name="ptype" onchange="javascript: update_ptype(this.form)">Trait vs. Trial
         </table><br><br>
     
         <p><input type="button" value="Plot and Calculate Index" onclick="javascript:cal_index()"/></p>
