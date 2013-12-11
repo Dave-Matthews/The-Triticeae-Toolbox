@@ -26,7 +26,7 @@ class Traits {
   private function typeSelect() {
     global $config;
     include($config['root_dir'] . 'theme/admin_header.php');
-    echo "<h2>Add or Edit CSR Information </h2>"; 
+    echo "<h2>Add or Edit Canopy Spectral Reflectance (CSR) Information </h2>"; 
     $this->type_func_sel();
     $footer_div = 1;
     include($config['root_dir'].'theme/footer.php');
@@ -45,18 +45,19 @@ class Traits {
   h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
 
+The Phenotype Trial must be loaded before adding CSR data<br><br>
 <table>
+    <tr><td>Field Book<td><form action="<?php echo $url2; ?>" method="GET">
+        <input type="submit" value="Add">
+      </form><td>plot, line, trial, row, column, and experiment design
     <tr><td>Spectrometer System<td><form action="<?php echo $url1; ?>" method="GET">
         <input type="submit" value="Add">
-      </form>
-    <tr><td>Field Book<td><form action="<?php echo $url2; ?>" method="GET">
-	<input type="submit" value="Add">
-      </form>
+      </form><td>spectrometer system used for recording the measurements
      <tr><td>Phenotype Results<td><form action="<?php echo $url3; ?>" method="GET">
-	<input type="submit" value="Add">
+	<input type="submit" value="Add"><td>CSR data and Annotation file
       </form>  
      <tr><td>Calculate Index<td><form action="<?php echo $url4; ?>" method="GET">
-        <input type="submit" value="Add">
+        <input type="submit" value="Add"><td>calculate an index for a loaded phenotype data file using a formula (NDVI, NWI, etc)
       </form>
 </table>
 
