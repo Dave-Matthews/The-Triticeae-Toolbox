@@ -278,11 +278,13 @@ private function typeExperimentCheck()
                //check unique row column
                for ($i = 3; $i <= $lines_found; $i++) {
                    $tmp = $data[$i]["D"] . ":" . $data[$i]["E"];
-                   if (isset($unique_rc[$tmp])) {
-                     echo "Error: duplicate row column $tmp<br>\n";
-                     $error_flag = 1;
-                   } else {
-                     $unique_rc[$tmp] = 1;
+                   if (preg_match("/[0-9]/", $tmp)) {
+                       if (isset($unique_rc[$tmp])) {
+                           echo "Error: duplicate row column $tmp<br>\n";
+                           $error_flag = 1;
+                       } else {
+                         $unique_rc[$tmp] = 1;
+                       }
                    }
                }
 
