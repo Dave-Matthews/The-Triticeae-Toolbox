@@ -135,6 +135,8 @@ class Instrument_Check
     } else {
       echo "using $metafile<br>\n";
     }
+    echo "<br>\n";
+
       $FileType = PHPExcel_IOFactory::identify($raw_path);
       switch ($FileType) {
         case 'Excel2007':
@@ -188,6 +190,29 @@ class Instrument_Check
                    $slit_aperature = "NULL";
                }
 
+               //check for missing entries
+
+               if ($value[7] == "") {
+                   $value[7] = "NULL";
+               } elseif (preg_match("/[A-Za-z0-9]/", $value[7])) {
+               } else {
+                   die("<font color=red>Error - Collection lens should be character</font>, found $value[7]<br>");
+               }
+
+               if ($value[8] == "") {
+                   $value[8] = "NULL";
+               } elseif (preg_match("/\d+/", $value[8])) {
+               } else {
+                   die("<font color=red>Error - Longpass filter should be integer</font>, found $value[8]<br>");
+               }
+
+               if ($value[9] == "") {
+                   $value[9] = "NULL";
+               } elseif (preg_match("/\d+/", $value[9])) {
+               } else {
+                   die("<font color=red>Error - slit aperature should be integer</font>, found $value[9]<br>");
+               }
+
 	       $sql = "select system_uid from csr_system where system_name = \"$value[2]\"";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                $row = mysqli_fetch_array($res);
@@ -212,9 +237,6 @@ class Instrument_Check
                  $new_record = 0;
                }
         
-               //check for missing entries
-
-
                if ($error_flag == 0) {
                  if ($new_record) {
                    $sql = "insert into csr_system (system_name, instrument, serial_num, serial_num2, grating, collection_lens, longpass_filter, slit_aperture, reference, cable_type, wavelengths, bandwidths, comments) values ('$value[2]','$value[3]','$value[4]','$value[5]','$value[6]','$value[7]','$value[8]',$value[9],'$value[10]','$value[11]','$value[12]','$value[13]','$value[14]')";
