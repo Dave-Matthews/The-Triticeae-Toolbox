@@ -52,7 +52,22 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
     } else {
         include $config['root_dir'].'theme/admin_header.php';
         $use_file = 0;
-        echo "<table><tr><td>name<td>type<td>A_allele<td>B_allele<td>synonym<td>mapped<td>lines genotyped<td>sequence\n";
+        ?>
+        <h2>Marker Information</h2>
+        <table><tr><th>name<th>type<th>A_allele<th>B_allele<th>synonym<th>mapped<th>lines genotyped<th>sequence
+        <style type="text/css">
+        th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+        table {background: none; border-collapse: collapse}
+        td {border: 1px solid #eee !important;}
+        h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+        </style>
+
+        <style type="text/css">
+        table.marker {background: none; border-collapse: collapse}
+        th.marker {background: #5b53a6; color: #fff; padding: 5px 0; border: 0; border-color: #fff}
+        td.marker {padding: 5px 0; border: 0 !important;}
+        </style>
+        <?php
     }
     foreach ($_SESSION['clicked_buttons'] as $mkruid) {
         $count_markers++;
@@ -96,6 +111,6 @@ if ($use_file) {
     fclose($h);
     header("Location: ".$dir.$filename);
 } else {
-    echo "</table>";
+    echo "</table><br>";
     print "<a href=genotyping/display_markers.php?function=download>Download marker information</a><br>\n";
 }
