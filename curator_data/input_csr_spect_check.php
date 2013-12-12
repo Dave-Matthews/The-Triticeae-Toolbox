@@ -183,34 +183,26 @@ class Instrument_Check
                  $error_flag = 1;
                }
 
-               //check for unique record
-               if (preg_match("/[0-9]/",$value[9])) {
-                   $slit_aperature = $value[9];
-               } else {
-                   $slit_aperature = "NULL";
-               }
-
                //check for missing entries
 
                if ($value[7] == "") {
-                   $value[7] = "NULL";
                } elseif (preg_match("/[A-Za-z0-9]/", $value[7])) {
                } else {
                    die("<font color=red>Error - Collection lens should be character</font>, found $value[7]<br>");
                }
 
                if ($value[8] == "") {
-                   $value[8] = "NULL";
                } elseif (preg_match("/\d+/", $value[8])) {
                } else {
                    die("<font color=red>Error - Longpass filter should be integer</font>, found $value[8]<br>");
                }
 
-               if ($value[9] == "") {
-                   $value[9] = "NULL";
-               } elseif (preg_match("/\d+/", $value[9])) {
-               } else {
+               if (preg_match("/[A-Za-z]/", $value[9])) {
                    die("<font color=red>Error - slit aperature should be integer</font>, found $value[9]<br>");
+               } elseif (preg_match("/\d+/", $value[9])) {
+                   $slit_aperature = $value[9];
+               } else {
+                   $slit_aperature = "NULL";
                }
 
 	       $sql = "select system_uid from csr_system where system_name = \"$value[2]\"";
@@ -239,7 +231,7 @@ class Instrument_Check
         
                if ($error_flag == 0) {
                  if ($new_record) {
-                   $sql = "insert into csr_system (system_name, instrument, serial_num, serial_num2, grating, collection_lens, longpass_filter, slit_aperture, reference, cable_type, wavelengths, bandwidths, comments) values ('$value[2]','$value[3]','$value[4]','$value[5]','$value[6]','$value[7]','$value[8]',$value[9],'$value[10]','$value[11]','$value[12]','$value[13]','$value[14]')";
+                   $sql = "insert into csr_system (system_name, instrument, serial_num, serial_num2, grating, collection_lens, longpass_filter, slit_aperture, reference, cable_type, wavelengths, bandwidths, comments) values ('$value[2]','$value[3]','$value[4]','$value[5]','$value[6]','$value[7]','$value[8]',$slit_aperature,'$value[10]','$value[11]','$value[12]','$value[13]','$value[14]')";
                    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                    echo "saved to database<br>\n";
                  } else {
