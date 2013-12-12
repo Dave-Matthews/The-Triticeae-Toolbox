@@ -96,7 +96,7 @@ class Tablet
 		<input type="hidden" id="plot" name="plot" value="-1" />
 		<input id="file[]" type="file" name="file[]" size="50%" />
 		<input type="submit" value="Upload" /><br>
-		<a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTabletTemplate.csv">Example Tablet file</a><br>
+		<a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTabletTemplate.csv">Example Plot file</a><br>
 		</form></p>
 		
 		</div><br>
