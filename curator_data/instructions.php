@@ -19,35 +19,31 @@ connect();
     <li>Data templates are .csv, .txt or  Excel worksheets with column headers for
       the data T3 requires or accepts.
     <li>Most example values can simply be replaced with your own, and notes about the restrictions for valid
-      data are included on the templates.    
-    <li>Once populated, the complete Excel or text files can be uploaded
-      directly into the T3 software. 
-    <li>CAP participants should use the Sandbox database for your crop to test load data.
-    <li>Some values are checked for validity (most are not).  
+      data are included.    
+    <li>Once populated, the files can be uploaded
+      directly into T3. 
     <li>To make updates or corrections, edit your file and reload.
-    <li>See specific tutorials for more information.  
+    <li>Please use the Sandbox database, <a href="http://malt.pw.usda.gov/t3/sandbox/wheat">wheat</a> 
+      or <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a>, 
+      for test-loading your files.  Once they&apos;re ready,
+      click below to submit them officially.<br>
+      <input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
   </ul>
 
   <p>
     <b><?php filelink2("Instructions","Steps_in_Data_Submission_to_T3.docx", "T3") ?></b> 
     - Rules for filling in the templates, and sequence of submission
-  <p>
+<br>
     <b>Tutorials</b><br>
-    <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson1_LineUpload.html" target="_blank">Lesson One.</a> Germplasm file creation and upload<br>
-    <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson2_Phenotype2012.html" target="_blank">Lesson Two.</a>
+    &bull; <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson1_LineUpload.html" target="_blank">Lesson One.</a> Germplasm file creation and upload<br>
+    &bull; <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson2_Phenotype2012.html" target="_blank">Lesson Two.</a>
     (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson2_Phenotype.pdf">.pdf</a>)
-    Phenotype trial annotation and data. <font size=-2 color=red>(new 27Dec2012)</font></b><br>
-<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson3_GenotypeUpload.html" target="_blank">Lesson Three.</a> Genotype trial annotation and data<br>
-<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Line_Panels.pdf" target="_blank">Lesson Four.</a> How to create germplasm line panels in T3<br>
+    Phenotype trial descriptions and data<br>
+&bull; <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson3_GenotypeUpload.html" target="_blank">Lesson Three.</a> Genotype trial descriptions and data<br>
+&bull; <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Line_Panels.pdf" target="_blank">Lesson Four.</a> How to create germplasm line panels in T3<br>
 
-<p>The Sandbox databases, <a href="http://malt.pw.usda.gov/t3/sandbox/wheat">wheat</a> 
-  and <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a>, 
-  are available for test-loading your data files.  Once they&apos;re ready,
-  click below to submit them officially.<br>
-  <input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
-</p>
 
-<b>Data Templates</b>
+<h3>Data Templates</h3>
 
 <div style=" text-align: left; text-indent: 0px; padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px;">
 
@@ -56,44 +52,68 @@ connect();
       <th>Topic
       <th>Link
       <th>Version
-      <th>Template file name
-      <th>Information
+      <!-- <th>Template file name -->
+      <th>Contents
     </thead>
     <tr>
       <td><b>Germplasm Lines</b>
       <td><?php filelink("Wheat","LineSubmissionForm_Wheat.xls", "T3") ?>
-      <td>Name, properties, pedigree, GRIN accessions for wheat
+      <td>Name, synonyms, pedigree for wheat
     </tr>
     <tr>
       <td>
       <td><?php filelink("Barley","LineSubmissionForm_Barley.xls", "T3") ?>
-      <td>Name, properties, pedigree, GRIN accessions for barley
+      <td>Name, synonyms, pedigree for barley
+    </tr>
+    <tr>
+      <td>
+      <td><?php filelink("Genetic Characters","Line_Properties.xls", "T3") ?>
+      <td>Genes, QTLs, trait-linked markers, market class
     </tr>
     <tr>
       <td>
       <td><?php filelink("Name conversion macros","T3NameConversion.xlsm", "T3") ?>
       <td>Excel spreadsheet to convert germplasm names to T3 formatted names.
     </tr>
-    <tr>
+    <tr style= "border-top-style: solid; border-top-width: 1px;">
       <td><b>Phenotyping</b>
-      <td><?php filelink("Experiment annotation","TrialSubmissionForm.xls", "T3") ?>
+      <td><?php filelink("Traits","trait_template.xls", "") ?>
+      <td>Please discuss with the <a href="feedback.php">curators</a> before adding a new trait.
+    </tr>
+    <tr>
+      <td>
+      <td><?php filelink("Trial description","TrialSubmissionForm.xls", "T3") ?>
       <td>Location, planting date, experimental design...
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Experiment results","PhenotypeSubmissionForm.xls", "T3") ?>
+      <td><?php filelink("Trial results","PhenotypeSubmissionForm.xls", "T3") ?>
       <td>Values for all traits for test lines and checks, summary statistics
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Traits","trait_template.xls", "") ?>
-      <td>Trait files are only necessary for new traits.  
-	Please discuss with the <a href="feedback.php">curators</a> before adding a new trait.
+      <td><?php filelink("Fieldbook","fieldbook_template.xlsx", "T3") ?>
+      <td>Field map 
+    </tr>
+ <tr>
+ <tr>
+      <td><b>Canopy Spectral<br>Reflectance</b>
+      <td><?php filelink("CSR System","CSRinT3_SpectrometerSystem.xlsx", "T3") ?>
+      <td>Instrument annotation
+    </tr>
+      <td>
+      <td><?php filelink("CSR description","CSRinT3_Sp1_Annotation.xlsx", "T3") ?>
+      <td>Description of the CSR experiment
     </tr>
     <tr>
+      <td>
+      <td><?php filelink("CSR results","CSR_Data_template.txt", "T3") ?>
+      <td>Data file format
+    </tr>
+    <tr style= "border-top-style: solid; border-top-width: 1px;">
       <td><b>Genotyping</b>
-      <td><?php filelink("Experiment annotation","Geno_Annotation_Sample.txt", "") ?>
-      <td>Trial information, software, manifest file names...
+      <td><?php filelink("Experiment description","Geno_Annotation_Sample.txt", "") ?>
+      <td>Platform, software, manifest file, experiment details...
     </tr>
     <tr>
       <td>
@@ -113,41 +133,23 @@ connect();
     <tr>
       <td><b>Markers</b>
       <td><?php filelink("Sequence","Generic_SNP.txt", "") ?>
-      <td>Marker sequence and A/B allele calls
-    </tr>
-    <tr>
-      <td>
-      <td><?php filelink("Map location","mapupload_example.txt", "") ?>
-      <td>Genetic / physical maps for T3
+      <td>Marker sequences and A/B allele definitions
     </tr>
     <tr>
       <td>
       <td><?php filelink("Gene function","Marker_import_sample4.txt", "") ?>
-      <td>Marker annotations and synonyms
-    </tr>
- <tr>
-      <td><b>Canopy Spectral Reflectance (CSR)</b>
-      <td><?php filelink("CSR System Descriptions","CSRinT3_SpectrometerSystem.xlsx", "T3") ?>
-      <td>Instrument annotation
+      <td>Sequence annotations and name synonyms
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Field Book","fieldbook_template.xlsx", "T3") ?>
-      <td>Field map 
-    </tr>
- <tr>
-      <td>
-      <td><?php filelink("CSR Annotation","CSRinT3_Sp1_Annotation.xlsx", "T3") ?>
-      <td>Description of the CSR experiment
-    </tr>
+      <td><?php filelink("Genetic Character markers","property_template.xls", "T3") ?>
+      <td>Trait-linked markers named for their associated gene or QTL
     <tr>
-      <td>
-      <td><?php filelink("CSR Data","CSR_Data_template.txt", "T3") ?>								    
-      <td>Data file format
     </tr>
-   
-
-
+      <td>
+      <td><?php filelink("Map location","mapupload_example.txt", "") ?>
+      <td>Genetic maps
+    </tr>
   </table>
 </div></div>
 
@@ -163,7 +165,7 @@ function filelink($label, $filenm, $subdir) {
     echo "<font  color=red>". date("dMy", filemtime($fullpath)) . "</font>";
   else
     echo date("dMy", filemtime($fullpath));
-  echo "</td><td>$filenm";
+    //echo "</td><td>$filenm";
 }
 
 // Variation of filelink(), for items in text instead of in the table.
