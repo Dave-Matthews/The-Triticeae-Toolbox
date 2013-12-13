@@ -263,7 +263,7 @@ EOD;
  if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
    $count = count($_SESSION['clicked_buttons']);
    print "$count markers selected. ";
-   print "<a href=genotyping/display_markers.php>Download list of markers</a><br>\n";
+   print "<a href=genotyping/display_markers.php>Show marker information</a><br>\n";
  } // end of if Currently Selected
  else print "None<br>";
 ?>

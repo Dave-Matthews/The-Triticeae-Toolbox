@@ -193,7 +193,7 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
       Pedigrees</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
-      Phenotype Trial Annotations</a></li>
+      Phenotype Trials</a></li>
       <!-- <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data"> -->
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php" title="Phenotype data">
       Phenotype Results</a></li>
@@ -201,11 +201,11 @@ EOD;
       CSR Data</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/fieldbook_export.php" title="Phenotype Tablet tools">Tablet Tools</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
-      Delete Trials or Experiments</a></li>
+      Delete Trials</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
       Traits and Genetic Characters</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
-      Genotype Experiment Annotations</a></li>
+      Genotype Experiments</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
       Genotype Results </a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
