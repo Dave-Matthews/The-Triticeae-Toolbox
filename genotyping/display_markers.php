@@ -97,7 +97,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
             if ($use_file) {
                 fwrite($h, "$selval,$type,$a_allele,$b_allele,\"$syn\",$mkr_mapped,$lines_geno,$seq\n");
             } else {
-                echo "<tr><td>$selval<td nowrap>$type<td>$a_allele<td>$b_allele<td nowrap>$syn<td>$mkr_mapped<td>$lines_geno<td>$seq\n";
+                echo "<tr><td><a href=view.php?table=markers&uid=$mkruid>$selval</a><td nowrap>$type<td>$a_allele<td>$b_allele<td nowrap>$syn<td>$mkr_mapped<td>$lines_geno<td>$seq\n";
             }
         } else {
             if ($use_file) {
