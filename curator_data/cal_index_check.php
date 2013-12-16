@@ -22,10 +22,12 @@
   <?php
   if (isset($_POST['trial']) && !empty($_POST['trial'])) {
     $trial = $_POST['trial'];
-    $sql = "select raw_file_name from csr_measurement where measurement_uid = $trial";
+    $sql = "select raw_file_name, trial_code from csr_measurement, experiments
+       where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = $trial";
     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_array($res)) {
       $filename3 = $row[0];
+      $trial_code = $row[1];
     } else {
       die("trial $trial not found<br>\n");
     }
@@ -38,6 +40,7 @@
     $smooth = 0;
     echo "no smoothing<br>\n";
   }
+  $formula1 = $_POST['formula1'];
   if (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
     $index = $_POST['formula2'];
     if (preg_match("/system/", $index)) {
@@ -79,7 +82,8 @@
   mkdir("/tmp/tht/$unique_str");
   $filename1 = "gbe-input.txt";
   $filename2 = "process_error.txt";
-  $filename4 = "gbe-output.txt";
+  $raw_file = $config['root_dir']."raw/phenotype/csr_data_$unique_str" . ".txt";
+  $filename4 = "csr_data_$unique_str" . ".txt";
   $filename5 = "gbe-formula.txt";
   $filename6 = "csr-plot1.png";
   $filename7 = "csr-plot2.png";
@@ -93,7 +97,7 @@
   $cmd2b = "  cat(\"Error - bad file format in $filename3\")\n";
   $cmd2c = "  stop(\"Error - bad file format in $filename3\")\n";
   $cmd2d = "}\n";
-  $cmd3 = "file_out <- \"$filename4\"\n";
+  $cmd3 = "file_out <- \"$raw_file\"\n";
   $cmd4 = "file_for <- \"$filename5\"\n";
   $cmd5 = "setwd(\"/tmp/tht/$unique_str\")\n";
   $cmd6 = "W1wav <- $w1\n";
@@ -101,6 +105,8 @@
   $cmd8 = "W3wav <- $w3\n";
   $cmd9 = "smooth <- $smooth\n";
   $cmd10 = "zoom <- \"$zoom\"\n";
+  $cmd11 = "trial_code <- \"$trial_code\"\n";
+  $cmd12 = "formula1 <- \"$formula1\"\n";
   fwrite($h, $png1); fwrite($h, $png2); fwrite($h, $png3);
   fwrite($h, $cmd1);
   fwrite($h, $cmd2); fwrite($h, $cmd2a); fwrite($h, $cmd2b); fwrite($h, $cmd2c); fwrite($h, $cmd2d);
@@ -112,6 +118,8 @@
   fwrite($h, $cmd8);
   fwrite($h, $cmd9);
   fwrite($h, $cmd10);
+  fwrite($h, $cmd11);
+  fwrite($h, $cmd12);
   fclose($h);
   $h = fopen("/tmp/tht/$unique_str/$filename5","w");
   fwrite($h, "calIndex <- function(data, idx1, idx2, idx3) {\n");
@@ -139,8 +147,12 @@
     print "<img src=\"/tmp/tht/$unique_str/$filename6\" /><br>";
   }
   print "<img src=\"/tmp/tht/$unique_str/$filename7\" /><br>";
-  if (file_exists("/tmp/tht/$unique_str/$filename4")) {
-    print "<a href=/tmp/tht/$unique_str/$filename4 target=\"_blank\"type=\"text/csv\">results file of calculated index<br>\n";
+  if (file_exists("$raw_file")) {
+    print "<a href=\"raw/phenotype/$filename4\" target=\"_blank\"type=\"text/csv\">results file of calculated index</a><br>\n";
+    print "<form action=\"curator_data/input_experiments_plot_check.php\" method=post>\n";
+    print "<input type=\"hidden\" name=\"filename0\" value=\"$filename4\">\n";
+    print "<input type=submit value=\"Upload\"> to database";
+    print "</form>";
   } else {
     echo "Error: calculation of index failed<br>\n";
   }
