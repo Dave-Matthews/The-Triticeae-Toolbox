@@ -128,31 +128,47 @@ function showPhenotypeForLine($line_id, $order="phenotype_category_name") {
 	  $filter = "";
 	else
 	  $filter = " AND data_public_flag = 1";
-	$query = "SELECT experiments.trial_code, 
-				phenotype_category.phenotype_category_name, phenotypes.phenotypes_name, 
-				phenotype_data.value, units.unit_name
-			FROM line_records, phenotype_category, phenotypes, phenotype_data, units, 
-				experiment_types, tht_base, experiments
-			WHERE line_records.line_record_uid = '$line_id'
-				AND phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid
-				AND phenotypes.unit_uid = units.unit_uid
-				AND line_records.line_record_uid = tht_base.line_record_uid
-				AND phenotype_data.tht_base_uid = tht_base.tht_base_uid
-				AND experiments.experiment_uid = tht_base.experiment_uid
-				AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
-				AND  experiment_types.experiment_type_name = 'phenotype'
-				AND phenotypes.phenotype_uid = phenotype_data.phenotype_uid
-                                $filter
-			ORDER BY $order";
-
+	// dem dec13: Change the order of the columns.
+	/* $query = "SELECT experiments.trial_code,  */
+	/* 			phenotype_category.phenotype_category_name, phenotypes.phenotypes_name,  */
+	/* 			phenotype_data.value, units.unit_name */
+	/* 		FROM line_records, phenotype_category, phenotypes, phenotype_data, units,  */
+	/* 			experiment_types, tht_base, experiments */
+	/* 		WHERE line_records.line_record_uid = '$line_id' */
+	/* 			AND phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid */
+	/* 			AND phenotypes.unit_uid = units.unit_uid */
+	/* 			AND line_records.line_record_uid = tht_base.line_record_uid */
+	/* 			AND phenotype_data.tht_base_uid = tht_base.tht_base_uid */
+	/* 			AND experiments.experiment_uid = tht_base.experiment_uid */
+	/* 			AND experiment_types.experiment_type_uid = experiments.experiment_type_uid */
+	/* 			AND  experiment_types.experiment_type_name = 'phenotype' */
+	/* 			AND phenotypes.phenotype_uid = phenotype_data.phenotype_uid */
+        /*                         $filter */
+	/* 		ORDER BY $order"; */
+	$query = "SELECT phenotypes.phenotypes_name as Trait, 
+                       experiments.trial_code as Trial, 
+		       phenotype_data.value, units.unit_name as Unit,
+		       phenotype_category.phenotype_category_name as Category
+	       FROM line_records, phenotype_category, phenotypes, phenotype_data, units, 
+		       experiment_types, tht_base, experiments
+	       WHERE line_records.line_record_uid = '$line_id'
+		       AND phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid
+		       AND phenotypes.unit_uid = units.unit_uid
+		       AND line_records.line_record_uid = tht_base.line_record_uid
+		       AND phenotype_data.tht_base_uid = tht_base.tht_base_uid
+		       AND experiments.experiment_uid = tht_base.experiment_uid
+		       AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
+		       AND  experiment_types.experiment_type_name = 'phenotype'
+		       AND phenotypes.phenotype_uid = phenotype_data.phenotype_uid
+		       $filter
+	       ORDER BY Trait, Trial";
 	$resource = mysql_query($query) or die(mysql_error());
-	
-	if(mysql_num_rows($resource) < 1) {
-		echo "No phenotype data found<br />";
-	}
+	if(mysql_num_rows($resource) < 1) 
+	  echo "No phenotype data found<br />";
 	else {
-		echo displayTable($resource, TRUE);
-		echo "<form action='dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . base64_encode($query) ."' /></form>";
+	  /* echo displayTable($resource, TRUE); */
+	  echo displayLinePheno($resource, FALSE, 1);  // includes/common.inc
+	  echo "<p><form action='dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . base64_encode($query) ."' /></form>";
   	}
 }
 
