@@ -12,14 +12,18 @@ $row = loadUser($_SESSION['username']);
 
 // Scale the measured phenotype values according to user's chosen method.
 function scaled($rawvalue, $trait, $trial) {
-  global $scaling, $mean, $SD;
+  global $scaling, $mean, $SD, $basevalue;
   if ($scaling == 'actual') {
-    return ($rawvalue);
+    return $rawvalue;
   }
   if ($scaling == 'normalized') {
     // For each trait, subtract the trial mean from $actual and divide by SD.
     $normalized = ($rawvalue - $mean[$trait][$trial]) / $SD[$trait][$trial];
     return $normalized;
+  }
+  if ($scaling == 'percent') {
+    $percent = 100 * $rawvalue / $basevalue[$trait][$trial];
+    return $percent;
   }
 }
 
@@ -30,6 +34,7 @@ function scaled($rawvalue, $trait, $trial) {
 </style>
 
 <h2>Selection Index</h2>
+
 
 <?php
 // Get the Currently Selected Traits.
@@ -55,6 +60,24 @@ foreach($_SESSION[selected_trials] as $trialid) {
 $trialcount = count($trialids);
 $triallist = implode(',', $trialids);
 
+// Lines in common among all these trials, as array of (name, uid) pairs.
+$started = 0;
+foreach ($trialids as $tid) {
+  $res = mysql_query("select line_record_uid from tht_base where experiment_uid = $tid") or die (mysql_error());
+  $entries = array();
+  while ($row = mysql_fetch_row($res)) 
+    $entries[] = $row[0];  
+  if ($started > 0) 
+    $commonlines = array_intersect($commonlines, $entries);
+  else {
+    $commonlines = $entries;
+    $started = 1;
+  }
+}
+/* print_h($commonlines); */
+/* $ct = count($commonlines); */
+/* echo "count of commonlines = $ct<p>"; */
+
 if (empty($_REQUEST)) { // Initial entry to the script.
 ?>
 Choose relative weights and a scaling method to combine the traits into an index.
@@ -78,8 +101,19 @@ foreach ($traitnames as $tn) {
 <br><h3>Scaling of trait values</h3>
 <input type=radio name=scaling value=normalized checked>Normalized, subtracting the trial mean and dividing by the standard deviation
 <br><input type=radio name=scaling value=actual>Actual measured value
+<br><input type=radio name=scaling value=percent>Percent of line: 
+<!-- <select multiple style="vertical-align: middle"> -->
+<select name=base-line>
+<option value=0>Choose...</option>
+<?php
+foreach ($commonlines as $cl) {
+  $linename = mysql_grab("select line_record_name from line_records where line_record_uid = $cl");
+  echo "<option value = $cl>$linename</option>";
+}
+?>
+</select>
 <br><input type=radio name=scaling value=rank disabled>Rank in trial
-<br><input type=radio name=scaling value=check disabled>Percent of trial check(s)
+
 <p><input type=submit value="Submit">
 </form>
 
@@ -91,7 +125,15 @@ else { // Submit button was clicked.
   $totalwt = array_sum($weight); // Needn't add up to 100.
   $reverse = $_REQUEST[reverse];
   $scaling = $_REQUEST[scaling];
-  echo "Scaling method: <b>$scaling</b><p>";
+  if ($_REQUEST['base-line'] != 0)
+    $scaling = "percent";
+  echo "Scaling method: <b>$scaling</b>";
+  if ($scaling == 'percent') {
+    $baselineuid = $_REQUEST['base-line'];
+    $baselinename = mysql_grab("select line_record_name from line_records where line_record_uid = $baselineuid");
+    echo " of <b>$baselinename</b>";
+  }
+  echo "<p>";
   $lines = array();
   // Fetch the data.
   if (!empty($triallist))
@@ -131,6 +173,13 @@ else { // Submit button was clicked.
 	$SD[$tn][$trial] = sqrt($devsq / $linecount);
       }
     }
+  }
+
+  if ($scaling == 'percent') {
+    // Get the values for the "base" line used as reference.
+    foreach ($traitnames as $tn) 
+      foreach ($trialnames as $trial) 
+	$basevalue[$tn][$trial] = $actual[$tn][$trial][$baselinename];
   }
 
   // Calculate Index.
