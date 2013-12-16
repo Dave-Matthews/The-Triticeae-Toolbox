@@ -1144,61 +1144,96 @@ function displayTableConvert($query, $sortable=FALSE, $lookup) {
 /* Modified version of displayTable(), to output phenotype values with
  * truncation according to units.sigdigits_display.  DEM 11aug10
  */
-
 function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
-
-	$tables = array();
-	/* $ret = "\n<table class='tableclass1'>\n"; */
-	$ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n";
-
-	$first = TRUE;
-	while($row = mysql_fetch_assoc($query)) {
-		if($first) {
-		  $ret .= "<thead>\n";
-			foreach($row as $k=>$v) {
-				
-				if(strpos($k, "_name") !== FALSE)
-					$tables[$k] = getTableByName($k);
-
-				$ret .= "<td><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
-
-				if($sortable) {
-					unset($_GET['sortby']);
-					unset($_GET['sorttype']);
-
-					$ret .= " <br />
-						  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=ASC'>Up</a> - 
-					          <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=DESC'>Down</a>";
-
-				}
-
-				$ret .= "</td>\n";
-			}
-			$ret .= "</tr></thead>\n<tbody>\n";
-			$first = FALSE;
-		}
-
-		$ret .= "\n<tr>\n";
-		foreach($row as $k=>$v) {
-			if(isset($tables[$k])) {
-				$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
-			}
-			if(strcmp($k,"trial_code") == 0) {
-			  $v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
-			}
-                        if(strcmp($k,"value") == 0 && $sigdig>=0) {
-                                $v = number_format($v,$sigdig);
-                        }
-			$ret .= "\t<td>$v</td>\n";
-		}
-
-		$ret .= "\n</tr>\n";
-
+  $tables = array();
+  /* $ret = "\n<table class='tableclass1'>\n"; */
+  $ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n";
+  $first = TRUE;
+  while($row = mysql_fetch_assoc($query)) {
+    // header
+    if($first) {
+      $ret .= "<thead>\n";
+      foreach($row as $k=>$v) {
+	if(strpos($k, "_name") !== FALSE)
+	  $tables[$k] = getTableByName($k);
+	$ret .= "<td><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
+	if($sortable) {
+	  unset($_GET['sortby']);
+	  unset($_GET['sorttype']);
+	  $ret .= " <br />
+	  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=ASC'>Up</a> - 
+          <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=DESC'>Down</a>";
 	}
+	$ret .= "</td>\n";
+      }
+      $ret .= "</tr></thead>\n<tbody>\n";
+      $first = FALSE;
+    }
+    $ret .= "\n<tr>\n";
+    // table body contents
+    foreach($row as $k=>$v) {
+      if(isset($tables[$k])) 
+	$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+      if(strcmp($k,"trial_code") == 0) 
+	$v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
+      if(strcmp($k,"value") == 0 && $sigdig>=0) 
+	$v = number_format($v,$sigdig);
+      $ret .= "\t<td>$v</td>\n";
+    }
+    $ret .= "\n</tr>\n";
+  }
+  $ret .= "</tbody>\n</table></div>\n";
+  return $ret;
+}
 
-	$ret .= "</tbody>\n</table></div>\n";
-
-	return $ret;
+/* Modified version of displayTableSigdig(), to output phenotype values with
+ * truncation to a fixed number of decimal points regardless of units.sigdigits_display.
+ * Not a great solution. DEM 16dec2013
+ * Used by phenotype/show.php?line=<line_record_uid>.
+ */
+function displayLinePheno($query, $sortable=TRUE, $sigdig, $link="") {
+  $tables = array();
+  /* $ret = "\n<table class='tableclass1'>\n"; */
+  /* $ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n"; */
+  $ret = "\n<div style='max-height: 500px; overflow: auto'><table>\n";
+  $first = TRUE;
+  while($row = mysql_fetch_assoc($query)) {
+    // header
+    if($first) {
+      $ret .= "<thead>\n";
+      foreach($row as $k=>$v) {
+	if(strpos($k, "_name") !== FALSE)
+	  $tables[$k] = getTableByName($k);
+	$ret .= "<th><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
+	if($sortable) {
+	  unset($_GET['sortby']);
+	  unset($_GET['sorttype']);
+	  $ret .= " <br />
+	  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=ASC'>Up</a> -
+          <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=DESC'>Down</a>";
+	}
+	$ret .= "</th>\n";
+      }
+      $ret .= "</tr></thead>\n<tbody>\n";
+      $first = FALSE;
+    }
+    $ret .= "\n<tr>\n";
+    // table body contents
+    foreach($row as $k=>$v) {
+      if(isset($tables[$k])) 
+	$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+      if(strcmp($k,"Trait") == 0) 
+	$v = "<a href=\"view.php?table=phenotypes" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+      if(strcmp($k,"Trial") == 0) 
+	$v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
+      if(strcmp($k,"value") == 0 && $sigdig>=0) 
+	$v = number_format($v,$sigdig);
+      $ret .= "\t<td>$v</td>\n";
+    }
+    $ret .= "\n</tr>\n";
+  }
+  $ret .= "</tbody>\n</table></div>\n";
+  return $ret;
 }
 
 
