@@ -97,7 +97,9 @@ csrFilt <- csrFilt[,-(1)]
 results <- apply(csrFilt, 2, calIndex,idx1= W1idx, idx2=W2idx,  idx3=W3idx);
 pltData <- pltData[-(1)]
 pltData <- t(pltData)
-results2 <- data.frame(plot=pltData, index=results)
+pltData2 <- cbind(trial_code, pltData)
+results2 <- data.frame(plot=pltData2, index=results)
+colnames(results2) <- c("Trial Code", "Plot", paste("CSR_", formula1, sep=""))
 write.csv(results2, file=file_out, quote=FALSE, row.names = FALSE)
 
 #plot index vs plot number
