@@ -101,7 +101,7 @@ class Downloads
                         case 'download_session_v6':
                             echo $this->type1_session(V6);
                             break;
-                        case 'download_session_v6':
+                        case 'download_session_v7':
                             echo $this->type1_session(V7);
                             break;
 			case 'refreshtitle':
@@ -380,7 +380,7 @@ class Downloads
             }
             $filename = "geneticMap.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            $output = $this->type1_build_geneticMap($lines,$markers,"R");
             fwrite($h, $output);
             fclose($h);
             $filename = "snpfile.txt";
@@ -403,7 +403,7 @@ class Downloads
             }
             $filename = "geneticMap.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            $output = $this->type1_build_geneticMap($lines,$markers,"FJ");
             fwrite($h, $output);
             fclose($h);
             $filename = "snpfile.txt";
@@ -421,7 +421,7 @@ class Downloads
             }
             $filename = "geneticMap.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            $output = $this->type1_build_geneticMap($lines,$markers,"R");
             fwrite($h, $output);
             fclose($h);
             $filename = "snpfile.txt";
@@ -962,53 +962,55 @@ class Downloads
 		header("Location: ".$dir.$filename);
 	}
 	
-	/**
-	 * generate download files in R format
-	 * @param unknown_type $experiments
-	 * @param unknown_type $traits
-	 * @param unknown_type $datasets
-	 */
-	function type1_build_traits_download($experiments, $traits, $datasets)
-	{
-            $delimiter = "\t";
+    /**
+     * generate download files in R format
+     * @param unknown_type $experiments
+     * @param unknown_type $traits
+     * @param unknown_type $datasets
+     * 
+     * @return NULL
+     */
+    function type1_build_traits_download($experiments, $traits, $datasets)
+    {
+        $delimiter = "\t";
 
-            $sql = "select line_record_name, line_record_uid from line_records";
-            $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
-            while ($row = mysql_fetch_array($res)) {
-               $line_name = $row[0];
-               $line_uid = $row[1];
-               $line_list[$line_uid] = $line_name;
-            }
+        $sql = "select line_record_name, line_record_uid from line_records";
+        $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
+        while ($row = mysql_fetch_array($res)) {
+            $line_name = $row[0];
+            $line_uid = $row[1];
+            $line_list[$line_uid] = $line_name;
+        }
 
-            $trait_name = "";
-            $sql = "select phenotype_uid, phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
-            $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
-            while ($row = mysql_fetch_array($res)) {
-               $uid = $row[0];
-               $trait_name = $row[1];
-               $trait_list[$uid] = $trait_name;
-               $empty[$uid] = "";
-            }
+        $trait_name = "";
+        $sql = "select phenotype_uid, phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
+        $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
+        while ($row = mysql_fetch_array($res)) {
+            $uid = $row[0];
+            $trait_name = $row[1];
+            $trait_list[$uid] = $trait_name;
+            $empty[$uid] = "NA";
+        }
 
-            $sql = "select experiment_uid, trial_code from experiments where experiment_uid IN ($experiments)";
-            $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
-            while ($row = mysql_fetch_array($res)) {
-              $uid = $row[0];
-              $expr_name = $row[1];
-              $expr_list[$uid] = $expr_name;
-            }
+        $sql = "select experiment_uid, trial_code from experiments where experiment_uid IN ($experiments)";
+        $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
+        while ($row = mysql_fetch_array($res)) {
+            $uid = $row[0];
+            $expr_name = $row[1];
+            $expr_list[$uid] = $expr_name;
+        }
 
-            $sql = "select distinct(tb.line_record_uid)
-                from tht_base as tb, phenotype_data as pd
-                where tb.experiment_uid IN ($experiments) AND
-                pd.tht_base_uid = tb.tht_base_uid
-                and pd.phenotype_uid IN ($traits)";
-            $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
-            while ($row = mysql_fetch_array($res)) {
-                $lines[] = $row[0];
-            }
+        $sql = "select distinct(tb.line_record_uid)
+            from tht_base as tb, phenotype_data as pd
+            where tb.experiment_uid IN ($experiments) AND
+            pd.tht_base_uid = tb.tht_base_uid
+            and pd.phenotype_uid IN ($traits)";
+        $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
+        while ($row = mysql_fetch_array($res)) {
+            $lines[] = $row[0];
+        }
 
-            $output = implode($delimiter, $trait_list) ;
+            $output = implode($delimiter, $trait_list);
             $output = 'line' . $delimiter . 'trial' . $delimiter . $output . "\n"; 
 
             $ncols = count($empty);
@@ -1026,14 +1028,14 @@ class Downloads
                     while ($row = mysql_fetch_array($res)) {
                       $trait_uid = $row[0];
                       $value = $row[1];
-                      $outarray[$trait_uid]= $row['value'];
+                      $outarray[$trait_uid]= $value;
                     }
                     $tmp = implode($delimiter, $outarray);
                     $output .= $line_name.$delimiter.$expr_name.$delimiter.$tmp."\n";
                 }
             }
-	    return $output;
-	}
+        return $output;
+    }
 
     /**
      * Build trait download file for Tassel program interface
@@ -1044,7 +1046,7 @@ class Downloads
      * @return string
      */
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
-	{
+    {
                 $delimiter = "\t";
 		$output = '';
 		$outputheader1 = '';
@@ -1892,11 +1894,6 @@ class Downloads
          } else {
            $selected_map = 1;
          }
-	
-		$lookup_chrom = array(
-		  '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
-		  '6H' => '6','7H' => '7','UNK'  => '10'
-		);
 
                 //generate an array of selected markers that can be used with isset statement
                 foreach ($markers as $temp) {
@@ -1922,6 +1919,11 @@ class Downloads
 		  $uid = $row[0];
 		  $chr = $row[1];
 		  $pos = $row[2];
+		  if (preg_match("/(\d+)/", $chr, $match)) {
+              $chr = $match[1];
+          } else {
+              $chr = 0;
+          }
 		  $marker_list_mapped[$uid] = "$chr\t$pos";
 		  if (preg_match("/(\d+)/",$chr,$match)) {
 		    $chr = $match[0];
@@ -1985,10 +1987,10 @@ class Downloads
                 // $firephp = log($nelem." ".$n_lines);
 
                 // write output file header
-                if ($dtype == "AB") {
+                if ($dtype == "FJ") {
                   $outputheader = "# fjFile = MAP\n";
-                } elseif ($dtype == "qtlminer") {
-                  $outputheader = "marker\tchrom\tloc\n";
+                } elseif ($dtype == "R") {
+                  $outputheader = "chr\tpos\n";
                 } else {
                   $outputheader = "<Map>\n";
                 }
