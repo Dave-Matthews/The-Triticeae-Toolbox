@@ -239,7 +239,7 @@ class Data_Check
                  echo "<tr><td>$line[0]";
                  //in some cases the stderr will not be calculated
                  if (!preg_match("/\d/", $line[2])) {
-                     $line[2] = NULL;
+                     $line[2] = "NULL";
                  }
                  $phenotype_uid = $phenotype_list[$count];
                  $sql = "select phenotype_mean_data_uid from phenotype_mean_data where phenotype_uid = $phenotype_uid and experiment_uid = $experiment_uid";
