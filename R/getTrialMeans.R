@@ -9,6 +9,9 @@ file_out <- "mean-output.txt"
 # !NA         !NA     Incomplete block model: Replications fixed and blocks random
 dataCols <- which(!(names(plotData) %in% c("line", "plot", "replication", "block", "subblock", "treatment")))
 df <- data.frame(line=as.factor(plotData$line), rep=as.factor(plotData$replication), block=as.factor(paste(plotData$replication, plotData$block, sep=".")), plotData[,dataCols])
+if (length(dataCols) == 1){
+  colnames(df) <- c('line', 'rep', 'block', colnames(plotData)[dataCols])
+}
 dataCols <- names(plotData)[dataCols]
 hasRep <- all(!is.na(plotData$replication)) & (length(unique(plotData$replication)) > 1)
 hasBlk <- all(!is.na(plotData$block)) & (length(unique(plotData$block)) > 1)
