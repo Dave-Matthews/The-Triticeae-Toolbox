@@ -106,8 +106,10 @@ private function type_Experiment_Name() {
        if ($col_id > $max_col) { $max_col = $col_id; }
    }
    if ($found) {
-     //echo "max_row $max_row<br>\n";
-     //echo "max_col $max_col<br>\n";
+       if (($max_row == 0) || ($max_col == 0)) {
+          echo "Error: row or column information is missing from field book<br>\n";
+          die();
+       }
    } else {
      echo "$sql<br>\n";
      die("Error: no fieldbook entries found");
