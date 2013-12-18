@@ -237,6 +237,10 @@ class Data_Check
              if ($count == 0) {
              } else {
                  echo "<tr><td>$line[0]";
+                 //in some cases the stderr will not be calculated
+                 if (!preg_match("/\d/", $line[2])) {
+                     $line[2] = NULL;
+                 }
                  $phenotype_uid = $phenotype_list[$count];
                  $sql = "select phenotype_mean_data_uid from phenotype_mean_data where phenotype_uid = $phenotype_uid and experiment_uid = $experiment_uid";
                  //echo "$sql<br>\n";
@@ -418,7 +422,9 @@ private function type_Experiment_Name() {
          }
          echo "\n<tr><td>$header[1]";
          foreach ($line_array as $trait) {
-             $tmp = number_format($trait[2],3);
+             if (preg_match("/\d/", $trait[2])) {
+                 $tmp = number_format($trait[2],3);
+             } 
              echo "<td>$tmp";
          }
          echo "\n<tr><td>$header[2]";
