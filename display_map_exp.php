@@ -91,13 +91,16 @@ private function type_Experiment_Name() {
        $plot = $row["plot_uid"];
        $row_id = $row["row_id"];
        $col_id = $row["column_id"];
-       //echo "row_list $plot $row_id col_list $plot $col_id<br>\n";
        $row_list[$plot] = $row_id;
        $col_list[$plot] = $col_id;
        if ($row_id > $max_row) { $max_row = $row_id; }
        if ($col_id > $max_col) { $max_col = $col_id; }
    }
    if ($found) {
+       if (($max_row == 0) || ($max_col == 0)) {
+          echo "Error: row or column information is missing from field book<br>\n";
+          die();
+       }
    } else {
      echo "$sql<br>\n";
      die("Error: no fieldbook entries found");
