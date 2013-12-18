@@ -196,14 +196,24 @@ class Data_Check
                          //echo "$sql<br>\n";
                          $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql<br>$count_item");
                          if ($row = mysqli_fetch_array($res)) {
-                             $sql = "update phenotype_data set phenotype_uid = $phenotype_uid, tht_base_uid = $tht_base_uid, value = '$line_item', updated_on = NOW() where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
-                             $msg = "<td>update<td>$line_item\n";
+                             if (preg_match("/\d/", $line_item)) {
+                                 $sql = "update phenotype_data set phenotype_uid = $phenotype_uid, tht_base_uid = $tht_base_uid, value = '$line_item', updated_on = NOW() where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
+                                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                             } else {
+                                 $sql = "update phenotype_data set phenotype_uid = $phenotype_uid, tht_base_uid = $tht_base_uid, value = NULL, updated_on = NOW() where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
+                                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                             }
+                             $msg = "update<td>$line_item\n";
                          } else {
-                             $sql = "insert into phenotype_data (phenotype_uid, tht_base_uid, value, updated_on, created_on) values ($phenotype_uid, $tht_base_uid, '$line_item', NOW(), NOW())";
-                             $msg = "<td>insert<td>$line_item\n";
+                             if (preg_match("/\d/", $line_item)) {
+                                 $sql = "insert into phenotype_data (phenotype_uid, tht_base_uid, value, updated_on, created_on) values ($phenotype_uid, $tht_base_uid, '$line_item', NOW(), NOW())";
+                                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                                 $msg = "insert<td>$line_item\n";
+                             } else {
+                                 $msg = "ignore<td>NULL\n";
+                             }
                          }
-                         $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                         echo "$msg";
+                         echo "<td>$msg";
                      }
                      $count_item++;
                  }
