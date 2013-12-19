@@ -454,10 +454,14 @@ $pheno_str = "";
 $rawsql="SELECT distinct(phenotypes_name) from phenotype_plot_data, phenotypes where phenotype_plot_data.phenotype_uid = phenotypes.phenotype_uid and experiment_uid = $experiment_uid";
 $rawres=mysql_query($rawsql) or die(mysql_error());
 while ($rawrow = mysql_fetch_assoc($rawres)) {
-    $pheno_str = $pheno_str . $rawrow['phenotypes_name'] . "<br>";
+    if ($pheno_str == "") {
+        $pheno_str = rawrow['phenotypes_name'];
+    } else {
+        $pheno_str = $pheno_str . ", $rawrow['phenotypes_name']";
+    }
 }
 if ($pheno_str != "") {
-    echo "<b>Plot level data:</b><br><a href=".$config['base_url']."display_map_exp.php?uid=$experiment_uid>$pheno_str</a>\n";
+    echo "<b>Plot level data:</b><a href=".$config['base_url']."display_map_exp.php?uid=$experiment_uid>$pheno_str</a><br>\n";
 }
 
 $found = 0;
