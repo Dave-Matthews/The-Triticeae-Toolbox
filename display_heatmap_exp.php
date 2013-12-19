@@ -145,15 +145,13 @@ private function type_Experiment_Name() {
      fwrite($h,"\n");
      for ($i=1; $i<=$max_row; $i++) {
         $output = "";
-        //fwrite($h,"$i\t");
         for ($j=1; $j<=$max_col; $j++) {
            $value = $pheno_val[$i][$j];
-           if ($output == "") {
+           if ($j == 1) {
              $output = $value;
            } else {
              $output = $output . "\t$value";
            }
-           //fwrite($h,"$value\t"); 
         }
         if (preg_match("/[0-9]/", $output)) {
           fwrite($h,"$i\t$output\n");
