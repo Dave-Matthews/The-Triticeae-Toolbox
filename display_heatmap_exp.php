@@ -46,7 +46,7 @@ private function typeExperimentCheck()
       {
                 global $config;
                 include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>Heatmap of trait values by field position</h2>";
+                echo "<h2>Heatmap of trait by field position</h2>";
                 $this->type_Experiment_Name();
                 $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
@@ -78,7 +78,8 @@ private function type_Experiment_Name() {
    if ($row = mysqli_fetch_assoc($res)) {
        $name = $row["trial_code"];
    }
-   echo "$name<br>\n";
+   echo "$name - \n";
+   echo "<a href=display_map_exp.php?uid=$exp_uid>Numeric map</a><br>";
 
    $sql = "select distinct phenotype_uid from phenotype_plot_data where experiment_uid = $exp_uid";  
    $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
