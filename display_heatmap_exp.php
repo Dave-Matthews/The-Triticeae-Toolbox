@@ -106,10 +106,8 @@ private function type_Experiment_Name() {
        if ($col_id > $max_col) { $max_col = $col_id; }
    }
    if ($found) {
-       if (($max_row == 0) || ($max_col == 0)) {
-          echo "Error: row or column information is missing from field book<br>\n";
-          die();
-       }
+     //echo "max_row $max_row<br>\n";
+     //echo "max_col $max_col<br>\n";
    } else {
      echo "$sql<br>\n";
      die("Error: no fieldbook entries found");
@@ -124,11 +122,6 @@ private function type_Experiment_Name() {
    foreach ($trait_list as $key => $val) { 
      echo "<h3>Trait = $val</h3><br>\n";
      $outputFile = "HeatMap" . $key . ".png";
-     for ($i=1; $i<=$max_row; $i++) {
-         for ($j=1; $j<=$max_col; $j++) {
-             $pheno_val[$i][$j] = "NA";
-         }
-     } 
      $max_val = 0;
      $sql = "select plot_uid, value from phenotype_plot_data where experiment_uid = $exp_uid and phenotype_uid = $key";
      $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
@@ -143,16 +136,28 @@ private function type_Experiment_Name() {
 
      $h = fopen("/tmp/tht/$unique_str/$inputFile", "w");
      for ($j=1; $j<=$max_col; $j++) {
-       fwrite($h,"$j\t");
+       if ($j == 1) {
+         fwrite($h,"$j");
+       } else {
+         fwrite($h,"\t$j");
+       }
      }
      fwrite($h,"\n");
      for ($i=1; $i<=$max_row; $i++) {
-        fwrite($h,"$i\t");
+        $output = "";
+        //fwrite($h,"$i\t");
         for ($j=1; $j<=$max_col; $j++) {
            $value = $pheno_val[$i][$j];
-           fwrite($h,"$value\t"); 
+           if ($output == "") {
+             $output = $value;
+           } else {
+             $output = $output . "\t$value";
+           }
+           //fwrite($h,"$value\t"); 
         }
-        fwrite($h,"\n");
+        if (preg_match("/[0-9]/", $output)) {
+          fwrite($h,"$i\t$output\n");
+        }
      }
      fclose($h);
      $png1 = "png(\"/tmp/tht/$unique_str/$outputFile\", width=600, height=600)\n";
