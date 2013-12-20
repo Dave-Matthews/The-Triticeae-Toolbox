@@ -110,40 +110,39 @@ class SelectPhenotypeExp
         case 'step1breedprog':
             $this->step1_breedprog();
             break;
-			case 'step1phenotype':
-				$this->step1_phenotype();
-				break;
-			case 'step2phenotype':
-				$this->step2_phenotype();
-				break;
-			case 'step3phenotype':
-				$this->step3_phenotype();
-				break;
-			case 'step4phenotype':
-				$this->step4_phenotype();
-				break;
-			case 'step5phenotype':
-			    $this->step5_phenotype();
-			    break;
-			case 'step1yearprog':
-			    $this->step1_yearprog();
-			    break;
-			case 'type1traits':
-				$this->type1_traits();
-				break;
-			case 'type1markers':
-				$this->type1_markers();
-				break;
-			case 'type2markers':
-			    $this->type2_markers();
-			    break;
-			case 'refreshtitle':
-			    echo $this->refresh_title();
-			    break;
-			default:
-				$this->type1_select();
-				break;
-				
+        case 'step1phenotype':
+			$this->step1_phenotype();
+			break;
+		case 'step2phenotype':
+			$this->step2_phenotype();
+			break;
+		case 'step3phenotype':
+			$this->step3_phenotype();
+			break;
+		case 'step4phenotype':
+			$this->step4_phenotype();
+			break;
+		case 'step5phenotype':
+			$this->step5_phenotype();
+			break;
+		case 'step1yearprog':
+			$this->step1_yearprog();
+			break;
+		case 'type1traits':
+			$this->type1_traits();
+			break;
+		case 'type1markers':
+			$this->type1_markers();
+			break;
+		case 'type2markers':
+			$this->type2_markers();
+			break;
+	    case 'refreshtitle':
+			echo $this->refresh_title();
+		    break;
+		default:
+			$this->type1_select();
+			break;			
 		}	
 	}
 
@@ -249,10 +248,15 @@ class SelectPhenotypeExp
 		</select></p>
 		        <script type="text/javascript" src="downloads/downloads.js"></script>
                 <?php 
-                $this->type1_breeding_programs_year();
+                $this->step1_breedprog();
                 ?>
-                </div>
-                
+                </div></div>
+                <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
+                <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
+		        <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
+		        <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
+		        <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+		        </div>
                 <?php
         }
 
@@ -399,85 +403,7 @@ class SelectPhenotypeExp
       </p>
       <?php 
     }
-    
-	/**
-	 * this is the main entry point when there are no lines saved in session variable
-	 */
-    private function type1_breeding_programs_year()
-	{
-		?>	
-			<div id="step11">
-			<table class="tableclass1">
-				<tr>
-					<th>Breeding Program</th>
-				</tr>
-				<tr>
-					<td>
-						<select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
-		<?php
 
-		// Select breeding programs for the drop down menu
-                $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-                  FROM experiments AS e, CAPdata_programs AS dp
-                  WHERE program_type = 'breeding'
-                  AND dp.CAPdata_programs_uid = e.CAPdata_programs_uid
-                  order by data_program_name asc";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
-		{
-			?>
-				<option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
-			<?php
-		}
-		?>
-						</select>
-			</table>
-			</div></div>
-					
-			<div id="step2" style="float: left; margin-bottom: 1.5em;">
-			<p>2.
-		<select name="select2">
-		  <option value="BreedingProgram">Year</option>
-		</select></p>
-			<table class="tableclass1">
-					<tr>
-					    <th>Year</th>
-					</tr>
-					<tr>
-					<td>
-						<select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-		<?php
-
-		// set up drop down menu with data showing year
-		// should this be phenotype experiments only? No
-
-		$sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-				WHERE e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'phenotype'";
-		if (!authenticate(array(USER_TYPE_PARTICIPANT,
-					USER_TYPE_CURATOR,
-					USER_TYPE_ADMINISTRATOR)))
-			$sql .= " and data_public_flag > 0";
-		$sql .= " GROUP BY e.experiment_year DESC";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
-			?>
-				<option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-			<?php
-		}
-		?>
-						</select>
-					</td>
-				</tr>
-			</table>
-		</div>
-		<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-		
-<?php
-	}
 	
 	/**
 	 * starting with phenotype display phenotype categories
@@ -909,7 +835,7 @@ class SelectPhenotypeExp
                 $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
                 ?>
                 <div id="step11">
-                <table>
+                <table class="tableclass1">
                 <tr>
                         <th>Breeding Program</th>
                 </tr>
@@ -920,12 +846,10 @@ class SelectPhenotypeExp
 
                 // Select breeding programs for the drop down menu
                 $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-                  FROM experiments AS e, experiment_types AS et, datasets AS ds, datasets_experiments AS d_e, CAPdata_programs AS dp
-                  WHERE e.experiment_type_uid = et.experiment_type_uid
-                  AND e.experiment_uid = d_e.experiment_uid
-                  AND d_e.datasets_uid = ds.datasets_uid
+                  FROM experiments AS e, CAPdata_programs AS dp
+                  WHERE program_type = 'breeding'
                   AND dp.CAPdata_programs_uid = e.CAPdata_programs_uid
-                  AND et.experiment_type_name = 'phenotype'";
+                  order by data_program_name asc";
                 $res = mysql_query($sql) or die(mysql_error());
                 while ($row = mysql_fetch_assoc($res))
                 {
@@ -936,6 +860,7 @@ class SelectPhenotypeExp
                 ?>
                                                 </select>
                                         </td>
+                </tr></table>
                 <?php
          }
 
