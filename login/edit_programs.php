@@ -28,15 +28,65 @@ if(count($drds) == 0) {
 }
 
 /*
- * Has an update been submitted?
+ * Has form data been submitted?  Then handle it.
  */
+if (!empty($_POST[adding])) {
+  // "Add" button
+  $prcode = $_POST[code];
+  $prname = $_POST[name];
+  $prtype = $_POST[type];
+  $prinst = $_POST[inst];
+  $prcollab = $_POST[collab];
+  $prdesc = $_POST[desc];
+  // Validate
+  if (empty($prcode))
+    $adderr = "Program Code is required.  Nothing added.<br>";
+  else { 
+    $oldcode = mysql_grab("select data_program_code from CAPdata_programs where data_program_code = '$prcode'");
+    if (!empty($oldcode))
+      $adderr = "Can't add.  Program Code $oldcode already exists.<br>";
+  }
+  if (empty($prname))
+    $adderr .= "Program Name is required.  Nothing added.<br>";
+  else { 
+    $oldname = mysql_grab("select data_program_name from CAPdata_programs where data_program_name = '$prname'");
+    if (!empty($oldname))
+      $adderr .= "Can't add.  Program Name \"$oldname\" already exists.<br>";
+  }
+  if (empty ($prinst))
+    $adderr .= "Institution is required.  Nothing added.<br>";
+  if (empty($prtype))
+    $adderr .= "Program Type is required.  Nothing added.<br>";
+  if (empty($adderr)) {
+  // Validated.  Add the data.
+    $sql = "insert into CAPdata_programs (
+	  data_program_code,
+	  data_program_name,
+	  institutions_uid,
+	  program_type,
+	  collaborator_name, 
+	  description,
+	  created_on ) 
+       values (
+	  '$prcode',
+	  '$prname',
+	  $prinst,
+	  '$prtype',
+	  '$prcollab',
+	  '$prdesc',
+	  NOW() )";
+    mysql_query($sql) or die("Insert failed.<br>".mysql_error());
+    $adderr = "Program $prcode added.";
+  }
+}
 if( ($id = array_search("Update", $_POST)) != NULL) {
+  // "Update" button
   foreach($_POST as $k=>$v)
     $_POST[$k] = addslashes($v);
   updateTable($_POST, "CAPdata_programs", array("CAPdata_programs_uid"=>$id));
 }
-elseif (!empty($_POST['Delete'])) {
-  // Delete this record.
+if (!empty($_POST['Delete'])) {
+  // "Delete" button
   $id = ($_POST['Delete']);
   $code = mysql_grab("select data_program_code from CAPdata_programs where CAPdata_programs_uid=$id");
   echo "Attempting to delete CAP Data Program id = $id, code = $code...<p>";
@@ -70,26 +120,52 @@ if(isset($_REQUEST['search']) && $_REQUEST['search'] != "") {
   }
 }
 
+// Which pagefull of existing records should we display?
 $start = 0;
 if(isset($_GET['start'])) 
   $start = $_GET['start'];
-
 ?>
 
-<div id="primaryContentContainer">
-  <div id="primaryContent">
-    <div class="box">
-
-      <h2>Edit/Delete CAP Data Programs</h2>
+<!-- Show the page and its forms. -->
+<div class="box">
+  <h2>Curate Data Programs</h2>
+  <div class="boxContent">
+    <h3>Add a new program</h3>
+<?php
+   if (!empty($adderr))
+     echo "<font color=red><b>$adderr</b></font>";
+?>   
+    <form method= post>
+      <table>
+	<tr><td>Program Code<td><input type=text name=code size=5 value = <?php echo $prcode ?>>	
+	    <tr><td>Name<td><input type=text name=name size=30 value = <?php echo $prname ?>>
+		<tr><td>Type<td>
+		    <select name=type>
+		      <option>
+		      <option value=breeding>breeding
+		      <option value=data>data
+		      <option value=mapping>mapping
+		    <tr><td>Institution<td><select name=inst><option value="">
+<?php
+  $res = mysql_query("select institutions_uid, institutions_name from institutions") or die(mysql_error());
+   while($r = mysql_fetch_row($res))
+     echo "<option value=$r[0]>$r[1]";
+?>
+			</select>
+	    <tr><td>Collaborator<td><input type=text name=collab value = <?php echo $prcollab ?>>	
+	    <tr><td>Description<td><input type=text name=desc size=50 value = <?php echo $prdesc ?>>	
+	  </table>
+	<input type=submit value=Add name=adding>
+	</form>
+      </div>
 
       <div class="boxContent">
+	<h3>Edit or Delete a program</h3>
 	<form action="<?php echo $config['base_url']; ?>login/edit_programs.php" method="post">
 	  <p>Show only items containing these words:<br>
 	    <input type="text" name="search" value="<?php echo $searchstring ?>" size="30" /> 
 	    <input type="submit" value="Search" /></p>
 	</form>
-      </div>
-    </div>
 
 <?php
 // attaching the query string to the callback URL.
