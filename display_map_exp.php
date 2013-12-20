@@ -46,7 +46,7 @@ private function typeExperimentCheck()
       {
                 global $config;
                 include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>Display map of trait value</h2>";
+                echo "<h2>Numeric map of trait by field position</h2>";
                 $this->type_Experiment_Name();
                 $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
@@ -72,13 +72,20 @@ private function type_Experiment_Name() {
      die();
    } 
    $exp_uid = $_GET['uid'];
+
+   $sql = "select trial_code from experiments where experiment_uid = $exp_uid";
+   $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
+   if ($row = mysqli_fetch_assoc($res)) {
+       $name = $row["trial_code"];
+   }
+   echo "$name - \n";
+   echo "<a href=display_heatmap_exp.php?uid=$exp_uid>Heat map</a><br>";
    $sql = "select distinct phenotype_uid from phenotype_plot_data where experiment_uid = $exp_uid";  
    $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
    while ($row = mysqli_fetch_assoc($res)) {
        $uid = $row["phenotype_uid"];
        $name = $phen_list[$uid];
        $trait_list[$uid] = $name;
-       //echo "$name<br>\n";
    }
   
    $max_row = 0;
@@ -91,13 +98,16 @@ private function type_Experiment_Name() {
        $plot = $row["plot_uid"];
        $row_id = $row["row_id"];
        $col_id = $row["column_id"];
-       //echo "row_list $plot $row_id col_list $plot $col_id<br>\n";
        $row_list[$plot] = $row_id;
        $col_list[$plot] = $col_id;
        if ($row_id > $max_row) { $max_row = $row_id; }
        if ($col_id > $max_col) { $max_col = $col_id; }
    }
    if ($found) {
+       if (($max_row == 0) || ($max_col == 0)) {
+          echo "Error: row or column information is missing from field book<br>\n";
+          die();
+       }
    } else {
      echo "$sql<br>\n";
      die("Error: no fieldbook entries found");

@@ -46,7 +46,7 @@ private function typeExperimentCheck()
       {
                 global $config;
                 include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>Heatmap of trait values by field position</h2>";
+                echo "<h2>Heatmap of trait by field position</h2>";
                 $this->type_Experiment_Name();
                 $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
@@ -78,7 +78,8 @@ private function type_Experiment_Name() {
    if ($row = mysqli_fetch_assoc($res)) {
        $name = $row["trial_code"];
    }
-   echo "$name<br>\n";
+   echo "$name - \n";
+   echo "<a href=display_map_exp.php?uid=$exp_uid>Numeric map</a><br>";
 
    $sql = "select distinct phenotype_uid from phenotype_plot_data where experiment_uid = $exp_uid";  
    $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
@@ -122,11 +123,6 @@ private function type_Experiment_Name() {
    foreach ($trait_list as $key => $val) { 
      echo "<h3>Trait = $val</h3><br>\n";
      $outputFile = "HeatMap" . $key . ".png";
-     for ($i=1; $i<=$max_row; $i++) {
-         for ($j=1; $j<=$max_col; $j++) {
-             $pheno_val[$i][$j] = "NA";
-         }
-     } 
      $max_val = 0;
      $sql = "select plot_uid, value from phenotype_plot_data where experiment_uid = $exp_uid and phenotype_uid = $key";
      $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
@@ -141,16 +137,26 @@ private function type_Experiment_Name() {
 
      $h = fopen("/tmp/tht/$unique_str/$inputFile", "w");
      for ($j=1; $j<=$max_col; $j++) {
-       fwrite($h,"$j\t");
+       if ($j == 1) {
+         fwrite($h,"$j");
+       } else {
+         fwrite($h,"\t$j");
+       }
      }
      fwrite($h,"\n");
      for ($i=1; $i<=$max_row; $i++) {
-        fwrite($h,"$i\t");
+        $output = "";
         for ($j=1; $j<=$max_col; $j++) {
            $value = $pheno_val[$i][$j];
-           fwrite($h,"$value\t"); 
+           if ($j == 1) {
+             $output = $value;
+           } else {
+             $output = $output . "\t$value";
+           }
         }
-        fwrite($h,"\n");
+        if (preg_match("/[0-9]/", $output)) {
+          fwrite($h,"$i\t$output\n");
+        }
      }
      fclose($h);
      $png1 = "png(\"/tmp/tht/$unique_str/$outputFile\", width=600, height=600)\n";
