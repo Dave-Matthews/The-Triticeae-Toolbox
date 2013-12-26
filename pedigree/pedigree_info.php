@@ -304,12 +304,16 @@ private function type_Line_Excel() {
   $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Species');
   $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Comment');
   // Add columns for line Properties.
-  $firstprop = ord(I);  // First property column is "I".
+  // Oops, columns will go way past Z.
+  /* $firstprop = ord(I);  // First property column is "I". */
+  $firstprop = 9; // First property column is 9.
   for ($i = 0; $i < count($ourprops); $i++) {
-    $colname = chr($firstprop + $i);
+    /* $colname = chr($firstprop + $i); */
+    $col = $firstprop + $i;
     $prname = mysql_grab("select name from properties where properties_uid = $ourprops[$i]");
-    $objPHPExcel->getActiveSheet()->getColumnDimension($colname)->setWidth(7);
-    $objPHPExcel->getActiveSheet()->SetCellValue($colname.'1', "$prname");
+    /* $objPHPExcel->getActiveSheet()->getColumnDimension($colname)->setWidth(7); */
+    /* $objPHPExcel->getActiveSheet()->SetCellValue($colname.'1', "$prname"); */
+    $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, 1, "$prname");
   }
 
   $i = 2;
@@ -355,8 +359,10 @@ private function type_Line_Excel() {
              where lp.property_value_uid = pv.property_values_uid
              and pv.property_uid = $ourprops[$j]
              and lp.line_record_uid = $lineuid");
-	$colname = chr($firstprop + $j);
-	$objPHPExcel->getActiveSheet()->SetCellValue($colname.$i, "$propval",$format_row);
+	/* $colname = chr($firstprop + $j); */
+	/* $objPHPExcel->getActiveSheet()->SetCellValue($colname.$i, "$propval",$format_row); */
+	$col = $firstprop + $j;
+	$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $i, "$propval", $format_row);
       }
       $i++;
     } // end of while ($tok !== false)
