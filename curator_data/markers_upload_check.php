@@ -182,10 +182,6 @@ class Markers_Check {
                 // Store individual records
                 $i = 1;
                 while(($line = fgets($reader)) !== FALSE) { 
-                    if (feof($reader)) {
-                        break;
-                    }
-                    
                     if ((stripos($line, '- cut -') > 0 )) {
                         $error_flag = 0; 
                         break;
@@ -615,11 +611,7 @@ class Markers_Check {
         // Store individual records
         $i = 1;
         while (($line = fgets($reader)) !== FALSE) { 
-            if (feof($reader)) {
-                  break;
-            }
-             
-	    	if ( trim($line) == '') {
+	    if ( trim($line) == '') {
             	continue;
             }
             
