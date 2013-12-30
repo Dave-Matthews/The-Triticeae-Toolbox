@@ -148,10 +148,13 @@
   }
   print "<img src=\"/tmp/tht/$unique_str/$filename7\" /><br>";
   if (file_exists("$raw_file")) {
-    print "<a href=\"raw/phenotype/$filename4\" target=\"_blank\"type=\"text/csv\">results file of calculated index</a><br>\n";
+    print "Results<br>\n";
+    print "<form action=\"raw/phenotype/$filename4\" target=\"_blank\">";
+    print "<input type=submit value=\"Download\"> file of calculated index";
+    print "</form>";
     print "<form action=\"curator_data/input_experiments_plot_check.php\" method=post>\n";
     print "<input type=\"hidden\" name=\"filename0\" value=\"$filename4\">\n";
-    print "<input type=submit value=\"Upload\"> to database";
+    print "<input type=submit value=\"Upload\"> as trait to database";
     print "</form>";
   } else {
     echo "Error: calculation of index failed<br>\n";
