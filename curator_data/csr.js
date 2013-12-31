@@ -230,6 +230,7 @@ function update_f1() {
 }
 
 function update_f2() {
+  formula1 = "CUSTOM";
   formula2 = document.getElementById("formula2").value;
   formula2 = encodeURIComponent(formula2);
 }
