@@ -15,7 +15,7 @@
  */
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
 $mysqli = connecti();
 
@@ -23,11 +23,11 @@ new Data_Check($_GET['function']);
 
 class Data_Check
 {
-  /**
-   * Using the class's constructor to decide which action to perform
-   * @param unknown_type $function
-   */
-  public function __construct($function = null) {
+    /**
+     * Using the class's constructor to decide which action to perform
+     * @param unknown_type $function
+     */
+    public function __construct($function = null) {
     switch($function)
       {
       case 'typeDatabase':
@@ -37,20 +37,19 @@ class Data_Check
         $this->typeExperimentCheck(); /* intial case*/
         break;
       }
-  }
+    }
 
 /**
  * check experiment data before loading into database
  */
-private function typeExperimentCheck()
-      {
-                global $config;
-                include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>Heatmap of trait by field position</h2>";
-                $this->type_Experiment_Name();
-                $footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-        }
+private function typeExperimentCheck() {
+    global $config;
+    include $config['root_dir'] . 'theme/admin_header.php';
+    echo "<h2>Heatmap of trait by field position</h2>";
+    $this->type_Experiment_Name();
+    $footer_div = 1;
+    include $config['root_dir'].'theme/footer.php';
+}
 
 /***
  * create data file, separate result for each trait

@@ -24,7 +24,7 @@
       $trial = $_POST['trial'];
       $sql = "select raw_file_name, trial_code from csr_measurement, experiments
        where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = $trial";
-      $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
       if ($row = mysqli_fetch_array($res)) {
           $filename3 = $row[0];
           $trial_code = $row[1];
@@ -44,15 +44,15 @@
   if (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
       $index = $_POST['formula2'];
       if (preg_match("/system/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
+          die("<font color=red>Error: Illegal formula</font>");
       } elseif (preg_match("/shell/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
+    	  die("<font color=red>Error: Illegal formula</font>");
       } elseif (preg_match("/[{}]/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
+    	  die("<font color=red>Error: Illegal formula</font>");
       } elseif (preg_match("/write/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
+    	  die("<font color=red>Error: Illegal formula</font>");
       } elseif (preg_match("/read/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
+    	  die("<font color=red>Error: Illegal formula</font>");
       }
       echo "formula = $index<br>\n";
   } else {
@@ -78,7 +78,7 @@
   $zoom = $_POST['xrange'];
   
   $dir = $config['root_dir'] . "raw/phenotype";
-  $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+  $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
   mkdir("/tmp/tht/$unique_str");
   $filename1 = "gbe-input.txt";
   $filename2 = "process_error.txt";
@@ -134,12 +134,12 @@
   if (file_exists("/tmp/tht/$unique_str/$filename2")) {
     $h = fopen("/tmp/tht/$unique_str/$filename2", "r");
     while ($line=fgets($h)) {
-      echo "$line<br>\n";
+        echo "$line<br>\n";
     }
     fclose($h);
     $h = fopen("/tmp/tht/$unique_str/$filename2", "r");
     while ($line=fgets($h)) {
-      echo "$line<br>\n";
+        echo "$line<br>\n";
     }
     fclose($h);
   }
