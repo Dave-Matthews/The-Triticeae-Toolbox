@@ -21,18 +21,18 @@
   <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
   <?php
   if (isset($_POST['trial']) && !empty($_POST['trial'])) {
-      $trial = $_POST['trial'];
-      $sql = "select raw_file_name, trial_code from csr_measurement, experiments
+    $trial = $_POST['trial'];
+    $sql = "select raw_file_name, trial_code from csr_measurement, experiments
        where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = $trial";
-      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-      if ($row = mysqli_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
           $filename3 = $row[0];
           $trial_code = $row[1];
-      } else {
+    } else {
          die("trial $trial not found<br>\n");
-      }
+    }
   } else {
-      die("no trial found");
+    die("no trial found");
   }
   if (isset($_POST['smooth']) && !empty($_POST['smooth'])) {
       $smooth = $_POST['smooth'];
@@ -48,11 +48,11 @@
       } elseif (preg_match("/shell/", $index)) {
     	  die("<font color=red>Error: Illegal formula</font>");
       } elseif (preg_match("/[{}]/", $index)) {
-    	  die("<font color=red>Error: Illegal formula</font>");
+          die("<font color=red>Error: Illegal formula</font>");
       } elseif (preg_match("/write/", $index)) {
     	  die("<font color=red>Error: Illegal formula</font>");
       } elseif (preg_match("/read/", $index)) {
-    	  die("<font color=red>Error: Illegal formula</font>");
+          die("<font color=red>Error: Illegal formula</font>");
       }
       echo "formula = $index<br>\n";
   } else {

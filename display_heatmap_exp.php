@@ -27,36 +27,38 @@ class Data_Check
      * Using the class's constructor to decide which action to perform
      * @param unknown_type $function
      */
-    public function __construct($function = null) {
-    switch($function)
-      {
-      case 'typeDatabase':
-        $this->type_Database(); /* update database */
-        break;
-      default:
-        $this->typeExperimentCheck(); /* intial case*/
-        break;
-      }
+    public function __construct($function = null)
+    {
+        switch($function)
+        {
+        case 'typeDatabase':
+            $this->type_Database(); /* update database */
+            break;
+        default:
+            $this->typeExperimentCheck(); /* intial case*/
+            break;
+        }
     }
 
-/**
- * check experiment data before loading into database
- */
-private function typeExperimentCheck() {
-    global $config;
-    include $config['root_dir'] . 'theme/admin_header.php';
-    echo "<h2>Heatmap of trait by field position</h2>";
-    $this->type_Experiment_Name();
-    $footer_div = 1;
-    include $config['root_dir'].'theme/footer.php';
-}
+    /**
+     * check experiment data before loading into database
+     */
+    private function typeExperimentCheck() {
+        global $config;
+        include $config['root_dir'] . 'theme/admin_header.php';
+        echo "<h2>Heatmap of trait by field position</h2>";
+        $this->type_Experiment_Name();
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
 
-/***
- * create data file, separate result for each trait
- * 1. display table or values in row column format
- * 2. call R script for displaying heatmap
- */
-private function type_Experiment_Name() {
+    /**
+     * create data file, separate result for each trait
+     * 1. display table or values in row column format
+     * 2. call R script for displaying heatmap
+     */
+private function type_Experiment_Name()
+{
    global $mysqli;
    $sql = "select phenotype_uid, phenotypes_name from phenotypes";
    $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli). $sql);
