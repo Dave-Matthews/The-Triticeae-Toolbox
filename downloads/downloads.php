@@ -265,37 +265,37 @@ class Downloads
      * @param string $version Tassel version of output
      */
     private function type1_session($version)
-	{
-	    $datasets_exp = "";
-                if (isset($_SESSION['selected_trials'])) {
+    {
+        $datasets_exp = "";
+        if (isset($_SESSION['selected_trials'])) {
                         $experiments_t = $_SESSION['selected_trials'];
-                        $experiments_t = implode(",",$experiments_t);
-                } else {
+                        $experiments_t = implode(",", $experiments_t);
+        } else {
                         $experiments_t = "";
-                }
-		if (isset($_SESSION['filtered_lines'])) {
+        }
+        if (isset($_SESSION['filtered_lines'])) {
 			$selectedcount = count($_SESSION['filtered_lines']);
 			$lines = $_SESSION['filtered_lines'];
 			$lines_str = implode(",", $lines);
-		} else {
+	} else {
 			$lines = "";
 			$lines_str = "";
-		}
-		if (isset($_SESSION['filtered_markers'])) {
+	}
+        if (isset($_SESSION['filtered_markers'])) {
 		    $selectcount = $_SESSION['filtered_markers'];
 		    $markers = $_SESSION['filtered_markers'];
 		    $markers_str = implode(",", $markers);
-		} else {
+	} else {
 		    $markers = array();
                     $markers_str = "";
-		}
-		if (isset($_SESSION['phenotype'])) {
+	}
+        if (isset($_SESSION['phenotype'])) {
 		    $phenotype = $_SESSION['phenotype'];
-		} else {
+	} else {
 		    $phenotype = "";
-		}
+	}
  
-                if (!preg_match('/[0-9]/',$markers_str)) {
+        if (!preg_match('/[0-9]/',$markers_str)) {
                   //show have markers selected
                   echo "<font color=red>Error: no markers selected</font><br>\n";
                   return;
@@ -307,14 +307,14 @@ class Downloads
                   allele_cache.line_record_uid in ($lines_str)";
                   $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
                   if (mysql_num_rows($res)>0) {
-                    while ($row = mysql_fetch_array($res)){
+                    while ($row = mysql_fetch_array($res)) {
                       $markers[] = $row["marker_uid"];
                     }
                   }
-                }
+        }
 		
-		//get genotype experiments
-		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
+	//get genotype experiments
+	$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
 		FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
 		WHERE
 		e.experiment_type_uid = et.experiment_type_uid
@@ -323,26 +323,20 @@ class Downloads
 		AND lr.line_record_uid in ($lines_str)
 		AND et.experiment_type_name = 'genotype'";
 		$res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-		if (mysql_num_rows($res)>0) {
-		 while ($row = mysql_fetch_array($res)){
+	if (mysql_num_rows($res)>0) {
+		 while ($row = mysql_fetch_array($res)) {
 		  $exp[] = $row["exp_uid"];
-		 }
+	}
 		 $experiments_g = implode(',',$exp);
-		}
+	}
 		
-                $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
-                $filename = "download_" . $unique_str;
-                mkdir("/tmp/tht/$filename");
+        $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+        $filename = "download_" . $unique_str;
+        mkdir("/tmp/tht/$filename");
         $subset = "yes";
         $dtype = "";
         
-        if ($version == "V2") {
-            $filename = "annotated_alignment.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_annotated_align($experiments_g);
-            fwrite($h, $output);
-            fclose($h);
-        } elseif ($version == "V3") {
+        if ($version == "V3") {
             $filename = "geneticMap.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
             $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
@@ -353,7 +347,7 @@ class Downloads
             $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         } elseif ($version == "V4") { //Download for Tassel
-            if (isset($_SESSION['phenotype'])) {
+            if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
                 $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
                 $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset);
@@ -371,7 +365,7 @@ class Downloads
             fclose($h);
         } elseif ($version == "V5") { //Download for R
             $dtype = "qtlminer";
-            if (isset($_SESSION['phenotype'])) {
+            if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
                 $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
                 $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
@@ -379,22 +373,22 @@ class Downloads
                 fclose($h);
             }
             $filename = "geneticMap.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_geneticMap($lines,$markers,"R");
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type1_build_geneticMap($lines, $markers, "R");
             fwrite($h, $output);
             fclose($h);
             $filename = "snpfile.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fwrite($h, $output);
             fclose($h);
             $filename = "genotype.hmp.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type3_build_markers_download($lines,$markers,$dtype,$h);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type3_build_markers_download($lines, $markers, $dtype,$h);
             fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
             $dtype = "AB";
-            if (isset($_SESSION['phenotype'])) {
+            if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
                 $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
                 $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp, $subset);
@@ -412,7 +406,7 @@ class Downloads
             fclose($h);
         } elseif ($version == "V7") {  //Download for synbreed 
             $dtype = "AB";
-            if (isset($_SESSION['phenotype'])) {
+            if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
                 $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
                 $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
@@ -1152,19 +1146,15 @@ class Downloads
 					GROUP BY tb.tht_base_uid, pd.phenotype_uid";
 			
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-           // // $firephp->log("sql ".$i." ".$sql);
-			$outarray = array_fill(0,$ncols,-999);
-			//// $firephp->table('outarray label values', $outarray); 
-			//$outarray = array_fill_keys( $keys  , -999);
-			$outarray = array_combine($keys  , $outarray);
-			//// $firephp->table('outarray label ', $outarray); 
+            if ($ncols > 0) {
+		$outarray = array_fill(0,$ncols,-999);
+		$outarray = array_combine($keys  , $outarray);
+            }
             while ($row = mysql_fetch_array($res)) {
                $keyval = $row['phenotype_uid'].":".$row['experiment_uid'];
-			   // $firephp->log("keyvals ".$keyval." ".$row['value']);
                $outarray[$keyval]= $row['value'];
             }
             $outline .= implode($delimiter,$outarray)."\n";
-			//// $firephp->log("outputline ".$i." ".$outline);
             $output .= $outline;
 
       }
