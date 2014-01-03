@@ -159,7 +159,7 @@ class Experiments
         include $config['root_dir'] . 'theme/admin_header.php';
 
         echo "<h2>Canopy Spectral Reflectance (CSR)</h2>";
-        echo "Select a Trial and Date/Time. ";
+        echo "<h3>1. Select a Trial and Date/Time</h3>";
         echo "The line selection can be saved for use in other analysis or download functions.<br>";
         echo "Either All Lines or only the Check Lines can be used based on the information from the fieldbook.<br><br>";
 
@@ -507,7 +507,7 @@ class Experiments
     function calculateIndex()
     {
         ?>
-        <h3>Calculate CSR Index</h3>
+        <h3>2. Calculate CSR Index</h3>
         The CSR indices are calculated from plot phenotype data.
         Select an Index then click the Calculate Index button.<br>
         The wavelength paramaters (W1, W2) and the formula may be modified from their default values.<br><br>

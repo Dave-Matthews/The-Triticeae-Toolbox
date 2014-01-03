@@ -24,61 +24,61 @@
     $trial = $_POST['trial'];
     $sql = "select raw_file_name, trial_code from csr_measurement, experiments
        where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = $trial";
-    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_array($res)) {
-      $filename3 = $row[0];
-      $trial_code = $row[1];
+          $filename3 = $row[0];
+          $trial_code = $row[1];
     } else {
-      die("trial $trial not found<br>\n");
+         die("trial $trial not found<br>\n");
     }
   } else {
     die("no trial found");
   }
   if (isset($_POST['smooth']) && !empty($_POST['smooth'])) {
-    $smooth = $_POST['smooth'];
+      $smooth = $_POST['smooth'];
   } else {
-    $smooth = 0;
-    echo "no smoothing<br>\n";
+      $smooth = 0;
+      echo "no smoothing<br>\n";
   }
   $formula1 = $_POST['formula1'];
   if (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
-    $index = $_POST['formula2'];
-    if (preg_match("/system/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
-    } elseif (preg_match("/shell/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
-    } elseif (preg_match("/[{}]/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
-    } elseif (preg_match("/write/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
-    } elseif (preg_match("/read/", $index)) {
-    	die("<font color=red>Error: Illegal formula</font>");
-    }
-    echo "formula = $index<br>\n";
+      $index = $_POST['formula2'];
+      if (preg_match("/system/", $index)) {
+          die("<font color=red>Error: Illegal formula</font>");
+      } elseif (preg_match("/shell/", $index)) {
+    	  die("<font color=red>Error: Illegal formula</font>");
+      } elseif (preg_match("/[{}]/", $index)) {
+          die("<font color=red>Error: Illegal formula</font>");
+      } elseif (preg_match("/write/", $index)) {
+    	  die("<font color=red>Error: Illegal formula</font>");
+      } elseif (preg_match("/read/", $index)) {
+          die("<font color=red>Error: Illegal formula</font>");
+      }
+      echo "formula = $index<br>\n";
   } else {
-    die("no formula specified<br>\n");
+      die("no formula specified<br>\n");
   }
   if (isset($_POST['W1']) && !empty($_POST['W1'])) {
-    $w1 = $_POST['W1'];
+      $w1 = $_POST['W1'];
   } else {
-    die("must specify W1");
+      die("must specify W1");
   }
   if (isset($_POST['W2']) && !empty($_POST['W2'])) {
-    $w2 = $_POST['W2'];
+      $w2 = $_POST['W2'];
   } else {
-    die("must specify W2");
+      die("must specify W2");
   }
   if (isset($_POST['W3']) && !empty($_POST['W3'])) {
-    $w3 = $_POST['W3'];
+      $w3 = $_POST['W3'];
   } elseif (preg_match("/W3/", $index)) {
-    die("must specify W3");
+      die("must specify W3");
   } else {
-    $w3 = "NA";
+      $w3 = "NA";
   }
   $zoom = $_POST['xrange'];
   
   $dir = $config['root_dir'] . "raw/phenotype";
-  $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+  $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
   mkdir("/tmp/tht/$unique_str");
   $filename1 = "gbe-input.txt";
   $filename2 = "process_error.txt";
@@ -134,12 +134,12 @@
   if (file_exists("/tmp/tht/$unique_str/$filename2")) {
     $h = fopen("/tmp/tht/$unique_str/$filename2", "r");
     while ($line=fgets($h)) {
-      echo "$line<br>\n";
+        echo "$line<br>\n";
     }
     fclose($h);
     $h = fopen("/tmp/tht/$unique_str/$filename2", "r");
     while ($line=fgets($h)) {
-      echo "$line<br>\n";
+        echo "$line<br>\n";
     }
     fclose($h);
   }
@@ -147,12 +147,28 @@
     print "<img src=\"/tmp/tht/$unique_str/$filename6\" /><br>";
   }
   print "<img src=\"/tmp/tht/$unique_str/$filename7\" /><br>";
+  //if user is not logged in give them login link
   if (file_exists("$raw_file")) {
-    print "<a href=\"raw/phenotype/$filename4\" target=\"_blank\"type=\"text/csv\">results file of calculated index</a><br>\n";
-    print "<form action=\"curator_data/input_experiments_plot_check.php\" method=post>\n";
-    print "<input type=\"hidden\" name=\"filename0\" value=\"$filename4\">\n";
-    print "<input type=submit value=\"Upload\"> to database";
+    print "<h3>3. Save Results</h3>\n";
+    print "<table>";
+    print "<tr><td><form action=\"raw/phenotype/$filename4\" target=\"_blank\">";
+    print "<input type=submit value=\"Download\"><td>";
     print "</form>";
+    if (isset($_SESSION['username'])) {
+      if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+        print "<tr><td><form action=\"curator_data/input_experiments_plot_check.php\" method=post>\n";
+        print "<input type=\"hidden\" name=\"filename0\" value=\"$filename4\">\n";
+        print "<input type=submit value=\"Upload\"><td>Load the index as a trait CSR_$formula1";
+        print "</form>";
+      } 
+        print "<tr><td>To load index on production T3 website as a trait<br>\n";
+        print "1. Download the file<br>\n";
+        print "2. Use the <a href=curator_data/queue.php>Data Submission form</a> to send the file to the currator\n";
+      print "</table>";
+    } else {
+      print "</table><br>\n";
+      print "<a href=login.php>Login</a> to save data as a trait or submit data to currator<br>\n";
+    }
   } else {
     echo "Error: calculation of index failed<br>\n";
   }

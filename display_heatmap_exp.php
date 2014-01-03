@@ -15,7 +15,7 @@
  */
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
 $mysqli = connecti();
 
@@ -23,41 +23,42 @@ new Data_Check($_GET['function']);
 
 class Data_Check
 {
-  /**
-   * Using the class's constructor to decide which action to perform
-   * @param unknown_type $function
-   */
-  public function __construct($function = null) {
-    switch($function)
-      {
-      case 'typeDatabase':
-        $this->type_Database(); /* update database */
-        break;
-      default:
-        $this->typeExperimentCheck(); /* intial case*/
-        break;
-      }
-  }
-
-/**
- * check experiment data before loading into database
- */
-private function typeExperimentCheck()
-      {
-                global $config;
-                include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>Heatmap of trait by field position</h2>";
-                $this->type_Experiment_Name();
-                $footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+    /**
+     * Using the class's constructor to decide which action to perform
+     * @param unknown_type $function
+     */
+    public function __construct($function = null)
+    {
+        switch($function)
+        {
+        case 'typeDatabase':
+            $this->type_Database(); /* update database */
+            break;
+        default:
+            $this->typeExperimentCheck(); /* intial case*/
+            break;
         }
+    }
 
-/***
- * create data file, separate result for each trait
- * 1. display table or values in row column format
- * 2. call R script for displaying heatmap
- */
-private function type_Experiment_Name() {
+    /**
+     * check experiment data before loading into database
+     */
+    private function typeExperimentCheck() {
+        global $config;
+        include $config['root_dir'] . 'theme/admin_header.php';
+        echo "<h2>Heatmap of trait by field position</h2>";
+        $this->type_Experiment_Name();
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
+
+    /**
+     * create data file, separate result for each trait
+     * 1. display table or values in row column format
+     * 2. call R script for displaying heatmap
+     */
+private function type_Experiment_Name()
+{
    global $mysqli;
    $sql = "select phenotype_uid, phenotypes_name from phenotypes";
    $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli). $sql);
@@ -107,8 +108,10 @@ private function type_Experiment_Name() {
        if ($col_id > $max_col) { $max_col = $col_id; }
    }
    if ($found) {
-     //echo "max_row $max_row<br>\n";
-     //echo "max_col $max_col<br>\n";
+       if (($max_row == 0) || ($max_col == 0)) {
+          echo "Error: row or column information is missing from field book<br>\n";
+          die();
+       }
    } else {
      echo "$sql<br>\n";
      die("Error: no fieldbook entries found");

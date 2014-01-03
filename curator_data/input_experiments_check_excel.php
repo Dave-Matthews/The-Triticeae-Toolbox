@@ -198,13 +198,16 @@ private function typeExperimentCheck()
 		 echo "Missing column: Line Name and Check are required.<p>";
 		 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\"><br>");
 	       }
+	       // Read in the trait names.
 	       $offset = $COL_LINENAME + 6;//column where phenotype data starts
 	       $phenonames = array();
 	       $phenoids = array();
-   
-	       for ($i = $offset; $i <= $cols; $i++) {
+   	       for ($i = $offset; $i <= $cols; $i++) {
 		 $teststr= addcslashes(trim($means['cells'][5][$i]),"\0..\37!@\177..\377");
-		 if (empty($teststr)) break; 
+
+		 // DEM dec13: Don't assume there are no empty columns interspersed. It has happened.
+		 if (empty($teststr)) 
+		   break;
 		 else {
 		   $teststr= str_replace('\\n',' ',$teststr);
 		   $pheno_cur =trim($teststr);
@@ -219,9 +222,10 @@ private function typeExperimentCheck()
 		     $phenoids[] = $row['id'];//$phenotype_uid;
 		     $pheno_max[] = $row['maxphen'];
 		     $pheno_min[] = $row['minphen'];
-		   } else {
+		     $pheno_idx[$row['name']] = $i;
+		   } 
+		   else 
 		     $eflgs[] = $pheno_cur;
-                   }
 		 }
 	       }
 	       if (count($eflgs) > 0) {
@@ -231,21 +235,20 @@ private function typeExperimentCheck()
 	       }
 	       $pheno_num = count($phenoids);
    
-	       /*
-		* Process the means file
-		*/
+	       // Process the data cells.
 	       $current = NULL;	// the current row
 	       $num_exp = 0;
 	       $experiment_uids[$num_exp] = -1;
 	       $BeginLinesInput = FALSE;
 	       for($i = 6; $i <= $rows; $i++) {
 		 $current = $means['cells'][$i];
-		 //check if line is empty, if yes then skip to the next line
+		 // Test if row is empty, if yes then skip to the next row.
 		 if (!empty($current)) {
-		   /* Deal with statistics */
+		   /* Deal with Trial summary statistics */
 		   // identify which statistic it is based on column 1
 		   $statname = str_replace(array(" ", "*"),"",strtolower(trim($current[1])));
                    if (preg_match('/^trialinformationgoesabove/', $statname)) {
+		     // Summary stats are done, starting data for individual lines.
                      $BeginLinesInput = TRUE;
 		     $i++;
 		     $current = $means['cells'][$i];
@@ -265,29 +268,10 @@ private function typeExperimentCheck()
                          <b>". $phenonames[$j]."</b> = '".$phenotype_data."'<br>";
 			 $phenotype_data = "NULL";
 		       }
-
-		       /* /\* ?? Why are we doing this before we've clicked Accept?? *\/ */
-		       /* if (!is_null($phenotype_data)) { */
-		       /* 	 if ($phenotype_data != "NULL") { $phenotype_data = "'".$phenotype_data."'"; } */
-		       /* 	 // check if there are existing statistics data for this experiment if yes then update */
-		       /* 	 $sql = "SELECT phenotype_mean_data_uid FROM phenotype_mean_data */
-                       /*          WHERE phenotype_uid = '$phenoids[$j]' */
-                       /*          AND experiment_uid = '$experiment_uid'"; */
-		       /* 	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		       /* 	 if ( mysql_num_rows($res)>0) { */
-		       /* 	   $sql = "UPDATE phenotype_mean_data SET $fieldname = $phenotype_data, updated_on=NOW() */
-                       /*              WHERE experiment_uid = '$experiment_uid' AND phenotype_uid = '$phenoids[$j]'"; */
-		       /* 	 } else { */
-		       /* 	   $sql = "INSERT INTO phenotype_mean_data SET $fieldname = '$phenotype_data', */
-                       /*              experiment_uid = '$experiment_uid', phenotype_uid = '$phenoids[$j]', */
-                       /*              updated_on=NOW(), created_on = NOW()"; */
-		       /* 	 } */
-		       /* 	 //$res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		       /* } */
-
 		     } // end of for($j)
 		   } // end of if ($BeginLinesInput === FALSE), finished collecting trial statistics
 		   else {
+		     // Read each line's data.
 		     // Get required columns
 		     $line_name = ForceValue($current[$COL_LINENAME], "<b>Error</b>: missing Line Name at row " . $i);
 		     $check = ForceValue($current[$COL_CHECK], "<b>Error</b>: missing Check value at row " . $i);
@@ -295,73 +279,33 @@ private function typeExperimentCheck()
 		     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		     if (mysql_numrows($res) > 0) {
 		       $line = mysql_fetch_assoc($res);
-		       $line_uid = $line['id'];
-		     } else {
+		       $line_record_uid = $line['id'];
+		     } 
+		     else {
 		       /* Translate synonyms */
 		       $sql = "select line_record_uid as id from line_synonyms where line_synonym_name  = '$line_name'";
 		       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		       if (mysql_numrows($res) > 0) {
 			 $realname = mysql_fetch_assoc($res);
-			 $line_uid = $realname['id'];
-		       } else {
-			 echo "Line name/synonym not found for line '". $line_name."' at row " . $i ."<br/><br/>";
+			 $line_record_uid = $realname['id'];
+		       } 
+		       else {
+			 echo "Line name or synonym not found for line '". $line_name."' at row " . $i ."<br/><br/>";
 			 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		       }
 		     }
-		     //Store experiment_uids for this file
-		     if (!in_array($experiment_uid,$experiment_uids)) {
-		       $experiment_uids[$num_exp]=$experiment_uid;
-		       $num_exp++;
 
-		    /*    // Don't do this before we've clicked Accept. : */
-		    /*    // remove checkline data for the phenotypes in this experiment from phenotype_data */
-		    /*    // table, this will help deal with multiple copies of a check_line. */
-		    /*    // get tht-base_uids for checklines */
-		    /*    // Only do this the first time through for an experiment */
-		    /*    $pheno_uids = implode(",",$phenoids); */
-			
-		    /*    $sql = "SELECT tht_base_uid */
-                    /* FROM tht_base */
-                    /* WHERE check_line='yes' AND experiment_uid='$experiment_uid'"; */
-                           
-		    /*    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		    /*    if (mysql_num_rows($res)>0) { */
-		    /* 	 while ($row = mysql_fetch_array($res)){ */
-		    /* 	   $tht_base_uids[]=$row['tht_base_uid']; */
-		    /* 	 } */
-		    /* 	 $tht_base_uids = implode(',',$tht_base_uids); */
-				
-		    /* 	 $sql = "DELETE FROM phenotype_data */
-		    /* 				WHERE tht_base_uid in ($tht_base_uids)AND phenotype_uid IN ($pheno_uids)"; */
-
-		    /* 	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		    /* 	 unset($tht_base_uids); */
-		    /*    } */
-
-		     }
-		     /*
-		      * Figure out which line to use
-		      */
-		     if ($check !=2) {
-		       $line_record_uid =	get_lineuid($line_name);
-		       if (count($line_record_uid)>1) {
-			 exit("more than one line record id for {$line_name}");
-		       } elseif ($line_record_uid===FALSE){
-			 exit("line {$line_name} not found in table, stop");
-		       }
-		       $line_record_uid=$line_record_uid[0];
-		       if (DEBUG>1) {
-			 echo "exp uid ".$experiment_uid." line uid ".$line_record_uid."\n";
-		       }
+		     // Validate $check.
+		     if ($check != 0 AND $check != 1) {
+		       echo "Error, row $i: Check must be either 0 or 1.<p>";
+		       exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		     }
 
-		     /*
-		      * Figure out which dataset to use if this is not a checkline
-		      */
+		     // Figure out which dataset to use if this is not a checkline
 		     if ($check == 0) {
 		       $sql = "SELECT CAPdata_programs_uid as id
-                    FROM CAPdata_programs
-                    WHERE data_program_code  = '$breeding_program_name'";
+			 FROM CAPdata_programs
+			 WHERE data_program_code  = '$breeding_program_name'";
 		       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		       if (1 == mysql_num_rows($res)) {
 			 $row = mysql_fetch_assoc($res);
@@ -371,113 +315,29 @@ private function typeExperimentCheck()
 			 exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 		       }
 		       $sql = "SELECT de.datasets_experiments_uid as id
-                     FROM datasets_experiments AS de, datasets AS ds, CAPdata_programs AS cd
-                     WHERE
-                        de.datasets_uid = ds.datasets_uid
-                        AND ds.CAPdata_programs_uid ='$BPcode_uid'
-                        AND experiment_uid = '$experiment_uid' limit 1";
+			  FROM datasets_experiments AS de, datasets AS ds, CAPdata_programs AS cd
+			  WHERE de.datasets_uid = ds.datasets_uid
+			  AND ds.CAPdata_programs_uid ='$BPcode_uid'
+			  AND experiment_uid = '$experiment_uid' limit 1";
 		       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		       if (1 == mysql_num_rows($res)) {
 			 $row = mysql_fetch_assoc($res);
 			 $de_uid = $row['id'];
 		       } 
-
-		       /* Don't do this till we've clicked Accept. */
-		       /* else { */
-		       /* 	 // set new dataset experiment code */
-		       /* 	 // Dataset name is data program name plus year.  Get year from  */
-		       /* 	 // previously loaded experiment annotation. */
-		       /* 	 $year = mysql_grab("select experiment_year from experiments where trial_code = '$trial_code'"); */
-		       /* 	 $ds_name = $breeding_program_name . substr($year, -2); */
-		       /* 	 // Get datasets_uid. */
-		       /* 	 $sql = "SELECT datasets_uid as id */
-                       /*  FROM  datasets */
-                       /*  WHERE dataset_name ='$ds_name'"; */
-		       /* 	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		       /* 	 if (mysql_num_rows($res)<1) {  */
-		       /* 	   // add in dataset */
-		       /* 	   $row = mysql_fetch_assoc($res); */
-		       /* 	   $ds_name = $breeding_program_name.substr($CAPyear,-2); */
-		       /* 	   echo "year = $year, dsname = $ds_name<br>"; */
-		       /* 	   $sql = "INSERT INTO datasets SET CAPdata_programs_uid='$BPcode_uid', */
-                       /*     breeding_year = '$year', dataset_name = '$ds_name', updated_on=NOW(), */
-                       /*     created_on = NOW()"; */
-		       /* 	   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		       /* 	   $ds_uid = mysql_insert_id(); */
-		       /* 	   $sql = "INSERT INTO datasets_experiments SET experiment_uid='$experiment_uid', */
-                       /*     datasets_uid = '$ds_uid', updated_on=NOW(), */
-                       /*     created_on = NOW()"; */
-		       /* 	   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		       /* 	   $de_uid = mysql_insert_id(); */
-		       /* 	 } elseif (1 == mysql_num_rows($res)) { */
-		       /* 	   $row = mysql_fetch_assoc($res); */
-		       /* 	   $ds_uid = $row['id']; */
-		       /* 	   $sql = "INSERT INTO datasets_experiments SET experiment_uid='$experiment_uid', */
-                       /*     datasets_uid = '$ds_uid', updated_on=NOW(), */
-                       /*     created_on = NOW()"; */
-		       /* 	   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		       /* 	   $de_uid = mysql_insert_id(); */
-		       /* 	 } else { */
-		       /* 	   $nr  = mysql_num_rows($res); */
-		       /* 	   echo "numrows = $nr<p>"; */
-		       /* 	   die ("<b>Error</b>: problem with dataset \"".$ds_name."\""); */
-		       /* 	 } */
-		       /* } */
-
-		       if (DEBUG>1) {
+		       if (DEBUG>1) 
 			 echo "ds uid ".$ds_uid." de uid ".$de_uid."\n";
-		       }
-		     } // end if for datalines
+		     } // end if $check == 0
 
-		     /*
-		      * Insert line into tht-base if check is 0 or 1
-		      */
+		     // Insert line into tht-base if check is 0 or 1.
 		     if ($check < 2) {
 		       $check_val ='no';
-		       if ($check == 1) {
+		       if ($check == 1) 
 		     	 $check_val ='yes';
-		       }
-		       // check if tht_base_uid already exists for this line, check condition, and experiment
+		       // Test whether tht_base_uid already exists for this line, check condition, and experiment.
 		       $sql = "SELECT tht_base_uid FROM tht_base
                         WHERE line_record_uid='$line_record_uid' AND experiment_uid='$experiment_uid'
 		     				AND check_line ='$check_val' limit 1";
 		       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-
-		       /* Don't do this till we've clicked Accept. */
-		       /* if (mysql_num_rows($res)==1) { */
-		       /* 	 $row = mysql_fetch_assoc($res); */
-		       /* 	 $tht_base_uid = $row['tht_base_uid']; */
-		       /* 	 $sql = "UPDATE tht_base */
-                       /*  SET line_record_uid = '$line_record_uid', */
-                       /*  experiment_uid = '$experiment_uid',"; */
-		       /* 	 if ($check ==1){ */
-		       /* 	   $sql .= "check_line='yes', datasets_experiments_uid=NULL, */
-                       /*  trial_code_number = NULL,"; */
-		       /* 	 } else { */
-		       /* 	   $sql .= "datasets_experiments_uid='$de_uid', */
-                       /*  trial_code_number = '$trial_entry_no',"; */
-		       /* 	 } */
-		       /* 	 $sql .= "updated_on=NOW() */
-                       /*  WHERE tht_base_uid = '$tht_base_uid'"; */
-		       /* 	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		       /* } else { */
-		       /* 	 $sql = "INSERT INTO tht_base */
-                       /*  SET line_record_uid = '$line_record_uid', */
-                       /*  experiment_uid = '$experiment_uid',"; */
-		       /* 	 if ($check ==1) { */
-		       /* 	   $sql .= "check_line='yes', datasets_experiments_uid=NULL, */
-                       /*  trial_code_number = NULL,"; */
-		       /* 	 } else { */
-		       /* 	   $sql .= "datasets_experiments_uid='$de_uid', */
-                       /*      trial_code_number = '$trial_entry_no',"; */
-		       /* 	 } */
-		       /* 	 $sql .= " updated_on=NOW(),created_on = NOW()"; */
-		       /* 	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-		       /* 	 $tht_base_uid = mysql_insert_id(); */
-		       /* 	 if (DEBUG>2) { */
-		       /* 	   echo "thtbase uid ".$tht_base_uid." line uid ".$line_record_uid."\n"; */
-		       /* 	 } */
-		       /* } */
 
 		       /*
 			* Enter phenotype values into the database for this particular line in this
@@ -492,101 +352,66 @@ private function typeExperimentCheck()
 			   $phenotype_data = trim($current[$offset+$j]);
 			   //put in check for SAS value for NULL
 			   // Apparently PHP's trim(chr(32)) == chr(0), not NULL.  Damn.
-			   /* if ((!is_null($phenotype_data))&&($phenotype_data!=".")) { */
 			   /* if ((!is_null($phenotype_data))&&($phenotype_data!=".")&&(ord($phenotype_data)!=0)) { */
 			   if ((!is_null($phenotype_data)) && ($phenotype_data!=".") && ($phenotype_data!="")) {
-			     // Check that the value is numeric if the schema says it must be.
+			     // Test that the value is numeric if the schema says it must be.
 			     $dt = $datatypes[$j];
 			     if ( (!is_numeric($phenotype_data)) AND ($dt != "string") AND ($dt != "text") ) {
 			       echo "<font color=red><b>Error:</b></font> Data not numeric. 
                                      <b>".$line_name."</b>: ".$phenonames[$j]." = ".$phenotype_data."<br>";
 			     } 
-			     //CHeck if phenotype data is within the specified range given in the database.
+			     //Test if phenotype data is within the specified range given in the database.
 			     // fix occasional excel problem with zeros coming up as very small negative numbers (E-12-E-15)
-			     if (abs($phenotype_data) < .00001){
+			     if (abs($phenotype_data) < .00001)
 			       $phenotype_data = 0;
-			     }
-			     if (($pheno_min[$j] !=$pheno_max[$j]) && (($phenotype_data<$pheno_min[$j]) ||($phenotype_data>$pheno_max[$j]))) {
-								
+			     if (($pheno_min[$j] !=$pheno_max[$j]) && (($phenotype_data<$pheno_min[$j]) ||($phenotype_data>$pheno_max[$j]))) 								
 			       echo "<font color=red><b>Error:</b></font> Out of bounds line,trait,value: ".$line_name.",".$phenonames[$j].",".$phenotype_data."<br>";
-
-			     } 
-
-			     /* Don't do this until we've clicked Accept. */
-			     /* elseif ($check == 0){ */
-			     /*   // check if there is existing data for this experiment if yes then update */
-			     /*   $sql = "SELECT phenotype_data_uid FROM phenotype_data */
-			     /* 							WHERE phenotype_uid = '$phenoids[$j]' */
-			     /* 							AND tht_base_uid = '$tht_base_uid'"; */
-			     /*   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-			     /*   if ( mysql_num_rows($res) > 0) { */
-			     /* 	 $sql = "UPDATE phenotype_data SET value = '$phenotype_data', updated_on=NOW() */
-			     /* 							WHERE tht_base_uid = '$tht_base_uid' AND phenotype_uid = '$phenoids[$j]'"; */
-			     /*   } else { */
-			     /* 	 $sql = "INSERT INTO phenotype_data SET phenotype_uid = '$phenoids[$j]', */
-			     /* 							 tht_base_uid = '$tht_base_uid', value = '$phenotype_data', */
-			     /* 							 updated_on=NOW(), created_on = NOW()"; */
-			     /*   } */
-			     /*   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-								
-			     /* } elseif ($check == 1) { */
-			     /*   //Insert only as all checklines were deleted at the beginning. The problem */
-			     /*   //occurs when an experiment has multiple values for the same checklines (e.g., MN data) */
-			     /*   if (DEBUG>2) {echo "checkline data ".$phenotype_data."\n";} */
-			     /*   if (!is_null($phenotype_data)) { */
-			     /* 	 $sql = "insert into phenotype_data set phenotype_uid = '$phenoids[$j]', */
-			     /* 						   tht_base_uid = '$tht_base_uid', value = '$phenotype_data', */
-			     /* 						   updated_on=NOW(), created_on = NOW()"; */
-			     /* 	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-			     /*   } */
-			     /* } */
-
 			   }
 			 }
 		       }
 		     }
-		   } 
-		 } // end skipping a line
-	       } // end for loop through file
+		     $lines_count++;
+		   } // end Read each line's data, $BeginLinesInput is TRUE.
+		 } // end not skipping a row, if (!empty($current))
+	       } // end for loop through rows $i
    
 	       ?>
    
 	       <style type="text/css">
-		  th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
 	       table {background: none; border-collapse: collapse}
+  	       th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
 	       td {border: 1px solid #eee !important;}
 	       h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 	       </style>
 
-		   <h3>We are reading the following data from the uploaded data file.</h3>
-		
-		   <table>
-		   <thead>
-		   <tr> 
-		   <?php
-		   for ($i = 1; $i <= $cols; $i++) {
-		     /* $teststr = str_replace(' ','',$means['cells'][5][$i]); */
-		     /* $newtext = wordwrap($teststr, 7, "\n", true); */
-		     /* echo "<th>$newtext</th>"; */
-		     echo "<th>".$means['cells'][5][$i]."</th>";
-		   }
+	       <h3>Data in the uploaded file</h3>
+	       <table>
+	       <thead>
+	       <tr> 
+	       <?php 
+	       echo "Data read for <b>$pheno_num</b> traits, to the first empty column.<br>";
+	       echo "Data read for <b>$lines_count</b> lines.<p>";
+	       // Table header
+	       for ($i = 1; $i <= 6; $i++) 
+		 echo "<th>".$means['cells'][5][$i]."</th>";
+	       // Trait names 
+	       for ($i = 0; $i < $pheno_num;  $i++) 
+		 echo "<th>$phenonames[$i]";
 	       ?>
 	       </tr>
-		   </thead>
-		   <tbody style="padding: 0; width: 700px;  overflow: scroll;border: 1px solid #5b53a6;">
+               </thead>
+	       <tbody style="padding: 0; width: 700px;  overflow: scroll;border: 1px solid #5b53a6;">
 		   <?php
 		   /* printing the values onto the page for user*/
 		   for ($i = 6; $i <= $rows; $i++) {
 		     echo "<tr>";
 		     $current_row = $means['cells'][$i];
-		     for ($j=1; $j<=$cols; $j++) {
-		       echo "<td>";
-		       /* $newtext = wordwrap($current_row[$j], 7, "\n", true); */
-		       /* echo  $newtext; */
-		       echo $current_row[$j];
-		       echo "</td>";
+		     // Don't display this internal template instruction.
+		     if (!preg_match('/^Trial information goes above/', $current_row[1])) {
+		       for ($j=1; $j<=$cols; $j++) 
+			 echo "<td>$current_row[$j]";
+		       echo "</tr>";
 		     }
-		     echo "</tr>";
 		   } 
 	       ?>
 	       </tbody>
@@ -664,14 +489,17 @@ private function typeExperimentCheck()
    $phenoids = array();
    for ($i = $offset; $i <= $cols; $i++) {
      $teststr= addcslashes(trim($means['cells'][5][$i]),"\0..\37!@\177..\377");
-     if (strlen($teststr) == 0) break;
-     else {
+     // DEM dec13: Don't assume there are no empty columns interspersed. It has happened.
+     /* if (empty($teststr)) break;  */
+     /* else { */
+     // Assume any non-empty cell is the name of a trait.
+     if (!empty($teststr)) {
        $teststr= str_replace('\\n',' ',$teststr);
-       
-	 $pheno_cur =trim($teststr);
-	 $sql = "SELECT phenotype_uid as id,phenotypes_name as name, max_pheno_value as maxphen, min_pheno_value as minphen, datatype
-					FROM phenotypes
-					WHERE phenotypes_name = '$pheno_cur'";
+       $pheno_cur =trim($teststr);
+       $sql = "SELECT phenotype_uid as id,phenotypes_name as name, 
+                   max_pheno_value as maxphen, min_pheno_value as minphen, datatype
+   	       FROM phenotypes
+	       WHERE phenotypes_name = '$pheno_cur'";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 	 if ($row = mysql_fetch_assoc($res)) {
 	   $datatypes[] = $row['datatype'];
@@ -679,6 +507,7 @@ private function typeExperimentCheck()
 	   $phenoids[] = $row['id'];//$phenotype_uid;
 	   $pheno_max[] = $row['maxphen'];
 	   $pheno_min[] = $row['minphen'];
+	   $pheno_idx[$row['name']] = $i;
 	   $eflg = 1;
 	 } else {
            echo "Trait \"".$pheno_cur."\" does not exist in the database.<p> ";
