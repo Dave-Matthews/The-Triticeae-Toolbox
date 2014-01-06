@@ -67,11 +67,11 @@ class Tablet
                 In the Field Book program the range is the first level division and refers to the row of the field. 
                 The second level division is the plot. All other coluns are considered Extra Information. The program moves through the field row by row for measurements.
                 <h4>Create Field Layout and Trait File for import into the tablet</h4>
-		1. Select a fieldbook containing your experiment.<br>
-                2. Download and save the field layout file.<br>
-                3. Select a category and one or more traits.<br>
-                4. Download and save the trait file.<br>
-                5. Connect your tablet to this computer and move field layout and trait file into field_import folder of the SD card of the tablet.<br>
+		1. Select a fieldbook containing your experiment. Download and save the field layout file.<br>
+                2. Select a category and one or more traits. Download and save the trait file.<br>
+                3. Connect your tablet to this computer.<br>
+                4. Move the field layout file to the field_import folder of the SD card of the tablet.<br>
+                5. Move the trait file to the trait folder of the SD card of the tablet.<br>
                 6. Import these files into the Field Book App.<br>
                 7. Record measurements using the tablet.<br><br>
 
@@ -197,25 +197,27 @@ class Tablet
         $phen_item = $_GET['pi'];
         $phen_list = explode(",", $phen_item);
 
-        $sql = "select phenotype_uid, phenotypes_name, unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid";
+        $sql = "select phenotype_uid, phenotypes_name, datatype, description from phenotypes";
         $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_row($res)) {
             $uid= $row[0];
             $trait[$uid] = $row[1];
-            $format[$uid] = $row[2];
+            $format = $row[2];
+            $detail[$uid] = $row[3];
         }
 
         $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));  
-        $filename = "import_" . $unique_str . ".csv";
+        $filename = "import_" . $unique_str . ".trt";
         $output = fopen("/tmp/tht/$filename","w");
         $pos = 1;
         fwrite($output, "trait,format,defaultValue,minimum,maximum,details,categories,isVisible,realPosition\n");
         foreach ($phen_list as $item) {
-           fwrite($output, "$trait[$item],,,,,,,TRUE,$pos\n");
+           fwrite($output, "$trait[$item],$format[$item],,,,\"$detail[$item]\",,TRUE,$pos\n");
            $pos++;
         }
         fclose($output);
-        echo "<form method=\"link\" action=\"/tmp/tht/$filename\">";
+        echo "<form method=\"link\" action=\"curator_data/download_file.php\" method=\"get\">";
+        echo "<input type=hidden name=\"file\" value=\"$filename\">";
         echo "<input type=submit value=\"Download\">";
         echo "</form>";
     }
