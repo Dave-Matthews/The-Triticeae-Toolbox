@@ -197,12 +197,13 @@ class Tablet
         $phen_item = $_GET['pi'];
         $phen_list = explode(",", $phen_item);
 
-        $sql = "select phenotype_uid, phenotypes_name, datatype from phenotypes";
+        $sql = "select phenotype_uid, phenotypes_name, datatype, description from phenotypes";
         $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_row($res)) {
             $uid= $row[0];
             $trait[$uid] = $row[1];
-            $format[$uid] = $row[2];
+            $format = $row[2];
+            $detail[$uid] = $row[3];
         }
 
         $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));  
@@ -211,7 +212,7 @@ class Tablet
         $pos = 1;
         fwrite($output, "trait,format,defaultValue,minimum,maximum,details,categories,isVisible,realPosition\n");
         foreach ($phen_list as $item) {
-           fwrite($output, "$trait[$item],$format[$item],,,,,,TRUE,$pos\n");
+           fwrite($output, "$trait[$item],$format[$item],,,,\"$detail[$uid]\",,TRUE,$pos\n");
            $pos++;
         }
         fclose($output);
