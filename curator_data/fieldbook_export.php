@@ -212,7 +212,7 @@ class Tablet
         $pos = 1;
         fwrite($output, "trait,format,defaultValue,minimum,maximum,details,categories,isVisible,realPosition\n");
         foreach ($phen_list as $item) {
-           fwrite($output, "$trait[$item],$format[$item],,,,\"$detail[$uid]\",,TRUE,$pos\n");
+           fwrite($output, "$trait[$item],$format[$item],,,,\"$detail[$item]\",,TRUE,$pos\n");
            $pos++;
         }
         fclose($output);
