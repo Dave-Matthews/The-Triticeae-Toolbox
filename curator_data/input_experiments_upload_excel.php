@@ -424,15 +424,7 @@ if ($_GET['delete']) {
   <div class=section>
   <h3>Plot Level data</h3>
   The fieldbook file must be loaded before adding plot level data. The plot file contains columns for trial, plot number, and one or more traits.<br>
-  <div style="float: left;">
-  <h4>Add Plot File</h4>
-  <p><form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">Plot file:
-  <input type="hidden" id="plot" name="plot" value="-1" />
-  <input id="file[]" type="file" name="file[]" size="50%" /><br>
-  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls">Example Plot file</a><br>
-  <input type="submit" value="Upload" /></p>
-  </form>
-  </div>
+
   <div style="float: left;">
   <h4>Add Fieldbook File</h4>
   <p><form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">Field Book File:
@@ -442,6 +434,27 @@ if ($_GET['delete']) {
   <input type="submit" value="Upload" /></p>
   </form>
   </div>
+
+  <div style="clear: both; float: left;">
+  <h4>Add Plot File</h4>
+  <p><form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">Plot file:
+  <input type="hidden" id="plot" name="plot" value="-1" />
+  <input id="file[]" type="file" name="file[]" size="50%" /><br>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls">Example Plot file</a><br>
+  <input type="submit" value="Upload" /></p>
+  </form>
+  </div>
+
+  <div style="float: left;">
+  <h4>Add Plot File (from Field Book App)</h4>
+  <p><form action="curator_data/input_experiments_tablet_plot_check.php" method="post" enctype="multipart/form-data">Plot file:
+  <input type="hidden" id="plot" name="plot" value="-1" />
+  <input id="file[]" type="file" name="file[]" size="50%" /><br>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTabletTemplate.csv">Example Plot file</a><br>
+  <input type="submit" value="Upload" /></p>
+  </form>
+  </div>
+
   </div>
   <br><br>
   <?php
