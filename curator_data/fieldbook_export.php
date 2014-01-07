@@ -65,10 +65,10 @@ class Tablet
                 <a href="http://www.wheatgenetics.org/bioinformatics/22-android-field-book.html">Poland Lab</a>.
                 Before using these tools it is necessary to <a href="curator_data/input_experiments_upload_excel.php">import a field layout</a> into the database.
                 In the Field Book program the range is the first level division and refers to the row of the field. 
-                The second level division is the plot. All other coluns are considered Extra Information. The program moves through the field row by row for measurements.
+                The second level division is the plot. All other columns are considered Extra Information. The program moves through the field row by row for measurements.
                 <h4>Create Field Layout and Trait File for import into the tablet</h4>
-		1. Select a fieldbook containing your experiment. Download and save the field layout file.<br>
-                2. Select a category and one or more traits. Download and save the trait file.<br>
+		1. Select a field layout for your experiment. Download and save the file.<br>
+                2. Select a category and one or more traits. Download and save the file.<br>
                 3. Connect your tablet to this computer.<br>
                 4. Move the field layout file to the field_import folder of the SD card of the tablet.<br>
                 5. Move the trait file to the trait folder of the SD card of the tablet.<br>
@@ -77,7 +77,7 @@ class Tablet
 
 		<div style="float: left">
                 <table class="tableclass1">	
-		<tr><th>Fieldbook:
+		<tr><th>Field layout:
                 <?php
 		$sql = "select fieldbook_info_uid, experiment_uid, fieldbook_file_name from fieldbook_info";
 		$sql = "select distinct(fieldbook.experiment_uid), trial_code from fieldbook, experiments where fieldbook.experiment_uid = experiments.experiment_uid";
@@ -197,18 +197,29 @@ class Tablet
         $phen_item = $_GET['pi'];
         $phen_list = explode(",", $phen_item);
 
-        $sql = "select phenotype_uid, phenotypes_name, datatype, description from phenotypes";
+        //allowed values for Android Field Book are numeric, qualitative, percent, date, boolean, text, audio
+        $sql = "select phenotype_uid, phenotypes_name, datatype, description, unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid";
         $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_row($res)) {
             $uid= $row[0];
             $trait[$uid] = $row[1];
-            $format = $row[2];
+            $fmt = $row[2];
             $detail[$uid] = $row[3];
+            $units = $row[4];
+            if ($units == "percent") {
+                $fmt = "percent";
+            } elseif ($fmt == "continuous") {
+                $fmt = "numeric";
+            } elseif ($fmt == "discrete") {
+                $fmt = "numeric";
+            }
+            $format[$uid] = $fmt;
         }
 
-        $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));  
-        $filename = "import_" . $unique_str . ".trt";
-        $output = fopen("/tmp/tht/$filename","w");
+        $unique_str = "tablet_" . chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));  
+        mkdir("/tmp/tht/$unique_str");
+        $filename = "trait_import.trt";
+        $output = fopen("/tmp/tht/$unique_str/$filename","w");
         $pos = 1;
         fwrite($output, "trait,format,defaultValue,minimum,maximum,details,categories,isVisible,realPosition\n");
         foreach ($phen_list as $item) {
@@ -217,6 +228,7 @@ class Tablet
         }
         fclose($output);
         echo "<form method=\"link\" action=\"curator_data/download_file.php\" method=\"get\">";
+        echo "<input type=hidden name=\"unq\" value=\"$unique_str\">";
         echo "<input type=hidden name=\"file\" value=\"$filename\">";
         echo "<input type=submit value=\"Download\">";
         echo "</form>";
@@ -237,8 +249,7 @@ class Tablet
         }
 
         $error = 0;
-    	$unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
-    	$filename = "import_" . $unique_str . ".csv";
+    	$filename = "import_" . $uid . ".csv";
     	if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
     	$output = fopen("/tmp/tht/$filename","w");
     	fwrite($output, "plot_id,range,plot,tray_row,name,replication,block\n");
@@ -260,7 +271,7 @@ class Tablet
                 if (!preg_match("/\d+/",$column_id)) {
                     $error = 1;
                 }
-    		fwrite($output, "$plot_id,$row_id,$plot,$column_id,$line_record_name,$replication,$block\n");
+    		fwrite($output, "$plot_id,$column_id,$plot,$row_id,$line_record_name,$replication,$block\n");
     	}
     	fclose($output);
         if ($error == 0) {
