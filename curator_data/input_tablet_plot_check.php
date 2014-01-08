@@ -279,7 +279,7 @@ class Data_Check
            echo "Found $count_new new trait measurements for plot level data<br>\n";
          }
                    ?>
-                   <form action="curator_data/input_tablet_plot_check.php" method="post" enctype="multipart/form-data">
+                   <form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">
                    Do you want to overwrite previously loaded plot level data?
                    <input id="exper_uid" type="hidden" name="exper_uid" value="<?php echo $experiment_uid; ?>">
                    <input id="replace" type="hidden" name="replace" value="Yes">
@@ -309,8 +309,8 @@ class Data_Check
                } else {
                  $sql = "insert into phenotype_plot_data (phenotype_uid, experiment_uid, plot_uid, value, updated_on, created_on) values ( $phenotype_uid, $experiment_uid, $plot_uid, '$val', now(), now())";
                }
-               $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-               //echo "$sql<br>\n";
+               //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+               echo "$sql<br>\n";
              //} else {
              //  echo "$i $j no data<br>\n";
              }
