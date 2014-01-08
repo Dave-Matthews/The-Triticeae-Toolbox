@@ -222,8 +222,6 @@ class Data_Check
          }
          fclose($h);
          echo "</table>\n";
-         $sql = "update phenotype_experiment_info set mean_calculation = 'calculated' where experiment_uid = $experiment_uid";
-         $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
      } else {
          echo "$unique_str file does not exists\n";
      }
@@ -246,11 +244,11 @@ class Data_Check
                  //echo "$sql<br>\n";
                  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                  if ($row = mysqli_fetch_array($res)) {
-                     $sql = "update phenotype_mean_data set mean_value = $line[1], standard_error = $line[2], number_replicates = $line[3], updated_on = NOW()
+                     $sql = "update phenotype_mean_data set mean_value = $line[1], standard_error = $line[2], number_replicates = $line[3], mean_calculation = 'calculated', updated_on = NOW()
                      where phenotype_uid = $phenotype_uid and experiment_uid = $experiment_uid";
                      $msg = "<td>update<td>$line[1]<td>$line[2]<td>$line[3]";
                  } else {
-                     $sql = "insert into phenotype_mean_data (experiment_uid, phenotype_uid, mean_value, standard_error, number_replicates, created_on, updated_on) values ($experiment_uid, $phenotype_uid, $line[1], $line[2], $line[3], NOW(), NOW())";
+                     $sql = "insert into phenotype_mean_data (experiment_uid, phenotype_uid, mean_value, standard_error, number_replicates, mean_calculation, created_on, updated_on) values ($experiment_uid, $phenotype_uid, $line[1], $line[2], $line[3], \"calculated\", NOW(), NOW())";
                      $msg = "<td>insert<td>$line[1]<td>$line[2]<td>$line[3]";
                  }
                  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -285,7 +283,7 @@ private function type_Experiment_Name() {
    if (empty($_POST['exper_uid'])) {
      echo "Error: invalid experiment uid<br>\n";
    } else {
-     $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+     $unique_str = chr(rand(65,90)).chr(rand(65,90)).chr(rand(65,90)).chr(rand(65,90));
      mkdir("/tmp/tht/$unique_str");
      $filename1 = "plot-pheno.txt";
      $filename2 = "plot-map.txt";
@@ -320,6 +318,15 @@ private function type_Experiment_Name() {
      while ($row = mysqli_fetch_array($res)) {
        $pheno_ary[] = $row[0];
        $pheno_ary_name[] = $row[1];
+     }
+     foreach ($pheno_ary as $puid) {
+        $sql = "select mean_calculation from phenotype_mean_data where experiment_uid = $uid and phenotype_uid = $puid";
+        $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        if ($row = mysqli_fetch_array($res)) {
+          $mean_calculation[$puid] = $row[0];
+        } else {
+          $mean_calculation[$puid] = "not loaded";
+        }
      }
 
      //generate input data file for R, trait file with fieldbook information
@@ -389,7 +396,10 @@ private function type_Experiment_Name() {
              }
              $count++;
              foreach ($line as $tmp) {
-                 echo "<td>$tmp";
+                 if (is_numeric($tmp)) {
+                     $tmp = number_format ($tmp, 2);
+                 }
+                 echo "<td style=\"width:100px\">$tmp";
              }
          }
          fclose($h);
@@ -414,11 +424,14 @@ private function type_Experiment_Name() {
          fclose($h);
          echo "\n<tr><td style=\"width:150px\">";
          foreach ($line_array as $trait) {
-             echo "<td>$trait[0]";
+             echo "<td style=\"width:100px\">$trait[0]";
          }
          echo "\n<tr><td>$header[0]";
          foreach ($line_array as $trait) {
-             echo "<td>$trait[1]";
+             if (is_numeric($trait[1])) {
+                 $trait[1] = number_format ($trait[1], 2);
+             }
+             echo "<td style=\"width:100px\">$trait[1]";
          }
          echo "\n<tr><td>$header[1]";
          foreach ($line_array as $trait) {
@@ -432,10 +445,26 @@ private function type_Experiment_Name() {
              $tmp = number_format($trait[3],3);
              echo "<td>$tmp";
          }
-         
          echo "\n</table><br>";
      }
-
+     echo "<tr><td>Current calculation method in database\n";
+     echo "<table>";
+     echo "<tr><td style=\"width:150px\">";
+     foreach ($pheno_ary_name as $name) {
+         echo "<td style=\"width:100px\">$name";
+     }
+     echo "<tr><td style=\"width:150px\"><td>";
+     $warning = "";
+     foreach ($pheno_ary as $puid) {
+         $method = $mean_calculation[$puid];
+         if ($method == "import") {
+             $warning = "<font color=red>Warning: previously imported values will be overwritten</font>";
+         }
+         echo "$mean_calculation[$puid]<td>";
+     }
+     echo "</table><br>";
+          
+     echo "$warning<br>\n";
      if (file_exists("/tmp/tht/$unique_str/$filename5")) {
        $h = fopen("/tmp/tht/$unique_str/$filename5","r");
        while ($line=fgets($h)) {
