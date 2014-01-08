@@ -57,7 +57,7 @@ h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
 
 <?php
-    echo "<h2>Add Phenotype Experiment Results</h2>"; 
+    echo "<h2>Phenotype Trial Results</h2>"; 
     $this->type_Experiment_Name();
     $footer_div = 1;
     include($config['root_dir'].'theme/footer.php');
@@ -73,28 +73,59 @@ h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
     global $mysqli;
 ?>
 
-<p>Here you can load the results of a single field or greenhouse Trial.  The Annotation describing
-the conditions of the Trial must already have been 
-<a href="<?php echo $config['base_url'] ?>curator_data/input_annotations_upload_excel.php">loaded</a>.
- Please see the 
+<p>Add the results of a single field or greenhouse Trial.  The Trial Description must already have been 
+<a href="<?php echo $config['base_url'] ?>curator_data/input_annotations_upload_router.php">loaded</a>.
+<br>See the 
 <a href="<?php echo $config['base_url'] ?>curator_data/tutorial/T3_Lesson2_Phenotype.html">tutorial</a> for 
 step by step instructions.</font>
 <p>
 
 <div class="section">
-  <h3>Add a Means File</h3>
+  <h3>Trial Means</h3>
   The Means file contains, for each trait, one value for each line in the Trial: the mean over all plots for that line.
 <form action="curator_data/input_experiments_check_excel.php" method="post" enctype="multipart/form-data">
   <input type="hidden" id="means" name="means" value="-1" />
-  <p><strong>Means file:</strong> <input id="file[]" type="file" name="file[]" size="50%" />
-  <br><a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PhenotypeSubmissionForm.xls">Example Means file</a>
+  <p>Means file: <input id="file[]" type="file" name="file[]" size="50%" />
+    <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PhenotypeSubmissionForm.xls">Example</a>
   <br><input type="submit" value="Upload" /></p>
 </form>
 </div> <!-- end of div 'section' -->
 
+  <div class=section>
+  <h3>Plot-Level Results</h3>
+  <ul>
+    <li><b>T3 format</b><br>
+      Trial name, plot numbers, and values of one or more traits.
+      <form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">Plot file:
+	<input type="hidden" id="plot" name="plot" value="-1" />
+	<input id="file[]" type="file" name="file[]" size="50%" />
+	<a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls"> Example</a><br>
+	<input type="submit" value="Upload" />
+      </form>
+      <p>
+    <li><b><a href="http://www.wheatgenetics.org/bioinformatics/22-android-field-book.html">Android Field Book</a> format</b><br>
+		1. After completing data collection, export the data in table format.<br>
+                2. Export as "Table Format" and select the first 4 columns for export.<br>
+                3. Connect your tablet to this computer and move the file from the field_export folder.<br>
+                4. Browse to this file and select Upload.<br>
+      <form action="curator_data/input_experiments_tablet_plot_check.php" method="post" enctype="multipart/form-data">Plot file:
+	<input type="hidden" id="plot" name="plot" value="-1" />
+	<input id="file[]" type="file" name="file[]" size="50%" />
+	<a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTabletTemplate.csv">Example</a><br>
+	<input type="submit" value="Upload" />
+      </form>
+      <p>
+      <li><b>Other</b>
+	<br>Other tablet devices can be used by opening the file from
+	the <a href="http://malt.pw.usda.gov/t3/wheatplus/curator_data/fieldbook_export.php">Field
+	Layout download</a> and adding columns for each trait as in the
+	Example file.
+  </ul>
+  </div>
+  <br>
 
 <div id='rawsection' class="section">
-  <h3>Add Raw Files</h3>
+  <h3>Optional Raw Data</h3>
   One or more files of additional information maybe be attached to each Trial.  The files are archived for 
   downloading but their contents are not loaded into the database.  
 
@@ -420,44 +451,6 @@ if ($_GET['delete']) {
     } // end editing form for previous raw files
 
   } /* end of else*/
-  ?>
-  <div class=section>
-  <h3>Plot Level data</h3>
-  The fieldbook file must be loaded before adding plot level data. The plot file contains columns for trial, plot number, and one or more traits.<br>
-
-  <div style="float: left;">
-  <h4>Add Fieldbook File</h4>
-  <p><form action="curator_data/input_csr_field_check.php" method="post" enctype="multipart/form-data">Field Book File:
-  <input type="hidden" id="plot" name="plot" value="-1" />
-  <input id="file[]" type="file" name="file[]" size="50%" /><br>
-  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/fieldbook_template.xlsx">Example Field Book file</a><br>
-  <input type="submit" value="Upload" /></p>
-  </form>
-  </div>
-
-  <div style="clear: both; float: left;">
-  <h4>Add Plot File</h4>
-  <p><form action="curator_data/input_experiments_plot_check.php" method="post" enctype="multipart/form-data">Plot file:
-  <input type="hidden" id="plot" name="plot" value="-1" />
-  <input id="file[]" type="file" name="file[]" size="50%" /><br>
-  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTemplate.xls">Example Plot file</a><br>
-  <input type="submit" value="Upload" /></p>
-  </form>
-  </div>
-
-  <div style="float: left;">
-  <h4>Add Plot File (from Field Book App)</h4>
-  <p><form action="curator_data/input_experiments_tablet_plot_check.php" method="post" enctype="multipart/form-data">Plot file:
-  <input type="hidden" id="plot" name="plot" value="-1" />
-  <input id="file[]" type="file" name="file[]" size="50%" /><br>
-  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTabletTemplate.csv">Example Plot file</a><br>
-  <input type="submit" value="Upload" /></p>
-  </form>
-  </div>
-
-  </div>
-  <br><br>
-  <?php
   } /* end of type_Experiment_Name function*/
 } /* end of class */
 ?>
