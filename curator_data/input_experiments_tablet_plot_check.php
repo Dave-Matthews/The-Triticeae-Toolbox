@@ -201,7 +201,7 @@ class Data_Check
         }
         $i++;
       }
-      if (!defined($experiment_uid)) {
+      if (!isset($experiment_uid)) {
           die("Error: No experiment found<br>\n");
       }
 
