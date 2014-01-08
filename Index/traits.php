@@ -3,6 +3,11 @@
 /* Index/trait.php, DEM 26jun13 */
 /* Create a user-defined Selection Index, a weighted combination of Trait values
    in a specified set of Trials. */
+// dem 7jan13: Use mean over trials to calculate index, in case of
+//    missing data in some trials.  Fixed bug in normalization.
+// Todo: - Show correlation of each trait vs. Index.
+//       - Allow download of the result tables.
+
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
 include($config['root_dir'] . 'theme/admin_header.php');
@@ -30,11 +35,10 @@ function scaled($rawvalue, $trait, $trial) {
 ?>
 <style type="text/css">
 /* Make the tables more compact. */
-  table td { padding-top: 2px; padding-bottom: 2px;}
+  table td { padding-top: 0px; padding-bottom: 0px;}
 </style>
 
 <h2>Selection Index</h2>
-
 
 <?php
 // Get the Currently Selected Traits.
@@ -74,46 +78,58 @@ foreach ($trialids as $tid) {
     $started = 1;
   }
 }
-/* print_h($commonlines); */
-/* $ct = count($commonlines); */
-/* echo "count of commonlines = $ct<p>"; */
 
-if (empty($_REQUEST)) { // Initial entry to the script.
+if (empty($_REQUEST) or $_REQUEST['reselect']) { 
+  // Initial entry to the script or resetting parameters.
 ?>
 Choose relative weights and a scaling method to combine the traits into an index.
 <br>If smaller values of a trait are better, reverse the scale.
 <br>Data will come from the <a href=<?php echo $config[base_url]?>phenotype/phenotype_selection.php>currently selected trials</a>.
 <br><br>
 <form>
-<table>
-<tr><th>Trait<th>Weight<th>Reverse scale
+  <table>
+    <tr><th>Trait<th>Weight<th>Reverse scale
 
-<?php
-  // User hasn't yet specified the relative weights.  Divide equally by default.
-foreach ($traitnames as $tn) { 
-  $weight[$tn] = intval(100 / $traitcount);
-  echo "<tr><td>$tn";
-  echo "<td><input type=text name='wt[$tn]' value=$weight[$tn] size=3>";
-  echo "<td style=text-align:center><input type=checkbox name='reverse[$tn]'>";
-}
+<?php 
+  // If reselecting parameters, read in the old values.
+  $weight = $_REQUEST[wt];
+  $reverse = $_REQUEST[reverse];
+  // If user hasn't yet specified the relative weights, divide equally.
+  foreach ($traitnames as $tn) { 
+    if (!$weight[$tn]) 
+      $weight[$tn] = intval(100 / $traitcount);
+    echo "<tr><td>$tn";
+    echo "<td><input type=text name='wt[$tn]' value=$weight[$tn] size=3>";
+    echo "<td style=text-align:center>";
+    // Previously reversed?  
+    $ck = "";
+    if ($reverse[$tn] == 'on')
+      $ck = "checked";
+    echo "<input type=checkbox name='reverse[$tn]' $ck>";
+  }
 ?>
-</table>
+  </table>
 <br><h3>Scaling of trait values</h3>
 <input type=radio name=scaling value=normalized checked>Normalized, subtracting the trial mean and dividing by the standard deviation
 <br><input type=radio name=scaling value=actual>Actual measured value
-<br><input type=radio name=scaling value=percent>Percent of line: 
-<!-- <select multiple style="vertical-align: middle"> -->
-<select name=base-line>
-<option value=0>Choose...</option>
+
 <?php
-foreach ($commonlines as $cl) {
-  $linename = mysql_grab("select line_record_name from line_records where line_record_uid = $cl");
-  echo "<option value = $cl>$linename</option>";
-}
+  // Disallow "Percent of common line" if there are no lines in common across all trials.
+  $dsbl = ""; $choices = "Choose...";
+  if (empty($commonlines)) {
+    $dsbl = "disabled";
+    $choices = "None";
+  }
+  echo "<br><input type=radio name=scaling value=percent $dsbl>Percent of common line: ";
+  echo "<select name=base-line>";
+  echo "<option value=0>$choices</option>";
+  foreach ($commonlines as $cl) {
+    $linename = mysql_grab("select line_record_name from line_records where line_record_uid = $cl");
+    echo "<option value = $cl>$linename</option>";
+  }
 ?>
 </select>
 <br><input type=radio name=scaling value=rank disabled>Rank in trial
-
 <p><input type=submit value="Submit">
 </form>
 
@@ -127,13 +143,17 @@ else { // Submit button was clicked.
   $scaling = $_REQUEST[scaling];
   if ($_REQUEST['base-line'] != 0)
     $scaling = "percent";
+  echo "<form method=POST>";
   echo "Scaling method: <b>$scaling</b>";
   if ($scaling == 'percent') {
     $baselineuid = $_REQUEST['base-line'];
     $baselinename = mysql_grab("select line_record_name from line_records where line_record_uid = $baselineuid");
     echo " of <b>$baselinename</b>";
   }
-  echo "<p>";
+  echo ". Weights: <b>".implode($weight, ', ')."</b>. ";
+  echo "<input type=submit name= reselect value=Reselect>";
+  echo "</form>";
+
   $lines = array();
   // Fetch the data.
   if (!empty($triallist))
@@ -161,16 +181,20 @@ else { // Submit button was clicked.
     // To normalize we need the mean and SD of each trait/trial combination.
     foreach ($traitnames as $tn) {
       foreach ($trialnames as $trial) {
-	$sum = 0; $linecount = 0; 
+	$sum = 0; $linecount = 0; $devsq = 0;
 	foreach ($lines as $line) {
+	  if ($actual[$tn][$trial][$line]) {
 	  $sum += $actual[$tn][$trial][$line];
 	  $linecount++;
+	  }
 	} 
 	$mean[$tn][$trial] = $sum / $linecount;
-	// Get the sum of (deviations from mean)^2.
 	foreach ($lines as $line) 
-	  $devsq += pow($mean[$tn][$trial] - $actual[$tn][$trial][$line], 2);
-	$SD[$tn][$trial] = sqrt($devsq / $linecount);
+	  if ($actual[$tn][$trial][$line]) {
+	    // Get the sum of (deviations from mean)^2.
+	    $devsq += pow($mean[$tn][$trial] - $actual[$tn][$trial][$line], 2);
+	    $SD[$tn][$trial] = sqrt($devsq / $linecount);
+	  }
       }
     }
   }
@@ -182,7 +206,42 @@ else { // Submit button was clicked.
 	$basevalue[$tn][$trial] = $actual[$tn][$trial][$baselinename];
   }
 
-  // Calculate Index.
+  // Average the (scaled) trait scores over trials, for each line.
+  foreach ($traitnames as $tn) {
+    foreach ($lines as $line) {
+      $sum = 0; $N = 0;
+      foreach ($trialnames as $trial) {
+	if (!empty($actual[$tn][$trial][$line])) {
+	  $sum += scaled($actual[$tn][$trial][$line], $tn, $trial);
+	  $N++;
+	}
+      }
+      if ($N > 0)
+	$avg[$tn][$line] = $sum / $N;
+    }
+  }
+
+  // Calculate Index from the scaled average over trials.
+  foreach ($lines as $line) {
+    // Don't calculate an Index if there is no value for one or more traits.
+    $missing = FALSE;
+    foreach ($traitnames as $tn) {
+      if (empty($avg[$tn][$line]))
+	$missing = TRUE;
+      else {
+	$weightedval = ($weight[$tn] * $avg[$tn][$line] ) / $totalwt;
+	if ($reverse[$tn] == 'on')
+	  $weightedval = - $weightedval;
+	$wv[$tn] = $weightedval;
+      }
+    }
+    if (!$missing)
+      $avgndx[$line] = round(array_sum($wv), 2);
+  }
+  // Sort with highest first.
+  arsort($avgndx);
+
+  // Calculate Index within each trial.
   foreach ($trialnames as $trial) {
     foreach ($lines as $line) {
       // If the value of any trait is missing for this line and trial, ignore.
@@ -204,43 +263,39 @@ else { // Submit button was clicked.
     }
   }
 
-  // Average Index value for each line over all trials with data.:
-  foreach ($lines as $line) {
-    foreach ($trialnames as $trial) {
-      if (!empty($Index[$trial][$line])) {
-	$sumndx[$line] += $Index[$trial][$line];
-	$trialct[$line]++;
-      }
-      if (!empty($sumndx[$line])) {
-	$avgndx[$line] = round($sumndx[$line] / $trialct[$line], 2);
-	// Sort with highest first.
-	arsort($avgndx);
-      }
-    }
-  }
-
   // Display.
   echo "<h3>Selection Index values</h3>";
+  echo "Individual trait values, after scaling and averaging over trials, are also shown.<p>";
+  // table header
   echo "<table><tr><th>Line<th>Index";
-  foreach ($avgndx as $ln => $ndx) 
+  foreach ($traitnames as $tn)
+    echo "<th>$tn";
+  // table contents
+  foreach ($avgndx as $ln => $ndx) {
     echo "<tr><td>$ln<td>$ndx";
+    foreach ($traitnames as $tn) {
+      if(empty($avg[$tn][$ln]))
+	$avgscaled = "";
+      else 
+	$avgscaled = round($avg[$tn][$ln], 2);
+      echo "<td>$avgscaled";
+    }
+  }
   echo "</table>";
 
-  // Show with a column for each trait.
-  echo "<h3>Details by trial</h3>";
-  // table header
+  // Show per-trial, with a column for each trait.
+  echo "<h3>Details, by Trial</h3>";
   echo "<table><tr><th>Trial<th>Line<th>Index";
   foreach ($traitnames as $tn)
     echo "<th>$tn";
-  // table body
+  // table contents
   foreach ($Index as $trial => $linendx) {
     // Re-sort by Index value within this trial.
     arsort($linendx);
     foreach ($linendx as $line => $ndx) {
       echo "<tr><td>$trial<td>$line<td>$ndx";
       foreach ($traitnames as $tn)
-	echo "<td style=text-align:center>".$actual[$tn][$trial][$line];
-	/* echo "<td style=text-align:center>".scaled($actual[$tn][$trial][$line], $tn, $trial); */
+	echo "<td style=text-align:center>".round($actual[$tn][$trial][$line], 2);
     }
   }
   echo "</table>";
