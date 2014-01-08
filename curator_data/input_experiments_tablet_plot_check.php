@@ -201,6 +201,9 @@ class Data_Check
         }
         $i++;
       }
+      if (!isset($experiment_uid)) {
+          die("Error: No experiment found<br>\n");
+      }
 
        $trial_code_list = implode(",", $trial_code_array);
        echo "Trial: <strong>$trial_code_list</strong><br>\n";
