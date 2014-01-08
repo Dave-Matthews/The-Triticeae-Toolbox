@@ -1,6 +1,9 @@
 /*global $,$A,Ajax*/
 
 var php_self = document.location.href;
+var phenotype_categories_str = "";
+var phenotype_items_str = "";
+var experiments_str = "";
 var exp_uid = "";
 var title = document.title;
 
@@ -9,7 +12,7 @@ function update_expr() {
 	exp_uid = e.options[e.selectedIndex].value;
 
 	var url = php_self + "?function=save" + "&uid=" + exp_uid;
-	tmp = new Ajax.Updater($('export'), url, {
+	var tmp = new Ajax.Updater($('export'), url, {
         onComplete : function() {
             $('export').show();
             document.title = title;

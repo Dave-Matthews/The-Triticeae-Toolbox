@@ -120,7 +120,7 @@ class Tablet
 		
 		</div>
                 <div style="clear:both;">
-                Note: Other tablet devices can be used by opening the file from the fieldbook download in a spreedsheet application and adding on columns for each trait as in the Example Plot file.
+                Note: Other tablet devices can be used by opening the file from the fieldbook download in a spreadsheet application and adding on columns for each trait as in the Example Plot file.
                 </div></div>
 		<?php
 		include($config['root_dir'].'theme/footer.php');
