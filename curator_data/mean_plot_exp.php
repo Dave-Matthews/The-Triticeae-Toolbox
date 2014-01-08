@@ -396,7 +396,10 @@ private function type_Experiment_Name() {
              }
              $count++;
              foreach ($line as $tmp) {
-                 echo "<td style=\"width:125px\">$tmp";
+                 if (is_numeric($tmp)) {
+                     $tmp = number_format ($tmp, 2);
+                 }
+                 echo "<td style=\"width:100px\">$tmp";
              }
          }
          fclose($h);
@@ -421,11 +424,14 @@ private function type_Experiment_Name() {
          fclose($h);
          echo "\n<tr><td style=\"width:150px\">";
          foreach ($line_array as $trait) {
-             echo "<td style=\"width:125px\">$trait[0]";
+             echo "<td style=\"width:100px\">$trait[0]";
          }
          echo "\n<tr><td>$header[0]";
          foreach ($line_array as $trait) {
-             echo "<td style=\"width:125px\">$trait[1]";
+             if (is_numeric($trait[1])) {
+                 $trait[1] = number_format ($trait[1], 2);
+             }
+             echo "<td style=\"width:100px\">$trait[1]";
          }
          echo "\n<tr><td>$header[1]";
          foreach ($line_array as $trait) {
@@ -445,7 +451,7 @@ private function type_Experiment_Name() {
      echo "<table>";
      echo "<tr><td style=\"width:150px\">";
      foreach ($pheno_ary_name as $name) {
-         echo "<td style=\"width:125px\">$name";
+         echo "<td style=\"width:100px\">$name";
      }
      echo "<tr><td style=\"width:150px\"><td>";
      $warning = "";
