@@ -340,12 +340,6 @@ private function typeExperimentCheck()
          }
 
          /* check mean caluculation method for this experiment */
-         $mean_calculation = "";
-         $sql = "select mean_calculation from phenotype_experiment_info where experiment_uid = $uid";
-         $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-         if ($row = mysqli_fetch_array($res)) {
-           $mean_calculation = $row[0];
-         }
 
          /* check if mean file loaded for each trait*/
          $count_new = 0;
@@ -364,7 +358,7 @@ private function typeExperimentCheck()
          }
          $total = $count_new + $count_upd;
 
-         echo "<br>Plot file loaded successfuly<br>\n";
+         echo "<br>Plot file loaded successfully<br>\n";
 
          echo "<br><h3>Check Results</h3>\n";
          echo "<table>";
@@ -388,7 +382,7 @@ private function typeExperimentCheck()
 
          echo "<h3>Calculate then save mean data</h3>";
          echo "The next step is to calculate the line and trial means from the plot data.";
-         echo "<br>The model is choosen base on replication and block fields of the fieldbook data";
+         echo "<br>The model is chosen base on replication and block fields of the fieldbook data";
          echo "<ul><li>CRD: use simple averages<li>RCBC: use fixed effects and return LS means<li>blocks as random effects with no replication effect";
          echo "<li>Incomplete block model: Replications fixed and blocks random</ul>";
 
