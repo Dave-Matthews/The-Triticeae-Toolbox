@@ -375,7 +375,7 @@ class Annotations_Check {
                             $tmp_name = $_FILES['file']['tmp_name'][$key];
                             $name = $_FILES['file']['name'][$key];
                             move_uploaded_file($tmp_name, "$raw_path/$name");
-                            echo "successfuly uploaded $name<br>\n";
+                            echo "successfully uploaded $name<br>\n";
            } else {
                             echo "no file upload for entry $i<br>\n";
                             //print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1);\"><br>";
