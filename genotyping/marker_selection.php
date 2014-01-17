@@ -57,15 +57,20 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
 
     if ( isset($_POST['wildcard']) && ($_POST['wildcard'] == 'Yes')) {
         $mkrnm = $selmkrnames[0];
-        $sql = "select marker_uid from marker_synonyms where value REGEXP \"$mkrnm\" UNION
-          select marker_uid from markers where marker_name REGEXP \"$mkrnm\"";
+        $sql = "select marker_uid from markers where marker_name REGEXP \"$mkrnm\"";
         $r = mysql_query($sql);
-        if (mysql_num_rows($r) == 0)
-            echo "<font color=red>\"$mkrnm\" not found.</font><br>";
-        else {
-            while ($row = mysql_fetch_row($r)) {
+        while ($row = mysql_fetch_row($r)) {
                 array_push($selmkrs, $row[0]);
-            }
+        }
+        $sql = "select marker_uid from marker_synonyms where value REGEXP \"$mkrnm\"";
+        $r = mysql_query($sql);
+        while ($row = mysql_fetch_row($r)) {
+            if (! in_array($row[0], $selmkrs))
+                array_push($selmkrs, $row[0]);
+        }
+        $entries = count($selmkrs);
+        if ($entries == 0) {
+            echo "<font color=red>\"$mkrnm\" not found.</font><br>";
         }
     } else {
     foreach ($selmkrnames as $mkrnm) {
