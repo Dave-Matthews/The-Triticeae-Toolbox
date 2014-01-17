@@ -50,7 +50,6 @@ function getSubmittedMapid()
 
 if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
     // Handle <space>- and <tab-separated words.
-    //$selmkrnames = preg_split("/\r\n/", $_POST['selMarkerstring']);
     $s = preg_replace("/\\s+/", "\\r\\n", $_POST['selMarkerstring']);
     $selmkrnames = explode("\\r\\n", $s);
     // Get the marker uids.
@@ -65,8 +64,6 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
             echo "<font color=red>\"$mkrnm\" not found.</font><br>";
         else {
             while ($row = mysql_fetch_row($r)) {
-            // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
-            if (! in_array($row[0], $selmkrs))
                 array_push($selmkrs, $row[0]);
             }
         }
