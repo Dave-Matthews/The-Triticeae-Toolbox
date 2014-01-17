@@ -50,13 +50,13 @@ function getSubmittedMapid()
 
 if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
     // Handle <space>- and <tab-separated words.
-    //$selmkrnames = preg_split("/\r\n/", $_POST['selMarkerstring']);
     $s = preg_replace("/\\s+/", "\\r\\n", $_POST['selMarkerstring']);
     $selmkrnames = explode("\\r\\n", $s);
     // Get the marker uids.
     $selmkrs = array();
 
     if ( isset($_POST['wildcard']) && ($_POST['wildcard'] == 'Yes')) {
+        set_time_limit(300);
         $mkrnm = $selmkrnames[0];
         $sql = "select marker_uid from marker_synonyms where value REGEXP \"$mkrnm\" UNION
           select marker_uid from markers where marker_name REGEXP \"$mkrnm\"";
