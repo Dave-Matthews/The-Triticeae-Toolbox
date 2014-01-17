@@ -21,6 +21,7 @@ $usegbrowse = false;
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 connect();
+$mysqli = connecti();
 session_start();
 require $config['root_dir'].'theme/admin_header.php';
 ?>
@@ -60,11 +61,11 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
         $mkrnm = $selmkrnames[0];
         $sql = "select marker_uid from marker_synonyms where value REGEXP \"$mkrnm\" UNION
           select marker_uid from markers where marker_name REGEXP \"$mkrnm\"";
-        $r = mysql_query($sql);
-        if (mysql_num_rows($r) == 0)
+        $r = mysqli_query($mysqli, $sql);
+        if (mysqli_num_rows($r) == 0) {
             echo "<font color=red>\"$mkrnm\" not found.</font><br>";
-        else {
-            while ($row = mysql_fetch_row($r)) {
+        } else {
+            while ($row = mysqli_fetch_row($r)) {
             // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
             if (! in_array($row[0], $selmkrs))
                 array_push($selmkrs, $row[0]);
@@ -74,11 +75,11 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
     foreach ($selmkrnames as $mkrnm) {
         $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
           select marker_uid from markers where marker_name = '$mkrnm'";
-        $r = mysql_query($sql);
-        if (mysql_num_rows($r) == 0)
+        $r = mysqli_query($mysqli, $sql);
+        if (mysqli_num_rows($r) == 0)
             echo "<font color=red>\"$mkrnm\" not found.</font><br>";
         else {
-            $row = mysql_fetch_row($r);
+            $row = mysqli_fetch_row($r);
             // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
             if (! in_array($row[0], $selmkrs))
                 array_push($selmkrs, $row[0]);
