@@ -155,6 +155,7 @@ EOD;
 	<li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
         <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
  	<li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
+	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
@@ -174,11 +175,10 @@ EOD;
       <ul>
 	<li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
-	<!-- <li><a href="<?php echo $config['base_url']; ?>flapjack_download.php" title="Flapjack format">
-            Genotype Data</a> -->
-	  <!-- dem 12jan12 Needs data correctness check. -->
 	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
 	    SNP Alleles and Sequences</a> 
+        <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
+            Android Field Book</a>
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
 
@@ -188,24 +188,23 @@ EOD;
   ?> 
    <li> <a href="" title="Add, edit or delete data">Curate</a>
       <ul>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
-      Traits</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
       Lines</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_pedigree_router.php" title="Pedigree information about the lines, optional">
       Pedigrees</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php" title="Descriptions of phenotype experiments, must precede loading results">
-      Phenotype Trial Annotations</a></li>
+      Phenotype Trials</a></li>
       <!-- <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_router.php" title="Phenotype data"> -->
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php" title="Phenotype data">
       Phenotype Results</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_router.php" title="Phenotype CSR data">
       CSR Data</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>curator_data/fieldbook_export.php" title="Phenotype Tablet tools">Tablet Tools</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
-      Delete Trials / Experiments</a></li>
+      Delete Trials</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
+      Traits and Genetic Characters</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
-      Genotype Experiment Annotations</a></li>
+      Genotype Experiments</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_data_upload.php" title="Add Genotyping Result Data">
       Genotype Results </a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_map_upload.php" title="Genetic maps of the markers">
@@ -214,8 +213,9 @@ EOD;
       Markers</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_programs.php">
       CAP Data Programs</a></li>
-      <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php">
-      Anything!</a></li>
+      <!-- Too dangerous. -->
+      <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
+      <!-- Anything!</a></li> -->
       </ul>
       <?php endif ?>
 
