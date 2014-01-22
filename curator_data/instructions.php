@@ -16,17 +16,18 @@ connect();
 <h1>Data Submission</h1>
 <div class="section">
   <ul>
-    <li>Data templates are .csv, .txt or  Excel worksheets with column headers for
+    <li>Data templates are Excel, .txt, or .csv worksheets with column headers for
       the data T3 requires or accepts.
-    <li>Most example values can simply be replaced with your own, and notes about the restrictions for valid
-      data are included.    
-    <li>Once populated, the files can be uploaded
-      directly into T3. 
+    <li>The example values can be replaced with your own.  Notes about the restrictions for valid
+      data are included in the templates.    
+    <li>Once populated, the files can be loaded into T3 using
+    the <b>Curate</b> menu, which is available to registered Sandbox
+    users.
     <li>To make updates or corrections, edit your file and reload.
-    <li>Please use the Sandbox database, <a href="http://malt.pw.usda.gov/t3/sandbox/wheat">wheat</a> 
-      or <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a>, 
-      for test-loading your files.  Once they&apos;re ready,
-      click below to submit them officially.<br>
+    <li>Please use the <a href="http://malt.pw.usda.gov/t3/sandbox/wheat">wheat</a> 
+      or <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a> Sandbox database
+      for test-loading your files.  When they&apos;re ready,
+      click here to submit them to the T3 Curator for loading into the official database.
       <input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
   </ul>
 
