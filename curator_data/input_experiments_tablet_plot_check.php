@@ -350,7 +350,7 @@ class Data_Check
          }
          $total = $count_new + $count_upd;
 
-         echo "<br>Plot file loaded successfuly<br>\n";
+         echo "<br>Plot file loaded successfully<br>\n";
 
          echo "<br><h3>Check Results</h3>\n";
          echo "<table>";
@@ -374,7 +374,7 @@ class Data_Check
 
          echo "<h3>Calculate then save mean data</h3>";
          echo "The next step is to calculate the line and trial means from the plot data.";
-         echo "<br>The model is choosen base on replication and block fields of the fieldbook data";
+         echo "<br>The model is chosen base on replication and block fields of the fieldbook data";
          echo "<ul><li>CRD: use simple averages<li>RCBC: use fixed effects and return LS means<li>blocks as random effects with no replication effect";
          echo "<li>Incomplete block model: Replications fixed and blocks random</ul>";
 

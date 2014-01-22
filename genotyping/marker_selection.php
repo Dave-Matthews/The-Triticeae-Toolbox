@@ -21,6 +21,7 @@ $usegbrowse = false;
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 connect();
+$mysqli = connecti();
 session_start();
 require $config['root_dir'].'theme/admin_header.php';
 ?>
@@ -50,24 +51,40 @@ function getSubmittedMapid()
 
 if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
     // Handle <space>- and <tab-separated words.
-    //$selmkrnames = preg_split("/\r\n/", $_POST['selMarkerstring']);
     $s = preg_replace("/\\s+/", "\\r\\n", $_POST['selMarkerstring']);
     $selmkrnames = explode("\\r\\n", $s);
     // Get the marker uids.
     $selmkrs = array();
+
+    if ( isset($_POST['wildcard']) && ($_POST['wildcard'] == 'Yes')) {
+        set_time_limit(300);
+        $mkrnm = $selmkrnames[0];
+        $sql = "select marker_uid from marker_synonyms where value REGEXP \"$mkrnm\" UNION
+          select marker_uid from markers where marker_name REGEXP \"$mkrnm\"";
+        $r = mysqli_query($mysqli, $sql);
+        if (mysqli_num_rows($r) == 0) {
+            echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+        } else {
+            while ($row = mysqli_fetch_row($r)) {
+            // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
+            if (! in_array($row[0], $selmkrs))
+                array_push($selmkrs, $row[0]);
+            }
+        }
+    } else {
     foreach ($selmkrnames as $mkrnm) {
-        //$sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm'";
         $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
           select marker_uid from markers where marker_name = '$mkrnm'";
-        $r = mysql_query($sql);
-        if (mysql_num_rows($r) == 0)
+        $r = mysqli_query($mysqli, $sql);
+        if (mysqli_num_rows($r) == 0)
             echo "<font color=red>\"$mkrnm\" not found.</font><br>";
         else {
-            $row = mysql_fetch_row($r);
+            $row = mysqli_fetch_row($r);
             // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
             if (! in_array($row[0], $selmkrs))
                 array_push($selmkrs, $row[0]);
         }
+    }
     }
     $clkmkrs=$_SESSION['clicked_buttons'];
     if (!isset($clkmkrs) || ! is_array($clkmkrs)) $clkmkrs=array();
@@ -273,8 +290,23 @@ EOD;
   <h3>Select markers by name</h3>
   <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
   <table><tr><td>
-  <textarea rows=6 cols=10 name=selMarkerstring></textarea>
-  <td>Synonyms will be translated.
+  <textarea rows=6 cols=10 name=selMarkerstring id="selMarkerstring"></textarea>
+  <td>Synonyms will be translated.<br>
+  <!--input type="checkbox" name="wildcard" value="Yes" onclick="javascript: update_select(this.value)">Use Wildcard.<br-->
+  <p><input type=submit value=Select style=color:blue>
+  </tr></table>
+  </form><br>
+
+  <h3>Select markers by name using pattern matching</h3>
+  <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
+  <table><tr><td>
+  <input type="text" name=selMarkerstring id="selMarkerstring"><br>
+   . - matches any single character<br>
+   * - matches zero or more instances of preceding<br>
+   ^ - matches at the beginning of value<br>
+   $ - matches at the end of value<br>
+  <td>Synonyms will be translated.<br>
+  <input type="hidden" name="wildcard" value="Yes">
   <p><input type=submit value=Select style=color:blue>
   </tr></table>
   </form>

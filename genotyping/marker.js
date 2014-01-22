@@ -15,7 +15,7 @@ function update_platform(options) {
             }
         });
     var url = "includes/ajaxlib?func=DispExperiment&platform=" + platform_str;
-    new Ajax.Updater($('col2'), url, {
+    var tmp = new Ajax.Updater($('col2'), url, {
         onComplete : function() {
             $('col2').show();
             document.title = title;
@@ -32,7 +32,7 @@ function DispMarkerSet(options) {
             }
         });
     var url = "includes/ajaxlib?func=DispMarkerSet&set=" + panel_str;
-    new Ajax.Updater($('markerSet'), url, {
+    var tmp = new Ajax.Updater($('markerSet'), url, {
         onComplete : function() {
             $('MarkerSet').show();
             document.title = title;
@@ -52,7 +52,7 @@ function update_exper(options) {
 
 function update_side() {
     var url = "side_menu.php";
-    new Ajax.Updater($('quicklinks'), url, {
+    var tmp = new Ajax.Updater($('quicklinks'), url, {
       onComplete : function() {
         $('quicklinks').show();
         document.title = title;
@@ -63,7 +63,7 @@ function update_side() {
 function select_exper(options) {
     document.getElementById('current').innerHTML = "<img id=\"spinner\" src=\"images/ajax-loader.gif\"> Calculating which markers are in selected experiment(s)";
     var url = "includes/ajaxlib?func=SelcExperiment&experiment=" + expt_str;
-    new Ajax.Updater($('current'), url, {
+    var tmp = new Ajax.Updater($('current'), url, {
         onComplete : function() {
             $('current').show();
             document.title = title;
@@ -75,7 +75,7 @@ function select_exper(options) {
 function select_set(options) {
     document.getElementById('current').innerHTML = "<img id=\"spinner\" src=\"images/ajax-loader.gif\"> Calculating which markers are in selected experiment(s)";
     var url = "includes/ajaxlib?func=SelcMarkerSet&set=" + panel_str;
-    new Ajax.Updater($('current'), url, {
+    var tmp = new Ajax.Updater($('current'), url, {
         onComplete : function() {
             $('current').show();
             document.title = title;

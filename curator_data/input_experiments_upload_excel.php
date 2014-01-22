@@ -116,10 +116,10 @@ step by step instructions.</font>
       </form>
       <p>
       <li><b>Other</b>
-	<br>Other tablet devices can be used by opening the file from
-	the <a href="http://malt.pw.usda.gov/t3/wheatplus/curator_data/fieldbook_export.php">Field
+	<br>Other tablet apps can be used by opening the file from the
+	<a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php">Field
 	Layout download</a> and adding columns for each trait as in the
-	Example file.
+	<a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/PlotTabletTemplate.csv">Example file</a>.
   </ul>
   </div>
   <br>
