@@ -93,17 +93,16 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
     $_SESSION['clicked_buttons'] = $clkmkrs;
     // Get the uid of a map each of the markers is on.
     $mapids = $_SESSION['mapids'];
-    if (!isset($mapids) || !is_array($mapids))
-        $mapids = array();
-    foreach ($selmkrs as $mkr) {
-        $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
-        //$sql = "select distinct map_uid from markers where marker_uid = $mkr";
-        $r = mysql_query($sql);
-        $row = mysql_fetch_row($r);
-        if (! in_array($row[0], $mapids))
-            array_push($mapids, $row[0]);
-    }
-    $_SESSION['mapids'] = $mapids;
+    //if (!isset($mapids) || !is_array($mapids))
+    //    $mapids = array();
+    //foreach ($selmkrs as $mkr) {
+    //    $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
+    //    $r = mysql_query($sql);
+    //    $row = mysql_fetch_row($r);
+    //    if (! in_array($row[0], $mapids))
+    //        array_push($mapids, $row[0]);
+    //}
+    //$_SESSION['mapids'] = $mapids;
     ?>
     <script type="text/javascript">
     update_side_menu();
