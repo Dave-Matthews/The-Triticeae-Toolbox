@@ -66,8 +66,6 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
             echo "<font color=red>\"$mkrnm\" not found.</font><br>";
         } else {
             while ($row = mysqli_fetch_row($r)) {
-            // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
-            if (! in_array($row[0], $selmkrs))
                 array_push($selmkrs, $row[0]);
             }
         }
