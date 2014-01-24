@@ -69,30 +69,32 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
                 $selmkrs[] = $row[0];
             }
         }
+        $_SESSION['clicked_buttons'] = $selmkrs;
     } else {
-    foreach ($selmkrnames as $mkrnm) {
-        $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
-          select marker_uid from markers where marker_name = '$mkrnm'";
-        $r = mysqli_query($mysqli, $sql);
-        if (mysqli_num_rows($r) == 0)
+        foreach ($selmkrnames as $mkrnm) {
+            $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
+            select marker_uid from markers where marker_name = '$mkrnm'";
+            $r = mysqli_query($mysqli, $sql);
+            if (mysqli_num_rows($r) == 0)
             echo "<font color=red>\"$mkrnm\" not found.</font><br>";
-        else {
+            else {
             $row = mysqli_fetch_row($r);
             // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
             if (! in_array($row[0], $selmkrs))
                 array_push($selmkrs, $row[0]);
+            }
         }
+        $clkmkrs=$_SESSION['clicked_buttons'];
+        if (!isset($clkmkrs) || ! is_array($clkmkrs)) $clkmkrs=array();
+        foreach ($selmkrs as $mkruid) {
+            if (! in_array($mkruid, $clkmkrs)) 
+              array_push($clkmkrs, $mkruid);
+        }
+        $_SESSION['clicked_buttons'] = $clkmkrs;
     }
-    }
-    $clkmkrs=$_SESSION['clicked_buttons'];
-    if (!isset($clkmkrs) || ! is_array($clkmkrs)) $clkmkrs=array();
-    foreach ($selmkrs as $mkruid) {
-        if (! in_array($mkruid, $clkmkrs)) 
-            array_push($clkmkrs, $mkruid);
-    }
-    $_SESSION['clicked_buttons'] = $clkmkrs;
+
     // Get the uid of a map each of the markers is on.
-    $mapids = $_SESSION['mapids'];
+    //$mapids = $_SESSION['mapids'];
     //if (!isset($mapids) || !is_array($mapids))
     //    $mapids = array();
     //foreach ($selmkrs as $mkr) {
@@ -102,7 +104,7 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
     //    if (! in_array($row[0], $mapids))
     //        array_push($mapids, $row[0]);
     //}
-    //$_SESSION['mapids'] = $mapids;
+    $_SESSION['mapids'] = $mapids;
     ?>
     <script type="text/javascript">
     update_side_menu();
