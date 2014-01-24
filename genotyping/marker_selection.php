@@ -66,7 +66,7 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
             echo "<font color=red>\"$mkrnm\" not found.</font><br>";
         } else {
             while ($row = mysqli_fetch_row($r)) {
-                array_push($selmkrs, $row[0]);
+                $selmkrs[] = $row[0];
             }
         }
     } else {
