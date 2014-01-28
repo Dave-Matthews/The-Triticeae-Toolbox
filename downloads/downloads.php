@@ -77,49 +77,48 @@ class Downloads
         case 'step1yearprog':
             $this->step1_yearprog();
             break;
-			case 'type1build_tassel_v3':
-				echo $this->type1_build_tassel_v3();
-				break;
-			case 'step2lines':
-				echo $this->step2_lines();
-				break;
-			case 'searchLines':
-				echo $this->step1_search_lines();
-				break;
-			case 'download_session_v2':
-			    echo $this->type1_session(V2);
-			    break;
-			case 'download_session_v3':
-			    echo $this->type1_session(V3);
-			    break;
-			case 'download_session_v4':
-			    echo $this->type1_session(V4);
-			    break;
-                        case 'download_session_v5':
-                            echo $this->type1_session(V5);
-                            break;
-                        case 'download_session_v6':
-                            echo $this->type1_session(V6);
-                            break;
-                        case 'download_session_v7':
-                            echo $this->type1_session(V7);
-                            break;
-			case 'refreshtitle':
-			    echo $this->refresh_title();
-			    break;
-			default:
-				$this->type1_select();
-				break;
-				
-		}	
-	}
+        case 'type1build_tassel_v3':
+            echo $this->type1_build_tassel_v3();
+            break;
+        case 'step2lines':
+            echo $this->step2_lines();
+            break;
+        case 'searchLines':
+            echo $this->step1_search_lines();
+            break;
+        case 'download_session_v2':
+            echo $this->type1_session(V2);
+            break;
+        case 'download_session_v3':
+            echo $this->type1_session(V3);
+            break;
+        case 'download_session_v4':
+            echo $this->type1_session(V4);
+            break;
+        case 'download_session_v5':
+            echo $this->type1_session(V5);
+            break;
+        case 'download_session_v6':
+            echo $this->type1_session(V6);
+            break;
+        case 'download_session_v7':
+            echo $this->type1_session(V7);
+            break;
+        case 'refreshtitle':
+            echo $this->refresh_title();
+            break;
+        default:
+            $this->type1_select();
+            break;
+        }	
+    }
 
-	/**
-	 * load header and footer then check session to use existing data selection
-	 */
-	private function type1_select()
-	{
-		global $config;
+        /**
+         * load header and footer then check session to use existing data selection
+         */
+        private function type1_select()
+        {
+                global $config;
                 include $config['root_dir'].'theme/normal_header.php';
 		$phenotype = "";
                 $lines = "";
@@ -127,7 +126,7 @@ class Downloads
 		$saved_session = "";
 		$this->type1_checksession();
 		include $config['root_dir'].'theme/footer.php';
-	}	
+        }	
 	
 	/**
 	 * Checks the session variable, if there is lines data saved then go directly to the lines menu
@@ -329,8 +328,12 @@ class Downloads
 	}
 		 $experiments_g = implode(',',$exp);
 	}
+
+        // Clean up old files, older than 1 day
+        $dir = "/tmp/tht";
+        system("find $dir -mtime +1 -name 'download_????' -delete");
 		
-        $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+        $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
         $filename = "download_" . $unique_str;
         mkdir("/tmp/tht/$filename");
         $subset = "yes";
@@ -338,37 +341,37 @@ class Downloads
         
         if ($version == "V3") {
             $filename = "geneticMap.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type1_build_geneticMap($lines, $markers, $dtype);
             fwrite($h, $output);
             fclose($h);
             $filename = "snpfile.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
         } elseif ($version == "V4") { //Download for Tassel
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
-                $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-                $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset);
+                $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+                $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset);
                 fwrite($h, $output);
                 fclose($h);
             }
             $filename = "geneticMap.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_geneticMap($lines,$markers,$dtype);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type1_build_geneticMap($lines, $markers, $dtype);
             fwrite($h, $output);
             fclose($h);
             $filename = "genotype.hmp.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type3_build_markers_download($lines,$markers,$dtype,$h);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type3_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
         } elseif ($version == "V5") { //Download for R
             $dtype = "qtlminer";
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
-                $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-                $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
+                $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+                $output = $this->type1_build_traits_download($experiments_t, $phenotype, $datasets_exp);
                 fwrite($h, $output);
                 fclose($h);
             }
