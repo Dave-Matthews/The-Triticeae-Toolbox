@@ -331,7 +331,7 @@ class Downloads
 
         // Clean up old files, older than 1 day
         $dir = "/tmp/tht";
-        system("find $dir -mtime +1 -name 'download_????' -delete");
+        system("find $dir -mtime +1 -name 'download_????' -exec rm -r {} \;");
 		
         $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
         $filename = "download_" . $unique_str;
