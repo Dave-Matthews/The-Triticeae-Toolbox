@@ -3,6 +3,7 @@
 // Genotype data importer - also contains various   
 // pieces of import code by Julie's team @ iowaStateU  
 
+// 11/01/2011  JLee   Reinstate Allele freq calculations 
 // 10/25/2011  JLee   Ignore "cut" portion of input file 
 
 // 10/18/2011 JLee  Replace loop control "next" with "continue"
@@ -141,15 +142,24 @@ while(($line = fgets($reader)) !== FALSE) {
     //echo  $lineStr . " - ". $trialCodeStr. "<br>"; 
     // Trial Code processing
     if (($curTrialCode != $trialCodeStr) && ($trialCodeStr != '')) {
-                     
-        $res = mysql_query("SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'") 
-            or exitFatal ($errFile, "Database Error: Experiment uid lookup - ".mysql_error());
-        $exp_uid = implode(",",mysql_fetch_assoc($res));
                     
-        $res = mysql_query("SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'")
+        $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'"; 
+        $res = mysql_query($sql)
+            or exitFatal ($errFile, "Database Error: Experiment uid lookup - ".mysql_error());
+        if ($row = mysql_fetch_assoc($res)) {
+          $exp_uid = implode(",", $row);
+        } else {
+          exitFatal($errFile, "not found - $sql");
+        }
+        
+        $sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
+        $res = mysql_query($sql)
             or exitFatal ($errFile, "Database Error: Dataset experiment uid lookup - ".mysql_error());
-        $de_uid=implode(",",mysql_fetch_assoc($res));
-
+        if ($row = mysql_fetch_assoc($res)) {
+          $de_uid=implode(",", $row);
+        } else {
+          exitFatal($errFile, "not found - $sql");
+        }
         $curTrialCode = $trialCodeStr;
     } 
     $lineExpHash[$lineStr] = $exp_uid;
@@ -359,7 +369,6 @@ while (!feof($reader))  {
 fclose($reader);
 echo "Genotyping record creation completed.\n";
 
-/* No longer needed in T3 - JLee  9/16/2011 
 echo "Start allele frequency calculation processing...\n";
 
 // Do allele frequency calculations
@@ -506,7 +515,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
 fclose($errFile);
 
 echo "Allele frequency calculations completed.\n";
-*/
+
 
 // Send out status email
 if (filesize($errorFile)  > 0) {
