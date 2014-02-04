@@ -1,8 +1,20 @@
 <?php
-// Genotype data importer
-
-// 10/17/2011 JLee  Pass username to offline app
-// 04/11/2011 Jlee  Add zip file handling
+/**
+ * Genotype data importer
+ *
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/genotype_data_check.php
+ * 
+ * 10/17/2011 JLee  Pass username to offline app
+ * 04/11/2011 Jlee  Add zip file handling
+ */
 //
 // Written By: John Lee
 //*********************************************
@@ -11,8 +23,8 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require $config['root_dir'] . 'curator_data/lineuid.php';
 //require_once $config['root_dir'] . 'includes/email.inc';
 
 
@@ -30,6 +42,14 @@ ob_end_flush();
 
 new gLineNames_Check($_GET['function']);
 
+/** Using a PHP class to implement the "Download Gateway" feature
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <claybirkett@gmail.com>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/genotype_data_check.php
+ **/
 class gLineNames_Check
 {
     private $delimiter = "\t";
@@ -123,14 +143,14 @@ class gLineNames_Check
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");           
         }
         
-        if(move_uploaded_file($_FILES['file']['tmp_name'][1], $genoDataFile) == FALSE) 	{
+        if (move_uploaded_file($_FILES['file']['tmp_name'][1], $genoDataFile) == FALSE) {
             error(1, "Unable to move the genotype data file to the upload directory.");
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");           
        	}
        	if ($_POST['data_format'] == '1D') { 
-       		$cmd = "php genoDataOffline.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." ". $username ." > " . $processOut . " &";
-		} else {
-        	$cmd = "php genoDataOffline2D.php " . $translateFile . " " . $genoDataFile . " " . $userEmail ." ".$url ." ". $username ." > " . $processOut . " &";
+       	    $cmd = "php genoDataOffline.php \"$translateFile\" $genoDataFile $userEmail $url $username" ." > " . $processOut . " &";
+        } else {
+            $cmd = "php genoDataOffline2D.php \"$translateFile\" \"$genoDataFile\" $userEmail $url $username" ." > " . $processOut . " &";
         }
         //echo "Cmd - " . $cmd . "<br>";
         exec($cmd);
