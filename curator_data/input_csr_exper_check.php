@@ -264,7 +264,7 @@ private function type_ExperimentCropScan()
        $csr_date = $temp[0];
        fwrite($h,"Trial\t$trial_code\tDate\t$temp[0]\n");
        fwrite($h,"Plot");
-       for ($j = 1; $j < $count_lines; $j++) {
+       for ($j = 1; $j <= $count_lines; $j++) {
            $temp = $data[$j];
            fwrite($h, "\t$temp[4]");
        }
@@ -273,7 +273,7 @@ private function type_ExperimentCropScan()
        //write out header line 3 and 4
        fwrite($h, "Start time\n");
        fwrite($h, "Stop time");
-       for ($j= 1; $j < $count_lines; $j++) {
+       for ($j= 1; $j <= $count_lines; $j++) {
            $temp = $data[$j];
            fwrite($h, "\t$temp[1]");
        }
@@ -285,7 +285,7 @@ private function type_ExperimentCropScan()
        $wavelen = 6;
        for ($i = $wavelen; $i <= $last_col; $i++) {
            fwrite($h, "$header[$i]\t");
-           for ($j = 1; $j < $count_lines; $j++) {
+           for ($j = 1; $j <= $count_lines; $j++) {
                $temp = $data[$j];
                if ($j == 1) {
                    fwrite($h, "$temp[$i]");
