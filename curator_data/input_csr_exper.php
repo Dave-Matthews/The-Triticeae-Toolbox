@@ -94,7 +94,8 @@ echo "</select>\n";
   <tr><td><strong>CSR Annotation File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
   <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSRinT3_Sp1_Annotation.xlsx">CSR Annotation Template</a><td><font color=red>Updated 02/12/2013</font>
   <tr><td><strong>CSR Data File:</strong><td><input id="file[]" type="file" name="file[]" size="50%" /><td>
-  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSR_Data_template.txt">CSR Data Template</a>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSR_Data_template.txt">CSR Data Template (Jaz, USB2000)</a><br>
+  <a href="<?php echo $config['base_url']; ?>curator_data/examples/T3/CSR_CropScan_template.txt">CSR Data Template (CropScan)</a>
   </table>
   <p><input type="submit" value="Upload" /></p>
 </form>
