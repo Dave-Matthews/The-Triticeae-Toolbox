@@ -100,7 +100,9 @@ echo "</select>\n";
   <p><input type="submit" value="Upload" /></p>
 </form>
 
-<a href=login/edit_csr_trials.php>Edit Trial Table</a>
+<a href=login/edit_csr_trials.php>Edit CSR Trial Table</a><br><br>
+Note: When CropScan data files is loaded it is translated into the format used by the Jaz device.<br>
+The lines before the column header in the CropScan data file are not be saved.
 		
 <?php
 	} /* end of type_Experiment_Name function*/
