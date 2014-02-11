@@ -353,7 +353,8 @@ private function typeExperimentCheck()
 			   //put in check for SAS value for NULL
 			   // Apparently PHP's trim(chr(32)) == chr(0), not NULL.  Damn.
 			   /* if ((!is_null($phenotype_data))&&($phenotype_data!=".")&&(ord($phenotype_data)!=0)) { */
-			   if ((!is_null($phenotype_data)) && ($phenotype_data!=".") && ($phenotype_data!="")) {
+			   // Stop allowing ".", the SAS value for NULL.
+			   if ((!is_null($phenotype_data)) && ($phenotype_data!="")) {
 			     // Test that the value is numeric if the schema says it must be.
 			     $dt = $datatypes[$j];
 			     if ( (!is_numeric($phenotype_data)) AND ($dt != "string") AND ($dt != "text") ) {
@@ -379,19 +380,23 @@ private function typeExperimentCheck()
    
 	       <style type="text/css">
 	       table {background: none; border-collapse: collapse}
-  	       th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+  	       th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6} 
 	       td {border: 1px solid #eee !important;}
 	       h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 	       </style>
 
 	       <h3>Data in the uploaded file</h3>
-	       <table>
-	       <thead>
-	       <tr> 
-	       <?php 
+	       File:  <i><?php echo $uploadfile ?></i><br>
+	       Trial: <b><?php echo$trial_code ?></b><br>
+   <?php 
+	       if (!$pheno_num)
+		 $pheno_num = 0;
+	       if (!$lines_count)
+		 $lines_count = 0;
 	       echo "Data read for <b>$pheno_num</b> traits, to the first empty column.<br>";
 	       echo "Data read for <b>$lines_count</b> lines.<p>";
 	       // Table header
+	       echo "<table> <thead> <tr>";
 	       for ($i = 1; $i <= 6; $i++) 
 		 echo "<th>".$means['cells'][5][$i]."</th>";
 	       // Trait names 
