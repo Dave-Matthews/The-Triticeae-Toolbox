@@ -112,6 +112,13 @@ function update_DateTime() {
 	          document.title = title;
 	    }
 	});
+        url = php_self + "?function=showExper&muid=" + muid;
+        new Ajax.Updater($('col4'), url, {
+              onComplete : function() {
+                  $('col4').show();
+                  document.title = title;
+            }
+        });
 	url = php_self + "?function=statusLines&trial=" + trial + "&subset=" + subset;
 	new Ajax.Updater($('status'), url, {
 	      onComplete : function() {
