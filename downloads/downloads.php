@@ -180,31 +180,32 @@ class Downloads
             $this->refresh_title();
          ?>        
         </div>
+        <div id="title2">
          <?php
-                echo "1. Select a set of lines, traits, and trials.<br>";
-                echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> which has the best coverage for this set.<br>";
-                echo "3. Return to this page and select the filter options.<br>";
-                echo "4. Select the Create file button with the desired file format.<br>";
-                echo "5. Select the Download Zip file button to retreive the results.<br><br>";
                 if (empty($_SESSION['selected_lines'])) {
-                    echo "<font color=red>No lines selected. </font>";
-                    echo "<a href=\"" . $config['base_url'];
-                    echo "pedigree/line_selection.php\">Select Lines by Properties</a> or ";
-                    echo "<a href=\"" . $config['base_url'];
-                    echo "downloads/select_all.php\">Wizard (Lines, Traits, Trials)</a><br><br>.";
+                    echo "1. Select a set of <a href=\"" . $config['base_url'];
+                    echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
+                    echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> which has the best coverage for your selection.<br><br>";
+                    echo "</div>";
                 } else if (empty($_SESSION['selected_map'])) {
-                    echo "<font color=red>No map selected. </font>";
-                    echo "<a href=\"" . $config['base_url'];
-                    echo "maps/select_map.php\">Select genetic map</a><br><br>.";
+                    echo "1. Select a set of <a href=\"" . $config['base_url'];
+                    echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
+                    echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> which has the best coverage for your selection.<br><br>";
+                    echo "</div><br>";
+                    ?> 
+                    <div id="step1" style="float: left; margin-bottom: 1.5em;">
+                    <?php
+                    $this->type1_lines_trial_trait(); 
+                } else {
+                    echo "1. Select the filter options.<br>";
+                    echo "2. Select the Create file button with the desired file format.<br><br>";
+                    echo "</div><br>";
+                    ?> 
+                    <div id="step1" style="float: left; margin-bottom: 1.5em;">
+                    <?php
+                    $this->type1_lines_trial_trait(); 
                 }
-   
-                   ?> 
-                   <div id="step1" style="float: left; margin-bottom: 1.5em;">
-                   <?php
-                   $this->type1_lines_trial_trait(); 
-                ?>
-                </div>
-                <?php
+                echo "</div>";
         }
 
     /**
@@ -496,8 +497,17 @@ class Downloads
             <?php
             $this->step4_lines();
             ?></div>
-	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+            <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
+            <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+            <?php
+            if (empty($_SESSION['selected_map'])) {
+                echo "<font color=red>No map selected. </font>";
+                echo "<a href=\"" . $config['base_url'];
+                echo "maps/select_map.php\">Select genetic map</a><br><br>.";
+                echo "</div>";
+            } else {
+                ?>
+            </div>
             <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <script type="text/javascript" src="downloads/downloads.js"></script>
 	    <script type="text/javascript">
@@ -513,6 +523,7 @@ class Downloads
 	    </script>
 	    </div>
 	     <?php 	
+            }
 	}
 	
 	/**
@@ -749,8 +760,8 @@ class Downloads
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove lines missing &gt <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
             <?php
-            if ($use_database) {
-                calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
+             if ($use_database) {
+                //calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
              } else {
                 calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
              }
