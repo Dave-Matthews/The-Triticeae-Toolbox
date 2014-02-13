@@ -113,14 +113,7 @@ connect();
 	<input type="text" name="institution" id="institution"
 	       value="$institution" size="30" /> Required for TBD Participants.
         </td></tr></table>
-  <h3>I wish to be a TBD Participant.</h3>
-  <input $c_no type="radio" value="no" name="answer" id="answer_no" />
-  <label for="answer_no">No</label>
-  <br />
-  <input $c_yes type="radio" value="yes" name="answer"
-	 id="answer_yes" />
-  <label for="answer_yes">Yes</label>
-  <br />
+  <p>
   <table border="0" cellspacing=="0" cellpadding="0"
 	 style="border: none; background: none">
     <tr><td><img id="captcha" src="./securimage/securimage_show.php"
@@ -479,7 +472,9 @@ if (isset($_POST['submit_login'])) {
      $safe_institution = $institution ? "'" . mysql_real_escape_string($institution) . "'" : 'NULL';
      $desired_usertype = ($answer == 'yes' ? USER_TYPE_PARTICIPANT :
 			  USER_TYPE_PUBLIC);
-     $safe_usertype = USER_TYPE_PUBLIC;
+     // For the Funnyfarm, everyone is a Curator.
+     //$safe_usertype = USER_TYPE_PUBLIC;
+     $safe_usertype = USER_TYPE_CURATOR;
      $sql = "insert into users (user_types_uid, users_name, pass,
 name, email, institution) values ($safe_usertype, '$safe_email',
 MD5('$safe_password'), '$safe_name', '$safe_email',
@@ -488,19 +483,9 @@ $safe_institution)";
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-     // If not currently in the Sandbox, mention it.
+     // If not currently in the Funnyfarm, mention it.
      $rd = $config['root_dir'];
-     if (!strpos($rd, "sandbox")) {
-       $dir = explode("/", $rd); 
-       // Pop twice.
-       $crop = array_pop($dir);
-       $crop = array_pop($dir);
-       $sbmsg = "\nIf you will be submitting data to be loaded in TBD, 
-please register also in the Sandbox, 
-http://malt.pw.usda.gov/t3/sandbox/$crop
-There you can load your own files directly to see the results 
-and verify them before sending the files to the curator.\n";
-     }
+
      send_email($email, "Breeders Database registration in progress",
 "<pre>Dear $name,
 
@@ -516,24 +501,25 @@ Sincerely,
 The Breeders Database Team
 ");
 
-     if ($desired_usertype == USER_TYPE_PARTICIPANT) {
-       $capkey = setting('capencryptionkey');
-       $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
-       send_email(setting('capmail'),
-		  "Validate TBD Participant $email",
-"Email: $email
-Name: $name
-Institution: $institution
+/*      if ($desired_usertype == USER_TYPE_PARTICIPANT) { */
+/*        $capkey = setting('capencryptionkey'); */
+/*        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128)); */
+/*        send_email(setting('capmail'), */
+/* 		  "Validate TBD Participant $email", */
+/* 		  "Email: $email */
+/* Name: $name */
+/* Institution: $institution */
 
-Please use the following link to confirm or reject participant status 
-of this user:
-{$root}fromcapemail.php?token=$capurltoken
+/* Please use the following link to confirm or reject participant status  */
+/* of this user: */
+/* {$root}fromcapemail.php?token=$capurltoken */
 
-A message has been sent to the user that he must confirm his email 
-address at
-{$root}fromemail.php?token=$urltoken
-");
-     }
+/* A message has been sent to the user that he must confirm his email  */
+/* address at */
+/* {$root}fromemail.php?token=$urltoken */
+/* "); */
+/*      } */
+
      echo HTMLRegistrationSuccess($name, $email);
    }
  }
