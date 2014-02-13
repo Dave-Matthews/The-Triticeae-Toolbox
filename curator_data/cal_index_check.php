@@ -164,7 +164,7 @@
           print "</table><br>\n";
           print "<tr><td>To load index on production T3 website as a trait<br>\n";
           print "1. Download the file<br>\n";
-          print "2. Use the <a href=curator_data/queue.php>Data Submission form</a> to send the file to the currator\n";
+          print "2. Use the <a href=curator_data/queue.php>Data Submission form</a> to send the file to the curator\n";
     } else {
         print "</table><br>\n";
         print "<a href=login.php>Login</a> to save data as a trait or submit data to curator<br>\n";
