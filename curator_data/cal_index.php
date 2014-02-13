@@ -322,7 +322,7 @@ class Experiments
         }
         ?>
         </select><br>
-        <input type="radio" <?php echo $checked_all; ?> name="subset" value="All" onclick="javascript: update_subset(this.form)">All Lines<br>
+        <input type="radio" <?php echo $checked_all; ?> name="subset" value="All" onclick="javascript: update_subset(this.form)">All Lines
         <input type="radio" <?php echo $checked_chk; ?> name="subset" value="Check" onclick="javascript: update_subset(this.form)">Check Lines
         </table>
         <?php
@@ -385,8 +385,7 @@ class Experiments
         while ($row = mysqli_fetch_row($res)) {
             $count++;
         }
-        echo "current data selection = $count lines<br>\n";
-        echo "<input type=button value=\"Save current selection\" onclick=\"javascript: save_session();\">";
+        echo "To save the $count selected lines for other Analysis <input type=button value=\"Save\" onclick=\"javascript: save_session();\">";
         echo "<br><br>";
     }
 
@@ -420,8 +419,9 @@ class Experiments
             $subset = $_GET['subset'];
         }
 
+        echo "<br>To view the raw CSR Data ";
         if ($raw_path == "") {
-            echo "<br><input type=\"button\" value=\"Download CSR Data\" disabled><br><br>";
+            echo "<input type=\"button\" value=\"Download\" disabled><br><br>";
             return;
         }
         if (($reader = fopen($raw_path, "r")) == false) {
@@ -432,10 +432,9 @@ class Experiments
         if (($writer = fopen($out_path, "w")) == false) {
             die("error - can not write file $out_path");
         }
-        echo "<br><input type=\"button\" value=\"Download CSR Data\"
+        echo "<input type=\"button\" value=\"Download\"
             onclick=\"javascript: start_download('$url_path');\">";
         echo "<br><br>";
-        //echo "<a target=\"_blank\" href=\"$out_path\">Download CSR Data</a>";
 
         //get list of line names for each plot
         if ($subset == "all") {
