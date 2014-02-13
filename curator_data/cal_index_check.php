@@ -50,7 +50,7 @@
       } elseif (preg_match("/[{}]/", $index)) {
           die("<font color=red>Error: Illegal formula</font>");
       } elseif (preg_match("/write/", $index)) {
-    	  die("<font color=red>Error: Illegal formula</font>");
+          die("<font color=red>Error: Illegal formula</font>");
       } elseif (preg_match("/read/", $index)) {
           die("<font color=red>Error: Illegal formula</font>");
       }
@@ -160,11 +160,11 @@
               print "<input type=\"hidden\" name=\"filename0\" value=\"$filename4\">\n";
               print "<input type=submit value=\"Upload\"><td>Load the index as a trait CSR_$formula1";
               print "</form>";
-            } 
-            print "</table><br>\n";
-            print "<tr><td>To load index on production T3 website as a trait<br>\n";
-            print "1. Download the file<br>\n";
-            print "2. Use the <a href=curator_data/queue.php>Data Submission form</a> to send the file to the currator\n";
+          } 
+          print "</table><br>\n";
+          print "<tr><td>To load index on production T3 website as a trait<br>\n";
+          print "1. Download the file<br>\n";
+          print "2. Use the <a href=curator_data/queue.php>Data Submission form</a> to send the file to the currator\n";
     } else {
         print "</table><br>\n";
         print "<a href=login.php>Login</a> to save data as a trait or submit data to curator<br>\n";
