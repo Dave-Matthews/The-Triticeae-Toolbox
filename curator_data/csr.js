@@ -98,6 +98,7 @@ function update_trial() {
     });
     muid = "";
     document.getElementById("col3").innerHTML = "";
+    document.getElementById("col4").innerHTML = "";
     document.getElementById("download").innerHTML = "";
     document.getElementById("status").innerHTML = "";
 }
