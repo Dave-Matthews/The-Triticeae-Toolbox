@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-include($config['root_dir'].'theme/normal_header.php');
+include $config['root_dir'].'theme/normal_header.php';
 ?>
 <script type="text/javascript" src="theme/new.js"></script>
 <?php
@@ -14,8 +14,9 @@ if (isset($_GET['clearSel'])) {
     unset($_SESSION['clicked_buttons']);
     unset($_SESSION['filtered_markers']);
     unset($_SESSION['filtered_lines']);
-    $_SESSION['training_traits'] = NULL; unset($_SESSION['training_traits']);
-    $_SESSION['training_trials'] = NULL; unset($_SESSION['training_trials']);
+    unset($_SESSION['selected_map']);
+    $_SESSION['training_traits'] = null; unset($_SESSION['training_traits']);
+    $_SESSION['training_trials'] = null; unset($_SESSION['training_trials']);
     ?>
     <script type="text/javascript">
       update_side_menu();

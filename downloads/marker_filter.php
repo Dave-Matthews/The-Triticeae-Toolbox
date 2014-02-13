@@ -183,6 +183,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
             $num_mark++;
         }
     }
+    //echo "<br>num of markers with data = $num_mark<br>\n";
     $_SESSION['filtered_markers'] = $markers_filtered;
     $count = count($markers_filtered);
     if ($count == 0) {    //if none of markers meet maf requirements then we can not filter lines by missing data
@@ -236,8 +237,9 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     ?>
     <table>
     <tr><td><a onclick="filterDesc( <?php echo ($min_maf) ?>, <?php echo ($max_miss_line) ?>, <?php echo ($max_miss_line) ?>)">Removed by filtering</a><td>Remaining
-    <tr><td><b><?php echo ($num_maf) ?></b><i> markers have a minor allele frequency (MAF) less than </i><b><?php echo ($min_maf) ?></b><i>%
-    <br><b><?php echo ($num_miss) ?></b><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
+    <tr><td><?php echo ($num_maf) ?><i> markers have a minor allele frequency (MAF) less than </i><b><?php echo ($min_maf) ?></b><i>%
+    <br><?php echo ($num_miss) ?><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
+    <br><b><?php echo ($num_removed) ?></b><i> markers removed</i>
     <td><b><?php echo ("$count") ?></b><i> markers</i>
     <tr><td>
     <?php
