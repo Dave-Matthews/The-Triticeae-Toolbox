@@ -689,7 +689,7 @@ function update_phenotype_linesb(options) {
 			} 
 
            function create_file(version) {
-                document.getElementById('step6').innerHTML = "Creating download file";
+                document.getElementById('title2').innerHTML = "Creating download file";
                 var url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str;
                 document.title='Creating Download file...';
                 var tmp = new Ajax.Updater($('step6'), url, {
@@ -697,6 +697,7 @@ function update_phenotype_linesb(options) {
                         $('step6').show();
                         document.title = title;
                         Element.hide('spinner');
+                        document.getElementById('title2').innerHTML = "Select the Download Zip file button to retrieve the results.";
                     }}
                 );
             }
@@ -707,7 +708,7 @@ function update_phenotype_linesb(options) {
                 var mml = $('mml').getValue();
                 markers_loading = true;
                 Element.show('spinner');
-                document.getElementById('step5').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
+                document.getElementById('title2').innerHTML = "Selecting markers and calculating allele frequency for selected lines";
                 document.getElementById('step6').innerHTML = "";
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&mml=' + mml + '&use_line=yes';
                 document.title='Loading Markers...';
