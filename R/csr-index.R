@@ -7,6 +7,23 @@
 
 wavelength <- csrData[,1]
 
+#check wavelength range before calculating index
+maxWav = length(wavelength)
+if (W1wav < wavelength[1]) {
+  stop("Error: W1 wavelength is too small")
+}
+if (W2wav == "") {
+  stop("Error: W2 missing")
+} else if (W2wav < wavelength[1]) {
+  stop("Error: W2 wavelength is too small")
+} else if (W2wav > wavelength[maxWav]) {
+  stop("Error: W2 wavelength is too large")
+}
+if (is.na(W3wav)) {
+} else if (W3wav > wavelength[maxWav]) {
+  stop("Error: W3 wavelength is too large")
+} 
+
 #find index for wavelength, distribution is not linear so pick the closest one
 min <- max(wavelength)
 for (i in 1:length(wavelength)) {
@@ -77,20 +94,6 @@ for (i in 2:ncol(csrFilt)) {
   } else {
     lines(csrData[,1], csrFilt[,i])
   }
-}
-
-#check wavelength range before calculating index
-if (W1idx == 1) {
-  stop("Error: W1 wavelength is too small")
-}
-if (W2idx == length(wavelength)) {
-  stop("Error: W2 wavelength is too large")
-}
-if (W3idx == "") {
-} else {
-if ((W3idx == 1) || (W3idx == length(wavelength))) {
-  stop("Error: W3 out of range")
-}
 }
 
 # apply formula to calculate index for each column then write to file
