@@ -1532,7 +1532,7 @@ class Downloads
            $pos = $row[2];
            if (preg_match("/(\d+)/",$chr,$match)) {
              $chr = $match[0];
-             $rank = (1000*$chr) + $pos;
+             $rank = (100000*$chr) + round(100*$pos);
            } else {
              $rank = 99999;
            }
