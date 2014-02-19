@@ -1535,9 +1535,9 @@ class Downloads
            $pos = $row[2];
            if ($pos != $prev_pos) {
              $prev_pos = $pos;
-             $chr_rank = $chr_rank + 1000;
+             $chr_rank = $chr_rank + 100000;
            }
-           $rank = $chr_rank + $pos;
+           $rank = $chr_rank + round(100*$pos);
 	   $marker_list_mapped[$marker_uid] = $rank;
 	 }
 	
