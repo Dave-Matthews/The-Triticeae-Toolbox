@@ -1636,7 +1636,7 @@ class Downloads
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	     if ($row = mysql_fetch_array($res)) {
 	        $chrom = $row[2];
-	        $pos = 100 * $row[3];
+	        $pos = round(100 * $row[3]);
 	     } else {
 	        $chrom = 0;
 	        $pos = 0;
