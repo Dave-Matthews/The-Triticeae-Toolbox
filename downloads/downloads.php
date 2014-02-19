@@ -1518,6 +1518,9 @@ class Downloads
          }
 
 	 //order the markers by map location
+         //need to convert chromosome name to integer for ranking, chromosome name can be anything character string
+         $pre_pos = 0;
+         $chr_rank = 0;
 	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
@@ -1530,12 +1533,11 @@ class Downloads
            $marker_uid = $row[0];
            $chr = $row[1];
            $pos = $row[2];
-           if (preg_match("/(\d+)/",$chr,$match)) {
-             $chr = $match[0];
-             $rank = (100000*$chr) + round(100*$pos);
-           } else {
-             $rank = 99999;
+           if ($pos != $prev_pos) {
+             $prev_pos = $pos;
+             $chr_rank = $chr_rank + 1000;
            }
+           $rank = $chr_rank + $pos;
 	   $marker_list_mapped[$marker_uid] = $rank;
 	 }
 	
