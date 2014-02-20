@@ -388,7 +388,7 @@ class DownloadsJNLP
           echo "Note:<br>\n";
           echo "1. For Safari and other browsers that will not execute programs from the internet, ";
           echo "go to your download folder and open the .jnlp file<br>";
-          echo "2. You may have to change security from high to medium if you receive an error message ";
+          echo "2. You will have to change the Java security from high to medium if you receive an error message ";
           echo "that self-signed applications are blocked<br><br>";
           echo "TASSEL (Trait Analysis by Association, Evolution and Linkage)<br>";
           echo "provided by Buckler Lab for Maize Genetics and Diversity<br>";
