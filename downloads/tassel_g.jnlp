@@ -17,7 +17,7 @@
     </security>
     <resources>
 
-      <j2se version="1.6+" initial-heap-size="512m" max-heap-size="2048m" href="http://java.sun.com/products/autodl/j2se"/>
+      <j2se version="1.7+" initial-heap-size="512m" max-heap-size="2048m" href="http://java.sun.com/products/autodl/j2se"/>
 
       <jar href="sTASSEL4.jar" main="true" download="eager"/>
       <jar href="LiuExt.jar" download="eager"/>
@@ -37,13 +37,13 @@
       <jar href="jfreechart-1.0.3.jar" download="eager"/>
       <jar href="colt.jar" download="eager"/>
       <jar href="xml.jar" download="eager"/>
-      <jar href="ejml-0.13.jar" download="eager"/>
+      <jar href="ejml-0.23.jar" download="eager"/>
       <jar href="mail-1.4.jar" download="eager"/>
       <jar href="log4j-1.2.13.jar" download="eager"/>
+      <jar href="guava-14.0.1.jar" download="eager"/>
 
       <!-- Forester Jars -->
       <jar href="forester.jar" download="eager"/>
-      <jar href="commons-codec-1.5.jar" download="eager"/>
       <jar href="itextpdf-5.1.0.jar" download="eager"/>
 
       <!-- JHDF5 Jars -->
