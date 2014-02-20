@@ -1969,14 +1969,7 @@ class DownloadsJNLP
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	     if ($row = mysql_fetch_array($res)) {
                 $chrom = $row[2];
-                if (preg_match('/[0-9]+/',$chrom, $match)) {
-                  $chrom = $match[0];
-                  $pos = 100 * $row[3];
-                } else {
-                  $chrom = 0;
-                  $pos = $pos_index;
-                  $pos_index += 10;
-                }
+                $pos = round(100 * $row[3]);
 	     } else {
                 $chrom = 0;
                 $pos = $pos_index;
