@@ -385,8 +385,11 @@ class DownloadsJNLP
           echo "<form method=\"LINK\" action=\"$temp2\">";
           echo "<input type=\"submit\" value=\"Open file with TASSEL\"> (950Mb Heap Size) Use if Error Creating Java Virtual Machine";
           echo "</form><br>";
-          echo "For Safari and other browsers that will not execute programs from the internet,<br>";
-          echo "Go to your download folder and open the .jnlp file<br><br>";
+          echo "Note:<br>\n";
+          echo "1. For Safari and other browsers that will not execute programs from the internet, ";
+          echo "go to your download folder and open the .jnlp file<br>";
+          echo "2. You may have to change security from high to medium if you receive an error message ";
+          echo "that self-signed applications are blocked<br><br>";
           echo "TASSEL (Trait Analysis by Association, Evolution and Linkage)<br>";
           echo "provided by Buckler Lab for Maize Genetics and Diversity<br>";
           echo "<a href=\"http://www.maizegenetics.net/tassel\">www.maizegenetics.net/tassel</a>";
@@ -1860,6 +1863,8 @@ class DownloadsJNLP
          }
  
 	 //order the markers by map location
+         $pre_pos = 0;
+         $chr_rank = 0;
 	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
@@ -1872,12 +1877,11 @@ class DownloadsJNLP
            $marker_uid = $row[0];
            $chr = $row[1];
            $pos = $row[2];
-           if (preg_match("/(\d+)/",$chr,$match)) {
-             $chr = $match[0];
-             $rank = (1000*$chr) + $pos;
-           } else {
-             $rank = 99999;
+           if ($chr != $prev_pos) {
+             $prev_pos = $chr;
+             $chr_rank = $chr_rank + 100000;
            }
+           $rank = $chr_rank + round(100*$pos);
 	   $marker_list_mapped[$marker_uid] = $rank;
 	 }
 	
