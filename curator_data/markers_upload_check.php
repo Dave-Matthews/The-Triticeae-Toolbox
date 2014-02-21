@@ -15,13 +15,13 @@ require 'config.php';
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
-ini_set('memory_limit', '2G');
 
 connect();
 loginTest();
 
 //needed for mac compatibility
 ini_set('auto_detect_line_endings',true);
+ini_set('memory_limit', '2G');
 
 /* ******************************* */
 $row = loadUser($_SESSION['username']);
