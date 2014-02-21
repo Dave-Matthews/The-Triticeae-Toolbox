@@ -15,6 +15,7 @@ require 'config.php';
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
+//ini_set('memory_limit', '2G');
 
 connect();
 loginTest();
@@ -207,7 +208,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         <table id="content1<?php echo $pheno_uid; ?>" style="<? echo $display1; ?>">
         <?php
         echo "<thead><tr><th>marker<th>match by name<th>match by sequence<th>database change\n";
-        echo "<tr><td>$tmp<td>$count_dup_name<td>$count_dup_seq<td>";
+        echo "<tr><td>$tmp<td>$count_dup_name<td><font color=blue>$count_dup_seq</font><td>";
         echo "$count_update update marker<br>";
         echo "$count_insert add marker<br>";
         echo "$count_add_syn add synonym\n";
@@ -257,7 +258,6 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
 <?php
         $error_flag = 0;
         $row = loadUser($_SESSION['username']);
-		ini_set("memory_limit","24M");
 		$username=$row['name'];
 		$tmp_dir="./uploads/tmpdir_".$username."_".rand();
         //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
@@ -452,7 +452,6 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
 
         $error_flag = 0;
         $row = loadUser($_SESSION['username']);
-		ini_set("memory_limit","24M");
 		$username=$row['name'];
 		$tmp_dir="./uploads/tmpdir_".$username."_".rand();
         $infile = "";
