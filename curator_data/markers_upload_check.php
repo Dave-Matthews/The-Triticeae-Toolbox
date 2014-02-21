@@ -15,7 +15,7 @@ require 'config.php';
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
-ini_set('memory_limit', '2G')
+ini_set('memory_limit', '2G');
 
 connect();
 loginTest();
