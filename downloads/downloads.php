@@ -1520,7 +1520,7 @@ class Downloads
 	 //order the markers by map location
          //tassel v5 needs markers sorted when position is not unique
          $pre_pos = 0;
-	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
+	 $sql = "select markers.marker_uid,  mim.chromosome from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
 	 AND mim.map_uid = map.map_uid
@@ -1531,14 +1531,15 @@ class Downloads
 	 while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
            $chr = $row[1];
-           $pos = $row[2];
 	   $marker_list_mapped[$marker_uid] = 1;
 	 }
 
          $marker_list_all = $marker_list_mapped;	
 	 //generate an array of selected markers and add map position if available
          $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
-         where marker_uid IN ($markers_str) and markers.marker_type_uid = marker_types.marker_type_uid";
+         where marker_uid IN ($markers_str)
+         AND markers.marker_type_uid = marker_types.marker_type_uid
+         order by marker_name";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
          while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
