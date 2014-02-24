@@ -1526,7 +1526,7 @@ class Downloads
 	 AND mim.map_uid = map.map_uid
 	 AND map.mapset_uid = mapset.mapset_uid
 	 AND mapset.mapset_uid = $selected_map 
-	 order by mim.chromosome, mim.start_position, markers.marker_name";
+	 order by mim.chromosome, mim.start_position, binary markers.marker_name";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
@@ -1539,7 +1539,7 @@ class Downloads
          $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
          where marker_uid IN ($markers_str)
          AND markers.marker_type_uid = marker_types.marker_type_uid
-         order by marker_name";
+         order by binary marker_name";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
          while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
