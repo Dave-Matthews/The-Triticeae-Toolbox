@@ -1520,7 +1520,7 @@ class Downloads
 	 //order the markers by map location
          //tassel v5 needs markers sorted when position is not unique
          $pre_pos = 0;
-	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position, markers.marker_name from markers, markers_in_maps as mim, map, mapset
+	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
 	 AND mim.map_uid = map.map_uid
@@ -1532,7 +1532,6 @@ class Downloads
            $marker_uid = $row[0];
            $chr = $row[1];
            $pos = $row[2];
-           $name = $row[3];
 	   $marker_list_mapped[$marker_uid] = 1;
 	 }
 
@@ -1588,6 +1587,7 @@ class Downloads
 	   '6H' => '6','7H' => '7','UNK'  => '0');
 	
 	 //using a subset of markers so we have to translate into correct index
+         $pos_index = 0;
 	 foreach ($marker_list_all as $marker_id => $rank) {
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
@@ -1630,7 +1630,8 @@ class Downloads
 	        $pos = round(100 * $row[3]);
 	     } else {
 	        $chrom = 0;
-	        $pos = 0;
+	        $pos = $pos_index;
+                $pos_index += 10;
 	     }
              if ($dtype == "qtlminer") {
                fwrite($h, "$marker_name\t$allele\t$chrom\t$pos");
