@@ -77,15 +77,17 @@ private function typeExperimentCheck()
     if ($systemName != "") {
         $sql = "select instrument from csr_system where system_name = '$systemName'";
                     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-            if ($row = mysqli_fetch_array($res)) {
-                        $systemType = $row[0];
-                        if (preg_match("/CropScan/", $systemType)) {
-                            echo "using CropScan file format<br>\n";
-                            $this->type_ExperimentCropScan();
-                        } else {
-                            echo "using USB2000/JAZ file format<br>\n";
-                            $this->type_ExperimentOceanOptics();
-                        }
+        if ($row = mysqli_fetch_array($res)) {
+            $systemType = $row[0];
+            if (preg_match("/CropScan/", $systemType)) {
+                echo "using CropScan file format<br>\n";
+                    $this->type_ExperimentCropScan();
+                } else {
+                    echo "using USB2000/JAZ file format<br>\n";
+                    $this->type_ExperimentOceanOptics();
+                }
+            } else {
+                echo "Error: Cound not find Spectrometer System $systemName in database<br>\n";
             }
     } else {
         echo "Error: CSR System type not specified<br>\n";
