@@ -1519,7 +1519,6 @@ class Downloads
 
 	 //order the markers by map location
          //tassel v5 needs markers sorted when position is not unique
-         $pre_pos = 0;
 	 $sql = "select markers.marker_uid, CAST(100*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
