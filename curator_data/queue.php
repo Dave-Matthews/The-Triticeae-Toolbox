@@ -27,7 +27,7 @@ if (!empty($_POST['dtype']) OR !empty($_FILES)) {
     $dir= $config['root_dir']."curator_data/uploads/".str_replace(' ', '_', $username)."_".$date."/";
     umask(0);
     if (!file_exists($dir) || !is_dir($dir)) {
-        mkdir($dir, 0777);
+        mkdir($dir, 0777) or die("<br>Error: Can not create directory $dir\n");
     }
     if ($_FILES['file']['name'] == "") {
         error(1, "No File Uploaded");
@@ -92,14 +92,14 @@ This file $tested[$tst] load successfully in the Sandbox.";
 // Nothing submitted yet.
 // Require that the user be signed in.
 $user = $_SESSION['username'];
-if (empty($user)) 
+if (empty($user)) {
   echo "Please sign in before sending data files to the curator
         for loading into the production database.<br>
         <button type=submit onClick=\"location.href='login.php'\">Sign in</button>";
-else if ($user == "t3user@graingenes.org") 
+} else if ($user == "t3user@graingenes.org") {
   echo "Please sign out and login as yourself instead of the public 't3user'.<br>
         <button type=submit onClick=\"location.href='logout.php'\">Sign out</button>";
-else {
+} else {
   echo "Please submit a data file for the curator to load
         into the production database. File names should not contain spaces.";
   ?>
