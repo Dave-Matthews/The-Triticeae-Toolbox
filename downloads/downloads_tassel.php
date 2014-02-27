@@ -1864,13 +1864,13 @@ class DownloadsJNLP
  
 	 //order the markers by map location
          //tassel v5 needs markers sorted when position is not unique
-         $sql = "select markers.marker_uid, CAST(100*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
+         $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
 	 AND mim.map_uid = map.map_uid
 	 AND map.mapset_uid = mapset.mapset_uid
 	 AND mapset.mapset_uid = $selected_map 
-	 order by mim.chromosome, CAST(100*mim.start_position as UNSIGNED), markers.marker_name";
+	 order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
@@ -1883,7 +1883,9 @@ class DownloadsJNLP
          $marker_list_all = $marker_list_mapped;	
 	 //generate an array of selected markers and add map position if available
          $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
-         where marker_uid IN ($markers_str) and markers.marker_type_uid = marker_types.marker_type_uid";
+         where marker_uid IN ($markers_str)
+         and markers.marker_type_uid = marker_types.marker_type_uid
+         order by BINARY marker_name";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
          while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
