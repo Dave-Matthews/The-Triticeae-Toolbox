@@ -1519,13 +1519,13 @@ class Downloads
 
 	 //order the markers by map location
          //tassel v5 needs markers sorted when position is not unique
-	 $sql = "select markers.marker_uid, CAST(100*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
+	 $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
 	 AND mim.map_uid = map.map_uid
 	 AND map.mapset_uid = mapset.mapset_uid
 	 AND mapset.mapset_uid = $selected_map 
-	 order by mim.chromosome, CAST(100*mim.start_position as UNSIGNED), markers.marker_name";
+	 order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), markers.marker_name";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
@@ -1629,20 +1629,6 @@ class Downloads
           );
            }
 
-	     //$sql = "select A_allele, B_allele, mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset where markers.marker_uid = $marker_id
-	     //    AND mim.marker_uid = markers.marker_uid
-	     //    AND mim.map_uid = map.map_uid
-	     //    AND map.mapset_uid = mapset.mapset_uid
-	     //    AND mapset.mapset_uid = $selected_map";
-	     //$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	     //if ($row = mysql_fetch_array($res)) {
-	     //   $chrom = $row[2];
-	     //   $pos = round(100 * $row[3]);
-	     //} else {
-	     //   $chrom = 'UNK';
-	     //   $pos = $pos_index;
-             //   $pos_index += 10;
-	     //}
              if ($dtype == "qtlminer") {
                fwrite($h, "$marker_name\t$allele\t$chrom\t$pos");
              } else {
@@ -1887,7 +1873,6 @@ class Downloads
 			$max_missing = 100;
 		elseif ($max_missing<0)
 			$max_missing = 0;
-			// $firephp->log("in sort markers2");
         $min_maf = 0.01;//IN PERCENT
         if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
@@ -1899,8 +1884,15 @@ class Downloads
          if (isset($_SESSION['selected_map'])) {
            $selected_map = $_SESSION['selected_map'];
          } else {
-           $selected_map = 1;
+           die("<font color=red>Error - map should be selected before download</font>");
          }
+
+         if (count($markers)>0) {
+           $markers_str = implode(",", $markers);
+         } else {
+           die("<font color=red>Error - markers should be selected before download</font>");
+         }
+
 
                 //generate an array of selected markers that can be used with isset statement
                 foreach ($markers as $temp) {
@@ -1916,29 +1908,19 @@ class Downloads
                   $i++;
                 }
 
-		$sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
-		where mim.marker_uid = markers.marker_uid
+		$sql = "select markers.marker_uid,  mim.chromosome, CAST(1000*mim.start_position as UNSIGNED) from markers, markers_in_maps as mim, map, mapset
+		where markers.marker_uid IN ($markers_str)
+                AND mim.marker_uid = markers.marker_uid
 		AND mim.map_uid = map.map_uid
 		AND map.mapset_uid = mapset.mapset_uid
-		AND mapset.mapset_uid = $selected_map";
+		AND mapset.mapset_uid = $selected_map
+                order by mim.chromosome, CAST(100*mim.start_position as UNSIGNED), markers.marker_name";
 		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		while ($row = mysql_fetch_array($res)) {
 		  $uid = $row[0];
 		  $chr = $row[1];
 		  $pos = $row[2];
-		  if (preg_match("/(\d+)/", $chr, $match)) {
-              $chr = $match[1];
-          } else {
-              $chr = 0;
-          }
 		  $marker_list_mapped[$uid] = "$chr\t$pos";
-		  if (preg_match("/(\d+)/",$chr,$match)) {
-		    $chr = $match[0];
-		    $rank = (1000*$chr) + $pos;
-		  } else {
-		    $rank = 99999;
-		  }  
-		  $marker_list_rank[$uid] = $rank; 
 		}
 	
                 foreach ($lines as $line_record_uid) {
@@ -1969,14 +1951,16 @@ class Downloads
                   //echo "$line_record_uid<br>\n";
                 }
 
+                $marker_list_all = $marker_list_mapped;
                 //get lines and filter to get a list of markers which meet the criteria selected by the user
                 $num_maf = $num_miss = 0;
                 foreach ($marker_list as $i => $uid) {
                   $marker_name = $marker_list_name[$i];
+                  $marker_list_all_name[$uid] = $marker_name;
                   if (isset($marker_lookup[$uid])) {
-                      if (isset($marker_list_mapped[$uid])) {
-                        $marker_list_all_name[$uid] = $marker_name;
-                        $marker_list_all[$uid] = $marker_list_rank[$uid];
+                      if (isset($marker_list_all[$uid])) {
+                      } else {
+                        $marker_list_all[$uid] = 0;
                       }
                   }
                 }
@@ -2002,12 +1986,6 @@ class Downloads
                   $outputheader = "<Map>\n";
                 }
 
-        //sort marker_list by map location
-        if (uasort($marker_list_all, array($this,'cmp'))) {
-        } else {
-          die("could not sort marker list\n");
-        }
-        
 		$num_markers = 0;
 		/* foreach( $marker_uid as $cnt => $uid) { */
 		foreach($marker_list_all as $uid=>$value) {
