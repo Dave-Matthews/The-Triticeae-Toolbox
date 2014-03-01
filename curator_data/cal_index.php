@@ -266,7 +266,7 @@ class Experiments
         $exp = $_GET['trial'];
         $sql = "select measurement_uid, date_format(measure_date,'%m-%d-%y'), time_format(start_time, '%H:%I')
         from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid and
-        experiments.experiment_uid = $exp";
+        experiments.experiment_uid = $exp order by measure_date, start_time";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         echo "<option>select a date and time</option>\n";
         while ($row = mysqli_fetch_row($res)) {
