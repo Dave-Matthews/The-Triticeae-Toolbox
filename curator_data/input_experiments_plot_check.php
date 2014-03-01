@@ -252,7 +252,7 @@ private function typeExperimentCheck()
                  }
                  $sql = "insert into phenotypes (unit_uid, phenotype_category_uid, phenotypes_name, description, datatype) values ($unit_uid, 1, \"$val\", \"canopy spectral reflectance, $val\" , \"numeric\")";
                  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                 $phenotype_uid = mysqli_insert_id($res);
+                 $phenotype_uid = mysqli_insert_id($mysqli);
                  $phenotype_list[$j] = $phenotype_uid;
              }  else {
                  $error = 1;
