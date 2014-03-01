@@ -192,6 +192,12 @@ function update_f1() {
     w1 = 880;
     formula2 = "(W2-W1)/(W1+W2)";
     desc = "Normalized Water Index";
+  } else if (formula1 == "EVI") {
+    w3 = 510;
+    w2 = 900;
+    w1 = 680;
+    formula2 = "2.5*(W2-W1)/(W3+6*W1-7.5*W3+1)";
+    desc = "<a target='_blank' href=http://en.wikipedia.org/wiki/Enhanced_vegetation_index>Enhanced Vegetation index</a>";
   } else if (formula1 == "NDVI") {
     w2 = 900;
     w1 = 680;
