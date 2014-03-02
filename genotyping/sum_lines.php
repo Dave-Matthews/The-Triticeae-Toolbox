@@ -69,15 +69,27 @@ if (isset($_GET['uid'])) {
       }
   }
 } else {
-
-echo "<table>";
-echo "<tr><td>line name<td>count of conflicts\n";
-$sql = "select line_record_uid, count(line_record_uid) as temp from allele_conflicts group by line_record_uid order by temp DESC limit 20";
-$result = mysql_query($sql) or die(mysql_error());
-while ($row=mysql_fetch_row($result)) {
-  $uid = $row[0];
-  $count = $row[1];
-  echo "<tr><td><a href=genotyping/sum_lines.php?uid=$uid>$name_list[$uid]</a><td>$count\n";
-}
+    echo "<table>";
+    echo "<tr><td>line name<td>size<td>conflicts<td>percent\n";
+    $sql = "select line_record_uid, count(line_record_uid) as temp from allele_conflicts group by line_record_uid order by temp DESC limit 100";
+    $result = mysql_query($sql) or die(mysql_error());
+    while ($row=mysql_fetch_row($result)) {
+       $uid = $row[0];
+       $count = $row[1];
+       $total = 0;
+       $sql = "select alleles from allele_byline where line_record_uid = $uid";
+       $result2 = mysql_query($sql) or die(mysql_error());
+       if ($row2=mysql_fetch_row($result2)) {
+           $alleles = $row2[0];
+           $outarray = explode(',', $alleles);
+           foreach ($outarray as $allele) {
+               if (preg_match("/[AB]/", $allele)) {
+                   $total++;
+               }
+           }
+       }
+       $perc = round(100*$count/$total,2);
+       echo "<tr><td><a href=genotyping/sum_lines.php?uid=$uid>$name_list[$uid]</a><td>$total<td>$count<td>$perc\n";
+    }
 }
 echo "</table>";
