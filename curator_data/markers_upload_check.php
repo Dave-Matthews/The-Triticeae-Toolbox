@@ -117,7 +117,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         $count_dup_name = 0;
         $dup_name_results = "";
         $count_dup_seq = 0;
-        $dup_seq_results = "";
+        $count_total = 0;
         $count_update = 0;
         $count_insert = 0;
         $count_add_syn = 0;
@@ -127,6 +127,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $seq = $storageArr[$i][$sequenceIdx];
             if (!preg_match("/[A-Z]/", $seq)) {
             } elseif (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
+                $count_total++;
                 $seq1 = $match[1] . $match[2] . $match[4];
                 $seq2 = $match[1] . $match[3] . $match[4];
                 $found_name = 0;
@@ -190,7 +191,6 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 echo "Error: $seq<br>\n";
             }
         }
-        $tmp = count($storageArr);
         if ($expand == 1) {
             $display1 = "display:none;";
             $display2 = "";
@@ -208,14 +208,13 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         <table id="content1<?php echo $pheno_uid; ?>" style="<? echo $display1; ?>">
         <?php
         echo "<thead><tr><th>marker<th>match by name<th>match by sequence<th>database change\n";
-        echo "<tr><td>$tmp<td>$count_dup_name<td><font color=blue>$count_dup_seq</font><td>";
+        echo "<tr><td>$count_total<td>$count_dup_name<td><font color=blue>$count_dup_seq</font><td>";
         echo "$count_update update marker<br>";
         echo "$count_insert add marker<br>";
         echo "$count_add_syn add synonym\n";
         ?></table>
         <table id="content2<?php echo $pheno_uid; ?>" style="<? echo $display2; ?>">
         <?php
-        //echo "$dup_seq_results\n";
         echo "$results\n";
         echo "</table>";
         $pheno_uid = 2;
