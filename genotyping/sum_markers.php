@@ -25,9 +25,12 @@ if (isset($_GET['uid'])) {
   and a.experiment_uid = e.experiment_uid
   and m.marker_uid = $uid";
   $result = mysql_query($sql) or die(mysql_error());
+  $count = 0;
   while ($row=mysql_fetch_row($result)) {
+    $count++;
     $trial = $row[0];
     $empty[$trial] = "";
+    $empty_cnt[$trial] = $count;
   }
 
   $sql = "select l.line_record_name, m.marker_name, a.alleles, e.trial_code
@@ -42,10 +45,13 @@ if (isset($_GET['uid'])) {
   $count = 0;
   $prev = "";
   echo "Conflicts for marker $name_list[$uid]<br>\n";
+  foreach ($empty_cnt as $trial=>$cnt) {
+    echo "$cnt.$trial<br>\n";
+  }
   echo "<table>\n";
   echo "<tr><td>Line name\n";
-  foreach ($empty as $trial=>$allele) {
-      echo "<td>$trial";
+  foreach ($empty_cnt as $trial=>$cnt) {
+      echo "<td>$cnt";
   }
   while ($row=mysql_fetch_row($result)) {
       $line_name = $row[0];
