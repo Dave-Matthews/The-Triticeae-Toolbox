@@ -69,8 +69,9 @@ if (isset($_GET['uid'])) {
       }
   }
 } else {
+    echo "Top 100 conflicts\n";
     echo "<table>";
-    echo "<tr><td>line name<td>size<td>conflicts<td>percent\n";
+    echo "<tr><td>line name<td>total<br>measured<td>conflicts<td>percent<br>conflicts\n";
     $sql = "select line_record_uid, count(line_record_uid) as temp from allele_conflicts group by line_record_uid order by temp DESC limit 100";
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
@@ -83,7 +84,7 @@ if (isset($_GET['uid'])) {
            $alleles = $row2[0];
            $outarray = explode(',', $alleles);
            foreach ($outarray as $allele) {
-               if (preg_match("/[AB]/", $allele)) {
+               if ($allele != '') {
                    $total++;
                }
            }
@@ -92,4 +93,5 @@ if (isset($_GET['uid'])) {
        echo "<tr><td><a href=genotyping/sum_lines.php?uid=$uid>$name_list[$uid]</a><td>$total<td>$count<td>$perc\n";
     }
 }
-echo "</table>";
+echo "</table></div>";
+include $config['root_dir'].'theme/footer.php';

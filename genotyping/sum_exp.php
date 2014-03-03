@@ -64,7 +64,7 @@ if (isset($_GET['uid'])) {
     }
     
     echo "<table>";
-    echo "<tr><td>Experiment<td>size<td>conflicts<td>percentage\n";
+    echo "<tr><td>Experiment<td>total<br>measured<td>conflicts<td>percent<br>conflicts\n";
     $sql = "select experiment_uid, count(experiment_uid) as temp from allele_conflicts group by experiment_uid order by temp DESC";
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
