@@ -46,15 +46,35 @@ if (isset($_GET['uid'])) {
       echo "<tr><td>$line_name<td>$marker_name<td>$alleles\n";
   }
 } else {
-
-echo "<table>";
-echo "<tr><td>Experiment<td>count of conflicts\n";
-$sql = "select experiment_uid, count(experiment_uid) as temp from allele_conflicts group by experiment_uid order by temp DESC";
-$result = mysql_query($sql) or die(mysql_error());
-while ($row=mysql_fetch_row($result)) {
-  $uid = $row[0];
-  $count = $row[1];
-  echo "<tr><td><a href=genotyping/sum_exp.php?uid=$uid>$trial_name_list[$uid]</a><td>$count\n";
+    $sql = "select experiment_uid, count(*) from allele_frequencies
+    group by experiment_uid"; 
+    $result = mysql_query($sql) or die(mysql_error());
+    while ($row=mysql_fetch_row($result)) {
+        $uid = $row[0];
+        $count = $row[1];
+        $total_marker_list[$uid] = $count;
+    }
+    $sql = "select experiment_uid, count(*) from tht_base
+    group by experiment_uid";
+    $result = mysql_query($sql) or die(mysql_error());
+    while ($row=mysql_fetch_row($result)) {
+        $uid = $row[0];
+        $count = $row[1];
+        $total_line_list[$uid] = $count;
+    }
+    
+    echo "<table>";
+    echo "<tr><td>Experiment<td>size<td>conflicts<td>percentage\n";
+    $sql = "select experiment_uid, count(experiment_uid) as temp from allele_conflicts group by experiment_uid order by temp DESC";
+    $result = mysql_query($sql) or die(mysql_error());
+    while ($row=mysql_fetch_row($result)) {
+        $uid = $row[0];
+        $count = $row[1];
+        $total = ($total_marker_list[$uid]*$total_line_list[$uid]);
+        $perc = round(100*$count/$total,2);
+        $total = round(($total/1000),0) . "K";
+        echo "<tr><td><a href=genotyping/sum_exp.php?uid=$uid>$trial_name_list[$uid]</a><td>$total<td>$count<td>$perc\n";
+    }
 }
-}
-echo "</table>";
+echo "</table></div>";
+include $config['root_dir'].'theme/footer.php';
