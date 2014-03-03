@@ -36,10 +36,10 @@ if (isset($_GET['uid'])) {
       echo "<tr><td>$line_name<td>$alleles<td>$trial\n";
   }
 } else {
-
+    echo "Top 100 conflicts\n";
 echo "<table>";
-echo "<tr><td>marker name<td>count of conflicts\n";
-$sql = "select marker_uid, count(marker_uid) as temp from allele_conflicts group by marker_uid order by temp DESC limit 20";
+echo "<tr><td>marker name<td>conflicts\n";
+$sql = "select marker_uid, count(marker_uid) as temp from allele_conflicts group by marker_uid order by temp DESC limit 100";
 $result = mysql_query($sql) or die(mysql_error());
 while ($row=mysql_fetch_row($result)) {
   $uid = $row[0];
@@ -48,3 +48,4 @@ while ($row=mysql_fetch_row($result)) {
 }
 }
 echo "</table>";
+include $config['root_dir'].'theme/footer.php';
