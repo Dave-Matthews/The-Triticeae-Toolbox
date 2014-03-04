@@ -143,6 +143,7 @@ if (isset($_GET['uid'])) {
        }
        $perc = round(100*$count/$total,2);
        echo "<tr><td><a href=genotyping/sum_lines.php?uid=$uid>$name_list[$uid]</a><td>$total<td>$count<td>$perc\n";
+       flush();
     }
 }
 echo "</table></div>";
