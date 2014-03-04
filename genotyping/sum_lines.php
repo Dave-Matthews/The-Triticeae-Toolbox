@@ -13,12 +13,15 @@ while ($row=mysql_fetch_row($result)) {
   $name_list[$uid] = $name;
 }
 
-echo "<h2>Allele Conflicts by Line</h2>\n";
+echo "Also see <a href=genotyping/sum_exp.php>conflicts by experiment</a>, <a href=genotyping/sum_markers.php>conflicts by marker</a>";
+echo ", and <a href=genotyping/allele_conflicts.php>All Allele Conflicts</a>.<br><br>\n";
+
 if (isset($_GET['uid'])) {
   $uid = $_GET['uid'];
+  echo "<h3>Allele Conflicts for $name_list[$uid] between experiments</h2>\n";
  
   //get list of trials
-  $sql = "select distinct(e.trial_code)
+  $sql = "select distinct(e.trial_code), e.experiment_uid
   from allele_conflicts a, line_records l, markers m, experiments e
   where a.line_record_uid = l.line_record_uid
   and a.marker_uid = m.marker_uid
@@ -27,8 +30,56 @@ if (isset($_GET['uid'])) {
   $result = mysql_query($sql) or die(mysql_error());
   while ($row=mysql_fetch_row($result)) {
     $trial = $row[0];
+    $e_uid = $row[1];
     $empty[$trial] = "";
+    $trial_list[$e_uid] = $trial;
   }
+
+  echo "<table>";
+  echo "<tr><td>";
+  foreach ($trial_list as $trial1=>$val1) {
+    echo "<td>$val1";
+  }
+  foreach ($trial_list as $trial1=>$val1) {
+    echo "<tr><td>$val1";
+    foreach ($trial_list as $trial2=>$val2) {
+      $count = 0;
+      unset($marker_list1);
+      unset($marker_list2);
+      $sql = "select marker_uid, alleles from allele_conflicts
+        where line_record_uid = $uid
+        and experiment_uid = $trial1";
+      $result = mysql_query($sql) or die(mysql_error());
+      while ($row=mysql_fetch_row($result)) {
+          $count1++;
+          $marker_uid = $row[0];
+          $alleles1 = $row[1];
+          $marker_list1[$marker_uid] = $alleles1;
+      }
+      $sql = "select marker_uid, alleles from allele_conflicts
+        where line_record_uid = $uid
+        and experiment_uid = $trial2";
+      $result = mysql_query($sql) or die(mysql_error());
+      while ($row=mysql_fetch_row($result)) {
+          $count2++;
+          $marker_uid = $row[0];
+          $alleles1 = $row[1];
+          $marker_list2[$marker_uid] = $alleles1;
+      }
+      foreach ($marker_list1 as $marker_uid=>$alleles1) {
+        if (isset($marker_list2[$marker_uid])) {
+          $alleles2 = $marker_list2[$marker_uid];
+          if ($alleles1 == $alleles2) {
+          } else {
+            $count++;
+          }
+        }
+      }
+      echo "<td>$count";
+    }
+    echo "\n";
+  }
+  echo "</table><br>\n";
  
   $sql = "select l.line_record_name, m.marker_name, a.alleles, e.trial_code
   from allele_conflicts a, line_records l, markers m, experiments e
@@ -41,7 +92,7 @@ if (isset($_GET['uid'])) {
   $result = mysql_query($sql) or die(mysql_error());
   $count = 0;
   $prev = "";
-  echo "Conflicts for line $name_list[$uid]<br>\n";
+  echo "<h3>Allele Conflicts for $name_list[$uid] sorted by marker name</h3>\n";
   echo "<table>\n";
   echo "<tr><td>marker name\n";
   foreach ($empty as $trial=>$allele) {
@@ -69,6 +120,7 @@ if (isset($_GET['uid'])) {
       }
   }
 } else {
+    echo "<h2>Allele Conflicts by Line</h2>\n";
     echo "Top 100 conflicts\n";
     echo "<table>";
     echo "<tr><td>line name<td>total<br>measured<td>conflicts<td>percent<br>conflicts\n";
