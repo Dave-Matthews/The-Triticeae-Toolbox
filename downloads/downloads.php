@@ -180,31 +180,32 @@ class Downloads
             $this->refresh_title();
          ?>        
         </div>
+        <div id="title2">
          <?php
-                echo "1. Select a set of lines, traits, and trials.<br>";
-                echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> which has the best coverage for this set.<br>";
-                echo "3. Return to this page and select the filter options.<br>";
-                echo "4. Select the Create file button with the desired file format.<br>";
-                echo "5. Select the Download Zip file button to retreive the results.<br><br>";
                 if (empty($_SESSION['selected_lines'])) {
-                    echo "<font color=red>No lines selected. </font>";
-                    echo "<a href=\"" . $config['base_url'];
-                    echo "pedigree/line_selection.php\">Select Lines by Properties</a> or ";
-                    echo "<a href=\"" . $config['base_url'];
-                    echo "downloads/select_all.php\">Wizard (Lines, Traits, Trials)</a><br><br>.";
+                    echo "1. Select a set of <a href=\"" . $config['base_url'];
+                    echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
+                    echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> which has the best coverage for your selection.<br><br>";
+                    echo "</div>";
                 } else if (empty($_SESSION['selected_map'])) {
-                    echo "<font color=red>No map selected. </font>";
-                    echo "<a href=\"" . $config['base_url'];
-                    echo "maps/select_map.php\">Select genetic map</a><br><br>.";
+                    echo "1. Select a set of <a href=\"" . $config['base_url'];
+                    echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
+                    echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> which has the best coverage for your selection.<br><br>";
+                    echo "</div><br>";
+                    ?> 
+                    <div id="step1" style="float: left; margin-bottom: 1.5em;">
+                    <?php
+                    $this->type1_lines_trial_trait(); 
+                } else {
+                    echo "1. Select the filter options.<br>";
+                    echo "2. Select the Create file button with the desired file format.<br><br>";
+                    echo "</div><br>";
+                    ?> 
+                    <div id="step1" style="float: left; margin-bottom: 1.5em;">
+                    <?php
+                    $this->type1_lines_trial_trait(); 
                 }
-   
-                   ?> 
-                   <div id="step1" style="float: left; margin-bottom: 1.5em;">
-                   <?php
-                   $this->type1_lines_trial_trait(); 
-                ?>
-                </div>
-                <?php
+                echo "</div>";
         }
 
     /**
@@ -496,8 +497,17 @@ class Downloads
             <?php
             $this->step4_lines();
             ?></div>
-	    <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-	    <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+            <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
+            <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+            <?php
+            if (empty($_SESSION['selected_map'])) {
+                echo "<font color=red>No map selected. </font>";
+                echo "<a href=\"" . $config['base_url'];
+                echo "maps/select_map.php\">Select genetic map</a><br><br>.";
+                echo "</div>";
+            } else {
+                ?>
+            </div>
             <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <script type="text/javascript" src="downloads/downloads.js"></script>
 	    <script type="text/javascript">
@@ -513,6 +523,7 @@ class Downloads
 	    </script>
 	    </div>
 	     <?php 	
+            }
 	}
 	
 	/**
@@ -749,8 +760,8 @@ class Downloads
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove lines missing &gt <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
             <?php
-            if ($use_database) {
-                calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
+             if ($use_database) {
+                //calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
              } else {
                 calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
              }
@@ -769,7 +780,7 @@ class Downloads
 	       <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
                <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
 	       <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
-               <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>used with <b>TASSEL</b> Version 3 or 4 
+               <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>used with <b>TASSEL</b> Version 3, 4, or 5 
                <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
                <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
                <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
@@ -1507,36 +1518,34 @@ class Downloads
          }
 
 	 //order the markers by map location
-	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
+         //tassel v5 needs markers sorted when position is not unique
+	 $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
 	 AND mim.map_uid = map.map_uid
 	 AND map.mapset_uid = mapset.mapset_uid
 	 AND mapset.mapset_uid = $selected_map 
-	 order by mim.chromosome, mim.start_position";
+	 order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
-           $chr = $row[1];
-           $pos = $row[2];
-           if (preg_match("/(\d+)/",$chr,$match)) {
-             $chr = $match[0];
-             $rank = (1000*$chr) + $pos;
-           } else {
-             $rank = 99999;
-           }
-	   $marker_list_mapped[$marker_uid] = $rank;
+           $pos = $row[1];
+           $chr = $row[2];
+	   $marker_list_mapped[$marker_uid] = $pos;
+           $marker_list_chr[$marker_uid] = $chr;
 	 }
-	
+
+         $marker_list_all = $marker_list_mapped;	
 	 //generate an array of selected markers and add map position if available
          $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
-         where marker_uid IN ($markers_str) and markers.marker_type_uid = marker_types.marker_type_uid";
+         where marker_uid IN ($markers_str)
+         AND markers.marker_type_uid = marker_types.marker_type_uid
+         order by BINARY marker_name";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
          while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
            $marker_name = $row[1];
-           if (isset($marker_list_mapped[$marker_uid])) {
-             $marker_list_all[$marker_uid] = $marker_list_mapped[$marker_uid];
+           if (isset($marker_list_all[$marker_uid])) {
            } else {
              $marker_list_all[$marker_uid] = 0;
            }
@@ -1550,12 +1559,6 @@ class Downloads
            $marker_list_name[$marker_uid] = $marker_name;
            $marker_list_allele[$marker_uid] = $allele;
            $marker_list_type[$marker_uid] = $row[4];
-         }
-
-         //sort marker_list_all by map location if available
-         if (uasort($marker_list_all, array($this,'cmp'))) {
-         } else {
-           die("could not sort marker list\n");
          }
 
 	 //get location in allele_byline for each marker
@@ -1586,11 +1589,20 @@ class Downloads
 	   '6H' => '6','7H' => '7','UNK'  => '0');
 	
 	 //using a subset of markers so we have to translate into correct index
-	 foreach ($marker_list_all as $marker_id => $rank) {
+         $pos_index = 0;
+	 foreach ($marker_list_all as $marker_id => $val) {
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
           $marker_type = $marker_list_type[$marker_id];
+          if (isset($marker_list_mapped[$marker_id])) {
+            $chrom = $marker_list_chr[$marker_id];
+            $pos = $marker_list_mapped[$marker_id];
+          } else {
+            $chrom = 'UNK';
+            $pos = $pos_index;
+            $pos_index += 10;
+          }
 
           if ($dtype == "qtlminer") {
            $lookup = array(
@@ -1617,19 +1629,6 @@ class Downloads
           );
            }
 
-	     $sql = "select A_allele, B_allele, mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset where markers.marker_uid = $marker_id
-	         AND mim.marker_uid = markers.marker_uid
-	         AND mim.map_uid = map.map_uid
-	         AND map.mapset_uid = mapset.mapset_uid
-	         AND mapset.mapset_uid = $selected_map";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	     if ($row = mysql_fetch_array($res)) {
-	        $chrom = $row[2];
-	        $pos = 100 * $row[3];
-	     } else {
-	        $chrom = 0;
-	        $pos = 0;
-	     }
              if ($dtype == "qtlminer") {
                fwrite($h, "$marker_name\t$allele\t$chrom\t$pos");
              } else {
@@ -1874,7 +1873,6 @@ class Downloads
 			$max_missing = 100;
 		elseif ($max_missing<0)
 			$max_missing = 0;
-			// $firephp->log("in sort markers2");
         $min_maf = 0.01;//IN PERCENT
         if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
             $min_maf = $_GET['mmaf'];
@@ -1886,8 +1884,15 @@ class Downloads
          if (isset($_SESSION['selected_map'])) {
            $selected_map = $_SESSION['selected_map'];
          } else {
-           $selected_map = 1;
+           die("<font color=red>Error - map should be selected before download</font>");
          }
+
+         if (count($markers)>0) {
+           $markers_str = implode(",", $markers);
+         } else {
+           die("<font color=red>Error - markers should be selected before download</font>");
+         }
+
 
                 //generate an array of selected markers that can be used with isset statement
                 foreach ($markers as $temp) {
@@ -1903,29 +1908,19 @@ class Downloads
                   $i++;
                 }
 
-		$sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
-		where mim.marker_uid = markers.marker_uid
+		$sql = "select markers.marker_uid,  mim.chromosome, CAST(1000*mim.start_position as UNSIGNED) from markers, markers_in_maps as mim, map, mapset
+		where markers.marker_uid IN ($markers_str)
+                AND mim.marker_uid = markers.marker_uid
 		AND mim.map_uid = map.map_uid
 		AND map.mapset_uid = mapset.mapset_uid
-		AND mapset.mapset_uid = $selected_map";
+		AND mapset.mapset_uid = $selected_map
+                order by mim.chromosome, CAST(100*mim.start_position as UNSIGNED), markers.marker_name";
 		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 		while ($row = mysql_fetch_array($res)) {
 		  $uid = $row[0];
 		  $chr = $row[1];
 		  $pos = $row[2];
-		  if (preg_match("/(\d+)/", $chr, $match)) {
-              $chr = $match[1];
-          } else {
-              $chr = 0;
-          }
 		  $marker_list_mapped[$uid] = "$chr\t$pos";
-		  if (preg_match("/(\d+)/",$chr,$match)) {
-		    $chr = $match[0];
-		    $rank = (1000*$chr) + $pos;
-		  } else {
-		    $rank = 99999;
-		  }  
-		  $marker_list_rank[$uid] = $rank; 
 		}
 	
                 foreach ($lines as $line_record_uid) {
@@ -1956,14 +1951,16 @@ class Downloads
                   //echo "$line_record_uid<br>\n";
                 }
 
+                $marker_list_all = $marker_list_mapped;
                 //get lines and filter to get a list of markers which meet the criteria selected by the user
                 $num_maf = $num_miss = 0;
                 foreach ($marker_list as $i => $uid) {
                   $marker_name = $marker_list_name[$i];
+                  $marker_list_all_name[$uid] = $marker_name;
                   if (isset($marker_lookup[$uid])) {
-                      if (isset($marker_list_mapped[$uid])) {
-                        $marker_list_all_name[$uid] = $marker_name;
-                        $marker_list_all[$uid] = $marker_list_rank[$uid];
+                      if (isset($marker_list_all[$uid])) {
+                      } else {
+                        $marker_list_all[$uid] = 0;
                       }
                   }
                 }
@@ -1989,12 +1986,6 @@ class Downloads
                   $outputheader = "<Map>\n";
                 }
 
-        //sort marker_list by map location
-        if (uasort($marker_list_all, array($this,'cmp'))) {
-        } else {
-          die("could not sort marker list\n");
-        }
-        
 		$num_markers = 0;
 		/* foreach( $marker_uid as $cnt => $uid) { */
 		foreach($marker_list_all as $uid=>$value) {

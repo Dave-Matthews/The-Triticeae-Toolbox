@@ -242,9 +242,23 @@ private function typeExperimentCheck()
                $pheno_found = $pheno_found . ",$val"; 
              }
            } else {
-             $error = 1;
-             $error_flag = 1;
-             echo "$val not defined in phenotypes table<br>\n";
+             if (preg_match("/CSR_/", $val)) {
+                 $sql = "select unit_uid from units where unit_name = \"CSR index\"";
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                 if ($row = mysqli_fetch_array($res)) {
+                     $unit_uid = $row[0];
+                 } else {
+                     die("Error: CSR index not found in units table\n");
+                 }
+                 $sql = "insert into phenotypes (unit_uid, phenotype_category_uid, phenotypes_name, description, datatype) values ($unit_uid, 1, \"$val\", \"canopy spectral reflectance, $val\" , \"numeric\")";
+                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                 $phenotype_uid = mysqli_insert_id($mysqli);
+                 $phenotype_list[$j] = $phenotype_uid;
+             }  else {
+                 $error = 1;
+                 $error_flag = 1;
+                 echo "$val not defined in phenotypes table<br>\n";
+             }
            }
          } else {
            $done = 1;
