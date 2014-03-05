@@ -12,8 +12,6 @@ connect();
   ul ul ul {list-style-type: disc}
 </style>
 
-<div id="primaryContentContainer">
-  <div id="primaryContent">
   <h1>Data Submission</h1>
   <div class="section">
   <p>
@@ -73,14 +71,17 @@ if (!empty($_POST['dtype']) OR !empty($_FILES)) {
       $tst = $_POST['tested'];
       $tested = array('DOES', 'does NOT');
       $host = $_SERVER['SERVER_NAME'];
+      $private = $_POST['private'];
       $mesg = "$username has submitted a data file.
-Data type: $dtype[$dt]
+\nData type: $dtype[$dt]
 Location: $host
 Directory: $dir
 Filename: $uploadfile
 Comments: 
 $comments
-This file $tested[$tst] load successfully in the Sandbox.";
+\nThis file $tested[$tst] load successfully in the Sandbox.\n";
+      if ($private = 'on')
+	$mesg .= "This is phenotype data private to the project.\n";
       //print_h($mesg);
       send_email(setting('capmail'), 'Data submitted to T3', $mesg);
     } else {
@@ -120,20 +121,27 @@ if (empty($user)) {
       </ul>
   </ul>
   <b>Comments</b><br>
-  <textarea name="comments" cols="40" rows="5" ></textarea><br>
+  <textarea name="comments" cols="80" rows="5" ></textarea><br>
   This file loads successfully in the Sandbox. 
   <input type=radio name=tested value='0'> Yes 
   <input type=radio name=tested value='1' checked> No
+  <br><input type=checkbox name=private onclick="document.getElementById('info').style.visibility = 
+					     this.checked ? 'visible' : 'hidden'"> 
+  This file contains phenotype data private to project members only.
+  <!-- If box is checked, show Toronto link. -->
+  <div id="info" style="visibility:hidden">
+    <br>Please include in the <b>Comments</b> the information about the dataset
+    needed for the table on the <a href="toronto.php">Data Usage Policy</a> page.
+  </div>
 
-
-  <p><strong>File:</strong> <input type=file name="file"> 
+  <br><strong>File:</strong> <input type=file name="file"> 
   <p><input type="submit" value="Upload">
 </form>
 
 <?php
      }
 }
-echo "</div></div></div>";
+echo "</div>";
 $footer_div=1;
 include $config['root_dir'].'theme/footer.php'; 
 

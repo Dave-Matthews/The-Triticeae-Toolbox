@@ -20,8 +20,10 @@ $name = get_unique_name("datasets");
   Agriculture (<a href="http://www.usda.gov">USDA</a>). T3 contains SNP, phenotypic, and pedigree data
   from wheat and barley germplasm in the Triticeae CAP. <a href="about.php">More...</a>
 
-  <p><b>Participants</b>: The templates for submitting your data about
-  phenotype trials, phenotype results, and the lines tested are here.
+  <p><b>Participants</b>: The templates and instructions for data submission 
+  are <a href="curator_data/instructions.php">here</a>.
+  If your data are not totally public, please check the 
+  <a href="toronto.php">Data Usage Policy</a>.
     <br>
     <input type="Button" value="Data submission" onclick="window.open('curator_data/instructions.php','_self')">
 

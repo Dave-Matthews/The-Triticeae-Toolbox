@@ -28,7 +28,7 @@ connect();
       or <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a> Sandbox database
       for test-loading your files.  When they&apos;re ready,
       click here to submit them to the T3 Curator for loading into the official database.
-      <input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
+      <br><input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
   </ul>
 
   <p>
