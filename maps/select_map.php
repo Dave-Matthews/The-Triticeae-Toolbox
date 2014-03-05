@@ -100,9 +100,8 @@ class Maps {
     if (isset($_SESSION['selected_map'])) {
       $selected_map = $_SESSION['selected_map'];
     }
-    $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
-      WHERE mim.marker_uid = markers.marker_uid
-      AND mim.map_uid = map.map_uid
+    $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers_in_maps as mim, map
+      WHERE mim.map_uid = map.map_uid
       AND map.mapset_uid = mapset.mapset_uid
       GROUP BY mapset.mapset_uid";
       echo "This table lists the total markers in each map.\n";
@@ -161,11 +160,10 @@ class Maps {
       die("Error - must select lines or markers<br>\n");
     }
     $found = 0;
-    $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers, markers_in_maps as mim, map
-       WHERE mim.marker_uid = markers.marker_uid
-       AND mim.map_uid = map.map_uid
+    $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers_in_maps as mim, map
+       WHERE mim.map_uid = map.map_uid
        AND map.mapset_uid = mapset.mapset_uid
-       AND markers.marker_uid IN ($marker_str) 
+       AND mim.marker_uid IN ($marker_str) 
        GROUP BY mapset.mapset_uid";
     $res = mysql_query($sql) or die (mysql_error());
     while ($row = mysql_fetch_assoc($res)) {

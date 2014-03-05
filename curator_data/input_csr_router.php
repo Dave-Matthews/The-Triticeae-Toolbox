@@ -1,7 +1,7 @@
 <?php
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap.inc');
+require $config['root_dir'] . 'includes/bootstrap.inc';
 connect();
 loginTest();
 
@@ -12,10 +12,12 @@ ob_end_flush();
 
 new Traits($_GET['function']);
 
-class Traits {
+class Traits
+{
 
   // Using the class's constructor to decide which action to perform
-  public function __construct($function = null) {	
+  public function __construct($function = null)
+  {	
     switch($function) {
     default:
       $this->typeSelect(); /* intial case*/
@@ -23,7 +25,8 @@ class Traits {
     }	
   }
 
-  private function typeSelect() {
+  private function typeSelect()
+  {
     global $config;
     include($config['root_dir'] . 'theme/admin_header.php');
     echo "<h2>Add or Edit Canopy Spectral Reflectance (CSR) Information </h2>"; 
@@ -32,7 +35,8 @@ class Traits {
     include($config['root_dir'].'theme/footer.php');
   }
 	
-  private function type_func_sel() {
+  private function type_func_sel()
+  {
     $url1 = $config['base_url'] . "curator_data/input_csr_spect.php";
     $url2 = $config['base_url'] . "curator_data/input_csr_field.php";
     $url3 = $config['base_url'] . "curator_data/input_csr_exper.php";
@@ -47,16 +51,16 @@ class Traits {
 
 The Phenotype Trial must be loaded before adding CSR data<br><br>
 <table>
-    <tr><td>Field Book<td><form action="<?php echo $url2; ?>" method="GET">
+    <tr><td>Field Book<td><form action="<?php echo $url2; ?>" method="post">
         <input type="submit" value="Add">
       </form><td>plot, line, trial, row, column, and experiment design
-    <tr><td>Spectrometer System<td><form action="<?php echo $url1; ?>" method="GET">
+    <tr><td>Spectrometer System<td><form action="<?php echo $url1; ?>" method="post">
         <input type="submit" value="Add">
       </form><td>spectrometer system used for recording the measurements
-     <tr><td>Phenotype Results<td><form action="<?php echo $url3; ?>" method="GET">
+     <tr><td>Phenotype Results<td><form action="<?php echo $url3; ?>" method="post">
 	<input type="submit" value="Add"><td>CSR data and Annotation file
       </form>  
-     <tr><td>Calculate Index<td><form action="<?php echo $url4; ?>" method="GET">
+     <tr><td>Calculate Index<td><form action="<?php echo $url4; ?>" method="post">
         <input type="submit" value="Add"><td>calculate an index for a loaded phenotype data file using a formula (NDVI, NWI, etc)
       </form>
 </table>

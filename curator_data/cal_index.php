@@ -69,6 +69,9 @@ class Experiments
         case 'selLines':
             $this->selectLines();
             break;
+        case 'showExper':
+            $this->showExper();
+            break;
         case 'save':
             $this->saveSession();
             break;
@@ -169,6 +172,7 @@ class Experiments
         echo "</div>";
         echo "<div id=col2 style=\"float: left;\"></div>";
         echo "<div id=col3 style=\"float: left;\"></div>";
+        echo "<div id=col4 style=\"float: left;\"></div>";
         echo "<div id=download style=\"clear: both;\">";
         $this->selectDownload();
         echo "</div>";
@@ -262,7 +266,7 @@ class Experiments
         $exp = $_GET['trial'];
         $sql = "select measurement_uid, date_format(measure_date,'%m-%d-%y'), time_format(start_time, '%H:%I')
         from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid and
-        experiments.experiment_uid = $exp";
+        experiments.experiment_uid = $exp order by measure_date, start_time";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         echo "<option>select a date and time</option>\n";
         while ($row = mysqli_fetch_row($res)) {
@@ -318,8 +322,42 @@ class Experiments
         }
         ?>
         </select><br>
-        <input type="radio" <?php echo $checked_all; ?> name="subset" value="All" onclick="javascript: update_subset(this.form)">All Lines<br>
+        <input type="radio" <?php echo $checked_all; ?> name="subset" value="All" onclick="javascript: update_subset(this.form)">All Lines
         <input type="radio" <?php echo $checked_chk; ?> name="subset" value="Check" onclick="javascript: update_subset(this.form)">Check Lines
+        </table>
+        <?php
+    }
+
+    /**
+     * show experiment annotation
+     *
+     * @return null
+     */
+    function showExper()
+    {
+        global $mysqli;
+        $muid = $_GET['muid'];
+        ?>
+        <table>
+        <tr><th>Annotation</th>
+        <tr><td style="height:100px; vertical-align:text-top">
+        <?php
+        $sql = "select weather, system_name, direction from csr_measurement, csr_system, csr_measurement_rd
+          where csr_measurement.spect_sys_uid = csr_system.system_uid
+          and csr_measurement.radiation_dir_uid = csr_measurement_rd.radiation_dir_uid
+          and measurement_uid = $muid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        if ($row = mysqli_fetch_row($res)) {
+            $weather = $row[0];
+            $name = $row[1];
+            $dir = $row[2];
+            echo "<select multiple>\n";
+            echo "<option disabled=\"disabled\">weather = $weather</option>\n";
+            echo "<option disabled=\"disabled\">system = $name</option>\n";
+            echo "<option disabled=\"disabled\">direction = $dir</option>\n";
+            echo "</select>";
+        }
+        ?>
         </table>
         <?php
     }
@@ -347,8 +385,7 @@ class Experiments
         while ($row = mysqli_fetch_row($res)) {
             $count++;
         }
-        echo "current data selection = $count lines<br>\n";
-        echo "<input type=button value=\"Save current selection\" onclick=\"javascript: save_session();\">";
+        echo "To save the $count selected lines for other Analysis <input type=button value=\"Save\" onclick=\"javascript: save_session();\">";
         echo "<br><br>";
     }
 
@@ -382,8 +419,9 @@ class Experiments
             $subset = $_GET['subset'];
         }
 
+        echo "<br>To view the raw CSR Data ";
         if ($raw_path == "") {
-            echo "<br><input type=\"button\" value=\"Download CSR Data\" disabled><br><br>";
+            echo "<input type=\"button\" value=\"Download\" disabled><br><br>";
             return;
         }
         if (($reader = fopen($raw_path, "r")) == false) {
@@ -394,10 +432,9 @@ class Experiments
         if (($writer = fopen($out_path, "w")) == false) {
             die("error - can not write file $out_path");
         }
-        echo "<br><input type=\"button\" value=\"Download CSR Data\"
+        echo "<input type=\"button\" value=\"Download\"
             onclick=\"javascript: start_download('$url_path');\">";
         echo "<br><br>";
-        //echo "<a target=\"_blank\" href=\"$out_path\">Download CSR Data</a>";
 
         //get list of line names for each plot
         if ($subset == "all") {
@@ -527,6 +564,7 @@ class Experiments
         <option value="NWI1">NWI 1</option>
         <option value="NWI3">NWI 3</option>
         <option value="PRI">PRI</option>
+        <option value="EVI">EVI</option>
         <option value="NDVI">NDVI</option>
         <option value="NDVIR">NDVI Red</option>
         <option value="NDVIG">NDVI Green</option>
