@@ -80,8 +80,8 @@ Filename: $uploadfile
 Comments: 
 $comments
 \nThis file $tested[$tst] load successfully in the Sandbox.\n";
-      if ($private = 'on')
-	$mesg .= "This is phenotype data private to the project.\n";
+      if ($private == 'on')
+	$mesg .= "This user wishes this data to be PRIVATE to the project.\n";
       //print_h($mesg);
       send_email(setting('capmail'), 'Data submitted to T3', $mesg);
     } else {
