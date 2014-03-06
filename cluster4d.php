@@ -78,9 +78,6 @@ if ($estiamate < 2) {
 }
 $elapsed = time() - $starttime;
 
-/*
- * Show the graphic.
- */
 if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
   echo "Error - R script failed<br>\n";
   $h = fopen("/tmp/tht/cluster4d.txt".$time,"r");
@@ -90,7 +87,25 @@ if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
   fclose($h);
   die();
 }
+else {
+  // Make the cluster coordinates file comma-separated and put it where we can download it.
+  $inclust = fopen("/tmp/tht/clust3dCoords.csv".$time, "r");
+  $outclust = fopen($config[root_dir]."raw/genotype/clusters3D.csv", "w");
+  fwrite($outclust, "Line,Cluster\n");
+  while ($line = fgets($inclust)) {
+    $line = trim($line);
+    $fields = preg_split('/\t/', $line);
+    $fields[0] = preg_replace('/"/', '', $fields[0]);
+    $line = implode(',', $fields);
+    fwrite($outclust, $line."\n");
+  }
+  fclose($inclust);
+  fclose($outclust);
+}
 
+/*
+ * Show the graphic.
+ */
 ?>
     <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
     <link rel="stylesheet" type="text/css" href="X3DOM/x3dom.css" />
@@ -188,6 +203,7 @@ Analysis time = <?php echo $elapsed ?> s<br>
 <style type="text/css">
   table th {text-align: center;}
   table td {text-align: center;}
+  h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
 
 <?php
@@ -218,7 +234,7 @@ print "<thead><tr><th>&nbsp;</th><th>Cluster</th><th>Count</th><th>Lines</th></t
 for ($i=1; $i<count($clustsize)+1; $i++) {
   $total = $total + $clustsize[$i];
   print "<tr style='color:".$color[$i-1]."';'>";
-  print "<td><input type='checkbox' name='mycluster[]' value=$i></td>";
+  print "<td><input type='checkbox' name='mycluster[]' value=$i checked></td>";
   print "<td>$i</td>";
   print "<td>$clustsize[$i]</td>";
   print "<td style='text-align: left'>".trim($contents[$i],', ')."</td>";
@@ -229,7 +245,14 @@ print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
 ?>
 </table>
 <p>
-    How many clusters? <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1"><br>
+
+  <a href='<?php echo $config[base_url]?>raw/genotype/clusters3D.csv'>Download</a> the table of cluster members and their 3D coordinates.
+
+
+  <br><br>
+  <h3>Re-Cluster the checked clusters</h3>
+    Into <input type=text id='clusters' name="clusters" value=<?php echo $nclusters ?> size="1"> clusters<br>
+
     &nbsp;&nbsp;&nbsp;&nbsp;
     <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -240,9 +263,9 @@ print "<tr><td></td><td>Total:</td><td>$total</td></tr>";
 <?php
 echo "<table>";
 $count = count($_SESSION['filtered_markers']);
-echo "<tr><td>markers<td>$count\n";
+echo "<tr><td>Markers<td><b>$count</b>";
 $count = count($_SESSION['filtered_lines']);
-echo "<tr><td>lines<td>$count\n";
+echo "<tr><td>Lines<td><b>$count</b>";
 echo "</table>";
 echo "<br>Reclustering a group of lines requires at least 25 members in a cluster<br>\n";
 print "<p>Select the clusters you want to use. ";
