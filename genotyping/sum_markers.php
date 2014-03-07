@@ -124,7 +124,8 @@ if (isset($_GET['uid'])) {
     //  echo "<tr><td>$line_name<td>$alleles<td>$trial\n";
   }
 } else {
-    echo "Top 100 conflicts\n";
+    echo "Top 100 conflicts<br>\n";
+    echo "Select the link for each marker name to view the conflicts between experiments and by line.";
     echo "<table>";
     echo "<tr><td>marker name<td>total<br>measured<td>conflicts<td>percent<br>conflicts\n";
     $sql = "select marker_uid, count(marker_uid) as temp from allele_conflicts group by marker_uid order by temp DESC limit 100";

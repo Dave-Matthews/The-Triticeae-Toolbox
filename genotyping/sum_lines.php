@@ -121,7 +121,8 @@ if (isset($_GET['uid'])) {
   }
 } else {
     echo "<h2>Allele Conflicts by Line</h2>\n";
-    echo "Top 100 conflicts\n";
+    echo "Top 100 conflicts<br>\n";
+    echo "Select the link for each line name to view the conflicts between experiments and by marker.";
     echo "<table>";
     echo "<tr><td>line name<td>total<br>measured<td>conflicts<td>percent<br>conflicts\n";
     $sql = "select line_record_uid, count(line_record_uid) as temp from allele_conflicts group by line_record_uid order by temp DESC limit 100";
