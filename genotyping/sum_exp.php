@@ -69,7 +69,7 @@ if (isset($_GET['uid'])) {
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
         $uid = $row[0];
-        $count = $row[1];
+        $count = $row[1]/2;  //every conflict is entered twice in database so we have to divide by 2
         $total = ($total_marker_list[$uid]*$total_line_list[$uid]);
         $perc = round(100*$count/$total,2);
         $total = round(($total/1000),0) . "K";
