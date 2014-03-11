@@ -42,7 +42,6 @@ if (isset($_GET['uid'])) {
       $line_name = $row[0];
       $marker_name = $row[1];
       $alleles = $row[2];
-      $trial = $row[3];
       echo "<tr><td>$line_name<td>$marker_name<td>$alleles\n";
   }
 } else {
@@ -65,11 +64,11 @@ if (isset($_GET['uid'])) {
     
     echo "<table>";
     echo "<tr><td>Experiment<td>total<br>measured<td>conflicts<td>percent<br>conflicts\n";
-    $sql = "select experiment_uid, count(experiment_uid) as temp from allele_conflicts group by experiment_uid order by temp DESC";
+    $sql = "select experiment_uid, count(marker_uid) as temp from allele_conflicts group by experiment_uid order by temp DESC";
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
         $uid = $row[0];
-        $count = $row[1]/2;  //every conflict is entered twice in database so we have to divide by 2
+        $count = $row[1];
         $total = ($total_marker_list[$uid]*$total_line_list[$uid]);
         $perc = round(100*$count/$total,2);
         $total = round(($total/1000),0) . "K";
