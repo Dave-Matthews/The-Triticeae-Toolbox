@@ -79,12 +79,6 @@ class Downloads
         case 'run_rscript2':
             $this->run_rscript2();
             break;
-        case 'type1markers':
-            $this->type1_markers();
-            break;
-        case 'type2markers':
-            $this->type2_markers();
-            break;
         case 'type1build_tassel':
             echo $this->type1_build_tassel();
             break;
@@ -94,36 +88,35 @@ class Downloads
         case 'download_session_v3':
             echo $this->type1_session(V3);
             break;
-       case 'download_session_v4':
+        case 'download_session_v4':
             echo $this->type1_session(V4);
             break;
-			case 'type2_build_tassel_v2':
-			    echo $this->type2_build_tassel(V2);
-			    break;
-			case 'type2_build_tassel_v3':
-			    echo $this->type2_build_tassel(V3);
-			    break;
-			case 'type2_build_tassel_v4':
-			    echo $this->type2_build_tassel(V4);
-			    break;
-			case 'refreshtitle':
-			    echo $this->refresh_title();
-			    break;
-                        case 'gwas_status':
-                            echo $this->status_gwas();
-                            break;
-                        case 'pred_status':
-                            echo $this->status_pred();
-                            break;
-                        case 'filter_lines':
-                            echo $this->filter_lines();
-                            break;
-			default:
-				$this->type1_select();
-				break;
-				
-		}	
-	}
+	case 'type2_build_tassel_v2':
+	    echo $this->type2_build_tassel(V2);
+	    break;
+	case 'type2_build_tassel_v3':
+	    echo $this->type2_build_tassel(V3);
+	    break;
+	case 'type2_build_tassel_v4':
+	    echo $this->type2_build_tassel(V4);
+	    break;
+	case 'refreshtitle':
+	    echo $this->refresh_title();
+	    break;
+        case 'gwas_status':
+            echo $this->status_gwas();
+            break;
+        case 'pred_status':
+            echo $this->status_pred();
+            break;
+        case 'filter_lines':
+            echo $this->filter_lines();
+            break;
+	default:
+	    $this->type1_select();
+	    break;
+	}	
+    }
 
 	/**
 	 * load header and footer then check session to use existing data selection
@@ -269,7 +262,11 @@ class Downloads
                 }
                 echo "</table>";
                 if ($count_dup > 0) {
-                     echo " Warning - $count_dup lines removed from prediction set because they are in training set";
+                    if (empty($_SESSION['selected_trials'])) {
+                        echo " Warning - $count_dup lines removed from prediction set because they are in training set";
+                    } else {
+                        echo " Warning - $count_dup lines removed from validation set because they are in training set";
+                    }
                 }
                 $min_maf = 5;
                 $max_missing = 10;
