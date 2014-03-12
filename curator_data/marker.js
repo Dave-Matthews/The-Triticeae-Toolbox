@@ -20,11 +20,19 @@ function CheckSynonym(filepath, filename, username, filetype) {
      if (document.getElementById('use_imp').checked) {
         overwrite = 1;
      }
+     $('update').show();
+     var url = php_self + "?function=typeCheckProgress&linedata=" + filepath + "&file_name=" + filename;
+     var tmp1 = new Ajax.Updater($('update'), url, {
+     });
+
      $('checksyn').hide();
-     var url = php_self + "?function=typeCheckSynonym&linedata=" + filepath + "&file_name=" + filename + "&user_name=" + username + "&file_type=" + filetype + "&overwrite=" + overwrite +"&expand=" + expand;
-     var tmp = new Ajax.Updater($('checksyn'), url, {
+     url = php_self + "?function=typeCheckSynonym&linedata=" + filepath + "&file_name=" + filename + "&user_name=" + username + "&file_type=" + filetype + "&overwrite=" + overwrite +"&expand=" + expand;
+     var tmp2 = new Ajax.Updater($('checksyn'), url, {
+         onCreate: function() { Element.show('spinner'); },
          onComplete : function() {
            $('checksyn').show();
+           Element.hide('spinner');
+           Element.hide('update');
          }
      });
 }
