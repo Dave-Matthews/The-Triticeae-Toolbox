@@ -94,7 +94,7 @@ connect();
     <tr>
       <td>
       <td><?php filelink("Plot-Level Results", "PlotTemplate.xls", "T3") ?>
-      <td>Values for all traits for test lines and checks, summary statistics
+      <td>Trait values for each plot
     </tr>
     <tr>
       <td>
