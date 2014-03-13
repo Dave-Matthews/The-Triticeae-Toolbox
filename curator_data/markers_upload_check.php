@@ -15,7 +15,6 @@ require 'config.php';
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
-//ini_set('memory_limit', '2G');
 
 connect();
 loginTest();
@@ -129,9 +128,7 @@ private function typeMarkersProgress() {
     }
 }
 
-//private function typeCheckSynonym(&$storageArr1, &$storageArr2, $nameIdx, $sequenceIdx, $overwrite, $expand) {
 private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand) {
-    set_time_limit(0);
     global $mysqli;
     $sql = "select marker_uid, value from marker_synonyms";
     $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
@@ -163,29 +160,27 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         $count_insert = 0;
         $count_add_syn = 0;
         $results = "<thead><tr><th>marker<th>match by name<th>match by sequence<th>database change</thead>\n";
-        //$limit = count($storageArr1);
         $limit = count($storageArr);
         for ($i = 1; $i <= $limit; $i++) {
-            //$name = $storageArr1[$i];
-            //$seq = $storageArr2[$i];
             $name = $storageArr[$i][$nameIdx];
             $seq = strtoupper($storageArr[$i][$sequenceIdx]);
-            //if ($i % 10000 == 0) {
-            //    $t = microtime();
-            //    echo "finished line $i<br>\n";
-            //    flush();
-            //}
-            if (!preg_match("/[A-Z]/", $seq)) {
-            } elseif (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
+            $found_name = 0;
+            $found_seq = 0;
+            if (preg_match("/[A-Za-z0-9]/", $name)) {
+               if (isset($marker_name[$name]) || isset($marker_syn_list[$name])) {
+                  $found_name = 1;
+                  $name_match = "yes";
+                  $count_dup_name++;
+                } else {
+                  $name_match = "";
+                }
+            } else {
+                echo "Error: bad name $name line $i<br>\n";
+            }
+            if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
                 $count_total++;
                 $seq1 = $match[1] . $match[2] . $match[4];
                 $seq2 = $match[1] . $match[3] . $match[4];
-                $found_name = 0;
-                $found_seq = 0;
-                if (isset($marker_name[$name]) || isset($marker_syn_list[$name])) {
-                  $found_name = 1;
-                  $count_dup_name++;
-                }
                 if (isset($marker_seq[$seq1]) && ($marker_seq[$seq1] != $name)) {
                   $found_seq = 1;
                   $found_seq_name = $marker_seq[$seq1];
@@ -196,22 +191,18 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 //if sequence match found then change name in import file
                 //if more than one match found then latest one will be used
                 if ($found_seq && $overwrite) {
-                    $storageArr1[$i][$nameIdx] = $name_db;
-                    $storageArr3[$i]["syn"] = $name;
-                }
-                if ($found_name) {
-                  $name_match = "yes";
-                } else {
-                  $name_match = "";
+                    $storageArr[$i][$nameIdx] = $name_db;
+                    $storageArr[$i]["syn"] = $name;
                 }
                 if ($found_seq) {
                   $seq_match = $found_seq_name;
                 } else {
                   $seq_match = "";
                 }
-                if ($found_seq) {
-                  $count_dup_seq++;
-                  if ($overwrite == 1) {
+            }
+            if ($found_seq) {
+                $count_dup_seq++;
+                if ($overwrite == 1) {
                     if ($found_name) {
                         $count_update++;
                         $action = "update marker";
@@ -219,13 +210,6 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                         $count_add_syn++;
                         $action = "add synonym";
                     }
-                  } elseif ($found_name) {
-                    $count_update++;
-                    $action = "update marker";
-                  } else {
-                    $count_insert++;
-                    $action = "add marker";
-                  }
                 } elseif ($found_name) {
                     $count_update++;
                     $action = "update marker";
@@ -233,10 +217,14 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                     $count_insert++;
                     $action = "add marker";
                 }
-                $results .= "<tr><td>$name<td>$name_match<td><font color=blue>$seq_match</font><td>$action\n"; 
+            } elseif ($found_name) {
+                    $count_update++;
+                    $action = "update marker";
             } else {
-                echo "Error: $seq<br>\n";
+                    $count_insert++;
+                    $action = "add marker";
             }
+            $results .= "<tr><td>$name<td>$name_match<td><font color=blue>$seq_match</font><td>$action\n";
         }
         if ($expand == 1) {
             $display1 = "display:none;";
@@ -668,10 +656,10 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         }
           
         // Store header
-        $i = 0;
-        foreach ($header as $value)  {                     
-            $storageArr[0][$i++] = $value;   
-        }
+        //$i = 0;
+        //foreach ($header as $value)  {                     
+        //    $storageArr[0][$i++] = $value;   
+        //}
         // Store individual records
         $i = 1;
         while (($line = fgets($reader)) !== FALSE) { 
@@ -700,8 +688,8 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 }
                 $storageArr[$i][$j++] = $value;   
             }
-            $storageArr1[$i] = $data[0];
-            $storageArr2[$i] = $data[4];
+            //$storageArr1[$i] = $data[0];
+            //$storageArr2[$i] = $data[4];
             if (feof($reader)) {
                 break;
             } else {
@@ -1156,7 +1144,8 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $name = $rdata['name'];
             $sTypeHash[$name] = $rdata['marker_synonym_type_uid'];            
         }
-         // Store individual records
+
+        // Store individual records
         $i = 1;
         while(($line = fgets($reader)) !== FALSE) { 
             if ( trim($line) == '') {
@@ -1195,6 +1184,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         <?php
   
         $count_added = 0; 
+        $count_added_syn = 0;
         if ($error_flag > 0)  {
             echo "ERROR DETECT: One or more fields contained blank values"."<br/>";
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
@@ -1280,7 +1270,8 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                             $sql = "INSERT INTO marker_synonyms (marker_uid, marker_synonym_type_uid, value, updated_on)
                             VALUES ($marker_uid, $synonymTypeID, '$synonym', NOW())";
                             $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
-                            echo "$sql<br>\n";
+                            //echo "$sql<br>\n";
+                            $count_added_syn++;
                         } else {
                             //echo "skipping marker $marker marker_uid $marker_uid synonym $synonym, already in database<br>\n";
                         }
@@ -1302,6 +1293,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             }
             if ($count_added > 0) {
                 echo "$count_added markers added to database<br>\n";
+            }
+            if ($count_added_syn > 0) {
+                echo "$count_added_syn synonyms added to database<br>\n";
             }
             echo " <b>The Data is inserted/updated successfully </b><br>";
             echo "<br/><br/>";
