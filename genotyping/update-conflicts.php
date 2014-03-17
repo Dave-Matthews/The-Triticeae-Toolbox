@@ -33,7 +33,7 @@ connect();
     $result = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 
     $sql = "select line_record_uid, count(distinct(marker_uid)) as temp from allele_conflicts
-      group by line_record_uid order by temp DESC limit 20";
+      group by line_record_uid order by temp DESC";
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
        $uid = $row[0];
