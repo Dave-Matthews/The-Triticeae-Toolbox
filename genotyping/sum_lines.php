@@ -161,24 +161,22 @@ if (isset($_GET['uid'])) {
           ) > 0, 'need_update', 'okay')";
     $need = mysql_grab($sql);
     if ($need == 'need_update') {
-    //    $update = TRUE;
+        $update = TRUE;
     }
 
     if ($update) {
     //update table
     echo "allele conflicts table is out of date, recalculating .....<br>\n";
     echo "Please wait, this may take 30 minutes<br>\n";
+    flush();
     $sql = "delete from allele_duplicates";
     set_time_limit(0);
     $result = mysql_query($sql) or die(mysql_error() . "<br>$sql");
     $sql = "select line_record_uid, count(distinct(marker_uid)) as temp from allele_conflicts
-      group by line_record_uid order by temp DESC";
+      group by line_record_uid order by temp DESC limit 200";
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
        $uid = $row[0];
-       $count = $row[1];
-       $sql = "insert into  allele_duplicates (line_record_uid, conflicts) values ($uid, $count)";
-       $result2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 
         $sql = "select distinct(e.trial_code), e.experiment_uid
           from allele_conflicts a, line_records l, markers m, experiments e
@@ -193,39 +191,77 @@ if (isset($_GET['uid'])) {
           $trial_list[$e_uid] = $trial;
         }
 
-        $total = 0;
+        $count_duplicate = 0;
+        $count_conflict = 0;
         foreach ($trial_list as $trial1=>$val1) {
           $count1 = 0;
-          unset($measured1);
+          $marker_list1 = array();
+          $marker_all1 = array();
+          $sql = "select marker_uid, alleles from allele_conflicts
+             where line_record_uid = $uid
+             and experiment_uid = $trial1";
+          $result2 = mysql_query($sql) or die(mysql_error());
+          while ($row2=mysql_fetch_row($result2)) {
+             $count1++;
+             $marker_uid = $row2[0];
+             $alleles1 = $row2[1];
+             $marker_list1[$marker_uid] = $alleles1;
+          }
           $sql = "select marker_uid from allele_cache where line_record_uid = $uid and experiment_uid = $trial1";
           //echo "$sql<br>\n";
           $result2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
           while ($row2=mysql_fetch_row($result2)) {
              $count1++;
              $marker_uid = $row2[0];
-             $measured1[] = $marker_uid;
+             $marker_all1[] = $marker_uid;
           }
           foreach ($trial_list as $trial2=>$val2) {
+            $count_conflict = 0;
             $count2 = 0;
-            unset($measured2);
+            $marker_list2 = array();
+            $marker_all2 = array();
+            $sql = "select marker_uid, alleles from allele_conflicts
+              where line_record_uid = $uid
+              and experiment_uid = $trial2";
+            $result2 = mysql_query($sql) or die(mysql_error());
+            while ($row2=mysql_fetch_row($result2)) {
+               $count2++;
+               $marker_uid = $row2[0];
+               $alleles1 = $row2[1];
+               $marker_list2[$marker_uid] = $alleles1;
+            }
             $sql = "select marker_uid from allele_cache where line_record_uid = $uid and experiment_uid = $trial2";
             //echo "$sql<br>\n";
             $result3 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
             while ($row3=mysql_fetch_row($result3)) {
               $count2++;
               $marker_uid = $row3[0];
-              $measured2[] = $marker_uid;
+              $marker_all2[] = $marker_uid;
             }
-            if (($count1 > 0) && ($count2 > 0) && ($trial1 != $trial2)) {
-              $tmp1 = array_intersect($measured1, $measured2);
-              $tmp2 = count($tmp1);
-              $total = $total + $tmp2;
+            foreach ($marker_list1 as $marker_uid=>$alleles1) {
+              if (isset($marker_list2[$marker_uid])) {
+                $alleles2 = $marker_list2[$marker_uid];
+                if ($alleles1 == $alleles2) {
+                } else {
+                  $count_conflict++;
+                }
+              }
             }
+            $tmp1 = array_intersect($marker_all1, $marker_all2);
+            $count_duplicate = count($tmp1);
+            if (($count_conflict > 0) && ($count_duplicate > 0)) {
+              $perc = round(100*($count_conflict/$count_duplicate), 0);
+              if ($perc > $max_perc) {
+                $max_perc = $perc;
+                $max_count_dup = $count_duplicate;
+                $max_count_con = $count_conflict;
+              }
+            }
+
             //echo "$uid $trial1 $trial2 $tmp2 $total<br>\n";
           }
         }
-        $total = $total / 2;
-        $sql = "update allele_duplicates set duplicates = $total where line_record_uid = $uid";
+        $sql = "insert into allele_duplicates (line_record_uid, duplicates, conflicts, percent_conf) values ($uid, $max_count_dup, $max_count_con, $max_perc)";
         $result2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
         //echo "$uid $sql<br>\n";
     }
