@@ -240,7 +240,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         <a class="collapser" id="off_switch<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?> border-bottom:none" onclick="javascript:hide_index(<?php echo $pheno_uid;?>);return false;">
         <img src="images/collapser_minus.png"/> Compress</a>
         </table>
-        <table id="content1<?php echo $pheno_uid; ?>" style="<? echo $display1; ?>">
+        <table id="content1<?php echo $pheno_uid; ?>" style="<?php echo $display1; ?>">
         <?php
         echo "<thead><tr><th>marker<th>match by name<th>match by sequence<th>database change\n";
         echo "<tr><td>$count_total<td>$count_dup_name<td><font color=blue>$count_dup_seq</font><td>";
@@ -248,7 +248,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         echo "$count_insert add marker<br>";
         echo "$count_add_syn add synonym\n";
         ?></table>
-        <table id="content2<?php echo $pheno_uid; ?>" style="<? echo $display2; ?>">
+        <table id="content2<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?>">
         <?php
         echo "$results\n";
         echo "</table>";
