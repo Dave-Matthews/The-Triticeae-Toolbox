@@ -45,8 +45,8 @@ if (isset($_GET['uid'])) {
   foreach ($trial_list as $trial1=>$val1) {
     $i++;
     echo "<tr><td>$val1";
-    unset($marker_list1);
-    unset($marker_all1);
+    $marker_list1 = array();
+    $marker_all1 = array();
     $sql = "select marker_uid, alleles from allele_conflicts
         where line_record_uid = $uid
         and experiment_uid = $trial1";
@@ -71,9 +71,8 @@ if (isset($_GET['uid'])) {
       if ($j > ($i + 0)) {
         break;
       }
-      $count = 0;
-      unset($marker_list2);
-      unset($marker_all2);
+      $marker_list2 = array();
+      $marker_all2 = array();
       $sql = "select marker_uid, alleles from allele_conflicts
         where line_record_uid = $uid
         and experiment_uid = $trial2";
@@ -92,6 +91,7 @@ if (isset($_GET['uid'])) {
         $marker_uid = $row[0];
         $marker_all2[] = $marker_uid;
       }
+      $count = 0;
       foreach ($marker_list1 as $marker_uid=>$alleles1) {
         if (isset($marker_list2[$marker_uid])) {
           $alleles2 = $marker_list2[$marker_uid];
@@ -155,6 +155,11 @@ if (isset($_GET['uid'])) {
         $count++;
       }
   }
+  echo "<tr><td>$prev";
+  foreach ($allele_ary as $t1=>$a) {
+      echo "<td>$a";
+  }
+  echo "\n";
 } else {
     echo "<h2>Allele Conflicts between experiments by Line</h2>\n";
     echo "Select the link for each line name to view the conflicts between experiments and by marker.<br>";
