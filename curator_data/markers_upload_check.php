@@ -235,9 +235,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         }
         ?>
         <table><tr><td>
-        <a class="collapser" id="on_switch<?php echo $pheno_uid; ?>" style="<? echo $display1; ?> border-bottom:none" onclick="javascript:disp_index(<?php echo $pheno_uid;?>);return false;">
+        <a class="collapser" id="on_switch<?php echo $pheno_uid; ?>" style="<?php echo $display1; ?> border-bottom:none" onclick="javascript:disp_index(<?php echo $pheno_uid;?>);return false;">
         <img src="images/collapser_plus.png" /> Expand</a>
-        <a class="collapser" id="off_switch<?php echo $pheno_uid; ?>" style="<? echo $display2; ?> border-bottom:none" onclick="javascript:hide_index(<?php echo $pheno_uid;?>);return false;">
+        <a class="collapser" id="off_switch<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?> border-bottom:none" onclick="javascript:hide_index(<?php echo $pheno_uid;?>);return false;">
         <img src="images/collapser_minus.png"/> Compress</a>
         </table>
         <table id="content1<?php echo $pheno_uid; ?>" style="<? echo $display1; ?>">
