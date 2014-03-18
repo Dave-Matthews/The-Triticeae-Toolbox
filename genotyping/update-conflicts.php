@@ -37,9 +37,6 @@ connect();
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
        $uid = $row[0];
-       //$count = $row[1];
-       //$sql = "insert into  allele_duplicates (line_record_uid, conflicts) values ($uid, $count)";
-       //$result2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 
         $sql = "select distinct(e.trial_code), e.experiment_uid
           from allele_conflicts a, line_records l, markers m, experiments e
@@ -115,7 +112,7 @@ connect();
             $tmp1 = array_intersect($marker_all1, $marker_all2);
             $count_duplicate = count($tmp1);
             if (($count_conflict > 0) && ($count_duplicate > 0)) {
-              $perc = round(100*($count_conflict/$count_duplicate), 0);
+              $perc = $count_conflict/$count_duplicate;
               if ($perc > $max_perc) {
                 $max_perc = $perc;
                 $max_count_dup = $count_duplicate;
@@ -125,6 +122,7 @@ connect();
             }
           }
         }
+        $max_perc = round(100*$max_perc, 0);
         $sql = "insert into allele_duplicates (line_record_uid, duplicates, conflicts, percent_conf) values ($uid, $max_count_dup, $max_count_con, $max_perc)";
         $result2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
         echo "$uid $sql<br>\n";
