@@ -159,7 +159,7 @@ function convert2Illumina ($alleles)
     } elseif ($alleles == 'N') {
         $results = '--';
     } else {
-        echo "Error: allele is not valid SNP $a_allele, $b_allele, $alleles\n";
+        echo "Error: allele is not valid SNP $alleles ($a_allele/$b_allele)\n";
     }
     return $results;
 }
@@ -456,6 +456,10 @@ while ($inputrow= fgets($reader))  {
     $marker_ab = $marker_snp[$marker_uid];
     $a_allele = substr($marker_ab,0,1);
     $b_allele = substr($marker_ab,1,1);
+  } else {
+    $msg = "ERROR: marker SNP not found for marker_uid = $marker_uid";
+    fwrite($errFile, $msg);
+    continue;
   }
   if (is_null($marker_ab) || (empty($marker_ab))) {
     $msg = "ERROR: allele A/B information not found for marker $marker.\n";
@@ -611,7 +615,7 @@ while ($inputrow= fgets($reader))  {
             }
         } elseif ($alleles == '') {
  	} else {
- 	    	$msg = "bad data at $line_name $data_pt $data[$data_pt]\n";
+ 	    	$msg = "bad data at $line_name $marker " . $data[$data_pt];
                 fwrite($errFile, $msg);
                 $errLines++;
  	}
