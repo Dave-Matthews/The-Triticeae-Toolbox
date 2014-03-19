@@ -1174,9 +1174,10 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         }  
         unset ($value);
         fclose($reader);   
-
+      
+        $expand = 0;
         if ($overwrite) {
-          $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite);
+          $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
         }
         ?>
         <script type="text/javascript" src="curator_data/marker.js"></script>
