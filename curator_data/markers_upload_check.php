@@ -72,6 +72,7 @@ class Markers_Check {
 		echo "<h2> Enter/Update Markers: Validation</h2>"; 
                 echo "<h3>Check import file</h3>\n";
     echo "Compares the marker name and sequence in the import file to markers already loaded in the database.<br>";
+    echo "The following steps are ordered by precedent so that if a name match is found the sequence match is ignored.<br>";
     echo "1. When a marker matches by name or synonym to a database entry the entry will be updated.<br>\n";
     echo "2. When a marker matches by sequence to a database entry and \"Add as synonym\" is checked it will be added as a synonym.<br>\n";
     echo "3. When a marker name is not in the database it will be added<br>\n";
@@ -191,8 +192,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 //if sequence match found then change name in import file
                 //if more than one match found then latest one will be used
                 if ($found_seq && $overwrite) {
-                    $storageArr[$i][$nameIdx] = $name_db;
-                    $storageArr[$i]["syn"] = $name;
+                    $storageArr[$i]["syn"] = $found_seq_name;
                 }
                 if ($found_seq) {
                   $seq_match = $found_seq_name;
@@ -202,6 +202,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             }
             if ($found_seq) {
                 $count_dup_seq++;
+                echo "dup seq $name $found_seq_name<br>\n";
                 if ($overwrite == 1) {
                     if ($found_name) {
                         $count_update++;
@@ -1224,9 +1225,41 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                     $rdata = mysql_fetch_assoc($res);
                     $marker_uid = $rdata['marker_uid'];
                 }    
-                //echo "marker_uid = $marker_uid<br>\n"; 
-                // if no marker and overwrite then create marker
-                if (empty ($marker_uid) && ($typeIdx != "")) {
+ 
+                //Check to see if synonym name already exists
+                if (empty($marker_uid) && $overwrite && ($synonym != "")) {
+                        if (isset($sTypeHash["GBS sequence tag"])) {
+                            $synonymTypeID = $sTypeHash["GBS sequence tag"];
+                        } else {
+                            $sql = "insert into marker_synonym_types (name, comments) values (\"GBS sequence tag\", \"N/A\")";
+                            $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
+                            echo "$sql<br>\n";
+                            $synonymTypeID = mysql_insert_id();
+                        }
+                        $sql = "select marker_uid from markers where marker_name = \"$synonym\"";
+                        $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
+                        if ($row = mysql_fetch_assoc($res)) {
+                            $marker_uid = $row['marker_uid'];
+                        } else {
+                            die("Error: could not find synonym entry for $synonym<br>$sql\n");
+                        }
+                        $sql = "SELECT marker_synonym_uid
+                        FROM marker_synonyms
+                        WHERE value = '$marker'";
+                        $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
+                        $rdata = mysql_fetch_assoc($res);
+                        $mSynonym_uid=$rdata['marker_synonym_uid'];
+ 
+                        if (empty($mSynonym_uid)) {
+                            $sql = "INSERT INTO marker_synonyms (marker_uid, marker_synonym_type_uid, value, updated_on)
+                            VALUES ($marker_uid, $synonymTypeID, '$synonym', NOW())";
+                            $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
+                            echo "$sql<br>\n";
+                            $count_added_syn++;
+                        } else {
+                            echo "skipping marker $marker marker_uid $marker_uid synonym $marker, already in database<br>\n";
+                        }
+                } elseif (empty ($marker_uid) && ($typeIdx != "")) {
                     $sql = "SELECT marker_type_uid, marker_type_name
                     FROM marker_types";
                     $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
@@ -1236,8 +1269,8 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                     }
                     if (isset($mTypeHash["$markerType"])) {
                         $markerTypeID = $mTypeHash["$markerType"];
-                        $sql = "insert into markers (marker_type_uid, marker_name, updated_on, created_on) 
-                        values ($markerTypeID, \"$marker\", NOW(), NOW())";
+                        $sql = "insert into markers (marker_type_uid, marker_name, A_allele, B_allele, sequence, updated_on, created_on) 
+                        values ($markerTypeID, \"$marker\", \"$alleleA\", \"$alleleB\", \"$sequence\", NOW(), NOW())";
                         $res = mysql_query($sql) or die("Database Error: " . mysql_error() . "<br>$sql");
                         $marker_uid = mysql_insert_id();
                         //echo "$sql<br>\n";
@@ -1247,38 +1280,13 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                         $missing++;
                         continue;
                     }
+                } else {
+                    $sql = "UPDATE markers SET A_allele = '$alleleA', B_allele='$alleleB', sequence='$sequence', updated_on=NOW() 
+                            WHERE marker_uid = '$marker_uid'";
+                    $res = mysql_query($sql) or die("Database Error: SNP sequence update failed - ". mysql_error() ."<br>".$sql);
+                    //echo "update $marker_uid<br>\n";
                 }
- 
-                //Check to see if synonym name already exists
-                if ($overwrite) {
-                    if ($synonym != "") {
-                        if (isset($sTypeHash["GBS sequence tag"])) {
-                            $synonymTypeID = $sTypeHash["GBS sequence tag"];
-                        } else {
-                            $sql = "insert into marker_synonym_types (name, comments) values (\"GBS sequence tag\", \"N/A\")";
-                            $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
-                            echo "$sql<br>\n";
-                            $synonymTypeID = mysql_insert_id();
-                        }
-                        $sql = "SELECT marker_synonym_uid
-                        FROM marker_synonyms
-                        WHERE value = '$synonym'";
-                        $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
-                        $rdata = mysql_fetch_assoc($res);
-                        $mSynonym_uid=$rdata['marker_synonym_uid'];
- 
-                        if (empty($mSynonym_uid)) {
-                            $sql = "INSERT INTO marker_synonyms (marker_uid, marker_synonym_type_uid, value, updated_on)
-                            VALUES ($marker_uid, $synonymTypeID, '$synonym', NOW())";
-                            $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
-                            //echo "$sql<br>\n";
-                            $count_added_syn++;
-                        } else {
-                            //echo "skipping marker $marker marker_uid $marker_uid synonym $synonym, already in database<br>\n";
-                        }
-                    }
-                }
-
+                  
                 // marker name don't exist in DB
                 if (empty ($marker_uid)) {
                     error(1, "Marker name - ". $marker . " does not exist in DB. <br> Skipping this entry ..." );
@@ -1286,11 +1294,6 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                     continue;
                 }
                 //echo "marker_uid ".$marker_uid."<br>";
-
-                $sql = "UPDATE markers SET A_allele = '$alleleA', B_allele='$alleleB', sequence='$sequence', updated_on=NOW() 
-                            WHERE marker_uid = '$marker_uid'";
-                $res = mysql_query($sql) or die("Database Error: SNP sequence update failed - ". mysql_error() ."<br>".$sql);
-                //echo "update $marker_uid<br>\n";
             }
             if ($count_added > 0) {
                 echo "$count_added markers added to database<br>\n";
