@@ -569,7 +569,7 @@ while ($inputrow= fgets($reader))  {
         if (($alleles == 'A') || ($alleles == 'C') || ($alleles == 'T') || ($alleles == 'G') || ($alleles == 'N')) {
           $results = convert2Illumina($alleles);
           if ($results == "") {
-            $msg = "Error: could not convert ACTG to Illumina AB format\n";
+            $msg = "Error: could not convert ACTG to Illumina AB format $alleles $a_allele $b_allele\n";
             fwrite($errFile, $msg);
             $alleles = $marker_ab;
           } else {
@@ -611,7 +611,7 @@ while ($inputrow= fgets($reader))  {
             }
         } elseif ($alleles == '') {
  	} else {
- 	    	$msg = "bad data at " . $line_name . " $data[$data_pt]\n";
+ 	    	$msg = "bad data at $line_name $data_pt $data[$data_pt]\n";
                 fwrite($errFile, $msg);
                 $errLines++;
  	}
