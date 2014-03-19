@@ -202,7 +202,6 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             }
             if ($found_seq) {
                 $count_dup_seq++;
-                echo "dup seq $name $found_seq_name<br>\n";
                 if ($overwrite == 1) {
                     if ($found_name) {
                         $count_update++;
@@ -1252,7 +1251,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
  
                         if (empty($mSynonym_uid)) {
                             $sql = "INSERT INTO marker_synonyms (marker_uid, marker_synonym_type_uid, value, updated_on)
-                            VALUES ($marker_uid, $synonymTypeID, '$synonym', NOW())";
+                            VALUES ($marker_uid, $synonymTypeID, '$marker', NOW())";
                             $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
                             echo "$sql<br>\n";
                             $count_added_syn++;
