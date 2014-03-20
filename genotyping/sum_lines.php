@@ -19,6 +19,7 @@ echo ", and <a href=genotyping/allele_conflicts.php>All Allele Conflicts</a>.<br
 if (isset($_GET['uid'])) {
   $uid = $_GET['uid'];
   echo "<h3>Allele Conflicts for $name_list[$uid] between experiments</h2>\n";
+  echo "Each entry has number of conflicts / comparisons (percent conflicts).<br>\n";
  
   //get list of trials
   $sql = "select distinct(e.trial_code), e.experiment_uid
@@ -40,22 +41,38 @@ if (isset($_GET['uid'])) {
   foreach ($trial_list as $trial1=>$val1) {
     echo "<td>$val1";
   }
+  $i = 1;
   foreach ($trial_list as $trial1=>$val1) {
+    $i++;
     echo "<tr><td>$val1";
-    foreach ($trial_list as $trial2=>$val2) {
-      $count = 0;
-      unset($marker_list1);
-      unset($marker_list2);
-      $sql = "select marker_uid, alleles from allele_conflicts
+    $marker_list1 = array();
+    $marker_all1 = array();
+    $sql = "select marker_uid, alleles from allele_conflicts
         where line_record_uid = $uid
         and experiment_uid = $trial1";
-      $result = mysql_query($sql) or die(mysql_error());
-      while ($row=mysql_fetch_row($result)) {
+    $result = mysql_query($sql) or die(mysql_error());
+    while ($row=mysql_fetch_row($result)) {
           $count1++;
           $marker_uid = $row[0];
           $alleles1 = $row[1];
           $marker_list1[$marker_uid] = $alleles1;
+    }
+    $sql = "select marker_uid from allele_cache
+        where line_record_uid = $uid
+        and experiment_uid = $trial1";
+    $result = mysql_query($sql) or die(mysql_error());
+    while ($row=mysql_fetch_row($result)) {
+        $marker_uid = $row[0];
+        $marker_all1[] = $marker_uid;
+    }
+    $j = 1;
+    foreach ($trial_list as $trial2=>$val2) {
+      $j++;
+      if ($j > ($i + 0)) {
+        break;
       }
+      $marker_list2 = array();
+      $marker_all2 = array();
       $sql = "select marker_uid, alleles from allele_conflicts
         where line_record_uid = $uid
         and experiment_uid = $trial2";
@@ -66,6 +83,15 @@ if (isset($_GET['uid'])) {
           $alleles1 = $row[1];
           $marker_list2[$marker_uid] = $alleles1;
       }
+      $sql = "select marker_uid from allele_cache
+        where line_record_uid = $uid
+        and experiment_uid = $trial2";
+      $result = mysql_query($sql) or die(mysql_error());
+      while ($row=mysql_fetch_row($result)) {
+        $marker_uid = $row[0];
+        $marker_all2[] = $marker_uid;
+      }
+      $count = 0;
       foreach ($marker_list1 as $marker_uid=>$alleles1) {
         if (isset($marker_list2[$marker_uid])) {
           $alleles2 = $marker_list2[$marker_uid];
@@ -75,7 +101,17 @@ if (isset($_GET['uid'])) {
           }
         }
       }
-      echo "<td>$count";
+      $tmp1 = array_intersect($marker_all1, $marker_all2);
+      $tmp2 = count($tmp1);
+      if ($count > 10) {
+        $perc = round(100*($count/$tmp2), 0);
+        echo "<td>$count/$tmp2 ($perc%)";
+      } elseif ($count > 0) {
+        $perc = round(100*($count/$tmp2), 1);
+        echo "<td>$count/$tmp2 ($perc%)";
+      } else {
+        echo "<td>$count/$tmp2 (0%)";
+      }
     }
     echo "\n";
   }
@@ -119,31 +155,49 @@ if (isset($_GET['uid'])) {
         $count++;
       }
   }
+  echo "<tr><td>$prev";
+  foreach ($allele_ary as $t1=>$a) {
+      echo "<td>$a";
+  }
+  echo "\n";
 } else {
-    echo "<h2>Allele Conflicts by Line</h2>\n";
-    echo "Top 100 conflicts\n";
+    echo "<h2>Allele Conflicts between experiments by Line</h2>\n";
+    echo "Select the link for each line name to view the conflicts between experiments and by marker.<br>";
+    echo "When there are more than 2 experiments the values are for the experiments that have the largest percentage of conflicts.<br>\n";
+
+    // Update cache table if necessary. Empty?
+    if(mysql_num_rows(mysql_query("select line_record_uid from allele_duplicates")) == 0)
+      $update = TRUE;
+
+    // Out of date?
+    $sql = "select if( datediff(
+            (select max(updated_on) from allele_frequencies),
+            (select max(updated_on) from allele_duplicates)
+          ) > 0, 'need_update', 'okay')";
+    $need = mysql_grab($sql);
+    if ($need == 'need_update') {
+        $update = TRUE;
+    }
+
+    if ($update) {
+    //update table
+       echo "<br>The database table is out of date.<br>\n";
+       echo "A job has been scheduled to update the table<br>\n";
+       echo "Please check the results again 30 minutes<br>\n";
+       exec("php update-conflicts.php > /dev/null &");
+    }
+
     echo "<table>";
-    echo "<tr><td>line name<td>total<br>measured<td>conflicts<td>percent<br>conflicts\n";
-    $sql = "select line_record_uid, count(line_record_uid) as temp from allele_conflicts group by line_record_uid order by temp DESC limit 100";
+    echo "<tr><td>line name<td>conflicts<td>comparisons<td>percent<br>conflicts\n";
+    $sql = "select line_record_uid, duplicates, conflicts, percent_conf
+      from allele_duplicates order by percent_conf DESC";
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
        $uid = $row[0];
-       $count = $row[1];
-       $total = 0;
-       $sql = "select alleles from allele_byline where line_record_uid = $uid";
-       $result2 = mysql_query($sql) or die(mysql_error());
-       if ($row2=mysql_fetch_row($result2)) {
-           $alleles = $row2[0];
-           $outarray = explode(',', $alleles);
-           foreach ($outarray as $allele) {
-               if ($allele != '') {
-                   $total++;
-               }
-           }
-       }
-       $perc = round(100*$count/$total,2);
-       echo "<tr><td><a href=genotyping/sum_lines.php?uid=$uid>$name_list[$uid]</a><td>$total<td>$count<td>$perc\n";
-       flush();
+       $dupl = $row[1];
+       $conf = $row[2];
+       $perc = $row[3];
+       echo "<tr><td><a href=genotyping/sum_lines.php?uid=$uid>$name_list[$uid]</a><td>$conf<td>$dupl<td>$perc\n";
     }
 }
 echo "</table></div>";

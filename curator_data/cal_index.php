@@ -264,7 +264,7 @@ class Experiments
         <tr><td style="height:100px; vertical-align:text-top"><select id="muid" name="muid" onchange="javascript: update_DateTime()">
         <?php
         $exp = $_GET['trial'];
-        $sql = "select measurement_uid, date_format(measure_date,'%m-%d-%y'), time_format(start_time, '%H:%I')
+        $sql = "select measurement_uid, date_format(measure_date,'%m-%d-%y'), time_format(start_time, '%H:%i')
         from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid and
         experiments.experiment_uid = $exp order by measure_date, start_time";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
