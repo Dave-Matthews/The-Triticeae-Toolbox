@@ -1,7 +1,7 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/admin_header.php';
 connect();
 ?>
 
@@ -32,7 +32,7 @@ connect();
   </ul>
 
   <p>
-    <b><?php filelink2("Instructions","Steps_in_Data_Submission_to_T3.docx", "T3") ?></b> 
+    <b><?php filelink2("Instructions", "Steps_in_Data_Submission_to_T3.docx", "T3") ?></b> 
     - Rules for filling in the templates, and sequence of submission
 <br>
     <b>Tutorials</b><br>
@@ -58,82 +58,87 @@ connect();
     </thead>
     <tr>
       <td><b>Germplasm Lines</b>
-      <td><?php filelink("Wheat","LineSubmissionForm_Wheat.xls", "T3") ?>
+      <td><?php filelink("Wheat", "LineSubmissionForm_Wheat.xls", "T3") ?>
       <td>Name, synonyms, pedigree for wheat
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Barley","LineSubmissionForm_Barley.xls", "T3") ?>
+      <td><?php filelink("Barley", "LineSubmissionForm_Barley.xls", "T3") ?>
       <td>Name, synonyms, pedigree for barley
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Genetic Characters","Line_Properties.xls", "T3") ?>
+      <td><?php filelink("Genetic Characters", "Line_Properties.xls", "T3") ?>
       <td>Genes, QTLs, trait-linked markers, market class
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Name conversion macros","T3NameConversion.xlsm", "T3") ?>
+      <td><?php filelink("Name conversion macros", "T3NameConversion.xlsm", "T3") ?>
       <td>Excel spreadsheet to convert germplasm names to T3 formatted names.
     </tr>
     <tr style= "border-top-style: solid; border-top-width: 1px;">
       <td><b>Phenotyping</b>
-      <td><?php filelink("Traits","trait_template.xls", "") ?>
+      <td><?php filelink("Traits", "trait_template.xls", "") ?>
       <td>Please discuss with the <a href="feedback.php">curators</a> before adding a new trait.
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Trial description","TrialSubmissionForm.xls", "T3") ?>
+      <td><?php filelink("Trial description", "TrialSubmissionForm.xls", "T3") ?>
       <td>Location, planting date, experimental design...
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Trial results","PhenotypeSubmissionForm.xls", "T3") ?>
+      <td><?php filelink("Trial means", "PhenotypeSubmissionForm.xls", "T3") ?>
       <td>Values for all traits for test lines and checks, summary statistics
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Fieldbook","fieldbook_template.xlsx", "T3") ?>
+      <td><?php filelink("Plot-Level Results", "PlotTemplate.xls", "T3") ?>
+      <td>Trait values for each plot
+    </tr>
+    <tr>
+      <td>
+      <td><?php filelink("Fieldbook", "fieldbook_template.xlsx", "T3") ?>
       <td>Field map 
     </tr>
  <tr>
  <tr>
       <td><b>Canopy Spectral<br>Reflectance</b>
-      <td><?php filelink("CSR System","CSRinT3_SpectrometerSystem.xlsx", "T3") ?>
+      <td><?php filelink("CSR System", "CSRinT3_SpectrometerSystem.xlsx", "T3") ?>
       <td>Instrument annotation
     </tr>
       <td>
-      <td><?php filelink("CSR description","CSRinT3_Sp1_Annotation.xlsx", "T3") ?>
+      <td><?php filelink("CSR description", "CSRinT3_Sp1_Annotation.xlsx", "T3") ?>
       <td>Description of the CSR experiment
     </tr>
     <tr>
       <td>
-      <td><?php filelink("CSR results","CSR_Data_template.txt", "T3") ?>
+      <td><?php filelink("CSR results", "CSR_Data_template.txt", "T3") ?>
       <td>Data file format
     </tr>
     <tr style= "border-top-style: solid; border-top-width: 1px;">
       <td><b>Genotyping</b>
-      <td><?php filelink("Experiment description","Geno_Annotation_Sample.txt", "") ?>
+      <td><?php filelink("Experiment description", "Geno_Annotation_Sample.txt", "") ?>
       <td>Platform, software, manifest file, experiment details...
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Line translation","LinesTrialCode_Sample.txt", "") ?>
+      <td><?php filelink("Line translation", "LinesTrialCode_Sample.txt", "") ?>
       <td>Line Name and Trial Code
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Experiment results","TCAPbarley9K-sample.txt", "") ?>
+      <td><?php filelink("Experiment results", "TCAPbarley9K-sample.txt", "") ?>
       <td>2D table of alleles for lines and markers <b>(Preferred!)</b>
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Experiment results (1D)","genotypeData_T3.txt", "") ?>
+      <td><?php filelink("Experiment results (1D)", "genotypeData_T3.txt", "") ?>
       <td>1D table of alleles for lines and markers
     </tr>
     <tr>
       <td><b>Markers</b>
-      <td><?php filelink("Sequence","Generic_SNP.txt", "") ?>
+      <td><?php filelink("Sequence", "Generic_SNP.txt", "") ?>
       <td>Marker sequences and A/B allele definitions
     </tr>
     <tr>
@@ -155,9 +160,11 @@ connect();
 </div></div>
 
 <?php
-// Date-stamp the template files, in red if they're new.
-// $subdir is relative to curator_data/examples/.
-function filelink($label, $filenm, $subdir) {
+/** Date-stamp the template files, in red if they're new.
+ * $subdir is relative to curator_data/examples/.
+ */
+function filelink($label, $filenm, $subdir)
+{
   global $config;
   echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
   $fullpath = $config['root_dir'] . "curator_data/examples/$subdir/$filenm";
@@ -169,7 +176,8 @@ function filelink($label, $filenm, $subdir) {
     //echo "</td><td>$filenm";
 }
 
-// Variation of filelink(), for items in text instead of in the table.
+/** Variation of filelink(), for items in text instead of in the table.
+ */
 function filelink2($label, $filenm, $subdir) {
   global $config;
   echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
@@ -180,5 +188,5 @@ function filelink2($label, $filenm, $subdir) {
 }
 
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); 
+require $config['root_dir'].'theme/footer.php'; 
 ?>

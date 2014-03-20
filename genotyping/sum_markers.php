@@ -124,10 +124,12 @@ if (isset($_GET['uid'])) {
     //  echo "<tr><td>$line_name<td>$alleles<td>$trial\n";
   }
 } else {
-    echo "Top 100 conflicts\n";
+    echo "Top 100 conflicts<br>\n";
+    echo "Select the link for each marker name to view the conflicts between experiments and by line.<br>";
+    echo "Total measured is the number of lines with genotype data for this marker.\n";
     echo "<table>";
     echo "<tr><td>marker name<td>total<br>measured<td>conflicts<td>percent<br>conflicts\n";
-    $sql = "select marker_uid, count(marker_uid) as temp from allele_conflicts group by marker_uid order by temp DESC limit 100";
+    $sql = "select marker_uid, count(distinct(line_record_uid)) as temp from allele_conflicts group by marker_uid order by temp DESC limit 100";
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
       $uid = $row[0];

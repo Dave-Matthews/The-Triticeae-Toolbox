@@ -82,8 +82,10 @@ class Markers {
 	<br>
 	<p>
         </style>
-        NOTE: Use Illumina format for files with AB base calls. Use Generic format for ACTG base calls. Use A_allele = 1 and B_allele = 0 for DArT markers.<br>
-        The marker names should already be defined by importing the marker annotation file.
+        NOTE:<br>
+        1. Use Illumina format for files with AB base calls. Use Generic format for ACTG base calls. Use A_allele = 1 and B_allele = 0 for DArT markers.<br>
+        2. For Illumina and DArT format the marker names should already be defined by importing the marker annotation file.<br>
+        3. For Generic format you can skip the annotation file and a new database entry will be created by the sequence file import.<br>
 	</p>
 <?php
  

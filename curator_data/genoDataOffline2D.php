@@ -159,7 +159,7 @@ function convert2Illumina ($alleles)
     } elseif ($alleles == 'N') {
         $results = '--';
     } else {
-        echo "Error: allele is not valid SNP $a_allele, $b_allele, $alleles\n";
+        echo "Error: allele is not valid SNP $alleles ($a_allele/$b_allele)\n";
     }
     return $results;
 }
@@ -410,6 +410,27 @@ $line_name = "qwerty";
 $errLines = 0;
 $data = array();
 
+$gen_uid = 0;
+$allele1 = "";
+$allele2 = "";
+$sql = "INSERT INTO alleles (genotyping_data_uid, allele_1, allele_2, updated_on, created_on)
+    VALUES (?, ?, ?, NOW(), NOW())";
+if (!$stmt1 = $mysqli->prepare($sql)) {
+    echo "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error . "\n$sql\n";
+}
+if (!$stmt1->bind_param('iss',$gen_uid, $allele1, $allele2)) {
+    echo "Binding parameters failed: (" . $stmt1->errno . ") " . $stmt1->error;
+}
+
+$sql = "UPDATE alleles set allele_1 = ?, allele_2 = ?, updated_on = NOW() 
+    WHERE genotyping_data_uid = ?";
+if (!$stmt2 = $mysqli->prepare($sql)) {
+    echo "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error . "\n$sql\n";
+}
+if (!$stmt2->bind_param('ssi', $allele1, $allele2, $gen_uid)) {
+    echo "Binding parameters failed: (" . $stmt2->errno . ") " . $stmt2->error;
+}
+
 //for imports that take a long time there may be a deadlock when the allele cache does its daily refresh
 //this statement causes the locks to be released earlier
 $sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED";
@@ -456,6 +477,10 @@ while ($inputrow= fgets($reader))  {
     $marker_ab = $marker_snp[$marker_uid];
     $a_allele = substr($marker_ab,0,1);
     $b_allele = substr($marker_ab,1,1);
+  } else {
+    $msg = "ERROR: marker SNP not found for marker_uid = $marker_uid";
+    fwrite($errFile, $msg);
+    continue;
   }
   if (is_null($marker_ab) || (empty($marker_ab))) {
     $msg = "ERROR: allele A/B information not found for marker $marker.\n";
@@ -554,22 +579,16 @@ while ($inputrow= fgets($reader))  {
             $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data insert - ". mysqli_error($mysqli) . ".\n\n$sql");
             $gen_uid = mysqli_insert_id($mysqli);
             //echo "gen_uid = $gen_uid\t";
-            //$sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid = $marker_uid AND tht_base_uid=$tht_uid ";
-            //$rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: post genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
-            //$rqgen=mysqli_fetch_assoc($rgen);
-            //$gen_uid=$rqgen['genotyping_data_uid'];
-            //echo "$gen_uid\n";
-            //echo "created new genotyping_data entry\n";
         }
-		// echo "gen_uid".$gen_uid."\n";
-		/* Read in the rest of the variables */
+
+	/* Read in the rest of the variables */
         $alleles = $data[$data_pt];
         $allele1 = substr($data[$data_pt],0,1);
 	    $allele2 = substr($data[$data_pt],1,1);
         if (($alleles == 'A') || ($alleles == 'C') || ($alleles == 'T') || ($alleles == 'G') || ($alleles == 'N')) {
           $results = convert2Illumina($alleles);
           if ($results == "") {
-            $msg = "Error: could not convert ACTG to Illumina AB format\n";
+            $msg = "Error: could not convert ACTG to Illumina AB format $alleles $a_allele $b_allele\n";
             fwrite($errFile, $msg);
             $alleles = $marker_ab;
           } else {
@@ -594,24 +613,21 @@ while ($inputrow= fgets($reader))  {
             $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid") or exitFatal($errFile, "Database Error: gd lookup $sql");
             $rgen=mysql_num_rows($result);
             if ($rgen < 1) {
-		      $sql = "INSERT INTO alleles (genotyping_data_uid,allele_1,allele_2,
-						updated_on, created_on)
-						VALUES ($gen_uid,'$allele1','$allele2', NOW(), NOW()) ";
+                if (!$stmt1->execute()) {
+                    $msg = "Execute failed: (" . $stmt1->errno .") " . $stmt1->error;
+                    fwrite($errFile, $msg);
+                    $errLines++;
+                }
             } else {
-		      $sql = "UPDATE alleles
-			  SET allele_1='$allele1',allele_2='$allele2',
-			  updated_on=NOW() 
-			  WHERE genotyping_data_uid = $gen_uid";
+                if (!$stmt2->execute()) {
+                     $msg = "Execute failed: (" . $stmt2->errno .") " . $stmt2->error;
+                     fwrite($errFile, $msg);
+                     $errLines++;
+                }
 	    }
-	    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: alleles processing - ". mysqli_error($mysqli) . ".\n\n$sql");
-	    if ($res != 1) { 
-                  $msg = "ERROR:  Allele not loaded! row = " . $rowNum ."\t" . $inputrow;
-                  fwrite($errFile, $msg);
-                  $errLines++;
-            }
         } elseif ($alleles == '') {
  	} else {
- 	    	$msg = "bad data at " . $line_name . " $data[$data_pt]\n";
+ 	    	$msg = "bad data at $line_name $marker " . $data[$data_pt];
                 fwrite($errFile, $msg);
                 $errLines++;
  	}
