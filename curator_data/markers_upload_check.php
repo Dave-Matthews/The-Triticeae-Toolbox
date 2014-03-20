@@ -1251,7 +1251,6 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                             $sql = "INSERT INTO marker_synonyms (marker_uid, marker_synonym_type_uid, value, updated_on)
                             VALUES ($marker_uid, $synonymTypeID, '$marker', NOW())";
                             $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
-                            echo "$sql<br>\n";
                             $count_added_syn++;
                         } else {
                             echo "skipping marker $marker marker_uid $marker_uid synonym $marker, already in database<br>\n";
