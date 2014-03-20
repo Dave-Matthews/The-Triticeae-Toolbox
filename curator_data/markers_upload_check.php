@@ -146,8 +146,8 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
            if (preg_match("/([A-Z]*)\[([ACTG])\/([ACTG])\]([A-Z]*)/", $seq, $match)) {
                $seq1 = $match[1] . $match[2] . $match[4];
                $seq2 = $match[1] . $match[3] . $match[4];
-               $marker_seq[$seq1] =  $name;
-               $marker_seq[$seq2] =  $name;
+               $marker1_seq[$seq1] =  $name;
+               $marker2_seq[$seq2] =  $name;
                $marker_name[$name] =  1;
            } else {
                //echo "bad sequence in database<br>$name<br>$seq<br>\n";
@@ -182,12 +182,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 $count_total++;
                 $seq1 = $match[1] . $match[2] . $match[4];
                 $seq2 = $match[1] . $match[3] . $match[4];
-                if (isset($marker_seq[$seq1]) && ($marker_seq[$seq1] != $name)) {
+                if (isset($marker1_seq[$seq1]) && isset($marker2_seq[$seq2]) && ($marker1_seq[$seq1] != $name)) {
                   $found_seq = 1;
-                  $found_seq_name = $marker_seq[$seq1];
-                } elseif (isset($marker_seq[$seq2]) && ($marker_seq[$seq2] != $name)) {
-                  $found_seq = 1;
-                  $found_seq_name = $marker_seq[$seq2];
+                  $found_seq_name = $marker1_seq[$seq1];
                 }
                 //if sequence match found then change name in import file
                 //if more than one match found then latest one will be used
