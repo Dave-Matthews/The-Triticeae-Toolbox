@@ -143,12 +143,11 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         while ($row = mysql_fetch_assoc($res)) {
            $name = $row['marker_name'];
            $seq = strtoupper($row['sequence']);
-           if (preg_match("/([A-Z]*)\[([ACTG])\/([ACTG])\]([A-Z]*)/", $seq, $match)) {
-               $seq1 = $match[1] . $match[2] . $match[4];
-               $seq2 = $match[1] . $match[3] . $match[4];
-               $marker1_seq[$seq1] =  $name;
-               $marker2_seq[$seq2] =  $name;
+           if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
+               //$seq1 = $match[1] . $match[2] . $match[4];
+               //$seq2 = $match[1] . $match[3] . $match[4];
                $marker_name[$name] =  1;
+               $marker_seq[$seq] = $name;
            } else {
                //echo "bad sequence in database<br>$name<br>$seq<br>\n";
            }
@@ -180,11 +179,11 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             }
             if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
                 $count_total++;
-                $seq1 = $match[1] . $match[2] . $match[4];
-                $seq2 = $match[1] . $match[3] . $match[4];
-                if (isset($marker1_seq[$seq1]) && isset($marker2_seq[$seq2]) && ($marker1_seq[$seq1] != $name)) {
+                //$seq1 = $match[1] . $match[2] . $match[4];
+                //$seq2 = $match[1] . $match[3] . $match[4];
+                if (isset($marker_seq[$seq]) && ($marker_seq[$seq] != $name)) {
                   $found_seq = 1;
-                  $found_seq_name = $marker1_seq[$seq1];
+                  $found_seq_name = $marker_seq[$seq];
                 }
                 //if sequence match found then change name in import file
                 //if more than one match found then latest one will be used
@@ -196,6 +195,8 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 } else {
                   $seq_match = "";
                 }
+            } else {
+                echo "bad sequence $seq<br>\n";
             }
             if ($found_seq) {
                 $count_dup_seq++;
