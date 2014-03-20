@@ -328,9 +328,14 @@ class LineNames_Check {
 		    die_nice ("Line Name '$line' is used more than once in this file.");
 		  else array_push($lines_seen, $line);
 		  // Check if line is in database, as either a line name or synonym.
-		  $line_uid = get_lineuid($line);
+		  // dem mar2014: Don't use this semi-fuzzy match; insist on exact (case-insensitive).
+		  //$line_uid = get_lineuid($line);
+		  $lid = mysql_grab("select line_record_uid from line_records where line_record_name = '$line'");
+		  if (!$lid) // If not a primary name, check for synonym.
+		    $lid = mysql_grab("select line_record_name from line_synonyms ls, line_records lr where line_synonym_name = '$line' and ls.line_record_uid = lr.line_record_uid");
 		  // $line_uid is an array.
-		  if ($line_uid === FALSE) {
+		  $line_uid = array($lid);
+		  if (!$lid) {
 		    // Insert new line into database.
 		    //convert line name to upper case and replace spaces with an underscore
 		    $line = strtoupper(str_replace(" ","_",$line));
@@ -369,8 +374,14 @@ class LineNames_Check {
 			die_nice ("Alias '$syn' is used more than once in this file.");
 		      else array_push($syns_seen, $syn);
 		      // Does the name already exist as either a synonym or a line name?
-		      $linesyn_uid = get_lineuid($syn);
-		      if ($linesyn_uid === FALSE) {
+		      // dem mar2014: Don't use this semi-fuzzy match; insist on exact (case-insensitive).
+		      //$linesyn_uid = get_lineuid($syn);
+		      $lsid = mysql_grab("select line_record_uid from line_records where line_record_name = '$syn'");
+		      if (!$lsid) // If not a primary name, check for synonym.
+			$lsid = mysql_grab("select line_record_name from line_synonyms ls, line_records lr where line_synonym_name = '$syn' and ls.line_record_uid = lr.line_record_uid");
+		      // $linesyn_uid is an array.
+		      $linesyn_uid = array($lsid);
+		      if (!$lsid) {
 			// Okay, insert synonym into database.
 		      } 
 		      elseif (count($linesyn_uid) == 1) {
