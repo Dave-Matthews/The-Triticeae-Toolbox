@@ -5,16 +5,29 @@ include($config['root_dir'].'theme/normal_header.php');
 connect();
 ?>
 
-<h2>The Wheat Breeder&apos;s Seed Catalog</h2>
-    <h3 style="color: #de5414; margin-left: 30px;"><i>Making breeding fun!</i></h3>
-    <br>
+<h2>Home: The Breeders Funnyfarm</h2>
+
+<p>This version of the Breeders Datafarm (BD) is for hands-on learning,
+practice, and data experiments.
+
+<p>Anyone can load data here as long as they
+have <a href="http://malt.pw.usda.gov/t3/bdfunny/login.php">registered</a>,
+and anyone can register. Note that you must register again here even if
+you've done it already on the main BD website.
+
+<p>All data loaded here will be <font color=red><b>gone</b></font>
+tomorrow, unless loaded into the production BD. This database is copied
+from
+<a href="http://malt.pw.usda.gov/t3/bd/">http://malt.pw.usda.gov/t3/bd/</a>
+ nightly. So once your data is ready please submit it for loading there.
+<br><br>
     <div class="section">
       <p>If you knew everything about the genome of each of your
 	breeding lines, wouldn't it be <b>fun</b> to decide who to cross?
 	
       <h3>Welcome to the Breeders Datafarm!</h3>
 
-      <p>BDF is the web portal for data from US Uniform Regional
+      <p>BD is the web portal for data from US Uniform Regional
 	Nurseries.  Supported by the <a href="http://scabusa.org">US
 	Wheat and Barley Scab Initiative</a>, it is derived from The
 	Triticeae Toolbox (T3), the database of
