@@ -158,6 +158,8 @@ function convert2Illumina ($alleles)
         $results = 'BB';
     } elseif ($alleles == 'N') {
         $results = '--';
+    } elseif ($alleles == 'H') {
+        $results = 'AB';
     } else {
         echo "Error: allele is not valid SNP $alleles ($a_allele/$b_allele)\n";
     }
@@ -329,21 +331,14 @@ while (($line = fgets($reader)) !== false) {
     } else {
       $line_uid = implode(",",$line_uid);
       $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
-      $rtht = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
-      $rqtht = mysqli_fetch_assoc($rtht);
-      $tht_uid = $rqtht['tht_base_uid'];
-      //if (empty($tht_uid)) {
-      //    $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
-      //                                VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
-      //    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
-      //    $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
-      //    $rtht=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysqli_error($mysqli). ".\n\n$sql");
-      //    $rqtht=mysqli_fetch_assoc($rtht);
-      //    $tht_uid=$rqtht['tht_base_uid'];
-      //    //echo "created new tht_base entry\n";
-      //}
-      //$thtuid_lookup[$lineStr] = $tht_uid;
-      echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid.\n";
+      $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
+      if ($row = mysqli_fetch_assoc($res)) {
+          $thtuid = $row['tht_base_uid'];
+          $thtuid_lookup[$lineStr] = $thtuid;
+      } else {
+          $thtuid = NULL;
+      }
+      echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid. tht_base $thtuid\n";
     }
     if (feof($reader)) break;
 }    
@@ -524,28 +519,16 @@ while ($inputrow= fgets($reader))  {
 	      /* $msg = "missing from dataset experiments $line_name $line_uid" . "\n"; */
 	      /* fwrite($errFile, $msg); */
             }
-            //if (isset($thtuid_lookup[$line_name])) {				
-            //  $tht_uid = $thtuid_lookup[$line_name];
-            //} else {
-            //  $msg = "missing from tht_base $line_name $exp_uid\n";
-            //  fwrite($errFile, $msg);
-            //}
 
             /* get thtbase_uid. If null, then we have to create this ID */
-            $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
-            $rtht = mysql_query($sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysql_error() . ".\n\n$sql");
-            // fwrite($errFile,$sql);
-            $rqtht = mysql_fetch_assoc($rtht);
-            $tht_uid = $rqtht['tht_base_uid'];
-
-            if (empty($tht_uid)) {
-            $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
+            if (isset($thtuid_lookup[$line_name])) {				
+              $tht_uid = $thtuid_lookup[$line_name];
+            } else {
+              $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
                                         VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
-            $res = mysql_query($sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysql_error() . ".\n\n$sql");
-            $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
-            $rtht=mysql_query($sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysql_error(). ".\n\n$sql");
-            $rqtht=mysql_fetch_assoc($rtht);
-            $tht_uid=$rqtht['tht_base_uid'];
+              $res = mysql_query($sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysql_error() . ".\n\n$sql");
+              $tht_uid = mysql_insert_id();
+              $thtuid_lookup[$line_name] = $tht_uid;
             }
 
             //if this is a new marker then we don't need to query for uid before inserting
@@ -585,7 +568,7 @@ while ($inputrow= fgets($reader))  {
         $alleles = $data[$data_pt];
         $allele1 = substr($data[$data_pt],0,1);
 	    $allele2 = substr($data[$data_pt],1,1);
-        if (($alleles == 'A') || ($alleles == 'C') || ($alleles == 'T') || ($alleles == 'G') || ($alleles == 'N')) {
+        if (($alleles == 'A') || ($alleles == 'C') || ($alleles == 'T') || ($alleles == 'G') || ($alleles == 'N') || ($alleles == 'H')) {
           $results = convert2Illumina($alleles);
           if ($results == "") {
             $msg = "Error: could not convert ACTG to Illumina AB format $alleles $a_allele $b_allele\n";
@@ -627,7 +610,7 @@ while ($inputrow= fgets($reader))  {
 	    }
         } elseif ($alleles == '') {
  	} else {
- 	    	$msg = "bad data at $line_name $marker " . $data[$data_pt];
+ 	    	$msg = "bad data at $line_name $marker " . $data[$data_pt] . " $alleles\n";
                 fwrite($errFile, $msg);
                 $errLines++;
  	}
