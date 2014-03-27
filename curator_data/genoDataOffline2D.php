@@ -485,14 +485,8 @@ while ($inputrow= fgets($reader))  {
   $rowNum++;		// Which row number of the file, 1 being the first marker.
   $markerflag = 0;        //flag for checking marker existence
   $data_pt = 0;
-  //$sql = "SET AUTOCOMMIT=0";
-  //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
-    //$sql = "SET foreign_key_checks=0";
-    //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
-    //$sql = "SET unique_checks=0";
-    //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
-    //$sql = "START TRANSACTION";
-    //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+    $sql = "START TRANSACTION";
+    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
       $line_name = $header[$data_pt];
 
@@ -616,7 +610,7 @@ while ($inputrow= fgets($reader))  {
  	}
       }
     }
-    $sql = "SET AUTOCOMMIT=1";
+    $sql = "COMMIT";
     $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
 } // End of while data 
 fclose($reader);
