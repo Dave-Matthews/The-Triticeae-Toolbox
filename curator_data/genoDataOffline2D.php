@@ -485,8 +485,7 @@ while ($inputrow= fgets($reader))  {
   $rowNum++;		// Which row number of the file, 1 being the first marker.
   $markerflag = 0;        //flag for checking marker existence
   $data_pt = 0;
-    $sql = "START TRANSACTION";
-    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+    mysqli_autocommit($mysqli, FALSE);
     for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
       $line_name = $header[$data_pt];
 
@@ -520,8 +519,8 @@ while ($inputrow= fgets($reader))  {
             } else {
               $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
                                         VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
-              $res = mysql_query($sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysql_error() . ".\n\n$sql");
-              $tht_uid = mysql_insert_id();
+              $res = mysqli_query($mysqli, $sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error() . ".\n\n$sql");
+              $tht_uid = mysqli_insert_id($mysqli);
               $thtuid_lookup[$line_name] = $tht_uid;
             }
 
@@ -587,8 +586,8 @@ while ($inputrow= fgets($reader))  {
         }
 
 	if (($alleles == 'AA') || ($alleles == 'BB') || ($alleles == '--') || ($alleles == 'AB') || ($alleles == 'BA')) {
-            $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid") or exitFatal($errFile, "Database Error: gd lookup $sql");
-            $rgen=mysql_num_rows($result);
+            $result =mysqli_query($mysqli, "SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid") or exitFatal($errFile, "Database Error: gd lookup $sql");
+            $rgen=mysqli_num_rows($result);
             if ($rgen < 1) {
                 if (!$stmt1->execute()) {
                     $msg = "Execute failed: (" . $stmt1->errno .") " . $stmt1->error;
@@ -610,8 +609,11 @@ while ($inputrow= fgets($reader))  {
  	}
       }
     }
-    $sql = "COMMIT";
-    $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+    if (!mysqli_commit($mysqli)) {
+        $msg = "Transaction commit failed\n";
+        fwrite($errFile, $msg);
+        $errLines++;
+    }
 } // End of while data 
 fclose($reader);
 echo "Genotyping record creation completed.\n";
