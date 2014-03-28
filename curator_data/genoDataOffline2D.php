@@ -336,9 +336,9 @@ while (($line = fgets($reader)) !== false) {
           $thtuid = $row['tht_base_uid'];
           $thtuid_lookup[$lineStr] = $thtuid;
       } else {
-          $thtuid = NULL;
+          $thtuid = null;
       }
-      echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid. tht_base $thtuid\n";
+      echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid.\n";
     }
     if (feof($reader)) break;
 }    
@@ -444,7 +444,7 @@ while ($inputrow= fgets($reader))  {
   $num = count($data);		// number of fields
   $linecount = $num - 1;   // number of germplasm lines, i.e. data-containing columns.
   /* echo "working on marker $marker with $num of lines\n"; */
-  echo "Reading alleles for marker $marker, $linecount germplasm lines.\n";
+  /* echo "Reading alleles for marker $marker, $linecount germplasm lines.\n";
     
   /* check if marker is EST synonym, if not found, then check name */
   $sql ="SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE ms.value='$marker'";
@@ -467,6 +467,17 @@ while ($inputrow= fgets($reader))  {
       $marker_uid=$rdata['marker_uid'];
     }
   }
+  echo "Reading alleles for marker $marker, $linecount, id $marker_uid $found_genotype_data ";
+
+  $sql = "SELECT genotyping_data_uid from genotyping_data where marker_uid=$marker_uid";
+  $res = mysqli_query($mysqli,$sql);
+  if (null === ($rqgen=mysqli_fetch_assoc($res))) {
+      $found_genotype_data = false;
+      echo "no genotype data in db\n";
+  } else {
+      $found_genotype_data = true;
+      echo "previous genotype data in db\n";
+  }
     
   if (isset($marker_snp[$marker_uid])) {
     $marker_ab = $marker_snp[$marker_uid];
@@ -485,7 +496,7 @@ while ($inputrow= fgets($reader))  {
   $rowNum++;		// Which row number of the file, 1 being the first marker.
   $markerflag = 0;        //flag for checking marker existence
   $data_pt = 0;
-    mysqli_autocommit($mysqli, FALSE);
+    mysqli_autocommit($mysqli, false);
     for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
       $line_name = $header[$data_pt];
 
@@ -519,19 +530,20 @@ while ($inputrow= fgets($reader))  {
             } else {
               $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
                                         VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
-              $res = mysqli_query($mysqli, $sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error() . ".\n\n$sql");
+              $res = mysqli_query($mysqli, $sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
               $tht_uid = mysqli_insert_id($mysqli);
               $thtuid_lookup[$line_name] = $tht_uid;
             }
 
             //if this is a new marker then we don't need to query for uid before inserting
-           $gen_uid = null;
-           $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid AND tht_base_uid=$tht_uid ";
-           $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
-           if (null !== ($rqgen=mysqli_fetch_assoc($rgen)))
-           { 
-             $gen_uid=$rqgen['genotyping_data_uid'];
-           }
+            $gen_uid = null;
+            if ($found_genotype_data) {
+                $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid AND tht_base_uid=$tht_uid ";
+                $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
+                if (null !== ($rqgen=mysqli_fetch_assoc($rgen))) {
+                   $gen_uid=$rqgen['genotyping_data_uid'];
+                }
+            }
 
 	    //$sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
 	    //$rtht = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
