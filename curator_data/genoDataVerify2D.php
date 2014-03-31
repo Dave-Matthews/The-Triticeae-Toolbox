@@ -424,9 +424,7 @@ while ($inputrow= fgets($reader))  {
     // fwrite($errFile,$sql);
     if (mysqli_num_rows($res) < 1) {
       $markerflag = 1;
-      $msg = "ERROR: marker '$marker' not found.\n";
-      fwrite($errFile, $msg);
-      $errLines++;
+      echo "ERROR: marker '$marker' not found.\n";
       continue;
     } else {
       $rdata = mysqli_fetch_assoc($res);

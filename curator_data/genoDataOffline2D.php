@@ -457,7 +457,9 @@ while ($inputrow= fgets($reader))  {
     $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: Marker lookup - ". mysqli_error($mysqli)."\n\n$sql");
     if (mysqli_num_rows($res) < 1) {
       $markerflag = 1;
-      echo "ERROR: marker '$marker' not found.\n";
+      $msg = "ERROR: marker '$marker' not found.\n";
+      fwrite($errFile, $msg);
+      $errLines++;
       continue;
     } else {
       $rdata = mysqli_fetch_assoc($res);
