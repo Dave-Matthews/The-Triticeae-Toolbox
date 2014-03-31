@@ -289,12 +289,12 @@ while (($line = fgets($reader)) !== false) {
     // Trial Code processing
     if (($curTrialCode != $trialCodeStr) && ($trialCodeStr != '')) {
         $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'";
-    $res = mysqli_query($mysqli,$sql)
+        $res = mysqli_query($mysqli, $sql)
             or exitFatal($errFile, "Database Error: Experiment uid lookup - ".mysqli_error($mysqli));
         if ($row = mysqli_fetch_assoc($res)) {
-          $exp_uid = implode(",",$row);
+            $exp_uid = implode(",", $row);
         } else {
-	  exitFatal($errFile, "not found - $sql");
+	    exitFatal($errFile, "not found - $sql");
         }
         
 	$sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
@@ -434,16 +434,16 @@ while ($inputrow= fgets($reader))  {
       $marker_uid=$rdata['marker_uid'];
     }
   }
-  echo "Reading alleles for marker $marker, $linecount, id $marker_uid ";
+  echo "Reading alleles for marker $marker, id $marker_uid, line $linecount ";
 
   $sql = "SELECT genotyping_data_uid from genotyping_data where marker_uid=$marker_uid";
   $res = mysqli_query($mysqli,$sql);
   if (null === ($rqgen=mysqli_fetch_assoc($res))) {
       $found_genotype_data = false;
-      echo "no genotype data in db\n";
+      echo "genotype data not found in db\n";
   } else {
       $found_genotype_data = true;
-      echo "previous genotype data in db\n";
+      echo "genotype data found in db\n";
   }
     
   if (isset($marker_snp[$marker_uid])) {
@@ -499,10 +499,6 @@ while ($inputrow= fgets($reader))  {
             $gen_uid = null;
             if ($found_genotype_data) {
                 $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid AND tht_base_uid=$tht_uid ";
-                $rgen=mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: genotype_data lookup - ". mysqli_error($mysqli). ".\n\n$sql");
-                if (null !== ($rqgen=mysqli_fetch_assoc($rgen))) {
-                   $gen_uid=$rqgen['genotyping_data_uid'];
-                }
             }
 
 	    //$sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
