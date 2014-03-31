@@ -57,7 +57,7 @@ if (isset($_GET['uid'])) {
           $alleles1 = $row[1];
           $marker_list1[$marker_uid] = $alleles1;
     }
-    $sql = "select marker_uid from allele_cache
+    $sql = "select distinct marker_uid from allele_cache
         where line_record_uid = $uid
         and experiment_uid = $trial1";
     $result = mysql_query($sql) or die(mysql_error());
@@ -83,7 +83,7 @@ if (isset($_GET['uid'])) {
           $alleles1 = $row[1];
           $marker_list2[$marker_uid] = $alleles1;
       }
-      $sql = "select marker_uid from allele_cache
+      $sql = "select distinct marker_uid from allele_cache
         where line_record_uid = $uid
         and experiment_uid = $trial2";
       $result = mysql_query($sql) or die(mysql_error());
