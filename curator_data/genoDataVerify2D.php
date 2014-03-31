@@ -378,8 +378,8 @@ for ($x = 0; $x < $num; $x++) {
     $line_uid = get_lineuid($line_name);
     if ($line_uid == false) {
       $colnum = $x + 1; // Human-oriented column numbering.
-      $msg = "In file $gDataFile,\ncolumn $colnum:\nLine name '$header[$x]' is not in the database.\nUpload aborted.\n";
-      exitFatal($errFile, $msg);
+      $msg = "In file $gDataFile,\ncolumn $colnum:\tLine name '$header[$x]' is not in the database.\n";
+      fwrite($errFile, $msg);
     } else {
       $line_uid = implode(",",$line_uid);
       $lineuid_lookup[$line_name] = $line_uid;
