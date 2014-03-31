@@ -294,16 +294,16 @@ while (($line = fgets($reader)) !== false) {
         if ($row = mysqli_fetch_assoc($res)) {
             $exp_uid = implode(",", $row);
         } else {
-	    exitFatal($errFile, "not found - $sql");
+            exitFatal($errFile, "not found - $sql");
         }
         
-	$sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
-	$res = mysqli_query($mysqli,$sql)
+        $sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
+        $res = mysqli_query($mysqli,$sql)
             or exitFatal($errFile, "Database Error: Dataset experiment uid lookup - ".mysql_error());
         if ($row = mysqli_fetch_assoc($res)) {
-          $de_uid=implode(",",$row);
-	} else {
-          exitFatal($errFile, "not found - $sql");
+            $de_uid=implode(",", $row);
+        } else {
+            exitFatal($errFile, "not found - $sql");
         }
 
         $curTrialCode = $trialCodeStr;
@@ -314,18 +314,18 @@ while (($line = fgets($reader)) !== false) {
 
     $line_uid = get_lineuid($lineStr);
     if ($line_uid == false) {
-      exitFatal($errFile, "In Line Translation file, germplasm line '$lineStr' can not be found in the database.\nAborting.\n");
+        exitFatal($errFile, "In Line Translation file, germplasm line '$lineStr' can not be found in the database.\nAborting.\n");
     } else {
-      $line_uid = implode(",",$line_uid);
-      $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
-      $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
-      if ($row = mysqli_fetch_assoc($res)) {
-          $thtuid = $row['tht_base_uid'];
-          $thtuid_lookup[$lineStr] = $thtuid;
-      } else {
-          $thtuid = null;
-      }
-      echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid.\n";
+        $line_uid = implode(",",$line_uid);
+        $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
+        $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
+        if ($row = mysqli_fetch_assoc($res)) {
+            $thtuid = $row['tht_base_uid'];
+            $thtuid_lookup[$lineStr] = $thtuid;
+        } else {
+            $thtuid = null;
+        }
+        echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid.\n";
     }
     if (feof($reader)) break;
 }    
@@ -501,21 +501,6 @@ while ($inputrow= fgets($reader))  {
                 $sql ="SELECT genotyping_data_uid FROM genotyping_data WHERE marker_uid=$marker_uid AND tht_base_uid=$tht_uid ";
             }
 
-	    //$sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
-	    //$rtht = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
-	    // fwrite($errFile,$sql);
-	    //$rqtht = mysqli_fetch_assoc($rtht);
-	    //$tht_uid = $rqtht['tht_base_uid'];
-				
-	    //if (empty($tht_uid)) {
-            //$sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
-	    //				VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
-            //$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
-            //$sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid = '$exp_uid' AND line_record_uid = '$line_uid'";
-            //$rtht=mysqli_query($sql) or exitFatal($errFile, "Database Error: post tht_base insert - ". mysqli_error($mysqli). ".\n\n$sql");
-            // $rqtht=mysql_fetch_assoc($rtht);
-            //$tht_uid=$rqtht['tht_base_uid'];
-					
 	/* Read in the rest of the variables */
         $alleles = $data[$data_pt];
         $allele1 = substr($data[$data_pt],0,1);
@@ -553,7 +538,6 @@ while ($inputrow= fgets($reader))  {
  	}
       }
     }
-    mysqli_query($mysqli, "COMMIT");
 } // End of while data 
 fclose($reader);
 
