@@ -1,11 +1,21 @@
 <?php 
-// Genotype data importer
-
+/**
+ * Genotype data importer
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/genotype_data_upload.php
+ *
+ */
 // 08/09/2011 JLee  Add note that both files are required
 // 04/11/2011 Jlee  Add zip file handling
 //
 // Written By: John Lee
-//*********************************************
 
 require 'config.php';
 /*
@@ -32,7 +42,7 @@ class GenotypeData {
     private $delimiter = "\t";
     	
 	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
+        public function __construct($function = null)
 	{	
 		switch($function) {
 							
@@ -81,7 +91,8 @@ class GenotypeData {
                           <tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example 
 <a href="curator_data/examples/DArT_Genotype_template.txt">DArT_Genotype_template.txt</a> (1 = Present, 0 = Absent, "-" =  missing)</p>
 	</table>
-    <p><input type="submit" value="Upload Line Translation and Genotype Data File" /></p>
+    <p><input type="submit" name="submitButton" value="Upload Line Translation and Genotype Data File" /></p>
+    <p><input type="submit" name="submitButton" value="Verify Files" /> Check if lines and markers exist in database</p>
  
     <p></p>
     <p><h4>Note: Both files (line translation and genotype data) are required.
