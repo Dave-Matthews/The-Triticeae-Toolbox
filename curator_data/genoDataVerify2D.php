@@ -314,7 +314,8 @@ while (($line = fgets($reader)) !== false) {
 
     $line_uid = get_lineuid($lineStr);
     if ($line_uid == false) {
-        exitFatal($errFile, "In Line Translation file, germplasm line '$lineStr' can not be found in the database.\nAborting.\n");
+        $msg = "In Line Translation file, germplasm line '$lineStr' can not be found in the database.\nAborting.\n"
+        fwrite($errFile, $msg);
     } else {
         $line_uid = implode(",",$line_uid);
         $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
