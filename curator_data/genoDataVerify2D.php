@@ -314,7 +314,7 @@ while (($line = fgets($reader)) !== false) {
 
     $line_uid = get_lineuid($lineStr);
     if ($line_uid == false) {
-        $msg = "In Line Translation file, germplasm line '$lineStr' can not be found in the database.\nAborting.\n"
+        $msg = "In Line Translation file, germplasm line '$lineStr' can not be found in the database.\nAborting.\n";
         fwrite($errFile, $msg);
     } else {
         $line_uid = implode(",",$line_uid);
