@@ -455,12 +455,9 @@ while ($inputrow= fgets($reader))  {
   if (empty($marker_uid)) {
     $sql = "SELECT m.marker_uid FROM  markers AS m WHERE m.marker_name ='$marker'";
     $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: Marker lookup - ". mysqli_error($mysqli)."\n\n$sql");
-    // fwrite($errFile,$sql);
     if (mysqli_num_rows($res) < 1) {
       $markerflag = 1;
-      $msg = "ERROR: marker '$marker' not found.\n";
-      fwrite($errFile, $msg);
-      $errLines++;
+      echo "ERROR: marker '$marker' not found.\n";
       continue;
     } else {
       $rdata = mysqli_fetch_assoc($res);
