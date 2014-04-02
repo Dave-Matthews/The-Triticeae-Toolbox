@@ -66,22 +66,16 @@ class Markers_Check {
     }
 
     private function typeMarkersCheck() {
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
-
-		echo "<h2> Enter/Update Markers: Validation</h2>"; 
-                echo "<h3>Check import file</h3>\n";
-    echo "Compares the marker name and sequence in the import file to markers already loaded in the database.<br>";
-    echo "The following steps are ordered by precedent so that if a name match is found the sequence match is ignored.<br>";
-    echo "1. When a marker matches by name or synonym to a database entry the entry will be updated.<br>\n";
-    echo "2. When a marker matches by sequence to a database entry and \"Add as synonym\" is checked it will be added as a synonym.<br>\n";
-    echo "3. When a marker name is not in the database it will be added<br>\n";
-    ?>
-    <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-    <script type="text/javascript" src="curator_data/marker.js"></script>
-    <div id=update></div>
-    <div id=checksyn>
-    <?php
+	global $config;
+	include($config['root_dir'] . 'theme/admin_header.php');
+        ?>
+        <h2>Enter/Update Markers: Validation</h2>
+        <h3>Check import file</h3>
+        <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+        <script type="text/javascript" src="curator_data/marker.js"></script>
+        <div id=update></div>
+        <div id=checksyn>
+        <?php
                 //echo "The import scrip first check if the marker name is in the databae. ";
                 //echo "If no matching name is found then it will check if the marker sequence";
                 //echo "  matches an entry in the database.";
@@ -244,7 +238,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         echo "<tr><td>$count_total<td>$count_dup_name<td><font color=blue>$count_dup_seq</font><td>";
         echo "$count_update update marker<br>";
         echo "$count_insert add marker<br>";
-        echo "$count_add_syn add synonym\n";
+        if ($overwrite) {
+            echo "$count_add_syn add synonym\n";
+        }
         ?></table>
         <table id="content2<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?>">
         <?php
@@ -562,7 +558,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         <?php
     }
 
-  	private function type_MarkersSNP() {
+    private function type_MarkersSNP() {
 	?>
 	<style type="text/css">
 		th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
@@ -593,6 +589,13 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $fileFormat = $_GET['file_type'];
             $overwrite = $_GET['overwrite'];
             $expand = $_GET['expand'];
+        }
+        if ($overwrite) {
+            $checked_imp = "checked";
+            $checked_db = "";
+        } else {
+            $checked_imp = "";
+            $checked_db = "checked";
         }
 
         /* Read the file */
@@ -695,31 +698,41 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             }
         }  
         unset ($value);
-        fclose($reader);   
+        fclose($reader); 
+        ?> 
+        <input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
+            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
+            > Ignore sequence matches<br><br>
+        <input type=radio name="check_seq" id="use_imp" value="imp" <?php echo $checked_imp ?>
+            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
+            > When sequence matches add marker as synonym<br>
+        <?php
+        if ($overwrite) {
+          ?>
+          <ul><li>Does the marker name in the import file match an entry in the markers or synonym table?</li>
+            <ul><li>Yes - Update the database entry</li>
+                <li>No - Does the marker sequence in the import file match an entry in the markers table?</li>
+                <ul><li>Yes - Add as synonym
+                    <li>No - Add new entry to the database<br>
+                </ul>
+           </ul>
+          </ul>
+        <?php
+        } else {
+          ?>
+          <ul><li>Does the marker name in the import file match an entry in the markers or synonym table?
+            <ul><li>Yes - Update the database entry
+                <li>No - Add new entry to the database
+            </ul>
+          </ul>
+          <?php
+        }
 
         $count_total = $i - 1; 
         //$numMatch = $this->typeCheckSynonym($storageArr1, $storageArr2, $nameIdx, $sequenceIdx, $overwrite, $expand);
         $numMatch = $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
 
         if ($numMatch["dupSeq"] > 0) {
-            echo "When sequence match is found should this entry be added as a synonym?<br>";
-            echo "<table>";
-            if ($overwrite) {
-              $checked_imp = "checked";
-              $checked_db = "";
-            } else {
-              $checked_imp = "";
-              $checked_db = "checked";
-            } 
-            ?>
-            <tr><td><input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
-            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
-            >Ignore match, update or add marker
-            <tr><td><input type=radio name="check_seq" id="use_imp" value="imp" <?php echo $checked_imp ?>
-            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
-            >Add marker as synonym to <font color="blue">database marker</font><br>
-            </table><br>
-            <?php
         } else {
             ?>
             <input type=hidden name="check_seq" id="use_imp" value="">
