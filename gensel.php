@@ -679,17 +679,17 @@ class Downloads
         $filename1 = 'THT_result_' . $unique_str . '.csv';
         $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if (file_exists("/tmp/tht/$filename7")) {
-                  print "<img src=\"/tmp/tht/$filename7\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
         } else {
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename10")) {
-                  print "<img src=\"/tmp/tht/$filename10\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
         } else {
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
                   print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
                   print "with columns for marker name, chromosome, position, marker score<br><br>";
                   print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
@@ -812,9 +812,9 @@ class Downloads
         $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if(!file_exists($dir.$filename3)){
             $h = fopen($dir.$filename3, "w+");
-            $png1 = "png(\"$dir$filename4\", width=800, height=400)\n";
-            $png2 = "png(\"$dir$filename7\", width=800, height=400)\n";
-            $png3 = "png(\"$dir$filename10\", width=800, height=400)\n"; 
+            $png1 = "png(\"$dir$filename4\", width=1200, height=400)\n";
+            $png2 = "png(\"$dir$filename7\", width=1200, height=400)\n";
+            $png3 = "png(\"$dir$filename10\", width=1200, height=400)\n"; 
             $png4 = "dev.set(3)\n";
             $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
@@ -839,16 +839,16 @@ class Downloads
         }
         exec("cat /tmp/tht/$filename3 R/GSforGWA.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
         if (file_exists("/tmp/tht/$filename7")) {
-                  print "<img src=\"/tmp/tht/$filename7\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename7\" width=\"800\" /><br>";
         } else {
                   echo "Error in R script<br>\n";
                   echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla <br>";
         }
         if (file_exists("/tmp/tht/$filename10")) {
-                  print "<img src=\"/tmp/tht/$filename10\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
         }
         if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
                   print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
                   print "with columns for marker name, chromosome, position, marker score<br><br>";
                   print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
@@ -897,9 +897,9 @@ class Downloads
         $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if(!file_exists($dir.$filename3)){
             $h = fopen($dir.$filename3, "w+");
-            $png1 = "png(\"$dir$filename4\", width=800, height=400)\n";
-            $png2 = "png(\"$dir$filename7\", width=800, height=400)\n";
-            $png3 = "png(\"$dir$filename10\", width=800, height=400)\n";
+            $png1 = "png(\"$dir$filename4\", width=1200, height=400)\n";
+            $png2 = "png(\"$dir$filename7\", width=1200, height=400)\n";
+            $png3 = "png(\"$dir$filename10\", width=1200, height=400)\n";
             $png4 = "dev.set(3)\n";
             $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
@@ -1263,19 +1263,6 @@ class Downloads
                   echo "skip CrossValidation because traing set has less than 50 lines<br>\n";
                   }
                 }
-	}
-	
-	/**
-	 * used by uasort() to order an array
-	 * @param integer $a
-	 * @param integer $b
-	 * @return number
-	 */
-	private function cmp($a, $b) {
-	  if ($a == $b) {
-	    return 0;
-	  }
-	  return ($a < $b) ? -1 : 1;
 	}
 	
 	/**
