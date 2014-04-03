@@ -5,13 +5,14 @@ require_once 'Mail.php';
 function send_email($to, $subject, $message, $attachments = array()) {
   connect();
   //$smtpserver = split(":", setting('smtpserver','mailhub.iastate.edu'));
-  $smtpserver = split(":", setting('smtpserver','graingenes.org'));
+  //$smtpserver = split(":", setting('smtpserver','graingenes.org'));
+  $smtpserver = split(":", setting('smtpserver','mail.authsmtp.com'));
 
   $smtphost = $smtpserver[0];
   $smtpport = isset($smtpserver[1]) ? $smtpserver[1] : '25';
   ini_set('smtp', $smtpserver[1]);
   ini_set('smtp_port', $smtpport);
-  $from = setting('mailfrom', 'noreply@tht.vrac.iastate.edu');
+  $from = setting('mailfrom', 'noreply@graingenes.org');
   ini_set('sendmail_from', $from);
 
   $headers = array("From" => $from,
@@ -57,9 +58,12 @@ $message . "\r\n" .
     syslog(LOG_INFO, "to: $to\nemail:\n$message");
     closelog();
   }
-  $mobj = &Mail::factory(setting('mailbackend', 'sendmail'),
-			 array('host' => $smtpserver,
-			       'port' => $smtpport));
+  $mobj = &Mail::factory(setting('mailbackend', 'smtp'),
+			 array('host' => 'mail.authsmtp.com',
+			       'port' => 23,
+                               'auth' => true,
+                               'username' => 'ac65953',
+                               'password' => 'kcuvrkr4hsktuu'));
   return $mobj->send(array($to), $headers, $message);
   }
 
