@@ -529,7 +529,7 @@ if (filesize($errorFile)  > 0) {
             "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
     echo "Genotype Data Import Processing Successfully Completed\n";
 }
-mail($emailAddr, $subject, $body, $mailheader);
+send_email($emailAddr, $subject, $body);
 
 echo "Genotype Data Import Done\n";
 echo "Finish time - ". date("m/d/y : H:i:s", time()). "\n"; 
@@ -568,7 +568,7 @@ function exitFatal ($handle, $msg) {
     $subject = 'Fatal Import Error';
     $body = "There was a fatal problem during the offline importing process.\n". $msg. "\n\n" .
         "Additional information can be found at ".$urlPath.'curator_data/'.$tPath. "\n";      
-    mail($emailAddr, $subject, $body, $mailheader);
+    send_email($emailAddr, $subject, $body);
     exit(1);
 }
 

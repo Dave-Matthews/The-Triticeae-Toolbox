@@ -775,7 +775,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
 
 echo "Allele frequency calculations completed.\nNow updating the allele cache table.\n";
 $body = "Allele frequency calculations completed.\nNow updating the allele cache table.\n";
-mail($emailAddr, "Genotype import step 1", $body, $mailheader);
+send_email($emailAddr, "Genotype import step 1", $body);
 
 // Shortcut function for mysql_query().
 function mysqlq($command) {
@@ -807,7 +807,7 @@ mysqlq("RENAME TABLE ac_temp TO allele_cache");
 mysqlq("ALTER TABLE allele_cache add index (experiment_uid), add index (line_record_uid), add index (marker_uid)");
 $body = "Allele cache table updated.\nNow updating the allele_conflicts table.\n";
 echo $body;
-mail($emailAddr, "Genotype import step 2", $body, $mailheader);
+send_email($emailAddr, "Genotype import step 2", $body);
 
 // Update table allele_conflicts.
 mysqlq("drop table if exists acxyz");
@@ -845,7 +845,7 @@ mysqlq("rename table allele_conflicts_temp to allele_conflicts");
 
 $body = "Allele conflicts table updated.\nNow updating the allele_bylines and allele_bymarker tables.\n";
 echo $body;
-mail($emailAddr, "Genotype import step 3", $body, $mailheader);
+send_email($emailAddr, "Genotype import step 3", $body);
 
 $cmd = "/usr/bin/php " . $progPath . "cron/create-allele-byline.php";
 exec($cmd);
@@ -864,7 +864,7 @@ if (filesize($errorFile)  > 0) {
             "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
     echo "Genotype Data Import Processing Successfully Completed\n";
 }
-mail($emailAddr, $subject, $body, $mailheader);
+send_email($emailAddr, $subject, $body);
 
 // Declare completion.
 echo "Genotype Data Import Done\n";
@@ -929,7 +929,7 @@ function exitFatal ($handle, $msg)
     $subject = 'Fatal Import Error';
     $body = "There was a fatal problem during the offline importing process.\n". $msg. "\n\n" .
         "Additional information can be found at ".$urlPath.'curator_data/'.$tPath. "\n";      
-    mail($emailAddr, $subject, $body, $mailheader);
+    send_email($emailAddr, $subject, $body);
     exit(1);
 }
 
