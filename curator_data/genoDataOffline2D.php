@@ -348,7 +348,7 @@ echo "Line translation file processing done. Number of experiments: $num\n";
 //send email so user can check on status of import
 $body = "The offline genotype data import has started.\n".
   "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
-mail($emailAddr, "Genotype import started", $body, $mailheader);
+send_email($emailAddr, "Genotype import started", $body);
 
 //echo "Start genotyping record creation process...\n";
 echo "\nProcessing genotype data file...\n";
