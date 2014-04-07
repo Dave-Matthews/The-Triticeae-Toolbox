@@ -149,7 +149,7 @@ private function typeExperimentCheck()
       $uploadfile=$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
       if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
-          echo "error - could not upload file $uploadfile<br>\n";
+          echo "error - could not upload file $uploadfile<br> Can not move " . $_FILES['file']['tmp_name'][0] . " to $raw_path <br>Possibly folder permission problem.\n";
       } else {
           echo $_FILES['file']['name'][0] . " $FileType<br>\n";
           $metafile = $raw_path;
@@ -265,7 +265,7 @@ private function typeExperimentCheck()
                }
 
                //check unique plot#
-               for ($i = 3; $i <= $lines_found; $i++) {
+               for ($i = 2; $i <= $lines_found; $i++) {
                     $tmp = $data[$i]["A"];
                     if (isset($unique_plot[$tmp])) {
                       echo "Error: duplicate plot number $tmp<br>\n";
@@ -276,7 +276,7 @@ private function typeExperimentCheck()
                }
 
                //check unique row column
-               for ($i = 3; $i <= $lines_found; $i++) {
+               for ($i = 2; $i <= $lines_found; $i++) {
                    $tmp = $data[$i]["D"] . ":" . $data[$i]["E"];
                    if (preg_match("/[0-9]/", $tmp)) {
                        if (isset($unique_rc[$tmp])) {
