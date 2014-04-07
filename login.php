@@ -242,11 +242,10 @@ user_types_uid=$public_type_id) limit 1";
 /**
  * Check if the user+password confirmed his email.
  */
-function isVerified($email, $pass) {
+function isVerified($email) {
   $sql_email = mysql_real_escape_string($email);
-  $sql_pass = mysql_real_escape_string($pass);
   $sql = "select email_verified from users where
-users_name='$sql_email' and pass=MD5('$sql_pass')";
+users_name='$sql_email'";
   $r = mysql_query($sql);
   $row = mysql_fetch_assoc($r);
   if ($row)
@@ -287,34 +286,37 @@ function HTMLProcessLogin() {
   $email = $_POST['email'];
   $password = $_POST['password'];
   $rv = '';
-  if (isUser($email, $password)) {
-    // Successful login
-    $_SESSION['username'] = $email;
-    $_SESSION['password'] = md5($password);
-    $sql = "update users set lastaccess = now() where
-users_name = '$email'";
-    mysql_query($sql) or die("<pre>" . mysql_error() .
-			     "\n\n\n$sql.</pre>");
-    // Retrieve stored selection of lines, markers and maps.
-    $stored = retrieve_session_variables('selected_lines', $email);
-    if (-1 != $stored)
-      $_SESSION['selected_lines'] = $stored;
-    $stored = retrieve_session_variables('clicked_buttons', $email);
-    if (-1 != $stored)
-      $_SESSION['clicked_buttons'] = $stored;
-    $stored = retrieve_session_variables('mapids', $email);
-    if (-1 != $stored)
-      $_SESSION['mapids'] = $stored;
-    $rv = HTMLLoginSuccess();
-  }
-  else
-    if (!passIsRight($_POST['email'], $_POST['password']))
-      $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
-    else
-      if (!isVerified($_POST['email'], $_POST['password']))
+  
+  if (!isVerified($_POST['email']))
 	$rv = HTMLLoginForm("You cannot login until you confirm your email (the link was sent to you at the time of registration)");
-      else
-	$rv = HTMLLoginForm("Login failed for unknown reason.");
+  else {
+        if (isUser($email, $password)) {
+          // Successful login
+          $_SESSION['username'] = $email;
+          $_SESSION['password'] = md5($password);
+          $sql = "update users set lastaccess = now() where
+      users_name = '$email'";
+          mysql_query($sql) or die("<pre>" . mysql_error() .
+                                   "\n\n\n$sql.</pre>");
+          // Retrieve stored selection of lines, markers and maps.
+          $stored = retrieve_session_variables('selected_lines', $email);
+          if (-1 != $stored)
+            $_SESSION['selected_lines'] = $stored;
+          $stored = retrieve_session_variables('clicked_buttons', $email);
+          if (-1 != $stored)
+            $_SESSION['clicked_buttons'] = $stored;
+          $stored = retrieve_session_variables('mapids', $email);
+          if (-1 != $stored)
+            $_SESSION['mapids'] = $stored;
+          $rv = HTMLLoginSuccess();
+        }
+        else {
+            if (!passIsRight($_POST['email'], $_POST['password']))
+                $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
+            else
+                $rv = HTMLLoginForm("Login failed for unknown reason.");
+        }
+  }
   return $rv;
 }
 
