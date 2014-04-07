@@ -26,7 +26,7 @@ loginTest();
 $row = loadUser($_SESSION['username']);
 
 //needed for mac compatibility
-ini_set('auto_detect_line_endings',true);
+ini_set('auto_detect_line_endings', true);
 
 ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
@@ -46,70 +46,77 @@ new Data_Check($_GET['function']);
 
 class Data_Check
 {
-  /**
-   * Using the class's constructor to decide which action to perform
-   * @param unknown_type $function
-   */
-  public function __construct($function = null) {
-    switch($function)
-      {
-      case 'typeDatabase':
-        $this->type_Database(); /* update database */
-        break;
-      default:
-        $this->typeExperimentCheck(); /* intial case*/
-        break;
-      }
-  }
-
-/**
- * check experiment data before loading into database
- */
-private function typeExperimentCheck()
+    /**
+     * Using the class's constructor to decide which action to perform
+     *
+     * @param unknown_type $function action to perform
+     */
+    public function __construct($function = null)
+    {
+        switch($function)
         {
-                global $config;
-                include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>CSR Field Book Data Validation</h2>";
-                $this->type_Experiment_Name();
-                $footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+        case 'typeDatabase':
+            $this->type_Database(); /* update database */
+            break;
+        default:
+            $this->typeExperimentCheck(); /* intial case*/
+            break;
         }
+    }
 
-/**
- * check experiment data before loading into database
- */
- private function type_Experiment_Name() {
-   global $mysqli;
-?>
-   <script type="text/javascript">
-     function update_database(filepath, filename, username, rawdatafile) {
-       var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&expdata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&raw_data_file=' + rawdatafile;
-       // Opens the url in the same window
-       window.open(url, "_self");
-     }
-     function goBack() {
-       window.history.back()
-     }
-   </script>
-   <!-- style type="text/css">
-     th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-     table {background: none; border-collapse: collapse}
-     td {border: 0px solid #eee !important;}
-     h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-   </style-->
-<?php
-  global $config;
-  $row = loadUser($_SESSION['username']);
-  $username=$row['name'];
-  $tmp_dir="uploads/tmpdir_".$username."_".rand();
-  //$experiment_uid = $_POST['exper_uid'];
-  //if (preg_match("/[0-9]/",$experiment_uid)) {
-  //} else {
-  //  die("Error: Must select a trial name<br>\n");
-  //}
-  $replace_flag = $_POST['replace'];
-  $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
-  $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
+    /**
+     * check experiment data before loading into database
+     *
+     * @return null
+     */
+    private function typeExperimentCheck()
+    {
+        global $config;
+        include $config['root_dir'] . 'theme/admin_header.php';
+        echo "<h2>CSR Field Book Data Validation</h2>";
+        $this->type_Experiment_Name();
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
+
+    /**
+     * check experiment data before loading into database
+     *
+     * @return null
+     */
+    private function type_Experiment_Name()
+    {
+        global $mysqli;
+        ?>
+        <script type="text/javascript">
+        function update_database(filepath, filename, username, rawdatafile) {
+        var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&expdata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&raw_data_file=' + rawdatafile;
+        // Opens the url in the same window
+        window.open(url, "_self");
+        }
+        function goBack() {
+            window.history.back()
+        }
+        </script>
+        <!-- style type="text/css">
+        th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+        table {background: none; border-collapse: collapse}
+        td {border: 0px solid #eee !important;}
+        h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+        </style-->
+        <?php
+        global $config;
+        $row = loadUser($_SESSION['username']);
+        $username=$row['name'];
+        $tmp_dir="uploads/tmpdir_".$username."_".rand();
+        //$experiment_uid = $_POST['exper_uid'];
+        //if (preg_match("/[0-9]/",$experiment_uid)) {
+        //} else {
+        //  die("Error: Must select a trial name<br>\n");
+        //}
+        $replace_flag = $_POST['replace'];
+        $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
+        $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
   //$sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
   //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
   //if ($row = mysqli_fetch_assoc($res)) {
@@ -119,12 +126,12 @@ private function typeExperimentCheck()
   //  die("Error: could not find trial code in database $experiment_uid<br>\n");
   //}
   if (file_exists($raw_path)) {
-    $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
+    $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(64, 80));
     $tmp1 = $_FILES['file']['name'][0];
     $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][0];
     //echo "replace $tmp1 $tmp2 $raw_path<br>\n";
-    $meta_path = str_replace("$tmp1","$unq_file_name","$meta_path",$count);
-    $raw_path = str_replace("$tmp1","$unq_file_name","$raw_path",$count);
+    $meta_path = str_replace("$tmp1", "$unq_file_name", "$meta_path",$count);
+    $raw_path = str_replace("$tmp1", "$unq_file_name", "$raw_path",$count);
   } else {
     $unq_file_name = $_FILES['file']['name'][0];
   }
@@ -149,7 +156,8 @@ private function typeExperimentCheck()
       $uploadfile=$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
       if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
-          echo "error - could not upload file $uploadfile<br>\n";
+          echo "error - could not upload file $uploadfile<br> Can not move " . $_FILES['file']['tmp_name'][0]
+          . " to $raw_path <br>Possibly folder permission problem.\n";
       } else {
           echo $_FILES['file']['name'][0] . " $FileType<br>\n";
           $metafile = $raw_path;
@@ -265,7 +273,7 @@ private function typeExperimentCheck()
                }
 
                //check unique plot#
-               for ($i = 3; $i <= $lines_found; $i++) {
+               for ($i = 2; $i <= $lines_found; $i++) {
                     $tmp = $data[$i]["A"];
                     if (isset($unique_plot[$tmp])) {
                       echo "Error: duplicate plot number $tmp<br>\n";
@@ -276,11 +284,11 @@ private function typeExperimentCheck()
                }
 
                //check unique row column
-               for ($i = 3; $i <= $lines_found; $i++) {
+               for ($i = 2; $i <= $lines_found; $i++) {
                    $tmp = $data[$i]["D"] . ":" . $data[$i]["E"];
                    if (preg_match("/[0-9]/", $tmp)) {
                        if (isset($unique_rc[$tmp])) {
-                           echo "Error: duplicate row column $tmp<br>\n";
+                           echo "Error: duplicate row column $tmp on line $i<br>\n";
                            $error_flag = 1;
                        } else {
                          $unique_rc[$tmp] = 1;
