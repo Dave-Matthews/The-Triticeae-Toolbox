@@ -54,8 +54,10 @@ class gLineNames_Check
 {
     private $delimiter = "\t";
 
-    // Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
+    /**
+     * Using the class's constructor to decide which action to perform
+     */
+    public function __construct($function = null)
 	{	
 		switch($function)
 		{
@@ -147,17 +149,28 @@ class gLineNames_Check
             error(1, "Unable to move the genotype data file to the upload directory.");
             exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");           
        	}
-       	if ($_POST['data_format'] == '1D') { 
+        if ($_POST['submitButton'] == 'Verify Files') {
+            $cmd = "php genoDataVerify2D.php \"$translateFile\" \"$genoDataFile\" $userEmail $url $username" ." > " . $processOut ;
+            exec($cmd);
+            if (file_exists($processOut)) {
+              $h = fopen($processOut, "r");
+              while ($line= fgets($h)) {
+                echo "$line<br>\n";
+              }
+              fclose($h);
+            }
+       	} elseif ($_POST['data_format'] == '1D') { 
        	    $cmd = "php genoDataOffline.php \"$translateFile\" $genoDataFile $userEmail $url $username" ." > " . $processOut . " &";
+            exec($cmd);
+            echo "<h3>The files have been uploaded and submitted to the off-line processor.<br>";
+            echo "A report will be emailed to you once the data import to the database has been completed. </h3>";
         } else {
             $cmd = "php genoDataOffline2D.php \"$translateFile\" \"$genoDataFile\" $userEmail $url $username" ." > " . $processOut . " &";
+            exec($cmd);
+            echo "<h3>The files have been uploaded and submitted to the off-line processor.<br>";
+            echo "A report will be emailed to you once the data import to the database has been completed. </h3>";
         }
-        //echo "Cmd - " . $cmd . "<br>";
-        exec($cmd);
-   
-        echo "<h3>The files have been uploaded and submitted to the off-line processor.<br>";
-        echo "A report will be emailed to you once the data import to the database has been completed. </h3><br>";
-        echo "<br>";
+        echo "<br><br>";
         exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
    }
  
