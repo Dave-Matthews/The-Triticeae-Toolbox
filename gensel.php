@@ -79,9 +79,6 @@ class Downloads
         case 'run_rscript2':
             $this->run_rscript2();
             break;
-        case 'type1build_tassel':
-            echo $this->type1_build_tassel();
-            break;
         case 'download_session_v2':
             echo $this->type1_session(V2);
             break;
@@ -682,17 +679,17 @@ class Downloads
         $filename1 = 'THT_result_' . $unique_str . '.csv';
         $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if (file_exists("/tmp/tht/$filename7")) {
-                  print "<img src=\"/tmp/tht/$filename7\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
         } else {
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename10")) {
-                  print "<img src=\"/tmp/tht/$filename10\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
         } else {
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
                   print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
                   print "with columns for marker name, chromosome, position, marker score<br><br>";
                   print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
@@ -815,9 +812,9 @@ class Downloads
         $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if(!file_exists($dir.$filename3)){
             $h = fopen($dir.$filename3, "w+");
-            $png1 = "png(\"$dir$filename4\", width=800, height=400)\n";
-            $png2 = "png(\"$dir$filename7\", width=800, height=400)\n";
-            $png3 = "png(\"$dir$filename10\", width=800, height=400)\n"; 
+            $png1 = "png(\"$dir$filename4\", width=1200, height=400)\n";
+            $png2 = "png(\"$dir$filename7\", width=1200, height=400)\n";
+            $png3 = "png(\"$dir$filename10\", width=1200, height=400)\n"; 
             $png4 = "dev.set(3)\n";
             $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
@@ -842,16 +839,16 @@ class Downloads
         }
         exec("cat /tmp/tht/$filename3 R/GSforGWA.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
         if (file_exists("/tmp/tht/$filename7")) {
-                  print "<img src=\"/tmp/tht/$filename7\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename7\" width=\"800\" /><br>";
         } else {
                   echo "Error in R script<br>\n";
                   echo "cat /tmp/tht/$filename3 R/GSforT3.R | R --vanilla <br>";
         }
         if (file_exists("/tmp/tht/$filename10")) {
-                  print "<img src=\"/tmp/tht/$filename10\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
         }
         if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
+                  print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
                   print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
                   print "with columns for marker name, chromosome, position, marker score<br><br>";
                   print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
@@ -900,9 +897,9 @@ class Downloads
         $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if(!file_exists($dir.$filename3)){
             $h = fopen($dir.$filename3, "w+");
-            $png1 = "png(\"$dir$filename4\", width=800, height=400)\n";
-            $png2 = "png(\"$dir$filename7\", width=800, height=400)\n";
-            $png3 = "png(\"$dir$filename10\", width=800, height=400)\n";
+            $png1 = "png(\"$dir$filename4\", width=1200, height=400)\n";
+            $png2 = "png(\"$dir$filename7\", width=1200, height=400)\n";
+            $png3 = "png(\"$dir$filename10\", width=1200, height=400)\n";
             $png4 = "dev.set(3)\n";
             $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
             $cmd4 = "hmpData <- read.table(\"$dir$filename9\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", check.names = FALSE)\n";
@@ -1266,19 +1263,6 @@ class Downloads
                   echo "skip CrossValidation because traing set has less than 50 lines<br>\n";
                   }
                 }
-	}
-	
-	/**
-	 * used by uasort() to order an array
-	 * @param integer $a
-	 * @param integer $b
-	 * @return number
-	 */
-	private function cmp($a, $b) {
-	  if ($a == $b) {
-	    return 0;
-	  }
-	  return ($a < $b) ? -1 : 1;
 	}
 	
 	/**
@@ -2320,46 +2304,39 @@ class Downloads
 	 AND mim.map_uid = map.map_uid
 	 AND map.mapset_uid = mapset.mapset_uid
 	 AND mapset.mapset_uid = $selected_map 
-	 order by mim.chromosome, mim.start_position";
+         order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
 	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 	 while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
            $chr = $row[1];
            $pos = $row[2];
-           if (preg_match("/(\d+)/",$chr,$match)) {
-             $chr = $match[0];
-             $rank = (1000*$chr) + $pos;
-           } else {
-             $rank = 99999;
-           }
-	   $marker_list_mapped[$marker_uid] = $rank;
+	   $marker_list_mapped[$marker_uid] = $pos;
+           $marker_list_chr[$marker_uid] = $chr;
 	 }
-	
+
+         $marker_list_all = $marker_list_mapped;	
 	 //generate an array of selected markers and add map position if available
-         $sql = "select marker_uid, marker_name, A_allele, B_allele from markers
-         where marker_uid IN ($markers_str)";
+         $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
+         where marker_uid IN ($markers_str)
+         AND markers.marker_type_uid = marker_types.marker_type_uid
+         order by BINARY marker_name";
          $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
          while ($row = mysql_fetch_array($res)) {
            $marker_uid = $row[0];
            $marker_name = $row[1];
-           if (isset($marker_list_mapped[$marker_uid])) {
-             $marker_list_all[$marker_uid] = $marker_list_mapped[$marker_uid];
+           if (isset($marker_list_all[$marker_uid])) {
            } else {
              $marker_list_all[$marker_uid] = 0;
            }
            if (preg_match("/[A-Z]/",$row[2]) && preg_match("/[A-Z]/",$row[3])) {
+                $allele = $row[2] . "/" . $row[3];
+           } elseif (preg_match("/DArT/",$row[4])) {
                 $allele = $row[2] . "/" . $row[3];
            } else {
                 $allele = "N/N";
            }
            $marker_list_name[$marker_uid] = $marker_name;
            $marker_list_allele[$marker_uid] = $allele;
-         }
-
-         //sort marker_list_all by map location if available
-         if (uasort($marker_list_all, array($this,'cmp'))) {
-         } else {
-           die("could not sort marker list\n");
          }
 
 	 //get location in allele_byline for each marker
@@ -2385,7 +2362,7 @@ class Downloads
 	 //using a subset of markers so we have to translate into correct index
          //if there is no map then use chromosome 0 and index for position
          $pos_index = 0;
-	 foreach ($marker_list_all as $marker_id => $rank) {
+	 foreach ($marker_list_all as $marker_id => $val) {
 	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
@@ -2408,7 +2385,6 @@ class Downloads
 	     if ($row = mysql_fetch_array($res)) {
                 $chrom = $row[2];
                 if (preg_match('/[0-9]+/',$chrom, $match)) {
-                  $chrom = $match[0];
                   $pos = 100 * $row[3];
                 } else {
                   $chrom = 0;
@@ -2655,230 +2631,4 @@ class Downloads
 
 	}
 
-	/**
-	 * create map file for tassel V3
-	 * @param array $lines
-	 * @param array $markers
-	 * @return string
-	 */
-	function type1_build_geneticMap($lines,$markers)
-	{
-		$delimiter ="\t";
-		$output = '';
-		$doneheader = false;
-		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-            $max_missing = $_GET['mm'];
-		if ($max_missing>100)
-			$max_missing = 100;
-		elseif ($max_missing<0)
-			$max_missing = 0;
-			// $firephp->log("in sort markers2");
-        $min_maf = 0.01;//IN PERCENT
-        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-            $min_maf = $_GET['mmaf'];
-		if ($min_maf>100)
-			$min_maf = 100;
-		elseif ($min_maf<0)
-			$min_maf = 0;
-		// $firephp->log("in sort markers".$max_missing."  ".$min_maf);
-		
-		$lookup_chrom = array(
-		  '1H' => '1','2H' => '2','3H' => '3','4H' => '4','5H' => '5',
-		  '6H' => '6','7H' => '7','UNK'  => '10'
-		);
-
-                //generate an array of selected markers that can be used with isset statement
-                foreach ($markers as $temp) {
-                  $marker_lookup[$temp] = 1;
-                }
-
-                $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-                $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-                $i=0;
-                while ($row = mysql_fetch_array($res)) {
-                  $marker_list[$i] = $row[0];
-                  $marker_list_name[$i] = $row[1];
-                  $i++;
-                }
-
-		$sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
-		where mim.marker_uid = markers.marker_uid
-		AND mim.map_uid = map.map_uid
-		AND map.mapset_uid = mapset.mapset_uid
-		AND mapset.mapset_uid = 1";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		while ($row = mysql_fetch_array($res)) {
-		  $uid = $row[0];
-		  $chr = $lookup_chrom[$row[1]];
-		  $pos = $row[2];
-		  $marker_list_mapped[$uid] = "$chr\t$pos";
-		  if (preg_match("/(\d+)/",$chr,$match)) {
-		    $chr = $match[0];
-		    $rank = (1000*$chr) + $pos;
-		  } else {
-		    $rank = 99999;
-		  }  
-		  $marker_list_rank[$uid] = $rank; 
-		}
-	
-                foreach ($lines as $line_record_uid) {
-                  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-                  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-                  if ($row = mysql_fetch_array($res)) {
-                    $alleles = $row[0];
-                    $outarray = explode(',',$alleles);
-                    $i=0;
-                    foreach ($outarray as $allele) {
-                      if ($allele=='AA') {
-                        $marker_aacnt[$i]++;
-                      }
-                      elseif (($allele=='AB') or ($allele=='BA')) {
-                        $marker_abcnt[$i]++;
-                      }
-                      elseif ($allele=='BB') {
-                        $marker_bbcnt[$i]++;
-                      }
-                      elseif (($allele=='--') or ($allele=='')) {
-                        $marker_misscnt[$i]++;
-                      }
-                      else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
-                      }
-                      $i++;
-                    }
-                  }
-                  //echo "$line_record_uid<br>\n";
-                }
-
-                //get lines and filter to get a list of markers which meet the criteria selected by the user
-                $num_maf = $num_miss = 0;
-                foreach ($marker_list as $i => $uid) {
-                  $marker_name = $marker_list_name[$i];
-                  if (isset($marker_lookup[$uid])) {
-                    $total = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i] + $marker_misscnt[$i];
-                    if ($total>0) {
-                      $maf[$i] = round(100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total),1);
-                      $miss[$i] = round(100*$marker_misscnt[$i]/$total,1);
-                    } else {
-                      $maf[$i] = 0;
-                      $miss[$i] = 100;
-                    }
-                    if (($maf[$i] >= $min_maf)AND ($miss[$i]<=$max_missing)) {
-                      if (isset($marker_list_mapped[$uid])) {
-                        $marker_list_all_name[$uid] = $marker_name;
-                        $marker_list_all[$uid] = $marker_list_rank[$uid];
-                      }
-                    }
-                  }
-                }
-                if (count($marker_list_all) == 0) {
-                   $output = "no mapped data found";
-                   return $output;
-                }
-
-        // make an empty marker with the lines as array keys 
-        $nelem = count($marker_uid);
-        $n_lines = count($lines);
-                $empty = array_combine($lines,array_fill(0,$n_lines,'-'));
-                $nemp = count($empty);
-                $line_str = implode($delimiter,$lines);
-                // $firephp = log($nelem." ".$n_lines);
-
-                // write output file header
-                $outputheader = "<Map>\n";
-            // $firephp = log($outputheader);
-
-                // get marker map data, line and marker names; use latest consensus map
-                // as the map default
-        $mapset = 1;
-	
-        //sort marker_list by map location
-        if (uasort($marker_list_all, array($this,'cmp'))) {
-        } else {
-          die("could not sort marker list\n");
-        }
-        
-		$num_markers = 0;
-		/* foreach( $marker_uid as $cnt => $uid) { */
-		foreach($marker_list_all as $uid=>$value) {
-		    $marker_name = $marker_list_all_name[$uid];
-		    $map_loc = $marker_list_mapped[$uid];
-		    $output .= "$marker_name\t$map_loc\n";
-		    $num_markers++;
-		}
-		
-	  return $outputheader.$output;
-    }
-
-    /**
-     * create pedigree output file for qtlminer
-     * @param string $experiments
-     */
-	function type1_build_pedigree_download($experiments)
-	{
-		$delimiter ="\t";
-		// output file header for QTL Miner Pedigree files
-		$outputheader = "Inbred" . $delimiter . "Parent1" . $delimiter . "Parent2" . $delimiter . "Contrib1" . $delimiter . "Contrib2";
-		//echo "Inbred  Parent1   Parent2 Contrib1  Contrib2";
-        // get all line records in the incoming experiments
-      //// $firephp = FirePHP::getInstance(true);
-		//// $firephp->log($outputheader);  
-		$sql = "SELECT DISTINCT datasets_uid
-					FROM datasets_experiments
-					WHERE experiment_uid IN ($experiments)";
-
-		$res=	mysql_query($sql) or die(mysql_error());
-        		
-		//loop through the datasets
-		$output = '';
-		while($row=mysql_fetch_array($res))
-		{
-			$datasets_uid[]=$row['datasets_uid'];
-			//// $firephp->log($row['datasets_uid']); 
-		}
-		foreach($datasets_uid as $ds){
-			
-		  $sql_ds = "SELECT datasets_pedigree_data FROM datasets WHERE datasets_uid = $ds";
-		  //// $firephp->log($sql_ds);
-		  $res=	mysql_query($sql_ds) or die(mysql_error());
-		  $resdata=mysql_fetch_array($res);
-		   $outdata=$resdata['datasets_pedigree_data'];
-		   //// $firephp->log($outdata);
-		  $output .= $outdata;
-		}
-
-		return $outputheader."\n".$output;
-	}
-	
-	/**
-	 * create output file for qtlminer
-	 * @param string $experiments
-	 * @return string
-	 */
-	function type1_build_inbred_download($experiments)
-	{
-		$newline ="\n";
-		// output file header for QTL Miner Pedigree files
-		$output = "Inbred\n";
-		
-        // get all line records in the incoming experiments
-      //// $firephp = FirePHP::getInstance(true);
-		//// $firephp->log($outputheader);  
-		$sql = "SELECT DISTINCT line_record_name
-					FROM tht_base,line_records
-					WHERE line_records.line_record_uid=tht_base.line_record_uid
-					AND experiment_uid IN ($experiments)";
-
-		$res=	mysql_query($sql) or die(mysql_error());
-        		
-		//loop through the lines
-
-		while($row=mysql_fetch_array($res))
-		{
-			$output .=$row['line_record_name']."\n";
-			//// $firephp->log($row['datasets_uid']); 
-		}
-
-		return $output;
-	}	
-	
 }// end class
