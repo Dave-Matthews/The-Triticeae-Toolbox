@@ -8,56 +8,58 @@ require_once 'config.php';
 require_once($config['root_dir'].'includes/bootstrap_curator.inc');
 require_once($config['root_dir'].'includes/aes.inc');
 
-if (!isset($_GET['token'])) {
-  header('HTTP/1.0 404 Not Found');
+if (!isset($_GET['token'])) 
   die('This script only handles email confirmations.');
- }
 
 connect();
 $token = $_GET['token'];
 $email = AESDecryptCtr($token, setting('encryptionkey'), 128);
 $email = mysql_real_escape_string($email);
-$sql = "select users_uid, name from users where
-users_name = '$email' and email_verified=0;";
+/* $sql = "select users_uid, name from users where users_name = '$email' and email_verified=0;"; */
+$sql = "select users_uid, name, email_verified from users where users_name = '$email'";
 $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
-if (!mysql_num_rows($r)) {
-  header('HTTP/1.0 404 Not Found');
+if (!mysql_num_rows($r)) 
   die("Couldn't find your record in the database.");
- }
 
 $row = mysql_fetch_assoc($r);
 $name = $row['name'];
 $uid = $row['users_uid'];
+$vrfy = $row['email_verified'];
 
 require_once $config['root_dir'].'theme/normal_header.php';
 ?>
 <h1>Email Confirmation</h1>
 <?php
-if (!isset($_GET['yes']) && !isset($_GET['no'])) {
-  $htmltoken = htmlentities($token);
-  echo <<< HTML
-    <p> Hi {$name}, please confirm that you registered {$email}
-  with The Triticeae Toolbox. <br /><br>
-    <form action="">
+
+if ($vrfy == 1) 
+  echo "You have already verified yourself.  Thanks again.<p>";
+else {
+  if (!isset($_GET['yes']) && !isset($_GET['no'])) {
+    $htmltoken = htmlentities($token);
+    echo <<< HTML
+      <p> Hi {$name}, please confirm that you registered {$email}
+    with The Triticeae Toolbox. <br /><br>
+      <form action="">
       <input type="hidden" name="token"
-	     value="{$htmltoken}"></input>
-    <input type="submit" name="yes" value="Yes, I did"/>
-    <input type="submit" name="no" value="No, I did not register"/>
-    </form>
-    </p>
+      value="{$htmltoken}"></input>
+      <input type="submit" name="yes" value="Yes, I did"/>
+      <input type="submit" name="no" value="No, I did not register"/>
+      </form>
+      </p>
 HTML;
- }
- else {
-   if (isset($_GET['yes']))
-     $sql = "update users set email_verified=1 where users_uid=$uid";
-   else 
-     $sql = "delete from users where users_uid=$uid;";
-   mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
-   if (isset($_GET['yes']))
-     echo "<h3>Your registration was confirmed.</h3>";
-   else 
-     echo "We have removed the record. Sorry for bothering you.";
- }
+  }
+  else {
+    if (isset($_GET['yes']))
+      $sql = "update users set email_verified=1 where users_uid=$uid";
+    else 
+      $sql = "delete from users where users_uid=$uid;";
+    mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
+    if (isset($_GET['yes']))
+      echo "<h3>Your registration was confirmed.</h3>";
+    else 
+      echo "We have removed the record. Sorry for bothering you.";
+  }
+}
 
 $footer_div = 1;
 include($config['root_dir'].'theme/footer.php');
