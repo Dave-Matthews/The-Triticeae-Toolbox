@@ -31,7 +31,7 @@ function send_email($to, $subject, $message, $attachments = array())
     connect();
     //$smtpserver = split(":", setting('smtpserver','mailhub.iastate.edu'));
     //$smtpserver = split(":", setting('smtpserver','graingenes.org'));
-    $smtpserver = split(":", setting('smtpserver', 'mail.authsmtp.com'));
+    //$smtpserver = split(":", setting('smtpserver', 'mail.authsmtp.com'));
 
     $smtphost = $smtpserver[0];
     $smtpport = isset($smtpserver[1]) ? $smtpserver[1] : '25';
@@ -84,13 +84,9 @@ function send_email($to, $subject, $message, $attachments = array())
         closelog();
     }
     $mobj = &Mail::factory(
-        setting('mailbackend', 'smtp'),
-        array('host' => 'mail.authsmtp.com',
-        'port' => 23,
-        'auth' => true,
-        'username' => 'ac65953',
-        'password' => 'kcuvrkr4hsktuu')
-    );
+        setting('mailbackend', 'sendmail'),
+        array('host' => $smtpserver,
+        'port' => $smtpport));
     return $mobj->send(array($to), $headers, $message);
 }
 
@@ -110,7 +106,7 @@ function send_email_from($to, $subject, $from, $message, $attachments = array())
     connect();
     //$smtpserver = split(":", setting('smtpserver','mailhub.iastate.edu'));
     //$smtpserver = split(":", setting('smtpserver','graingenes.org'));
-    $smtpserver = split(":", setting('smtpserver', 'mail.authsmtp.com'));
+    //$smtpserver = split(":", setting('smtpserver', 'mail.authsmtp.com'));
 
     $smtphost = $smtpserver[0];
     $smtpport = isset($smtpserver[1]) ? $smtpserver[1] : '25';
@@ -162,12 +158,9 @@ $message . "\r\n" .
     syslog(LOG_INFO, "to: $to\nemail:\n$message");
     closelog();
   }
-  $mobj = &Mail::factory(setting('mailbackend', 'smtp'),
-			 array('host' => 'mail.authsmtp.com',
-			       'port' => 23,
-                               'auth' => true,
-                               'username' => 'ac65953',
-                               'password' => 'kcuvrkr4hsktuu'));
+  $mobj = &Mail::factory(setting('mailbackend', 'sendmail'),
+			 array('host' => $smtpserver,
+                               'port' => $smtpport));
   return $mobj->send(array($to), $headers, $message);
   }
 
