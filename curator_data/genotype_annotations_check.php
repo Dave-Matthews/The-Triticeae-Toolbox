@@ -15,6 +15,7 @@ require 'config.php';
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'] . 'curator_data/lineuid.php');
+ini_set('auto_detect_line_endings', true);
 
 connect();
 loginTest();
