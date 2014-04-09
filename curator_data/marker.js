@@ -11,7 +11,7 @@ function update_databaseSNP(filepath, filename, username, filetype) {
      if (document.getElementById('use_imp').checked) {
                 overwrite = 1;
      }
-     var url = php_self + "?function=typeDatabaseSNP&linedata=" + filepath + "&file_name=" + filename + "&user_name=" + username + "&file_type=" + filetype + "&overwrite=" + overwrite;
+     var url = php_self + "?function=typeDatabaseSNP&linedata=" + filepath + "&file_name=" + filename + "&user_name=" + username + "&file_type=" + filetype + "&overwrite=" + overwrite + "&orderAllele=" orderAllele;
      // Opens the url in the same window
      window.open(url, "_self");
 }
