@@ -75,7 +75,7 @@ connect();
   <h3>Name</h3>
   &nbsp;&nbsp;<label for="name">My name is:</label>&nbsp;
   <input type="text" name="name" id="name" value="$name" /><br>
-  &nbsp;&nbsp;Triticeae CAP participants <b>must</b> give a full name to be approved.
+  &nbsp;&nbsp;Project participants <b>must</b> give a full name to be approved.
   <h3>Email address</h3>
   <table border="0" cellspacing="0" cellpadding="0"
 	 style="border: none; background: none">
@@ -102,9 +102,9 @@ connect();
 	<label for="institution">My institution is:<label></td>
 	<td style="border:none;">
 	<input type="text" name="institution" id="institution"
-	       value="$institution" size="30" /> Required for Triticeae CAP participants.
+	       value="$institution" size="30" /> Required for project participants.
         </td></tr></table>
-  <h3>Are you a Triticeae CAP participant?</h3>
+  <h3>Are you a project participant?</h3>
   <input $c_no type="radio" value="no" name="answer" id="answer_no" />
   <label for="answer_no">No</label>
   <br />
@@ -154,12 +154,11 @@ function HTMLLoginForm($msg = "") {
   $retval .= <<<HTML
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
-  <b>Triticeae CAP Participants</b>
+  <b>Participants</b>
   <ul>
     <li>have pre-release access to all phenotype and genotype data from the project.
     <li>will be allowed to add their own private data to the database (feature to be added).
-    <li>can test-load their data files in the Sandbox database before submitting them to the curator. 
-      For this purpose please register at the <a href=http://malt.pw.usda.gov/t3/sandbox/$crop>Sandbox site</a>.
+    <li>can test-load their data files in the "Sandbox" database before submitting them to the curator. 
     <li>can create unique germplasm line panels (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>)
  </ul>
 
@@ -346,7 +345,7 @@ function HTMLProcessForgot() {
   else {
     $key = setting('passresetkey');
     $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-    send_email($email, "Triticeae Toolbox : Reset Your Password",
+    send_email($email, "T3: Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
 {$root}resetpass.php?token=$urltoken");
@@ -479,30 +478,17 @@ $safe_institution)";
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-     // If not currently in the Sandbox, mention it.
-     $rd = $config['root_dir'];
-     if (!strpos($rd, "sandbox")) {
-       $dir = explode("/", $rd); 
-       // Pop twice.
-       $crop = array_pop($dir);
-       $crop = array_pop($dir);
-       $sbmsg = "\nIf you will be submitting data to be loaded in T3, 
-please register also in the Sandbox, 
-http://malt.pw.usda.gov/t3/sandbox/$crop
-There you can load your own files directly to see the results 
-and verify them before sending the files to the curator.\n";
-     }
-     send_email($email, "Triticeae Toolbox registration in progress",
-"<pre>Dear $name,
+     send_email($email, "T3 registration in progress",
+"Dear $name,
 
-Thank you for requesting an account on The Triticeae Toolbox.
+Thank you for requesting an account on T3.
 
 To complete your registration, please confirm that you requested it 
 by visiting the following URL:
 {$root}fromemail.php?token=$urltoken
 
 Your registration will be complete when you have performed this step.
-$sbmsg
+
 Sincerely,
 The Triticeae Toolbox Team
 ");
@@ -511,7 +497,7 @@ The Triticeae Toolbox Team
        $capkey = setting('capencryptionkey');
        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
        send_email(setting('capmail'),
-		  "[T3] Validate CAP Participant $email",
+		  "[T3] Validate Participant $email",
 "Email: $email
 Name: $name
 Institution: $institution
