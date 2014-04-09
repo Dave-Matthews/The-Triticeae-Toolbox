@@ -3,6 +3,7 @@
 // Marker importer
 //
 //
+// 04/08/2014  CLB    for GBS markers the A and B alleles should be alphabetically ordered since when is no reference 
 // 11/09/2011  JLee   Fix problem with empty lines in SNP file
 // 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
 // 08/02/2011  JLee   Allow for empty synonyms and annotations
@@ -123,14 +124,77 @@ private function typeMarkersProgress() {
     }
 }
 
+/* for GBS markers without reference sequence the alleles should be ordered alphabetically
+ */
+private function typeCheckAlleleOrder(&$storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx) {
+    $count_allele = 0;
+    $count_seq = 0;
+    $count = 0;
+    $infile = $_GET['linedata'];
+    $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
+    $tPath = str_replace('./', '', $target_Path);
+    $change_file = $tPath . "markerProc1.out";
+    if (($fh = fopen($change_file, "w")) == FALSE) { 
+        echo "Error creating change file $change_file<br>\n";
+    }
+    fwrite($fh, "name\torig/cor\tA_allele\tB_allele\tsequence\n");
+    $limit = count($storageArr);
+    for ($i = 1; $i <= $limit; $i++) {
+        $found = 0;
+        $name = $storageArr[$i][$nameIdx];
+        $allele = array($storageArr[$i][$alleleAIdx], $storageArr[$i][$alleleBIdx]);
+        $allele_sort = array($storageArr[$i][$alleleAIdx], $storageArr[$i][$alleleBIdx]);
+        if (!sort($allele_sort)) {
+            echo "Error in sorting alleles\n";
+        }
+        if ($allele[0] != $allele_sort[0]) {
+            $found = 1;
+            $storageArr[$i][$alleleAIdx] = $allele_sort[0];
+            $storageArr[$i][$alleleBIdx] = $allele_sort[1];
+        }
+        $seq = strtoupper($storageArr[$i][$sequenceIdx]);
+        if (preg_match("/([A-Z]*)\[([ACTG])\/([ACTG])\]([A-Z]*)/", $seq, $match)) {
+            $seq_snp = array($match[2], $match[3]);
+            $seq_snp_sort = array($match[2], $match[3]);
+            sort($seq_snp_sort);
+            if ($seq_snp[0] != $seq_snp_sort[0]) {
+                $found = 1;
+                $count_seq++;
+                $seq_sort = $match[1] . "[" . $match[3] . "/" . $match[2] . "]" . $match[4];
+                $storageArr[$i][$sequenceIdx] = $seq_sort;
+            }
+        } else {
+           echo "Error in format of sequence $name $seq<br>\n";
+        }
+        if ($found) {
+            $count_allele++;
+            fwrite($fh, "$name\toriginal\t$allele[0]\t$allele[1]\t$seq\n");
+            fwrite($fh, "$name\tcorrected\t$allele_sort[0]\t$allele_sort[1]\t$seq_sort\n");
+        }
+    }
+    fclose($fh);
+    echo "<table><tr><th>marker<th>corrected allele\n";
+    echo "<tr><td>$limit<td>$count_allele<td><a href=\"curator_data/$change_file\" target=\"_new\">Download Corrections</a>\n";
+    echo "</table>";
+}
+ 
 private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand) {
     global $mysqli;
+    $infile = $_GET['linedata'];
+    $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
+    $tPath = str_replace('./', '', $target_Path);
+    $change_file = $tPath . "markerProc2.out";
+    if (($fh = fopen($change_file, "w")) == FALSE) {
+        echo "Error creating change file $change_file<br>\n";
+    }
+
     $sql = "select marker_uid, value from marker_synonyms";
     $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
     while ($row = mysql_fetch_assoc($res)) {
         $name = $row['value'];
         $marker_syn_list[$name] = 1;
     }
+    //look for the case where A and B allele are reversed
     $pheno_uid = 1;
         $sql = "select marker_name, sequence from markers where sequence is not NULL";
         $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
@@ -138,8 +202,23 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
            $name = $row['marker_name'];
            $seq = strtoupper($row['sequence']);
            if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
-               //$seq1 = $match[1] . $match[2] . $match[4];
-               //$seq2 = $match[1] . $match[3] . $match[4];
+               $allele = $match[2] . $match[3];
+               if (($allele == "AC") || ($allele == "CA")) {
+                 $allele = "M";
+               } elseif (($allele == "AG") || ($allele == "GA")) {
+                 $allele = "R";
+               } elseif (($allele == "AT") || ($allele == "TA")) {
+                 $allele = "W";
+               } elseif (($allele == "CG") || ($allele == "GC")) {
+                 $allele = "S";
+               } elseif (($allele == "CT") || ($allele == "TC")) {
+                 $allele = "Y";
+               } elseif (($allele == "GT") || ($allele == "TG")) {
+                 $allele = "K";
+               } else {
+                 echo "bad SNP in database<br>$name<br>$allele<br>\n";
+               }
+               $seq = $match[1] . $allele . $match[4];
                $marker_name[$name] =  1;
                $marker_seq[$seq] = $name;
            } else {
@@ -154,6 +233,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         $count_insert = 0;
         $count_add_syn = 0;
         $results = "<thead><tr><th>marker<th>match by name<th>match by sequence<th>database change</thead>\n";
+        fwrite($fh, "marker\tmatch by name\tmatch by sequence\tdatabase change\n");
         $limit = count($storageArr);
         for ($i = 1; $i <= $limit; $i++) {
             $name = $storageArr[$i][$nameIdx];
@@ -173,8 +253,23 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             }
             if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
                 $count_total++;
-                //$seq1 = $match[1] . $match[2] . $match[4];
-                //$seq2 = $match[1] . $match[3] . $match[4];
+                $allele = $match[2] . $match[3];
+                if (($allele == "AC") || ($allele == "CA")) {
+                  $allele = "M";
+                } elseif (($allele == "AG") || ($allele == "GA")) {
+                  $allele = "R";
+                } elseif (($allele == "AT") || ($allele == "TA")) {
+                  $allele = "W";
+                } elseif (($allele == "CG") || ($allele == "GC")) {
+                  $allele = "S";
+                } elseif (($allele == "CT") || ($allele == "TC")) {
+                  $allele = "Y";
+                } elseif (($allele == "GT") || ($allele == "TG")) {
+                  $allele = "K";
+                } else {
+                  echo "bad SNP in import file<br>$name<br>$allele<br>\n";
+                }
+                $seq = $match[1] . $allele . $match[4];
                 if (isset($marker_seq[$seq]) && ($marker_seq[$seq] != $name)) {
                   $found_seq = 1;
                   $found_seq_name = $marker_seq[$seq];
@@ -217,6 +312,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                     $action = "add marker";
             }
             $results .= "<tr><td>$name<td>$name_match<td><font color=blue>$seq_match</font><td>$action\n";
+            fwrite($fh, "$name\t$name_match\t$seq_match\t$action\n");
         }
         if ($expand == 1) {
             $display1 = "display:none;";
@@ -225,13 +321,17 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $display1 = "";
             $display2 = "display:none;";
         }
+        if ($limit < 1000) {
         ?>
-        <table><tr><td>
-        <a class="collapser" id="on_switch<?php echo $pheno_uid; ?>" style="<?php echo $display1; ?> border-bottom:none" onclick="javascript:disp_index(<?php echo $pheno_uid;?>);return false;">
-        <img src="images/collapser_plus.png" /> Expand</a>
-        <a class="collapser" id="off_switch<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?> border-bottom:none" onclick="javascript:hide_index(<?php echo $pheno_uid;?>);return false;">
-        <img src="images/collapser_minus.png"/> Compress</a>
-        </table>
+          <table><tr><td>
+          <a class="collapser" id="on_switch<?php echo $pheno_uid; ?>" style="<?php echo $display1; ?> border-bottom:none" onclick="javascript:disp_index(<?php echo $pheno_uid;?>);return false;">
+          <img src="images/collapser_plus.png" /> Expand</a>
+          <a class="collapser" id="off_switch<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?> border-bottom:none" onclick="javascript:hide_index(<?php echo $pheno_uid;?>);return false;">
+          <img src="images/collapser_minus.png"/> Compress</a>
+          </table>
+          <?php
+        }
+        ?>
         <table id="content1<?php echo $pheno_uid; ?>" style="<?php echo $display1; ?>">
         <?php
         echo "<thead><tr><th>marker<th>match by name<th>match by sequence<th>database change\n";
@@ -241,15 +341,18 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         if ($overwrite) {
             echo "$count_add_syn add synonym\n";
         }
+        echo "<td><a href=\"curator_data/$change_file\" target=\"_new\">Download Database Changes</a>\n";
         ?></table>
         <table id="content2<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?>">
         <?php
-        echo "$results\n";
-        echo "</table>";
-        $pheno_uid = 2;
-        if ($count_dup_seq == 0) {
-            echo "$count_dup_seq marker(s) found with duplicate sequence in database<br>\n";
+        if ($limit < 1000) {
+            echo "$results\n";
+        } else {
+            echo "<tr><td>Too many entries, please download.";
         }
+        echo "</table>";
+        fclose($fh);
+        $pheno_uid = 2;
         $change["update"] = $count_update;
         $change["insert"] = $count_insert;
         $change["dupSeq"] = $count_dup_seq;
@@ -548,6 +651,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         }
         ?>
         <input type=hidden name="check_seq" id="use_imp" value="">
+        <input type=hidden name="orderAllele" id="order_yes" value"">
         <script type="text/javascript">
         if ( window.addEventListener ) {
             window.addEventListener( "load", CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>'), false );
@@ -589,6 +693,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $fileFormat = $_GET['file_type'];
             $overwrite = $_GET['overwrite'];
             $expand = $_GET['expand'];
+            $orderAllele = $_GET['orderAllele'];
         }
         if ($overwrite) {
             $checked_imp = "checked";
@@ -596,6 +701,13 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         } else {
             $checked_imp = "";
             $checked_db = "checked";
+        }
+        if ($orderAllele) {
+            $order_yes = "checked";
+            $order_no = "";
+        } else {
+            $order_yes = "";
+            $order_no = "checked";
         }
 
         /* Read the file */
@@ -699,13 +811,29 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         }  
         unset ($value);
         fclose($reader); 
-        ?> 
-        <input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
+        ?>
+        <table>
+        <tr><td>When sequence matches add marker as synonym 
+        <td><input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
-            > Ignore sequence matches<br><br>
+            > No
         <input type=radio name="check_seq" id="use_imp" value="imp" <?php echo $checked_imp ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
-            > When sequence matches add marker as synonym<br>
+            > Yes
+        <?php
+        if ($fileFormat == 0) {
+        ?>
+        <tr><td>Order A and B alleles alphabetically
+        <td><input type=radio name="check_ord" id="order_no" value="no" <?php echo $order_no ?>
+            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
+            > No
+        <input type=radio name="check_ord" id="order_yes" value="yes" <?php echo $order_yes ?>
+            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
+           > Yes
+        <?php
+        }
+        ?>
+        </table>
         <?php
         if ($overwrite) {
           ?>
@@ -729,8 +857,10 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         }
 
         $count_total = $i - 1; 
-        //$numMatch = $this->typeCheckSynonym($storageArr1, $storageArr2, $nameIdx, $sequenceIdx, $overwrite, $expand);
         $numMatch = $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
+        if ($orderAllele) {
+            $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
+        }
 
         if ($numMatch["dupSeq"] > 0) {
         } else {
@@ -1120,6 +1250,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         $fileFormat = $_GET['file_type'];
         $overwrite = $_GET['overwrite'];  //overwrite = 1 means check for sequence match. If match found then add marker as synonym. If marker not loaded then create.
                                           //overwrite = 0 means do not check sequence. If marker not already loaded give error
+        $orderAllele = $_GET['orderAllele'];  //orderAllele = 1 mean check for alphabetical order of alleles
         
         //echo "datafile = ".  $datafile  . "<br>";
         //echo "filename = " . $filename . "<br>";
@@ -1189,6 +1320,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         $expand = 0;
         if ($overwrite) {
           $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
+        }
+        if ($orderAllele) {
+          $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
         }
         ?>
         <script type="text/javascript" src="curator_data/marker.js"></script>
