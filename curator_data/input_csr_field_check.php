@@ -156,8 +156,7 @@ class Data_Check
       $uploadfile=$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
       if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
-          echo "error - could not upload file $uploadfile<br> Can not move " . $_FILES['file']['tmp_name'][0]
-          . " to $raw_path <br>Possibly folder permission problem.\n";
+          echo "error - could not upload file $uploadfile<br> Can not move " . $_FILES['file']['tmp_name'][0] . " to $raw_path <br>Possibly folder permission problem.\n";
       } else {
           echo $_FILES['file']['name'][0] . " $FileType<br>\n";
           $metafile = $raw_path;
