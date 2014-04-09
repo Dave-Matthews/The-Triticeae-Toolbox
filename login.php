@@ -485,11 +485,8 @@ $safe_institution)";
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-     // If not currently in the Funnyfarm, mention it.
-     $rd = $config['root_dir'];
-
      send_email($email, "Breeders Database registration in progress",
-"<pre>Dear $name,
+"Dear $name,
 
 Thank you for requesting an account on The Breeders Database.
 
@@ -498,7 +495,7 @@ by visiting the following URL:
 {$root}fromemail.php?token=$urltoken
 
 Your registration will be complete when you have performed this step.
-$sbmsg
+
 Sincerely,
 The Breeders Database Team
 ");
