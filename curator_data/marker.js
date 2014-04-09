@@ -3,6 +3,7 @@
 var php_self = document.location.href;
 var title = document.title;
 var overwrite = "";
+var orderAllele = "";
 var expand = "";
 
 function update_databaseSNP(filepath, filename, username, filetype) {
@@ -20,13 +21,17 @@ function CheckSynonym(filepath, filename, username, filetype) {
      if (document.getElementById('use_imp').checked) {
         overwrite = 1;
      }
+     orderAllele = 0;
+     if (document.getElementById('order_yes').checked) {
+         orderAllele = 1;
+     }
      $('update').show();
      var url = php_self + "?function=typeCheckProgress&linedata=" + filepath + "&file_name=" + filename;
      var tmp1 = new Ajax.Updater($('update'), url, {
      });
 
      $('checksyn').hide();
-     url = php_self + "?function=typeCheckSynonym&linedata=" + filepath + "&file_name=" + filename + "&user_name=" + username + "&file_type=" + filetype + "&overwrite=" + overwrite +"&expand=" + expand;
+     url = php_self + "?function=typeCheckSynonym&linedata=" + filepath + "&file_name=" + filename + "&user_name=" + username + "&file_type=" + filetype + "&overwrite=" + overwrite + "&expand=" + expand + "&orderAllele=" + orderAllele;
      var tmp2 = new Ajax.Updater($('checksyn'), url, {
          onCreate: function() { Element.show('spinner'); },
          onComplete : function() {
@@ -35,19 +40,6 @@ function CheckSynonym(filepath, filename, username, filetype) {
            Element.hide('update');
          }
      });
-}
-
-function CheckSynonym2(filepath, filename, username, filetype) {
-    overwrite = 0;
-    if (document.getElementById('use_imp').checked) {
-        overwrite = 1;
-    }
-    var url = php_self;
-    var param = "function=typeCheckSynonym&linedata=" + filepath + "&file_name=" + filename + "&user_name=" + username + "&file_type=" + filetype + "&overwrite=" + overwrite;
-    var tmp = new Ajax.Updater($('checksyn'), url, {
-        method: 'post',
-        postBody: param
-    });
 }
 
 function disp_index(pheno_uid) {
