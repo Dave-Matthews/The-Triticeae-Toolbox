@@ -87,7 +87,7 @@ class GenotypeData {
                           <tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D Example
 <a href="curator_data/examples/TCAPbarley9K-sample.txt">Illumina_Genotype_template.txt</a>
                           <tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example
-<a href="curator_data/examples/GBS_Genotype_template.txt">GBS_Genotype_template.txt</a> (ACTG, H = heterozygous) 
+<a href="curator_data/examples/GBS_Genotype_template.txt">GBS_Genotype_template.txt</a> (ACTG, N = missing, H = heterozygous) 
                           <tr><td><td><input type="radio" name="data_format" value="2D"> 2D Example 
 <a href="curator_data/examples/DArT_Genotype_template.txt">DArT_Genotype_template.txt</a> (1 = Present, 0 = Absent, "-" =  missing)</p>
 	</table>
