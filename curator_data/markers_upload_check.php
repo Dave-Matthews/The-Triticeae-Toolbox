@@ -1,27 +1,37 @@
 <?php
-//**********************************************  
-// Marker importer
-//
-//
-// 04/08/2014  CLB    for GBS markers the A and B alleles should be alphabetically ordered since when is no reference 
-// 11/09/2011  JLee   Fix problem with empty lines in SNP file
-// 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
-// 08/02/2011  JLee   Allow for empty synonyms and annotations
-//
-// Author: John Lee         6/15/2011
-//**********************************************  
+/**
+ * Marker importer
+ * 
+ * PHP version 5.3
+ * Prototype version 1.5.0
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
+ *
+ * 04/08/2014  CLB    for GBS markers the A and B alleles should be alphabetically
+ * 11/09/2011  JLee   Fix problem with empty lines in SNP file
+ * 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
+ * 08/02/2011  JLee   Allow for empty synonyms and annotations
+ *
+ * Author: John Lee         6/15/2011
+ */
+
 require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require $config['root_dir'] . 'curator_data/lineuid.php';
 
 connect();
 loginTest();
 
 //needed for mac compatibility
-ini_set('auto_detect_line_endings',true);
+ini_set('auto_detect_line_endings', true);
 
 /* ******************************* */
 $row = loadUser($_SESSION['username']);
@@ -34,41 +44,53 @@ ob_end_flush();
 
 new Markers_Check($_GET['function']);
 
-class Markers_Check {
-
-    private $delimiter = "\t";
-    private $storageArr = array (array());
-	// Using the class's constructor to decide which action to perform
-//**************************************************************
- 	public function __construct($function = null) {	
-	        switch($function) {
-	            case 'typeDatabaseAnnot':
-			$this->type_DatabaseAnnot(); /* update Marker Info */
-			break;
-		    case 'typeDatabaseSNP':
-			$this->type_DatabaseSNP(); /* update Allele SNP */
-			break;
-                    case 'typeCheckSynonym';
-                        $this->typeMarkersSynonym(); /* check marker sequence */
-                        break;
-                    case 'typeCheckProgress';
-                        $this->typeMarkersProgress(); /* check progress of typeMarkersSynonym */
-                        break;
-                    default:
-		        $this->typeMarkersCheck(); /* intial case*/
-			break;
-                }
-	}
-
-//**************************************************************
-
-    private function typeMarkersSynonym() {
-        $this->type_MarkersSNP();
+/** Using a PHP class to implement the marker import feature
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
+ **/
+class Markers_Check
+{
+    public $delimiter = "\t";
+    public $storageArr = array (array());
+    /** Using the class's constructor to decide which action to perform
+     *
+     * @param string $function action to perform
+     */
+    public function __construct($function = null)
+    {	
+        switch($function)
+        {
+        case 'typeDatabaseAnnot':
+            $this->type_DatabaseAnnot(); /* update Marker Info */
+            break;
+        case 'typeDatabaseSNP':
+            $this->type_DatabaseSNP(); /* update Allele SNP */
+            break;
+        case 'typeCheckSynonym';
+            $this->type_MarkersSNP(); /* check marker sequence */
+            break;
+        case 'typeCheckProgress';
+            $this->typeMarkersProgress(); /* check progress of typeMarkersSynonym */
+            break;
+        default:
+            $this->typeMarkersCheck(); /* intial case*/
+            break;
+        }
     }
 
-    private function typeMarkersCheck() {
-	global $config;
-	include($config['root_dir'] . 'theme/admin_header.php');
+    /**
+     * display header footer and call load functions
+     *
+     * @return null
+     */
+    function typeMarkersCheck()
+    {
+        global $config;
+        include $config['root_dir'] . 'theme/admin_header.php';
         ?>
         <h2>Enter/Update Markers: Validation</h2>
         <h3>Check import file</h3>
@@ -93,60 +115,75 @@ class Markers_Check {
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
         }
         echo "</div>";
-	$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-	}
-
-private function typeMarkersProgress() {
-    /* Read the file */
-    if (empty($_GET['linedata'])) {
-                echo "missing data file\n";
-    } else {
-                $infile = $_GET['linedata'];
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
     }
-    if (($reader = fopen($infile, "r")) == FALSE) {
+
+    /**
+     * estimate execution time for check marker name and sequence
+     *
+     * @return null
+     */
+    function typeMarkersProgress()
+    {
+        if (empty($_GET['linedata'])) {
+            echo "missing data file\n";
+        } else {
+            $infile = $_GET['linedata'];
+        }
+        if (($reader = fopen($infile, "r")) == false) {
             error(1, "Unable to access file.");
             exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-    }
-    $count_total = 0;
-    while(!feof($reader)) {
-        $line = fgets($reader);
-        $count_total++;
-    }
-    fclose($reader);
-
-    $sql = "select count(*) from markers";
-    $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
-    if ($row = mysql_fetch_row($res)) {
-        $count_db = $row[0];
-        $exec_time = round(($count_total * $count_db)/500000000,0);
-        echo "<br>Checking marker name and sequence.<br>Predicted execution time is $exec_time seconds<br>\n";
-    }
-}
-
-/* for GBS markers without reference sequence the alleles should be ordered alphabetically
- */
-private function typeCheckAlleleOrder(&$storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx) {
-    $count_allele = 0;
-    $count_seq = 0;
-    $count = 0;
-    $infile = $_GET['linedata'];
-    $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
-    $tPath = str_replace('./', '', $target_Path);
-    $change_file = $tPath . "markerProc1.out";
-    if (($fh = fopen($change_file, "w")) == FALSE) { 
-        echo "Error creating change file $change_file<br>\n";
-    }
-    fwrite($fh, "name\torig/cor\tA_allele\tB_allele\tsequence\n");
-    $limit = count($storageArr);
-    for ($i = 1; $i <= $limit; $i++) {
-        $found = 0;
-        $name = $storageArr[$i][$nameIdx];
-        $allele = array($storageArr[$i][$alleleAIdx], $storageArr[$i][$alleleBIdx]);
-        $allele_sort = array($storageArr[$i][$alleleAIdx], $storageArr[$i][$alleleBIdx]);
-        if (!sort($allele_sort)) {
-            echo "Error in sorting alleles\n";
         }
+        $count_total = 0;
+        while (!feof($reader)) {
+            $line = fgets($reader);
+            $count_total++;
+        }
+        fclose($reader);
+
+        $sql = "select count(*) from markers";
+        $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
+        if ($row = mysql_fetch_row($res)) {
+            $count_db = $row[0];
+            $exec_time = round(($count_total * $count_db)/500000000, 0);
+            echo "<br>Checking marker name and sequence.<br>Predicted execution time is $exec_time seconds<br>\n";
+        }
+    }
+
+    /**
+     * for GBS markers without reference sequence the alleles should be ordered alphabetically
+     *
+     * @param array  &$storageArr contents of import file
+     * @param string $nameIdx     index of name column
+     * @param string $alleleAIdx  index of alleleA column
+     * @param string $alleleBIdx  index of alleleB column
+     * @param string $sequenceIdx index of sequence column
+     *
+     * @return null
+     */
+    function typeCheckAlleleOrder(&$storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx)
+    {
+        $count_allele = 0;
+        $count_seq = 0;
+        $count = 0;
+        $infile = $_GET['linedata'];
+        $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
+        $tPath = str_replace('./', '', $target_Path);
+        $change_file = $tPath . "markerProc1.out";
+        if (($fh = fopen($change_file, "w")) == false) { 
+            echo "Error creating change file $change_file<br>\n";
+        }
+        fwrite($fh, "name\torig/cor\tA_allele\tB_allele\tsequence\n");
+        $limit = count($storageArr);
+        for ($i = 1; $i <= $limit; $i++) {
+            $found = 0;
+            $name = $storageArr[$i][$nameIdx];
+            $allele = array($storageArr[$i][$alleleAIdx], $storageArr[$i][$alleleBIdx]);
+            $allele_sort = array($storageArr[$i][$alleleAIdx], $storageArr[$i][$alleleBIdx]);
+            if (!sort($allele_sort)) {
+                echo "Error in sorting alleles\n";
+            }
         if ($allele[0] != $allele_sort[0]) {
             $found = 1;
             $storageArr[$i][$alleleAIdx] = $allele_sort[0];
