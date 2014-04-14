@@ -1,65 +1,93 @@
 <?php 
-// dem 23mar12 Handle large dataset downloads. Output one row at a time
-//             instead of catenating the whole thing into $output first.
-// J.Lee 5/9/2011	Fix problem with query while restricting mmaf and max missing values,
-//					prevent download operation when 0 markers match condition.
-// J.Lee 8/17/2010  Modify alelle download to work in Linux and Solaris 
-//****************************************************************************
-
-/*
-Report for a single genotyping experiment.
-*/
+/**
+ * Report for a single genotyping experiment.
+ *
+ * PHP version 5.3
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/display_genotype.php
+ *
+ * dem 23mar12 Handle large dataset downloads. Output one row at a time
+ *             instead of catenating the whole thing into $output first.
+ * J.Lee 5/9/2011 Fix problem with query while restricting mmaf and max missing
+ *	          values, prevent download operation when 0 markers match condition.
+ * J.Lee 8/17/2010 Modify alelle download to work in Linux and Solaris 
+ */
 
 // dem 23mar12: Default 30 sec is too short for experiment 2011_9K_NB_allplates.
-ini_set("max_execution_time","300");
+ini_set("max_execution_time", "300");
 // dem 23mar12: Default 500M is too small for experiment 2011_9K_NB_allplates.
-ini_set('memory_limit','4096M');
+ini_set('memory_limit', '4096M');
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap.inc');
+require $config['root_dir'] . 'includes/bootstrap.inc';
 require_once 'Spreadsheet/Excel/Writer.php';
 connect();
 
 /* new ShowData($_GET['function']); */
 new ShowData($_REQUEST['function']);
 
-class ShowData {
-  private $delimiter = "\t";
-  // Using the class's constructor to decide which action to perform
-  public function __construct($function = null) {	
-    switch($function) {
-    case 'typeTabDelimiter':
-      $this->type_Tab_Delimiter();  /* Displaying in tab delimited fashion */
-      break;
-    case 'select_lines':
-      $this->type_SelectLines();
-      break;
-    default:
-      $this->typeData();
-      break;
+/** Using a PHP class to implement the report feature
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/display_genotype.php
+ **/
+class ShowData
+{
+    public $delimiter = "\t";
+    /**
+     * Using the class's constructor to decide which action to perform
+     *
+     * @param string $function action to perform
+     */
+    public function __construct($function = null)
+    {	
+        switch($function) {
+        case 'typeTabDelimiter':
+            $this->type_Tab_Delimiter();  /* Displaying in tab delimited fashion */
+            break;
+        case 'select_lines':
+            $this->type_SelectLines();
+            break;
+        default:
+            $this->typeData();
+            break;
+        }
     }
-  }
-	
-  // Store the lines from this experiment in a session variable, and jump to Select by Properties.
-  private function type_SelectLines() {
-    $_SESSION[selected_lines] = explode(",", $_POST[linelist]);
-    echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."pedigree/line_properties.php\">";
-  }
+
+    /**
+     * Store the lines from this experiment in a session variable, and jump to Select by Properties.
+     *
+     * @return null
+     */
+    private function type_SelectLines()
+    {
+        $_SESSION[selected_lines] = explode(",", $_POST[linelist]);
+        echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."pedigree/line_properties.php\">";
+    }
 
   // The wrapper action for the type1 download. Handles outputting the header
   // and footer and calls the first real action of the type1 download.
   private function typeData() {
     global $config;
-    include($config['root_dir'].'theme/normal_header.php');
+    include $config['root_dir'].'theme/normal_header.php';
 
     $trial_code=$_GET['trial_code'];
     echo " <h2>Genotyping experiment ".$trial_code. "</h2>";
     $this->type_DataInformation($trial_code);
 
     $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
+    include $config['root_dir'].'theme/footer.php';
   }
 
   private function type_DataInformation($trial_code) {
+    $line_ids = array();
     $sql = "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code = '".$trial_code."' ";
     $res = mysql_query($sql) or die("Error: unable to retrieve experiment record with trial code.<br>".mysql_error());
     $row = mysql_fetch_assoc($res);
@@ -90,6 +118,11 @@ class ShowData {
     $raw_datafile_archive = $row_Gen_Info['raw_datafile_archive'];
     $genotype_experiment_info_uid = $row_Gen_Info['genotype_experiment_info_uid'];
     $comments = $row_Gen_Info['comments'];
+    $platform_uid = $row_Gen_Info['platform_uid'];
+    $sql = "SELECT platform_name from platform where platform_uid = $platform_uid";;
+    $res = mysql_query($sql) or die("Error: No platform information for genotype experiment $trial_code..<br> " .mysql_error());
+    $row = mysql_fetch_assoc($res);
+    $platform_name = $row['platform_name'];
 ?>
 
 <script type="text/javascript">
@@ -148,6 +181,7 @@ class ShowData {
 	echo "<h3>Description</h3><p>";
 	echo "<table>";
 	echo "<tr> <td>Experiment Short Name</td><td>".$experiment_short_name."</td></tr>";
+        echo "<tr> <td>Platform</td><td>".$platform_name."</td></tr>";
 	echo "<tr> <td>Data Program</td><td>".$data_program_name." (".$data_program_code.")</td></tr>";
 	echo "<tr> <td>OPA Name</td><td>".$row_Gen_Info['OPA_name']."</td></tr>";
 	echo "<tr> <td>Processing Date</td><td>".$row_Gen_Info['processing_date']."</td></tr>";
