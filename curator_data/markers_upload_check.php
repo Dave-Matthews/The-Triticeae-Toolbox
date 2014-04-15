@@ -210,7 +210,7 @@ class Markers_Check
         }
     }
     fclose($fh);
-    echo "<table><tr><th>marker<th>corrected allele\n";
+    echo "<table><tr><th>marker<th>corrected allele order\n";
     echo "<tr><td>$limit<td>$count_allele<td><a href=\"curator_data/$change_file\" target=\"_new\">Download Corrections</a>\n";
     echo "</table>";
 }
@@ -277,6 +277,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $seq = strtoupper($storageArr[$i][$sequenceIdx]);
             $found_name = 0;
             $found_seq = 0;
+            $seq_match = "";
             if (preg_match("/[A-Za-z0-9]/", $name)) {
                if (isset($marker_name[$name]) || isset($marker_syn_list[$name])) {
                   $found_name = 1;
@@ -317,9 +318,11 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                     $storageArr[$i]["syn"] = $found_seq_name;
                 }
                 if ($found_seq) {
-                  $seq_match = $found_seq_name;
-                } else {
-                  $seq_match = "";
+                  if ($seq_match == "") {
+                    $seq_match = $found_seq_name;
+                  } else {
+                    $seq_match = $seq_match . ", $found_seq_name";
+                  }
                 }
             } else {
                 echo "bad sequence $seq<br>\n";
@@ -732,6 +735,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $expand = $_GET['expand'];
             $orderAllele = $_GET['orderAllele'];
         }
+        if ($fileFormat == 0) {
+            $fileFormatName = "generic";
+        }
         if ($overwrite) {
             $checked_imp = "checked";
             $checked_db = "";
@@ -739,13 +745,8 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $checked_imp = "";
             $checked_db = "checked";
         }
-        if ($orderAllele) {
-            $order_yes = "checked";
-            $order_no = "";
-        } else {
-            $order_yes = "";
-            $order_no = "checked";
-        }
+        $order_yes = "checked";
+        $order_no = "";
 
         /* Read the file */
         if (($reader = fopen($infile, "r")) == FALSE) {
@@ -765,7 +766,13 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
         }
         $header = str_getcsv($line,",");
-         
+        
+        if (count($header) < 2) {
+            echo "Using $fileFormatName file format.<br>\n";
+            error(1, "File is not in correct CSV format, must include comma seperators.\n");
+            exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+        }
+ 
         // Set up header column; all columns are required
         $nameIdx = implode(find("marker_name", $header),"");
         $typeIdx = implode(find("marker_type", $header),"");
@@ -861,10 +868,10 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         if ($fileFormat == 0) {
         ?>
         <tr><td>Order A and B alleles alphabetically
-        <td><input type=radio name="check_ord" id="order_no" value="no" <?php echo $order_no ?>
+        <td><input type=radio name="check_ord" id="order_no" value="no" disabled <?php echo $order_no ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
             > No
-        <input type=radio name="check_ord" id="order_yes" value="yes" <?php echo $order_yes ?>
+        <input type=radio name="check_ord" id="order_yes" value="yes" disabled <?php echo $order_yes ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
            > Yes
         <?php
@@ -895,9 +902,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
 
         $count_total = $i - 1; 
         $numMatch = $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
-        if ($orderAllele) {
+        //if ($orderAllele) {
             $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
-        }
+        //}
 
         if ($numMatch["dupSeq"] > 0) {
         } else {
@@ -1358,9 +1365,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         if ($overwrite) {
           $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
         }
-        if ($orderAllele) {
+        //if ($orderAllele) {
           $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
-        }
+        //}
         ?>
         <script type="text/javascript" src="curator_data/marker.js"></script>
         <br><h3>Loading import file into database</h3>
