@@ -12,7 +12,7 @@
  * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
  *
- * 04/08/2014  CLB    for GBS markers the A and B alleles should be alphabetically
+ * 04/08/2014  CLB    for GBS markers the A and B alleles should be alphabetically ordered
  * 11/09/2011  JLee   Fix problem with empty lines in SNP file
  * 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
  * 08/02/2011  JLee   Allow for empty synonyms and annotations
@@ -93,6 +93,8 @@ class Markers_Check
         include $config['root_dir'] . 'theme/admin_header.php';
         ?>
         <h2>Enter/Update Markers: Validation</h2>
+        If the marker name has not been published or does not have mapping data,<br>
+        then check "Yes" to add marker as synonym.
         <h3>Check import file</h3>
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
         <script type="text/javascript" src="curator_data/marker.js"></script>
@@ -902,9 +904,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
 
         $count_total = $i - 1; 
         $numMatch = $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
-        //if ($orderAllele) {
+        if ($fileFormat == 0) {
             $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
-        //}
+        }
 
         if ($numMatch["dupSeq"] > 0) {
         } else {
@@ -1365,9 +1367,9 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         if ($overwrite) {
           $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
         }
-        //if ($orderAllele) {
+        if ($fileFormat == 0) {
           $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
-        //}
+        }
         ?>
         <script type="text/javascript" src="curator_data/marker.js"></script>
         <br><h3>Loading import file into database</h3>
