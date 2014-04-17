@@ -1,10 +1,13 @@
 <body bgcolor=white><pre>
 <b>Requirements</b>
+
 - For any functionality at all
   - Unix.  Ubuntu and Solaris work.
   - Apache
   - MySQL
   - PHP, including PEAR
+  - R, version at least 2.15.2
+    - additional packages: rrBLUP, multicore, rpart, lme4, pheatmap
   - Spreadsheet_Excel_Writer.  Can be installed with this command:
     % sudo pear install Spreadsheet_Excel_Writer-0.9.2
 - For some functions
@@ -14,14 +17,15 @@
     - NCBI BLAST+, ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
       Edit viroblast/viroblast.ini to use the path to these executables.
   - GBrowse
-  - R
-    - additional packages: rrBLUP, multicore, rpart, lme4, pheatmap
   - pclzip.lib.php
   - libzzip
   - PHP-libgd (?)
 
 <b>Setting up the MySQL databases</b>
-Load the schema and some initializing data from the .sql files in this docs/ directory.
+
+Load the schema and some initializing data from the .sql files in this
+docs/ directory:
+
 mysql> create database T3wheat;
 mysql> use T3wheat;
 mysql> source T3wheat_schema.sql;
@@ -37,12 +41,19 @@ Grant write permission to another user such as "curator":
 
 mysql> grant all on T3wheat.* to curator@localhost identified by '&lt;password>';
 
-Similarly, create the GBrowse database "gtht" and grant permissions.
+The skeleton file T3wheat_skeleton.sql loads some initializing 
+data in several housekeeping tables.  You will want to modify 
+some of these values for your installation, especially in table
+'settings'.
+
+If using GBrowse, create the GBrowse database "gtht" and grant
+permissions:
 
 mysql> create database gtht;
 mysql> grant select on gtht.* to publicuser@localhost identified by '&lt;password>';
 
 <b>Database connection scripts</b>
+
 For security, the password information to connect to the MySQL database
 is not stored within the T3 source code repository or even within the
 Apache directory.  For example ours is in
@@ -73,6 +84,7 @@ T3wheat_writeaccess.inc:
 ?>
 
 <b>cron jobs</b>
+
 Some pages use "materialized view" tables of allele data rather than the
 source table 'alleles' itself.  Some of these view tables are created
 and updated from the source table with scripts in the cron/ directory.
@@ -83,6 +95,7 @@ this:
 
 
 <b>Directories for uploaded and output files</b>
+
 Uploaded data files are stored in the curator_data/uploads/ directory,
 which must be writable by the Apache user, e.g. www-data.  
 
@@ -104,7 +117,19 @@ are in a subdirectory "t3" of the webserver's top directory
 
 % cd /www/htdocs/t3; mkdir tmp; ln -s /tmp/tht tmp/tht
 
+<b>ViroBLAST</b>
+
+The built-in BLAST interface, ViroBLAST, is not included in the GitHub
+repository but is <a href="http://c4c.uwc4c.com/express_license_technologies/viroblast">available</a> for academic and nonprofit 
+use at no charge.  It should be installed in directory 'viroblast/' at the
+top level of the T3 distribution.
+
+If you have installed ViroBLAST, the sequences of the markers will be
+maintained in a BLAST database in the directory 'viroblast/db/nucleotide/'.
+This directory must be writable by Apache user.
+
 <b>PHP configuration</b>
+
 Some helpful modifications for the php.ini file, such as 
 /etc/php5/apache2/php.ini:
 
