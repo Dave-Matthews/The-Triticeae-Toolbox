@@ -691,6 +691,7 @@ function update_phenotype_linesb(options) {
            function create_file(version) {
                 Element.show('spinner');
                 document.getElementById('title2').innerHTML = "Creating download file";
+                document.getElementById('step6').innerHTML = "";
                 var url=php_self + "?function=download_session_" + version + "&bp=" + breeding_programs_str+'&yrs='+ years_str+'&e='+experiments_str;
                 document.title='Creating Download file...';
                 var tmp = new Ajax.Updater($('step6'), url, {
