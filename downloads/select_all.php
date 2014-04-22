@@ -111,40 +111,40 @@ class SelectPhenotypeExp
             $this->step1_breedprog();
             break;
         case 'step1phenotype':
-			$this->step1_phenotype();
-			break;
-		case 'step2phenotype':
-			$this->step2_phenotype();
-			break;
-		case 'step3phenotype':
-			$this->step3_phenotype();
-			break;
-		case 'step4phenotype':
-			$this->step4_phenotype();
-			break;
-		case 'step5phenotype':
-			$this->step5_phenotype();
-			break;
-		case 'step1yearprog':
-			$this->step1_yearprog();
-			break;
-		case 'type1traits':
-			$this->type1_traits();
-			break;
-		case 'type1markers':
-			$this->type1_markers();
-			break;
-		case 'type2markers':
-			$this->type2_markers();
-			break;
-	    case 'refreshtitle':
-			echo $this->refresh_title();
-		    break;
-		default:
-			$this->type1_select();
-			break;			
-		}	
-	}
+            $this->step1_phenotype();
+            break;
+        case 'step2phenotype':
+            $this->step2_phenotype();
+            break;
+        case 'step3phenotype':
+            $this->step3_phenotype();
+            break;
+        case 'step4phenotype':
+            $this->step4_phenotype();
+            break;
+        case 'step5phenotype':
+            $this->step5_phenotype();
+            break;
+        case 'step1yearprog':
+            $this->step1_yearprog();
+            break;
+        case 'type1traits':
+            $this->type1_traits();
+            break;
+        case 'type1markers':
+            $this->type1_markers();
+            break;
+        case 'type2markers':
+            $this->type2_markers();
+            break;
+        case 'refreshtitle':
+            echo $this->refresh_title();
+            break;
+        default:
+            $this->type1_select();
+            break;			
+        }	
+    }
 
 	/**
 	 * load header and footer then check session to use existing data selection
@@ -246,7 +246,7 @@ class SelectPhenotypeExp
 		  <option value="Locations">Locations</option>
 		  <option value="Phenotypes">Trait Category</option>
 		</select></p>
-		        <script type="text/javascript" src="downloads/downloads.js"></script>
+		        <script type="text/javascript" src="downloads/downloads01.js"></script>
                 <?php 
                 $this->step1_breedprog();
                 ?>
@@ -268,6 +268,7 @@ class SelectPhenotypeExp
     private function refresh_title() {
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+      $menu = (isset($_GET['menu']) && !empty($_GET['menu'])) ? $_GET['menu'] : null;
       ?>
       <h2>Select Lines, Traits, and Trials</h2>
       <p>
@@ -282,7 +283,8 @@ class SelectPhenotypeExp
         <?php 
       }
       if ($command == "save") {
-        if (empty($_GET['lines'])) {
+        if ($menu == "Lines") {
+        } elseif (empty($_GET['lines'])) {
           if ((!empty($_GET['pi'])) && (!empty($_GET['exps']))) {
             $phen_item = $_GET['pi'];
             $experiments = $_GET['exps'];
@@ -310,7 +312,6 @@ class SelectPhenotypeExp
               array_push($lines,$row['id']);
             }
             $lines_str = implode(",", $lines);
-            $count = count($lines);
           }
           //overide these setting is radio button checked
           if ($subset == "no") {
@@ -342,8 +343,7 @@ class SelectPhenotypeExp
             AND tb.experiment_uid IN ($experiments)
             ORDER BY lr.line_record_name";
             $res = mysql_query($sql) or die(mysql_error() . $sql);
-            while ($row = mysql_fetch_assoc($res))
-            {
+            while ($row = mysql_fetch_assoc($res)) {
               $line_uid = $row['id'];
               if (!in_array($line_uid,$lines)) {
                 array_push($lines,$row['id']);
@@ -361,18 +361,17 @@ class SelectPhenotypeExp
             AND tb.experiment_uid IN ($experiments)
             ORDER BY lr.line_record_name";
             $res = mysql_query($sql) or die(mysql_error() . $sql);
-            while ($row = mysql_fetch_assoc($res))
-            {
+            while ($row = mysql_fetch_assoc($res)) {
               $temp[] = $row['id'];
             }
             $lines = array_intersect($lines, $temp);
-            $lines_str = implode(",", $lines);
+            $_SESSION['selected_lines'] = $lines;
           }
         } else {
           $lines_str = $_GET['lines'];
           $lines = explode(',', $lines_str);
+          $_SESSION['selected_lines'] = $lines;
         }
-        $_SESSION['selected_lines'] = $lines;
           
         if (isset($_GET['pi'])) {
           $_SESSION['phenotype'] = $_GET['pi'];
@@ -388,7 +387,6 @@ class SelectPhenotypeExp
         } else {
           echo "error - no trials selection found";
         }
-
 
         $username=$_SESSION['username'];
         if ($username) {
