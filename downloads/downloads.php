@@ -74,6 +74,9 @@ class Downloads
         case 'step5lines':
             $this->step5_lines();
             break;
+        case 'step6lines':
+            $this->step6_lines();
+            break;
         case 'step1yearprog':
             $this->step1_yearprog();
             break;
@@ -85,12 +88,6 @@ class Downloads
             break;
         case 'searchLines':
             echo $this->step1_search_lines();
-            break;
-        case 'download_session_v2':
-            echo $this->type1_session(V2);
-            break;
-        case 'download_session_v3':
-            echo $this->type1_session(V3);
             break;
         case 'download_session_v4':
             echo $this->type1_session(V4);
@@ -104,6 +101,12 @@ class Downloads
         case 'download_session_v7':
             echo $this->type1_session(V7);
             break;
+        case 'download_session_v8':
+            echo $this->type2_session(V8);
+            break;
+        case 'download_session_v9':
+            echo $this->type2_session(V9);
+            break;
         case 'refreshtitle':
             echo $this->refresh_title();
             break;
@@ -113,48 +116,48 @@ class Downloads
         }	
     }
 
-        /**
-         * load header and footer then check session to use existing data selection
-         */
-        private function type1_select()
-        {
-                global $config;
-                include $config['root_dir'].'theme/normal_header.php';
-		$phenotype = "";
-                $lines = "";
-		$markers = "";
-		$saved_session = "";
-		$this->type1_checksession();
-		include $config['root_dir'].'theme/footer.php';
-        }	
-	
-	/**
-	 * Checks the session variable, if there is lines data saved then go directly to the lines menu
-	 */
-	private function type1_checksession()
+    /**
+     * load header and footer then check session to use existing data selection
+     */
+    private function type1_select()
     {
-            ?>
-		<div id="title">
-		<?php
-            $phenotype = "";
-            $lines = "";
-            $markers = "";
-            $saved_session = "";
-		    $message1 = $message2 = "";
+        global $config;
+        include $config['root_dir'].'theme/normal_header.php';
+        $phenotype = "";
+        $lines = "";
+        $markers = "";
+        $saved_session = "";
+        $this->type1_checksession();
+        include $config['root_dir'].'theme/footer.php';
+    }	
 
-            if (isset($_SESSION['phenotype'])) {
-                    $tmp = count($_SESSION['phenotype']);
-                    if ($tmp==1) {
-                        $saved_session = "$tmp phenotype ";
-                    } else {
-                        $saved_session = "$tmp phenotypes ";
-                    }
-                    $message2 = "download phenotype and genotype data";
-                    $phenotype = $_SESSION['phenotype'];
-            } else {
-				$message1 = "0 phenotypes";
-				$message2 = " download genotype data";
-			}
+    /**
+     * Checks the session variable, if there is lines data saved then go directly to the lines menu
+     */
+    private function type1_checksession()
+    {
+         ?>
+         <div id="title">
+	 <?php
+         $phenotype = "";
+         $lines = "";
+         $markers = "";
+         $saved_session = "";
+         $message1 = $message2 = "";
+
+         if (isset($_SESSION['phenotype'])) {
+             $tmp = count($_SESSION['phenotype']);
+             if ($tmp==1) {
+                 $saved_session = "$tmp phenotype ";
+             } else {
+                 $saved_session = "$tmp phenotypes ";
+             }
+             $message2 = "download phenotype and genotype data";
+             $phenotype = $_SESSION['phenotype'];
+         } else {
+	     $message1 = "0 phenotypes";
+	     $message2 = " download genotype data";
+	 }
             if (isset($_SESSION['selected_lines'])) {
                     $countLines = count($_SESSION['selected_lines']);
                     if ($saved_session == "") {
@@ -190,7 +193,7 @@ class Downloads
                 } else if (empty($_SESSION['selected_map'])) {
                     echo "1. Select a set of <a href=\"" . $config['base_url'];
                     echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
-                    echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> which has the best coverage for your selection.<br><br>";
+                    echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> to enable download of genotype data.<br><br>";
                     echo "</div><br>";
                     ?> 
                     <div id="step1" style="float: left; margin-bottom: 1.5em;">
@@ -209,54 +212,13 @@ class Downloads
         }
 
     /**
-     * 1. display a spinning activity image when a slow function is running
-     * 2. show button to clear sessin data
-     * 3. show button to save current selection
+     * display a spinning activity image when a slow function is running
+     *
      */    
     private function refresh_title() {
-      $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       ?>
       <h2>Download Genotype and Phenotype Data</h2>
       <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
-      <?php 
-      if ($command == "save") {
-        if (!empty($_GET['lines'])) {
-          $lines_str = $_GET['lines'];
-          $lines = explode(',', $lines_str);
-          $_SESSION['selected_lines'] = $lines;
-        } elseif ((!empty($_GET['pi'])) && (!empty($_GET['exps']))) {
-          $phen_item = $_GET['pi'];
-          $experiments = $_GET['exps'];
-          $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-          FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-          WHERE
-          pd.tht_base_uid = tb.tht_base_uid
-          AND p.phenotype_uid = pd.phenotype_uid
-          AND lr.line_record_uid = tb.line_record_uid
-          AND pd.phenotype_uid IN ($phen_item)
-          AND tb.experiment_uid IN ($experiments)
-          ORDER BY lr.line_record_name";
-          $lines = array();
-          $res = mysql_query($sql) or die(mysql_error() . $sql);
-          while ($row = mysql_fetch_assoc($res))
-          {
-            array_push($lines,$row['id']);
-          }
-          $lines_str = implode(",", $lines);
-          $_SESSION['selected_lines'] = $lines;
-        } else {
-          echo "error - no selection found";
-        }
-        $username=$_SESSION['username'];
-        if ($username) {
-          store_session_variables('selected_lines', $username);
-        }
-      } elseif ($selection_ready) {
-        ?>
-        <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
-       <?php
-      }
-      ?>
       <?php 
     }
     
@@ -440,6 +402,57 @@ class Downloads
         <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
         <?php
 	}
+
+    /**
+     * use this download when selecting program and year
+     * @param string $version Tassel version of output
+     */
+    private function type2_session($version)
+    {
+        $subset = "yes";
+        $datasets_exp = "";
+        if (isset($_SESSION['selected_trials'])) {
+                        $experiments_t = $_SESSION['selected_trials'];
+                        $experiments_t = implode(",", $experiments_t);
+        } else {
+                        $experiments_t = "";
+        }
+        if (isset($_SESSION['phenotype'])) {
+                    $phenotype = $_SESSION['phenotype'];
+        } else {
+                    $phenotype = "";
+        }
+
+        // Clean up old files, older than 1 day
+        $dir = "/tmp/tht";
+        system("find $dir -mtime +1 -name 'download_????' -exec rm -r {} \;");
+        system("find $dir -mtime +1 -name 'download_????.zip' -exec rm {} \;");
+
+        $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
+        $filename = "download_" . $unique_str;
+        mkdir("/tmp/tht/$filename");
+        $subset = "yes";
+        $dtype = "";
+ 
+        $filename = "traits.txt";
+        $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+        if ($version == "V8") {
+            $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
+        } elseif ($version == "V9") {
+            $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset); 
+        }
+        fwrite($h, $output);
+        fclose($h);
+        
+        $filename = "/tmp/tht/download_" . $unique_str . ".zip";
+        //$filename = "/tmp/tht/download_" . $unique_str . "/traits.txt";
+        exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str");
+ 
+        ?>
+        <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
+        <?php
+
+    }
 	
     /**
      * starting with year
@@ -498,32 +511,39 @@ class Downloads
             $this->step4_lines();
             ?></div>
             <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-            <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+            <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+            <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+            <script type="text/javascript" src="downloads/downloads02.js"></script>
             <?php
             if (empty($_SESSION['selected_map'])) {
-                echo "<font color=red>No map selected. </font>";
-                echo "<a href=\"" . $config['base_url'];
-                echo "maps/select_map.php\">Select genetic map</a><br><br>.";
-                echo "</div>";
+                ?>
+                <script type="text/javascript">
+                if ( window.addEventListener ) {
+                    window.addEventListener( "load", load_pheno_lines(), false );
+                } else if ( window.attachEvent ) {
+                    window.attachEvent( "onload", load_pheno_lines);
+                } else if ( window.onload ) {
+                    window.onload = load_pheno_lines();
+                }
+                </script>
+                <?php
             } else {
                 ?>
-            </div>
-            <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
-            <script type="text/javascript" src="downloads/downloads.js"></script>
-	    <script type="text/javascript">
-	      var mm = 10;
-	      var mmaf = 5; 
-              if ( window.addEventListener ) {
-                window.addEventListener( "load", load_markers_lines( mm, mmaf), false );
-              } else if ( window.attachEvent ) {
-                window.attachEvent( "onload", load_markers_lines);
-              } else if ( window.onload ) {
-                window.onload = load_markers_lines( mm, mmaf);
-              }
-	    </script>
-	    </div>
-	     <?php 	
+	        <script type="text/javascript">
+	          var mm = 10;
+	          var mmaf = 5; 
+                  if ( window.addEventListener ) {
+                    window.addEventListener( "load", load_markers_lines( mm, mmaf), false );
+                  } else if ( window.attachEvent ) {
+                    window.attachEvent( "onload", load_markers_lines);
+                  } else if ( window.onload ) {
+                    window.onload = load_markers_lines( mm, mmaf);
+                  }
+	        </script>
+	        </div>
+	         <?php 	
             }
+            echo "</div>";
 	}
 	
 	/**
@@ -803,6 +823,37 @@ class Downloads
             , <a href="downloads/synbreed.doc">synbreed</a>.
           <?php
 	}
+
+        /**
+         * when no marker data selected then only show phenotype download button
+         */
+        private function step6_lines() {
+            if (isset($_SESSION['selected_lines'])) {
+             $countLines = count($_SESSION['selected_lines']);
+             $lines = $_SESSION['selected_lines'];
+             $selectedlines = implode(",", $_SESSION['selected_lines']);
+             if ($saved_session == "") {
+              $saved_session = "$countLines lines";
+             } else {
+              $saved_session = $saved_session . ", $countLines lines";
+             }
+         } else {
+             $countLines = 0;
+         }
+
+            if ($saved_session != "") {
+                echo "current data selection = $saved_session<br><br>";
+            }
+            ?>
+            Create phenotype data file
+            <table border=0>
+            <tr><td><input type="button" value="Create file" onclick="javascript:create_file('v8');" />
+            <td>one column for each trait
+            <tr><td><input type="button" value="Create file" onclick="javascript:create_file('v9');" />
+            <td>one column for each trial<br>used by <b>TASSEL</b>
+            </table>
+            <?php
+        }
 	
 	/**
 	 * used by uasort() to order an array
