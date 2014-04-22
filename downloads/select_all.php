@@ -365,8 +365,8 @@ class SelectPhenotypeExp
               $temp[] = $row['id'];
             }
             $lines = array_intersect($lines, $temp);
-            $_SESSION['selected_lines'] = $lines;
           }
+          $_SESSION['selected_lines'] = $lines;
         } else {
           $lines_str = $_GET['lines'];
           $lines = explode(',', $lines_str);
