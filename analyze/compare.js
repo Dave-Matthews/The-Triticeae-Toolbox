@@ -39,7 +39,22 @@ function run_compare(unq_file) {
     });
 }
 
-function cal_index() {
+function run_compare2(unq_file) {
+    var url = php_self + "?function=plotManyTrials" + "&unq=" + unq_file + "&index=" + index + "&formula=" + formula2 + "&type=" + ptype;
+    var tmp = new Ajax.Updater($('step3'), url, {
+        onComplete : function () {
+            $('step3').show();
+            document.title = title;
+        }
+    });
+}
+
+function twoTrials(frm) {
+        if (frm.ptype[1].checked) {
+            ptype = "line";
+        } else {
+            ptype = "scatter";
+        }
 	var unq_file = Date.now();
         var e= document.getElementById("trial1");
         trial1 = e.options[e.selectedIndex].value;
@@ -47,13 +62,27 @@ function cal_index() {
         trial2 = e.options[e.selectedIndex].value;
         e= document.getElementById("pheno");
         pheno = e.options[e.selectedIndex].value;
-
 	var url = php_self + "?function=download_session_v4&unq=" + unq_file + "&pheno=" + pheno + "&trial1=" + trial1 + "&trial2=" + trial2;
 	var tmp = new Ajax.Updater($('step2'), url, {
         onComplete : function() {
             $('step2').show();
             document.title = title;
             run_compare(unq_file);
+        }
+    });
+}
+
+function manyTrials(frm) {
+    ptype = "line";
+    var unq_file = Date.now();
+    var e= document.getElementById("pheno");
+    pheno = e.options[e.selectedIndex].value;
+    var url = php_self + "?function=download_session_v4&unq=" + unq_file + "&pheno=" + pheno;
+        var tmp = new Ajax.Updater($('step2'), url, {
+        onComplete : function() {
+            $('step2').show();
+            document.title = title;
+            run_compare2(unq_file);
         }
     });
 }
