@@ -348,18 +348,14 @@ private function typeExperimentCheck()
 		       if (($check ==0) || ($check ==1)) {
 			 for ($j=0;$j<$pheno_num;$j++) {
 			   $pheno_uid =$phenoids[$j];
-			   // Remove some invisible characters, esp. " ", chr(32).
-			   $phenotype_data = trim($current[$offset+$j]);
-			   //put in check for SAS value for NULL
-			   // Apparently PHP's trim(chr(32)) == chr(0), not NULL.  Damn.
-			   /* if ((!is_null($phenotype_data))&&($phenotype_data!=".")&&(ord($phenotype_data)!=0)) { */
-			   // Stop allowing ".", the SAS value for NULL.
+			   $phenotype_data = $current[$offset+$j];
 			   if ((!is_null($phenotype_data)) && ($phenotype_data!="")) {
 			     // Test that the value is numeric if the schema says it must be.
 			     $dt = $datatypes[$j];
 			     if ( (!is_numeric($phenotype_data)) AND ($dt != "string") AND ($dt != "text") ) {
 			       echo "<font color=red><b>Error:</b></font> Data not numeric. 
-                                     <b>".$line_name."</b>: ".$phenonames[$j]." = ".$phenotype_data."<br>";
+                                     <b>".$line_name."</b>: ".$phenonames[$j]." = 
+                                     <font color=red><b>'".$phenotype_data."'</b></font><br>";
 			     } 
 			     //Test if phenotype data is within the specified range given in the database.
 			     // fix occasional excel problem with zeros coming up as very small negative numbers (E-12-E-15)
