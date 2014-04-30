@@ -1,6 +1,7 @@
 # These are the two packages I want.  The multicore package makes crossvalidation run faster
 library(rrBLUP)
 library(multicore) # Installing multicore will make replicated crossvalidations go faster
+library(parallel, warn.conflicts = FALSE)
 nCores <- multicore:::detectCores()
 if (nCores > 12) {
   nCores = 12
@@ -48,21 +49,9 @@ numMarkers <- ncol(mrkData)
 mrkData <- hmpData[,-2]
 moreThan1Trial <- length(unique(phenoData$trial)) > 1
 if (moreThan1Trial) {
-  if (model_opt == "") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial")
-  } else if (model_opt == "0") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial")
-  } else {
-    results <- GWAS(pheno, mrkData, n.core=nCores, fixed="trial", n.PC=model_opt)
-  }
+    results <- GWAS(pheno, mrkData, K=mrkRelMat, n.core=nCores, fixed="trial", n.PC=model_opt)
 } else {
-  if (model_opt == "") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE)
-  } else if (model_opt == "0") {
-    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE)
-  } else {
-    results <- GWAS(pheno, mrkData, n.core=nCores, P3D=FALSE, n.PC=model_opt)
-  }
+    results <- GWAS(pheno, mrkData, K=mrkRelMat, n.core=nCores, P3D=FALSE, n.PC=model_opt)
 }
 write.csv(results, file=fileout, quote=FALSE)
 if (exists("email")) {
