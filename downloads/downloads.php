@@ -15,7 +15,7 @@
  */
 // |                                                                      |
 // | The purpose of this script is to provide the user with an interface  |
-// | for downloading certain kinds of files from THT.                     |
+// | for downloading certain kinds of files from T3.                     |
 
 set_time_limit(0);
 
@@ -39,7 +39,7 @@ new Downloads($_GET['function']);
  * 
  * @category PHP
  * @package  T3
- * @author   Clay Birkett <claybirkett@gmail.com>
+ * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
@@ -123,10 +123,6 @@ class Downloads
     {
         global $config;
         include $config['root_dir'].'theme/normal_header.php';
-        $phenotype = "";
-        $lines = "";
-        $markers = "";
-        $saved_session = "";
         $this->type1_checksession();
         include $config['root_dir'].'theme/footer.php';
     }	
@@ -136,16 +132,16 @@ class Downloads
      */
     private function type1_checksession()
     {
-         ?>
-         <div id="title">
-	 <?php
-         $phenotype = "";
-         $lines = "";
-         $markers = "";
-         $saved_session = "";
-         $message1 = $message2 = "";
+        ?>
+        <div id="title">
+	<?php
+        $phenotype = "";
+        $lines = "";
+        $markers = "";
+        $saved_session = "";
+        $message1 = $message2 = "";
 
-         if (isset($_SESSION['phenotype'])) {
+        if (isset($_SESSION['phenotype'])) {
              $tmp = count($_SESSION['phenotype']);
              if ($tmp==1) {
                  $saved_session = "$tmp phenotype ";
@@ -154,31 +150,31 @@ class Downloads
              }
              $message2 = "download phenotype and genotype data";
              $phenotype = $_SESSION['phenotype'];
-         } else {
+        } else {
 	     $message1 = "0 phenotypes";
 	     $message2 = " download genotype data";
-	 }
-            if (isset($_SESSION['selected_lines'])) {
-                    $countLines = count($_SESSION['selected_lines']);
-                    if ($saved_session == "") {
-                        $saved_session = "$countLines lines";
-                    } else {
-                        $saved_session = $saved_session . ", $countLines lines";
-                    }
-                    $lines = $_SESSION['selected_lines'];
-            }
-            if (isset($_SESSION['clicked_buttons'])) {
-                    $tmp = count($_SESSION['clicked_buttons']);
-                    $saved_session = $saved_session . ", $tmp markers";
-                    $markers = $_SESSION['clicked_buttons'];
-            } else {
-			    if ($message2 == "") {
-			      $message1 = "0 markers ";
-			      $message2 = "for all markers.";
-			    } else {
-			  	  $message1 = $message1 . ", 0 markers ";
-			  	  $message2 = $message2 . " for all markers";
-				}
+	}
+        if (isset($_SESSION['selected_lines'])) {
+             $countLines = count($_SESSION['selected_lines']);
+             if ($saved_session == "") {
+                 $saved_session = "$countLines lines";
+             } else {
+                 $saved_session = $saved_session . ", $countLines lines";
+             }
+             $lines = $_SESSION['selected_lines'];
+        }
+        if (isset($_SESSION['clicked_buttons'])) {
+             $tmp = count($_SESSION['clicked_buttons']);
+             $saved_session = $saved_session . ", $tmp markers";
+             $markers = $_SESSION['clicked_buttons'];
+        } else {
+	    if ($message2 == "") {
+	      $message1 = "0 markers ";
+	      $message2 = "for all markers.";
+	    } else {
+	      $message1 = $message1 . ", 0 markers ";
+	      $message2 = $message2 . " for all markers";
+	    }
 			}	
             $this->refresh_title();
          ?>        
@@ -512,8 +508,8 @@ class Downloads
             ?></div>
             <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
             <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-            <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <script type="text/javascript" src="downloads/downloads02.js"></script>
+            <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <?php
             if (empty($_SESSION['selected_map'])) {
                 ?>
@@ -726,6 +722,11 @@ class Downloads
 	 } else {
 	     $countLines = 0;
 	 }
+         if (isset($_SESSION['selected_trials'])) {
+            $countTrials = count($_SESSION['selected_trials']);
+         } else {
+            $countTrials = 0;
+         }
          if (isset($_SESSION['selected_map'])) {
             $selected_map = $_SESSION['selected_map'];
             $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
@@ -740,19 +741,19 @@ class Downloads
          }
          
 	 if (isset($_SESSION['clicked_buttons'])) {
-	    $tmp = count($_SESSION['clicked_buttons']);
-	    $saved_session = $saved_session . ", $tmp markers";
-	    $markers = $_SESSION['clicked_buttons']; 
-	    $marker_str = implode(',',$markers);
+            $tmp = count($_SESSION['clicked_buttons']);
+            $saved_session = $saved_session . ", $tmp markers";
+            $markers = $_SESSION['clicked_buttons']; 
+            $marker_str = implode(',',$markers);
 	 } else {
-	    $markers = "";
-	    $marker_str = "";
-	 }
-	 
-	 if ($saved_session != "") {
-	  echo "current data selection = $saved_session<br>";
-	 }
-	 
+            $markers = "";
+            $marker_str = "";
+         }
+ 
+         if ($saved_session != "") {
+             echo "current data selection = $saved_session<br><br>";
+         }
+ 
 	 // initialize markers and flags if not already set
 	 $max_missing = 99.9;//IN PERCENT
 	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
@@ -773,6 +774,8 @@ class Downloads
            $max_miss_line = $_GET['mml'];
          if ($countLines > 0) {
              ?>
+             <input type="radio" name="datatype" value="pheno" onclick="javascript:load_pheno_lines();">Phenotype
+            <input type="radio" name="datatype" value="geno" checked onclick="javascript:load_markers_lines();")>Phenotype and Genotype<br>
             <p>
         Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -786,15 +789,24 @@ class Downloads
                 calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
              }
          }
-	 
-	 if ($saved_session != "") {
-	     if ($countLines == 0) {
-	       echo "Choose one or more lines before using a saved selection. ";
+	 echo "<br><br>"; 
+	 if ($countLines == 0) {
+	       echo "<font color=\"red\">Choose one or more lines before using a saved selection.</font>";
 	       echo "<a href=";
 	       echo $config['base_url'];
 	       echo "pedigree/line_selection.php> Select lines</a><br>";
-	     } else {
-	       echo "<br>Filter lines and markers then $message2<br>";
+         } elseif ($countTrials == 0) {
+             echo "<font color=\"red\">Choose one or more trials before using a saved selection.</font>";
+             echo "<a href=";
+             echo $config['base_url'];
+             echo "phenotype/phenotype_selection.php> Select Trials</a><br>";
+         } elseif ($selected_map == "") {
+             echo "<font color=\"red\">Choose a genetic map before using a saved selection.</font>";
+             echo "<a href=";
+             echo $config['base_url'];
+             echo "maps/select_map.php> Genetic Map</a><br>";
+	 } else {
+	       echo "Filter lines and markers then $message2<br>";
 	       ?>
                <table border=0>
 	       <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
@@ -809,8 +821,6 @@ class Downloads
                <td>genotype coded as {AA, AB, BB}<br>used by <b>synbreed</b>
                </table>
                <?php
-             }
-          }
           ?><br><br>
           The snpfile.txt file has one row for each germplasm line.<br>
           The genotype.hmp.txt file has one row for each marker similar to the  HapMap format and contains map information.<br>
@@ -822,39 +832,48 @@ class Downloads
             , <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>
             , <a href="downloads/synbreed.doc">synbreed</a>.
           <?php
+          }
 	}
 
-        /**
-         * when no marker data selected then only show phenotype download button
-         */
-        private function step6_lines() {
-            if (isset($_SESSION['selected_lines'])) {
-             $countLines = count($_SESSION['selected_lines']);
-             $lines = $_SESSION['selected_lines'];
-             $selectedlines = implode(",", $_SESSION['selected_lines']);
-             if ($saved_session == "") {
-              $saved_session = "$countLines lines";
-             } else {
-              $saved_session = $saved_session . ", $countLines lines";
-             }
-         } else {
-             $countLines = 0;
-         }
-
-            if ($saved_session != "") {
-                echo "current data selection = $saved_session<br><br>";
+    /**
+    * when no marker data selected then only show phenotype download button
+    */
+    private function step6_lines()
+    {
+        if (isset($_SESSION['selected_lines'])) {
+            $countLines = count($_SESSION['selected_lines']);
+            $lines = $_SESSION['selected_lines'];
+            $selectedlines = implode(",", $_SESSION['selected_lines']);
+            if ($saved_session == "") {
+                $saved_session = "$countLines lines";
+            } else {
+                $saved_session = $saved_session . ", $countLines lines";
             }
-            ?>
-            Create phenotype data file
-            <table border=0>
-            <tr><td><input type="button" value="Create file" onclick="javascript:create_file('v8');" />
-            <td>one column for each trait
-            <tr><td><input type="button" value="Create file" onclick="javascript:create_file('v9');" />
-            <td>one column for each trial<br>used by <b>TASSEL</b>
-            </table>
-            <?php
         }
-	
+        echo "current data selection = $saved_session<br><br>";
+        ?>
+        <input type="radio" name="datatype" value="pheno" checked onclick="javascript:load_pheno_lines();">
+        Phenotype
+        <input type="radio" name="datatype" value="geno" onclick="javascript:load_markers_lines();")>
+        Phenotype and Genotype<br><br>
+        <?php
+        if (isset($_SESSION['selected_traits'])) {
+            $count = count($_SESSION['selected_traits']);
+        } else {
+            echo "Error: Please Select <a href=\"downloads/select_all.php\">traits</a>.\n";
+            return;
+        }
+        
+        ?>
+        <table border=0>
+        <tr><td><input type="button" value="Create file" onclick="javascript:create_file('v8');" />
+        <td>one column for each trait
+        <tr><td><input type="button" value="Create file" onclick="javascript:create_file('v9');" />
+        <td>one column for each trial<br>used by <b>TASSEL</b>
+        </table>
+        <?php
+    }
+
 	/**
 	 * used by uasort() to order an array
 	 * @param integer $a
