@@ -501,7 +501,7 @@ class Downloads
         calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
         $count = count(lines);
         $markers = $_SESSION['filtered_markers'];
-        $estimate = count($markers) + count($lines);
+        $estimate = (count($markers) * count($lines)) / 10000;
         if ($count > 0) {
           ?>
           <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
@@ -518,21 +518,22 @@ class Downloads
           <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 
           <table border=0>
-          <tr><td>
+          <tr><td rowspan=2>
           <input type="button" value="Analyze" onclick="javascript:load_genomic_gwas(<?php echo $estimate; ?>)"> GWAS
-          <td>
-          <select name="model2" onchange="javascript: update_fixed(this.value)">
+          <td>principal components
+          <td><select name="model2" onchange="javascript: update_fixed(this.value)">
           <option>0</option>
           <option>1</option>
           <option>2</option>
           <option>3</option>
           <option>4</option>
           <option>5</option>
-          </select>principal components
-          <!--td><input type="checkbox" value="PC3D">PC3D -->
+          </select>
+          <tr><td>method
+          <td><input type="radio" name="P3D" checked value="TRUE">EMMAX (faster but can underestimate significance<br>
+          <input type="radio" name="P3D" value="FALSE">EMMA with REML
           <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $estimate; ?>')"> rrBLUP
           <td>
-          <!--td><input type="checkbox" name="model3" value="reduce">reduce -->
           </table><br>
           <form action="gensel.php">
           <input type="hidden" value="step1gensel" name="function">
@@ -679,13 +680,13 @@ class Downloads
         $filename1 = 'THT_result_' . $unique_str . '.csv';
         $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if (file_exists("/tmp/tht/$filename7")) {
-                  print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
         } else {
+          echo "$filename7 not ready<br>\n";
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename10")) {
-                  print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
         } else {
+          echo "$filename10 not ready<br>\n";
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename4")) {
@@ -694,6 +695,7 @@ class Downloads
                   print "with columns for marker name, chromosome, position, marker score<br><br>";
                   print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
         } else {
+          echo "$filename4 not ready<br>\n";
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename5")) {
@@ -703,11 +705,14 @@ class Downloads
            }
            fclose($h);
         }
-        if ($found == 0) {
+        if ($found) {
+          print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
+          print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
+        } else {
           $lines = $_SESSION['filtered_lines'];
           $markers = $_SESSION['filtered_markers'];
-          $estimate = count($lines) + count($markers);
-          $estimate = round($estimate/700,1);
+          $estimate = count($lines) * count($markers);
+          $estimate = round($estimate/10000,1);
           echo "Results not ready yet. Estimated analysis time is $estimate minutes.<br>";
           ?>
           <font color=red>Select the "Check Results" button to retrieve results.<br>
@@ -784,6 +789,7 @@ class Downloads
     private function run_gwa() {
         $unique_str = $_GET['unq'];
         $model_opt = $_GET['fixed2'];
+        $p3d = $_GET['p3d'];
         if (isset($_SESSION['training_traits'])) {
             $phenotype = $_SESSION['training_traits'];
             $phenotype = $phenotype[0];
@@ -834,6 +840,7 @@ class Downloads
             fwrite($h, $cmd7);
             fwrite($h, $cmd8);
             fwrite($h, $cmd9);
+            fwrite($h, "p3d <- $p3d\n");
             fwrite($h, "setwd(\"/tmp/tht/\")\n");
             fclose($h);
         }
@@ -869,6 +876,7 @@ class Downloads
         global $config;
         $unique_str = $_GET['unq'];
         $model_opt = $_GET['fixed2'];
+        $p3d = $_GET['p3d'];
         if (isset($_SESSION['training_traits'])) {
             $phenotype = $_SESSION['training_traits'];
             $phenotype = $phenotype[0];
@@ -927,6 +935,7 @@ class Downloads
             fwrite($h, $cmd7);
             fwrite($h, $cmd8);
             fwrite($h, $cmd9);
+            fwrite($h, "p3d <- $p3d\n");
             fwrite($h, "setwd(\"/tmp/tht/\")\n");
             fclose($h);
         }
