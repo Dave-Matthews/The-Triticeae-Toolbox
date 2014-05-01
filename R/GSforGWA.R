@@ -49,9 +49,9 @@ numMarkers <- ncol(mrkData)
 mrkData <- hmpData[,-2]
 moreThan1Trial <- length(unique(phenoData$trial)) > 1
 if (moreThan1Trial) {
-    results <- GWAS(pheno, mrkData, K=mrkRelMat, n.core=nCores, fixed="trial", n.PC=model_opt)
+    results <- GWAS(pheno, mrkData, K=mrkRelMat, n.core=nCores, fixed="trial", n.PC=model_opt, P3D=p3d)
 } else {
-    results <- GWAS(pheno, mrkData, K=mrkRelMat, n.core=nCores, P3D=FALSE, n.PC=model_opt)
+    results <- GWAS(pheno, mrkData, K=mrkRelMat, n.core=nCores, fixed=NULL, n.PC=model_opt, P3D=p3d)
 }
 write.csv(results, file=fileout, quote=FALSE)
 if (exists("email")) {
