@@ -73,7 +73,7 @@ function run_gwa(unq_file) {
     } else {
       p3d = "TRUE";
     }
-    if (analysis_count > 60) {
+    if (analysis_count > 300) {
         url = php_self + "?function=run_gwa2" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2 + "&p3d=" + p3d;
     } else {
         url = php_self + "?function=run_gwa" + "&unq=" + unq_file + "&fixed1=" + fixed1 + "&fixed2=" + fixed2 + "&p3d=" + p3d;
