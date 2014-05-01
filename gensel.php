@@ -398,7 +398,7 @@ class Downloads
         3. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
         4. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
         
-        <p><a href="downloads/genomic-tools.php">Additional notes on rrBLUP and methods</a><br>
+        <p><a href="downloads/genomic-tools.php">Additional notes on GWAS and rrBLUP methods</a><br>
         <?php
       }
       if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
@@ -530,7 +530,7 @@ class Downloads
           <option>5</option>
           </select>
           <tr><td>method
-          <td><input type="radio" name="P3D" checked value="TRUE">EMMAX (faster but can underestimate significance<br>
+          <td><input type="radio" name="P3D" checked value="TRUE">EMMAX (faster but can underestimate significance)<br>
           <input type="radio" name="P3D" value="FALSE">EMMA with REML
           <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $estimate; ?>')"> rrBLUP
           <td>
@@ -681,21 +681,17 @@ class Downloads
         $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if (file_exists("/tmp/tht/$filename7")) {
         } else {
-          echo "$filename7 not ready<br>\n";
+          //echo "$filename7 not ready<br>\n";
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename10")) {
         } else {
-          echo "$filename10 not ready<br>\n";
+          //echo "$filename10 not ready<br>\n";
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
-                  print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
-                  print "with columns for marker name, chromosome, position, marker score<br><br>";
-                  print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
         } else {
-          echo "$filename4 not ready<br>\n";
+          //echo "$filename4 not ready<br>\n";
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename5")) {
@@ -708,12 +704,16 @@ class Downloads
         if ($found) {
           print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
           print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
+          print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+          print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
+          print "with columns for marker name, chromosome, position, marker score<br><br>";
+          print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
         } else {
           $lines = $_SESSION['filtered_lines'];
           $markers = $_SESSION['filtered_markers'];
           $estimate = count($lines) * count($markers);
-          $estimate = round($estimate/10000,1);
-          echo "Results not ready yet. Estimated analysis time is $estimate minutes.<br>";
+          $estimate = round($estimate/6000000,1);
+          echo "Results not ready yet. Estimated analysis time is $estimate minutes using default options.<br>";
           ?>
           <font color=red>Select the "Check Results" button to retrieve results.<br>
           <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
@@ -943,9 +943,9 @@ class Downloads
        
         $lines = $_SESSION['filtered_lines']; 
         $markers = $_SESSION['filtered_markers'];
-        $estimate = count($lines) + count($markers);
-        $estimate = round($estimate/700,1);
-        echo "Estimated analysis time is $estimate minutes.<br>";
+        $estimate = count($lines) * count($markers);
+        $estimate = round($estimate/600000,1);
+        echo "Estimated analysis time is $estimate minutes using default options.<br>";
         $emailAddr = $_SESSION['username'];
         if (isset($_SESSION['username'])) {
           echo "An email will be sent to $emailAddr when the job is complete<br>\n";
