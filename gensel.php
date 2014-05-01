@@ -88,18 +88,18 @@ class Downloads
         case 'download_session_v4':
             echo $this->type1_session(V4);
             break;
-	case 'type2_build_tassel_v2':
-	    echo $this->type2_build_tassel(V2);
-	    break;
-	case 'type2_build_tassel_v3':
-	    echo $this->type2_build_tassel(V3);
-	    break;
-	case 'type2_build_tassel_v4':
-	    echo $this->type2_build_tassel(V4);
-	    break;
-	case 'refreshtitle':
-	    echo $this->refresh_title();
-	    break;
+        case 'type2_build_tassel_v2':
+            echo $this->type2_build_tassel(V2);
+            break;
+        case 'type2_build_tassel_v3':
+            echo $this->type2_build_tassel(V3);
+            break;
+        case 'type2_build_tassel_v4':
+            echo $this->type2_build_tassel(V4);
+            break;
+        case 'refreshtitle':
+            echo $this->refresh_title();
+            break;
         case 'gwas_status':
             echo $this->status_gwas();
             break;
@@ -110,8 +110,8 @@ class Downloads
             echo $this->filter_lines();
             break;
 	default:
-	    $this->type1_select();
-	    break;
+            $this->type1_select();
+            break;
 	}	
     }
 
@@ -142,7 +142,7 @@ class Downloads
 			td {border: 1px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
-            <script type="text/javascript" src="downloads/download_gs.js"></script>
+            <script type="text/javascript" src="downloads/download_gs01.js"></script>
 		<div id="title">
 		<?php
             $phenotype = "";
