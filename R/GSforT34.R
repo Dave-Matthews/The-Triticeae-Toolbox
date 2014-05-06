@@ -15,6 +15,7 @@ if (predSetExists) {
 }
 if (yesPredPheno) {
 # Assume that any trial that has lines in the prediction set is a prediction trial
+        message("genomic prediction")
         phenoData$phenoTrain <- phenoData$pheno
         phenoData$phenoTrain[phenoData$trial %in% predTrials] <- NA
         moreThan1Trial <- sum(!(unique(phenoData$trial) %in% predTrials)) > 1
@@ -72,6 +73,7 @@ if (yesPredPheno) {
                 ylegend <- ylegend - ydiv
 	}
 } else {
+        message("cross validation")
 # No prediction set (or prediction set all NA)
 # If no prediction set, the plot will be on the basis of cross validation
 ##########################################################################################

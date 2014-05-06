@@ -200,7 +200,10 @@ class Downloads
                     echo "Select prediction set without trait measurements to predict the traits. ";
                     echo "<a href=";
                     echo $config['base_url'];
-                    echo "pedigree/line_properties.php>Lines by Properties</a><br>";
+                    echo "pedigree/line_properties.php>Lines by Properties</a>, ";
+                    echo "<a href=";
+                    echo $config['base_url'];
+                    echo "downloads/select_genotype.php>Lines by Genotype Experiment</a><br>";
                 } elseif (empty($_SESSION['phenotype']) && empty($_SESSION['training_traits'])) {
                     echo "Please select traits before using this feature.<br><br>";
                     echo "<a href=";
@@ -289,7 +292,7 @@ class Downloads
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <table>
                   <!--tr><td><td>fixed effect (trial is always included)-->
-                  <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction(<?php echo $estimate; ?>)">
+                  <tr><td><input type="button" value="G-BLUP Analysis" onclick="javascript:load_genomic_prediction(<?php echo $estimate; ?>)">
                   <!-td-->
                   </table><br>
                   </div>
@@ -394,11 +397,11 @@ class Downloads
 
         <p><b>Genomic Prediction</b><br>
         1. Select a <a href="downloads/select_all.php">set of lines, trait, and trials</a> (one trait).<br>
-        2. Return to this page and select rrBLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
+        2. Return to this page and select G-BLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
         3. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
         4. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
         
-        <p><a href="downloads/genomic-tools.php">Additional notes on GWAS and rrBLUP methods</a><br>
+        <p><a href="downloads/genomic-tools.php">Additional notes on GWAS and G-BLUP methods</a><br>
         <?php
       }
       if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
@@ -532,7 +535,7 @@ class Downloads
           <tr><td>method
           <td><input type="radio" name="P3D" checked value="TRUE">EMMAX (faster but can underestimate significance)<br>
           <input type="radio" name="P3D" value="FALSE">EMMA with REML
-          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $estimate; ?>')"> rrBLUP
+          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $estimate; ?>')"> G-BLUP
           <td>
           </table><br>
           <form action="gensel.php">
