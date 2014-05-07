@@ -747,8 +747,7 @@ class Downloads
         }
         if (file_exists("/tmp/tht/$filename4")) {
              print "<img src=\"/tmp/tht/$filename4\" /><br>";
-             //if (isset($_SESSION['selected_traits'])) { use when multiple traits is supported
-             if (isset($_SESSION['phenotype'])) {
+             if (isset($_SESSION['selected_trials'])) {
                   print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export prediction to CSV file</a><br><br>";
              } else {
                   print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
@@ -985,7 +984,7 @@ class Downloads
         if (file_exists("/tmp/tht/$filename4")) {
              print "<img src=\"/tmp/tht/$filename4\" /><br>";
              //if (isset($_SESSION['selected_traits'])) { use when multiple traits is supported
-             if (isset($_SESSION['phenotype'])) {
+             if (isset($_SESSION['selected_trials'])) {
                   print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export prediction to CSV file</a><br><br>";
              } else { 
                   print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
@@ -1233,11 +1232,6 @@ class Downloads
                     $cmd1 = "snpData_p <- read.table(\"$dir$filename1\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd2 = "snpData_t <- read.table(\"$dir$filename8\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
-                    if ($training_lines == "") {
-                      $cmd4 = "yesPredPheno <- 0\n"; #no prediction set, do cross validation
-                    } else {
-                      $cmd4 = "yesPredPheno <- 1\n"; #yes prediction set, calculate prediction
-                    }
                     $cmd5 = "fileerr <- \"$filename6\"\n";
                     $cmd6 = "fileout <- \"$filename7\"\n";
                     $cmd7 = "phenolabel <- \"$phenolabel\"\n";
@@ -1259,7 +1253,6 @@ class Downloads
                     }
                     fwrite($h, $cmd2);
                     fwrite($h, $cmd3);
-                    fwrite($h, $cmd4);
                     fwrite($h, $cmd5);
                     fwrite($h, $cmd6);
                     fwrite($h, $cmd7);
