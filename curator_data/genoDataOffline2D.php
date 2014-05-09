@@ -513,14 +513,14 @@ while ($inputrow= fgets($reader))  {
             if (isset($lineExpHash[$line_name])) {
               $exp_uid = $lineExpHash[$line_name];
 	    } else {
-              /* $msg = "missing from experiments $line_name $line_uid" . "\n"; */
-	      /* fwrite($errFile, $msg); */
+               $msg = "Line name is missing from Line Translation file $line_name $line_uid" . "\n";
+	       fwrite($errFile, $msg);
             }
  	    if (isset($lineDsHash[$line_name])) {
               $de_uid = $lineDsHash[$line_name];
             } else {
-	      /* $msg = "missing from dataset experiments $line_name $line_uid" . "\n"; */
-	      /* fwrite($errFile, $msg); */
+	       $msg = "line name is missing from Line Translation file $line_name $line_uid" . "\n";
+	       fwrite($errFile, $msg); 
             }
 
             /* get thtbase_uid. If null, then we have to create this ID */
