@@ -176,7 +176,9 @@ EOD;
 	<li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
 	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
-	    SNP Alleles and Sequences</a> 
+	    SNP Alleles and Sequences</a>
+        <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
+            Experiment Design</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
