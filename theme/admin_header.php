@@ -164,7 +164,7 @@ EOD;
 	  <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
 	    Track Alleles through Pedigree</a>
 	<li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
-	<li><a href="<?php echo $config['base_url']; ?>genotyping/allele_conflicts.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
+	<li><a href="<?php echo $config['base_url']; ?>genotyping/sum_lines.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
 	<li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
 	    BLAST Search against Markers</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
@@ -177,6 +177,8 @@ EOD;
             Genotype and Phenotype Data</a>
 	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
 	    SNP Alleles and Sequences</a> 
+        <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
+            Experiment Design</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
