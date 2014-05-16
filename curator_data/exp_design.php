@@ -67,32 +67,44 @@ class Fieldbook
     private function type_checksession()
     {
         global $config;
-        include $config['root_dir'].'theme/admin_header_new.php';
+        include $config['root_dir'].'theme/admin_header.php';
         ?>
-        <h2>Manage trials</h2>
+        <h2>Manage Phenotype trials</h2>
         <?php
         $this->design();
         ?>
         </div>
         <?php
-        include $config['root_dir'].'theme/footer_new.php';
+        include $config['root_dir'].'theme/footer.php';
     }
  
     private function design()
     {
         ?>
-        <br>
-        <b>Phenotype Trial</b>
-        <table><tr><td>
-        <td><input type=button value="Select" onclick="javascript: select_trial()">
-        <td><input type=button value="Upload trial" onclick="javascript: upload_trial()">
-        <td><input type=button value="Add trial" onclick="javascript: add_trial()">
-        </table><br>
+        <input type=button value="Select" onclick="javascript: select_trial()"  style="display: inline-block">
+        <input type=button value="Upload trial" onclick="javascript: upload_trial()" style="display: inline-block">
+        <!--input type=button value="Upload trial" id="upload-trial" style="display: inline-block"-->
+        <!--input type=button value="Add trial" id="add-trial" style="display: inline-block"-->
+        <input type=button value="Add trial" onclick="javascript: add_trial()" style="display: inline-block"-->
+        <br><br>
+        <div id="dialog-form" title="Add Phenotype Trial">
+        <form action="curator_data/input_annotations_check_excel.php" method="post" enctype="multipart/form-data">
+          <p>Do you want the data from this trial to be <b>Public</b>?
+          <input type='radio' name='flag' value="1" checked style="display: inline-block"/> Yes &nbsp;&nbsp;
+          <input type='radio' name='flag' value="0" style="display: inline-block"/> No
+          <p>Trial description file: <input id="trial_upload_file[]" type="file" name="file[]" style="display: inline-block" />
+          <p><a href="curator_data/examples/T3/TrialSubmissionForm.xls">Example</a>
+          <p><input type="submit" value="Upload" />
+        </form>
+        </div>
         <div class="step1"></div>
         <div class="step2"></div>
         <div class="step3"></div>
         <div class="step4"></div>
         <div class="step5"></div>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
         <script type="text/javascript" src="curator_data/design.js"></script>
         <script type="text/javascript">
         if ( window.addEventListener ) {
@@ -209,8 +221,8 @@ class Fieldbook
     private function design3()
     {
         ?>
-        This tool allows you to create a new trial.
-        The results can be downloaded or submitted to the curator for loading into the production website.<br>
+        This tool allows you to create a new trial and experiment design.
+        The results can be downloaded then submitted to the curator for loading into the production website.<br>
         <?php
         if (isset($_SESSION['selected_lines'])) {
         } else {
@@ -229,7 +241,7 @@ class Fieldbook
         $res = mysql_query($sql) or die(mysql_error());
         while ($row = mysql_fetch_assoc($res)) {
            ?>
-           <option value="<?php echo $row['CAPdata_programs_uid'] ?>"><?php echo $row['data_program_name'];
+           <option value="<?php echo $row['data_program_code'] ?>"><?php echo $row['data_program_name'];
            echo " ("; echo $row['data_program_code']; echo ")"?></option>
            <?php
         }
@@ -271,12 +283,14 @@ class Fieldbook
         <tr><td>Trial description:<td colspan=2><input type="text" id="desc"><td> 
         <tr><td>Planting date:<td colspan=2><input type="text" id="plant_date"><td>This should be the one date on which planting was begun.<br>
                 Use Excel "Text", not "Date", format. The value should be given as m/d/yyyy with no leading zeros, e.g. "5/7/2012".
-        <tr><td>Harvest data:<td colspan=2><input type="text" id="harvest_date"><td>Use Excel "Text", not "Date", format. if the trial was not harvestd,
+        <tr><td>Harvest date:<td colspan=2><input type="text" id="harvest_date"><td>Use Excel "Text", not "Date", format. if the trial was not harvestd,
                 use the date of last data collection.
-        <tr><td>Greenhouse trial<td><input type="radio" name="greenhouse" checked value="no">No<td><input type="radio" name="greenhouse" value="yes">Yes
-        <tr><td>Seeding rate<td colspan=2><input type="text"><td>This is the target density for the trial, not the actual rate for each line
+        <tr><td>Begin weather date:<td colspan=2><input type ="text" id="bwdate"><td>Optional, if T3 should store weather data starting at some point before planting (e.g., to track soil moisture status).
+        <tr><td>Greenhouse trial<td><input type="radio" name="greenhouse" id="greenhouse" checked value="no">No
+            <td><input type="radio" name="greenhouse" value="yes">Yes
+        <tr><td>Seeding rate<td colspan=2><input type="text" id="seed"><td>This is the target density for the trial, not the actual rate for each line
         <tr><td>Design type:<td colspan=2>
-        <select id="type" name="type" onchange="javascript: update_type(this.options)">
+        <select id="design" name="design" onchange="javascript: update_type(this.options)">
         <option>select design</option>
         <option value="alpha">Alpha</option>
         <option value="bib">Random Balanced ICB</option>
@@ -287,7 +301,8 @@ class Fieldbook
         <option value="madii">MADII</option>
         </select>
 
-        <tr><td>Irrigation<td><input type="radio" name="irrigation" checked value="no">No<td><input type="radio" name="irrigation" value="yes">Yes
+        <tr><td>Irrigation<td><input type="radio" name="irrigation" id="irrigation" checked value="no">No
+            <td><input type="radio" name="irrigation" value="yes">Yes
         <tr><td>Other remarks<td colspan=2><input type="text"><td>Optional. Adjustments to means in data analysis or other specifics of statistical analysis.<br>Other notes that may help in interpretation of results, for example that harvest was delayed due to weather.
         </table>
         <?php
@@ -322,11 +337,6 @@ class Fieldbook
     {
         $type = $_GET['type'];
         echo "<table>";
-        if (isset($_GET['type'])) {
-            //echo "<tr><td>Design type:<td>$type";
-        } else {
-            //echo "<tr><td>Design type:<td><font color=red>Error: </font>Please select design type";
-        }
         if ($type == "alpha") {
             if (isset($_SESSION['selected_lines'])) {
             $count = count($_SESSION['selected_lines']);
@@ -442,7 +452,6 @@ class Fieldbook
         if (isset($_GET['prg'])) {
             $program = $_GET['prg'];
         }
-        $program = $_POST["program"];
         if (isset($_GET['trial_name'])) {
             $trial_name = $_GET['trial_name'];
         }
@@ -464,6 +473,10 @@ class Fieldbook
         if (isset($_GET['collab'])) {
             $collab = $_GET['collab'];
         }
+        $description = $_GET['desc'];
+        $pdate = $_GET['pdate'];
+        $hdate = $_GET['hdate'];
+        $bwdate = $_GET['bwdate'];
 
         $sql = "select value from settings where name='database'";
         $res = mysql_query($sql) or die(mysql_error());
@@ -520,11 +533,12 @@ class Fieldbook
         $objPHPExcel->getActiveSheet()->SetCellValue('B19', $design);
         $objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
         $objWriter->save($filename);
-        echo "<a href=\"$filename\">Download Trial Description</a><br>";
+        echo "<a href=\"$filename\">Download Trial Description</a><br><br>";
     }
 
     private function create_field()
     {
+        global $config;
         $unique_str = $_GET['unq'];
         $dir = "/tmp/tht/$unique_str/";
         $filename1 = "argico.R";
@@ -570,7 +584,6 @@ class Fieldbook
         if (isset($_SESSION['check_lines'])) {
             $tmp = $_SESSION['check_lines'];
             $count_lines = count($tmp);
-            if ($count_lines > 1) {
                 $exp = "";
                 foreach($tmp as $item) {
                   $sql = "select line_record_name from line_records where line_record_uid = $item";
@@ -587,9 +600,6 @@ class Fieldbook
                   }
                 }
                 $cmd = "trt2 <-c($exp)\n";
-            } else {
-                $cmd = "trt2 <-c($tmp_str)\n";
-            }
             fwrite($h, $cmd);
         }
         if (isset($_GET['size_blk']) && (!empty($_GET['size_blk']))) {
@@ -614,10 +624,17 @@ class Fieldbook
         fwrite($h, $cmd);
         $cmd = "exp <- \"$trial_code\"\n";
         fwrite($h, $cmd);
+        $cmd = "common_code <- \"" . $config['root_dir'] . "R/madii.R\"\n";
+        fwrite($h, $cmd);
         fwrite($h, "setwd(\"/tmp/tht/$unique_str\")\n");
         fclose($h);
 
-        exec("cat /tmp/tht/$unique_str/$filename1 ../R/design.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename3");
+        if ($exp_type == "madii") {
+            exec("cat /tmp/tht/$unique_str/$filename1 ../R/design_madii.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename3");
+            $filename2 = "tester1/tester1.csv";
+        } else {
+            exec("cat /tmp/tht/$unique_str/$filename1 ../R/design.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename3"); 
+        }
         if (file_exists("/tmp/tht/$unique_str/$filename3")) {
             $h = fopen("/tmp/tht/$unique_str/$filename3", "r");
             while ($line=fgets($h)) {

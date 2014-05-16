@@ -1,4 +1,4 @@
-/*global, alert $*/
+/*global, alert, jQuery, $ */
 
 var select1_str = "";	//select/add
 var num_replicates = "";
@@ -13,19 +13,20 @@ var longit = "";
 var collab = "";
 var unq_dir = "";
 var php_self = document.location.href;
+$.noConflict(); //when prototype.js is removed then this is not necessary
 
 function select_trial() {
   select1_str = "select";
   program = "";
   trial = "";
-  $(".step2").html("");
-  $(".step3").html("");
-  $.ajax({
+  jQuery(".step2").html("");
+  jQuery(".step3").html("");
+  jQuery.ajax({
       type: "GET",
       url: php_self,
       data: "function=selectProg",
       success: function(data, textStatus) {
-          $(".step1").html(data);
+          jQuery(".step1").html(data);
       },
       error: function() {
           alert('Error in selecting design type');
@@ -34,17 +35,17 @@ function select_trial() {
 }
 
 function upload_trial() {
-    location.href = "curator_data/input_annotations_upload_excel.php"; 
+    jQuery( "#dialog-form" ).dialog( "open" );
 }
 
 function update_trial() {
-  trial = $("#trial").val();
-  $.ajax({
+  trial = jQuery("#trial").val();
+  jQuery.ajax({
       type: "GET",
       url: php_self,
       data: "function=displayTrial&prog=" + program + "&trial=" + trial,
       success: function(data, textStatus) {
-          $(".step3").html(data);
+          jQuery(".step3").html(data);
       },
       error: function() {
           alert('Error in selecting design type');
@@ -56,43 +57,43 @@ function add_trial() {
   select1_str = "add";
   program = "";
   trial = "";
-  $(".step2").html("");
-  $(".step3").html("");
-  $.ajax({
+  jQuery(".step2").html("");
+  jQuery(".step3").html("");
+  jQuery.ajax({
       type: "GET",
       url: php_self,
       data: "function=designTrial",
       success: function(data, textStatus) {
-          $(".step1").html(data);
+          jQuery(".step1").html(data);
       },
       error: function() {
           alert('Error in selecting design type');
       }
   });
-  $(".step2").html("<input type=submit value='Create trial' onclick='javascript: create_trial()'><br>");
+  jQuery(".step2").html("<input type=submit value='Create trial' onclick='javascript: create_trial()'><br>");
 }
 
 function update_type(options) {
-  design_type = $("#type").val();
-  $(".step3").html("");
-  $.ajax({
+  design_type = jQuery("#design").val();
+  jQuery(".step3").html("");
+  jQuery.ajax({
       type: "GET",
       url: php_self,
       data: "function=designField&type=" + design_type,
       success: function(data, textStatus) {
-          $(".step3").html(data);
+          jQuery(".step3").html(data);
       },
       error: function() {
           alert('Error in selecting design type');
       }
   });
-  $(".step4").html("");
-  $.ajax({
+  jQuery(".step4").html("");
+  jQuery.ajax({
       type: "GET",
       url: php_self,
       data: "function=design_results&type=" + design_type,
       success: function(data, textStatus) {
-          $(".step4").html(data);
+          jQuery(".step4").html(data);
       },
       error: function() {
           alert('Error in selecting design type');
@@ -102,26 +103,26 @@ function update_type(options) {
 
 function update_step1() {
   if (select1_str == "select") {
-      program = $("#program").val();
-      $(".step3").html("");
-      $.ajax({
+      program = jQuery("#program").val();
+      jQuery(".step3").html("");
+      jQuery.ajax({
           type: "GET",
           url: php_self,
           data: "function=selectTrial&prog=" + program,
           success: function(data, textStatus) {
-              $(".step2").html(data);
+              jQuery(".step2").html(data);
           },
           error: function() {
               alert('Error in selecting trial');
           }
       });
   } else {
-      $(".step2").html("<input type=submit value='Create trial' onclick='javascript: create_trial()'><br>");
+      jQuery(".step2").html("<input type=submit value='Create trial' onclick='javascript: create_trial()'><br>");
   }
 }
 
 function update_step3() {
-  $(".step4").html("<input type=submit value='Create field layout' onclick='javascript: create_field()'>");
+  jQuery(".step4").html("<input type=submit value='Create field layout' onclick='javascript: create_field()'>");
 }
 
 function create_trial() {
@@ -161,12 +162,12 @@ function create_trial() {
   var seed = document.getElementById("seed").value;
   design_type = document.getElementById("design").value;
 
-  $.ajax({
+  jQuery.ajax({
       type: "GET",
       url: php_self,
-      data: "function=create_trial&prg=" + program + "&trial_name=" + trial_name + "&year=" + year + "&exp_name=" + exp_name + "&location=" + loc + "&lat=" + lat + "&long=" + longit + "&collab=" + collab + "&desc=" + desc + "&pdate=" + pdate, 
+      data: "function=create_trial&prg=" + program + "&trial_name=" + trial_name + "&year=" + year + "&exp_name=" + exp_name + "&location=" + loc + "&lat=" + lat + "&long=" + longit + "&collab=" + collab + "&desc=" + desc + "&pdate=" + pdate + "&hdate=" + hdate + "&bwdate=" + bwdate, 
       success: function(data, textStatus) {
-          $(".step2").html(data);
+          jQuery(".step2").html(data);
       },
       error: function() {
           alert('Error in creating trial');
@@ -202,14 +203,14 @@ function create_field() {
     num_blk = document.getElementById('num_blk').value;
   }
   var msg = num_replicates + " " + num_blocks;
-  $("#test").html(msg);
+  jQuery("#test").html(msg);
   var url = php_self;
-  $.ajax({
+  jQuery.ajax({
       type: "GET",
       url: php_self,
       data: "function=create_field&trial_name=" + trial_name + "&trt=" + trt + "&type=" + design_type + "&num_rep=" + num_rep + "&size_blk=" + size_blk + "&unq=" + unq_dir,
       success: function(data, textStatus) {
-          $(".step4").html(data);
+          jQuery(".step4").html(data);
       },
       error: function() {
           alert('Error in creating field layout');
@@ -218,15 +219,47 @@ function create_field() {
 }
 
 function saveChecks() {
-  $.ajax({
+  jQuery.ajax({
       type: "GET",
       url: php_self,
       data: "function=saveChecks",
       success: function(data, textStatus) {
-          $(".step4").html(data);
+          jQuery(".step4").html(data);
       },
       error: function() {
           alert('Error in saving check lines');
       }
   });
 }
+
+  jQuery(function() {
+
+    jQuery( "#dialog-form" ).dialog({
+      autoOpen: false,
+      height: 250,
+      width: 450,
+      modal: false,
+      buttons: {
+        Cancel: function() {
+          jQuery( this ).dialog( "close" );
+        }
+      }
+    });
+
+  jQuery("#upload-trial")
+    .button()
+    .click(function() {
+      jQuery( "#dialog-form" ).dialog( "open" );
+    });
+  jQuery("#add-trial")
+    .button()
+    .click(function() {
+      add_trial();
+    });
+  jQuery("#select-trial")
+    .button()
+    .click(function() {
+      select_trial();
+    });
+});
+
