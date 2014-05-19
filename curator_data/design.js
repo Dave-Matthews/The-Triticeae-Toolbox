@@ -182,6 +182,8 @@ function create_field() {
   var size_blk = "";
   var num_rep = "";
   var num_blk = "";
+  var num_row = "";
+  var num_col = "";
   unq_dir = "download_" + Date.now();
   if (document.getElementById("name")) {
       trial_name = document.getElementById("name").value;
@@ -202,13 +204,19 @@ function create_field() {
   if (document.getElementById("num_blk")) {
     num_blk = document.getElementById('num_blk').value;
   }
+  if (document.getElementById("rows")) {
+    num_row = document.getElementById("rows").value;
+  }
+  if (document.getElementById("columns")) {
+    num_col = document.getElementById("columns").value;
+  }
   var msg = num_replicates + " " + num_blocks;
   jQuery("#test").html(msg);
   var url = php_self;
   jQuery.ajax({
       type: "GET",
       url: php_self,
-      data: "function=create_field&trial_name=" + trial_name + "&trt=" + trt + "&type=" + design_type + "&num_rep=" + num_rep + "&size_blk=" + size_blk + "&unq=" + unq_dir,
+      data: "function=create_field&trial_name=" + trial_name + "&trt=" + trt + "&type=" + design_type + "&num_rep=" + num_rep + "&size_blk=" + size_blk + "&unq=" + unq_dir + "&num_row=" + num_row + "&num_col=" + num_col,
       success: function(data, textStatus) {
           jQuery(".step4").html(data);
       },

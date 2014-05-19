@@ -612,6 +612,20 @@ class Fieldbook
             $cmd = "r <- $num_rep\n";
             fwrite($h, $cmd);
         }
+        if (isset($_GET['num_row']) && (!empty($_GET['num_row']))) {
+            $num_row = $_GET['num_row'];
+            $cmd = "num_row <- $num_row\n";
+        } else {
+            $cmd = "num_row <- NULL\n";
+        }
+        fwrite($h, $cmd);
+        if (isset($_GET['num_col']) && (!empty($_GET['num_col']))) {
+            $num_row = $_GET['num_col'];
+            $cmd = "num_col <- $num_col\n";
+        } else {
+            $cmd = "num_col <- NULL\n";
+        }
+        fwrite($h, $cmd);
 
         /*error checking*/
         if ($exp_type == "alpha") {
