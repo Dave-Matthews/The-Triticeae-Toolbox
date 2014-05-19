@@ -21,6 +21,8 @@ function select_trial() {
   trial = "";
   jQuery(".step2").html("");
   jQuery(".step3").html("");
+  jQuery(".step4").html("");
+  jQuery(".step5").html("");
   jQuery.ajax({
       type: "GET",
       url: php_self,
@@ -34,8 +36,30 @@ function select_trial() {
   });
 }
 
+function search_line() {
+  jQuery.ajax({
+    type: "GET",
+    url: php_self,
+    data: "function=searchLine",
+    success: function(data, textStatus) {
+        jQuery(".dialog_r").html(data);
+    },
+    error: function() {
+        alert('Error in selecting design type');
+      }
+  });
+}
+
 function upload_trial() {
     jQuery( "#dialog-form" ).dialog( "open" );
+}
+
+function upload_field() {
+    jQuery( "#dialog-form-field" ).dialog( "open" );
+}
+
+function select_check() {
+    jQuery( "#dialog-form-checks" ).dialog( "open" );
 }
 
 function update_trial() {
@@ -240,9 +264,9 @@ function saveChecks() {
   });
 }
 
-  jQuery(function() {
+jQuery(function() {
 
-    jQuery( "#dialog-form" ).dialog({
+  jQuery( "#dialog-form" ).dialog({
       autoOpen: false,
       height: 250,
       width: 450,
@@ -252,22 +276,32 @@ function saveChecks() {
           jQuery( this ).dialog( "close" );
         }
       }
-    });
+  });
 
-  jQuery("#upload-trial")
-    .button()
-    .click(function() {
-      jQuery( "#dialog-form" ).dialog( "open" );
-    });
-  jQuery("#add-trial")
-    .button()
-    .click(function() {
-      add_trial();
-    });
-  jQuery("#select-trial")
-    .button()
-    .click(function() {
-      select_trial();
-    });
+  jQuery( "#dialog-form-field" ).dialog({
+      autoOpen: false,
+      height: 250,
+      width: 450,
+      modal: false,
+      buttons: {
+        Cancel: function() {
+          jQuery( this ).dialog( "close" );
+        }
+      }
+  });
+
+  jQuery( "#dialog-form-checks" ).dialog({
+      autoOpen: false,
+      height: 250,
+      width: 450,
+      modal: false,
+      buttons: {
+        Cancel: function() {
+          jQuery( this ).dialog( "close" );
+        }
+      }
+  });
+
+
 });
 

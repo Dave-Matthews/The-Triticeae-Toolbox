@@ -36,9 +36,6 @@ if (type == "alpha") {
 } else if (type == "rcbd") {
   message("randomized complete block design")
   outdesign<- design.rcbd(trt, r, serie=serie)
-} else if (type == "madii") {
-  message("MADII design")
-  outdesign<- MADIIdgn(num.entries=90, num.rows=9, num.cols=NULL, num.sec.chk=3, designID="tester1", annoy=T)
 } else {
   message("Error: Invalied design type")
 }
@@ -54,8 +51,8 @@ rowNum <- c()
 colNum <- c()
 for (i in 1:length(outdesign$book$plot)) {
   plotval <- outdesign$book$plot[i]
-  rowNum[i] <- substr(plotval, 1, nchar(plotval)-serie)
-  colNum[i]<- substr(plotval, nchar(plotval)-serie+1, nchar(plotval))
+  rowNum[i] <- ""
+  colNum[i]<- ""
 }
 
 #get check lines and set others to empty
