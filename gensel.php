@@ -802,7 +802,7 @@ class Downloads
         $sql = "select phenotypes_name, unit_name from phenotypes, units
                where phenotypes.unit_uid = units.unit_uid
                and phenotype_uid = $phenotype";
-        $res = mysql_query($sql) or die(mysql_error());
+        $res = mysql_query($sql) or die(mysql_error() . $sql);
         $row = mysql_fetch_array($res);
         $phenolabel = $row[0];
         //$unique_fld = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));

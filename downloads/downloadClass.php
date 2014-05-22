@@ -41,9 +41,6 @@ class Downloads
         global $mysqli;
         $delimiter = "\t";
         $experiment_str = implode(",", $experiments);
-        if (isset($_SESSION['selected_lines']) && (count($_SESSION['selected_lines']) > 0)) {
-            $lines = $_SESSION['selected_lines'];
-        } else {
             $found = 0;
             $sql = "select DISTINCT lr.line_record_uid from tht_base as tb,
                 phenotype_data as pd, phenotypes as p, line_records as lr
@@ -63,7 +60,6 @@ class Downloads
             } else {
                 //echo "Found $found lines using selected experiments and trait<br>\n";
             }
-        }
         $selectedlines = implode(",", $lines);
         $outputheader2 = "gid";
         foreach ($experiments as $exp_uid) {
