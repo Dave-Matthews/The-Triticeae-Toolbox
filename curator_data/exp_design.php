@@ -448,7 +448,7 @@ class Fieldbook
                     $count = count($_SESSION['selected_lines']);
                     echo "<tr><td>Treatment:<td>$count lines selected";
                     ?>
-                    <tr><td>Rows:<td><input type="text" id="rows">
+                    <tr><td>Rows:<td><input type="text" id="rows"><td>MADII design requires that the number of rows be a multiple of 3
                     <tr><td>Columns:<td><input type="text" id="columns">
                     <?php
                 } else {
@@ -456,8 +456,8 @@ class Fieldbook
                 }
             } elseif (isset($_SESSION['selected_lines'])) {
                 $count = count($_SESSION['selected_lines']);
-                echo "<tr><td>$count Lines selected<td><input type=\"button\" value=\"Save as checks\" onclick=\"javascript: saveChecks()\">
-                <td>Then select treatment lines and return to this page";
+                echo "<tr><td width=120>$count Lines selected<td><input type=\"button\" value=\"Save as checks\" onclick=\"javascript: saveChecks()\">
+                <td>Selct more than one. First line is the primary check. Additional lines are secondary checks.";
             } else {
                 echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please <a href=pedigree/line_properties.php>select a set of lines</a>";
             }
@@ -696,7 +696,7 @@ class Fieldbook
         if (isset($_SESSION['selected_lines'])) {
           $_SESSION['check_lines'] = $_SESSION['selected_lines'];
           unset($_SESSION['selected_lines']);
-          echo "Saved selected lines as checks<br>\n";
+          echo "Saved selected lines as checks<br>Now select treatment lines and reurn to this page\n";
         } else {
           echo "Error: no line selection<br>\n";
         }
