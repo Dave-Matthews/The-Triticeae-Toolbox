@@ -469,9 +469,18 @@ class Fieldbook
  
     private function design_results()
     {
-        ?>
-        <input type="submit" value="Create field layout" onclick="javascript: create_field()">
-        <?php
+        $type = $_GET['type'];
+        if (($type == "madii") || ($type == "dau")) {
+          if (isset($_SESSION['check_lines'])) {
+          ?>
+          <input type="submit" value="Create field layout" onclick="javascript: create_field()">
+          <?php
+          }
+        } elseif (isset($_SESSION['selected_lines'])) {
+          ?>
+          <input type="submit" value="Create field layout" onclick="javascript: create_field()">
+          <?php
+        }
     }
 
     private function create_trial()
@@ -647,7 +656,7 @@ class Fieldbook
         }
         fwrite($h, $cmd);
         if (isset($_GET['num_col']) && (!empty($_GET['num_col']))) {
-            $num_row = $_GET['num_col'];
+            $num_col = $_GET['num_col'];
             $cmd = "num_col <- $num_col\n";
         } else {
             $cmd = "num_col <- NULL\n";
