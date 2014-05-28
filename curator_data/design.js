@@ -37,10 +37,31 @@ function select_trial() {
 }
 
 function search_line() {
+  var lines = document.getElementById("LineSearchInput").value;
   jQuery.ajax({
-    type: "GET",
+    type: "POST",
     url: php_self,
-    data: "function=searchLine",
+    data: "function=searchLine&LineSearchInput=" + lines,
+    success: function(data, textStatus) {
+        jQuery(".dialog_r").html(data);
+    },
+    error: function() {
+        alert('Error in selecting design type');
+      }
+  });
+}
+
+function save_line(options) {
+  var lines = document.getElementById("selLines[]").value;
+  var lines_str = "";
+  $(options).each(function(lines)
+  {
+     lines_str += (lines_str === ''?'' : ',') + lines.value; 
+  });
+  jQuery.ajax({
+    type: "POST",
+    url: php_self,
+    data: "function=saveLine&LineSearchInput=" + lines,
     success: function(data, textStatus) {
         jQuery(".dialog_r").html(data);
     },
@@ -292,7 +313,7 @@ jQuery(function() {
 
   jQuery( "#dialog-form-checks" ).dialog({
       autoOpen: false,
-      height: 250,
+      height: 450,
       width: 450,
       modal: false,
       buttons: {
@@ -301,7 +322,6 @@ jQuery(function() {
         }
       }
   });
-
 
 });
 

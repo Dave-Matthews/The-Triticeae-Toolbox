@@ -288,7 +288,11 @@ MADIIdgn <- function(enviro="Eretz", entries= NULL, num.entries= NULL, chk.names
   fld.dgn.mod <- fld.dgn.mod[,c(1,2,9,8, 3:7)]
 
   if(is.null(designID)==F){
-    assign(designID, fld.dgn.mod, envir=.GlobalEnv)
+    t3fld.dgn.mod <- cbind(fld.dgn.mod[,c(2)], matrix(exp, nrow=num.rows, ncol=1), fld.dgn.mod[,c(3,5,6)], matrix("", nrow=num.rows, ncol=1))
+    t3fld.dgn.mod <- cbind(t3fld.dgn.mod, matrix("", nrow=num.rows, ncol=1), fld.dgn.mod[,c(7)], matrix("", nrow=num.rows, ncol=2))
+    t3fld.dgn.mod <- cbind(t3fld.dgn.mod, fld.dgn.mod[,c(4)])
+    colnames(t3fld.dgn.mod) <- c("plot","trial","line_name","row","column","entry","replication","block","subblock","treatment","check")
+    assign(designID, t3fld.dgn.mod, envir=.GlobalEnv)
     cat("\nYour MADII design is available in your working directory and R environment; named per ID provided.")
     write.csv(get(designID), paste(designID,"/",designID, ".csv", sep=""), row.names=F)
   } else{
