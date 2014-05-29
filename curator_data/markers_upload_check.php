@@ -1083,7 +1083,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $data = str_getcsv($line,"\t");
                         
             //Check for junk line
-            if (count($data) != 6)  {
+            if (count($data) != 6) {
                 echo "ERROR DETECT: Invalid number of columns in line $i.<br/>";
 				echo "The offending row contains:<br>\"$line\"<br>";
                 print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><br>";
@@ -1095,17 +1095,33 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 $storageArr[$i][$j++] = trim($value);   
             }
         
-	    	$lastmarker = $data[0];
-	    	$lastline = $i-1;
-	    	$i++;
+	        $lastmarker = $data[0];
+	        $lastline = $i-1;
+                $i++;
         }  
         unset ($value);
         fclose($reader);   
-        
+
+        //cache the marker and synonym names
+        $sql = "SELECT marker_uid, marker_name FROM markers";
+        $res = mysql_query($sql) or die("Database Error: marker name lookup - ".mysql_error() ."<br>".$sql);
+        while ($rdata = mysql_fetch_assoc($res)) {
+            $m_uid=$rdata['marker_uid'];
+            $m_nam=$rdata['marker_name'];
+            $markerNameLookup[$m_nam] = $m_uid;
+        }
+        $sql = "SELECT marker_uid, value FROM marker_synonyms";
+        $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
+        while ($rdata = mysql_fetch_assoc($res)) {
+            $m_uid=$rdata['marker_uid'];
+            $m_nam=$rdata['value'];
+            $markerSynLookup[$m_nam] = $m_uid;
+        }
+ 
         $curMarker = '';
         $markerUid = 0;
 
-        for ($i = 1; $i <= count($storageArr) ; $i++)  {
+        for ($i = 1; $i <= count($storageArr); $i++) {
 
             $marker = $storageArr[$i][$nameIdx];
             $markerType = $storageArr[$i][$markerTypeIdx];
@@ -1114,21 +1130,21 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $annotation = $storageArr[$i][$annotationIdx];
             $annotationType = $storageArr[$i][$annotationTypeIdx];
             
-	    	if ($marker == "") continue;
+            if ($marker == "") continue;
             // handle repeating marker entries
-            if (strcmp($marker, $curMarker) == 0)  {
+            if (strcmp($marker, $curMarker) == 0) {
                 
                 $doMarker = 0;
-                if (empty($synonym) )
+                if (empty($synonym) ) {
                     $doSynonym = 0;
-                else 
+                } else {
                     $doSynonym = 1;
-                    
-                if (empty($annotation)) 
+                }   
+                if (empty($annotation)) {
                     $doAnnotation = 0;
-                else 
+                } else {
                     $doAnnotation = 1;
-
+                }
             } else {
                 $curMarker = $marker;
                 $doMarker = 1;
@@ -1153,22 +1169,13 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 }
                 
                 //echo "Marker type - ".$markerType . " value = " . $markerTypeID . "<br>";  
-                //exit(0);
                 //Check to see if marker already exists
-                $sql = "SELECT marker_uid
-                        FROM markers
-                        WHERE marker_name = '$marker'";
-                $res = mysql_query($sql) or die("Database Error: marker name lookup - ".mysql_error() ."<br>".$sql);
-                $rdata = mysql_fetch_assoc($res);
-                $m_uid=$rdata['marker_uid'];
-                // Check synomyn
-                if (empty($m_uid)) {
-                    $sql = "SELECT marker_uid
-                            FROM marker_synonyms
-                            WHERE value = '$marker'";
-                    $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
-                    $rdata = mysql_fetch_assoc($res);
-                    $m_uid=$rdata['marker_uid'];
+                $m_uid = null;
+                if (isset($markerNameLookup[$marker])) {
+                    $m_uid=$markerNameLookup[$marker];
+                    // Check synomyn
+                } elseif (isset($markerSynLookup[$marker])) {
+                    $m_uid = $markerSynLookup[$marker];
                 }
                 // if no existing name or synonym 
                 if (empty($m_uid)) {
@@ -1511,7 +1518,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         }
         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
         $footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+        include $config['root_dir'].'theme/footer.php';
     } /* end of function type_databaseSNP */
     
 } /* end of class */
