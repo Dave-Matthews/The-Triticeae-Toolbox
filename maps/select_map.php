@@ -14,8 +14,8 @@
  * 
  */
 
-require_once('config.php');
-include_once($config['root_dir'].'includes/bootstrap.inc');
+require_once 'config.php';
+require_once $config['root_dir'].'includes/bootstrap.inc';
 connect();
 
 new Maps($_GET['function']);
@@ -28,79 +28,90 @@ new Maps($_GET['function']);
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/maps/select_map.php
  **/
-class Maps {
-
-  /**
-   * Using the class's constructor to decide which action to perform
-   * @param string $function action to perform
-   */
-  public function __construct($function = null) {
-    switch($function) {
-    case 'Save':
-      $this->typeMapSave();
-      break;
-    case 'Markers':
-      $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
-      break;
-    default:
-      $this->typeMapSet(); /* initial case */
-      break;
+class Maps
+{
+    /**
+     * Using the class's constructor to decide which action to perform
+     *
+     * @param string $function action to perform
+     */
+    public function __construct($function = null)
+    {
+        switch($function) {
+        case 'Save':
+            $this->typeMapSave();
+            break;
+        case 'Markers':
+            $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
+            break;
+        default:
+            $this->typeMapSet(); /* initial case */
+            break;
+        }
     }
-  }
 
-  /**
-   * The wrapper action for the typeMapset . Handles outputting the header
-   * and footer and calls the first real action of the typeMapset .
-   */
-  private function typeMapSet()
-  {
-    global $config;
-    include($config['root_dir'].'theme/normal_header.php');
+    /**
+     * The wrapper action for the typeMapset . Handles outputting the header
+     * and footer and calls the first real action of the typeMapset .
+     *
+     * @return avaiable maps
+     */
+    function typeMapSet()
+    {
+        global $config;
+        include $config['root_dir'].'theme/normal_header.php';
 
-    echo "<h2>Map Sets</h2>";
-    echo "<div id=\"step1\">";
-    $this->type_MapSet_Display();
-    echo "</div>";
-    echo "<div id=\"step2\">";
-    echo "<img id=\"spinner\" src=\"images/ajax-loader.gif\" style=\"display:none;\" />";
-    echo "</div>";
-    echo "<div id=\"step3\"></div>";
-    if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) {
-    ?>
-    <script type="text/javascript">
-      window.onload = load_markersInMap();
-    </script>
-    <?php
+        echo "<h2>Map Sets</h2>";
+        echo "<div id=\"step1\">";
+        $this->typeMapSetDisplay();
+        echo "</div>";
+        echo "<div id=\"step2\">";
+        echo "<img id=\"spinner\" src=\"images/ajax-loader.gif\" style=\"display:none;\" />";
+        echo "</div>";
+        ?>
+        <div id=step3></div>
+        <div id=step4><br>
+        <button onclick="javascript: load_markersInMap()">Calculate markers in map for selected lines</button>
+        </div>
+        <?php
+        if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) {
+            ?>
+            <script type="text/javascript">
+            <!--  window.onload = load_markersInMap();-->
+            </script>
+            <?php
+        }
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
     }
-    $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
-  }
 
-  /**
-   * Display a table of available maps
-   */
-  private function type_MapSet_Display()
-  {
-      if (isset($_GET['map'])) {
-          $map = $_GET['map'];
-          $_SESSION['selected_map'] = $map;
-          echo "Map selection saved.<br><br>\n";
-      }
-  ?>
-  <style type="text/css">
+    /**
+     * Display a table of available maps
+     *
+     * @return  available maps
+     */
+    function typeMapSetDisplay()
+    {
+        if (isset($_GET['map'])) {
+            $map = $_GET['map'];
+            $_SESSION['selected_map'] = $map;
+            echo "Map selection saved.<br><br>\n";
+        }
+        ?>
+        <style type="text/css">
          th {background: #5B53A6 !important; color: white !important; }
          table {background: none; border-collapse: collapse; }
          td {border: 1px solid #eee !important;}
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-  </style>
-  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-  <script type="text/javascript" src="maps/select_map01.js">
-  </script>
-  <form name="myForm" action="maps/select_map.php">
-  <?php
-    if (isset($_SESSION['selected_map'])) {
-      $selected_map = $_SESSION['selected_map'];
-    }
+        </style>
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script type="text/javascript" src="maps/select_map01.js">
+        </script>
+        <form name="myForm" action="maps/select_map.php">
+        <?php
+        if (isset($_SESSION['selected_map'])) {
+            $selected_map = $_SESSION['selected_map'];
+        }
     $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, mapset.comments as mapcmt from mapset, markers_in_maps as mim, map
       WHERE mim.map_uid = map.map_uid
       AND map.mapset_uid = mapset.mapset_uid
@@ -123,11 +134,9 @@ class Maps {
       }
       echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: save_map(this.value)\"><td>$count<td>$val<td><article title=\"$comment\">$comm</article>\n";
     }
-    echo "</table>";
-    #echo "<input type=\"submit\" name=\"function\" value=\"Save\">";
-    #echo "<input type=\"button\" value=\"Save\" onclick=\"javascript:save_map()\">";
-    echo "</form>";
-  }
+        echo "</table>";
+        echo "</form>";
+    }
 
     /**
      * called through ajax to display how many of the selected markers are in each map set
