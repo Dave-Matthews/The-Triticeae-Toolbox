@@ -217,6 +217,12 @@ EOD;
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
       </ul>
+      <?php else: ?>
+      <li> <a href="" title="Manage">Manage</a>
+        <ul>
+        <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
+            Phenotype Trials</a>
+        </ul>
       <?php endif ?>
 
       <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
