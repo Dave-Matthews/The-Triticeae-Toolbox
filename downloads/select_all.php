@@ -374,9 +374,9 @@ class SelectPhenotypeExp
         }
           
         if (isset($_GET['pi'])) {
-          $_SESSION['phenotype'] = $_GET['pi'];
-          $phenotype_ary = explode(",",$_SESSION['phenotype']);
+          $phenotype_ary = explode(",",$_GET['pi']);
           $_SESSION['selected_traits'] = $phenotype_ary;
+          $_SESSION['phenotype'] = $phenotype_ary[0];
         } else {
           echo "error - no selection found";
         }
