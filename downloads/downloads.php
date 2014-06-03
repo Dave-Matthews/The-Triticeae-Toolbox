@@ -791,36 +791,36 @@ class Downloads
          }
 	 echo "<br><br>"; 
 	 if ($countLines == 0) {
-	       echo "<font color=\"red\">Choose one or more lines before using a saved selection.</font>";
-	       echo "<a href=";
-	       echo $config['base_url'];
-	       echo "pedigree/line_selection.php> Select lines</a><br>";
+             echo "<font color=\"red\">Choose one or more lines before using a saved selection. </font>";
+             echo "<a href=";
+             echo $config['base_url'];
+             echo "pedigree/line_selection.php>Select lines</a><br>";
          } elseif ($countTrials == 0) {
-             echo "<font color=\"red\">Choose one or more trials before using a saved selection.</font>";
+             echo "<font color=\"red\">Choose one or more trials before downloading genotype data. </font>";
              echo "<a href=";
              echo $config['base_url'];
-             echo "phenotype/phenotype_selection.php> Select Trials</a><br>";
+             echo "phenotype/phenotype_selection.php>Select Trials</a><br>";
          } elseif ($selected_map == "") {
-             echo "<font color=\"red\">Choose a genetic map before using a saved selection.</font>";
+             echo "<font color=\"red\">Choose a genetic map before downloading genotype data. </font>";
              echo "<a href=";
              echo $config['base_url'];
-             echo "maps/select_map.php> Genetic Map</a><br>";
+             echo "maps/select_map.php>Genetic Map</a><br>";
 	 } else {
-	       echo "Filter lines and markers then $message2<br>";
-	       ?>
-               <table border=0>
-	       <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
-               <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
-	       <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
-               <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>used with <b>TASSEL</b> Version 3, 4, or 5 
-               <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
-               <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
-               <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
-               <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b>
-               <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v7');">
-               <td>genotype coded as {AA, AB, BB}<br>used by <b>synbreed</b>
-               </table>
-               <?php
+             echo "Filter lines and markers then $message2<br>";
+             ?>
+             <table border=0>
+             <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
+             <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
+             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
+             <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>used with <b>TASSEL</b> Version 3, 4, or 5 
+             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
+             <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
+             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
+             <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b>
+             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v7');">
+             <td>genotype coded as {AA, AB, BB}<br>used by <b>synbreed</b>
+             </table>
+             <?php
           ?><br><br>
           The snpfile.txt file has one row for each germplasm line.<br>
           The genotype.hmp.txt file has one row for each marker similar to the  HapMap format and contains map information.<br>
