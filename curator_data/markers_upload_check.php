@@ -279,6 +279,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $seq = strtoupper($storageArr[$i][$sequenceIdx]);
             $found_name = 0;
             $found_seq = 0;
+            $found_seq_name = "";
             $seq_match = "";
             if (preg_match("/[A-Za-z0-9]/", $name)) {
                if (isset($marker_name[$name]) || isset($marker_syn_list[$name])) {
