@@ -78,6 +78,11 @@ class Annotations {
   </form>
 </div>
 
+<div class="section">
+  <h3>Design Field Layout File</h3>
+  <a href="curator_data/exp_design.php">Experiment Design and Field Layout</a>
+</div>
+
 <!-- <a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_text.php"><li><b>Upload a Tab Delimited(.txt) File</b></li></a><br> -->
 <!-- <a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php"><li><b>Delete an experiment</b></li></a> -->
 		
