@@ -233,8 +233,12 @@ function create_trial() {
   if (document.getElementById("design")) {
       design_type = document.getElementById("design").value;
   }
-  var numEntry = document.getElementByID("trt").value;
-  var numRepl = document.getElementByID("cnt").value;
+  if (document.getElementById("trt")) {
+      var numEntry = document.getElementByID("trt").value;
+  }
+  if (document.getElementById("cnt")) {
+      var numRepl = document.getElementByID("cnt").value;
+  }
   var irrigation = jQuery('input[name="irrigation"]:checked').val();
 
   jQuery.ajax({
