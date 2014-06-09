@@ -1,4 +1,4 @@
-/*global, alert, jQuery, $ */
+/*global, alert, jQuery, $, $A */
 
 var select1_str = "";	//select/add
 var num_replicates = "";
@@ -19,6 +19,12 @@ function select_trial() {
   select1_str = "select";
   program = "";
   trial = "";
+  if (jQuery(".step1a")) {
+      jQuery(".step1a").html("");
+  }
+  if (jQuery(".step1b")) {
+      jQuery(".step1b").html("");
+  }
   jQuery(".step2").html("");
   jQuery(".step3").html("");
   jQuery(".step4").html("");
@@ -43,7 +49,7 @@ function search_line() {
     url: php_self,
     data: "function=searchLine&LineSearchInput=" + lines,
     success: function(data, textStatus) {
-        jQuery(".dialog_r").html(data);
+        jQuery("#dialog_r").html(data);
     },
     error: function() {
         alert('Error in selecting design type');
@@ -51,19 +57,57 @@ function search_line() {
   });
 }
 
-function save_line(options) {
-  var lines = document.getElementById("selLines[]").value;
+function update_type(options) {
+  design_type = jQuery("#design").val();
+  jQuery(".step3").html("");
+  jQuery.ajax({
+      type: "GET",
+      url: php_self,
+      data: "function=designField&type=" + design_type,
+      success: function(data, textStatus) {
+          jQuery(".step3").html(data);
+      },
+      error: function() {
+          alert('Error in selecting design type');
+      }
+  });
+  if (design_type == "alpha") {
+    jQuery("#design_desc").html("The number of treatments must be multiple of k (size block)");
+  } else if (design_type == "bib") {
+    jQuery("#design_desc").html("Randomized Balanced Incomplete Block Design");
+  } else if (design_type == "lattice") {
+    jQuery("#design_desc").html("SIMPLE and TRIPLE lattice designs. It randomizes treatments in k x k lattice.");
+  } else if (design_type == "madii") {
+    jQuery("#design_desc").html("Modified augmented design.");
+  } else {
+    jQuery("#design_desc").html("");
+  }
+  jQuery(".step4").html("");
+  jQuery.ajax({
+      type: "GET",
+      url: php_self,
+      data: "function=design_results&type=" + design_type,
+      success: function(data, textStatus) {
+          jQuery(".step4").html(data);
+      },
+      error: function() {
+          alert('Error in selecting design type');
+      }
+  });
+}
+
+function save_line() {
   var lines_str = "";
-  $(options).each(function(lines)
-  {
-     lines_str += (lines_str === ''?'' : ',') + lines.value; 
+  jQuery('#selLines').each(function(){
+     lines_str += (lines_str === ''?'' : ',') + jQuery(this).val(); 
   });
   jQuery.ajax({
     type: "POST",
     url: php_self,
-    data: "function=saveLine&LineSearchInput=" + lines,
+    data: "function=saveLine&LineSearchInput=" + lines_str,
     success: function(data, textStatus) {
-        jQuery(".dialog_r").html(data);
+        jQuery("#dialog-form-checks").dialog( "close" );
+        update_type(); 
     },
     error: function() {
         alert('Error in selecting design type');
@@ -90,7 +134,8 @@ function update_trial() {
       url: php_self,
       data: "function=displayTrial&prog=" + program + "&trial=" + trial,
       success: function(data, textStatus) {
-          jQuery(".step3").html(data);
+          jQuery(".step1b").html(data);
+          //jQuery(data).appendTo(".step1");
       },
       error: function() {
           alert('Error in selecting design type');
@@ -102,6 +147,12 @@ function add_trial() {
   select1_str = "add";
   program = "";
   trial = "";
+  if (jQuery(".step1a")) {
+      jQuery(".step1a").html("");
+  }
+  if (jQuery(".step1b")) {
+      jQuery(".step1b").html("");
+  }
   jQuery(".step2").html("");
   jQuery(".step3").html("");
   jQuery.ajax({
@@ -118,34 +169,6 @@ function add_trial() {
   jQuery(".step2").html("<input type=submit value='Create trial' onclick='javascript: create_trial()'><br>");
 }
 
-function update_type(options) {
-  design_type = jQuery("#design").val();
-  jQuery(".step3").html("");
-  jQuery.ajax({
-      type: "GET",
-      url: php_self,
-      data: "function=designField&type=" + design_type,
-      success: function(data, textStatus) {
-          jQuery(".step3").html(data);
-      },
-      error: function() {
-          alert('Error in selecting design type');
-      }
-  });
-  jQuery(".step4").html("");
-  jQuery.ajax({
-      type: "GET",
-      url: php_self,
-      data: "function=design_results&type=" + design_type,
-      success: function(data, textStatus) {
-          jQuery(".step4").html(data);
-      },
-      error: function() {
-          alert('Error in selecting design type');
-      }
-  });
-}
-
 function update_step1() {
   if (select1_str == "select") {
       program = jQuery("#program").val();
@@ -155,7 +178,8 @@ function update_step1() {
           url: php_self,
           data: "function=selectTrial&prog=" + program,
           success: function(data, textStatus) {
-              jQuery(".step2").html(data);
+              jQuery(".step1a").html(data);
+              //jQuery(data).appendTo(".step1");
           },
           error: function() {
               alert('Error in selecting trial');
@@ -178,8 +202,8 @@ function create_trial() {
   if (document.getElementById("program")) {
       program = document.getElementById("program").value;
   }
-  if (document.getElementById("name")) {
-      trial_name = document.getElementById("name").value;
+  if (document.getElementById("trial")) {
+      trial_name = document.getElementById("trial").value;
   }
   if (document.getElementById("year")) {
       year = document.getElementById("year").value;
@@ -203,14 +227,20 @@ function create_trial() {
   var pdate = document.getElementById("plant_date").value;
   var hdate = document.getElementById("harvest_date").value;
   var bwdate = document.getElementById("bwdate").value;
-  var greenhouse = document.getElementById("greenhouse").value;
+  var radio = document.getElementById("greenhouse");
+  var greenhouse = jQuery('input[name="greenhouse"]:checked').val();
   var seed = document.getElementById("seed").value;
-  design_type = document.getElementById("design").value;
+  if (document.getElementById("design")) {
+      design_type = document.getElementById("design").value;
+  }
+  var numEntry = document.getElementByID("trt").value;
+  var numRepl = document.getElementByID("cnt").value;
+  var irrigation = jQuery('input[name="irrigation"]:checked').val();
 
   jQuery.ajax({
       type: "GET",
       url: php_self,
-      data: "function=create_trial&prg=" + program + "&trial_name=" + trial_name + "&year=" + year + "&exp_name=" + exp_name + "&location=" + loc + "&lat=" + lat + "&long=" + longit + "&collab=" + collab + "&desc=" + desc + "&pdate=" + pdate + "&hdate=" + hdate + "&bwdate=" + bwdate, 
+      data: "function=create_trial&prg=" + program + "&trial_name=" + trial_name + "&year=" + year + "&exp_name=" + exp_name + "&location=" + loc + "&lat=" + lat + "&long=" + longit + "&collab=" + collab + "&desc=" + desc + "&pdate=" + pdate + "&hdate=" + hdate + "&bwdate=" + bwdate + "&greenhouse=" + greenhouse + "&seed=" + seed + "&design=" + design_type + "&irrigation=" + irrigation + "&numEnty=" + numEntry + "&numRepl=" + numRepl, 
       success: function(data, textStatus) {
           jQuery(".step2").html(data);
       },
@@ -230,8 +260,8 @@ function create_field() {
   var num_row = "";
   var num_col = "";
   unq_dir = "download_" + Date.now();
-  if (document.getElementById("name")) {
-      trial_name = document.getElementById("name").value;
+  if (document.getElementById("trial")) {
+      trial_name = document.getElementById("trial").value;
   } 
   if (trial_name === "") {
       alert('Error: must specify Trial Name');
