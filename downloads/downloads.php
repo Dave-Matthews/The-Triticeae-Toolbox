@@ -124,6 +124,12 @@ class Downloads
         global $config;
         include $config['root_dir'].'theme/normal_header.php';
         $this->type1_checksession();
+        ?>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+        <script type="text/javascript" src="downloads/downloadsjq.js"></script>
+        <?php
         include $config['root_dir'].'theme/footer.php';
     }	
 
@@ -184,14 +190,16 @@ class Downloads
                 if (empty($_SESSION['selected_lines'])) {
                     echo "1. Select a set of <a href=\"" . $config['base_url'];
                     echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
-                    echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> which has the best coverage for your selection.<br><br>";
-                    echo "</div>";
+                    ?>
+                    2. Select the <input type="button" value="Genetic map" onclick="javascript: select_map()"> which has the best coverage for your selection.<br><br>
+                    </div>
+                    <?php
                 } else if (empty($_SESSION['selected_map'])) {
                     echo "1. Select a set of <a href=\"" . $config['base_url'];
                     echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
-                    echo "2. Select the <a href=\"maps/select_map.php\">genetic map</a> to enable download of genotype data.<br><br>";
-                    echo "</div><br>";
-                    ?> 
+                    ?>
+                    2. Select the <input type="button" value="Genetic map" onclick="javascript: select_map()"> which has the best coverage for your selection.<br><br>
+                    </div><br>
                     <div id="step1" style="float: left; margin-bottom: 1.5em;">
                     <?php
                     $this->type1_lines_trial_trait(); 
@@ -204,6 +212,7 @@ class Downloads
                     <?php
                     $this->type1_lines_trial_trait(); 
                 }
+                include 'select-map.php';
                 echo "</div>";
         }
 
