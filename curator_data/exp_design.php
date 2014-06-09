@@ -18,9 +18,10 @@ require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 require $config['root_dir'] . 'lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
+require $config['root_dir'] . 'lib/phpRW.php';
 connect();
 
-new Fieldbook($_GET['function']);
+new Fieldbook($_REQUEST['function']);
 
 class Fieldbook
 {
@@ -61,6 +62,9 @@ class Fieldbook
         case 'searchLine':
             $this->searchLine();
             break;
+        case 'saveLine':
+            $this->saveLines();
+            break;
         default:
             $this->type_checksession();
             break;
@@ -83,16 +87,92 @@ class Fieldbook
 
     private function searchLine()
     {
-        echo "found\n";
+        if (!empty($_POST)) {
+            $linenames = $_POST['LineSearchInput'];
+        }
+        if (strlen($linenames) != 0)  {
+      // Assume input is punctuated either with commas, tabs or linebreaks. Change to commas.
+      $linenames = str_replace(array('\r\n', ', '), '\t', $linenames);
+      $linenames = str_replace(array('\n', ', '), '\t', $linenames);
+      $lineList = explode('\t', $linenames);
+      foreach ($lineList as $word) {
+        echo "$word<br>\n";
+        $found = FALSE;
+        $word = str_replace('*', '%', $word);  // Handle "*" wildcards.
+        $word = str_replace('&amp;', '&', $word);  // Allow "&" character in line names.
+        // First check line_records.line_record_name.
+        $hits = mysql_query("select line_record_name from line_records
+                where line_record_name like '$word'") or die(mysql_error());
+        if (mysql_num_rows($hits) > 0) {
+          $found = TRUE;
+          while ($hit = mysql_fetch_row($hits))
+            $linesFound[] = $hit[0];
+        }
+        // Now check line_synonyms.line_synonym_name.
+        $hits = mysql_query("select line_record_name
+                from line_synonyms ls, line_records lr
+                where line_synonym_name like '$word'
+                and ls.line_record_uid = lr.line_record_uid") or die(mysql_error());
+        if (mysql_num_rows($hits) > 0) {
+          $found = TRUE;
+          while($hit = mysql_fetch_row($hits))
+            $linesFound[] = $hit[0];
+        }
+        if ($found === FALSE)
+          $nonHits[] = $word;
+      }
+      // Generate the translated line names
+      if (count($linesFound) > 0)
+        $linenames = implode("','", $linesFound);
+    } // end if (strlen($linenames) != 0)
+        /* Build the search string $where. */
+    $count = 0;
+    if (strlen($linenames) > 0)         {
+      if ($count == 0)
+        $where .= "line_record_name in ('".$linenames."')";
+      else
+        $where .= " AND line_record_name in ('".$linenames."')";
+      $count++;
+      $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
+      $result=mysql_query($TheQuery) or die(mysql_error()."<br>Query was:<br>".$TheQuery);
+      $linesfound = mysql_num_rows($result);
+    }
+
+      /* Search Results: */
+    /* echo "</div><div class='boxContent'><table width=500px><tr><td>"; */
+    echo "<form name='lines' action=".$_SERVER['PHP_SELF']." method='get'>";
+    // Show failures from the Name box that don't match any line names.
+    foreach ($nonHits as $i)
+      if ($i != '') echo "<font color=red><b>Line \"$i\" not found.</font></b><br>";
+    print "<b>Lines found: $linesfound </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+
+    /* If any hits. */
+    if ($linesfound > 0) {
+      echo " <input type='button' name='WhichBtn' value='Add to check lines' onclick='javascript: save_line(this.options)'/>";
+      print "<br><select name='selLines' id='selLines' multiple='multiple' style='height: 17em; width: 13em'>";
+      $_SESSION['linesfound'] = array();
+      while($row = mysql_fetch_assoc($result)) {
+        $line_record_name = $row['line_record_name'];
+        $line_record_uid = $row['line_record_uid'];
+        echo "<option value='$line_record_uid' selected>$line_record_name</option>";
+        $_SESSION['linesfound'][] = $line_record_uid;
+      }
+      print "</select><br>";
+
+    } // end if ($linesfound > 0)
+    print "</form>";
+
     }
 
     private function design()
     {
         ?>
-        <input type=button value="Select" onclick="javascript: select_trial()"  style="display: inline-block">
-        <input type=button value="Upload Phenotype trial" onclick="javascript: upload_trial()" style="display: inline-block">
-        <input type=button value="Upload Field layout" onclick="javascript: upload_field()" style="display: inline-block">
-        <input type=button value="Create trial" onclick="javascript: add_trial()" style="display: inline-block"-->
+        This tool allows you to select or create a trial and experiment design.<br> 
+        The results can be uploaded in the sandbox, downloaded to a tablet device, or submitted to the curator for loading into the production website.<br><br>
+        <input type=button value="Select existing trial" onclick="javascript: select_trial()"  style="display: inline-block">
+        <!--input type=button value="Upload Phenotype trial" onclick="javascript: upload_trial()" style="display: inline-block">
+        <input type=button value="Upload Field layout" onclick="javascript: upload_field()" style="display: inline-block"-->
+        <input type=button value="Create new trial" onclick="javascript: add_trial()" style="display: inline-block"-->
         <br><br>
         <div id="dialog-form" title="Upload Phenotype Trial">
         <form action="curator_data/input_annotations_check_excel.php" method="post" enctype="multipart/form-data">
@@ -115,14 +195,14 @@ class Fieldbook
         <form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
           <tr style="vertical-align: top">
             <td><b>Name</b> <br>
-              <textarea name="LineSearchInput" rows="3" cols="18" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
+              <textarea name="LineSearchInput" id="LineSearchInput" rows="3" cols="18" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
               <br> E.g. Cayuga, tur*ey, iwa860*<br>
               Synonyms will be translated.<br>
           <input type="button" value="Search" onclick="javascript: search_line()"/>
         </form>
         <div id="dialog_r"></div>
         </div>
-        <div class="step1"></div>
+        <div class="step1"></div><div class="step1a"></div><div class="step1b"></div>
         <div class="step2"></div>
         <div class="step3"></div>
         <div class="step4"></div>
@@ -144,6 +224,8 @@ class Fieldbook
     private function selectProg()
     {
         ?>
+        <h3>Trial description</h3>
+        To create an experiment design, select a design type from the drop-down list<br><br>
         <table>
         <tr><td width="120">Program:
         <td><select id="program" onchange="javascript: update_step1()">
@@ -151,8 +233,7 @@ class Fieldbook
         <?php
         $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
                   FROM experiments AS e, CAPdata_programs AS dp
-                  WHERE program_type = 'breeding'
-                  AND dp.CAPdata_programs_uid = e.CAPdata_programs_uid
+                  WHERE dp.CAPdata_programs_uid = e.CAPdata_programs_uid
                   order by data_program_name asc";
         $res = mysql_query($sql) or die(mysql_error());
         while ($row = mysql_fetch_assoc($res)) {
@@ -165,6 +246,7 @@ class Fieldbook
         </select>
         </table>
         <?php
+        //WHERE program_type = 'phenotyping'
     }
 
     private function displayTrial()
@@ -190,6 +272,20 @@ class Fieldbook
             $irrigation = $row['irrigation'];
             $remarks = $row['other_remarks'];
         }
+        $sel_alpha = "";
+        $sel_bid = "";
+        $sel_crd = "";
+        $sel_lattice = "";
+        $design = strtolower($design);
+        if ($design == "alpha") {
+            $sel_alpha = "selected";
+        } elseif ($design == "bib") {
+            $sel_bid = "selected";
+        } elseif ($design == "crd") {
+            $sel_crd = "selected";
+        } elseif ($design == "lattice") {
+            $sel_lattice = "selected";
+        } 
         ?>
         <table>
         <tr><td width="120">Year:<td><?php echo $year; ?>
@@ -202,16 +298,26 @@ class Fieldbook
         <tr><td>Planting date:<td><?php echo $plant_date; ?>
         <tr><td>Greenhouse trial?<td><?php echo $greenhouse; ?>
         <tr><td>Seeding rate:<td><?php echo $seeding; ?>
-        <tr><td id="type" name="type">Design type:<td><?php echo $design; ?>
+        <tr><td id="type" name="type">Design type:<td>
+        <select id="design" name="design" onchange="javascript: update_type(this.options)">
+        <option>select design</option>
+        <option value="alpha" <?php echo "$sel_alpa"; ?>>Alpha</option>
+        <option value="bib" <?php echo "$sel_bid"; ?>>Random Balanced ICB</option>
+        <option value="crd" <?php echo "$sel_crd"; ?>>Completely Random</option>
+        <option value="lattice" <?php echo "$sel_lattice"; ?>>Lattice</option>
+        <option value="dau">Augmented</option>
+        <option value="rcbd">Random Complete Block</option>
+        <option value="madii">MADII</option>
+        </select>
         <tr><td>Irrigation:<td>
         <tr><td>Other remarks:<td><?php echo $remarks; ?>
-        </table>
+        </table><br><br>
         <script type="text/javascript">
-        //if ( window.addEventListener ) {
-        //    window.addEventListener( "load", update_type(), false );
-        //} else if ( window.onload ) {
-        //    window.onload = "update_type()";
-        //}
+        if ( window.addEventListener ) {
+            window.addEventListener( "load", update_type(this.options), false );
+        } else if ( window.onload ) {
+            window.onload = "update_type()";
+        }
         </script>
         <?php
     }
@@ -246,10 +352,10 @@ class Fieldbook
     private function design3()
     {
         ?>
-        This tool allows you to create a new trial and experiment design.
-        The results can be downloaded then submitted to the curator for loading into the production website.<br>
+        <h3>Trial description</h3>
         The trial design is generated by the "<a href="http://cran.r-project.org/web/packages/agricolae/agricolae.pdf">
-        agricolae</a>" package except for the MADII type which uses a custom R script.<br><br>
+        agricolae</a>" package except for the MADII type which uses a custom R script.<br>
+        To create an experiment design, select a design type from the drop-down list<br><br>
         <?php
         if (isset($_SESSION['selected_lines'])) {
         } else {
@@ -275,7 +381,7 @@ class Fieldbook
         ?>
         </select>
         <td>Program responsible for data collection
-        <tr><td>Trial Name:<td colspan=2><input type="text" id="name" onchange="javascript: update_step1()">
+        <tr><td>Trial Name:<td colspan=2><input type="text" id="trial" onchange="javascript: update_step1()">
         <td>Format: "Experiment_YYYY_Location", where Experiment is short but descriptive, YYYY=Trial Year.<br>
                 Trial Names should be unique across T3 for a crop. A trial is carried out at one location in one year.  
         <tr><td>Year:<td colspan=2>
@@ -313,8 +419,9 @@ class Fieldbook
         <tr><td>Harvest date:<td colspan=2><input type="text" id="harvest_date"><td>Use Excel "Text", not "Date", format. if the trial was not harvestd,
                 use the date of last data collection.
         <tr><td>Begin weather date:<td colspan=2><input type ="text" id="bwdate"><td>Optional, if T3 should store weather data starting at some point before planting (e.g., to track soil moisture status).
-        <tr><td>Greenhouse trial<td><input type="radio" name="greenhouse" id="greenhouse" checked value="no">No
-            <td><input type="radio" name="greenhouse" value="yes">Yes
+        <tr><td>Greenhouse trial
+            <td><input type="radio" name="greenhouse" id="greenhouse" checked value="no">No
+            <td><input type="radio" name="greenhouse" id="greenhouse" value="yes">Yes
         <tr><td>Seeding rate<td colspan=2><input type="text" id="seed"><td>This is the target density for the trial, not the actual rate for each line
         <tr><td>Design type:<td colspan=2>
         <select id="design" name="design" onchange="javascript: update_type(this.options)">
@@ -327,6 +434,7 @@ class Fieldbook
         <option value="rcbd">Random Complete Block</option>
         <option value="madii">MADII</option>
         </select>
+        <td><div id="design_desc"></div>
 
         <tr><td>Irrigation<td><input type="radio" name="irrigation" id="irrigation" checked value="no">No
             <td><input type="radio" name="irrigation" value="yes">Yes
@@ -363,6 +471,7 @@ class Fieldbook
     private function designField()
     {
         $type = $_GET['type'];
+        echo "<h3>Field layout</h3>";
         echo "<table>";
         if ($type == "alpha") {
             if (isset($_SESSION['selected_lines'])) {
@@ -383,7 +492,8 @@ class Fieldbook
                 echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>";
             }
             ?>
-            <tr><td>Size of block:<td><input type="text" id="size_blk" onclick="javascript: update_step3()">
+            <tr><td>Size of block:<td>2
+            <input type="hidden" id="size_blk" value=2>
             <?php
         } elseif ($type == "crd") {
             if (isset($_SESSION['selected_lines'])) {
@@ -442,8 +552,25 @@ class Fieldbook
             <?php
         } elseif ($type == "madii") {
             if (isset($_SESSION['check_lines'])) {
-                $count = count($_SESSION['check_lines']);
-                echo "<tr><td>Check lines:<td>$count lines selected";
+                $lines = $_SESSION['check_lines'];
+                $lines_count = count($lines);
+                $lines_str = implode (",", $lines);
+                $name = "";
+                $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
+                $res = mysql_query($sql) or die(mysql_error() . $sql);
+                while ($row = mysql_fetch_assoc($res)) {
+                    $tmp = $row['line_record_name'];
+                    if ($name == "") {
+                        $name = $tmp;
+                    } else {
+                        $name = $name . ", $tmp";
+                    }
+                }
+                echo "<tr><td>Check lines:<td>$name<td>";
+                if ($lines_count < 2) {
+                    echo "<font color=red>Error: select 2 or more check lines for MADII</font>";
+                }
+                echo "<input type=\"button\" value=\"Select check lines\" onclick=\"javascript: select_check()\">";
                 if (isset($_SESSION['selected_lines'])) {
                     $count = count($_SESSION['selected_lines']);
                     echo "<tr><td>Treatment:<td>$count lines selected";
@@ -454,12 +581,9 @@ class Fieldbook
                 } else {
                     echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please <a href=pedigree/line_properties.php>select a set of lines</a>";
                 }
-            } elseif (isset($_SESSION['selected_lines'])) {
-                $count = count($_SESSION['selected_lines']);
-                echo "<tr><td width=120>$count Lines selected<td><input type=\"button\" value=\"Save as checks\" onclick=\"javascript: saveChecks()\">
-                <td>Selct more than one. First line is the primary check. Additional lines are secondary checks.";
             } else {
-                echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please <a href=pedigree/line_properties.php>select a set of lines</a>";
+               echo "<tr><td><input type=\"button\" value=\"Select check lines\" onclick=\"javascript: select_check()\">
+                <td>Select 2 or more check lines";
             }
         }
         ?>
@@ -513,6 +637,9 @@ class Fieldbook
         $pdate = $_GET['pdate'];
         $hdate = $_GET['hdate'];
         $bwdate = $_GET['bwdate'];
+        $greenhouse = $_GET['greenhouse'];
+        $seed = $_GET['seed'];
+        $design = $_GET['design']; 
 
         $sql = "select value from settings where name='database'";
         $res = mysql_query($sql) or die(mysql_error());
@@ -574,18 +701,14 @@ class Fieldbook
 
     private function create_field()
     {
+        $objRWrap = new RWrap();
         global $config;
-        $unique_str = $_GET['unq'];
-        $dir = "/tmp/tht/$unique_str/";
-        $filename1 = "argico.R";
         $filename2 = "design.csv";
-        $filename3 = "design.log";
-        mkdir("/tmp/tht/$unique_str");
-        $h = fopen($dir.$filename1, "w+");
+        $filename3 = "run.log";
         if (isset($_GET['type'])) {
             $exp_type = $_GET['type'];
             $cmd = "type <-c(\"$exp_type\")\n";
-            fwrite($h, $cmd);
+            $objRWrap->addCommand($cmd);
         }
         if (isset($_GET['trial_name'])) {
             $trial_code = $_GET['trial_name'];
@@ -597,7 +720,7 @@ class Fieldbook
                 $exp = "";
                 foreach($tmp as $item) {
                   $sql = "select line_record_name from line_records where line_record_uid = $item";
-                  $res = mysql_query($sql) or die(mysql_error());
+                  $res = mysql_query($sql) or die(mysql_error() . $sql);
                   if ($row = mysql_fetch_assoc($res)) { 
                     $name = $row['line_record_name'];
                   } else {
@@ -613,7 +736,7 @@ class Fieldbook
             } else {
                 $cmd = "trt <-c($tmp_str)\n";
             }
-            fwrite($h, $cmd);
+            $objRWrap->addCommand($cmd);
         } else {
           die("Error: no lines selected");
         }
@@ -623,7 +746,7 @@ class Fieldbook
                 $exp = "";
                 foreach($tmp as $item) {
                   $sql = "select line_record_name from line_records where line_record_uid = $item";
-                  $res = mysql_query($sql) or die(mysql_error());
+                  $res = mysql_query($sql) or die(mysql_error() . $sql);
                   if ($row = mysql_fetch_assoc($res)) {
                     $name = $row['line_record_name'];
                   } else {
@@ -636,17 +759,17 @@ class Fieldbook
                   }
                 }
                 $cmd = "trt2 <-c($exp)\n";
-            fwrite($h, $cmd);
+            $objRWrap->addCommand($cmd);
         }
         if (isset($_GET['size_blk']) && (!empty($_GET['size_blk']))) {
             $size_blk = $_GET['size_blk'];
             $cmd = "k <- $size_blk\n";
-            fwrite($h, $cmd);
+            $objRWrap->addCommand($cmd);
         }
         if (isset($_GET['num_rep']) && (!empty($_GET['num_rep']))) {
             $num_rep = $_GET['num_rep'];
             $cmd = "r <- $num_rep\n";
-            fwrite($h, $cmd);
+            $objRWrap->addCommand($cmd);
         }
         if (isset($_GET['num_row']) && (!empty($_GET['num_row']))) {
             $num_row = $_GET['num_row'];
@@ -654,14 +777,14 @@ class Fieldbook
         } else {
             $cmd = "num_row <- NULL\n";
         }
-        fwrite($h, $cmd);
+        $objRWrap->addCommand($cmd);
         if (isset($_GET['num_col']) && (!empty($_GET['num_col']))) {
             $num_col = $_GET['num_col'];
             $cmd = "num_col <- $num_col\n";
         } else {
             $cmd = "num_col <- NULL\n";
         }
-        fwrite($h, $cmd);
+        $objRWrap->addCommand($cmd);
 
         /*error checking*/
         if ($exp_type == "alpha") {
@@ -671,20 +794,25 @@ class Fieldbook
         }
  
         $cmd = "outfile <- \"$filename2\"\n";
-        fwrite($h, $cmd);
+        $objRWrap->addCommand($cmd);
         $cmd = "exp <- \"$trial_code\"\n";
-        fwrite($h, $cmd);
+        $objRWrap->addCommand($cmd);
         $cmd = "common_code <- \"" . $config['root_dir'] . "R/madii.R\"\n";
-        fwrite($h, $cmd);
-        fwrite($h, "setwd(\"/tmp/tht/$unique_str\")\n");
-        fclose($h);
+        $objRWrap->addCommand($cmd);
+        //$cmd = "setwd(\"/tmp/tht/$unique_str\")\n";
+        //$objRWrap->addCommand($cmd);
+        $objRWrap->close();
 
         if ($exp_type == "madii") {
-            exec("cat /tmp/tht/$unique_str/$filename1 ../R/design_madii.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename3");
+            $objRWrap->runCommand("design_madii.R");
+            //exec("cat /tmp/tht/$unique_str/$filename1 ../R/design_madii.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename3");
             $filename2 = "tester1/tester1.csv";
         } else {
-            exec("cat /tmp/tht/$unique_str/$filename1 ../R/design.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename3"); 
+            $objRWrap->runCommand("design.R");
+            //exec("cat /tmp/tht/$unique_str/$filename1 ../R/design.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename3"); 
         }
+        $log = $objRWrap->getResults($filename3);
+        echo "$log\n";
         if (file_exists("/tmp/tht/$unique_str/$filename3")) {
             $h = fopen("/tmp/tht/$unique_str/$filename3", "r");
             while ($line=fgets($h)) {
@@ -693,10 +821,11 @@ class Fieldbook
             fclose($h);
         }
 
-        if (file_exists("/tmp/tht/$unique_str/$filename2")) {
-            echo "<a href=\"/tmp/tht/$unique_str/$filename2\" target=\"_new\">Download Trial Design</a>";
+        $log = $objRWrap->getLink($filename2);
+        if ($log == "") {
+            echo "no output file $filename2\n";
         } else {
-            echo "no output file\n";
+            echo "<a href=\"$log\" target=\"_new\">Download Trial Design</a>";
         }
     }
 
@@ -708,6 +837,17 @@ class Fieldbook
           echo "Saved selected lines as checks<br>Now select treatment lines and reurn to this page\n";
         } else {
           echo "Error: no line selection<br>\n";
+        }
+    }
+  
+    private function saveLines()
+    {
+        if (isset($_POST['LineSearchInput'])) {
+            $line_str = $_POST['LineSearchInput'];
+            $lines = explode(',', $line_str);
+            $_SESSION['check_lines'] = $lines;
+        } else {
+            echo "Error: no lines selected\n";
         }
     }
 }
