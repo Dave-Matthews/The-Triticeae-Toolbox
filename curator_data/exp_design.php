@@ -527,8 +527,22 @@ class Fieldbook
             <?php
         } elseif ($type == "dau") {
             if (isset($_SESSION['check_lines'])) {
-                $count = count($_SESSION['check_lines']);
-                echo "<tr><td>Check lines:<td>$count lines selected";
+                $lines = $_SESSION['check_lines'];
+                $lines_count = count($_SESSION['check_lines']);
+                $lines_str = implode (",", $lines);
+                $name = "";
+                $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
+                $res = mysql_query($sql) or die(mysql_error() . $sql);
+                while ($row = mysql_fetch_assoc($res)) {
+                    $tmp = $row['line_record_name'];
+                    if ($name == "") {
+                        $name = $tmp;
+                    } else {
+                        $name = $name . ", $tmp";
+                    }
+                }
+                echo "<tr><td>Check lines:<td>$name<td>";
+                echo "<input type=\"button\" value=\"Select check lines\" onclick=\"javascript: select_check()\">";
                 if (isset($_SESSION['selected_lines'])) {
                     $count = count($_SESSION['selected_lines']);
                     echo "<tr><td>Treatment:<td>$count lines selected";
@@ -538,13 +552,10 @@ class Fieldbook
                 ?>
                 <tr><td>Replications or Blocks:<td><input type="text" id="num_rep" onclick="javascript: update_step3()">
                 <?php
-             } elseif (isset($_SESSION['selected_lines'])) {
-                $count = count($_SESSION['selected_lines']);
-                echo "<tr><td>$count Lines selected<td><input type=\"button\" value=\"Save as checks\" onclick=\"javascript: saveChecks()\">
-                <td>Then select treatment lines and return to this page";
              } else {
-                echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please <a href=pedigree/line_properties.php>select a set of lines</a>";
-             }
+               echo "<tr><td><input type=\"button\" value=\"Select check lines\" onclick=\"javascript: select_check()\">
+                <td>Select 1 or more check lines";
+            }
         } elseif ($type == "rcbd") {
             ?>
             <tr><td>Replications or Blocks:<td><input type="text" id="num_rep" onclick="javascript: update_step3()">
