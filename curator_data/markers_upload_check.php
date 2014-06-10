@@ -97,7 +97,7 @@ class Markers_Check
         then check "Yes" to add marker as synonym.
         <h3>Check import file</h3>
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-        <script type="text/javascript" src="curator_data/marker.js"></script>
+        <script type="text/javascript" src="curator_data/marker01.js"></script>
         <div id=update></div>
         <div id=checksyn>
         <?php
