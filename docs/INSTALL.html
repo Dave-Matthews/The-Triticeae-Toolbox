@@ -6,20 +6,24 @@
   - Apache
   - MySQL
   - PHP, including PEAR
-  - R, version at least 2.15.2
-    - additional packages: rrBLUP, multicore, rpart, lme4, pheatmap
-  - Spreadsheet_Excel_Writer.  Can be installed with this command:
+  - php5-mysql
+  - Spreadsheet_Excel_Writer and OLE.  Can be installed with:
+    % sudo pear install OLE-1.0.0RC2
     % sudo pear install Spreadsheet_Excel_Writer-0.9.2
+  - PHPExcel read, write Excel including .xlsx
+    copy source files into lib/PHPExcel/Classes
+  - R, version at least 2.15.2
+    - additional packages: rrBLUP, multicore, rpart, lme4, pheatmap, agricolae
 - For some functions
-  - for ViroBLAST.  
-    - DBD:CSV. Can be installed with this command:
-      % sudo cpan DBD::CSV
-    - NCBI BLAST+, ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
-      Edit viroblast/viroblast.ini to use the path to these executables.
   - GBrowse
   - pclzip.lib.php
   - libzzip
-  - PHP-libgd (?)
+  - for ViroBLAST.  
+    - DBD::CSV and XML::DOM. Can be installed with these commands:
+      % sudo cpan DBD::CSV
+      % sudo cpan XML::DOM
+    - NCBI BLAST+, ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
+      Edit viroblast/viroblast.ini to use the path to these executables.
 
 <b>Setting up the MySQL databases</b>
 
@@ -103,9 +107,10 @@ which must be writable by the Apache user, e.g. www-data.
 % mkdir uploads
 % sudo chown www-data uploads
 
-Likewise, certain "raw" data files that are not parsed into the database
-are archived in the raw/ directory, so this must be writable by the 
-Apache user too.
+Likewise, certain raw data files that are not parsed into the database
+are archived in the "raw/" directory, so this must be writable by the
+Apache user too.  In the Git distribution, "raw/" is a symbolic link to
+a directory outside the repository, with the writable permission.
 
 All output and temporary files are stored in directory /tmp/tht/, where
 write-access for the scripts isn't a problem and they're all in one
