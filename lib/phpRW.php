@@ -34,6 +34,9 @@ class RWrap
         $this->dir = "/tmp/tht/$this->unique_str";
         $this->log_file = "$this->dir/run.log";
         $this->cmd_file = "$this->dir/commands.R";
+        if (!file_exists("/tmp/tht")) {
+            mkdir("/tmp/tht");
+        }
         if (!mkdir("$this->dir")) {
             die("Can not create $this->dir<br>\n");
         }
@@ -42,7 +45,7 @@ class RWrap
             die("Can not open file $this->cmd<br>\n");
         } else {
             $cmd = "setwd(\"/tmp/tht/$this->unique_str\")\n";
-            fwrite ($this->h, $cmd);
+            fwrite($this->h, $cmd);
         }
     }
 
@@ -73,7 +76,7 @@ class RWrap
      *
      * @param string $result_file file name
      *
-     * @return null
+     * @return file contents 
      */
     function getResults($result_file)
     {
@@ -89,13 +92,20 @@ class RWrap
         return $results;
     }
 
+    /**
+     * return link to file
+     *
+     * @param string $result_file address of file name
+     *
+     * @return file path
+     */
     function getLink($result_file)
     {
         $file = "$this->dir/$result_file";
         if (file_exists($file)) {
-          return $file;
+            return $file;
         } else {
-          return null;
+            return null;
         }
     }
 
