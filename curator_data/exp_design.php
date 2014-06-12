@@ -531,12 +531,17 @@ class Fieldbook
         } elseif ($type == "lattice") {
             if (isset($_SESSION['selected_lines'])) {
                 $count = count($_SESSION['selected_lines']);
+                $tmp1 = sqrt($count);
+                $tmp2 = floor($tmp1);
                 echo "<tr><td>Treatment:<td>$count lines selected";
+                if (($tmp1 - $tmp2) > 0) {
+                    echo "<td><font color=red>Error: </font>the square root of lines selected must be an integer";
+                }
             } else {
                 echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please <a href=pedigree/line_properties.php>select a set of lines</a>";
             }
             ?>
-            <tr><td>Number of replicates:<td><input type="text" id="num_rep" onclick="javascript: update_step3()">
+            <tr><td>Number of replicates:<td><input type="text" id="num_rep" onclick="javascript: update_step3()"><td>Use either 2 or 3
             <?php
         } elseif ($type == "rcb") {
             if (isset($_SESSION['selected_lines'])) {
