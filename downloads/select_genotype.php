@@ -125,9 +125,14 @@ private function refresh_title()
           }
           $lines_str = implode(",", $lines);
           $_SESSION['selected_lines'] = $lines;
-        } else {
+      } else {
           echo "error - no selection found";
-        }
+      }
+      if (!empty($_GET['exps'])) {
+          $exps_str = $_GET['exps'];
+          $experiments = explode(',', $exps_str);
+          $_SESSION['geno_exps'] = $experiments;
+      }
         $username=$_SESSION['username'];
         if ($username) {
           store_session_variables('selected_lines', $username);
