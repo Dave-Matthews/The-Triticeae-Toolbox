@@ -88,18 +88,18 @@ class Downloads
         case 'download_session_v4':
             echo $this->type1_session(V4);
             break;
-	case 'type2_build_tassel_v2':
-	    echo $this->type2_build_tassel(V2);
-	    break;
-	case 'type2_build_tassel_v3':
-	    echo $this->type2_build_tassel(V3);
-	    break;
-	case 'type2_build_tassel_v4':
-	    echo $this->type2_build_tassel(V4);
-	    break;
-	case 'refreshtitle':
-	    echo $this->refresh_title();
-	    break;
+        case 'type2_build_tassel_v2':
+            echo $this->type2_build_tassel(V2);
+            break;
+        case 'type2_build_tassel_v3':
+            echo $this->type2_build_tassel(V3);
+            break;
+        case 'type2_build_tassel_v4':
+            echo $this->type2_build_tassel(V4);
+            break;
+        case 'refreshtitle':
+            echo $this->refresh_title();
+            break;
         case 'gwas_status':
             echo $this->status_gwas();
             break;
@@ -110,8 +110,8 @@ class Downloads
             echo $this->filter_lines();
             break;
 	default:
-	    $this->type1_select();
-	    break;
+            $this->type1_select();
+            break;
 	}	
     }
 
@@ -142,7 +142,7 @@ class Downloads
 			td {border: 1px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
-            <script type="text/javascript" src="downloads/download_gs.js"></script>
+            <script type="text/javascript" src="downloads/download_gs01.js"></script>
 		<div id="title">
 		<?php
             $phenotype = "";
@@ -200,7 +200,10 @@ class Downloads
                     echo "Select prediction set without trait measurements to predict the traits. ";
                     echo "<a href=";
                     echo $config['base_url'];
-                    echo "pedigree/line_properties.php>Lines by Properties</a><br>";
+                    echo "pedigree/line_properties.php>Lines by Properties</a>, ";
+                    echo "<a href=";
+                    echo $config['base_url'];
+                    echo "downloads/select_genotype.php>Lines by Genotype Experiment</a><br>";
                 } elseif (empty($_SESSION['phenotype']) && empty($_SESSION['training_traits'])) {
                     echo "Please select traits before using this feature.<br><br>";
                     echo "<a href=";
@@ -289,7 +292,7 @@ class Downloads
                   <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
                   <table>
                   <!--tr><td><td>fixed effect (trial is always included)-->
-                  <tr><td><input type="button" value="rrBLUP Analysis" onclick="javascript:load_genomic_prediction(<?php echo $estimate; ?>)">
+                  <tr><td><input type="button" value="G-BLUP Analysis" onclick="javascript:load_genomic_prediction(<?php echo $estimate; ?>)">
                   <!-td-->
                   </table><br>
                   </div>
@@ -394,11 +397,11 @@ class Downloads
 
         <p><b>Genomic Prediction</b><br>
         1. Select a <a href="downloads/select_all.php">set of lines, trait, and trials</a> (one trait).<br>
-        2. Return to this page and select rrBLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
+        2. Return to this page and select G-BLUP Analysis for cross-validation of the training set. Then save Training Set.<br>
         3. To select a validation set, select a new set of lines using a different trial, then return to this page for analysis.<br>
         4. To select a prediction set, select a new set of lines without phenotype measurements, then return to this page for analysis.<br>
         
-        <p><a href="downloads/genomic-tools.php">Additional notes on rrBLUP and methods</a><br>
+        <p><a href="downloads/genomic-tools.php">Additional notes on GWAS and G-BLUP methods</a><br>
         <?php
       }
       if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
@@ -501,7 +504,7 @@ class Downloads
         calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
         $count = count(lines);
         $markers = $_SESSION['filtered_markers'];
-        $estimate = count($markers) + count($lines);
+        $estimate = (count($markers) * count($lines)) / 10000;
         if ($count > 0) {
           ?>
           <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
@@ -518,21 +521,22 @@ class Downloads
           <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 
           <table border=0>
-          <tr><td>
+          <tr><td rowspan=2>
           <input type="button" value="Analyze" onclick="javascript:load_genomic_gwas(<?php echo $estimate; ?>)"> GWAS
-          <td>
-          <select name="model2" onchange="javascript: update_fixed(this.value)">
+          <td>principal components
+          <td><select name="model2" onchange="javascript: update_fixed(this.value)">
           <option>0</option>
           <option>1</option>
           <option>2</option>
           <option>3</option>
           <option>4</option>
           <option>5</option>
-          </select>principal components
-          <!--td><input type="checkbox" value="PC3D">PC3D -->
-          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $estimate; ?>')"> rrBLUP
+          </select>
+          <tr><td>method
+          <td><input type="radio" name="P3D" checked value="TRUE">EMMAX (faster but can underestimate significance)<br>
+          <input type="radio" name="P3D" value="FALSE">EMMA with REML
+          <tr><td><input type="button" value="Analyze" onclick="javascript:load_genomic_prediction('<?php echo $estimate; ?>')"> G-BLUP
           <td>
-          <!--td><input type="checkbox" name="model3" value="reduce">reduce -->
           </table><br>
           <form action="gensel.php">
           <input type="hidden" value="step1gensel" name="function">
@@ -679,21 +683,18 @@ class Downloads
         $filename1 = 'THT_result_' . $unique_str . '.csv';
         $filenameK = 'Kinship_matrix_' . $unique_str . '.csv';
         if (file_exists("/tmp/tht/$filename7")) {
-                  print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
         } else {
+          //echo "$filename7 not ready<br>\n";
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename10")) {
-                  print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
         } else {
+          //echo "$filename10 not ready<br>\n";
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
-                  print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
-                  print "with columns for marker name, chromosome, position, marker score<br><br>";
-                  print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
         } else {
+          //echo "$filename4 not ready<br>\n";
           $found = 0;
         }
         if (file_exists("/tmp/tht/$filename5")) {
@@ -703,12 +704,19 @@ class Downloads
            }
            fclose($h);
         }
-        if ($found == 0) {
+        if ($found) {
+          print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
+          print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
+          print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+          print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
+          print "with columns for marker name, chromosome, position, marker score<br><br>";
+          print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
+        } else {
           $lines = $_SESSION['filtered_lines'];
           $markers = $_SESSION['filtered_markers'];
-          $estimate = count($lines) + count($markers);
-          $estimate = round($estimate/700,1);
-          echo "Results not ready yet. Estimated analysis time is $estimate minutes.<br>";
+          $estimate = count($lines) * count($markers);
+          $estimate = round($estimate/6000000,1);
+          echo "Results not ready yet. Estimated analysis time is $estimate minutes using default options.<br>";
           ?>
           <font color=red>Select the "Check Results" button to retrieve results.<br>
           <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $unique_str; ?>');"/>
@@ -739,8 +747,7 @@ class Downloads
         }
         if (file_exists("/tmp/tht/$filename4")) {
              print "<img src=\"/tmp/tht/$filename4\" /><br>";
-             //if (isset($_SESSION['selected_traits'])) { use when multiple traits is supported
-             if (isset($_SESSION['phenotype'])) {
+             if (isset($_SESSION['selected_trials'])) {
                   print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export prediction to CSV file</a><br><br>";
              } else {
                   print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
@@ -784,6 +791,7 @@ class Downloads
     private function run_gwa() {
         $unique_str = $_GET['unq'];
         $model_opt = $_GET['fixed2'];
+        $p3d = $_GET['p3d'];
         if (isset($_SESSION['training_traits'])) {
             $phenotype = $_SESSION['training_traits'];
             $phenotype = $phenotype[0];
@@ -794,7 +802,7 @@ class Downloads
         $sql = "select phenotypes_name, unit_name from phenotypes, units
                where phenotypes.unit_uid = units.unit_uid
                and phenotype_uid = $phenotype";
-        $res = mysql_query($sql) or die(mysql_error());
+        $res = mysql_query($sql) or die(mysql_error() . $sql);
         $row = mysql_fetch_array($res);
         $phenolabel = $row[0];
         //$unique_fld = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
@@ -834,6 +842,7 @@ class Downloads
             fwrite($h, $cmd7);
             fwrite($h, $cmd8);
             fwrite($h, $cmd9);
+            fwrite($h, "p3d <- $p3d\n");
             fwrite($h, "setwd(\"/tmp/tht/\")\n");
             fclose($h);
         }
@@ -869,6 +878,7 @@ class Downloads
         global $config;
         $unique_str = $_GET['unq'];
         $model_opt = $_GET['fixed2'];
+        $p3d = $_GET['p3d'];
         if (isset($_SESSION['training_traits'])) {
             $phenotype = $_SESSION['training_traits'];
             $phenotype = $phenotype[0];
@@ -927,6 +937,7 @@ class Downloads
             fwrite($h, $cmd7);
             fwrite($h, $cmd8);
             fwrite($h, $cmd9);
+            fwrite($h, "p3d <- $p3d\n");
             fwrite($h, "setwd(\"/tmp/tht/\")\n");
             fclose($h);
         }
@@ -934,9 +945,9 @@ class Downloads
        
         $lines = $_SESSION['filtered_lines']; 
         $markers = $_SESSION['filtered_markers'];
-        $estimate = count($lines) + count($markers);
-        $estimate = round($estimate/700,1);
-        echo "Estimated analysis time is $estimate minutes.<br>";
+        $estimate = count($lines) * count($markers);
+        $estimate = round($estimate/600000,1);
+        echo "Estimated analysis time is $estimate minutes using default options.<br>";
         $emailAddr = $_SESSION['username'];
         if (isset($_SESSION['username'])) {
           echo "An email will be sent to $emailAddr when the job is complete<br>\n";
@@ -973,7 +984,7 @@ class Downloads
         if (file_exists("/tmp/tht/$filename4")) {
              print "<img src=\"/tmp/tht/$filename4\" /><br>";
              //if (isset($_SESSION['selected_traits'])) { use when multiple traits is supported
-             if (isset($_SESSION['phenotype'])) {
+             if (isset($_SESSION['selected_trials'])) {
                   print "<a href=/tmp/tht/$filename7 target=\"_blank\" type=\"text/csv\">Export prediction to CSV file</a><br><br>";
              } else { 
                   print "Cross-validation of training set using 5 folds and 2 repeats.<br>\n";
@@ -1221,11 +1232,6 @@ class Downloads
                     $cmd1 = "snpData_p <- read.table(\"$dir$filename1\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd2 = "snpData_t <- read.table(\"$dir$filename8\", header=TRUE, stringsAsFactors=FALSE, sep=\"\\t\", row.names=1)\n";
                     $cmd3 = "phenoData <- read.table(\"$dir$filename2\", header=TRUE, na.strings=\"-999\", stringsAsFactors=FALSE, sep=\"\\t\", row.names=NULL)\n";
-                    if ($training_lines == "") {
-                      $cmd4 = "yesPredPheno <- 0\n"; #no prediction set, do cross validation
-                    } else {
-                      $cmd4 = "yesPredPheno <- 1\n"; #yes prediction set, calculate prediction
-                    }
                     $cmd5 = "fileerr <- \"$filename6\"\n";
                     $cmd6 = "fileout <- \"$filename7\"\n";
                     $cmd7 = "phenolabel <- \"$phenolabel\"\n";
@@ -1247,7 +1253,6 @@ class Downloads
                     }
                     fwrite($h, $cmd2);
                     fwrite($h, $cmd3);
-                    fwrite($h, $cmd4);
                     fwrite($h, $cmd5);
                     fwrite($h, $cmd6);
                     fwrite($h, $cmd7);

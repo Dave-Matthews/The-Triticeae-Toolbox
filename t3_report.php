@@ -28,85 +28,80 @@ $user_agent = $_SERVER['HTTP_USER_AGENT'];
 $accept = $_SERVER['HTTP_ACCEPT'];
 
 if (isset($_GET['output'])) {
-  $output = $_GET['output'];
+    $output = $_GET['output'];
 } else {
-  $output = "";
+    $output = "";
 }
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-if (isset($_GET['query'])) {
-  $query = $_GET['query'];
-  $opt = $_GET['opt'];
+if (isset($_REQUEST['query'])) {
+    $query = $_REQUEST['query'];
+    $opt = $_REQUEST['opt'];
 } else {
-  $query = "";
-  $opt = "";
-}
-} else {
-if (isset($_POST['query'])) {
-  $query = $_POST['query'];
-} else {
-  $query = "";
+    $query = "";
+    $opt = "";
 }
 if (isset($_POST['startdate'])) {
-  $startdate = $_POST['startdate'];
+    $startdate = $_POST['startdate'];
 } else {
-  $startdate = "";
+    $startdate = "";
 }
 if (isset($_POST['enddate'])) {
-  $enddate = $_POST['enddate'];
+    $enddate = $_POST['enddate'];
 } else {
-  $enddate = "";
+    $enddate = "";
 }
-}
+
 $sql = "select database()";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 if ($row = mysqli_fetch_row($res)) {
- $db = $row[0];
+    $db = $row[0];
 } else {
- print "error $sql<br>\n";
+    print "error $sql<br>\n";
 }
 $cachefile = '/tmp/tht/cache_' . $db . '.txt';
+$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 if ($query == 'geno') {
-  $count = 0;
-  include $config['root_dir'].'theme/normal_header.php';
-  print "markers with no genotype data<br>\n";
-  print "<table border=0>";
-  print "<tr><td>marker_uid<td>marker_name\n";
-  $sql = "select marker_uid, marker_name from markers";
-  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-  while ($row = mysqli_fetch_row($res)) {
-    $marker_uid = $row[0];
-    $marker_name = $row[1];
-    $sql = "select marker_uid from genotyping_data where marker_uid = $marker_uid"; 
-    $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    if ($row2 = mysqli_fetch_row($res2)) {  
-    } else {
-      print "<tr><td>$marker_uid<td>$marker_name\n";
-      $count++;
+    $count = 0;
+    include $config['root_dir'].'theme/normal_header.php';
+    print "markers with no genotype data<br>\n";
+    print "<table border=0>";
+    print "<tr><td>marker_uid<td>marker_name\n";
+    $sql = "select marker_uid, marker_name from markers";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $marker_uid = $row[0];
+        $marker_name = $row[1];
+        $sql = "select marker_uid from genotyping_data where marker_uid = $marker_uid"; 
+        $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row2 = mysqli_fetch_row($res2)) {  
+        } else {
+            print "<tr><td>$marker_uid<td>$marker_name\n";
+            $count++;
+        }
     }
-  }
-  print "</table>\n";
-  print "total $count markers missing genotype data<br>\n";
+    print "</table>\n";
+    print "total $count markers missing genotype data<br>\n";
 } elseif ($query == 'geno2') {
-  $count = 0;
-  include $config['root_dir'].'theme/normal_header.php';
-  print "<h1>Genotyping data by experiment</h1>\n";
-  print "<table border=0>";
-  print "<tr><td>Trial Code<td>experiment name<td>genotyping data\n";
-  if (preg_match('/THT/',$db)) {
-    $sql = "select experiment_short_name, count(marker_uid) from experiments as e, tht_base as tb, genotyping_data as gd where e.experiment_uid = tb.experiment_uid AND gd.tht_base_uid = tb.tht_base_uid group by e.experiment_uid";
-  } else {
-    $sql = "select trial_code, experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
-  }
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  while ($row = mysqli_fetch_row($res)) {
-    $count=$count+$row[2];
-    print "<tr><td><a href=display_genotype.php?trial_code=$row[0]>$row[0]</a><td>$row[1]<td>$row[2]\n";
-  }
+    $count = 0;
+    include $config['root_dir'].'theme/normal_header.php';
+    print "<h1>Genotyping data by experiment</h1>\n";
+    print "<table border=0>";
+    print "<tr><td>Trial Code<td>experiment name<td>genotyping data\n";
+    if (preg_match('/THT/', $db)) {
+        $sql = "select experiment_short_name, count(marker_uid) from experiments as e, tht_base as tb, genotyping_data as gd where e.experiment_uid = tb.experiment_uid AND gd.tht_base_uid = tb.tht_base_uid group by e.experiment_uid";
+    } else {
+        $sql = "select trial_code, experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
+    }
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $count=$count+$row[2];
+        print "<tr><td><a href=display_genotype.php?trial_code=$row[0]>$row[0]</a><td>$row[1]<td>$row[2]\n";
+    }
   $count = number_format($count);
   print "<tr><td>total<td><td>$count\n";
   print "</table>";
 } elseif ($query == 'linegeno') {
-  include($config['root_dir'].'theme/normal_header.php');
+  include $config['root_dir'].'theme/normal_header.php';
   print "Lines with genotyping data\n";
   print "<table border=0>";
   print "<tr><td>breeding program code<td>count\n";

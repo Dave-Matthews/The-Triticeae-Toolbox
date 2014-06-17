@@ -15,6 +15,7 @@ if (isset($_GET['clearSel'])) {
     unset($_SESSION['filtered_markers']);
     unset($_SESSION['filtered_lines']);
     unset($_SESSION['selected_map']);
+    unset($_SESSION['check_lines']);
     $_SESSION['training_traits'] = null; unset($_SESSION['training_traits']);
     $_SESSION['training_trials'] = null; unset($_SESSION['training_trials']);
     ?>
