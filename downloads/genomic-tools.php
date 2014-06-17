@@ -22,13 +22,17 @@ X = Design matrix for fixed effects
 </table>
 The trial is always included as a fixed effect.<br> Principal components can also be added as a fixed effect.<br><br>
 
-<b>Genome Wide Association (GWAS)</b><br>
-1. For analysis of single trial P3D=FALSE (variance components are estimated by REML for each marker separately).<br>
-2. For more than one trial P3D=TRUE (variance components are estimated by REML only once, without any markers in the model).<br>
-3. The dashed line in the Manhattan plot indicates a False Discovery Rate (FDR) of 0.05. When there are no significant loci the dashed line is omitted.<br>
-4. Markers that are not mapped are assigned to chromosome 0.<br><br>
+<b>Genome Wide Association (GWAS)</b>
+<ul>
+<li>method (EMMAX Kang et al. 2010) - variance components are estimated by REML only once, without any markers in the model. This method is faster but can underestimate significance.
+<li>method (EMMA with REML Kang et al. 2008) - variance components are estimated by REML for each marker separately.
+<li>The dashed line in the Manhattan plot indicates a False Discovery Rate (FDR) of 0.05. When there are no significant loci the dashed line is omitted.</li>
+<li>Markers that are not mapped are assigned to chromosome 0.
+</ul>
 
-<b>Genomic Prediction</b><br>
-1. An additive relationship matrix is used for K to creates the model (G = K Vg).<br>
-2. In the prediction set the trait values, if any, are set to missing.<br>
+<b>Genomic Prediction</b>
+<ul>
+<li>An additive relationship matrix is used for K to creates the model (G = K Vg).
+<li>In the prediction set the trait values, if any, are set to missing.
+</ul>
 </html>

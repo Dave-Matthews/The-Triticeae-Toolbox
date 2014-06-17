@@ -1,7 +1,20 @@
 <?php
+/**
+ * Home page
+ *
+ * PHP version 5.3
+ *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/index.html
+ *
+ */
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/normal_header.php';
 connect();
 ?>
 
@@ -62,12 +75,12 @@ from
      WHERE program_type = 'breeding'
      AND cp.CAPdata_programs_uid = e.CAPdata_programs_uid
      order by data_program_name asc;";
-$r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-while($row = mysql_fetch_assoc($r)) {
-  $progname = $row['data_program_name']." - ".$row['data_program_code'];
-  $uid = $row['uid'];
-  echo "<option value='$uid'>$progname</option>\n";
- }
+   $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
+   while ($row = mysql_fetch_assoc($r)) {
+       $progname = $row['data_program_name']." - ".$row['data_program_code'];
+       $uid = $row['uid'];
+       echo "<option value='$uid'>$progname</option>\n";
+   }
 ?>
   </select></td>
   <td>Experiments whose entries include the program&apos;s lines</td>
@@ -79,11 +92,11 @@ while($row = mysql_fetch_assoc($r)) {
   <?php
   $sql = "select distinct phenotypes_name from phenotypes
   order by phenotypes_name";
-$r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-while($row = mysql_fetch_assoc($r)) {
-  $pheno_name = $row['phenotypes_name'];
-  echo "<option value='$pheno_name'>$pheno_name</option>\n";
- }
+  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
+  while ($row = mysql_fetch_assoc($r)) {
+      $pheno_name = $row['phenotypes_name'];
+      echo "<option value='$pheno_name'>$pheno_name</option>\n";
+  }
 ?>
 </select></td>
 <td></tr>
@@ -94,11 +107,11 @@ while($row = mysql_fetch_assoc($r)) {
   <?php
   $sql = "select distinct experiment_year from experiments
   order by experiment_year desc";
-$r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-while($row = mysql_fetch_assoc($r)) {
-  $year = $row['experiment_year'];
-  echo "<option value='$year'>$year</option>\n";
- }
+  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
+  while ($row = mysql_fetch_assoc($r)) {
+      $year = $row['experiment_year'];
+      echo "<option value='$year'>$year</option>\n";
+  }
 ?>
 </select></td>
 <td>Year of harvest</tr>
@@ -107,4 +120,5 @@ while($row = mysql_fetch_assoc($r)) {
 
 <?php 
   $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); ?>
+require $config['root_dir'].'theme/footer.php'; ?>
+

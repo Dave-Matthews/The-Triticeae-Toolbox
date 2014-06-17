@@ -97,7 +97,7 @@ class Markers_Check
         then check "Yes" to add marker as synonym.
         <h3>Check import file</h3>
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-        <script type="text/javascript" src="curator_data/marker.js"></script>
+        <script type="text/javascript" src="curator_data/marker01.js"></script>
         <div id=update></div>
         <div id=checksyn>
         <?php
@@ -186,53 +186,65 @@ class Markers_Check
             if (!sort($allele_sort)) {
                 echo "Error in sorting alleles\n";
             }
-        if ($allele[0] != $allele_sort[0]) {
-            $found = 1;
-            $storageArr[$i][$alleleAIdx] = $allele_sort[0];
-            $storageArr[$i][$alleleBIdx] = $allele_sort[1];
-        }
-        $seq = strtoupper($storageArr[$i][$sequenceIdx]);
-        if (preg_match("/([A-Z]*)\[([ACTG])\/([ACTG])\]([A-Z]*)/", $seq, $match)) {
-            $seq_snp = array($match[2], $match[3]);
-            $seq_snp_sort = array($match[2], $match[3]);
-            sort($seq_snp_sort);
-            if ($seq_snp[0] != $seq_snp_sort[0]) {
+            if ($allele[0] != $allele_sort[0]) {
                 $found = 1;
-                $count_seq++;
-                $seq_sort = $match[1] . "[" . $match[3] . "/" . $match[2] . "]" . $match[4];
-                $storageArr[$i][$sequenceIdx] = $seq_sort;
+                $storageArr[$i][$alleleAIdx] = $allele_sort[0];
+                $storageArr[$i][$alleleBIdx] = $allele_sort[1];
             }
-        } else {
-           echo "Error in format of sequence $name $seq<br>\n";
+            $seq = strtoupper($storageArr[$i][$sequenceIdx]);
+            if (preg_match("/([A-Z]*)\[([ACTG])\/([ACTG])\]([A-Z]*)/", $seq, $match)) {
+                $seq_snp = array($match[2], $match[3]);
+                $seq_snp_sort = array($match[2], $match[3]);
+                sort($seq_snp_sort);
+                if ($seq_snp[0] != $seq_snp_sort[0]) {
+                    $found = 1;
+                    $count_seq++;
+                    $seq_sort = $match[1] . "[" . $match[3] . "/" . $match[2] . "]" . $match[4];
+                    $storageArr[$i][$sequenceIdx] = $seq_sort;
+                }
+            } else {
+                echo "Error in format of sequence $name $seq<br>\n";
+            }
+            if ($found) {
+                $count_allele++;
+                fwrite($fh, "$name\toriginal\t$allele[0]\t$allele[1]\t$seq\n");
+                fwrite($fh, "$name\tcorrected\t$allele_sort[0]\t$allele_sort[1]\t$seq_sort\n");
+            }
         }
-        if ($found) {
-            $count_allele++;
-            fwrite($fh, "$name\toriginal\t$allele[0]\t$allele[1]\t$seq\n");
-            fwrite($fh, "$name\tcorrected\t$allele_sort[0]\t$allele_sort[1]\t$seq_sort\n");
-        }
-    }
-    fclose($fh);
-    echo "<table><tr><th>marker<th>corrected allele order\n";
-    echo "<tr><td>$limit<td>$count_allele<td><a href=\"curator_data/$change_file\" target=\"_new\">Download Corrections</a>\n";
-    echo "</table>";
-}
- 
-private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand) {
-    global $mysqli;
-    $infile = $_GET['linedata'];
-    $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
-    $tPath = str_replace('./', '', $target_Path);
-    $change_file = $tPath . "markerProc2.out";
-    if (($fh = fopen($change_file, "w")) == FALSE) {
-        echo "Error creating change file $change_file<br>\n";
+        fclose($fh);
+        echo "<table><tr><th>marker<th>corrected allele order\n";
+        echo "<tr><td>$limit<td>$count_allele<td><a href=\"curator_data/$change_file\" target=\"_new\">Download Corrections</a>\n";
+        echo "</table>";
     }
 
-    $sql = "select marker_uid, value from marker_synonyms";
-    $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
-    while ($row = mysql_fetch_assoc($res)) {
-        $name = $row['value'];
-        $marker_syn_list[$name] = 1;
-    }
+    /**
+     * check for check name and sequence matches
+     *
+     * @param array   &$storageArr contents of import file
+     * @param string  $nameIdx     index of name column
+     * @param integer $sequenceIdx index of sequence column
+     * @param bolean  $overwrite   change the contents of import
+     * @param bolean  $expand      expand listing of results
+     *
+     * @return null
+     */
+    function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand)
+    {
+        global $mysqli;
+        $infile = $_GET['linedata'];
+        $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
+        $tPath = str_replace('./', '', $target_Path);
+        $change_file = $tPath . "markerProc2.out";
+        if (($fh = fopen($change_file, "w")) == false) {
+            echo "Error creating change file $change_file<br>\n";
+        }
+
+        $sql = "select marker_uid, value from marker_synonyms";
+        $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
+        while ($row = mysql_fetch_assoc($res)) {
+            $name = $row['value'];
+            $marker_syn_list[$name] = 1;
+        }
     //look for the case where A and B allele are reversed
     $pheno_uid = 1;
         $sql = "select marker_name, sequence from markers where sequence is not NULL";
@@ -279,6 +291,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $seq = strtoupper($storageArr[$i][$sequenceIdx]);
             $found_name = 0;
             $found_seq = 0;
+            $found_seq_name = "";
             $seq_match = "";
             if (preg_match("/[A-Za-z0-9]/", $name)) {
                if (isset($marker_name[$name]) || isset($marker_syn_list[$name])) {
@@ -329,6 +342,18 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             } else {
                 echo "bad sequence $seq<br>\n";
             }
+            // now check for duplicate in import file
+            if (isset($marker_seq_import[$seq])) {
+                $marker_seq_dup = $marker_seq_dup . "$name ";
+            } else {
+                $marker_seq_import[$seq] = $name;
+            }
+            if (isset($marker_name_import[$name])) {
+                $marker_name_dup = $marker_name_dup . "$name ";
+            } else {
+                $marker_name_import[$name] = 1;
+            }
+
             if ($found_seq) {
                 $count_dup_seq++;
                 if ($overwrite == 1) {
@@ -393,6 +418,12 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             echo "<tr><td>Too many entries, please download.";
         }
         echo "</table>";
+        if ($marker_name_dup != "") {
+            echo "<font color=red>Error: marker name duplicated within import file</font><br>$marker_name_dup<br><br>\n";
+        }
+        if ($marker_seq_dup != "") {
+            echo "<font color=red>Error: marker sequence duplicated within import file</font><br>$marker_seq_dup<br><br>\n";
+        }
         fclose($fh);
         $pheno_uid = 2;
         $change["update"] = $count_update;
@@ -1083,7 +1114,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $data = str_getcsv($line,"\t");
                         
             //Check for junk line
-            if (count($data) != 6)  {
+            if (count($data) != 6) {
                 echo "ERROR DETECT: Invalid number of columns in line $i.<br/>";
 				echo "The offending row contains:<br>\"$line\"<br>";
                 print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><br>";
@@ -1095,17 +1126,33 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 $storageArr[$i][$j++] = trim($value);   
             }
         
-	    	$lastmarker = $data[0];
-	    	$lastline = $i-1;
-	    	$i++;
+	        $lastmarker = $data[0];
+	        $lastline = $i-1;
+                $i++;
         }  
         unset ($value);
         fclose($reader);   
-        
+
+        //cache the marker and synonym names
+        $sql = "SELECT marker_uid, marker_name FROM markers";
+        $res = mysql_query($sql) or die("Database Error: marker name lookup - ".mysql_error() ."<br>".$sql);
+        while ($rdata = mysql_fetch_assoc($res)) {
+            $m_uid=$rdata['marker_uid'];
+            $m_nam=$rdata['marker_name'];
+            $markerNameLookup[$m_nam] = $m_uid;
+        }
+        $sql = "SELECT marker_uid, value FROM marker_synonyms";
+        $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
+        while ($rdata = mysql_fetch_assoc($res)) {
+            $m_uid=$rdata['marker_uid'];
+            $m_nam=$rdata['value'];
+            $markerSynLookup[$m_nam] = $m_uid;
+        }
+ 
         $curMarker = '';
         $markerUid = 0;
 
-        for ($i = 1; $i <= count($storageArr) ; $i++)  {
+        for ($i = 1; $i <= count($storageArr); $i++) {
 
             $marker = $storageArr[$i][$nameIdx];
             $markerType = $storageArr[$i][$markerTypeIdx];
@@ -1114,21 +1161,21 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
             $annotation = $storageArr[$i][$annotationIdx];
             $annotationType = $storageArr[$i][$annotationTypeIdx];
             
-	    	if ($marker == "") continue;
+            if ($marker == "") continue;
             // handle repeating marker entries
-            if (strcmp($marker, $curMarker) == 0)  {
+            if (strcmp($marker, $curMarker) == 0) {
                 
                 $doMarker = 0;
-                if (empty($synonym) )
+                if (empty($synonym) ) {
                     $doSynonym = 0;
-                else 
+                } else {
                     $doSynonym = 1;
-                    
-                if (empty($annotation)) 
+                }   
+                if (empty($annotation)) {
                     $doAnnotation = 0;
-                else 
+                } else {
                     $doAnnotation = 1;
-
+                }
             } else {
                 $curMarker = $marker;
                 $doMarker = 1;
@@ -1153,22 +1200,13 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
                 }
                 
                 //echo "Marker type - ".$markerType . " value = " . $markerTypeID . "<br>";  
-                //exit(0);
                 //Check to see if marker already exists
-                $sql = "SELECT marker_uid
-                        FROM markers
-                        WHERE marker_name = '$marker'";
-                $res = mysql_query($sql) or die("Database Error: marker name lookup - ".mysql_error() ."<br>".$sql);
-                $rdata = mysql_fetch_assoc($res);
-                $m_uid=$rdata['marker_uid'];
-                // Check synomyn
-                if (empty($m_uid)) {
-                    $sql = "SELECT marker_uid
-                            FROM marker_synonyms
-                            WHERE value = '$marker'";
-                    $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
-                    $rdata = mysql_fetch_assoc($res);
-                    $m_uid=$rdata['marker_uid'];
+                $m_uid = null;
+                if (isset($markerNameLookup[$marker])) {
+                    $m_uid=$markerNameLookup[$marker];
+                    // Check synomyn
+                } elseif (isset($markerSynLookup[$marker])) {
+                    $m_uid = $markerSynLookup[$marker];
                 }
                 // if no existing name or synonym 
                 if (empty($m_uid)) {
@@ -1511,7 +1549,7 @@ private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwri
         }
         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
         $footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+        include $config['root_dir'].'theme/footer.php';
     } /* end of function type_databaseSNP */
     
 } /* end of class */
