@@ -887,9 +887,9 @@ class Downloads
 	 echo "<br><br>"; 
          if (!$use_database) {
              if ($countFilterLines < 1) {
-             echo "<font color=red>Error: No lines selected, raise the setting for removing lines missing data<br></font>\n";
+             echo "<font color=red>Error: No lines selected, increase the value for lines missing data to a larger number<br></font>\n";
              } elseif ($countFilterMarkers < 1) {
-             echo "<font color=red>Error: No markers selected, raise the setting for removing markers missing data<br></font>\n";
+             echo "<font color=red>Error: No markers selected, increase the value for markers missing data to a larger number<br></font>\n";
              }
          }
          if ($countLines == 0) {
