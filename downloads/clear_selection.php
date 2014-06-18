@@ -16,6 +16,7 @@ if (isset($_GET['clearSel'])) {
     unset($_SESSION['filtered_lines']);
     unset($_SESSION['selected_map']);
     unset($_SESSION['check_lines']);
+    unset($_SESSION['geno_exps']);
     $_SESSION['training_traits'] = null; unset($_SESSION['training_traits']);
     $_SESSION['training_trials'] = null; unset($_SESSION['training_trials']);
     ?>
