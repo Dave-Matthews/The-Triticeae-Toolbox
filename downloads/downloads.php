@@ -154,7 +154,7 @@ class Downloads
         $saved_session = "";
         $message1 = $message2 = "";
         $download_geno = "";
-        $download_geno = "";
+        $download_genoe = "";
         $download_pheno = "";
 
         if (isset($_SESSION['phenotype'])) {
