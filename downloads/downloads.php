@@ -211,22 +211,26 @@ class Downloads
                     echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
                     ?>
                     2. Select the <input type="button" value="Genetic map" onclick="javascript: select_map()"> which has the best coverage for your selection.<br>
+                    3. Select data type: Phenotype,  Genotype using consensus of all genotype experiments, or Genotype using one genotype experiment. See explanation in
+        <input type="button" value="Definition of Terms" onclick="javascript: define_terms()">.
                     <?php
         } else if (empty($_SESSION['selected_map'])) {
                     echo "1. Select a set of <a href=\"" . $config['base_url'];
                     echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
                     ?>
                     2. Select the <input type="button" value="Genetic map" onclick="javascript: select_map()"> which has the best coverage for your selection.<br>
+                    3. Select data type: Phenotype,  Genotype using consensus of all genotype experiments, or Genotype using one genotype experiment. See explanation in
+        <input type="button" value="Definition of Terms" onclick="javascript: define_terms()">.
                     <?php
         } else {
                     ?>
-                    1. Select the filter options.<br>
-                    2. Select the Create file button with the desired file format.<br>
+                    1. Select data type: Phenotype,  Genotype using consensus of all genotype experiments, or Genotype using one genotype experiment. See explanation in
+        <input type="button" value="Definition of Terms" onclick="javascript: define_terms()">.<br>
+                    2. Select the filter options.<br>
+                    3. Select the Create file button with the desired file format.<br>
                     <?php
         }
         ?>
-        3. Select data type: Phenotype,  Genotype using consensus of all genotype experiments, or Genotype using one genotype experiment. See explanation in 
-        <input type="button" value="Definition of Terms" onclick="javascript: define_terms()">.
         </div><br>
         <input type="checkbox" id="typeP" value="pheno" onclick="javascript:select_download();" <?php echo $download_pheno ?>>Phenotype
         <input type="radio" name="typeG" value="geno" onclick="javascript:select_download();"<?php echo $download_geno ?>>Genotype using consensus
@@ -795,7 +799,18 @@ class Downloads
                echo "downloads/select_genotype.php>Genotype experiment</a><br>";
             }
         }
-        if (($typeGE == "true") or ($typeG == "true")) {
+        if (($typeGE == "true") and isset($_SESSION['geno_exps'])) {
+            $geno_str = $geno_exp[0];
+            $sql = "SELECT count(af.marker_uid) as marker 
+            FROM allele_frequencies AS af
+            WHERE af.experiment_uid in ($geno_str)";
+            $res = mysql_query($sql) or die(mysql_error());
+            $row = mysql_fetch_row($res);
+            $count = $row[0];
+            $pred = (int) ($count / 1000);
+            if ($count > 1000) {
+                echo "<font color=\"red\">Warning: $count markers in selected genotype experiment. Download may take $pred minutes</font><br>\n";
+            }
         }    
         if ($saved_session == "") {
         } else {
