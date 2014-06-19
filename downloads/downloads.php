@@ -133,7 +133,7 @@ class Downloads
         <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
         <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-        <script type="text/javascript" src="downloads/downloadsjq.js"></script>
+        <script type="text/javascript" src="downloads/downloadsjq01.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
     }	
@@ -225,17 +225,17 @@ class Downloads
                     <?php
         }
         ?>
-        3. Genotype all genotype experiments: If a line has more than one genotype measurement then a majority rule is used.
-           When there is no majority the measurement is set to "missing".<br>
-        4. Genotype one genoytpe experiment: The genotype measurement for selected genotype experiment.
+        3. Select data type: Phenotype,  Genotype using consensus of all genotype experiments, or Genotype using one genotype experiment. See explanation in 
+        <input type="button" value="Definition of Terms" onclick="javascript: define_terms()">.
         </div><br>
         <input type="checkbox" id="typeP" value="pheno" onclick="javascript:select_download();" <?php echo $download_pheno ?>>Phenotype
-        <input type="radio" name="typeG" value="geno" onclick="javascript:select_download();"<?php echo $download_geno ?>>Genotype (all genotype experiments)
-        <input type="radio" name="typeG" value="genoE" onclick="javascript:select_download();"<?php echo $download_genoe ?>>Genotype (one genotype experiment)<br><br>
+        <input type="radio" name="typeG" value="geno" onclick="javascript:select_download();"<?php echo $download_geno ?>>Genotype using consensus
+        <input type="radio" name="typeG" value="genoE" onclick="javascript:select_download();"<?php echo $download_genoe ?>>Genotype using one genotype experiment<br><br>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
         <?php
         $this->type1_lines_trial_trait();
         include 'select-map.php';
+        include 'definition-of-terms.inc';
         //echo "</div>";
     }
 
@@ -254,24 +254,25 @@ class Downloads
     
     /**
      * use this download when selecting program and year
+     *
      * @param string $version Tassel version of output
      */
     private function type1_session($version)
     {
         $datasets_exp = "";
         if (isset($_SESSION['selected_trials'])) {
-                        $experiments_t = $_SESSION['selected_trials'];
-                        $experiments_t = implode(",", $experiments_t);
+            $experiments_t = $_SESSION['selected_trials'];
+            $experiments_t = implode(",", $experiments_t);
         } else {
-                        $experiments_t = "";
+            $experiments_t = "";
         }
         if (isset($_SESSION['filtered_lines'])) {
-			$selectedcount = count($_SESSION['filtered_lines']);
-			$lines = $_SESSION['filtered_lines'];
-			$lines_str = implode(",", $lines);
+            $selectedcount = count($_SESSION['filtered_lines']);
+            $lines = $_SESSION['filtered_lines'];
+            $lines_str = implode(",", $lines);
 	} else {
-			$lines = "";
-			$lines_str = "";
+            $lines = "";
+            $lines_str = "";
 	}
         if (isset($_SESSION['filtered_markers'])) {
 		    $selectcount = $_SESSION['filtered_markers'];
@@ -716,7 +717,8 @@ class Downloads
         $typeGE = $_GET['typeGE'];
         $saved_session = "";
         if (isset($_SESSION['selected_lines'])) {
-            $countLines = count($_SESSION['selected_lines']);
+            $lines = $_SESSION['selected_lines'];
+            $countLines = count($lines);
             $saved_session = "$countLines lines";
         } else {
             echo "<font color=\"red\">Choose one or more lines before using a saved selection. </font>";
@@ -793,6 +795,8 @@ class Downloads
                echo "downloads/select_genotype.php>Genotype experiment</a><br>";
             }
         }
+        if (($typeGE == "true") or ($typeG == "true")) {
+        }    
         if ($saved_session == "") {
         } else {
             echo "<br>current data selection = $saved_session<br>";
