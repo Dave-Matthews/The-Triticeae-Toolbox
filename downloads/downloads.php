@@ -807,9 +807,9 @@ class Downloads
             $res = mysql_query($sql) or die(mysql_error());
             $row = mysql_fetch_row($res);
             $count = $row[0];
-            $pred = (int) ($count / 1000);
-            if ($count > 1000) {
-                echo "<font color=\"red\">Warning: $count markers in selected genotype experiment. Download may take $pred minutes</font><br>\n";
+            $pred = (int) ($count / 500);
+            if ($count > 2000) {
+                echo "<font color=\"red\">Warning: $count markers in selected genotype experiment. Creating download file may take $pred minutes</font><br>\n";
             }
         }    
         if ($saved_session == "") {
