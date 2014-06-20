@@ -16,8 +16,8 @@
 ###################################################################
 
 # The multicore package enables parallelization
-library("multicore")
-nCores <- multicore:::detectCores() / 2 # Use half the available cores
+library("parallel")
+nCores <- detectCores() / 2 # Use half the available cores
 nCores <- min(nCores, 16) # But no more than 16 cores
 options(cores=nCores)
 # The rpart package makes tree predictors for clustering
