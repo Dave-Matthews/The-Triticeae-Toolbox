@@ -1,6 +1,6 @@
 library(rrBLUP)
-library(multicore) # Installing multicore will make replicated crossvalidations go faster
-nCores <- multicore:::detectCores()
+library(parallel, warn.conflicts = FALSE)
+nCores <- detectCores()
 if (nCores > 12) {
   nCores = 12
 }
