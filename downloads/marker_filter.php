@@ -148,8 +148,9 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                     $marker_abcnt[$i]++;
                 } elseif ($allele=='BB') {
                     $marker_bbcnt[$i]++;
-                } elseif (($allele=='--') or ($allele=='')) {
+                } elseif ($allele=='--') {
                     $marker_misscnt[$i]++;
+                } elseif ($allele=='') {
                 } else {
                     echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
                 }
@@ -200,7 +201,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 foreach ($markers_filtered as $marker_uid) {
                     $loc = $marker_list_loc[$marker_uid];
                     $allele = $outarray[$loc];
-                    if (($allele=='--') or ($allele=='')) {
+                    if ($allele=='--') {
                         $line_misscnt[$line_record_uid]++;
                     }
                 }
@@ -257,4 +258,140 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     }
     echo "<td><b>$count2</b><i> lines</a>";
     echo ("</table>");
+}
+
+function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
+{
+    global $mysqli;
+    $geno_exp = $_SESSION['geno_exps'];
+    $geno_exp = $geno_exp[0];
+    if (isset($_SESSION['clicked_buttons'])) {
+        $tmp = count($_SESSION['clicked_buttons']);
+        $saved_session = $saved_session . ", $tmp markers";
+        $markers = $_SESSION['clicked_buttons'];
+        $marker_str = implode(',', $markers);
+    } else {
+        $markers_filtered = array();
+        $markers = array();
+        $marker_str = "";
+    }
+
+    //create list of selected markers
+    foreach ($markers as $key=>$marker_uid) {
+        $selected_markers[$marker_uid] = 1;
+        //echo "selected $marker_uid\n";
+    }
+
+    //calculate allele frequence and missing
+    $marker_misscnt = array();
+    foreach ($lines as $line_record_uid) {
+        $sql = "select alleles, marker_uid from allele_cache where line_record_uid = $line_record_uid and experiment_uid = $geno_exp";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+        while ($row = mysqli_fetch_array($res)) {
+            $allele = $row[0];
+            $marker_uid = $row[1];
+            $marker_list[$marker_uid] = 1;
+                if ($allele=='AA') {
+                    $marker_aacnt[$marker_uid]++;
+                } elseif (($allele=='AB') or ($allele=='BA')) {
+                    $marker_abcnt[$marker_uid]++;
+                } elseif ($allele=='BB') {
+                    $marker_bbcnt[$marker_uid]++;
+                } elseif ($allele=='--') {
+                    $marker_misscnt[$marker_uid]++;
+                } elseif ($allele=='') {
+                } else {
+                    echo "illegal genotype value $allele for marker $marker_uid<br>";
+                }
+                $i++;
+        }
+    }
+    $num_mark = count($marker_list);
+    echo "<br>Total markers in experiment = $num_mark<br>\n";
+    $num_maf = $num_miss = $num_removed = 0;
+    foreach ($marker_list as $i=>$val) {
+        //if there are selected markers then only calculate allele frequencies for these
+        if (isset($_SESSION['clicked_buttons']) && !isset($selected_markers[$marker_uid])) {
+            continue;
+        }
+        $total_af = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i];
+        $total = $total_af + $marker_misscnt[$i];
+        //echo "$i $total_af $total<br>\n";
+        if ($total_af > 0) {
+            $maf = 100 * min((2 * $marker_aacnt[$i] + $marker_abcnt[$i]) /$total_af, ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / $total_af);
+            $miss = 100 * $marker_misscnt[$i]/$total;
+            if ($maf < $min_maf) $num_maf++;
+            if ($miss > $max_missing) $num_miss++;
+            if (($miss > $max_missing) OR ($maf < $min_maf)) {
+                $num_removed++;
+            } else {
+                $markers_filtered[] = $i;
+            }
+            $num_mark++;
+        }
+    }
+    $_SESSION['filtered_markers'] = $markers_filtered;
+    $count = count($markers_filtered);
+    if ($count == 0) {    //if none of markers meet maf requirements then we can not filter lines by missing data
+          $lines_filtered = $lines;
+    } else {
+        //calculate missing from each line
+        foreach ($lines as $line_record_uid) {
+            $sql = "select alleles, marker_uid from allele_cache where line_record_uid = $line_record_uid and experiment_uid = $geno_exp";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+            while ($row = mysqli_fetch_array($res)) {
+               $allele = $row[0];
+               $marker_uid = $row[1];
+               if (isset($marker_filtered[$marker_uid])) {
+                   if (($allele=='--') or ($allele=='')) {
+                       $line_misscnt[$line_record_uid]++;
+                   }
+               }
+            }
+        }
+        $lines_removed = 0;
+        $lines_removed_name = "";
+        $num_line = 0;
+        foreach ($lines as $line_record_uid) {
+            $miss = 100*$line_misscnt[$line_record_uid]/$count;
+            //echo "$line_record_uid $miss $max_miss_line<br>\n";
+            if ($miss > $max_miss_line) {
+                $lines_removed++;
+                if ($lines_removed_name == "") {
+                    $lines_removed_name = $line_list_name[$line_record_uid];
+                } else {
+                    $lines_removed_name = $lines_removed_name . ", $line_list_name[$line_record_uid]";
+                }
+            } else {
+                $lines_filtered[] = $line_record_uid;
+            }
+            $num_line++;
+        }
+    }
+    $_SESSION['filtered_lines'] = $lines_filtered;
+    $count2 = count($lines_filtered);
+    ?>
+    <table>
+    <tr><td><a onclick="filterDesc( <?php echo ($min_maf) ?>, <?php echo ($max_miss_line) ?>, <?php echo ($max_miss_line) ?>)">Removed by filtering</a><td>Remaining
+    <tr><td><?php echo ($num_maf) ?><i> markers have a minor allele frequency (MAF) less than </i><b><?php echo ($min_maf) ?></b><i>%
+    <br><?php echo ($num_miss) ?><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
+    <br><b><?php echo ($num_removed) ?></b><i> markers removed</i>
+    <td><b><?php echo ("$count") ?></b><i> markers</i>
+    <tr><td>
+    <?php
+    if ($lines_removed == 1) {
+          echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
+          <?php
+    } else {
+          echo ("</i><b>$lines_removed") ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data </b></i>
+          <?php
+    }
+    if ($lines_removed_name != "") {
+          ?>
+          <br>(<a onclick="linesRemoved('<?php echo ($lines_removed_name) ?>')"><?php echo ($comm) ?></a>)
+          <?php
+    }
+    echo "<td><b>$count2</b><i> lines</a>";
+    echo ("</table>");
+
 }
