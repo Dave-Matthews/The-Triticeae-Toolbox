@@ -713,6 +713,8 @@ class Downloads
 
     /**
      * verify input
+     *
+     * @return null
      */
     function verifyLines()
     {
@@ -809,7 +811,8 @@ class Downloads
             $count = $row[0];
             $pred = (int) ($count / 500);
             if ($count > 2000) {
-                echo "<font color=\"red\">Warning: $count markers in selected genotype experiment. Creating download file may take $pred minutes</font><br>\n";
+                echo "<font color=\"red\">Warning: $count markers in selected genotype experiment.
+                Estimated time to create download file is $pred minutes</font><br>\n";
             }
         }    
         if ($saved_session == "") {

@@ -260,6 +260,16 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     echo ("</table>");
 }
 
+    /**
+     * calculate allele frequence and missing data using selected lines and allele_cache (1D) databae table
+     * 
+     * @param array  $lines         selected lines
+     * @param floats $min_maf       minimum marker allele frequency
+     * @param floats $max_missing   maximum missing markers
+     * @param floats $max_miss_line maximum missing lines
+     * 
+     * @return $markers_filtered, $lines_filtered
+    */
 function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
 {
     global $mysqli;
@@ -287,7 +297,7 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
     foreach ($lines as $line_record_uid) {
         $sql = "select alleles, marker_uid from allele_cache where line_record_uid = $line_record_uid and experiment_uid = $geno_exp";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
-        while ($row = mysqli_fetch_array($res)) {
+        while ($row = mysqli_fetch_row($res)) {
             $allele = $row[0];
             $marker_uid = $row[1];
             $marker_list[$marker_uid] = 1;
@@ -303,17 +313,12 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
                 } else {
                     echo "illegal genotype value $allele for marker $marker_uid<br>";
                 }
-                $i++;
         }
     }
     $num_mark = count($marker_list);
     echo "<br>Total markers in experiment = $num_mark<br>\n";
     $num_maf = $num_miss = $num_removed = 0;
     foreach ($marker_list as $i=>$val) {
-        //if there are selected markers then only calculate allele frequencies for these
-        if (isset($_SESSION['clicked_buttons']) && !isset($selected_markers[$marker_uid])) {
-            continue;
-        }
         $total_af = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i];
         $total = $total_af + $marker_misscnt[$i];
         //echo "$i $total_af $total<br>\n";
@@ -339,7 +344,7 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
         foreach ($lines as $line_record_uid) {
             $sql = "select alleles, marker_uid from allele_cache where line_record_uid = $line_record_uid and experiment_uid = $geno_exp";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
-            while ($row = mysqli_fetch_array($res)) {
+            while ($row = mysqli_fetch_row($res)) {
                $allele = $row[0];
                $marker_uid = $row[1];
                if (isset($marker_filtered[$marker_uid])) {
