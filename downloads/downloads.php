@@ -813,7 +813,7 @@ class Downloads
             //echo "pred = $countLines $countMarkers $pred<br>\n";
             if ($pred > 3) {
                 echo "<font color=\"red\">Estimated time to create download file is $pred minutes</font><br><br>\n";
-                echo "markers in selected genotype experiment = $countMarkers"
+                echo "markers in selected genotype experiment = $countMarkers";
                 if (isset($_SESSION['username'])) {
             //        $emailAddr = $_SESSION['username'];
             //        echo "An email will be sent to $emailAddr when the download file has be created<br>\n";
