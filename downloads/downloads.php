@@ -812,10 +812,10 @@ class Downloads
             $pred = (int) ($countLines * $countMarkers / 50000);
             //echo "pred = $countLines $countMarkers $pred<br>\n";
             if ($pred > 3) {
-                echo "Warning: $countMarkers markers in selected genotype experiment.
-                <font color=\"red\">Estimated time to create download file is $pred minutes</font><br>\n";
+                $saved_session = "markers in selected genotype experiment = $countMarkers<br>" . $saved_session;
+                echo "<font color=\"red\">Estimated time to create download file is $pred minutes</font><br>\n";
                 if (isset($_SESSION['username'])) {
-                    $emailAddr = $_SESSION['username'];
+            //        $emailAddr = $_SESSION['username'];
             //        echo "An email will be sent to $emailAddr when the download file has be created<br>\n";
                 } else {
             //        echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
