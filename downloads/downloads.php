@@ -133,7 +133,7 @@ class Downloads
         <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
         <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-        <script type="text/javascript" src="downloads/downloadsjq01.js"></script>
+        <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
     }	
@@ -194,13 +194,12 @@ class Downloads
                  $message2 = $message2 . " for all markers";
              }
         }
-        if (isset($_SESSION['selected_map'])) {
-            if (isset($_SESSION['geno_exps'])) {
+        if (isset($_SESSION['geno_exps'])) {
                 $download_genoe = "checked";
-            } else {
+            } elseif (isset($_SESSION['selected_map'])) {
                 $download_geno = "checked";
-            }
         }
+         
         $this->refresh_title();
         ?>        
         </div>
@@ -234,7 +233,8 @@ class Downloads
         </div><br>
         <input type="checkbox" id="typeP" value="pheno" onclick="javascript:select_download();" <?php echo $download_pheno ?>>Phenotype
         <input type="radio" name="typeG" value="geno" onclick="javascript:select_download();"<?php echo $download_geno ?>>Genotype using consensus
-        <input type="radio" name="typeG" value="genoE" onclick="javascript:select_download();"<?php echo $download_genoe ?>>Genotype using one genotype experiment<br><br>
+        <input type="radio" name="typeG" value="genoE" onclick="javascript:select_download();"<?php echo $download_genoe ?>>Genotype using one genotype experiment
+        <input type="button" name="clear" value="Clear" onclick="javascript:location.reload();"<br><br>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
         <?php
         $this->type1_lines_trial_trait();
@@ -808,11 +808,18 @@ class Downloads
             WHERE af.experiment_uid in ($geno_str)";
             $res = mysql_query($sql) or die(mysql_error());
             $row = mysql_fetch_row($res);
-            $count = $row[0];
-            $pred = (int) ($count / 500);
-            if ($count > 2000) {
-                echo "<font color=\"red\">Warning: $count markers in selected genotype experiment.
-                Estimated time to create download file is $pred minutes</font><br>\n";
+            $countMarkers = $row[0];
+            $pred = (int) ($countLines * $countMarkers / 50000);
+            //echo "pred = $countLines $countMarkers $pred<br>\n";
+            if ($pred > 3) {
+                echo "Warning: $countMarkers markers in selected genotype experiment.
+                <font color=\"red\">Estimated time to create download file is $pred minutes</font><br>\n";
+                if (isset($_SESSION['username'])) {
+                    $emailAddr = $_SESSION['username'];
+            //        echo "An email will be sent to $emailAddr when the download file has be created<br>\n";
+                } else {
+            //        echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
+                }
             }
         }    
         if ($saved_session == "") {
@@ -866,7 +873,8 @@ class Downloads
             $marker_str = "";
         }
         $typeGE = $_GET['typeGE'];
- 
+
+
 	 // initialize markers and flags if not already set
 	 $max_missing = 99.9;//IN PERCENT
 	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
