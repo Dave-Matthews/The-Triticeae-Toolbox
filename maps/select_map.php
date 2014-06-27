@@ -104,7 +104,7 @@ class Maps
          td {border: 1px solid #eee !important;}
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
-        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="//code.jquery.com/jquery-1.11.1.js"></script>
         <script type="text/javascript" src="maps/select_map01.js">
         </script>
         <form name="myForm" action="maps/select_map.php">
