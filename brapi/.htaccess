@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule (.+)/genotype/(.+) genotype.php?version=$1&rest=$2 [QSA,NC,L]

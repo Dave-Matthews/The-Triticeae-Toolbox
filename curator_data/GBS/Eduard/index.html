@@ -1,0 +1,71 @@
+<html>
+NCBI assembly information
+<a href=http://www.ncbi.nlm.nih.gov/assembly/GCA_000334095.1>GCA_00334095.1</a><br>
+URGI contig download site
+<a href=https://urgi.versailles.inra.fr/download/iwgsc/>URGI</a><br>
+<h2>Genotype Experiment Description</h2>
+1. Hard Red Winter Wheat AM panel (it was genotyped with
+90K iSelect and you should have this data deposited to database).<br>
+2. Cut with PstI and MseI<br>
+3. Mapping was done using bowtie1 (3-steps with decreasing stringency: 1
+mismatch, 2 mm, 3 mm)<br>
+4. SNP calling with GATK pipeline (default routine described on the
+website).<br>
+<br>
+Filtering: minimum 50 accessions have data and no multi-allele SNPs. Depth
+of read coverage was not applied since we use multisample variant calling
+Approach.<br>The filtering criteria applied:  minimum 50 accessions have data, no
+multi-allele SNPs. In total after this filtering we have ~ 1.26M SNPs in
+total.
+<h2>Raw Files</h2>
+<table border=1>
+<tr><td>coordinate file, used to convert SNP location to location in contig of assembly<td><a href=Contigs_coordiantes_in_concatenated.txt>Contig coordiantes</a> 341MB
+<tr><td>SNP information (CHROM, POS, ID, REF, ALT, QUAL), 128,042 entries<td>all_chr_300acc_SNPs_min50acc_rmMultiAllele_addHeader.vcf 4.7G
+</table>
+<h2>Marker Definition files</h2>
+<table border=1>
+<tr><td>contig<td>chromosome<td>count in file<td>Marker annotation file
+<tr><td><a href=1AL-ab-k71-contigs.fa.longerthan_200.fa download>1AL-ab-k71</a><td>1AL<td>89,239<td><a href=1AL-ab-k71-contigs.fa.longerthan_200.fa.out>Marker Definition File</a>
+<tr><td><a href=1AS-ab-k71-contigs.fa.longerthan_200.fa download>1AS-ab-k71</a><td>1AS<td>51,871<td><a href=1AS-ab-k71-contigs.fa.longerthan_200.fa.out>Marker Definition File</a>
+<tr><td><a href=1BL-ab-k71-contigs.fa.longerthan_200.fa download>1BL-ab-k71</a><td>1BL<td>65,226<td><a href=1BL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=1BS-ab-k71-contigs.fa.longerthan_200.fa download>1BS-ab-k71</a><td>1BS<td>66,007<td><a href=1BS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=1DL-ab-k95-contigs.fa.longerthan_200.fa download>1DL-ab-k95</a><td>1DL<td>80,643<td><a href=1DL-ab-k95-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=1DS-ab-k71-contigs.fa.longerthan_200.fa download>1DS-ab-k71</a><td>1DS<td>35,945<td><a href=1DS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=2AL-ab-k71-contigs.fa.longerthan_200.fa download>2AL-ab-k71</a><td>2AL<td>58,000<td><a href=2AL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=2AS-ab-k71-contigs.fa.longerthan_200.fa download>2AS-ab-k71</a><td>2AS<td>53,993<td><a href=2AS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=2BL-ab-k71-contigs.fa.longerthan_200.fa download>2BL-ab-k71</a><td>2BL<td>69,290<td><a href=2BL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=2BS-ab-k71-contigs.fa.longerthan_200.fa download>2BS-ab-k71</a><td>2BS<td>52,563<td><a href=2BS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=2DL-ab-k71-contigs.fa.longerthan_200.fa download>2DL-ab-k71</a><td>2DL<td>31,932<td><a href=2DL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=2DS-ab-k71-contigs.fa.longerthan_200.fa download>2DS-ab-k71<td>2DS<td>25,696<td><a href=2DS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=3AL-ab-k71-contigs.fa.longerthan_200.fa download>3AL-ab-k71</a><td>3AL<td>36,878<td><a href=3AL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=3AS-ab-k71-contigs.fa.longerthan_200.fa download>3AS-ab-k71</a><td>3AS<td>29,106<td><a href=3AS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=3B-ab-k71-contigs.fa.longerthan_200.fa download>3B-ab-k71</a><td>3B<td>79,193<td><a href=3B-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=3DL-ab-k71-contigs.fa.longerthan_200.fa download>3DL-ab-k71</a><td>3DL<td>65,226<td><a href=3DL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=3DS-ab-k95-contigs.fa.longerthan_200.fa download>3DS-ab-k95</a><td>3DS<td><td><a href=3DS-ab-k95-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=4AL-ab-k71-contigs.fa.longerthan_200.fa download>4AL-ab-k71</a><td>4AL<td><td><a href=4AL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=4AS-ab-k71-contigs.fa.longerthan_200.fa download>4AS-ab-k71</a><td>4AS<td><td><a href=4AS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=4AS_v2-ab-k71-contigs.fa.longerthan_200.fa download>4AS_v2-ab-k71</a><td>4AS_v2<td><td><a href=4AS_v2-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=4BL-ab-k71-contigs.fa.longerthan_200.fa download>4BL-ab-k71</a><td>4BL<td><td><a href=4BL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=4BS-ab-k71-contigs.fa.longerthan_200.fa download>4BS-ab-k71</a><td>4BS<td><td><a href=4BS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=4DL-ab-k71-contigs.fa.longerthan_200.fa download>4DL-ab-k71</a><td>4DL<td><td><a href=4DL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=4DL_v2-ab-k71-contigs.fa.longerthan_200.fa download>4DL_v2-ab-k71</a><td>4DL_v2<td><td><a href=4DL_v2-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><a href=4DS-ab-k71-contigs.fa.longerthan_200.fa download>4DS-ab-k71</a><td>4DS<td><td><a href=4DS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>5AL<td><td><a href=5AL-ab-k95-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>5AS<td><td><a href=5AS-ab-k95-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>5BL<td><td><a href=5BL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>5BS<td><td><a href=5BS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>5DL<td><td><a href=5DL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>5DS<td><td><a href=5DS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker_Definition File</a>
+<tr><td><td>6AL<td><td><a href=6AL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>6AS<td><td><a href=6AS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>6BL<td><td><a href=6BL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>6BS<td><td><a href=6BS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>6DL<td><td><a href=6DL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>6DS<td><td><a href=6DS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>7AL<td><td><a href=7AL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>7AS<td><td><a href=7AS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>7BL<td><td><a href=7BL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>7BS<td><td><a href=7BS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>7DL<td><td><a href=7DL-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+<tr><td><td>7DS<td><td><a href=7DS-ab-k71-contigs.fa.longerthan_200.fa.out</a>Marker Definition File</a>
+</table>
