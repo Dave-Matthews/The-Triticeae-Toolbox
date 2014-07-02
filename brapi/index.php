@@ -15,8 +15,8 @@ connect();
   See the documentation that will be at <a href="http://docs.breeding.apiary.io/">http://docs.breeding.apiary.io/</a>
   <h3>Get Marker Count By Germplasm Id</h3>
   <b>GET</b> /brapi/0.1/genotype/{id}/count?analysisMethod={platform}<br>
-  Returns: JSON { total_markers: X, valid_markers: Y }<br>
-  Example: <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count</a>
+  Returns: JSON containing Germplasm Id, experiment Id, analysis method, and number of allele calls<br>
+  Example: <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate</a>
 
 <p>
 </div>
