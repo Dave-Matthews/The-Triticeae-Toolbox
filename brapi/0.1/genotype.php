@@ -54,6 +54,7 @@ if ($rest[1]) {
     }
   }
   $response = array($linearray, $markerCountarray);
+  header("Content-Type: application/json");
   /* Requires PHP 5.4.0: */
   /* echo json_encode($response, JSON_PRETTY_PRINT); */
   echo json_encode($response);
