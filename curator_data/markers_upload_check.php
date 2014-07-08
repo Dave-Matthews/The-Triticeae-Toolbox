@@ -26,6 +26,7 @@ require 'config.php';
  */
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require $config['root_dir'] . 'curator_data/lineuid.php';
+set_time_limit(3000);
 
 connect();
 loginTest();
@@ -1460,7 +1461,9 @@ class Markers_Check
         if (($fileFormat == 0) && ($orderAllele == 1)) {
           $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
         }
+        flush();
         $this->typeCheckImport($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
+        flush();
         ?>
         <script type="text/javascript" src="curator_data/marker01.js"></script>
         <br><h3>Loading import file into database</h3>
