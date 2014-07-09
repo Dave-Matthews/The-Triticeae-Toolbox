@@ -1,7 +1,7 @@
 library(agricolae)
 
 #defined dynamically
-#desing_type
+#type
 #trt, size_block, seed, num_repl, num_block
 #outfile
 
@@ -22,7 +22,7 @@ if (type == "alpha") {
   message("s=",s)
   outdesign<-design.alpha(trt, k, r, serie=serie)
 } else if (type == "bib") {
-  message("randomized balanced imcompleate block design")
+  message("randomized balanced incomplete block design")
   outdesign<- design.bib(trt, k, serie=serie)
 } else if (type == "crd") {
   message("completely randomized design")

@@ -190,9 +190,9 @@ class Fieldbook
     private function design()
     {
         ?>
-        This tool allows you to select or create a trial and experiment design.<br> 
+        This tool allows you to view a trial, create a trial, or create an experiment design.<br> 
         The results can be uploaded in the sandbox, downloaded to a tablet device, or submitted to the curator for loading into the production website.<br><br>
-        <input type=button value="Select existing trial" onclick="javascript: select_trial()"  style="display: inline-block">
+        <input type=button value="View existing trial" onclick="javascript: select_trial()"  style="display: inline-block">
         <!--input type=button value="Upload Phenotype trial" onclick="javascript: upload_trial()" style="display: inline-block">
         <input type=button value="Upload Field layout" onclick="javascript: upload_field()" style="display: inline-block"-->
         <input type=button value="Create new trial" onclick="javascript: add_trial()" style="display: inline-block"-->
@@ -231,9 +231,9 @@ class Fieldbook
         <div class="step4"></div>
         <div class="step5"></div>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
-        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-        <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-        <script type="text/javascript" src="curator_data/design.js"></script>
+        <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+        <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+        <script type="text/javascript" src="curator_data/design01.js"></script>
         <script type="text/javascript">
         if ( window.addEventListener ) {
             window.addEventListener( "load", select_trial(), false );
@@ -439,7 +439,7 @@ class Fieldbook
         <tr><td>Trial description:<td colspan=2><input type="text" id="desc"><td> 
         <tr><td>Planting date:<td colspan=2><input type="text" id="plant_date"><td>This should be the one date on which planting was begun.<br>
                 Use Excel "Text", not "Date", format. The value should be given as m/d/yyyy with no leading zeros, e.g. "5/7/2012".
-        <tr><td>Harvest date:<td colspan=2><input type="text" id="harvest_date"><td>Use Excel "Text", not "Date", format. if the trial was not harvestd,
+        <tr><td>Harvest date:<td colspan=2><input type="text" id="harvest_date"><td>Use Excel "Text", not "Date", format. if the trial was not harvested,
                 use the date of last data collection.
         <tr><td>Begin weather date:<td colspan=2><input type ="text" id="bwdate"><td>Optional, if T3 should store weather data starting at some point before planting (e.g., to track soil moisture status).
         <tr><td>Greenhouse trial
@@ -494,43 +494,57 @@ class Fieldbook
     private function designField()
     {
         $type = $_GET['type'];
+        $trial = $_GET['trial'];
+        $count = "";
+        if (preg_match("/\d/", $trial)) {
+            $sql = "select count(distinct lr.line_record_uid) from tht_base as tb, line_records as lr
+                where lr.line_record_uid = tb.line_record_uid
+                and tb.experiment_uid = $trial";
+            $res = mysql_query($sql) or die(mysql_error());
+            if ($row = mysql_fetch_row($res)) {
+                $count = $row[0];
+            }
+        } elseif (isset($_SESSION['selected_lines'])) {
+            $count = count($_SESSION['selected_lines']);
+        } else {
+           $msg = "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>";
+        }
         echo "<h3>Field layout</h3>";
         echo "<table>";
         if ($type == "alpha") {
-            if (isset($_SESSION['selected_lines'])) {
-            $count = count($_SESSION['selected_lines']);
+            if ($count != "") {
                 echo "<tr><td>Treatment:<td>$count lines selected";
             } else {
-                echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>";
+                echo "$msg";
             }
             ?>
             <tr><td>Size of block:<td><input type="text" id="size_blk" onclick="javascript: update_step3()">
             <tr><td>Number of replicates:<td><input type="text" id="num_rep" onclick="javascript: update_step3()">
             <?php
         } elseif ($type == "bib") {
-            if (isset($_SESSION['selected_lines'])) {
-                $count = count($_SESSION['selected_lines']);
+            if ($count != "") {
                 echo "<tr><td>Treatment:<td>$count lines selected";
+                if ($count > 100) {
+                    echo "<td><font color=red>warning - ICB design is slow for over 100 lines</font>";
+                }
             } else {
-                echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>";
+                echo "$msg";
             }
             ?>
             <tr><td>Size of block:<td>2
             <input type="hidden" id="size_blk" value=2>
             <?php
         } elseif ($type == "crd") {
-            if (isset($_SESSION['selected_lines'])) {
-                $count = count($_SESSION['selected_lines']);
+            if ($count != "") {
                 echo "<tr><td>Treatment:<td>$count lines selected";
             } else {
-                echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>";
+                echo "$msg";
             }
             ?>
             <tr><td>Number of replicates:<td><input type="text" id="num_rep" onclick="javascript: update_step3()">
             <?php
         } elseif ($type == "lattice") {
-            if (isset($_SESSION['selected_lines'])) {
-                $count = count($_SESSION['selected_lines']);
+            if ($count != "") {
                 $tmp1 = sqrt($count);
                 $tmp2 = floor($tmp1);
                 echo "<tr><td>Treatment:<td>$count lines selected";
@@ -538,17 +552,16 @@ class Fieldbook
                     echo "<td><font color=red>Error: </font>the square root of lines selected must be an integer";
                 }
             } else {
-                echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please <a href=pedigree/line_properties.php>select a set of lines</a>";
+                echo "$msg";
             }
             ?>
             <tr><td>Number of replicates:<td><input type="text" id="num_rep" onclick="javascript: update_step3()"><td>Use either 2 or 3
             <?php
         } elseif ($type == "rcb") {
-            if (isset($_SESSION['selected_lines'])) {
-                $count = count($_SESSION['selected_lines']);
+            if ($count != "") {
                 echo "<tr><td>Treatment:<td>$count lines selected";
             } else {
-                echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please <a href=pedigree/line_properties.php>select a set of lines</a>";
+                echo "$msg";
             }
             ?>
             <tr><td>Number of replicates:<td><input type="text" id="num_rep" onclick="javascript: update_step3()">
@@ -571,11 +584,10 @@ class Fieldbook
                 }
                 echo "<tr><td>Check lines:<td>$name<td>";
                 echo "<input type=\"button\" value=\"Select check lines\" onclick=\"javascript: select_check()\">";
-                if (isset($_SESSION['selected_lines'])) {
-                    $count = count($_SESSION['selected_lines']);
+                if ($count != "") {
                     echo "<tr><td>Treatment:<td>$count lines selected";
                 } else {
-                    echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please <a href=pedigree/line_properties.php>select a set of lines</a>";
+                    echo "$msg";
                 }
                 ?>
                 <tr><td>Replications or Blocks:<td><input type="text" id="num_rep" onclick="javascript: update_step3()">
@@ -585,6 +597,11 @@ class Fieldbook
                 <td>Select 1 or more check lines";
             }
         } elseif ($type == "rcbd") {
+            if ($count != "") {
+                echo "<tr><td>Treatment:<td>$count lines selected";
+            } else {
+                echo "$msg";
+            }
             ?>
             <tr><td>Replications or Blocks:<td><input type="text" id="num_rep" onclick="javascript: update_step3()">
             <td>greater than or equal to 2
@@ -610,15 +627,14 @@ class Fieldbook
                     echo "<font color=red>Error: select 2 or more check lines for MADII</font>";
                 }
                 echo "<input type=\"button\" value=\"Select check lines\" onclick=\"javascript: select_check()\">";
-                if (isset($_SESSION['selected_lines'])) {
-                    $count = count($_SESSION['selected_lines']);
+                if ($count != "") {
                     echo "<tr><td>Treatment:<td>$count lines selected";
                     ?>
                     <tr><td>Rows:<td><input type="text" id="rows"><td>MADII design requires that the number of rows be a multiple of 3
                     <tr><td>Columns:<td><input type="text" id="columns">
                     <?php
                 } else {
-                    echo "<tr><td>Treatment:<td><font color=red>Error: </font>Please <a href=pedigree/line_properties.php>select a set of lines</a>";
+                    echo "$msg";
                 }
             } else {
                echo "<tr><td><input type=\"button\" value=\"Select check lines\" onclick=\"javascript: select_check()\">
@@ -633,12 +649,17 @@ class Fieldbook
     private function design_results()
     {
         $type = $_GET['type'];
+        $trial = $_GET['trial'];
         if (($type == "madii") || ($type == "dau")) {
           if (isset($_SESSION['check_lines'])) {
           ?>
           <input type="submit" value="Create field layout" onclick="javascript: create_field()">
           <?php
           }
+        } elseif (preg_match("/\d/", $trial)) {
+          ?>
+          <input type="submit" value="Create field layout" onclick="javascript: create_field()">
+          <?php
         } elseif (isset($_SESSION['selected_lines'])) {
           ?>
           <input type="submit" value="Create field layout" onclick="javascript: create_field()">
@@ -752,7 +773,38 @@ class Fieldbook
         if (isset($_GET['trial_name'])) {
             $trial_code = $_GET['trial_name'];
         }
-        if (isset($_SESSION['selected_lines'])) {
+        $trial = $_GET['trial'];
+        if (preg_match("/\d/", $trial)) {
+            $sql = "select distinct lr.line_record_uid from tht_base as tb, line_records as lr
+                where lr.line_record_uid = tb.line_record_uid
+                and tb.experiment_uid = $trial";
+            $res = mysql_query($sql) or die(mysql_error());
+            while ($row = mysql_fetch_row($res)) {
+                $tmp[] = $row[0];
+            }
+            $count_lines = count($tmp);
+            if ($count_lines > 1) {
+                $exp = "";
+                foreach ($tmp as $item) {
+                    $sql = "select line_record_name from line_records where line_record_uid = $item";
+                    $res = mysql_query($sql) or die(mysql_error() . $sql);
+                    if ($row = mysql_fetch_assoc($res)) {
+                        $name = $row['line_record_name'];
+                    } else {
+                        die("Error: could not find line record $item<br>\n");
+                    }
+                    if ($exp == "") {
+                        $exp = $exp . "\"$name\"";
+                    } else {
+                        $exp = $exp . ",\"$name\"";
+                    }
+                }
+                $cmd = "trt <-c($exp)\n";
+            } else {
+                $cmd = "trt <-c($tmp_str)\n";
+            }
+            $objRWrap->addCommand($cmd);
+        } elseif (isset($_SESSION['selected_lines'])) {
             $tmp = $_SESSION['selected_lines'];
             $count_lines = count($tmp);
             if ($count_lines > 1) {
