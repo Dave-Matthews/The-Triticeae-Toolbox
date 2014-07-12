@@ -700,7 +700,7 @@ class Fieldbook
         $greenhouse = $_GET['greenhouse'];
         $seed = $_GET['seed'];
         $design = $_GET['design']; 
-
+        $irrigation = $_GET['irrigation'];
         $sql = "select value from settings where name='database'";
         $res = mysql_query($sql) or die(mysql_error());
         if ($row = mysql_fetch_assoc($res)) {
@@ -754,6 +754,8 @@ class Fieldbook
         $objPHPExcel->getActiveSheet()->SetCellValue('B18', $seed);
         $objPHPExcel->getActiveSheet()->SetCellValue('A19', 'Experiment design');
         $objPHPExcel->getActiveSheet()->SetCellValue('B19', $design);
+        $objPHPExcel->getActiveSheet()->SetCellValue('A20','Irrigation (yes or no)');
+        $objPHPExcel->getActiveSheet()->SetCellValue('B20',$irrigation);
         $objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
         $objWriter->save($filename);
         echo "<a href=\"$filename\">Download Trial Description</a><br><br>";
