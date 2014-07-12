@@ -239,7 +239,7 @@ class Tablet
     	$filename = "import_" . $uid . ".csv";
     	if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
     	$output = fopen("/tmp/tht/$filename","w");
-    	fwrite($output, "plot_id,range,plot,tray_row,name,replication,block\n");
+    	fwrite($output, "plot_id,range,plot,column,name,replication,block\n");
     	$sql = "select plot_uid, plot, block, row_id, column_id, replication, check_id, line_uid from fieldbook where experiment_uid = $uid order by row_id, plot";
     	$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
     	while ($row = mysqli_fetch_row($res)) {
@@ -258,7 +258,7 @@ class Tablet
                 if (!preg_match("/\d+/",$column_id)) {
                     $error = 1;
                 }
-    		fwrite($output, "$plot_id,$column_id,$plot,$row_id,$line_record_name,$replication,$block\n");
+    		fwrite($output, "$plot_id,$row_id,$plot,$column_id,$line_record_name,$replication,$block\n");
     	}
     	fclose($output);
         if ($error == 0) {
