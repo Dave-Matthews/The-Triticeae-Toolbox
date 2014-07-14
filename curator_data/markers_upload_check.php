@@ -97,7 +97,7 @@ class Markers_Check
         } else {
             ?>
             <h2>Enter/Update Markers: Validation</h2>
-            1. If markers have not been published or do not have mapping data, 
+            1. If the marker names have not been published or do not have mapping data, 
             then check "Yes" to add marker as synonym.<br>
             2. If a reference map is not used to anchor, order, and orient the contigs,
             then check "Yes" to order alleles alphabetically.<br>
@@ -222,6 +222,31 @@ class Markers_Check
         echo "<table><tr><th>marker<th>corrected allele order\n";
         echo "<tr><td>$limit<td>$count_allele<td><a href=\"curator_data/$change_file\" target=\"_new\">Download Corrections</a>\n";
         echo "</table>";
+    }
+
+    function revCmp($seq)
+    {
+        $seq = strrev($seq);
+        // change the sequence to upper case
+        $seq = strtoupper ($seq);
+        // the system used to get the complementary sequence is simple but fas
+        $seq=str_replace("A", "t", $seq);
+        $seq=str_replace("T", "a", $seq);
+        $seq=str_replace("G", "c", $seq);
+        $seq=str_replace("C", "g", $seq);
+        $seq=str_replace("Y", "r", $seq);
+        $seq=str_replace("R", "y", $seq);
+        $seq=str_replace("W", "w", $seq);
+        $seq=str_replace("S", "s", $seq);
+        $seq=str_replace("K", "m", $seq);
+        $seq=str_replace("M", "k", $seq);
+        $seq=str_replace("D", "h", $seq);
+        $seq=str_replace("V", "b", $seq);
+        $seq=str_replace("H", "d", $seq);
+        $seq=str_replace("B", "v", $seq);
+        // change the sequence to upper case again for output
+        $seq = strtoupper ($seq);
+        return $seq;
     }
 
     /**
@@ -947,20 +972,7 @@ class Markers_Check
         <input type=radio name="check_seq" id="use_imp" value="imp" <?php echo $checked_imp ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
             > Yes
-        <?php
-        if ($fileFormat == 0) {
-        ?>
-        <tr><td>Order A and B alleles alphabetically
-        <td><input type=radio name="check_ord" id="order_no" value="no" <?php echo $order_no ?>
-            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
-            > No
-        <input type=radio name="check_ord" id="order_yes" value="yes" <?php echo $order_yes ?>
-            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
-           > Yes
-        <?php
-        }
-        ?>
-        </table>
+        <td rowspan=2>
         <?php
         if ($overwrite) {
           ?>
@@ -982,8 +994,21 @@ class Markers_Check
           </ul>
           <?php
         }
-
-        echo "<h3>Check import file</h3>\n";
+        if ($fileFormat == 0) {
+        ?>
+        <tr><td>Order A and B alleles alphabetically
+        <td><input type=radio name="check_ord" id="order_no" value="no" <?php echo $order_no ?>
+            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
+            > No
+        <input type=radio name="check_ord" id="order_yes" value="yes" <?php echo $order_yes ?>
+            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
+           > Yes
+        <?php
+        }
+        ?>
+        </table>
+        <?php
+        echo "<h3>Checking import file</h3>\n";
         if ($overwrite) {
             $numMatch = $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
         }
