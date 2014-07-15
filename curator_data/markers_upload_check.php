@@ -97,12 +97,8 @@ class Markers_Check
         } else {
             ?>
             <h2>Enter/Update Markers: Validation</h2>
-            1. If the marker names have not been published or do not have mapping data, 
-            then check "Yes" to add marker as synonym.<br>
-            2. If a reference map is not used to anchor, order, and orient the contigs,
-            then check "Yes" to order alleles alphabetically.<br>
             <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-            <script type="text/javascript" src="curator_data/marker01.js"></script>
+            <script type="text/javascript" src="curator_data/marker02.js"></script>
             <div id=update></div>
             <div id=checksyn>
             <?php
@@ -266,11 +262,18 @@ class Markers_Check
         $infile = $_GET['linedata'];
         $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
         $tPath = str_replace('./', '', $target_Path);
-        $change_file = $tPath . "markerProc2.out";
-        if (($fh = fopen($change_file, "w")) == false) {
-            echo "Error creating change file $change_file<br>\n";
+        $change_file2 = $tPath . "markerProc2.out";
+        $change_file3 = $tPath . "markerProc3.out";
+        $change_file4 = $tPath . "markerProc4.out";
+        if (($fh2 = fopen($change_file2, "w")) == false) {
+            echo "Error creating change file $change_file2<br>\n";
         }
-
+        if (($fh3 = fopen($change_file3, "w")) == false) {
+            echo "Error creating change file $change_file3<br>\n";
+        }
+        if (($fh4 = fopen($change_file4, "w")) == false) {
+            echo "Error creating change file $change_file4<br>\n";
+        }
         $sql = "select marker_uid, value from marker_synonyms";
         $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
         while ($row = mysql_fetch_assoc($res)) {
@@ -316,7 +319,9 @@ class Markers_Check
         $count_insert = 0;
         $count_add_syn = 0;
         $results = "<thead><tr><th>marker<th>match by name<th>match by sequence<th>database change</thead>\n";
-        fwrite($fh, "marker\tmatch by name\tmatch by sequence\tdatabase change\n");
+        fwrite($fh2, "marker\tmatch by name\tmatch by sequence\tdatabase change\n");
+        fwrite($fh3, "marker\tmatch by name\tmatch by sequence\tdatabase change\n");
+        fwrite($fh4, "marker\tmatch by name\tmatch by sequence\tdatabase change\n");
         $limit = count($storageArr);
         for ($i = 1; $i <= $limit; $i++) {
             $name = $storageArr[$i][$nameIdx];
@@ -381,26 +386,31 @@ class Markers_Check
                     if ($found_name) {
                         $count_update++;
                         $action = "update marker";
+                        fwrite($fh2, "$name\t$name_match\t$seq_match\t$action\n");
                     } else {
                         $count_add_syn++;
                         $action = "add synonym";
+                        fwrite($fh4, "$name\t$name_match\t$seq_match\t$action\n");
                     }
                 } elseif ($found_name) {
                     $count_update++;
                     $action = "update marker";
+                    fwrite($fh2, "$name\t$name_match\t$seq_match\t$action\n");
                 } else {
                     $count_insert++;
                     $action = "add marker";
+                    fwrite($fh3, "$name\t$name_match\t$seq_match\t$action\n");
                 }
             } elseif ($found_name) {
                     $count_update++;
                     $action = "update marker";
+                    fwrite($fh2, "$name\t$name_match\t$seq_match\t$action\n");
             } else {
                     $count_insert++;
                     $action = "add marker";
+                    fwrite($fh3, "$name\t$name_match\t$seq_match\t$action\n");
             }
             $results .= "<tr><td>$name<td>$name_match<td><font color=blue>$seq_match</font><td>$action\n";
-            fwrite($fh, "$name\t$name_match\t$seq_match\t$action\n");
         }
         if ($expand == 1) {
             $display1 = "display:none;";
@@ -429,7 +439,9 @@ class Markers_Check
         if ($overwrite) {
             echo "$count_add_syn add synonym\n";
         }
-        echo "<td><a href=\"curator_data/$change_file\" target=\"_new\">Download Database Changes</a>\n";
+        echo "<td><a href=\"curator_data/$change_file2\" target=\"_new\">Download Update Changes</a>\n";
+        echo "<br><a href=\"curator_data/$change_file3\" target=\"_new\">Download Add Marker Changes</a>\n";
+        echo "<br><a href=\"curator_data/$change_file4\" target=\"_new\">Download ADD Synonym Changes</a>\n";
         ?></table>
         <table id="content2<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?>">
         <?php
@@ -439,7 +451,9 @@ class Markers_Check
             echo "<tr><td>Too many entries, please download.";
         }
         echo "</table>";
-        fclose($fh);
+        fclose($fh2);
+        fclose($fh3);
+        fclose($fh4);
         $pheno_uid = 2;
         $change["update"] = $count_update;
         $change["insert"] = $count_insert;
@@ -494,7 +508,9 @@ class Markers_Check
         if ($marker_seq_dup != "") {
             echo "<font color=red>Error: marker(s) removed from import because sequence duplicates previous entry</font><br>$marker_seq_dup<br><br>\n";
         }
-
+        if (($marker_seq_dup == "") && ($marker_name_dup == "")) {
+            echo "No duplicate names or sequences withing import file\n";
+        }
     }
 
     /**
@@ -964,6 +980,15 @@ class Markers_Check
         unset ($value);
         fclose($reader); 
         ?>
+        <h3>Options</h3>
+        If the marker names have not been published or do not have mapping data,
+            then check "Yes" to add marker as synonym.<br>
+        <?php 
+        if ($fileFormat == 0) {
+            echo "If a reference genome is used to anchor, order, or orient the contigs,
+            then check \"No\" to order alleles alphabetically.<br>";
+        }
+        ?>
         <table>
         <tr><td>When sequence matches add marker as synonym 
         <td><input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
@@ -974,26 +999,6 @@ class Markers_Check
             > Yes
         <td rowspan=2>
         <?php
-        if ($overwrite) {
-          ?>
-          <ul><li>Does the marker name in the import file match an entry in the markers or synonym table?</li>
-            <ul><li>Yes - Update the database entry</li>
-                <li>No - Does the marker sequence in the import file match an entry in the markers table?</li>
-                <ul><li>Yes - Add as synonym
-                    <li>No - Add new entry to the database<br>
-                </ul>
-           </ul>
-          </ul>
-        <?php
-        } else {
-          ?>
-          <ul><li>Does the marker name in the import file match an entry in the markers or synonym table?
-            <ul><li>Yes - Update the database entry
-                <li>No - Add new entry to the database
-            </ul>
-          </ul>
-          <?php
-        }
         if ($fileFormat == 0) {
         ?>
         <tr><td>Order A and B alleles alphabetically
@@ -1007,8 +1012,34 @@ class Markers_Check
         }
         ?>
         </table>
+        <h3>Validation Details</h3>
         <?php
-        echo "<h3>Checking import file</h3>\n";
+        if ($overwrite) {
+          ?>
+          <ol><li>Compare marker name in the import file to entries in the database</li>
+            <ul><li>If marker name found in database then update the database entry</li>
+                <li>If marker name not found in database then compare the marker sequence to entries in the database</li>
+                <ul><li>If marker sequence found in database then add marker as synonym
+                    <li>If marker sequence not found in database then add new marker to the  database<br>
+                </ul>
+           </ul>
+          
+        <?php
+        } else {
+          ?>
+          <ol><li>Compare marker name in the import file to entries in the database</li>
+            <ul><li>If marker name found in database then update the database entry</li>
+                <li>If marker name not found in database then add new marker to the database<br>
+            </ul>
+         
+          <?php
+        }
+        if ($orderAllele) {
+            echo "<li>Order A and B alleles alphabetically";
+        }
+        echo "<li>Check duplicates within import file</li>";
+        echo "</ol>";
+        echo "<h3>Results</h3>\n";
         if ($overwrite) {
             $numMatch = $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
         }
