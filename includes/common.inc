@@ -1373,22 +1373,54 @@ where users_name='$sql_users_name'";
   return 1;
 }
 
-function retrieve_session_variables($svkey, $user) {
-  if (isset($svkey) && strlen($svkey) > 0 && isset($user) &&
-      strlen($user)>1) {
-    $sql_user = mysql_real_escape_string($user);
-    $result=mysql_query("select serialized_values
-from session_variables where session_variables_name=\"$svkey\" and
-users_uid=(select users_uid from users
-where users_name='$sql_user')");
-    if(mysql_num_rows($result)>0) {
-      $row = mysql_fetch_assoc($result);
-      $str = base64_decode($row['serialized_values']);
-      $vals = unserialize($str);
-      return $vals;
+function retrieve_session_variables($svkey, $user)
+{
+    if (isset($svkey) && strlen($svkey) > 0 && isset($user) && strlen($user)>1) {
+        $sql_user = mysql_real_escape_string($user);
+        $result=mysql_query(
+            "select serialized_values
+            from session_variables where session_variables_name=\"$svkey\" and
+            users_uid=(select users_uid from users
+            where users_name='$sql_user')"
+        );
+        if (mysql_num_rows($result)>0) {
+            $row = mysql_fetch_assoc($result);
+            $str = base64_decode($row['serialized_values']);
+            $vals = unserialize($str);
+            return $vals;
+        }
     }
-  }
-  return -1;
+    return -1;
+}
+
+/**
+ * clear saved session variables for a user
+ *
+ * @param string $user user_name
+ *
+ * @return null
+ */
+function clearSessionVariables($user)
+{
+    global $mysqli;
+    if (isset($user) && strlen($user)>1) {
+        ($stmt = $mysqli->prepare("select users_uid from users where users_name=?")) or
+            die("Error: $mysqli->error");
+        $stmt->bind_param("s", $user);
+        ($stmt->execute()) or
+            die("Error: $stmt->error");
+        $stmt->bind_result($user_uid);
+        $stmt->fetch();
+        $stmt->close();
+        ($stmt = $mysqli->prepare("delete from session_variables where users_uid = ?")) or
+            die("Error: $mysqli->error"); 
+        $stmt->bind_param("i", $user_uid);
+        ($stmt->execute()) or
+            die("Error: $stmt->error");
+        $stmt->close();
+    } else {
+        die("Error: invalid user\n");
+    }
 }
 
 ?>
