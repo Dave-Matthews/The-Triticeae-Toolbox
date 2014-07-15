@@ -158,52 +158,48 @@ function showTableOptions($table, $selected="null", $orderby="uid") {
  * This function gets the primary key by querying the database
  * and then selecting the first field name in the database. That name
  * is always the primary key according to our database scheme
- *
  * @param $tablename - the table of which to get the primary key of.
  * @param $pkey - the primary key of the table
  */
 function get_pkey ($tablename) {
-
-	$result = mysql_query("DESC $tablename");
-	$pkey="";
-
-	while($row = mysql_fetch_assoc($result)) {
-		foreach($row as $k=>$v) {
-			if (strtolower($k)=='field') {
-				$pkey=$v;
-			}
-			break;
-		}
-		break;
-	}
-	return $pkey;
+  $result = mysql_query("DESC $tablename") or die("Error in includes/common.inc:get_pkey():<br>".mysql_error().
+"<br>Query was: 'DESC ".$tablename."'");
+  $pkey="";
+  while($row = mysql_fetch_assoc($result)) {
+    foreach($row as $k=>$v) {
+      if (strtolower($k)=='field') 
+	$pkey=$v;
+      break;
+    }
+    break;
+  }
+  return $pkey;
 }
 
 /**
  * This function gets the unique name of the table that we have set 
  * a standard to be. It looks at the table creation string and finds
  * the first field with "name" in it. Pretty simple.
- *
  * @param $table - the table of which to search through.
  * @return the unique name field.
- *
  */
 function get_unique_name($table) {
-
-	$q = mysql_query("SHOW CREATE TABLE $table") or die(mysql_error());
-	$row = mysql_fetch_row($q);
-	
-	$parts = explode("\n", $row[1]);
-
-	for($i = 2; $i<count($parts); $i++) {
-
-	  // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
-	  // if(preg_match("/_name/", $parts[$i], $matches)) {
-	  if(preg_match("/name/", $parts[$i], $matches)) {
-			$line = explode("`", $parts[$i]);
-			return $line[1];
-		}
-	}
+  // dem feb13: ugly special case:
+  if ($table == "experiments")
+    return "trial_code";
+  else {
+    $q = mysql_query("SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>".mysql_error());
+    $row = mysql_fetch_row($q);
+    $parts = explode("\n", $row[1]);
+    for($i = 2; $i<count($parts); $i++) {
+      // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
+      // if(preg_match("/_name/", $parts[$i], $matches)) {
+      if(preg_match("/name/", $parts[$i], $matches)) {
+	$line = explode("`", $parts[$i]);
+	return $line[1];
+      }
+    }
+  }
 }
 
 /**
@@ -474,81 +470,63 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
  *
  * @param array $values - this MUST be an associative array containing every key
  *			  and value that the programmer would like to update. 
- * 
  *	  Note: The keys in the $values array MUST have the same name as the field names
  *		in the table.
- *
  * @param $table - the name of the table of which to query. 
- *
- * @param $pkey - this MUST be an associative array who's keys are the primary key's
- *		  column name in the table and who's value is the unique value that
+ * @param $pkey - this MUST be an associative array whose keys are the primary key's
+ *		  column name in the table and whose value is the unique value that
  * 		  defines the particular row in the table to update. 
- *
  * @return TRUE if the query was successful or FALSE otherwise. If FALSE then an 
  * 	   error message is echoed containing the mysql_error(). 
- *
  * Note: The update query utilizes LIMIT 1 forcing the query to update only 1 row.
  */
 function updateTable(array $values, $table, array $pkey) {
-
-	$updateStr = "UPDATE $table SET ";
-	$strs = array();
-	$count = 0;
-
-	// get table fields
-	$cols = getTableColumns($table);
-	
-	// set values if they exist
-	foreach($cols as $column=>$type) {
-
-		// if the column name is in the $values array, then we want to update it
-		if(array_key_exists($column, $values)) {
-		
- 		  if ( (strpos($type, "enum") !== FALSE) && ($values[$column] != "") ) {
-		      // Get allowed values for enum columns.
-		      $allowed = preg_replace("/enum|[\\(\\)']/", "", $type);
- 		      if ( in_array($values[$column], explode(",", $allowed)) === FALSE )
-			echo "<font color=red>Allowed values of $column are $allowed.</font><br><br>";
-		  }
-
-		  if( (strpos($type, "varchar") !== FALSE) || 
-		      (strpos($type, "longtext") !== FALSE) ||
-		      // (strpos($type, "enum") !== FALSE) ||   No. If there's no value, can't set an enum to ''.
-		      ($values[$column] != "")
-		      )
-		    $strs[$count++] = "$column = '" . $values[$column] . "'";
-
-		  elseif ( (strpos($type, "enum") !== FALSE) && ($values[$column] == "") )
-		    $strs[$count++] = "$column = NULL";
-
-		  else    //default 0 for numberic fields with empty values
-		    $strs[$count++] = "$column = 0";	
-		}
-	}
-
-	// deal with primary key
-	$where = "";
-	$first = 0;
-	foreach($pkey as $k=>$v) {
-		if($first == 0)
-			$where .= "$k='$v'";
-		else
-			$where .= " AND $k='$v'";	//multiple keys
-
-		$first++;
-	}
-
-	// put the update string together
-	$updateStr .= implode(",", $strs) . " WHERE $where LIMIT 1";
-
-	// query	
-	if(mysql_query($updateStr)) 
-		return TRUE;
-	else {
-		error(1, mysql_error()."<br>".$updateStr);
-		return FALSE;
-	}
-
+  $updateStr = "UPDATE $table SET ";
+  $strs = array();
+  $count = 0;
+  // get table fields
+  $cols = getTableColumns($table);
+  // set values if they exist
+  foreach($cols as $column=>$type) {
+    // if the column name is in the $values array, then we want to update it
+    if(array_key_exists($column, $values)) {
+      if ( (strpos($type, "enum") !== FALSE) && ($values[$column] != "") ) {
+	// Get allowed values for enum columns.
+	$allowed = preg_replace("/enum|[\\(\\)']/", "", $type);
+	if ( in_array($values[$column], explode(",", $allowed)) === FALSE )
+	  echo "<font color=red>Allowed values of $column are $allowed.</font><br><br>";
+      }
+      if( (strpos($type, "varchar") !== FALSE) || 
+	  (strpos($type, "longtext") !== FALSE) ||
+	  // (strpos($type, "enum") !== FALSE) ||   No. If there's no value, can't set an enum to ''.
+	  ($values[$column] != "")
+	  )
+	$strs[$count++] = "$column = '" . $values[$column] . "'";
+      elseif ( (strpos($type, "enum") !== FALSE) && ($values[$column] == "") )
+	$strs[$count++] = "$column = NULL";
+      else    //default 0 for numeric fields with empty values
+	$strs[$count++] = "$column = 0";	
+    }
+  }
+  // deal with primary key
+  $where = "";
+  $first = 0;
+  foreach($pkey as $k=>$v) {
+    if($first == 0)
+      $where .= "$k='$v'";
+    else
+      $where .= " AND $k='$v'";	//multiple keys
+    $first++;
+  }
+  // put the update string together
+  $updateStr .= implode(",", $strs) . " WHERE $where LIMIT 1";
+  // query	
+  if(mysql_query($updateStr)) 
+    return TRUE;
+  else {
+    error(1, mysql_error()."<br>The query was:<br>".$updateStr."</br>in function updateTable().<p>");
+    return FALSE;
+  }
 }
 
 /**
@@ -696,7 +674,7 @@ function clean_up_temporary($tmpdir) {
  * 
  */
 function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $start="0") {
-	
+
 	//get the primary key of this table
 	$pkey = get_pkey($table);
 
@@ -777,7 +755,8 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 	 	 * Generate Edit Output
 		 */
 		// Enable the Delete option only for tables that have good foreign key constraints to prevent orphan data.
-		if ($table == 'CAPdata_programs')
+		/* if ($table == 'CAPdata_programs') */
+		if (in_array($table, array('CAPdata_programs', 'phenotypes')))
 		  $deletebutton = "<button type='submit' name='Delete' value='$row[$pkey]' disabled>Delete</button>";
 		$line = "
 		<tr><form name=\"$table$count\" id=\"$table$count\" action=\"$return_page\" method=\"post\">
@@ -831,7 +810,7 @@ function showPages($queryString, $page, $current=0, $limit=20) {
 
 	$query = mysql_query("
 			$queryString
-			") or die(mysql_error());
+			") or die(mysql_error() . "<br>Query was:<br>" . $queryString);
 
 	$max = mysql_num_rows($query);
 
@@ -1165,61 +1144,96 @@ function displayTableConvert($query, $sortable=FALSE, $lookup) {
 /* Modified version of displayTable(), to output phenotype values with
  * truncation according to units.sigdigits_display.  DEM 11aug10
  */
-
 function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
-
-	$tables = array();
-	/* $ret = "\n<table class='tableclass1'>\n"; */
-	$ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n";
-
-	$first = TRUE;
-	while($row = mysql_fetch_assoc($query)) {
-		if($first) {
-		  $ret .= "<thead>\n";
-			foreach($row as $k=>$v) {
-				
-				if(strpos($k, "_name") !== FALSE)
-					$tables[$k] = getTableByName($k);
-
-				$ret .= "<td><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
-
-				if($sortable) {
-					unset($_GET['sortby']);
-					unset($_GET['sorttype']);
-
-					$ret .= " <br />
-						  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=ASC'>Up</a> - 
-					          <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=DESC'>Down</a>";
-
-				}
-
-				$ret .= "</td>\n";
-			}
-			$ret .= "</tr></thead>\n<tbody>\n";
-			$first = FALSE;
-		}
-
-		$ret .= "\n<tr>\n";
-		foreach($row as $k=>$v) {
-			if(isset($tables[$k])) {
-				$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
-			}
-			if(strcmp($k,"trial_code") == 0) {
-			  $v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
-			}
-                        if(strcmp($k,"value") == 0 && $sigdig>=0) {
-                                $v = number_format($v,$sigdig);
-                        }
-			$ret .= "\t<td>$v</td>\n";
-		}
-
-		$ret .= "\n</tr>\n";
-
+  $tables = array();
+  /* $ret = "\n<table class='tableclass1'>\n"; */
+  $ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n";
+  $first = TRUE;
+  while($row = mysql_fetch_assoc($query)) {
+    // header
+    if($first) {
+      $ret .= "<thead>\n";
+      foreach($row as $k=>$v) {
+	if(strpos($k, "_name") !== FALSE)
+	  $tables[$k] = getTableByName($k);
+	$ret .= "<td><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
+	if($sortable) {
+	  unset($_GET['sortby']);
+	  unset($_GET['sorttype']);
+	  $ret .= " <br />
+	  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=ASC'>Up</a> - 
+          <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=DESC'>Down</a>";
 	}
+	$ret .= "</td>\n";
+      }
+      $ret .= "</tr></thead>\n<tbody>\n";
+      $first = FALSE;
+    }
+    $ret .= "\n<tr>\n";
+    // table body contents
+    foreach($row as $k=>$v) {
+      if(isset($tables[$k])) 
+	$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+      if(strcmp($k,"trial_code") == 0) 
+	$v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
+      if(strcmp($k,"value") == 0 && $sigdig>=0) 
+	$v = number_format($v,$sigdig);
+      $ret .= "\t<td>$v</td>\n";
+    }
+    $ret .= "\n</tr>\n";
+  }
+  $ret .= "</tbody>\n</table></div>\n";
+  return $ret;
+}
 
-	$ret .= "</tbody>\n</table></div>\n";
-
-	return $ret;
+/* Modified version of displayTableSigdig(), to output phenotype values with
+ * truncation to a fixed number of decimal points regardless of units.sigdigits_display.
+ * Not a great solution. DEM 16dec2013
+ * Used by phenotype/show.php?line=<line_record_uid>.
+ */
+function displayLinePheno($query, $sortable=TRUE, $sigdig, $link="") {
+  $tables = array();
+  /* $ret = "\n<table class='tableclass1'>\n"; */
+  /* $ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n"; */
+  $ret = "\n<div style='max-height: 500px; overflow: auto'><table>\n";
+  $first = TRUE;
+  while($row = mysql_fetch_assoc($query)) {
+    // header
+    if($first) {
+      $ret .= "<thead>\n";
+      foreach($row as $k=>$v) {
+	if(strpos($k, "_name") !== FALSE)
+	  $tables[$k] = getTableByName($k);
+	$ret .= "<th><strong>".ucwords(str_replace("_", " ", $k))."</strong>";
+	if($sortable) {
+	  unset($_GET['sortby']);
+	  unset($_GET['sorttype']);
+	  $ret .= " <br />
+	  <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=ASC'>Up</a> -
+          <a href='". $_SERVER['PHP_SELF'] ."?". kvimplode("&", $_GET) ."&sortby=$k&sorttype=DESC'>Down</a>";
+	}
+	$ret .= "</th>\n";
+      }
+      $ret .= "</tr></thead>\n<tbody>\n";
+      $first = FALSE;
+    }
+    $ret .= "\n<tr>\n";
+    // table body contents
+    foreach($row as $k=>$v) {
+      if(isset($tables[$k])) 
+	$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+      if(strcmp($k,"Trait") == 0) 
+	$v = "<a href=\"view.php?table=phenotypes" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+      if(strcmp($k,"Trial") == 0) 
+	$v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
+      if(strcmp($k,"value") == 0 && $sigdig>=0) 
+	$v = number_format($v,$sigdig);
+      $ret .= "\t<td>$v</td>\n";
+    }
+    $ret .= "\n</tr>\n";
+  }
+  $ret .= "</tbody>\n</table></div>\n";
+  return $ret;
 }
 
 
@@ -1359,22 +1373,54 @@ where users_name='$sql_users_name'";
   return 1;
 }
 
-function retrieve_session_variables($svkey, $user) {
-  if (isset($svkey) && strlen($svkey) > 0 && isset($user) &&
-      strlen($user)>1) {
-    $sql_user = mysql_real_escape_string($user);
-    $result=mysql_query("select serialized_values
-from session_variables where session_variables_name=\"$svkey\" and
-users_uid=(select users_uid from users
-where users_name='$sql_user')");
-    if(mysql_num_rows($result)>0) {
-      $row = mysql_fetch_assoc($result);
-      $str = base64_decode($row['serialized_values']);
-      $vals = unserialize($str);
-      return $vals;
+function retrieve_session_variables($svkey, $user)
+{
+    if (isset($svkey) && strlen($svkey) > 0 && isset($user) && strlen($user)>1) {
+        $sql_user = mysql_real_escape_string($user);
+        $result=mysql_query(
+            "select serialized_values
+            from session_variables where session_variables_name=\"$svkey\" and
+            users_uid=(select users_uid from users
+            where users_name='$sql_user')"
+        );
+        if (mysql_num_rows($result)>0) {
+            $row = mysql_fetch_assoc($result);
+            $str = base64_decode($row['serialized_values']);
+            $vals = unserialize($str);
+            return $vals;
+        }
     }
-  }
-  return -1;
+    return -1;
+}
+
+/**
+ * clear saved session variables for a user
+ *
+ * @param string $user user_name
+ *
+ * @return null
+ */
+function clearSessionVariables($user)
+{
+    global $mysqli;
+    if (isset($user) && strlen($user)>1) {
+        ($stmt = $mysqli->prepare("select users_uid from users where users_name=?")) or
+            die("Error: $mysqli->error");
+        $stmt->bind_param("s", $user);
+        ($stmt->execute()) or
+            die("Error: $stmt->error");
+        $stmt->bind_result($user_uid);
+        $stmt->fetch();
+        $stmt->close();
+        ($stmt = $mysqli->prepare("delete from session_variables where users_uid = ?")) or
+            die("Error: $mysqli->error"); 
+        $stmt->bind_param("i", $user_uid);
+        ($stmt->execute()) or
+            die("Error: $stmt->error");
+        $stmt->close();
+    } else {
+        die("Error: invalid user\n");
+    }
 }
 
 ?>
