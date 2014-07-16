@@ -316,6 +316,7 @@ private function typeExperimentCheck()
                    <input id="replace" type="hidden" name="replace" value="Yes">
                    <input id="filename0" type="hidden" name="filename0" value="<?php echo $filename0; ?>">
                    <input type="submit" value="Yes">
+                   <input type="Button" value="Cancel" onclick="history.go(-1); return;"/>
                    </form>
                    <?php
        } else {
