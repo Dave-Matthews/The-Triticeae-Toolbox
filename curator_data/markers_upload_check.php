@@ -509,7 +509,7 @@ class Markers_Check
             echo "<font color=red>Error: marker(s) removed from import because sequence duplicates previous entry</font><br>$marker_seq_dup<br><br>\n";
         }
         if (($marker_seq_dup == "") && ($marker_name_dup == "")) {
-            echo "No duplicate names or sequences withing import file\n";
+            echo "No duplicate names or sequences within import file\n";
         }
     }
 
@@ -981,33 +981,28 @@ class Markers_Check
         fclose($reader); 
         ?>
         <h3>Options</h3>
-        If the marker names have not been published or do not have mapping data,
-            then check "Yes" to add marker as synonym.<br>
-        <?php 
-        if ($fileFormat == 0) {
-            echo "If a reference genome is used to anchor, order, or orient the contigs,
-            then check \"No\" to order alleles alphabetically.<br>";
-        }
-        ?>
         <table>
-        <tr><td>When sequence matches add marker as synonym 
-        <td><input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
+	  <tr>
+            <td><input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
             > No
         <input type=radio name="check_seq" id="use_imp" value="imp" <?php echo $checked_imp ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
             > Yes
-        <td rowspan=2>
+	    <td>If the sequence matches, add the marker as a synonym.<br>
+              Check <b>Yes</b> unless the marker names have been published or have mapping data.
         <?php
         if ($fileFormat == 0) {
         ?>
-        <tr><td>Order A and B alleles alphabetically
+        <tr>
         <td><input type=radio name="check_ord" id="order_no" value="no" <?php echo $order_no ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
             > No
         <input type=radio name="check_ord" id="order_yes" value="yes" <?php echo $order_yes ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
            > Yes
+	<td>Order A and B alleles alphabetically.<br>
+	  Check <b>Yes</b> unless a reference genome sequence was used to anchor the markers.
         <?php
         }
         ?>
@@ -1016,29 +1011,29 @@ class Markers_Check
         <?php
         if ($overwrite) {
           ?>
-          <ol><li>Compare marker name in the import file to entries in the database</li>
-            <ul><li>If marker name found in database then update the database entry</li>
-                <li>If marker name not found in database then compare the marker sequence to entries in the database</li>
-                <ul><li>If marker sequence found in database then add marker as synonym
-                    <li>If marker sequence not found in database then add new marker to the  database<br>
+          <ul>The marker name in the import file is compared to pre-existing markers.
+            <ul><li>If found, the database entry will be updated.</li>
+                <li>Otherwise the marker sequence is compared to pre-existing markers.</li>
+	    <ul><li>If found, the marker will be added as a synonym.
+                    <li>Otherwise the new marker will be added.<br>
                 </ul>
            </ul>
           
         <?php
         } else {
           ?>
-          <ol><li>Compare marker name in the import file to entries in the database</li>
-            <ul><li>If marker name found in database then update the database entry</li>
-                <li>If marker name not found in database then add new marker to the database<br>
+          <ul>The marker name in the import file is compared to pre-existing markers.
+            <ul><li>If found, the database entry will be updated.</li>
+                <li>Otherwise the new marker will be added.<br>
             </ul>
          
           <?php
         }
-        if ($orderAllele) {
-            echo "<li>Order A and B alleles alphabetically";
-        }
-        echo "<li>Check duplicates within import file</li>";
-        echo "</ol>";
+        /* if ($orderAllele) { */
+        /*     echo "<li>Order A and B alleles alphabetically"; */
+        /* } */
+        /* echo "<li>Check duplicates within import file</li>"; */
+        echo "</ul>";
         echo "<h3>Results</h3>\n";
         if ($overwrite) {
             $numMatch = $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
