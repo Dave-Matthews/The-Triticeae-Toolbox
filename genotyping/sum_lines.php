@@ -162,8 +162,6 @@ if (isset($_GET['uid'])) {
   echo "\n";
 } else {
     echo "<h2>Allele Conflicts between experiments by Line</h2>\n";
-    echo "Select the link for each line name to view the conflicts between experiments and by marker.<br>";
-    echo "When there are more than 2 experiments the values are for the experiments that have the largest percentage of conflicts.<br>\n";
 
     // Update cache table if necessary. Empty?
     if(mysql_num_rows(mysql_query("select line_record_uid from allele_duplicates")) == 0)
@@ -187,10 +185,22 @@ if (isset($_GET['uid'])) {
        exec("php update-conflicts.php > /dev/null &");
     }
 
+    if (isset($_SESSION['selected_lines'])) {
+        $selectedlines = $_SESSION['selected_lines'];
+        $count = count($selectedlines);
+        echo "Only displaying lines from saved selection or $count lines.<br>\n";
+        $lines_str = implode (",", $selectedlines);
+        $sql = "select line_record_uid, duplicates, conflicts, percent_conf
+        from allele_duplicates where line_record_uid IN ($lines_str)
+        order by percent_conf DESC";
+    } else {
+        $sql = "select line_record_uid, duplicates, conflicts, percent_conf
+        from allele_duplicates order by percent_conf DESC";
+    }
+    echo "Select the link for each line name to view the conflicts between experiments and by marker.<br>";
+    echo "When there are more than 2 experiments the values are for the experiments that have the largest percentage of conflicts.<br>\n";
     echo "<table>";
     echo "<tr><td>line name<td>conflicts<td>comparisons<td>percent<br>conflicts\n";
-    $sql = "select line_record_uid, duplicates, conflicts, percent_conf
-      from allele_duplicates order by percent_conf DESC";
     $result = mysql_query($sql) or die(mysql_error());
     while ($row=mysql_fetch_row($result)) {
        $uid = $row[0];

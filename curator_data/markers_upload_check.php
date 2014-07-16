@@ -26,6 +26,7 @@ require 'config.php';
  */
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require $config['root_dir'] . 'curator_data/lineuid.php';
+set_time_limit(3000);
 
 connect();
 loginTest();
@@ -91,23 +92,24 @@ class Markers_Check
     {
         global $config;
         include $config['root_dir'] . 'theme/admin_header.php';
-        ?>
-        <h2>Enter/Update Markers: Validation</h2>
-        If the marker name has not been published or does not have mapping data,<br>
-        then check "Yes" to add marker as synonym.
-        <h3>Check import file</h3>
-        <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-        <script type="text/javascript" src="curator_data/marker01.js"></script>
-        <div id=update></div>
-        <div id=checksyn>
-        <?php
+        if ($_FILES['file']['name'][0] != "") {
+            echo "<h2>Marker Annotation</h2>";
+        } else {
+            ?>
+            <h2>Enter/Update Markers: Validation</h2>
+            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+            <script type="text/javascript" src="curator_data/marker02.js"></script>
+            <div id=update></div>
+            <div id=checksyn>
+            <?php
                 //echo "The import scrip first check if the marker name is in the databae. ";
                 //echo "If no matching name is found then it will check if the marker sequence";
                 //echo "  matches an entry in the database.";
+        }
 
         $infile = $_GET['linedata'];
         if ($_FILES['file']['name'][0] != "") {
-            $this->type_MarkersAnnot();
+            $this->_typeMarkersAnnot();
         } elseif ( $_FILES['file']['name'][1] != "") {
             $this->type_LoadFile1();
         } elseif ( $infile != "") {
@@ -177,12 +179,13 @@ class Markers_Check
             echo "Error creating change file $change_file<br>\n";
         }
         fwrite($fh, "name\torig/cor\tA_allele\tB_allele\tsequence\n");
+        //look for the case where A and B allele are reversed
         $limit = count($storageArr);
         for ($i = 1; $i <= $limit; $i++) {
             $found = 0;
             $name = $storageArr[$i][$nameIdx];
             $allele = array($storageArr[$i][$alleleAIdx], $storageArr[$i][$alleleBIdx]);
-            $allele_sort = array($storageArr[$i][$alleleAIdx], $storageArr[$i][$alleleBIdx]);
+            $allele_sort = $allele;
             if (!sort($allele_sort)) {
                 echo "Error in sorting alleles\n";
             }
@@ -217,8 +220,33 @@ class Markers_Check
         echo "</table>";
     }
 
+    function revCmp($seq)
+    {
+        $seq = strrev($seq);
+        // change the sequence to upper case
+        $seq = strtoupper ($seq);
+        // the system used to get the complementary sequence is simple but fas
+        $seq=str_replace("A", "t", $seq);
+        $seq=str_replace("T", "a", $seq);
+        $seq=str_replace("G", "c", $seq);
+        $seq=str_replace("C", "g", $seq);
+        $seq=str_replace("Y", "r", $seq);
+        $seq=str_replace("R", "y", $seq);
+        $seq=str_replace("W", "w", $seq);
+        $seq=str_replace("S", "s", $seq);
+        $seq=str_replace("K", "m", $seq);
+        $seq=str_replace("M", "k", $seq);
+        $seq=str_replace("D", "h", $seq);
+        $seq=str_replace("V", "b", $seq);
+        $seq=str_replace("H", "d", $seq);
+        $seq=str_replace("B", "v", $seq);
+        // change the sequence to upper case again for output
+        $seq = strtoupper ($seq);
+        return $seq;
+    }
+
     /**
-     * check for check name and sequence matches
+     * check database for name and sequence matches 
      *
      * @param array   &$storageArr contents of import file
      * @param string  $nameIdx     index of name column
@@ -234,47 +262,54 @@ class Markers_Check
         $infile = $_GET['linedata'];
         $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
         $tPath = str_replace('./', '', $target_Path);
-        $change_file = $tPath . "markerProc2.out";
-        if (($fh = fopen($change_file, "w")) == false) {
-            echo "Error creating change file $change_file<br>\n";
+        $change_file2 = $tPath . "markerProc2.out";
+        $change_file3 = $tPath . "markerProc3.out";
+        $change_file4 = $tPath . "markerProc4.out";
+        if (($fh2 = fopen($change_file2, "w")) == false) {
+            echo "Error creating change file $change_file2<br>\n";
         }
-
+        if (($fh3 = fopen($change_file3, "w")) == false) {
+            echo "Error creating change file $change_file3<br>\n";
+        }
+        if (($fh4 = fopen($change_file4, "w")) == false) {
+            echo "Error creating change file $change_file4<br>\n";
+        }
         $sql = "select marker_uid, value from marker_synonyms";
         $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
         while ($row = mysql_fetch_assoc($res)) {
             $name = $row['value'];
             $marker_syn_list[$name] = 1;
         }
-    //look for the case where A and B allele are reversed
-    $pheno_uid = 1;
+        //convert SNP to IUPAC Ambiguity Code before checking for sequence matches
+        $pheno_uid = 1;
         $sql = "select marker_name, sequence from markers where sequence is not NULL";
         $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
         while ($row = mysql_fetch_assoc($res)) {
-           $name = $row['marker_name'];
-           $seq = strtoupper($row['sequence']);
-           if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
-               $allele = $match[2] . $match[3];
-               if (($allele == "AC") || ($allele == "CA")) {
-                 $allele = "M";
-               } elseif (($allele == "AG") || ($allele == "GA")) {
-                 $allele = "R";
-               } elseif (($allele == "AT") || ($allele == "TA")) {
-                 $allele = "W";
-               } elseif (($allele == "CG") || ($allele == "GC")) {
-                 $allele = "S";
-               } elseif (($allele == "CT") || ($allele == "TC")) {
-                 $allele = "Y";
-               } elseif (($allele == "GT") || ($allele == "TG")) {
-                 $allele = "K";
-               } else {
-                 echo "bad SNP in database<br>$name<br>$allele<br>\n";
-               }
-               $seq = $match[1] . $allele . $match[4];
-               $marker_name[$name] =  1;
-               $marker_seq[$seq] = $name;
-           } else {
-               //echo "bad sequence in database<br>$name<br>$seq<br>\n";
-           }
+            $name = $row['marker_name'];
+            $seq = strtoupper($row['sequence']);
+            if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
+                $allele = $match[2] . $match[3];
+                if (($allele == "AC") || ($allele == "CA")) {
+                    $allele = "M";
+                } elseif (($allele == "AG") || ($allele == "GA")) {
+                    $allele = "R";
+                } elseif (($allele == "AT") || ($allele == "TA")) {
+                    $allele = "W";
+                } elseif (($allele == "CG") || ($allele == "GC")) {
+                    $allele = "S";
+                } elseif (($allele == "CT") || ($allele == "TC")) {
+                    $allele = "Y";
+                } elseif (($allele == "GT") || ($allele == "TG")) {
+                    $allele = "K";
+                } else {
+                    echo "bad SNP in database<br>$name<br>$allele<br>\n";
+                }
+                $seq = $match[1] . $allele . $match[4];
+                $marker_name[$name] =  1;
+                $marker_seq[$seq] = $name;
+            } else {
+                //echo "bad sequence in database<br>$name<br>$seq<br>\n";
+            }
         }
         $count_dup_name = 0;
         $dup_name_results = "";
@@ -284,7 +319,9 @@ class Markers_Check
         $count_insert = 0;
         $count_add_syn = 0;
         $results = "<thead><tr><th>marker<th>match by name<th>match by sequence<th>database change</thead>\n";
-        fwrite($fh, "marker\tmatch by name\tmatch by sequence\tdatabase change\n");
+        fwrite($fh2, "marker\tmatch by name\tmatch by sequence\tdatabase change\n");
+        fwrite($fh3, "marker\tmatch by name\tmatch by sequence\tdatabase change\n");
+        fwrite($fh4, "marker\tmatch by name\tmatch by sequence\tdatabase change\n");
         $limit = count($storageArr);
         for ($i = 1; $i <= $limit; $i++) {
             $name = $storageArr[$i][$nameIdx];
@@ -294,12 +331,12 @@ class Markers_Check
             $found_seq_name = "";
             $seq_match = "";
             if (preg_match("/[A-Za-z0-9]/", $name)) {
-               if (isset($marker_name[$name]) || isset($marker_syn_list[$name])) {
-                  $found_name = 1;
-                  $name_match = "yes";
-                  $count_dup_name++;
+                if (isset($marker_name[$name]) || isset($marker_syn_list[$name])) {
+                    $found_name = 1;
+                    $name_match = "yes";
+                    $count_dup_name++;
                 } else {
-                  $name_match = "";
+                    $name_match = "";
                 }
             } else {
                 echo "Error: bad name $name line $i<br>\n";
@@ -308,24 +345,24 @@ class Markers_Check
                 $count_total++;
                 $allele = $match[2] . $match[3];
                 if (($allele == "AC") || ($allele == "CA")) {
-                  $allele = "M";
+                    $allele = "M";
                 } elseif (($allele == "AG") || ($allele == "GA")) {
-                  $allele = "R";
+                    $allele = "R";
                 } elseif (($allele == "AT") || ($allele == "TA")) {
-                  $allele = "W";
+                    $allele = "W";
                 } elseif (($allele == "CG") || ($allele == "GC")) {
-                  $allele = "S";
+                    $allele = "S";
                 } elseif (($allele == "CT") || ($allele == "TC")) {
-                  $allele = "Y";
+                    $allele = "Y";
                 } elseif (($allele == "GT") || ($allele == "TG")) {
-                  $allele = "K";
+                    $allele = "K";
                 } else {
-                  echo "bad SNP in import file<br>$name<br>$allele<br>\n";
+                    echo "bad SNP in import file<br>$name<br>$allele<br>\n";
                 }
                 $seq = $match[1] . $allele . $match[4];
                 if (isset($marker_seq[$seq]) && ($marker_seq[$seq] != $name)) {
-                  $found_seq = 1;
-                  $found_seq_name = $marker_seq[$seq];
+                    $found_seq = 1;
+                    $found_seq_name = $marker_seq[$seq];
                 }
                 //if sequence match found then change name in import file
                 //if more than one match found then latest one will be used
@@ -333,25 +370,14 @@ class Markers_Check
                     $storageArr[$i]["syn"] = $found_seq_name;
                 }
                 if ($found_seq) {
-                  if ($seq_match == "") {
-                    $seq_match = $found_seq_name;
-                  } else {
-                    $seq_match = $seq_match . ", $found_seq_name";
-                  }
+                    if ($seq_match == "") {
+                        $seq_match = $found_seq_name;
+                    } else {
+                        $seq_match = $seq_match . ", $found_seq_name";
+                    }
                 }
             } else {
                 echo "bad sequence $seq<br>\n";
-            }
-            // now check for duplicate in import file
-            if (isset($marker_seq_import[$seq])) {
-                $marker_seq_dup = $marker_seq_dup . "$name ";
-            } else {
-                $marker_seq_import[$seq] = $name;
-            }
-            if (isset($marker_name_import[$name])) {
-                $marker_name_dup = $marker_name_dup . "$name ";
-            } else {
-                $marker_name_import[$name] = 1;
             }
 
             if ($found_seq) {
@@ -360,26 +386,31 @@ class Markers_Check
                     if ($found_name) {
                         $count_update++;
                         $action = "update marker";
+                        fwrite($fh2, "$name\t$name_match\t$seq_match\t$action\n");
                     } else {
                         $count_add_syn++;
                         $action = "add synonym";
+                        fwrite($fh4, "$name\t$name_match\t$seq_match\t$action\n");
                     }
                 } elseif ($found_name) {
                     $count_update++;
                     $action = "update marker";
+                    fwrite($fh2, "$name\t$name_match\t$seq_match\t$action\n");
                 } else {
                     $count_insert++;
                     $action = "add marker";
+                    fwrite($fh3, "$name\t$name_match\t$seq_match\t$action\n");
                 }
             } elseif ($found_name) {
                     $count_update++;
                     $action = "update marker";
+                    fwrite($fh2, "$name\t$name_match\t$seq_match\t$action\n");
             } else {
                     $count_insert++;
                     $action = "add marker";
+                    fwrite($fh3, "$name\t$name_match\t$seq_match\t$action\n");
             }
             $results .= "<tr><td>$name<td>$name_match<td><font color=blue>$seq_match</font><td>$action\n";
-            fwrite($fh, "$name\t$name_match\t$seq_match\t$action\n");
         }
         if ($expand == 1) {
             $display1 = "display:none;";
@@ -389,14 +420,14 @@ class Markers_Check
             $display2 = "display:none;";
         }
         if ($limit < 1000) {
-        ?>
-          <table><tr><td>
-          <a class="collapser" id="on_switch<?php echo $pheno_uid; ?>" style="<?php echo $display1; ?> border-bottom:none" onclick="javascript:disp_index(<?php echo $pheno_uid;?>);return false;">
-          <img src="images/collapser_plus.png" /> Expand</a>
-          <a class="collapser" id="off_switch<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?> border-bottom:none" onclick="javascript:hide_index(<?php echo $pheno_uid;?>);return false;">
-          <img src="images/collapser_minus.png"/> Compress</a>
-          </table>
-          <?php
+            ?>
+            <table><tr><td>
+            <a class="collapser" id="on_switch<?php echo $pheno_uid; ?>" style="<?php echo $display1; ?> border-bottom:none" onclick="javascript:disp_index(<?php echo $pheno_uid;?>);return false;">
+            <img src="images/collapser_plus.png" /> Expand</a>
+            <a class="collapser" id="off_switch<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?> border-bottom:none" onclick="javascript:hide_index(<?php echo $pheno_uid;?>);return false;">
+            <img src="images/collapser_minus.png"/> Compress</a>
+            </table>
+            <?php
         }
         ?>
         <table id="content1<?php echo $pheno_uid; ?>" style="<?php echo $display1; ?>">
@@ -408,7 +439,9 @@ class Markers_Check
         if ($overwrite) {
             echo "$count_add_syn add synonym\n";
         }
-        echo "<td><a href=\"curator_data/$change_file\" target=\"_new\">Download Database Changes</a>\n";
+        echo "<td><a href=\"curator_data/$change_file2\" target=\"_new\">Download Update Changes</a>\n";
+        echo "<br><a href=\"curator_data/$change_file3\" target=\"_new\">Download Add Marker Changes</a>\n";
+        echo "<br><a href=\"curator_data/$change_file4\" target=\"_new\">Download ADD Synonym Changes</a>\n";
         ?></table>
         <table id="content2<?php echo $pheno_uid; ?>" style="<?php echo $display2; ?>">
         <?php
@@ -418,34 +451,86 @@ class Markers_Check
             echo "<tr><td>Too many entries, please download.";
         }
         echo "</table>";
-        if ($marker_name_dup != "") {
-            echo "<font color=red>Error: marker name duplicated within import file</font><br>$marker_name_dup<br><br>\n";
-        }
-        if ($marker_seq_dup != "") {
-            echo "<font color=red>Error: marker sequence duplicated within import file</font><br>$marker_seq_dup<br><br>\n";
-        }
-        fclose($fh);
+        fclose($fh2);
+        fclose($fh3);
+        fclose($fh4);
         $pheno_uid = 2;
         $change["update"] = $count_update;
         $change["insert"] = $count_insert;
         $change["dupSeq"] = $count_dup_seq;
         $change["addSyn"] = $count_add_syn;
         return $change;
-}
-	
-//**************************************************************
- 	private function type_MarkersAnnot() {
-	?>
-	<script type="text/javascript">
+    }
+
+    /**
+     * check import file for name and sequence matches 
+     *
+     * @param array   &$storageArr contents of import file
+     * @param string  $nameIdx     index of name column
+     * @param integer $sequenceIdx index of sequence column
+     * @param bolean  $overwrite   change the contents of import
+     * @param bolean  $expand      expand listing of results
+     *
+     * @return null
+     */
+    function typeCheckImport(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand)
+    {
+        $limit = count($storageArr);
+        $marker_seq_dup = "";
+        $marker_name_dup = "";
+        for ($i = 1; $i <= $limit; $i++) {
+            $name = $storageArr[$i][$nameIdx];
+            $seq = strtoupper($storageArr[$i][$sequenceIdx]);
+            if (isset($marker_seq_import[$seq])) {
+                if ($marker_seq_dup == "") {
+                    $marker_seq_dup = $name;
+                } else {
+                    $marker_seq_dup = $marker_seq_dup . ", $name";
+                }
+                $storageArr[$i]["syn"] = "skip duplicate seq";;
+            } else {
+                $marker_seq_import[$seq] = $name;
+            }
+            if (isset($marker_name_import[$name])) {
+                if ($marker_name_dup == "") {
+                    $marker_name_dup = $name;
+                } else {
+                    $marker_name_dup = $marker_name_dup . ", $name";
+                }
+                $storageArr[$i]["syn"] = "skip duplicate name";
+            } else {
+                $marker_name_import[$name] = 1;
+            }
+        }
+        if ($marker_name_dup != "") {
+            echo "<font color=red>Error: marker(s) removed from import because name duplicates previous entry</font><br>$marker_name_dup<br><br>\n";
+        }
+        if ($marker_seq_dup != "") {
+            echo "<font color=red>Error: marker(s) removed from import because sequence duplicates previous entry</font><br>$marker_seq_dup<br><br>\n";
+        }
+        if (($marker_seq_dup == "") && ($marker_name_dup == "")) {
+            echo "No duplicate names or sequences within import file\n";
+        }
+    }
+
+    /**
+     * Load annotation file
+     *
+     * @return null
+     */
+    private function _typeMarkersAnnot()
+    {
+        ?>
+        <script type="text/javascript">
 	
         function update_databaseAnnot(filepath, filename, username) {
             var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabaseAnnot&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
 	
-			// Opens the url in the same window
-	   		window.open(url, "_self");
+            // Opens the url in the same window
+            window.open(url, "_self");
         }
 
-	</script>
+        </script>
 	
 	<style type="text/css">
 		th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
@@ -763,6 +848,7 @@ class Markers_Check
             echo "missing data file\n";
         } else {
             $infile = $_GET['linedata'];
+            $uploadfile = $_GET['file_name'];
             $fileFormat = $_GET['file_type'];
             $overwrite = $_GET['overwrite'];
             $expand = $_GET['expand'];
@@ -778,8 +864,13 @@ class Markers_Check
             $checked_imp = "";
             $checked_db = "checked";
         }
-        $order_yes = "checked";
-        $order_no = "";
+        if ($orderAllele) {
+            $order_yes = "checked";
+            $order_no = "";
+        } else {
+            $order_yes = "";
+            $order_no = "checked";
+        }
 
         /* Read the file */
         if (($reader = fopen($infile, "r")) == FALSE) {
@@ -889,56 +980,68 @@ class Markers_Check
         unset ($value);
         fclose($reader); 
         ?>
+        <h3>Options</h3>
         <table>
-        <tr><td>When sequence matches add marker as synonym 
-        <td><input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
+	  <tr>
+            <td><input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
             > No
         <input type=radio name="check_seq" id="use_imp" value="imp" <?php echo $checked_imp ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
             > Yes
+	    <td>If the sequence matches, add the marker as a synonym.<br>
+              Check <b>Yes</b> unless the marker names have been published or have mapping data.
         <?php
         if ($fileFormat == 0) {
         ?>
-        <tr><td>Order A and B alleles alphabetically
-        <td><input type=radio name="check_ord" id="order_no" value="no" disabled <?php echo $order_no ?>
+        <tr>
+        <td><input type=radio name="check_ord" id="order_no" value="no" <?php echo $order_no ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
             > No
-        <input type=radio name="check_ord" id="order_yes" value="yes" disabled <?php echo $order_yes ?>
+        <input type=radio name="check_ord" id="order_yes" value="yes" <?php echo $order_yes ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
            > Yes
+	<td>Order A and B alleles alphabetically.<br>
+	  Check <b>Yes</b> unless a reference genome sequence was used to anchor the markers.
         <?php
         }
         ?>
         </table>
+        <h3>Validation Details</h3>
         <?php
         if ($overwrite) {
           ?>
-          <ul><li>Does the marker name in the import file match an entry in the markers or synonym table?</li>
-            <ul><li>Yes - Update the database entry</li>
-                <li>No - Does the marker sequence in the import file match an entry in the markers table?</li>
-                <ul><li>Yes - Add as synonym
-                    <li>No - Add new entry to the database<br>
+          <ul>The marker name in the import file is compared to pre-existing markers.
+            <ul><li>If found, the database entry will be updated.</li>
+                <li>Otherwise the marker sequence is compared to pre-existing markers.</li>
+	    <ul><li>If found, the marker will be added as a synonym.
+                    <li>Otherwise the new marker will be added.<br>
                 </ul>
            </ul>
-          </ul>
+          
         <?php
         } else {
           ?>
-          <ul><li>Does the marker name in the import file match an entry in the markers or synonym table?
-            <ul><li>Yes - Update the database entry
-                <li>No - Add new entry to the database
+          <ul>The marker name in the import file is compared to pre-existing markers.
+            <ul><li>If found, the database entry will be updated.</li>
+                <li>Otherwise the new marker will be added.<br>
             </ul>
-          </ul>
+         
           <?php
         }
-
-        $count_total = $i - 1; 
-        $numMatch = $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
-        if ($fileFormat == 0) {
+        /* if ($orderAllele) { */
+        /*     echo "<li>Order A and B alleles alphabetically"; */
+        /* } */
+        /* echo "<li>Check duplicates within import file</li>"; */
+        echo "</ul>";
+        echo "<h3>Results</h3>\n";
+        if ($overwrite) {
+            $numMatch = $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
+        }
+        if (($fileFormat == 0) && ($orderAllele)) {
             $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
         }
-
+        $this->typeCheckImport($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
         if ($numMatch["dupSeq"] > 0) {
         } else {
             ?>
@@ -1400,16 +1503,20 @@ class Markers_Check
         }  
         unset ($value);
         fclose($reader);   
-      
         $expand = 0;
+
+        echo "<h3>Check import file</h3>\n";
         if ($overwrite) {
           $this->typeCheckSynonym($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
         }
-        if ($fileFormat == 0) {
+        if (($fileFormat == 0) && ($orderAllele == 1)) {
           $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
         }
+        flush();
+        $this->typeCheckImport($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
+        flush();
         ?>
-        <script type="text/javascript" src="curator_data/marker.js"></script>
+        <script type="text/javascript" src="curator_data/marker01.js"></script>
         <br><h3>Loading import file into database</h3>
         <?php
   
@@ -1453,9 +1560,13 @@ class Markers_Check
                     $rdata = mysql_fetch_assoc($res);
                     $marker_uid = $rdata['marker_uid'];
                 }    
- 
+
+                //Check if duplicate name or seq within import file
+                if (($synonym == "skip duplicate name") || ($synonym == "skip duplicate seq")) { 
+                    echo "$synonym $marker<br>\n";
+                    continue;
                 //Check to see if synonym name already exists
-                if (empty($marker_uid) && $overwrite && ($synonym != "")) {
+                } elseif (empty($marker_uid) && $overwrite && ($synonym != "")) {
                         if (isset($sTypeHash["GBS sequence tag"])) {
                             $synonymTypeID = $sTypeHash["GBS sequence tag"];
                         } else {
@@ -1511,7 +1622,7 @@ class Markers_Check
                     $sql = "UPDATE markers SET A_allele = '$alleleA', B_allele='$alleleB', sequence='$sequence', updated_on=NOW() 
                             WHERE marker_uid = '$marker_uid'";
                     $res = mysql_query($sql) or die("Database Error: SNP sequence update failed - ". mysql_error() ."<br>".$sql);
-                    //echo "update $marker_uid<br>\n";
+                    //echo "update $marker_uid<br>$sql<br>\n";
                 }
                   
                 // marker name don't exist in DB
