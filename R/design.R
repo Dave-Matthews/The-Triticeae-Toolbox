@@ -1,7 +1,7 @@
 library(agricolae)
 
 #defined dynamically
-#desing_type
+#type
 #trt, size_block, seed, num_repl, num_block
 #outfile
 
@@ -22,7 +22,7 @@ if (type == "alpha") {
   message("s=",s)
   outdesign<-design.alpha(trt, k, r, serie=serie)
 } else if (type == "bib") {
-  message("randomized balanced imcompleate block design")
+  message("randomized balanced incomplete block design")
   outdesign<- design.bib(trt, k, serie=serie)
 } else if (type == "crd") {
   message("completely randomized design")
@@ -44,15 +44,15 @@ plot<-rownames(outdesign$book)
 trial<-1:dim(outdesign$book)[1]
 trial[]<- exp
 line_name<- outdesign$book$trt
-entry<- outdesign$book$plot
+entry<- outdesign$book$plots
 
 #get row and column from plot column
 rowNum <- c() 
 colNum <- c()
-for (i in 1:length(outdesign$book$plot)) {
-  plotval <- outdesign$book$plot[i]
+for (i in 1:length(outdesign$book$plots)) {
+  plotval <- outdesign$book$plots[i]
   rowNum[i] <- ""
-  colNum[i]<- ""
+  colNum[i] <- ""
 }
 
 #get check lines and set others to empty
@@ -61,7 +61,7 @@ subblock <- c()
 treatment <- c()
 block_tmt <- c()
 subblock_tmt <- c()
-for (i in 1:length(outdesign$book$plot)) {
+for (i in 1:length(outdesign$book$plots)) {
   LineName <- line_name[i]
   if (exists("trt2")) {
     if (LineName %in% trt2) {
