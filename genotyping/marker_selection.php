@@ -291,18 +291,17 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
 
 <div class="boxContent">
   <h3>Select markers by name</h3>
-  <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
   <table><tr><td>
-  <textarea rows=6 cols=10 name=selMarkerstring id="selMarkerstring"></textarea>
+  <b>one or more markers</b>
+  <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
+  <textarea rows=6 name=selMarkerstring id="selMarkerstring"></textarea>
   <td>Synonyms will be translated.<br>
   <!--input type="checkbox" name="wildcard" value="Yes" onclick="javascript: update_select(this.value)">Use Wildcard.<br-->
-  <p><input type=submit value=Select style=color:blue>
-  </tr></table>
-  </form><br>
+  <p><input type=submit value="Select by name"  style=color:blue>
+  </form>
 
-  <h3>Select markers by name using pattern matching</h3>
+  <tr><td><b>search using pattern matching</b>
   <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
-  <table><tr><td>
   <input type="text" name=selMarkerstring id="selMarkerstring"><br>
    . - matches any single character<br>
    * - matches zero or more instances of preceding<br>
@@ -310,7 +309,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
    $ - matches at the end of value<br>
   <td>Synonyms will be translated.<br>
   <input type="hidden" name="wildcard" value="Yes">
-  <p><input type=submit value=Select style=color:blue>
+  <p><input type=submit value="Select by pattern matching"  style=color:blue>
   </tr></table>
   </form>
   </div>
