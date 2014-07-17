@@ -33,6 +33,8 @@ loginTest();
 
 //needed for mac compatibility
 ini_set('auto_detect_line_endings', true);
+//needed to hold all marker sequences in memory
+ini_set('memory_limit', '2G');
 
 /* ******************************* */
 $row = loadUser($_SESSION['username']);
