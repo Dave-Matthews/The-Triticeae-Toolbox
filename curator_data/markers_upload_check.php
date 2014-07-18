@@ -100,7 +100,7 @@ class Markers_Check
             ?>
             <h2>Enter/Update Markers: Validation</h2>
             <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-            <script type="text/javascript" src="curator_data/marker02.js"></script>
+            <script type="text/javascript" src="curator_data/marker03.js"></script>
             <div id=update></div>
             <div id=checksyn>
             <?php
