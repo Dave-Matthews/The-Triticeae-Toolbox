@@ -1,12 +1,9 @@
 <?php
+// 21jul2014 DEM Added ability to create an Institution.
 // 30jan2012 DEM Taken from edit_traits.php.
-// 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-// The actual editing functions:
-// ... Hmm, why doesn't this work?  No error message in the PHP or apache logs.
-//include('programs.inc');
 connect();
 loginTest();
 
@@ -31,7 +28,7 @@ if(count($drds) == 0) {
  * Has form data been submitted?  Then handle it.
  */
 if (!empty($_POST[adding])) {
-  // "Add" button
+  // Add a new Program.
   $prcode = $_POST[code];
   $prname = $_POST[name];
   $prtype = $_POST[type];
@@ -79,6 +76,48 @@ if (!empty($_POST[adding])) {
     $adderr = "Program $prcode added.";
   }
 }
+
+if (!empty($_POST[instn])) {
+  // Add a new Institution.
+  $instname = $_POST[instname];
+  $instabbr = $_POST[instabbr];
+  $inststate = $_POST[inststate];
+  $instcountry = $_POST[instcountry];
+  if (empty($instname))
+    $insterr .= "Institution Name is required.  Nothing added.<br>";
+  else { 
+    $oldname = mysql_grab("select institutions_name from institutions where institutions_name = '$instname'");
+    if (!empty($oldname))
+      $insterr .= "Can't add.  Institution Name \"$oldname\" already exists.<br>";
+  }
+  if (empty($instabbr))
+    $insterr .= "Institution Abbreviation is required.  Nothing added.<br>";
+  else { 
+    $oldabbr = mysql_grab("select institute_acronym from institutions where institute_acronym = '$instabbr'");
+    if (!empty($oldabbr))
+      $insterr .= "Can't add.  Institution Abbreviation \"$oldabbr\" already exists.<br>";
+  }
+  if (empty($insterr)) {
+    // Validated.  Add the data.  Ignore the institute_address field.
+    $sql = "insert into institutions (
+	  institutions_name,
+	  institute_acronym,
+	  institute_state,
+	  institute_country,
+          institute_address,
+	  created_on ) 
+       values (
+	  '$instname',
+	  '$instabbr',
+	  '$inststate',
+	  '$instcountry',
+          '',
+	  NOW() )";
+    mysql_query($sql) or die("Insert failed.<br>".mysql_error());
+    $insterr = "Institution $instname added.";
+  }
+}
+
 if( ($id = array_search("Update", $_POST)) != NULL) {
   // "Update" button
   foreach($_POST as $k=>$v)
@@ -130,42 +169,63 @@ if(isset($_GET['start']))
 <div class="box">
   <h2>Curate Data Programs</h2>
   <div class="boxContent">
-    <h3>Add a new program</h3>
+
+<table><tr><td>
+    <h3>Add a new Program</h3>
 <?php
    if (!empty($adderr))
      echo "<font color=red><b>$adderr</b></font>";
 ?>   
-    <form method= post>
-      <table>
-	<tr><td>Program Code<td><input type=text name=code size=5 value = <?php echo $prcode ?>>	
-	    <tr><td>Name<td><input type=text name=name size=30 value = <?php echo $prname ?>>
-		<tr><td>Type<td>
-		    <select name=type>
-		      <option>
-		      <option value=breeding>breeding
-		      <option value=data>data
-		      <option value=mapping>mapping
-		    <tr><td>Institution<td><select name=inst><option value="">
+<form method= post>
+  <table>
+    <tr><td>Program Code<td><input type=text name=code size=5 value = <?php echo $prcode ?>>	
+    <tr><td>Name<td><input type=text name=name size=30 value = <?php echo $prname ?>>
+    <tr><td>Type<td>
+	<select name=type>
+	  <option>
+	  <option value=breeding>breeding
+	  <option value=data>data
+	  <option value=mapping>mapping
+    <tr><td>Institution<td>
+	<select name=inst><option value="">
 <?php
   $res = mysql_query("select institutions_uid, institutions_name from institutions") or die(mysql_error());
    while($r = mysql_fetch_row($res))
      echo "<option value=$r[0]>$r[1]";
 ?>
-			</select>
-	    <tr><td>Collaborator<td><input type=text name=collab value = <?php echo $prcollab ?>>	
-	    <tr><td>Description<td><input type=text name=desc size=50 value = <?php echo $prdesc ?>>	
-	  </table>
-	<input type=submit value=Add name=adding>
-	</form>
-      </div>
+	</select>
+    <tr><td>Collaborator<td><input type=text name=collab value = <?php echo $prcollab ?>>	
+    <tr><td>Description<td><input type=text name=desc size=50 value = <?php echo $prdesc ?>>	
+  </table>
+  <input type=submit value=Add name=adding>
+</form>
 
-      <div class="boxContent">
-	<h3>Edit or Delete a program</h3>
-	<form action="<?php echo $config['base_url']; ?>login/edit_programs.php" method="post">
-	  <p>Show only items containing these words:<br>
-	    <input type="text" name="search" value="<?php echo $searchstring ?>" size="30" /> 
-	    <input type="submit" value="Search" /></p>
-	</form>
+    <td valign=top>
+      <h3>Add a new Institution</h3>
+<?php
+   if (!empty($insterr))
+     echo "<font color=red><b>$insterr</b></font>";
+?>   
+<form method= post>
+  <table>
+    <tr><td>Name<td><input type=text name=instname size=30>	
+    <tr><td>Abbreviation<td><input type=text name=instabbr>	
+    <tr><td>State<td><input type=text name=inststate>	
+    <tr><td>Country<td><input type=text name=instcountry value='USA'>	
+  </table>
+  <input type=submit value=Add name=instn>
+</form>
+</table>
+
+</div>
+
+  <div class="boxContent">
+    <h3>Edit or Delete a program</h3>
+    <form action="<?php echo $config['base_url']; ?>login/edit_programs.php" method="post">
+      <p>Show only items containing these words:<br>
+	<input type="text" name="search" value="<?php echo $searchstring ?>" size="30" /> 
+	<input type="submit" value="Search" /></p>
+    </form>
 
 <?php
 // attaching the query string to the callback URL.
