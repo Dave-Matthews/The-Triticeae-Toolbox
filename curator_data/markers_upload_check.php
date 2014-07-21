@@ -33,6 +33,8 @@ loginTest();
 
 //needed for mac compatibility
 ini_set('auto_detect_line_endings', true);
+//needed to hold all marker sequences in memory
+ini_set('memory_limit', '2G');
 
 /* ******************************* */
 $row = loadUser($_SESSION['username']);
@@ -98,7 +100,7 @@ class Markers_Check
             ?>
             <h2>Enter/Update Markers: Validation</h2>
             <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-            <script type="text/javascript" src="curator_data/marker02.js"></script>
+            <script type="text/javascript" src="curator_data/marker03.js"></script>
             <div id=update></div>
             <div id=checksyn>
             <?php
@@ -119,6 +121,7 @@ class Markers_Check
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
         }
         echo "</div>";
+        echo "<div id=result></div>"; 
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
     }
@@ -1427,7 +1430,6 @@ class Markers_Check
     private function type_DatabaseSNP() {
 
         global $config;
-        include($config['root_dir'] . 'theme/admin_header.php');
         
         //echo "You are in DB portion of SNP import." . "<br>";
          
@@ -1516,7 +1518,6 @@ class Markers_Check
         $this->typeCheckImport($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
         flush();
         ?>
-        <script type="text/javascript" src="curator_data/marker01.js"></script>
         <br><h3>Loading import file into database</h3>
         <?php
   
@@ -1659,8 +1660,6 @@ class Markers_Check
                         WHERE input_file_log_uid = '$input_uid'"; 
         }
         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
-        $footer_div = 1;
-        include $config['root_dir'].'theme/footer.php';
     } /* end of function type_databaseSNP */
     
 } /* end of class */
