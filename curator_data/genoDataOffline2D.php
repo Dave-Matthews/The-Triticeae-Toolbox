@@ -334,7 +334,7 @@ while (($line = fgets($reader)) !== false) {
       $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
       if ($row = mysqli_fetch_assoc($res)) {
           $thtuid = $row['tht_base_uid'];
-          $thtuid_lookup[$lineStr] = $thtuid;
+          $thtuid_lookup[$line_uid] = $thtuid;
       } else {
           $thtuid = null;
       }
@@ -524,14 +524,14 @@ while ($inputrow= fgets($reader))  {
             }
 
             /* get thtbase_uid. If null, then we have to create this ID */
-            if (isset($thtuid_lookup[$line_name])) {				
-              $tht_uid = $thtuid_lookup[$line_name];
+            if (isset($thtuid_lookup[$line_uid])) {				
+              $tht_uid = $thtuid_lookup[$line_uid];
             } else {
               $sql ="INSERT INTO tht_base (line_record_uid, experiment_uid, datasets_experiments_uid, updated_on, created_on)
                                         VALUES ('$line_uid', $exp_uid, $de_uid, NOW(), NOW())" ;
               $res = mysqli_query($mysqli, $sql) or exitFatal($errFile, "Database Error: tht_base insert failed - ". mysqli_error($mysqli) . ".\n\n$sql");
               $tht_uid = mysqli_insert_id($mysqli);
-              $thtuid_lookup[$line_name] = $tht_uid;
+              $thtuid_lookup[$line_uid] = $tht_uid;
             }
 
             //if this is a new marker then we don't need to query for uid before inserting
