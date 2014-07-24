@@ -495,16 +495,15 @@ class Downloads
         $res = mysql_query($sql) or die(mysql_error() . $sql);
         $row = mysql_fetch_array($res);
         $count = $row[0];
-        if ($count > 1) {
-            echo "$count<td>";
-        } else {
-            echo "$count <font color=red>Warning: not enough lines for analysis</font><td>";
-        }
+        echo "$count<td>";
         $sql = "select mapset_name from mapset where mapset_uid = $map";
         $res = mysql_query($sql) or die(mysql_error());
         $row = mysql_fetch_assoc($res);
         $map_name = $row['mapset_name'];
         echo "$map_name</table>";
+        if ($count < 10) {
+            echo "<font color=red>Warning: analysis may fail with only $count lines selected</font><td>";
+        }
         $min_maf = 5;
         $max_missing = 10;
         $max_miss_line = 10;
