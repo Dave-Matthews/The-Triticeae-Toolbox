@@ -13,38 +13,44 @@
  * @link     http://triticeaetoolbox.org/wheat/downloads/select_genotype.php
  */ 
 
-require_once('config.php');
-include($config['root_dir'].'includes/bootstrap.inc');
+require_once 'config.php';
+require $config['root_dir'].'includes/bootstrap.inc';
 connect();
 
 new SelectGenotypeExp($_GET['function']);
 
 /** functions specific to genotype experiment
- @category PHP
+ *
+ * @category PHP
  * @package  T3
  * @author   Clay Birkett <claybirkett@gmail.com>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/select_genotype.php
  */
 class SelectGenotypeExp
-{	
-   /**
-	* Using the class's constructor to decide which action to perform
-	* @param string $function action to perform
-	*/
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-		    case 'type1':
-		        $this->type1();
-		        break;
-		        
-			case 'type1experiments':
-				$this->type1_experiments(); /* display experiments */
-				break;
-				
-			case 'typeDownload':
+{
+    /**
+     * Using the class's constructor to decide which action to perform
+     *
+     * @param string $function action to perform
+     */
+    public function __construct($function = null)
+    {	
+        switch($function)
+        {
+        case 'type1':
+            $this->type1();
+            break;
+     
+        case 'type1experiments':
+            $this->type1_experiments(); /* display experiments */
+            break;
+                        
+        case 'type2experiments':
+            $this->type2_experiments(); /* display experiments */
+            break;
+			
+        case 'typeDownload':
 				$this->type_Download(); /* display experiments */
 				break;
 				
@@ -52,14 +58,6 @@ class SelectGenotypeExp
 			     $this->type_Download2();
 			     break;
 						
-			case 'typeFlapJack':
-				$this->type_Flap_Jack(); /* Handle Flap Jack Compatible download */
-				break;
-				
-			case 'typeFlapJack2':
-			    $this->type_Flap_Jack2();
-			    break;
-			    
 		    case 'refreshtitle':
 				echo $this->refresh_title();
 				break;
@@ -79,7 +77,11 @@ class SelectGenotypeExp
                     case 'step3lines':
                         echo $this->step3_lines();
                         break;
-                 
+                
+                    case 'step1platform':
+                        echo $this->step1_platform();
+                        break;
+ 
                     case 'step1yearprog':
                         $this->step1_yearprog();
                         break;
@@ -156,9 +158,9 @@ private function refresh_title()
 private function type1_select()
 {
      global $config;
-     include($config['root_dir'].'theme/normal_header.php');
+     include $config['root_dir'].'theme/normal_header.php';
      $this->type1_checksession();
-     include($config['root_dir'].'theme/footer.php');
+     include $config['root_dir'].'theme/footer.php';
 }
 
 /**
@@ -172,11 +174,14 @@ private function type1()
   unset($_SESSION['filtered_markers']);
 
   ?>
-  <p>
-  <strong>Data Program</strong>
+  <p>1.
+  <select name="select1" onchange="javascript: update_select1(this.options)">
+  <option value="Platform">Platform</option>
+  <option value="DataProgram">Data Program</option>
+  </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
   <?php
-  $this->step1_breedprog();
+  $this->step1_platform();
   $footer_div = 1;
   ?>
   </div>
@@ -206,14 +211,43 @@ private function type1_checksession()
   ?>
   </div>
   <div id="step1" style="float: left; margin-bottom: 1.5em;">
-  <p>
-  <strong>Data Program</strong>
-  <script type="text/javascript" src="downloads/genotype_flapjack.js"></script>
-  <?php 
-  $this->type_GenoType_Display();
-  echo "</div>";
+  <p>1.
+  <select name="select1" onchange="javascript: update_select1(this.options)">
+  <option value="Platform">Platform</option>
+  <option value="DataProgram">Data Program</option>
+  </select></p>
+  <div id="step11" style="float: left; margin-bottom: 1.5em;">
+  <script type="text/javascript" src="downloads/genotype_flapjack01.js"></script>
+  <?php
+  $this->step1_platform(); 
+  //$this->type_GenoType_Display();
+  ?>
+  </div></div>
+  <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
+  <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
+  <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
+  <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+  </div>
+  <?php
 }
 
+/**
+ * display platform
+ */
+private function step1_platform()
+{
+    ?>
+    <table><tr><td>
+    <select name='platform[]' style="height: 12em;" multiple onchange="javascript: update_platform(this.options)">
+    <?php
+    $result=mysql_query("select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysql_error());
+    while ($row=mysql_fetch_assoc($result)) {
+        $uid = $row['platform_uid'];
+        $val = $row['platform_name'];
+        print "<option value='$uid'>$val</option>\n";
+    }
+    print "</select></table>";
+}
 /**
  * display data program
  */
@@ -255,7 +289,10 @@ private function step1_breedprog()
      ?>
     <div id="step21">
     <p>
-    <strong>Year</strong>
+    <select disabled>
+    <option>Year</option>
+    </select>
+    </p>
     <table id="phenotypeSelTab" class="tableclass1">
     <tr><td>
     <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
@@ -264,7 +301,7 @@ private function step1_breedprog()
     FROM experiments AS e, experiment_types AS et
     WHERE e.experiment_type_uid = et.experiment_type_uid
     AND et.experiment_type_name = 'genotype'
-    AND e.CAPdata_programs_uid IN ('$CAPdata_programs')
+    AND e.CAPdata_programs_uid IN ($CAPdata_programs)
     GROUP BY e.experiment_year DESC";
     $res = mysql_query($sql) or die(mysql_error());
     while ($row = mysql_fetch_assoc($res))
@@ -356,7 +393,9 @@ private function step2_lines()
     $count = count($_SESSION['selected_lines']);
     ?>
     <p>2.
-    <strong>Experiments</strong>
+    <select disabled>
+    <option>Experiments</option>
+    </select>
     <table id="linessel" class="tableclass1">
     <tr><td>
     <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_line_trial(this.options)">
@@ -414,7 +453,9 @@ private function step3_lines() {
   $datasets = $_GET['dp'];
   ?>
   <p>
-  <strong>Lines</strong>
+  <select disabled>
+  <option>Lines</option>
+  </select>
   <table id="phenotypeSelTab">
   <tr><td>
           <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_lines(this.options)">
@@ -465,7 +506,7 @@ private function type_GenoType_Display()
 			<table>
 				<tr>
 					<td>
-						<select name="breeding_programs" size="10" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
+						<select name="breeding_programs" style="height: 12em;" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
 		<?php 
 		// Select data programs for the drop down menu
                 $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, dp.data_program_name AS name, dp.data_program_code AS code
@@ -491,7 +532,7 @@ private function type_GenoType_Display()
                                 <strong>Year</strong>
 			        <table>
 					<tr><td>
-						<select name="year" size="10" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
+						<select name="year" style="height: 12em;" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
 		<?php
 
 		// set up drop down menu with data showing year
@@ -529,7 +570,6 @@ private function type1_experiments()
 		$CAPdata_programs = $_GET['bp']; 
 		$years = $_GET['yrs']; 
 	
-	
 	/* Query for getting experiment id, trial code and year */
         /* AND e.experiment_year IN ($years) */
 	$sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year, e.traits AS traits
@@ -554,12 +594,14 @@ private function type1_experiments()
 ?>
 
     <p>
-    <strong>Experiments</strong>
+    <select disabled>
+    <option>Experiments</option>
+    </select>
 <table>
 	
 	<tr><td>
 		<!--select name="experiments" multiple="multiple" size="10" style="height: 12em" onchange="javascript:load_tab_delimiter(this.options)"-->
-                <select name="experiments" multiple="multiple" size="10" style="height: 12em" onchange="javascript:update_experiments(this.options)">
+                <select name="experiments" multiple="multiple" style="height: 12em;" style="height: 12em" onchange="javascript:update_experiments(this.options)">
 <?php
 	
 		while ($row = mysql_fetch_array($res)) {
@@ -590,17 +632,33 @@ private function type1_experiments()
   <?php 
 	}/* end of else */
 	} /* end of type1_experiments function */
-	
+
 /**
- * display title
- */	
-private function type_Flap_Jack()
-{	
-	    ?>
-		<input type="button" value="Save current selection" onclick="javascript: load_title('save');" />
-        <?php 	
-	}/* end of type_Flap_Jack function */
-	
+ * display genotype experiments
+ */
+private function type2_experiments()
+{
+    $platform = $_GET['platform'];
+    ?>
+    <p>
+    <select disabled>
+    <option>Experiments</option>
+    </select>
+    <table><tr><td><select name='expt[]' style="height: 12em;" multiple onchange="javascript: update_experiments(this.options)">
+    <?php
+    $result=mysql_query("select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
+        where experiments.experiment_uid = genotype_experiment_info.experiment_uid
+        and genotype_experiment_info.platform_uid IN ($platform)") or die(mysql_error);
+    while ($row=mysql_fetch_assoc($result)) {
+        $uid=$row['experiment_uid'];
+        $val=$row['trial_code'];
+        print "<option value=$uid>$val</option>\n";
+    }
+    ?>
+    </select>
+    <?php
+}	
+
 /**
  * display results of search
  */

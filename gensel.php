@@ -127,6 +127,7 @@ class Downloads
 		$markers = "";
 		$saved_session = "";
 		$this->type1_checksession();
+                include 'downloads/select-map.php';
 		include($config['root_dir'].'theme/footer.php');
 	}	
 	
@@ -142,7 +143,11 @@ class Downloads
 			td {border: 1px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
+            <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
             <script type="text/javascript" src="downloads/download_gs01.js"></script>
+            <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+            <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+            <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
 		<div id="title">
 		<?php
             $phenotype = "";
@@ -213,9 +218,8 @@ class Downloads
                     echo $config['base_url'];
                     echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
                 } elseif (empty($_SESSION['selected_map'])) {
-                    echo "<font color=red>Select map set using ";
-                    echo "<a href=\"" . $config['base_url'];
-                    echo "maps/select_map.php\">Genetic Map</a></font><br><br>.";
+                    echo "<font color=red>Select a genetic map.</font>";
+                    echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
                 } 
                 if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
                    if (empty($_SESSION['selected_trials'])) {
@@ -497,6 +501,9 @@ class Downloads
         $row = mysql_fetch_assoc($res);
         $map_name = $row['mapset_name'];
         echo "$map_name</table>";
+        if ($count < 10) {
+            echo "<font color=red>Warning: analysis may fail with only $count lines selected</font><td>";
+        }
         $min_maf = 5;
         $max_missing = 10;
         $max_miss_line = 10;
