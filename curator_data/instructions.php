@@ -33,7 +33,7 @@ connect();
     <li>Please use the <a href="http://malt.pw.usda.gov/t3/bdfunny">Funnyfarm</a> database
       for test-loading your files.  When they&apos;re ready,
       click here to submit them to the T3 Curator for loading into the official database.
-      <br><input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
+      <br><input type="Button" value="Submit" onclick="window.open('<?php echo $config['base_url']?>/curator_data/queue.php','_self')">
   </ul>
 
   <p>
@@ -188,11 +188,9 @@ connect();
 </div></div>
 
 <?php
-/** Date-stamp the template files, in red if they're new.
- * $subdir is relative to curator_data/examples/.
- */
-function filelink($label, $filenm, $subdir)
-{
+// Date-stamp the template files, in red if they're new.
+// $subdir is relative to curator_data/examples/.
+function filelink($label, $filenm, $subdir) {
   global $config;
   echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
   $fullpath = $config['root_dir'] . "curator_data/examples/$subdir/$filenm";
@@ -204,10 +202,8 @@ function filelink($label, $filenm, $subdir)
     //echo "</td><td>$filenm";
 }
 
-/** Variation of filelink(), for items in text instead of in the table.
- */
-function filelink2($label, $filenm, $subdir)
-{
+// Variation of filelink(), for items in text instead of in the table.
+function filelink2($label, $filenm, $subdir) {
     global $config;
     echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
     // Add "(new <date>)" if newer than 30 days.
