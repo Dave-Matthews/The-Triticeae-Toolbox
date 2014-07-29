@@ -58,14 +58,6 @@ class SelectGenotypeExp
 			     $this->type_Download2();
 			     break;
 						
-			case 'typeFlapJack':
-				$this->type_Flap_Jack(); /* Handle Flap Jack Compatible download */
-				break;
-				
-			case 'typeFlapJack2':
-			    $this->type_Flap_Jack2();
-			    break;
-			    
 		    case 'refreshtitle':
 				echo $this->refresh_title();
 				break;
@@ -667,16 +659,6 @@ private function type2_experiments()
     <?php
 }	
 
-/**
- * display title
- */	
-private function type_Flap_Jack()
-{	
-	    ?>
-		<input type="button" value="Save current selection" onclick="javascript: load_title('save');" />
-        <?php 	
-	}/* end of type_Flap_Jack function */
-	
 /**
  * display results of search
  */
