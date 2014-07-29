@@ -31,21 +31,25 @@ function use_normal() {
     document.getElementById('step4').innerHTML = "";
 }
 
-function load_title(command) {
-    var url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&cmd=' + command;
-    var tmp = new Ajax.Updater($('title'), url, {asynchronous:false}, {
-        onComplete : function() {
-            $('title').show();
-            document.title = title;
-        }
-    });
-    url = "side_menu.php";
-    tmp = new Ajax.Updater($('quicklinks'), url, {
+function update_side() {
+    var url = "side_menu.php";
+    var tmp = new Ajax.Updater($('quicklinks'), url, {
     onComplete : function() {
       $('quicklinks').show();
       document.title = title;
       document.getElementById('step5').innerHTML = "Selection saved";
     }
+    });
+}
+
+function load_title(command) {
+    var url = php_self + "?function=refreshtitle&lines=" + lines_str + "&exps=" + experiments_str + '&cmd=' + command;
+    var tmp = new Ajax.Updater($('title'), url, {
+        onComplete : function() {
+            $('title').show();
+            document.title = title;
+            update_side();
+        }
     });
 }
 
@@ -282,25 +286,6 @@ function update_experiments(options)
             }
         }
     );
-}
-
-function load_tab_delimiter(options)
-{
-    experiments_str = "";
-        
-    $A(options).each(function(experiments) {    
-        if (experiments.selected) {
-            experiments_str +=  (experiments_str === "" ? "\"" : ",\"") + experiments.value + "\""  ;
-        }
-    });
-    
-    var url = php_self + "?function=typeFlapJack&trialcode=" + experiments_str;
-    var tmp = new Ajax.Updater($('step4'), url, { 
-            onComplete: function() {
-                $('step4').show();       
-            }
-        }
-    );    
 }
 
 function download_tab_delimiter()
