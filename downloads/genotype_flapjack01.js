@@ -14,6 +14,17 @@ var markers_loaded = false;
 var markers_loading = false;
 var traits_loading = false;
 
+function update_side() {
+    var url = "side_menu.php";
+    var tmp = new Ajax.Updater($('quicklinks'), url, {
+    onComplete : function() {
+      $('quicklinks').show();
+      document.title = title;
+      document.getElementById('step5').innerHTML = "Selection saved";
+    }
+    });
+}
+
 function use_normal() {
     breeding_programs_str = "";
     years_str = "";
@@ -24,22 +35,12 @@ function use_normal() {
         onComplete : function() {
             $('step1').show();
             document.title = title;
+            update_side();
         }
     });
     document.getElementById('step2').innerHTML = "";
     document.getElementById('step3').innerHTML = "";
     document.getElementById('step4').innerHTML = "";
-}
-
-function update_side() {
-    var url = "side_menu.php";
-    var tmp = new Ajax.Updater($('quicklinks'), url, {
-    onComplete : function() {
-      $('quicklinks').show();
-      document.title = title;
-      document.getElementById('step5').innerHTML = "Selection saved";
-    }
-    });
 }
 
 function load_title(command) {
