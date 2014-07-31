@@ -195,11 +195,13 @@ HTML;
  * Return the html fragment associated with successful login.
  */
 function HTMLLoginSuccess() {
-  $url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
+  // DEM jul2014: Don't return to the previous page.  It might be the "Access Denied"
+  //   page which would be confusing.
+  //$url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
+  $url = $config['base_url']."index.php";
   return <<< HTML
-<p>You have been logged in. Please wait while you are being
-redirected or click <a href="$url">here</a>.</p>
-<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+<p>You have been logged in. Welcome!
+<p><input type='Button' value='Proceed' onClick='window.location.assign("$url")'>
 <meta http-equiv="refresh" content="2;url=$url" />
 HTML;
 }
