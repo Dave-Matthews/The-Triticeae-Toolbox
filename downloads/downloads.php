@@ -130,9 +130,9 @@ class Downloads
         include $config['root_dir'].'theme/normal_header.php';
         $this->_type1Checksession();
         ?>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+        <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
         <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
@@ -209,7 +209,8 @@ class Downloads
                     echo "1. Select a set of <a href=\"" . $config['base_url'];
                     echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
                     ?>
-                    2. Select the <input type="button" value="Genetic map" onclick="javascript: select_map()"> which has the best coverage for your selection.<br>
+                    2. Select the <input type="button" value="genetic map" onclick="javascript: select_map()"> which has the best coverage for your selection.
+                       Markers with no map location will not be excluded.<br>
                     3. Select data type: Phenotype,  Genotype using consensus of all genotype experiments, or Genotype using one genotype experiment. See explanation in
         <input type="button" value="Definition of Terms" onclick="javascript: define_terms()">.
                     <?php
@@ -217,7 +218,8 @@ class Downloads
                     echo "1. Select a set of <a href=\"" . $config['base_url'];
                     echo "downloads/select_all.php\">lines, traits, and trials</a>.<br>";
                     ?>
-                    2. Select the <input type="button" value="Genetic map" onclick="javascript: select_map()"> which has the best coverage for your selection.<br>
+                    2. Select the <input type="button" value="genetic map" onclick="javascript: select_map()"> which has the best coverage for your selection.
+                       Markers with no map location will not be excluded.<br>
                     3. Select data type: Phenotype,  Genotype using consensus of all genotype experiments, or Genotype using one genotype experiment. See explanation in
         <input type="button" value="Definition of Terms" onclick="javascript: define_terms()">.
                     <?php
@@ -231,10 +233,9 @@ class Downloads
         }
         ?>
         </div><br>
-        <input type="checkbox" id="typeP" value="pheno" onclick="javascript:select_download();" <?php echo $download_pheno ?>>Phenotype
-        <input type="radio" name="typeG" value="geno" onclick="javascript:select_download();"<?php echo $download_geno ?>>Genotype using consensus
-        <input type="radio" name="typeG" value="genoE" onclick="javascript:select_download();"<?php echo $download_genoe ?>>Genotype using one genotype experiment
-        <input type="button" name="clear" value="Clear" onclick="javascript:location.reload();"<br><br>
+        <input type="checkbox" id="typeP" value="pheno" onclick="javascript:select_download(this.id);" <?php echo $download_pheno ?>>Phenotype
+        <input type="checkbox" id="typeG" value="geno" onclick="javascript:select_download(this.id);"<?php echo $download_geno ?>>Genotype using consensus
+        <input type="checkbox" id="typeGE" value="genoE" onclick="javascript:select_download(this.id);"<?php echo $download_genoe ?>>Genotype using one genotype experiment<br><br>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
         <?php
         $this->type1_lines_trial_trait();
@@ -329,13 +330,15 @@ class Downloads
         mkdir("/tmp/tht/$filename");
         $subset = "yes";
         $dtype = "";
-        
-        if ($version == "V3") {
+       
+        if (isset($_SESSION['selected_map'])) {
             $filename = "geneticMap.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             $output = $this->type1_build_geneticMap($lines, $markers, $dtype);
             fwrite($h, $output);
             fclose($h);
+        } 
+        if ($version == "V3") {
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
@@ -348,11 +351,6 @@ class Downloads
                 fwrite($h, $output);
                 fclose($h);
             }
-            $filename = "geneticMap.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-            $output = $this->type1_build_geneticMap($lines, $markers, $dtype);
-            fwrite($h, $output);
-            fclose($h);
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             if ($typeGE == "true") {
@@ -370,11 +368,6 @@ class Downloads
                 fwrite($h, $output);
                 fclose($h);
             }
-            $filename = "geneticMap.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-            $output = $this->type1_build_geneticMap($lines, $markers, "R");
-            fwrite($h, $output);
-            fclose($h);
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
@@ -397,11 +390,6 @@ class Downloads
                 fwrite($h, $output);
                 fclose($h);
             }
-            $filename = "geneticMap.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_geneticMap($lines,$markers,"FJ");
-            fwrite($h, $output);
-            fclose($h);
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
             $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
@@ -415,11 +403,6 @@ class Downloads
                 fwrite($h, $output);
                 fclose($h);
             }
-            $filename = "geneticMap.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type1_build_geneticMap($lines,$markers,"R");
-            fwrite($h, $output);
-            fclose($h);
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
             $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
@@ -547,7 +530,7 @@ class Downloads
             ?></div>
             <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
             <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-            <script type="text/javascript" src="downloads/downloads04.js"></script>
+            <script type="text/javascript" src="downloads/downloads05.js"></script>
             <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <script type="text/javascript">
             var mm = 10;
@@ -758,9 +741,9 @@ class Downloads
                     $saved_session = $saved_session . ", map set = $map_name";
                 }
             } else {
-                echo "<font color=\"red\">Choose a genetic map before downloading genotype data. </font>";
+                echo "<font color=\"red\">Choose a ";
                 ?>
-                <input type="button" value="Genetic map" onclick="javascript: select_map()"><br>
+                <input type="button" value="genetic map" onclick="javascript: select_map()"> to include marker location data.</font><br>
                 <?php
             }
         }
@@ -777,9 +760,9 @@ class Downloads
                     $saved_session = $saved_session . ", map set = $map_name";
                 }
             } else {
-                echo "<font color=\"red\">Choose a genetic map before downloading genotype data. </font>";
+                echo "<font color=\"red\">Choose a ";
                 ?>
-                <input type="button" value="Genetic map" onclick="javascript: select_map()"><br>
+                <input type="button" value="genetic map" onclick="javascript: select_map()"> to include marker location data.</font><br>
                 <?php
             }
             if (isset($_SESSION['geno_exps'])) {
@@ -862,6 +845,11 @@ class Downloads
         if (isset($_SESSION['selected_map'])) {
             $selected_map = $_SESSION['selected_map'];
         }
+        if (isset($_SESSION['geno_exps'])) {
+            $geno_exps = $_SESSION['geno_exps'];
+        } else {
+            $geno_exps = "";
+        }
          
 	if (isset($_SESSION['clicked_buttons'])) {
             $tmp = count($_SESSION['clicked_buttons']);
@@ -923,7 +911,7 @@ class Downloads
              }
          }
          if ($countLines == 0) {
-         } elseif ($selected_map == "") {
+         } elseif (($typeGE == "true") && ($geno_exps == "")) {
          } else {
              echo "Filter lines and markers then $message2<br>";
              ?>
@@ -1668,7 +1656,8 @@ class Downloads
          if (isset($_SESSION['selected_map'])) {
            $selected_map = $_SESSION['selected_map'];
          } else {
-           die("<font color=red>Error - map should be selected before download</font>");
+           $selected_map = "";
+           echo "<font color=red>Warning - no marker location will be given</font>";
          }
 	
 	 if (count($markers)>0) {
@@ -1698,6 +1687,10 @@ class Downloads
 
 	 //order the markers by map location
          //tassel v5 needs markers sorted when position is not unique
+         if ($selected_map == "") {
+             $marker_list_mapped = array();
+             $marker_list_chr = array();
+         } else {
 	 $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
@@ -1713,6 +1706,7 @@ class Downloads
 	   $marker_list_mapped[$marker_uid] = $pos;
            $marker_list_chr[$marker_uid] = $chr;
 	 }
+         }
 
          $marker_list_all = $marker_list_mapped;	
 	 //generate an array of selected markers and add map position if available
