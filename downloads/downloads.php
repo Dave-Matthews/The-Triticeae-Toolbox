@@ -1847,7 +1847,8 @@ class Downloads
         if (isset($_SESSION['selected_map'])) {
             $selected_map = $_SESSION['selected_map'];
         } else {
-            die("<font color=red>Error - map should be selected before download</font>");
+           $selected_map = "";
+           echo "<font color=red>Warning - no marker location will be given</font>";
         }
         if (isset($_SESSION['geno_exps'])) {
             $geno_exp = $_SESSION['geno_exps'];
@@ -1869,6 +1870,10 @@ class Downloads
    
         //order the markers by map location
         //tassel v5 needs markers sorted when position is not unique
+        if ($selected_map == "") {
+            $marker_list_mapped = array();
+            $marker_list_chr = array(); 
+        } else {
         $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
         where markers.marker_uid IN ($markers_str)
         AND mim.marker_uid = markers.marker_uid
@@ -1883,6 +1888,7 @@ class Downloads
             $chr = $row[2];
             $marker_list_mapped[$marker_uid] = $pos;
             $marker_list_chr[$marker_uid] = $chr;
+        }
         }
  
         $marker_list_all = $marker_list_mapped;
