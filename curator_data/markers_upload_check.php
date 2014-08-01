@@ -1517,6 +1517,23 @@ class Markers_Check
         flush();
         $this->typeCheckImport($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
         flush();
+
+        //cache the marker and synonym names
+        $sql = "SELECT marker_uid, marker_name FROM markers";
+        $res = mysql_query($sql) or die("Database Error: marker name lookup - ".mysql_error() ."<br>".$sql);
+        while ($rdata = mysql_fetch_assoc($res)) {
+            $m_uid=$rdata['marker_uid'];
+            $m_nam=$rdata['marker_name'];
+            $markerNameLookup[$m_nam] = $m_uid;
+        }
+        $sql = "SELECT marker_uid, value FROM marker_synonyms";
+        $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
+        while ($rdata = mysql_fetch_assoc($res)) {
+            $m_uid=$rdata['marker_uid'];
+            $m_nam=$rdata['value'];
+            $markerSynLookup[$m_nam] = $m_uid;
+        }
+
         ?>
         <br><h3>Loading import file into database</h3>
         <?php
@@ -1542,26 +1559,16 @@ class Markers_Check
                     error(1, "There are too many invalid marker names. <br> Please fix and re-import." );
                     exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
                 }
-                
-                /* Find the marker uid*/
-                $sql = "SELECT marker_uid
-                        FROM markers
-                        WHERE marker_name ='$marker'";
-                //echo "marker table lookup sql - " . $sql . "<br>";       
-                $res = mysql_query($sql) or die("Database Error: Marker name lookup - ".mysql_error() ."<br>".$sql);
-                $rdata = mysql_fetch_assoc($res);
-                $marker_uid = $rdata['marker_uid'];
-                
-                //If we didn't get an uid, try the synonym table 
-                if (empty ($marker_uid)) {
-                    $sql = "SELECT marker_uid
-                        FROM marker_synonyms
-                        WHERE value ='$marker'";
-                    $res = mysql_query($sql) or die("Database Error: Marker name lookup - ".mysql_error() ."<br>".$sql);
-                    $rdata = mysql_fetch_assoc($res);
-                    $marker_uid = $rdata['marker_uid'];
-                }    
-
+ 
+                //Check to see if marker already exists
+                $marker_uid = null;
+                if (isset($markerNameLookup[$marker])) {
+                    $marker_uid=$markerNameLookup[$marker];
+                    // Check synomyn
+                } elseif (isset($markerSynLookup[$marker])) {
+                    $mmarker_uid = $markerSynLookup[$marker];
+                }
+               
                 //Check if duplicate name or seq within import file
                 if (($synonym == "skip duplicate name") || ($synonym == "skip duplicate seq")) { 
                     echo "$synonym $marker<br>\n";
