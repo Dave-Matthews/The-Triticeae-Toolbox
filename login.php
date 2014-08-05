@@ -1,10 +1,24 @@
 <?php
+/**
+ * Login
+ *
+ * PHP version 5.3
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/login.php
+ *
+ * 12/14/2010 JLee  Change to use curator bootstrap
+ * 
+ */
 
-// 12/14/2010 JLee  Change to use curator bootstrap
 
 session_start();
-$root = "http://".$_SERVER['HTTP_HOST'];
-$root .= str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
+$root = "//" . $_SERVER['HTTP_HOST'];
+$root .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
 $config['base_url'] = "$root";
 $root = preg_replace("/\/\/$/", "/", $root);
 $config['root_dir'] = (dirname(__FILE__) . '/');
@@ -20,37 +34,46 @@ connect();
 <?php
 /**
  * Return the registraion form fragment.
+ *
+ * @param string $msg         message to user
+ * @param string $name        user name
+ * @param string $email       user email
+ * @param string $cemail      confirm user email
+ * @param string $answer      response to do you have password
+ * @param string $institution institution
+ *
+ * @return registration form 
  */
-  function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="no",$institution="")
+function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="no",$institution="")
 {
-  // ensure that we go back to home..
-  $_SESSION['login_referer_override'] = '/';
-  $c_no = "";
-  $c_yes = "";
-  $c_forgot="";
-  if ($answer == "no")
-    $c_no = 'checked="checked"';
-  if ($answer == "yes")
-    $c_yes = 'checked="checked"';
-  $retval = "";
-  if (!empty($msg))
-    $retval .= "<div id='form_error'>$msg</div>\n";
-  $sql = "select institutions_name, email_domain from institutions";
-  $result = mysql_query($sql) or die("<pre>".mysql_error()."\n$sql");
-  $domainMap = array();
-  $email_domain = split('@', $email);
-  $email_domain = $email_domain[1];
-  while ($row = mysql_fetch_assoc($result)) {
-    $edomain = $row['email_domain'];
-    $iname = $row['institutions_name'];
-    if ($edomain) {
-      array_push($domainMap, "'$edomain': '$iname'");
-      if ($edomain == $email_domain)
-	$institution = $iname;
+    // ensure that we go back to home..
+    $_SESSION['login_referer_override'] = '/';
+    $c_no = "";
+    $c_yes = "";
+    $c_forgot="";
+    if ($answer == "no")
+      $c_no = 'checked="checked"';
+    if ($answer == "yes")
+      $c_yes = 'checked="checked"';
+    $retval = "";
+    if (!empty($msg))
+      $retval .= "<div id='form_error'>$msg</div>\n";
+    $sql = "select institutions_name, email_domain from institutions";
+    $result = mysql_query($sql) or die("<pre>".mysql_error()."\n$sql");
+    $domainMap = array();
+    $email_domain = split('@', $email);
+    $email_domain = $email_domain[1];
+    while ($row = mysql_fetch_assoc($result)) {
+        $edomain = $row['email_domain'];
+        $iname = $row['institutions_name'];
+        if ($edomain) {
+            array_push($domainMap, "'$edomain': '$iname'");
+        if ($edomain == $email_domain)
+            $institution = $iname;
+        }
     }
-  }
-  $domainMap = '{' . join(", ", $domainMap) . '}';
-  $retval .= <<<HTML
+    $domainMap = '{' . join(", ", $domainMap) . '}';
+    $retval .= <<<HTML
 <br />
 <h2>Registration</h2>
 <script type="text/javascript">
@@ -66,12 +89,17 @@ connect();
     return dm[email.split('@')[1]] || '';
   }
 </script>
+
+<style type="text/css">
+  table td {padding: 2px;}
+</style>
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post"
       onsubmit="return validatePassword(document.getElementById('password').value);">
   <h3>Name</h3>
   &nbsp;&nbsp;<label for="name">My name is:</label>&nbsp;
-  <input type="text" name="name" id="name" value="$name" /> Triticeae CAP participants <b>must</b> give a full name to be approved.
-  <h3>Email address			</h3>
+  <input type="text" name="name" id="name" value="$name" /><br>
+  &nbsp;&nbsp;Project participants <b>must</b> give a full name to be approved.
+  <h3>Email address</h3>
   <table border="0" cellspacing="0" cellpadding="0"
 	 style="border: none; background: none">
     <tr><td style="border: none; text-align: right;">
@@ -97,9 +125,9 @@ connect();
 	<label for="institution">My institution is:<label></td>
 	<td style="border:none;">
 	<input type="text" name="institution" id="institution"
-	       value="$institution" size="30" /> Required for Triticeae CAP participants.
+	       value="$institution" size="30" /> Required for project participants.
         </td></tr></table>
-  <h3>Are you a Triticeae CAP participant?</h3>
+  <h3>Are you a project participant?</h3>
   <input $c_no type="radio" value="no" name="answer" id="answer_no" />
   <label for="answer_no">No</label>
   <br />
@@ -122,35 +150,50 @@ connect();
   <input type="submit" name="submit_registration" value="Register" />
   </form>
 HTML;
-  return $retval;
+    return $retval;
 }
 
 /**
  * Return the login form fragment.
+ *
+ * @param string $msg message to user
+ *
+ * @return registration form form
  */
-function HTMLLoginForm($msg = "") {
-  $email = "";
-  if (isset($_GET['e']) && !empty($_GET['e']))
-    $email = base64_decode($_GET['e']);
-  $c_no = "";
-  $c_yes = "checked=\"checked\"";
-  if (isset($_GET['a']) && !empty($_GET['a'])) {
+function HTMLLoginForm($msg = "")
+{
+    $email = "";
+    if (isset($_GET['e']) && !empty($_GET['e']))
+      $email = base64_decode($_GET['e']);
     $c_no = "";
     $c_yes = "checked=\"checked\"";
-  }
+    if (isset($_GET['a']) && !empty($_GET['a'])) {
+        $c_no = "";
+        $c_yes = "checked=\"checked\"";
+    }
 
-  $retval = "";
-  if (!empty($msg))
-    $retval .= "<div id='form_error'>$msg</div>";
-  $retval .= <<<HTML
-<form action="{$_SERVER['SCRIPT_NAME']}" method="post">
+    $retval = "";
+    if (!empty($msg))
+        $retval .= "<div id='form_error'>$msg</div>";
+    global $config;
+    $dir = explode("/", $config['root_dir']);
+    // Pop twice.
+    $crop = array_pop($dir); $crop = array_pop($dir);
+    $retval .= <<<HTML
+  <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
-  Registered members of the Triticeae CAP team have pre-release
-    access to all phenotype and genotype data from the project, 
-    and are allowed to add their own private data to the database.
+  <b>Participants</b>
+  <ul>
+    <li>have pre-release access to all phenotype and genotype data from the project.
+    <li>will be allowed to add their own private data to the database (feature to be added).
+    <li>can test-load their data files in the "Sandbox" database before submitting them to the curator. 
+    <li>can create unique germplasm line panels (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>)
+ </ul>
 
-    <p>For registered non-CAP users, selections made during
-    their searches are saved from session to session.
+  <b>All Registered Users</b>
+  <ul>
+    <li> Selections made during searches are saved from session to session.
+  </ul>
 
     <h3>What is your email address?</h3>
     My email address is:
@@ -173,18 +216,24 @@ function HTMLLoginForm($msg = "") {
     <input type="submit" name="submit_login" value="Continue" />
    </form>
 HTML;
-  return $retval;
+    return $retval;
 }
 
 /**
  * Return the html fragment associated with successful login.
+ *
+ * @return null
  */
-function HTMLLoginSuccess() {
-  $url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
-  return <<< HTML
-<p>You have been logged in. Please wait while you are being
-redirected or click <a href="$url">here</a>.</p>
-<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+function HTMLLoginSuccess()
+{
+    // DEM jul2014: Don't return to the previous page.  It might be the "Access Denied"
+    //   page which would be confusing.
+    //$url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
+    global $config;
+    $url = "http:" . $config['base_url']."index.php";
+    return <<< HTML
+<p>You have been logged in. Welcome!
+<p><input type='Button' value='Proceed' onClick='window.location.assign("$url")'>
 <meta http-equiv="refresh" content="2;url=$url" />
 HTML;
 }
@@ -226,11 +275,10 @@ user_types_uid=$public_type_id) limit 1";
 /**
  * Check if the user+password confirmed his email.
  */
-function isVerified($email, $pass) {
+function isVerified($email) {
   $sql_email = mysql_real_escape_string($email);
-  $sql_pass = mysql_real_escape_string($pass);
   $sql = "select email_verified from users where
-users_name='$sql_email' and pass=MD5('$sql_pass')";
+users_name='$sql_email'";
   $r = mysql_query($sql);
   $row = mysql_fetch_assoc($r);
   if ($row)
@@ -271,34 +319,37 @@ function HTMLProcessLogin() {
   $email = $_POST['email'];
   $password = $_POST['password'];
   $rv = '';
-  if (isUser($email, $password)) {
-    // Successful login
-    $_SESSION['username'] = $email;
-    $_SESSION['password'] = md5($password);
-    $sql = "update users set lastaccess = now() where
-users_name = '$email'";
-    mysql_query($sql) or die("<pre>" . mysql_error() .
-			     "\n\n\n$sql.</pre>");
-    // Retrieve stored selection of lines, markers and maps.
-    $stored = retrieve_session_variables('selected_lines', $email);
-    if (-1 != $stored)
-      $_SESSION['selected_lines'] = $stored;
-    $stored = retrieve_session_variables('clicked_buttons', $email);
-    if (-1 != $stored)
-      $_SESSION['clicked_buttons'] = $stored;
-    $stored = retrieve_session_variables('mapids', $email);
-    if (-1 != $stored)
-      $_SESSION['mapids'] = $stored;
-    $rv = HTMLLoginSuccess();
-  }
-  else
-    if (!passIsRight($_POST['email'], $_POST['password']))
-      $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
-    else
-      if (!isVerified($_POST['email'], $_POST['password']))
+  
+  if (!isVerified($_POST['email']))
 	$rv = HTMLLoginForm("You cannot login until you confirm your email (the link was sent to you at the time of registration)");
-      else
-	$rv = HTMLLoginForm("Login failed for unknown reason.");
+  else {
+        if (isUser($email, $password)) {
+          // Successful login
+          $_SESSION['username'] = $email;
+          $_SESSION['password'] = md5($password);
+          $sql = "update users set lastaccess = now() where
+      users_name = '$email'";
+          mysql_query($sql) or die("<pre>" . mysql_error() .
+                                   "\n\n\n$sql.</pre>");
+          // Retrieve stored selection of lines, markers and maps.
+          $stored = retrieve_session_variables('selected_lines', $email);
+          if (-1 != $stored)
+            $_SESSION['selected_lines'] = $stored;
+          $stored = retrieve_session_variables('clicked_buttons', $email);
+          if (-1 != $stored)
+            $_SESSION['clicked_buttons'] = $stored;
+          $stored = retrieve_session_variables('mapids', $email);
+          if (-1 != $stored)
+            $_SESSION['mapids'] = $stored;
+          $rv = HTMLLoginSuccess();
+        }
+        else {
+            if (!passIsRight($_POST['email'], $_POST['password']))
+                $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
+            else
+                $rv = HTMLLoginForm("Login failed for unknown reason.");
+        }
+  }
   return $rv;
 }
 
@@ -328,7 +379,7 @@ function HTMLProcessForgot() {
   else {
     $key = setting('passresetkey');
     $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-    send_email($email, "Triticeae Toolbox : Reset Your Password",
+    send_email($email, "T3: Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
 {$root}resetpass.php?token=$urltoken");
@@ -461,10 +512,10 @@ $safe_institution)";
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-     send_email($email, "Triticeae Toolbox registration in progress",
+     send_email($email, "T3 registration in progress",
 "Dear $name,
 
-Thank you for requesting an account on The Triticeae Toolbox.
+Thank you for requesting an account on T3.
 
 To complete your registration, please confirm that you requested it 
 by visiting the following URL:
@@ -475,11 +526,12 @@ Your registration will be complete when you have performed this step.
 Sincerely,
 The Triticeae Toolbox Team
 ");
+
      if ($desired_usertype == USER_TYPE_PARTICIPANT) {
        $capkey = setting('capencryptionkey');
        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
        send_email(setting('capmail'),
-		  "[THT] Validate CAP Participant $email",
+		  "[T3] Validate Participant $email",
 "Email: $email
 Name: $name
 Institution: $institution
