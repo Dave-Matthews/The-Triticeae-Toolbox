@@ -1,10 +1,24 @@
 <?php
+/**
+ * Login
+ *
+ * PHP version 5.3
+ * 
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/login.php
+ *
+ * 12/14/2010 JLee  Change to use curator bootstrap
+ * 
+ */
 
-// 12/14/2010 JLee  Change to use curator bootstrap
 
 session_start();
-$root = "http://".$_SERVER['HTTP_HOST'];
-$root .= str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
+$root = "//" . $_SERVER['HTTP_HOST'];
+$root .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
 $config['base_url'] = "$root";
 $root = preg_replace("/\/\/$/", "/", $root);
 $config['root_dir'] = (dirname(__FILE__) . '/');
@@ -20,37 +34,46 @@ connect();
 <?php
 /**
  * Return the registraion form fragment.
+ *
+ * @param string $msg         message to user
+ * @param string $name        user name
+ * @param string $email       user email
+ * @param string $cemail      confirm user email
+ * @param string $answer      response to do you have password
+ * @param string $institution institution
+ *
+ * @return registration form 
  */
-  function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="no",$institution="")
+function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="no",$institution="")
 {
-  // ensure that we go back to home..
-  $_SESSION['login_referer_override'] = '/';
-  $c_no = "";
-  $c_yes = "";
-  $c_forgot="";
-  if ($answer == "no")
-    $c_no = 'checked="checked"';
-  if ($answer == "yes")
-    $c_yes = 'checked="checked"';
-  $retval = "";
-  if (!empty($msg))
-    $retval .= "<div id='form_error'>$msg</div>\n";
-  $sql = "select institutions_name, email_domain from institutions";
-  $result = mysql_query($sql) or die("<pre>".mysql_error()."\n$sql");
-  $domainMap = array();
-  $email_domain = split('@', $email);
-  $email_domain = $email_domain[1];
-  while ($row = mysql_fetch_assoc($result)) {
-    $edomain = $row['email_domain'];
-    $iname = $row['institutions_name'];
-    if ($edomain) {
-      array_push($domainMap, "'$edomain': '$iname'");
-      if ($edomain == $email_domain)
-	$institution = $iname;
+    // ensure that we go back to home..
+    $_SESSION['login_referer_override'] = '/';
+    $c_no = "";
+    $c_yes = "";
+    $c_forgot="";
+    if ($answer == "no")
+      $c_no = 'checked="checked"';
+    if ($answer == "yes")
+      $c_yes = 'checked="checked"';
+    $retval = "";
+    if (!empty($msg))
+      $retval .= "<div id='form_error'>$msg</div>\n";
+    $sql = "select institutions_name, email_domain from institutions";
+    $result = mysql_query($sql) or die("<pre>".mysql_error()."\n$sql");
+    $domainMap = array();
+    $email_domain = split('@', $email);
+    $email_domain = $email_domain[1];
+    while ($row = mysql_fetch_assoc($result)) {
+        $edomain = $row['email_domain'];
+        $iname = $row['institutions_name'];
+        if ($edomain) {
+            array_push($domainMap, "'$edomain': '$iname'");
+        if ($edomain == $email_domain)
+            $institution = $iname;
+        }
     }
-  }
-  $domainMap = '{' . join(", ", $domainMap) . '}';
-  $retval .= <<<HTML
+    $domainMap = '{' . join(", ", $domainMap) . '}';
+    $retval .= <<<HTML
 <br />
 <h2>Registration</h2>
 <script type="text/javascript">
@@ -127,32 +150,37 @@ connect();
   <input type="submit" name="submit_registration" value="Register" />
   </form>
 HTML;
-  return $retval;
+    return $retval;
 }
 
 /**
  * Return the login form fragment.
+ *
+ * @param string $msg message to user
+ *
+ * @return registration form form
  */
-function HTMLLoginForm($msg = "") {
-  $email = "";
-  if (isset($_GET['e']) && !empty($_GET['e']))
-    $email = base64_decode($_GET['e']);
-  $c_no = "";
-  $c_yes = "checked=\"checked\"";
-  if (isset($_GET['a']) && !empty($_GET['a'])) {
+function HTMLLoginForm($msg = "")
+{
+    $email = "";
+    if (isset($_GET['e']) && !empty($_GET['e']))
+      $email = base64_decode($_GET['e']);
     $c_no = "";
     $c_yes = "checked=\"checked\"";
-  }
+    if (isset($_GET['a']) && !empty($_GET['a'])) {
+        $c_no = "";
+        $c_yes = "checked=\"checked\"";
+    }
 
-  $retval = "";
-  if (!empty($msg))
-    $retval .= "<div id='form_error'>$msg</div>";
-  global $config;
-  $dir = explode("/", $config['root_dir']);
-  // Pop twice.
-  $crop = array_pop($dir); $crop = array_pop($dir);
-  $retval .= <<<HTML
-<form action="{$_SERVER['SCRIPT_NAME']}" method="post">
+    $retval = "";
+    if (!empty($msg))
+        $retval .= "<div id='form_error'>$msg</div>";
+    global $config;
+    $dir = explode("/", $config['root_dir']);
+    // Pop twice.
+    $crop = array_pop($dir); $crop = array_pop($dir);
+    $retval .= <<<HTML
+  <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
   <b>Participants</b>
   <ul>
@@ -188,18 +216,22 @@ function HTMLLoginForm($msg = "") {
     <input type="submit" name="submit_login" value="Continue" />
    </form>
 HTML;
-  return $retval;
+    return $retval;
 }
 
 /**
  * Return the html fragment associated with successful login.
+ *
+ * @return null
  */
-function HTMLLoginSuccess() {
-  // DEM jul2014: Don't return to the previous page.  It might be the "Access Denied"
-  //   page which would be confusing.
-  //$url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
-  $url = $config['base_url']."index.php";
-  return <<< HTML
+function HTMLLoginSuccess()
+{
+    // DEM jul2014: Don't return to the previous page.  It might be the "Access Denied"
+    //   page which would be confusing.
+    //$url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
+    global $config;
+    $url = "http:" . $config['base_url']."index.php";
+    return <<< HTML
 <p>You have been logged in. Welcome!
 <p><input type='Button' value='Proceed' onClick='window.location.assign("$url")'>
 <meta http-equiv="refresh" content="2;url=$url" />
