@@ -177,8 +177,6 @@ EOD;
             Genotype and Phenotype Data</a>
 	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
 	    SNP Alleles and Sequences</a> 
-        <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
-            Experiment Design</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
@@ -219,6 +217,12 @@ EOD;
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
       </ul>
+      <?php else: ?>
+      <li> <a href="" title="Manage">Manage</a>
+        <ul>
+        <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
+            Phenotype Trials</a>
+        </ul>
       <?php endif ?>
 
       <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
@@ -272,7 +276,7 @@ EOD;
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
             <?php else: ?>
     <li>
-      <a title="Login" href="<?php echo $config['base_url']; ?>login.php"><strong>Login/Register</strong></a>
+      <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
    <?php endif; ?>
 
 <?php

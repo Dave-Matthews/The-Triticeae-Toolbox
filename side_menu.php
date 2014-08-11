@@ -11,12 +11,12 @@ require $config['root_dir'].'includes/bootstrap.inc';
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
             <?php else: ?>
     <li>
-      <a title="Login" href="<?php echo $config['base_url']; ?>login.php"><strong>Login/Register</strong></a>
+      <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
    <?php endif; ?>
 
    <?php
    echo "<p><li><b>Current selections:</b>";
-   echo "<li><a href='".$config['base_url']."pedigree/line_selection.php'>Lines</a>: ". count($_SESSION['selected_lines']);
+   echo "<li><a href='".$config['base_url']."pedigree/line_properties.php'>Lines</a>: ". count($_SESSION['selected_lines']);
    echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers</a>: ";
    if (isset($_SESSION['clicked_buttons'])) {
      echo count($_SESSION['clicked_buttons']);
