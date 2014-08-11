@@ -11,7 +11,7 @@ require $config['root_dir'].'includes/bootstrap.inc';
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
             <?php else: ?>
     <li>
-      <a title="Login" href="<?php echo $config['base_url']; ?>login.php"><strong>Login/Register</strong></a>
+      <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
    <?php endif; ?>
 
    <?php
