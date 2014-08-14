@@ -207,7 +207,7 @@ if ($query == 'geno') {
                                         USER_TYPE_CURATOR,
                                         USER_TYPE_ADMINISTRATOR)))
                         $sql .= " and data_public_flag > 0";
-  $sql .= " order by experiments.created_on desc limit 100";
+  $sql .= " order by experiments.created_on desc";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   while ($row = mysqli_fetch_row($res)) {
     $trial_code = $row[0];
@@ -226,7 +226,7 @@ if ($query == 'geno') {
                                         USER_TYPE_CURATOR,
                                         USER_TYPE_ADMINISTRATOR)))
                         $sql .= " and data_public_flag > 0";
-  $sql .= " order by experiments.created_on desc limit 100";
+  $sql .= " order by experiments.created_on desc";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   while ($row = mysqli_fetch_row($res)) {
     $trial_code = $row[0];
