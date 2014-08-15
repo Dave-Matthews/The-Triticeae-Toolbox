@@ -296,7 +296,14 @@ EOD;
    } else {
      echo "0";
    }
-   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Trials:</a> " . count($_SESSION['selected_trials']);
+   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
+   if (isset($_SESSION['selected_trials'])) {
+       echo ": " . count($_SESSION['selected_trials']);
+   }
+   echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
+   if (isset($_SESSION['geno_exps'])) {
+       echo ": " . count($_SESSION['geno_exps']);
+   }
 ?>
 			
   </ul>
