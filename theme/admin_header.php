@@ -25,7 +25,7 @@
   <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
   <meta name="revisit-After" content="1 days" >
 
-  <!--base href="<?php echo $config['base_url']; ?>"-->
+  <base href="<?php echo $config['base_url']; ?>">
   <link rel="stylesheet" type="text/css" href="theme/new.css">
   <script type="text/javascript" src="includes/core.js"></script>
   <script type="text/javascript" src="theme/new.js"></script>
