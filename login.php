@@ -17,16 +17,16 @@
 
 
 session_start();
-$root = "//" . $_SERVER['HTTP_HOST'];
+$root = "http://" . $_SERVER['HTTP_HOST'];
 $root .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
 $config['base_url'] = "$root";
 $root = preg_replace("/\/\/$/", "/", $root);
 $config['root_dir'] = (dirname(__FILE__) . '/');
-require_once $config['root_dir'] . 'includes/bootstrap_curator.inc';
-require_once $config['root_dir'] . 'includes/email.inc';
-require_once $config['root_dir'] . 'includes/aes.inc';
-require_once $config['root_dir'] . 'theme/normal_header.php';
-require_once $config['root_dir'] . 'securimage/securimage.php';
+require_once 'includes/bootstrap_curator.inc';
+require_once 'includes/email.inc';
+require_once 'includes/aes.inc';
+require_once 'theme/normal_header.php';
+require_once 'securimage/securimage.php';
 connect();
 ?>
 <h1>Login/Register</h1>
@@ -562,5 +562,5 @@ address at
 	</div>
 <?php
 $footer_div = 1;
-include($config['root_dir'].'theme/footer.php');
+include('theme/footer.php');
 ?>
