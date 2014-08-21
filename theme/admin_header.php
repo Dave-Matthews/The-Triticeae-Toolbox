@@ -26,7 +26,7 @@
   <meta name="revisit-After" content="1 days" >
 
   <base href="<?php echo $config['base_url']; ?>" >
-  <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
+  <link rel="stylesheet" type="text/css" href="theme/new.css">
   <script type="text/javascript" src="includes/core.js"></script>
   <script type="text/javascript" src="theme/new.js"></script>
   <script type="text/javascript" src="theme/js/prototype.js"></script>
