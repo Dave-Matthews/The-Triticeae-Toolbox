@@ -17,7 +17,7 @@
 
 
 session_start();
-$root = "//" . $_SERVER['HTTP_HOST'];
+$root = "http://" . $_SERVER['HTTP_HOST'];
 $root .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
 $config['base_url'] = "$root";
 $root = preg_replace("/\/\/$/", "/", $root);
@@ -230,7 +230,7 @@ function HTMLLoginSuccess()
     //   page which would be confusing.
     //$url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
     global $config;
-    $url = "http:" . $config['base_url']."index.php";
+    $url = $config['base_url']."index.php";
     return <<< HTML
 <p>You have been logged in. Welcome!
 <p><input type='Button' value='Proceed' onClick='window.location.assign("$url")'>
