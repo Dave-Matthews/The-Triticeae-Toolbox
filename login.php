@@ -230,7 +230,7 @@ function HTMLLoginSuccess()
     //   page which would be confusing.
     //$url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
     global $config;
-    $url = $config['base_url']."index.php";
+    $url = "http:" . $config['base_url']."index.php";
     return <<< HTML
 <p>You have been logged in. Welcome!
 <p><input type='Button' value='Proceed' onClick='window.location.assign("$url")'>
