@@ -507,6 +507,9 @@ private function step3_lines() {
   <tr>
   <?php
   $sql_option = "";
+  if (preg_match("/\d/",$experiments)) {
+      $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
+  }
   $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
       FROM line_records, tht_base
       WHERE line_records.line_record_uid=tht_base.line_record_uid
