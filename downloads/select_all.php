@@ -172,6 +172,7 @@ class SelectPhenotypeExp
                 unset($_SESSION['selected_traits']);
                 unset($_SESSION['selected_trials']);
 		unset($_SESSION['clicked_buttons']);
+                unset($_SESSION['geno_exps']);
 		
 		?>
 		<p>1.
@@ -388,9 +389,12 @@ class SelectPhenotypeExp
           echo "error - no trials selection found";
         }
 
+        unset($_SESSION['geno_exps']);	//do not want to use the lines from a genotype experiment
         $username=$_SESSION['username'];
         if ($username) {
           store_session_variables('selected_lines', $username);
+          store_session_variables('selected_traits', $username);
+          store_session_variables('selected_trials', $username);
         }
       } elseif ($selection_ready) {
         ?>
