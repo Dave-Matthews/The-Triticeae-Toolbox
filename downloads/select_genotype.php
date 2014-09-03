@@ -266,7 +266,7 @@ private function type1_checksession()
   <option value="DataProgram">Data Program</option>
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
-  <script type="text/javascript" src="downloads/genotype_flapjack02.js"></script>
+  <script type="text/javascript" src="downloads/select_genotype.js"></script>
   <?php
   $this->step1_platform(); 
   //$this->type_GenoType_Display();
@@ -788,12 +788,14 @@ private function type1_markers() {
   } else {
     echo "found $count1 lines\n";
   }
+  if ($count1 > 0) {
   ?>
   <td>
   <input type="hidden" name="subset" id="subset" value="yes" />
   <input type="button" value="Save selection" onclick="javascript: load_title('save');"/>
   </table>
   <?php
+  }
 }
 
 } /* end of class */
