@@ -47,6 +47,7 @@ function use_normal() {
     });
     document.getElementById('step2').innerHTML = "";
     document.getElementById('step3').innerHTML = "";
+    document.getElementById('step4').innerHTML = "";
 }
 
 function load_title(command) {
@@ -99,6 +100,7 @@ function load_yearprog() {
       }
       );
       document.getElementById('step3').innerHTML = "";
+      document.getElementById('step4').innerHTML = "";
       document.getElementById('step5').innerHTML = "";
 }
 
@@ -173,6 +175,7 @@ function update_breeding_programs(options) {
             });
    load_yearprog();
    document.getElementById('step3').innerHTML = "";
+   document.getElementById('step4').innerHTML = "";
    document.getElementById('step5').innerHTML = "";
 }
 
@@ -188,21 +191,24 @@ function update_platform(options) {
         });
     load_experiments2();
     document.getElementById('step3').innerHTML = "";
+    document.getElementById('step4').innerHTML = "";
     document.getElementById('step5').innerHTML = "";
 }
 			
 function update_years(options) {
-				years_str = "";
-				
-				$A(options).each(function(year) {
-					if (year.selected) {
-						years_str += (years_str === "" ? "" : ",") + year.value;
-					}
-				});
-				if ((breeding_programs_str !== "") && (years_str !== ""))
-				{	
-					load_experiments();
-				}		
+    years_str = "";
+
+    $A(options).each(function(year) {
+      if (year.selected) {
+	years_str += (years_str === "" ? "" : ",") + year.value;
+      }
+    });
+    if ((breeding_programs_str !== "") && (years_str !== ""))
+    {	
+	load_experiments();
+    }		
+    document.getElementById('step4').innerHTML = "";
+    document.getElementById('step5').innerHTML = "";
 }
 
 function update_line_trial(options) {
@@ -261,6 +267,7 @@ function update_select1(options) {
   });
   document.getElementById('step2').innerHTML = "";
   document.getElementById('step3').innerHTML = "";
+  document.getElementById('step4').innerHTML = "";
   document.getElementById('step5').innerHTML = "";
   if (select1_str == "DataProgram") {
     load_breedprog();
@@ -272,6 +279,7 @@ function update_select1(options) {
 function update_experiments(options) 
 {
     experiments_str = "";
+    var target = "";
 
     $A(options).each(function(experiments) {
         if (experiments.selected) {
@@ -280,7 +288,12 @@ function update_experiments(options)
     });
 
     var url = php_self + "?function=step3lines&exps=" + experiments_str;
-    var tmp = new Ajax.Updater($('step3'), url, {
+    if (select1_str == "DataProgram") {
+      target = 'step4'; 
+    } else {
+      target = 'step3';
+    }
+    var tmp = new Ajax.Updater($(target), url, {
             onComplete: function() {
                 $('step3').show();
                 load_markers();
