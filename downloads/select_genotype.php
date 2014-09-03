@@ -274,6 +274,7 @@ private function type1_checksession()
   </div></div>
   <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
+  <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
   </div>
   <?php
@@ -383,6 +384,7 @@ private function type1_lines_trial_trait()
   ?>
   </div>
   <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
+  <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
   <script type="text/javascript">
       var mm = 99.9;
