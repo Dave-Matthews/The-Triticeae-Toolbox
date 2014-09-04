@@ -1304,39 +1304,32 @@ function kvimplode($delim, array $array) {
  * @param $id - the unique id of the specific record to fetch
  * @return FALSE if the given is not a table record,
  *	   the result mysql resource if the given is a table record.
+ * DEM 4sep14: OMG. $id can be either a uid or a name.  This is an error waiting 
+ *    to happen.  In particular in view.php if the name is numeric we're 
+ *    assuming it's a uid.  Changed this.
  */
 function isRecord($table, $id) {
+  if(!is_numeric($table)) {
+    $pkey = @get_pkey($table);
+    if(!$pkey) // not a valid table, return FALSE
+      return FALSE;
 
-	if(!is_numeric($table)) {
-
-		$pkey = @get_pkey($table);
-
-		if(!$pkey) // not a valid table, return FALSE
-			return FALSE;
-
-		if(is_numeric($id)) {
-
-			$source = mysql_query("
-				SELECT *
-				FROM $table
-				WHERE $pkey = '$id'
-			");
-		}
-
-		if(!$source || mysql_num_rows($source) < 1 || !is_numeric($id)) {	// maybe the id was a name
-
-			$name = get_unique_name($table);
-			$source = mysql_query("
-				SELECT *
-				FROM $table
-				WHERE $name = '$id'
-				");
-		}
-
-		if(@mysql_num_rows($source) > 0) {
-			return $source;
-		}
-	} 	return FALSE;
+    // Test for a name match first, then for a uid match.
+    /* if(is_numeric($id)) { */
+    /*   $source = mysql_query("	SELECT * */
+    /* 				FROM $table */
+    /* 				WHERE $pkey = '$id'"); */
+    /* } */
+    $name = get_unique_name($table);
+    $source = mysql_query("SELECT * FROM $table WHERE $name = '$id'");
+    if(@mysql_num_rows($source) > 0) 
+      return $source;
+    $source = mysql_query("SELECT * FROM $table WHERE $pkey = '$id'");
+    if(@mysql_num_rows($source) > 0) 
+      return $source;
+    // else, nothing found
+    return FALSE;
+  } 	
 }
  
 
