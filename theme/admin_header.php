@@ -276,7 +276,7 @@ EOD;
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
             <?php else: ?>
     <li>
-      <a title="Login" href="<?php echo $config['base_url']; ?>login.php"><strong>Login/Register</strong></a>
+      <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
    <?php endif; ?>
 
 <?php
@@ -296,7 +296,14 @@ EOD;
    } else {
      echo "0";
    }
-   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Trials:</a> " . count($_SESSION['selected_trials']);
+   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
+   if (isset($_SESSION['selected_trials'])) {
+       echo ": " . count($_SESSION['selected_trials']);
+   }
+   echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
+   if (isset($_SESSION['geno_exps'])) {
+       echo ": " . count($_SESSION['geno_exps']);
+   }
 ?>
 			
   </ul>

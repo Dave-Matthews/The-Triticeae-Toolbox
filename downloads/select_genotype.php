@@ -105,10 +105,15 @@ class SelectGenotypeExp
 private function refresh_title()
 {
    $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
+   $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
    echo "<h2>Select Lines by Genotype Experiment</h2>";
    echo "<p>After saving, the line selection can be used for analysis or download. Select multiple options by holding down the Ctrl key while selecting.";
    if ($command == "save") {
-      if (!empty($_GET['lines'])) {
+      if ((($subset == "yes") || ($subset == "comb")) && count($_SESSION['selected_lines'])>0) {
+          $lines = $_SESSION['selected_lines'];
+          $lines_str = implode(",", $lines);
+          $count = count($_SESSION['selected_lines']);
+      } elseif (!empty($_GET['lines'])) {
           $lines_str = $_GET['lines'];
           $lines = explode(',', $lines_str);
           $_SESSION['selected_lines'] = $lines;
@@ -130,6 +135,50 @@ private function refresh_title()
       } else {
           echo "error - no selection found";
       }
+      if ($subset == "no") {
+          $experiments = $_GET['exps'];
+          $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+          FROM tht_base as tb, line_records as lr
+          WHERE lr.line_record_uid = tb.line_record_uid
+          AND tb.experiment_uid IN ($experiments)
+          ORDER BY lr.line_record_name";
+          $lines = array();
+          $res = mysql_query($sql) or die(mysql_error() . $sql);
+          while ($row = mysql_fetch_assoc($res))
+          {
+            array_push($lines,$row['id']);
+          }
+          $lines_str = implode(",", $lines);
+      } elseif ($subset == "comb") {
+          $experiments = $_GET['exps'];
+          $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+          FROM tht_base as tb, line_records as lr
+          WHERE lr.line_record_uid = tb.line_record_uid
+          AND tb.experiment_uid IN ($experiments)
+          ORDER BY lr.line_record_name";
+          $res = mysql_query($sql) or die(mysql_error() . $sql);
+          while ($row = mysql_fetch_assoc($res))
+          {
+            $line_uid = $row['id'];
+            if (!in_array($line_uid,$lines)) {
+                array_push($lines,$row['id']);
+            }
+          }
+          $lines_str = implode(",", $lines);
+      } elseif ($subset == "yes") {
+          $experiments = $_GET['exps'];
+          $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+          FROM tht_base as tb, line_records as lr
+          WHERE lr.line_record_uid = tb.line_record_uid
+          AND tb.experiment_uid IN ($experiments)
+          ORDER BY lr.line_record_name";
+          $res = mysql_query($sql) or die(mysql_error() . $sql);
+          while ($row = mysql_fetch_assoc($res)) {
+            $temp[] = $row['id'];
+          }
+          $lines = array_intersect($lines, $temp);
+      }
+      $_SESSION['selected_lines'] = $lines;
       if (!empty($_GET['exps'])) {
           $exps_str = $_GET['exps'];
           $experiments = explode(',', $exps_str);
@@ -217,7 +266,7 @@ private function type1_checksession()
   <option value="DataProgram">Data Program</option>
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
-  <script type="text/javascript" src="downloads/genotype_flapjack01.js"></script>
+  <script type="text/javascript" src="downloads/select_genotype.js"></script>
   <?php
   $this->step1_platform(); 
   //$this->type_GenoType_Display();
@@ -457,9 +506,30 @@ private function step3_lines() {
   <option>Lines</option>
   </select>
   <table id="phenotypeSelTab">
+  <tr>
+  <?php
+  $sql_option = "";
+  if (preg_match("/\d/",$experiments)) {
+      $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
+  }
+  $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
+      FROM line_records, tht_base
+      WHERE line_records.line_record_uid=tht_base.line_record_uid
+      $sql_option";
+      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+      while($row = mysql_fetch_array($res)) {
+        $count1++;
+      }
+  
+  if (isset($_SESSION['selected_lines'])) {
+      $count2 = count($_SESSION['selected_lines']);
+      echo "<td>Lines found: $count1<td><td>Current selection: $count2";
+  }
+  ?>
   <tr><td>
           <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_lines(this.options)">
             <?php
+            $count = 0;
             $sql_option = "";
             if (preg_match("/\d/",$experiments)) {
               $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
@@ -473,6 +543,7 @@ private function step3_lines() {
             $sql_option";
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
             while($row = mysql_fetch_array($res)) {
+              $count++;
               ?>
               <option selected value="<?php echo $row['id'] ?>">
               <?php echo $row['name'] ?>
@@ -482,6 +553,25 @@ private function step3_lines() {
             ?>
           </select>
   <?php
+      if (isset($_SESSION['selected_lines']) AND count($_SESSION['selected_lines']) != 0) {
+          ?>
+          <td style="width: 130px; padding: 8px">Combine with <font color=blue>currently<br>selected lines</font>:<br>
+          <input type="radio" name="subset" value="no" checked onclick="javascript: update_combine(this.value)">Replace<br>
+          <input type="radio" name="subset" value="comb" onclick="javascript: update_combine(this.value)">Add (OR)<br>
+          <input type="radio" name="subset" value="yes" onclick="javascript: update_combine(this.value)">Intersect (AND)<br>
+  <?php
+          $count = count($_SESSION['selected_lines']);
+          print "<td><select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;\">";
+          foreach ($_SESSION['selected_lines'] as $lineuid) {
+            $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+            while ($row=mysql_fetch_assoc($result)) {
+              $selval=$row['line_record_name'];
+              print "<option value=\"$lineuid\" selected>$selval</option>\n";
+            }
+          }
+          print "</select></table>";
+       }
+
 }	
 
 /**
@@ -556,7 +646,6 @@ private function type_GenoType_Display()
 		</div>
 		<div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
 		<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
-		<div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
                 <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
 
 <?php 
@@ -701,12 +790,14 @@ private function type1_markers() {
   } else {
     echo "found $count1 lines\n";
   }
+  if ($count1 > 0) {
   ?>
   <td>
   <input type="hidden" name="subset" id="subset" value="yes" />
-  <input type="button" value="Save" onclick="javascript: load_title('save');"/>
+  <input type="button" value="Save selection" onclick="javascript: load_title('save');"/>
   </table>
   <?php
+  }
 }
 
 } /* end of class */

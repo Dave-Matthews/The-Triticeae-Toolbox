@@ -35,7 +35,7 @@ new Downloads($_GET['function']);
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
 class Downloads
-{   
+{
     /**
      * delimiter used for output files
      */
@@ -43,6 +43,7 @@ class Downloads
     
     /** 
      * Using the class's constructor to decide which action to perform
+     *
      * @param string $function action to perform
      */
     public function __construct($function = null)
@@ -113,7 +114,7 @@ class Downloads
          ?>        
         </div>
 		<div id="step1" style="float: left; margin-bottom: 1.5em;">
-		<script type="text/javascript" src="phenotype/downloads.js"></script><br>
+		<script type="text/javascript" src="phenotype/downloads01.js"></script><br>
                 <?php 
                 $this->type1_phenotype();
                 ?>
@@ -595,20 +596,27 @@ class Downloads
      */
     private function step5_phenotype()
     {
-     global $mysqli;
-     $phen_item = $_GET['pi'];
-     $experiments = $_GET['e'];
-     $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+        global $mysqli;
+        $phen_item = $_GET['pi'];
+        $experiments = $_GET['e'];
+        $subset = $_GET['lw'];
+        if (isset($_SESSION['selected_lines'])) {
+            $selectedlines= $_SESSION['selected_lines'];
+            $selectedlines = implode(',', $selectedlines);
+        }
 
-     ?>
-     <input type="button" value="Save Phenotype Selection" onclick="javascript:phenotype_save();" /><br><br>
-     <?php
+        ?>
+        <input type="button" value="Save Phenotype Selection" onclick="javascript:phenotype_save();" /><br><br>
+        <?php
 
-     if (isset($_GET['pi']) && !empty($_GET['pi'])) {
-     	$sel_phen = explode(',',$phen_item);
-     	$sel_expr = explode(',',$experiments);
-        echo "<table><tr><td>Traits<td>Trials<td>Number of Lines";    
-     	foreach ($sel_phen as $p_uid) {
+        if (isset($_GET['pi']) && !empty($_GET['pi'])) {
+            $sel_phen = explode(',', $phen_item);
+     	    $sel_expr = explode(',', $experiments);
+            echo "<table><tr><td>Traits<td>Trials<td>Lines";    
+            if ($subset == "yes") {
+                echo "<td>contained in<br>selected lines";
+            } 
+            foreach ($sel_phen as $p_uid) {
      		$sql = "select phenotypes_name from phenotypes where phenotype_uid = $p_uid";
      		$res1 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
      		while ($row1 = mysqli_fetch_array($res1)) {
@@ -632,6 +640,15 @@ class Downloads
      			      $l_count++;
      			    }
      			    echo "<tr><td>$p_name<td>$e_name<td>$l_count";
+                            if ($subset == "yes") {
+                                $sql .= " AND lr.line_record_uid IN ($selectedlines)";
+                                $res3 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                                $l_count = 0;
+                                while ($row3 = mysqli_fetch_array($res3)) {
+                                  $l_count++;
+                                }
+                                echo "<td>$l_count";
+                            }
      			  }
      		    }
      	    }
