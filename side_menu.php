@@ -11,7 +11,7 @@ require $config['root_dir'].'includes/bootstrap.inc';
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
             <?php else: ?>
     <li>
-      <a title="Login" href="<?php echo $config['base_url']; ?>login.php"><strong>Login/Register</strong></a>
+      <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
    <?php endif; ?>
 
    <?php
@@ -26,7 +26,14 @@ require $config['root_dir'].'includes/bootstrap.inc';
      echo "All";
    }
    echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits</a>: ". count($_SESSION['selected_traits']);
-   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Trials</a>: ". count($_SESSION['selected_trials']);
+   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
+   if (isset($_SESSION['selected_trials'])) {
+       echo ": " . count($_SESSION['selected_trials']);
+   }
+   echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
+   if (isset($_SESSION['geno_exps'])) {
+       echo ": " . count($_SESSION['geno_exps']);
+   }
 ?>
 			
 			
@@ -39,9 +46,8 @@ require $config['root_dir'].'includes/bootstrap.inc';
   </div>
   </form>
   <br>
-<!--  <a href="<?php echo $config['base_url']; ?>advanced_search.php">Advanced Search</a> -->
   </div>
-<div id="quicklinks"  style="top:230px;left:0px; width: 170px; padding: 10px 15px;">
-<?php include($config['root_dir'].'whatsnew.html'); ?>
+<div  style="margin-left: -25px; width: 170px; padding: 10px 15px;">
+<?php require $config['root_dir'].'whatsnew.html'; ?>
 </div>
 

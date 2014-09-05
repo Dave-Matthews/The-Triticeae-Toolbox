@@ -1,4 +1,18 @@
-<?php if ( isset($footer_div) ): ?>
+<?php
+/**
+ * page footer 
+ *
+ * PHP version 5.3
+ *
+ * @category PHP
+ * @package  T3
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @version  GIT: 2
+ * @link     http://triticeaetoolbox.org/wheat/theme/footer.php
+ *
+ */
+if ( isset($footer_div) ): ?>
 </div>
 <?php endif; ?>
 <div id="footer" style="padding: 15px 0 0 0; height: 160px; background-color: #f9cb73; top: 0;">
