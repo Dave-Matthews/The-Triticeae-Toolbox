@@ -3,7 +3,8 @@
  * Download Gateway New
  * 
  * PHP version 5.3
- * Prototype version 1.5.0
+ * jQuery version 1.11
+ * jQueryUI version 1.11
  * 
  * @category PHP
  * @package  T3
@@ -232,8 +233,8 @@ class Fieldbook
         <div class="step5"></div>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
-        <script type="text/javascript" src="curator_data/design02.js"></script>
+        <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+        <script type="text/javascript" src="curator_data/design04.js"></script>
         <script type="text/javascript">
         if ( window.addEventListener ) {
             window.addEventListener( "load", select_trial(), false );
@@ -614,6 +615,8 @@ class Fieldbook
             if (isset($_SESSION['check_lines'])) {
                 $lines = $_SESSION['check_lines'];
                 $lines_count = count($lines);
+                $nPriChk = 1;
+                $nSecChk = $lines_count - 1;
                 $lines_str = implode (",", $lines);
                 $name = "";
                 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
@@ -634,10 +637,19 @@ class Fieldbook
                 if ($count != "") {
                     echo "<tr><td>Treatment:<td>$count lines selected";
                     ?>
-                    <tr><td>Rows:<td><input type="text" id="rows"><td>MADII design requires that the number of rows be a multiple of 3
+                    <tr><td>Rows:<td><input type="text" id="rows"><td>also known as range
                     <tr><td>Columns:<td><input type="text" id="columns"><td>optional
-                    <tr><td>Rows Per Block:<td><input type="text" id="nRowPerBlk"><td>should be <= Rows
-                    <tr><td>Cols Per Block:<td><input type="text" id="nColPerBlk">
+                    <tr><td>Rows / Block:<td><input type="text" id="nRowPerBlk"><td>should be less then or equal to Rows
+                    <tr><td>Columns / Block:<td><input type="text" id="nColPerBlk">
+                    <tr><td>Extra Plot Fill:<td><select id="fillWith">
+                                      <option value='Chk'>Check</option>
+                                      <option value='Entry'>Entry</option>
+                                      <option value='Filler'>Filler</option>
+                        </select><td>extra plots in the field should be filled with
+                    <tr><td>Primary Checks:<td><div id="nPriChk"><?php echo $nPriChk; ?></div><td>number of primary checks
+                    <tr><td>Secondary Checks:<td><?php echo $nSecChk; ?><td>number of secondary checks
+                    <tr><td>Checks / Block:<td><input type="text" id="nChksPerBlk" value="2"><td>number of checks per block
+                         <br>
                     <?php
                 } else {
                     echo "$msg";
@@ -897,7 +909,22 @@ class Fieldbook
             $cmd = "nColsPerBlk <- $nColsPerBlk\n";
             $objRWrap->addCommand($cmd);
         }
-
+        if (isset($_GET['fillWith'])) {
+            $fillWith = $_GET['fillWith'];
+            $cmd = "fillWith <- \"$fillWith\"\n";
+            $objRWrap->addCommand($cmd);
+        }
+        if (isset($_GET['nSecChk'])) {
+            $nSecChk = $_GET['nSecChk'];
+            $cmd = "nSecChk <- $nSecChk\n";
+            $objRWrap->addCommand($cmd);
+        }
+        if (isset($_GET['nChksPerBlk'])) {
+            $nChksPerBlk = $_GET['nChksPerBlk'];
+            $cmd = "nChksPerBlk <- $nChksPerBlk\n";
+            $objRWrap->addCommand($cmd);
+        }
+ 
         /*error checking*/
         if ($exp_type == "alpha") {
             if (($count_lines % $size_blk) != 0) {
