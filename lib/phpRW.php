@@ -21,6 +21,8 @@
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/lib/RWrap.php
  */
+namespace T3;
+
 class RWrap
 {
     /**
@@ -28,7 +30,7 @@ class RWrap
      *
      * @return null
      */
-    function __construct()
+    public function __construct()
     {
         $this->unique_str = $_GET['unq'];
         $this->dir = "/tmp/tht/$this->unique_str";
@@ -56,7 +58,7 @@ class RWrap
      *
      * @return null
      */
-    function addCommand($cmd)
+    public function addCommand($cmd)
     {
         fwrite($this->h, $cmd);
     }
@@ -66,7 +68,7 @@ class RWrap
      *
      * @return null
      */
-    function close()
+    public function close()
     {
         fclose($this->h);
     }
@@ -78,7 +80,7 @@ class RWrap
      *
      * @return file contents 
      */
-    function getResults($result_file)
+    public function getResults($result_file)
     {
         $file = "$this->dir/$result_file";
         $h = fopen($file, "r");
@@ -99,7 +101,7 @@ class RWrap
      *
      * @return file path
      */
-    function getLink($result_file)
+    public function getLink($result_file)
     {
         $file = "$this->dir/$result_file";
         if (file_exists($file)) {
@@ -114,7 +116,7 @@ class RWrap
      *
      * @return null
      */
-    function getLog()
+    public function getLog()
     {
     }
 
@@ -125,11 +127,10 @@ class RWrap
      *
      * @return null
      */
-    function runCommand($pkg_file)
+    public function runCommand($pkg_file)
     {
         $cmd = "cat $this->cmd_file ../R/$pkg_file | R --vanilla > /dev/null 2> $this->log_file";
         exec($cmd);
         return $cmd;
     }
 }
-
