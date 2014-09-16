@@ -63,7 +63,7 @@ class ShowData
     private function typeData()
     {
         global $config;
-        include $config['root_dir'].'theme/normal_header.php';
+        include $config['root_dir'].'theme/admin_header.php';
 
         $trial_code=$_GET['trial_code'];
         echo " <h2>Genotyping experiment ".$trial_code. "</h2>";
