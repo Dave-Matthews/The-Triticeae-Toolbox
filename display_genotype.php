@@ -106,7 +106,17 @@ class ShowData
     while ($line = mysql_fetch_row($res_lines))
       $line_ids[] = $line[0];
     $line_total = count($line_ids);
-    $line_list = implode(",", $line_ids);
+    if ($line_total == 0) {
+        $sql_lines = "select line_index from allele_bymarker_expidx where experiment_uid = $experiment_uid";
+        $res_lines = mysql_query($sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysql_error());
+        if ($line = mysql_fetch_row($res_lines)) {
+            $line_list = $line[0];
+            $line_ids = explode(",", $line_list);
+            $line_total = count($line_ids);
+        }
+    } else {
+        $line_list = implode(",", $line_ids);
+    }
 
     $sql_Gen_Info = "SELECT * FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
     $res_Gen_Info = mysql_query($sql_Gen_Info) or die("Error: No experiment information for genotype experiment $trial_code..<br> " .mysql_error());
@@ -160,18 +170,19 @@ class ShowData
 	elseif ($min_maf < 0)
 	  $min_maf = 0;
 	
-	$sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa, SUM(af.missing) as summis, 
-		    SUM(af.bb_cnt) as sumbb, SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+	$sql_mstat = "SELECT af.marker_uid as marker, af.aa_cnt as sumaa, af.missing as summis, 
+		    af.bb_cnt as sumbb, af.total as total, af.ab_cnt AS sumab, maf
 		    FROM allele_frequencies AS af
-		    WHERE af.experiment_uid = '".$experiment_uid."'
-		    group by af.marker_uid"; 
+		    WHERE af.experiment_uid = '".$experiment_uid."'";
 	$res = mysql_query($sql_mstat) or die("Error: Unable to sum allele frequency values.<br>".mysql_error());
 	$num_mark = mysql_num_rows($res);
 	$num_maf = $num_miss = 0;
 			
 	while ($row = mysql_fetch_array($res)){
 	  $marker_uid[] = $row["marker"];
-	  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
+          $total_af = $row["sumaa"] + $row["sumab"] + $row["sumbb"];
+	  //$maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$total_af),($row["sumab"]+2*$row["sumbb"])/(2*$total_af)),1);
+          $maf = $row["maf"];
 	  $miss = round(100*$row["summis"]/$row["total"],1);
 	  if ($maf >= $min_maf)
 	    $num_maf++;
@@ -195,7 +206,7 @@ class ShowData
 <form method=POST action="<?php echo $SERVER[PHP_SELF] ?>">
 <b><?php echo ($num_mark) ?></b> markers were assayed for <b><?php echo ($line_total) ?></b> lines.
 <input type=hidden name=function value=select_lines>
-<input type=hidden name=linelist value=<?php echo $line_list ?>>
+<input type=hidden name=linelist value=<?php echo "\"$line_list\""; ?>>
 <input type="submit" value="Select these lines" style="color:blue">
 </form>
 
