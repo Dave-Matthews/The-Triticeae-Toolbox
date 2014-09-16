@@ -4,11 +4,8 @@
  *
  * PHP version 5.3
  *
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <cbirkett@gmail.com>
+ * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 12/12/2011
  * @link     http://triticeaetoolbox.org/wheat/t3_report.php
  *
  */
@@ -66,18 +63,13 @@ if ($query == 'geno') {
     print "markers with no genotype data<br>\n";
     print "<table border=0>";
     print "<tr><td>marker_uid<td>marker_name\n";
-    $sql = "select marker_uid, marker_name from markers";
+    $sql = "select markers.marker_uid, markers.marker_name from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $marker_uid = $row[0];
         $marker_name = $row[1];
-        $sql = "select marker_uid from genotyping_data where marker_uid = $marker_uid"; 
-        $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row2 = mysqli_fetch_row($res2)) {  
-        } else {
-            print "<tr><td>$marker_uid<td>$marker_name\n";
-            $count++;
-        }
+        print "<tr><td>$marker_uid<td>$marker_name\n";
+        $count++;
     }
     print "</table>\n";
     print "total $count markers missing genotype data<br>\n";
@@ -86,78 +78,81 @@ if ($query == 'geno') {
     include $config['root_dir'].'theme/normal_header.php';
     print "<h1>Genotyping data by experiment</h1>\n";
     print "<table border=0>";
-    print "<tr><td>Trial Code<td>experiment name<td>genotyping data\n";
+    print "<tr><td>Trial Code<td>experiment name<td>genotyp markers\n";
     if (preg_match('/THT/', $db)) {
         $sql = "select experiment_short_name, count(marker_uid) from experiments as e, tht_base as tb, genotyping_data as gd where e.experiment_uid = tb.experiment_uid AND gd.tht_base_uid = tb.tht_base_uid group by e.experiment_uid";
     } else {
-        $sql = "select trial_code, experiment_short_name, count(marker_uid) from allele_cache, experiments where allele_cache.experiment_uid = experiments.experiment_uid group by allele_cache.experiment_uid";
+        $sql = "select trial_code, experiment_short_name, count(marker_uid) from experiments, allele_frequencies where experiments.experiment_uid = allele_frequencies.experiment_uid group by allele_frequencies.experiment_uid";
     }
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $count=$count+$row[2];
         print "<tr><td><a href=display_genotype.php?trial_code=$row[0]>$row[0]</a><td>$row[1]<td>$row[2]\n";
+        flush();
     }
-  $count = number_format($count);
-  print "<tr><td>total<td><td>$count\n";
-  print "</table>";
+    $count = number_format($count);
+    print "<tr><td>total<td><td>$count\n";
+    print "</table>";
 } elseif ($query == 'linegeno') {
-  include $config['root_dir'].'theme/normal_header.php';
-  print "Lines with genotyping data\n";
-  print "<table border=0>";
-  print "<tr><td>breeding program code<td>count\n";
-  $sql = "select distinct(breeding_program_code) from line_records";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  while ($row = mysqli_fetch_row($res)) {
-    $program_code = $row[0];
-    if (preg_match("/[A-Z0-9]+/",$program_code)) {
-    $sql2 = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid) and (line_records.breeding_program_code = '$program_code')";
-    $res2 = mysqli_query($mysqli,$sql2) or die(mysqli_error($mysqli));
-    $row2 = mysqli_fetch_row($res2);
-    $count = $row2[0];
-    print "<tr><td>$program_code<td>$count\n";
+    include $config['root_dir'].'theme/normal_header.php';
+    print "Lines with genotyping data\n";
+    print "<table border=0>";
+    print "<tr><td>breeding program code<td>count\n";
+    $sql = "select distinct(breeding_program_code) from line_records";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $program_code = $row[0];
+        if (preg_match("/[A-Z0-9]+/", $program_code)) {
+            $sql2 = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid) and (line_records.breeding_program_code = '$program_code')";
+            $res2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mysqli));
+            $row2 = mysqli_fetch_row($res2);
+            $count = $row2[0];
+            print "<tr><td>$program_code<td>$count\n";
+        }
     }
-  }
-  print "</table>\n";
+    print "</table>\n";
 } elseif ($query == 'linephen') {
-  include($config['root_dir'].'theme/normal_header.php');
-  print "Lines with phenotype data\n";
-  print "<table border=0>";  print "<tr><td>breeding program code<td>count\n";
-  $sql = "select distinct(breeding_program_code) from line_records";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  while ($row = mysqli_fetch_row($res)) {
-    $program_code = $row[0];
-    if (preg_match("/[A-Z0-9]+/", $program_code)) {  
-    $sql2 = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, phenotype_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = phenotype_data.tht_base_uid) and (line_records.breeding_program_code = '$program_code')";
-    $res2 = mysqli_query($mysqli,$sql2) or die(mysqli_error($mysqli));
-    $row2 = mysqli_fetch_row($res2);
-    $count = $row2[0];
-    print "<tr><td>$program_code<td>$count\n";
+    include $config['root_dir'].'theme/normal_header.php';
+    print "Lines with phenotype data\n";
+    print "<table border=0>";
+    print "<tr><td>breeding program code<td>count\n";
+    $sql = "select distinct(breeding_program_code) from line_records";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $program_code = $row[0];
+        if (preg_match("/[A-Z0-9]+/", $program_code)) {
+            $sql2 = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, phenotype_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = phenotype_data.tht_base_uid) and (line_records.breeding_program_code = '$program_code')";
+            $res2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mysqli));
+            $row2 = mysqli_fetch_row($res2);
+            $count = $row2[0];
+            print "<tr><td>$program_code<td>$count\n";
+        }
     }
-  }
 } elseif ($query == 'Lines') {
-  include($config['root_dir'].'theme/normal_header.php');
-  print "Top 100 Line names ordered by creation date<br><br>\n";
-  print "<form action=t3_report.php method='POST'>";
-  print "<input type=hidden name=query value=Lines />";
-  print "Start Date: <input type=text name=startdate />";
-  print "End Date: <input type=text name=enddate />";
-  print "<input type=submit /> Use date format 2012-08-27";
-  print "</form><br>";
-  $sql = "select line_record_uid, line_record_name, date_format(created_on,'%m-%d-%y') from line_records";
-  if (empty($startdate) || empty($enddate)) {
-    $sql .= " order by created_on desc limit 100";
-  } else {
-    $sql .= " where (created_on > '$startdate') and (created_on < '$enddate')";
-    $sql .= " order by created_on desc";
-  }
-  print "<table border=0>"; print "<tr><td>Line name<td>created on\n";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  while ($row = mysqli_fetch_row($res)) {
-    $uid = $row[0];
-    $name = $row[1];
-    $date = $row[2];
-    print "<tr><td><a href=view.php?table=line_records&uid=$uid>$name</a><td>$date\n";
-  }
+    include $config['root_dir'].'theme/normal_header.php';
+    print "Top 100 Line names ordered by creation date<br><br>\n";
+    print "<form action=t3_report.php method='POST'>";
+    print "<input type=hidden name=query value=Lines />";
+    print "Start Date: <input type=text name=startdate />";
+    print "End Date: <input type=text name=enddate />";
+    print "<input type=submit /> Use date format 2012-08-27";
+    print "</form><br>";
+    $sql = "select line_record_uid, line_record_name, date_format(created_on,'%m-%d-%y') from line_records";
+    if (empty($startdate) || empty($enddate)) {
+        $sql .= " order by created_on desc limit 100";
+    } else {
+        $sql .= " where (created_on > '$startdate') and (created_on < '$enddate')";
+        $sql .= " order by created_on desc";
+    }
+    print "<table border=0>";
+    print "<tr><td>Line name<td>created on\n";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $uid = $row[0];
+        $name = $row[1];
+        $date = $row[2];
+        print "<tr><td><a href=view.php?table=line_records&uid=$uid>$name</a><td>$date\n";
+    }
 } elseif ($query == 'Markers') {
   include($config['root_dir'].'theme/normal_header.php');
   if ($opt == "") {
@@ -233,7 +228,7 @@ if ($query == 'geno') {
     $short_name = $row[1];
     $date = $row[2];
     $type = $row[3];
-    print "<tr><td><a href=display_genotype.php?trial_code=$trial_code>$trial_code</a><td>$short_name<td>$type<td>$date\n";
+    print "<tr><td><a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><td>$short_name<td>$type<td>$date\n";
   }
 } elseif ($query == 'cache') {
      $sql = "select count(genotyping_data_uid) from genotyping_data";
@@ -255,12 +250,12 @@ if ($query == 'geno') {
      if ($row = mysql_fetch_row($res)) {
         $LinesWithGeno = $row[0];
      }
-     $sql = "select count(distinct(markers.marker_uid)) from markers, genotyping_data where (markers.marker_uid = genotyping_data.marker_uid)";
+     $sql = "select count(markers.marker_uid) from markers where marker_uid IN (Select marker_uid from allele_frequencies)";
      $res = mysql_query($sql) or die(mysql_error());
      if ($row=mysql_fetch_row($res)) {
       $MarkersWithGeno = $row[0];
      }
-     $sql = "select distinct count(marker_uid) from markers where not exists (select genotyping_data_uid from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
+     $sql = "select count(markers.marker_uid) from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
      $res = mysql_query($sql) or die(mysql_error());
      if ($row=mysql_fetch_row($res)) {
        $MarkersNoGeno = $row[0];
@@ -348,12 +343,12 @@ if ($query == 'geno') {
      if ($row = mysqli_fetch_row($res)) {
         $LinesWithGeno = $row[0];
      }
-     $sql = "select count(distinct(markers.marker_uid)) from markers, genotyping_data where (markers.marker_uid = genotyping_data.marker_uid)";
+     $sql = "select count(markers.marker_uid) from markers where marker_uid IN (Select marker_uid from allele_frequencies)";
      $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
      if ($row=mysqli_fetch_row($res)) {
       $MarkersWithGeno = $row[0];
      }
-     $sql = "select distinct count(marker_uid) from markers where not exists (select genotyping_data_uid from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
+     $sql = "select count(markers.marker_uid) from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
      $res = mysql_query($sql) or die(mysql_error($mysqli));
      if ($row=mysql_fetch_row($res)) {
        $MarkersNoGeno = $row[0];
