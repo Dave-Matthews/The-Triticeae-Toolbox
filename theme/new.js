@@ -8,9 +8,9 @@ function getElmt(id) {
 	//if (isIE) { return (document.all[id]); }
 	//else { return (document.getElementById(id)); }
         if (document.getElementById) { //DOM
-          return (document.getElementById(id))
+          return (document.getElementById(id));
         } else if (document.all) { //IE
-           return (document.all[id])
+           return (document.all[id]);
         }
 }
 
@@ -19,10 +19,11 @@ function moveQuickLinks() {
 	var pos = 0;
 	// if (document.documentElement) { pos = 15 + document.documentElement.scrollTop; }
 	// else { pos = 15 + document.body.scrollTop; }
-	if (document.documentElement.scrollTopMax) 
+	if (document.documentElement.scrollTopMax) {
 	    pos = 15 + document.documentElement.scrollTop; // Firefox
-	else 
+	} else {
 	    pos = 15 + document.body.scrollTop; // Chrome, Safari, IE
+        }
 	if (pos < 141) { pos = 141; }
 	quickLinks.style.top = pos + "px";
 	setTimeout(moveQuickLinks, 0);
@@ -62,5 +63,3 @@ function update_side_menu() {
 }
 
 window.onload = startList;
-
-
