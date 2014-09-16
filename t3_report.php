@@ -66,6 +66,8 @@ if ($query == 'geno') {
     $sql = "select markers.marker_uid, markers.marker_name from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
+        $marker_uid = $row[0];
+        $marker_name = $row[1];
         print "<tr><td>$marker_uid<td>$marker_name\n";
         $count++;
     }
