@@ -31,44 +31,49 @@ connect();
 ?>
 <h1>Login/Register</h1>
 <div class="section">
-  <style type="text/css">
-    ul {margin: 3px;}
-  </style>
-
 <?php
 /**
  * Return the registraion form fragment.
+ *
+ * @param string $msg         message to user
+ * @param string $name        user name
+ * @param string $email       user email
+ * @param string $cemail      confirm user email
+ * @param string $answer      response to do you have password
+ * @param string $institution institution
+ *
+ * @return registration form 
  */
-  function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="no",$institution="")
+function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="no",$institution="")
 {
-  // ensure that we go back to home..
-  $_SESSION['login_referer_override'] = '/';
-  $c_no = "";
-  $c_yes = "";
-  $c_forgot="";
-  if ($answer == "no")
-    $c_no = 'checked="checked"';
-  if ($answer == "yes")
-    $c_yes = 'checked="checked"';
-  $retval = "";
-  if (!empty($msg))
-    $retval .= "<div id='form_error'>$msg</div>\n";
-  $sql = "select institutions_name, email_domain from institutions";
-  $result = mysql_query($sql) or die("<pre>".mysql_error()."\n$sql");
-  $domainMap = array();
-  $email_domain = split('@', $email);
-  $email_domain = $email_domain[1];
-  while ($row = mysql_fetch_assoc($result)) {
-    $edomain = $row['email_domain'];
-    $iname = $row['institutions_name'];
-    if ($edomain) {
-      array_push($domainMap, "'$edomain': '$iname'");
-      if ($edomain == $email_domain)
-	$institution = $iname;
+    // ensure that we go back to home..
+    $_SESSION['login_referer_override'] = '/';
+    $c_no = "";
+    $c_yes = "";
+    $c_forgot="";
+    if ($answer == "no")
+      $c_no = 'checked="checked"';
+    if ($answer == "yes")
+      $c_yes = 'checked="checked"';
+    $retval = "";
+    if (!empty($msg))
+      $retval .= "<div id='form_error'>$msg</div>\n";
+    $sql = "select institutions_name, email_domain from institutions";
+    $result = mysql_query($sql) or die("<pre>".mysql_error()."\n$sql");
+    $domainMap = array();
+    $email_domain = split('@', $email);
+    $email_domain = $email_domain[1];
+    while ($row = mysql_fetch_assoc($result)) {
+        $edomain = $row['email_domain'];
+        $iname = $row['institutions_name'];
+        if ($edomain) {
+            array_push($domainMap, "'$edomain': '$iname'");
+        if ($edomain == $email_domain)
+            $institution = $iname;
+        }
     }
-  }
-  $domainMap = '{' . join(", ", $domainMap) . '}';
-  $retval .= <<<HTML
+    $domainMap = '{' . join(", ", $domainMap) . '}';
+    $retval .= <<<HTML
 <br />
 <h2>Registration</h2>
 <script type="text/javascript">
@@ -93,13 +98,8 @@ connect();
   <h3>Name</h3>
   &nbsp;&nbsp;<label for="name">My name is:</label>&nbsp;
   <input type="text" name="name" id="name" value="$name" /><br>
-  &nbsp;&nbsp;For <i>Participant</i> or <i>Curator</i> status, please give your full name.
+  &nbsp;&nbsp;Project participants <b>must</b> give a full name to be approved.
   <h3>Email address</h3>
-
-  <style type="text/css">
-    table td {padding: 2px;}
-  </style>
-
   <table border="0" cellspacing="0" cellpadding="0"
 	 style="border: none; background: none">
     <tr><td style="border: none; text-align: right;">
@@ -125,9 +125,16 @@ connect();
 	<label for="institution">My institution is:<label></td>
 	<td style="border:none;">
 	<input type="text" name="institution" id="institution"
-	       value="$institution" size="30" /> Required for TBD Participants.
+	       value="$institution" size="30" /> Required for project participants.
         </td></tr></table>
-  <p>
+  <h3>Are you a project participant?</h3>
+  <input $c_no type="radio" value="no" name="answer" id="answer_no" />
+  <label for="answer_no">No</label>
+  <br />
+  <input $c_yes type="radio" value="yes" name="answer"
+	 id="answer_yes" />
+  <label for="answer_yes">Yes</label>
+  <br />
   <table border="0" cellspacing=="0" cellpadding="0"
 	 style="border: none; background: none">
     <tr><td><img id="captcha" src="./securimage/securimage_show.php"
@@ -143,47 +150,49 @@ connect();
   <input type="submit" name="submit_registration" value="Register" />
   </form>
 HTML;
-  return $retval;
+    return $retval;
 }
 
 /**
  * Return the login form fragment.
+ *
+ * @param string $msg message to user
+ *
+ * @return registration form form
  */
-function HTMLLoginForm($msg = "") {
-  $email = "";
-  if (isset($_GET['e']) && !empty($_GET['e']))
-    $email = base64_decode($_GET['e']);
-  $c_no = "";
-  $c_yes = "checked=\"checked\"";
-  if (isset($_GET['a']) && !empty($_GET['a'])) {
+function HTMLLoginForm($msg = "")
+{
+    $email = "";
+    if (isset($_GET['e']) && !empty($_GET['e']))
+      $email = base64_decode($_GET['e']);
     $c_no = "";
     $c_yes = "checked=\"checked\"";
-  }
+    if (isset($_GET['a']) && !empty($_GET['a'])) {
+        $c_no = "";
+        $c_yes = "checked=\"checked\"";
+    }
 
-  $retval = "";
-  if (!empty($msg))
-    $retval .= "<div id='form_error'>$msg</div>";
-  global $config;
-  $dir = explode("/", $config['root_dir']);
-  // Pop twice.
-  $crop = array_pop($dir); $crop = array_pop($dir);
-  $retval .= <<<HTML
-<form action="{$_SERVER['SCRIPT_NAME']}" method="post">
+    $retval = "";
+    if (!empty($msg))
+        $retval .= "<div id='form_error'>$msg</div>";
+    global $config;
+    $dir = explode("/", $config['root_dir']);
+    // Pop twice.
+    $crop = array_pop($dir); $crop = array_pop($dir);
+    $retval .= <<<HTML
+  <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
-  <b>All registered users</b>
-  <ul>
-    <li> Selections made during searches are saved from session to session.
-  </ul>
   <b>Participants</b>
   <ul>
-    <li>can create their own sets ("panels") of germplasm lines (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>).
-    <li>have pre-release access to all shared data.
-    <li>will be allowed to add their own private data to the database (<i>soon!</i>).
+    <li>have pre-release access to all phenotype and genotype data from the project.
+    <li>will be allowed to add their own private data to the database (feature to be added).
+    <li>can test-load their data files in the "Sandbox" database before submitting them to the curator. 
+    <li>can create unique germplasm line panels (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>)
  </ul>
-  <b>Curators</b>
+
+  <b>All Registered Users</b>
   <ul>
-    <li>can add data to the database.
-    <li>can correct or remove any data.
+    <li> Selections made during searches are saved from session to session.
   </ul>
 
     <h3>What is your email address?</h3>
@@ -207,7 +216,7 @@ function HTMLLoginForm($msg = "") {
     <input type="submit" name="submit_login" value="Continue" />
    </form>
 HTML;
-  return $retval;
+    return $retval;
 }
 
 /**
@@ -370,7 +379,7 @@ function HTMLProcessForgot() {
   else {
     $key = setting('passresetkey');
     $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-    send_email($email, "Breeders Database : Reset Your Password",
+    send_email($email, "T3: Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
 {$root}resetpass.php?token=$urltoken");
@@ -494,9 +503,7 @@ if (isset($_POST['submit_login'])) {
      $safe_institution = $institution ? "'" . mysql_real_escape_string($institution) . "'" : 'NULL';
      $desired_usertype = ($answer == 'yes' ? USER_TYPE_PARTICIPANT :
 			  USER_TYPE_PUBLIC);
-     // For the Funnyfarm, everyone is a Curator.
-     //$safe_usertype = USER_TYPE_PUBLIC;
-     $safe_usertype = USER_TYPE_CURATOR;
+     $safe_usertype = USER_TYPE_PUBLIC;
      $sql = "insert into users (user_types_uid, users_name, pass,
 name, email, institution) values ($safe_usertype, '$safe_email',
 MD5('$safe_password'), '$safe_name', '$safe_email',
@@ -505,10 +512,10 @@ $safe_institution)";
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-     send_email($email, "Breeders Database registration in progress",
+     send_email($email, "T3 registration in progress",
 "Dear $name,
 
-Thank you for requesting an account on The Breeders Database.
+Thank you for requesting an account on T3.
 
 To complete your registration, please confirm that you requested it 
 by visiting the following URL:
@@ -517,28 +524,27 @@ by visiting the following URL:
 Your registration will be complete when you have performed this step.
 
 Sincerely,
-The Breeders Database Team
+The Triticeae Toolbox Team
 ");
 
-/*      if ($desired_usertype == USER_TYPE_PARTICIPANT) { */
-/*        $capkey = setting('capencryptionkey'); */
-/*        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128)); */
-/*        send_email(setting('capmail'), */
-/* 		  "Validate TBD Participant $email", */
-/* 		  "Email: $email */
-/* Name: $name */
-/* Institution: $institution */
+     if ($desired_usertype == USER_TYPE_PARTICIPANT) {
+       $capkey = setting('capencryptionkey');
+       $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
+       send_email(setting('capmail'),
+		  "[T3] Validate Participant $email",
+"Email: $email
+Name: $name
+Institution: $institution
 
-/* Please use the following link to confirm or reject participant status  */
-/* of this user: */
-/* {$root}fromcapemail.php?token=$capurltoken */
+Please use the following link to confirm or reject participant status 
+of this user:
+{$root}fromcapemail.php?token=$capurltoken
 
-/* A message has been sent to the user that he must confirm his email  */
-/* address at */
-/* {$root}fromemail.php?token=$urltoken */
-/* "); */
-/*      } */
-
+A message has been sent to the user that he must confirm his email 
+address at
+{$root}fromemail.php?token=$urltoken
+");
+     }
      echo HTMLRegistrationSuccess($name, $email);
    }
  }

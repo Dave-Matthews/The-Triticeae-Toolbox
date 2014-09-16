@@ -30,7 +30,8 @@ connect();
     the <b>Curate</b> menu, which is available to registered Sandbox
     users.
     <li>To make updates or corrections, edit your file and reload.
-    <li>Please use the <a href="http://malt.pw.usda.gov/t3/bdfunny">Funnyfarm</a> database
+    <li>Please use the <a href="http://malt.pw.usda.gov/t3/sandbox/wheat">wheat</a> 
+      or <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a> Sandbox database
       for test-loading your files.  When they&apos;re ready,
       click here to submit them to the T3 Curator for loading into the official database.
       <br><input type="Button" value="Submit" onclick="window.open('<?php echo $config['base_url']?>/curator_data/queue.php','_self')">

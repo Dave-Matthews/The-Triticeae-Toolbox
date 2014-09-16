@@ -9,7 +9,7 @@ connect();
   table th { border-top: 2px solid #9a292c; }
 </style>
 
-<h1>Genetic Characters</h1>
+<h1>Property Descriptions</h1>
 <div class="section">
   <table>
 
