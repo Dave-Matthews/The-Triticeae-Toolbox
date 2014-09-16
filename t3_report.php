@@ -347,12 +347,12 @@ if ($query == 'geno') {
      if ($row = mysqli_fetch_row($res)) {
         $LinesWithGeno = $row[0];
      }
-     $sql = "select count(distinct(markers.marker_uid)) from markers, genotyping_data where (markers.marker_uid = genotyping_data.marker_uid)";
+     $sql = "select count(markers.marker_uid) from markers where marker_uid IN (Select marker_uid from allele_frequencies)";
      $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
      if ($row=mysqli_fetch_row($res)) {
       $MarkersWithGeno = $row[0];
      }
-     $sql = "select distinct count(marker_uid) from markers where not exists (select genotyping_data_uid from genotyping_data where markers.marker_uid = genotyping_data.marker_uid)";
+     $sql = "select count(markers.marker_uid) from markers where Marker_uid NOT IN (Select marker_uid from allele_frequencies)";
      $res = mysql_query($sql) or die(mysql_error($mysqli));
      if ($row=mysql_fetch_row($res)) {
        $MarkersNoGeno = $row[0];
