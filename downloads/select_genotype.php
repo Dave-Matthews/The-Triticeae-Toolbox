@@ -119,47 +119,36 @@ private function refresh_title()
           $_SESSION['selected_lines'] = $lines;
       } elseif (!empty($_GET['exps'])) {
           $experiments = $_GET['exps'];
-          $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-          FROM tht_base as tb, line_records as lr
-          WHERE lr.line_record_uid = tb.line_record_uid
-          AND tb.experiment_uid IN ($experiments)
-          ORDER BY lr.line_record_name";
-          $lines = array();
-          $res = mysql_query($sql) or die(mysql_error() . $sql);
-          while ($row = mysql_fetch_assoc($res))
-          {
-            array_push($lines,$row['id']);
+          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+          $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+          if ($row = mysql_fetch_array($res)) {
+              $lines = explode(",", $row[0]);
+              $_SESSION['selected_lines'] = $lines;
+          } else {
+              echo "error - no selection found";
           }
-          $lines_str = implode(",", $lines);
-          $_SESSION['selected_lines'] = $lines;
       } else {
           echo "error - no selection found";
       }
       if ($subset == "no") {
           $experiments = $_GET['exps'];
-          $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-          FROM tht_base as tb, line_records as lr
-          WHERE lr.line_record_uid = tb.line_record_uid
-          AND tb.experiment_uid IN ($experiments)
-          ORDER BY lr.line_record_name";
-          $lines = array();
-          $res = mysql_query($sql) or die(mysql_error() . $sql);
-          while ($row = mysql_fetch_assoc($res))
-          {
-            array_push($lines,$row['id']);
+          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+          $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+          if ($row = mysql_fetch_array($res)) {
+              $lines = explode(",", $row[0]);
+          } else {
+              echo "error - no selection found";
           }
-          $lines_str = implode(",", $lines);
       } elseif ($subset == "comb") {
           $experiments = $_GET['exps'];
-          $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-          FROM tht_base as tb, line_records as lr
-          WHERE lr.line_record_uid = tb.line_record_uid
-          AND tb.experiment_uid IN ($experiments)
-          ORDER BY lr.line_record_name";
-          $res = mysql_query($sql) or die(mysql_error() . $sql);
-          while ($row = mysql_fetch_assoc($res))
-          {
-            $line_uid = $row['id'];
+          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+          $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+          if ($row = mysql_fetch_array($res)) {
+              $lines_fnd = explode(",", $row[0]);
+          } else {
+              echo "error - no selection found";
+          }
+          foreach ($lines_fnd as $line_uid) {
             if (!in_array($line_uid,$lines)) {
                 array_push($lines,$row['id']);
             }
@@ -167,14 +156,10 @@ private function refresh_title()
           $lines_str = implode(",", $lines);
       } elseif ($subset == "yes") {
           $experiments = $_GET['exps'];
-          $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-          FROM tht_base as tb, line_records as lr
-          WHERE lr.line_record_uid = tb.line_record_uid
-          AND tb.experiment_uid IN ($experiments)
-          ORDER BY lr.line_record_name";
+          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
           $res = mysql_query($sql) or die(mysql_error() . $sql);
-          while ($row = mysql_fetch_assoc($res)) {
-            $temp[] = $row['id'];
+          if ($row = mysql_fetch_array($res)) {
+              $temp = explode(",", $row[0]);
           }
           $lines = array_intersect($lines, $temp);
       }
@@ -509,17 +494,16 @@ private function step3_lines() {
   <tr>
   <?php
   $sql_option = "";
+  $count1 = 0;
   if (preg_match("/\d/",$experiments)) {
       $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
   }
-  $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
-      FROM line_records, tht_base
-      WHERE line_records.line_record_uid=tht_base.line_record_uid
-      $sql_option";
-      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-      while($row = mysql_fetch_array($res)) {
-        $count1++;
-      }
+  $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+  if ($row = mysql_fetch_array($res)) {
+      $line_index = explode(",", $row[0]);
+      $count1 = count($line_index);
+  }
   
   if (isset($_SESSION['selected_lines'])) {
       $count2 = count($_SESSION['selected_lines']);
@@ -537,16 +521,19 @@ private function step3_lines() {
             if (preg_match("/\d/",$datasets)) {
               $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
             }
-            $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
-            FROM line_records, tht_base
-            WHERE line_records.line_record_uid=tht_base.line_record_uid
-            $sql_option";
+            $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            while($row = mysql_fetch_array($res)) {
-              $count++;
+            if ($row = mysql_fetch_array($res)) {
+              $line_index = explode(",", $row[0]);
+              $line_name_index = explode(",", $row[1]);
+              $count = count($line_index);
+            } else {
+              $line_index = array();
+            }
+            foreach ($line_index as $key=>$uid) {
               ?>
-              <option selected value="<?php echo $row['id'] ?>">
-              <?php echo $row['name'] ?>
+              <option selected value="<?php echo $uid ?>">
+              <?php echo $line_name_index[$key] ?>
               </option>
               <?php
             }
@@ -772,10 +759,11 @@ private function type1_markers() {
             FROM line_records, tht_base
             WHERE line_records.line_record_uid=tht_base.line_record_uid
             $sql_option";
+      $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-      while($row = mysql_fetch_array($res)) {
-        $lines[] = $row['line_record_uid'];
-      } 
+      if ($row = mysql_fetch_array($res)) {
+          $lines = explode(",", $row[0]);
+      }
     }
   } else {
     $lines_str = $_GET['lines'];
