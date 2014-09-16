@@ -63,18 +63,11 @@ if ($query == 'geno') {
     print "markers with no genotype data<br>\n";
     print "<table border=0>";
     print "<tr><td>marker_uid<td>marker_name\n";
-    $sql = "select marker_uid, marker_name from markers";
+    $sql = "select markers.marker_uid, markers.marker_name from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
-        $marker_uid = $row[0];
-        $marker_name = $row[1];
-        $sql = "select marker_uid from genotyping_data where marker_uid = $marker_uid";
-        $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row2 = mysqli_fetch_row($res2)) {
-        } else {
-            print "<tr><td>$marker_uid<td>$marker_name\n";
-            $count++;
-        }
+        print "<tr><td>$marker_uid<td>$marker_name\n";
+        $count++;
     }
     print "</table>\n";
     print "total $count markers missing genotype data<br>\n";
@@ -352,7 +345,7 @@ if ($query == 'geno') {
      if ($row=mysqli_fetch_row($res)) {
       $MarkersWithGeno = $row[0];
      }
-     $sql = "select count(markers.marker_uid) from markers where Marker_uid NOT IN (Select marker_uid from allele_frequencies)";
+     $sql = "select count(markers.marker_uid) from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
      $res = mysql_query($sql) or die(mysql_error($mysqli));
      if ($row=mysql_fetch_row($res)) {
        $MarkersNoGeno = $row[0];
