@@ -73,7 +73,7 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
         if ($miss > $max_missing) {
             $num_miss++;
         }
-        if (($miss > $max_missing) OR ($maf < $min_maf)) {
+        if (($miss > $max_missing) or ($maf < $min_maf)) {
             $num_removed++;
         } else {
             $markers_filtered[] = $marker_uid;
@@ -107,7 +107,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     }
 
     //create list of selected markers
-    foreach ($markers as $key=>$marker_uid) {
+    foreach ($markers as $key => $marker_uid) {
         $selected_markers[$marker_uid] = 1;
         //echo "selected $marker_uid\n";
     }
@@ -157,14 +157,14 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 $i++;
             }
         } else {
-            foreach ($marker_list as $i=>$value) {
+            foreach ($marker_list as $i => $value) {
                 $marker_misscnt[$i]++;
             }
         }
     }
     $num_mark = 0;
     $num_maf = $num_miss = $num_removed = 0;
-    foreach ($marker_list as $i=>$marker_uid) {
+    foreach ($marker_list as $i => $marker_uid) {
         //if there are selected markers then only calculate allele frequencies for these
         if (isset($_SESSION['clicked_buttons']) && !isset($selected_markers[$marker_uid])) {
             continue;
@@ -302,15 +302,17 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
     $num_miss = 0;
     $num_mark = 0;
     $num_removed = 0;
-    $sql = "SELECT marker_uid, maf, missing from allele_frequencies where experiment_uid = $experiment_uid";
+    $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $experiment_uid";
     $res = mysql_query($sql) or die(mysql_error() . $sql);
     while ($row = mysql_fetch_row($res)) {
         $marker_uid = $row[0];
         $maf = $row[1];
         $miss = $row[2];
+        $total = $row[3];
+        $miss_per = 100 * ($miss / $total);
         if ($maf < $min_maf) $num_maf++;
-        if ($miss > $max_missing) $num_miss++;
-        if (($miss > $max_missing_count) OR ($maf < $min_maf)) {
+        if ($miss_per > $max_missing) $num_miss++;
+        if (($miss_per > $max_missing) OR ($maf < $min_maf)) {
             $num_removed++;
         } else {
             $markers_filtered[$marker_uid] = 1; 
