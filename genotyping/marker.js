@@ -14,7 +14,7 @@ function update_platform(options) {
                 platform_str += (platform_str === "" ? "" : ",") + platform.value;
             }
         });
-    var url = "includes/ajaxlib?func=DispExperiment&platform=" + platform_str;
+    var url = "includes/ajaxlib.php?func=DispExperiment&platform=" + platform_str;
     var tmp = new Ajax.Updater($('col2'), url, {
         onComplete : function() {
             $('col2').show();
@@ -31,7 +31,7 @@ function DispMarkerSet(options) {
                 panel_str += (panel_str === "" ? "" : ",") + markers.value;
             }
         });
-    var url = "includes/ajaxlib?func=DispMarkerSet&set=" + panel_str;
+    var url = "includes/ajaxlib.php?func=DispMarkerSet&set=" + panel_str;
     var tmp = new Ajax.Updater($('markerSet'), url, {
         onComplete : function() {
             $('MarkerSet').show();
@@ -62,7 +62,7 @@ function update_side() {
 
 function select_exper(options) {
     document.getElementById('current').innerHTML = "<img id=\"spinner\" src=\"images/ajax-loader.gif\"> Calculating which markers are in selected experiment(s)";
-    var url = "includes/ajaxlib?func=SelcExperiment&experiment=" + expt_str;
+    var url = "includes/ajaxlib.php?func=SelcExperiment&experiment=" + expt_str;
     var tmp = new Ajax.Updater($('current'), url, {
         onComplete : function() {
             $('current').show();
@@ -74,7 +74,7 @@ function select_exper(options) {
 
 function select_set(options) {
     document.getElementById('current').innerHTML = "<img id=\"spinner\" src=\"images/ajax-loader.gif\"> Calculating which markers are in selected experiment(s)";
-    var url = "includes/ajaxlib?func=SelcMarkerSet&set=" + panel_str;
+    var url = "includes/ajaxlib.php?func=SelcMarkerSet&set=" + panel_str;
     var tmp = new Ajax.Updater($('current'), url, {
         onComplete : function() {
             $('current').show();
