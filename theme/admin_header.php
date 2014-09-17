@@ -200,7 +200,7 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_router.php" title="Phenotype CSR data">
       CSR Data</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
-      Delete Trials</a></li>
+      Delete Trials and Experiments</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
       Traits and Genetic Characters</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
