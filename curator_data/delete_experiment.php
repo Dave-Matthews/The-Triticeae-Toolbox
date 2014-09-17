@@ -43,8 +43,8 @@ include($config['root_dir'].'theme/admin_header.php');
   </select>
   </div>
 
-  <!-- form to select an Experiment: -->
-  <h1>Delete an Experiment</h1>
+  <!-- form to select a phenotype Experiment: -->
+  <h1>Delete a Phenotype Experiment</h1>
   <div class='section'>
     <form action = "curator_data/delete_experiment.php" method="get">
       Experiment to delete
@@ -67,6 +67,31 @@ include($config['root_dir'].'theme/admin_header.php');
 ?>
   </select>
   </div>
+
+  <!-- form to select a genotype Experiment: -->
+  <h1>Delete a Genotype Experiment</h1>
+  <div class='section'>
+    <form action = "curator_data/delete_experiment.php" method="get">
+      Experiment to delete
+      <input type=text name=genoexptname>
+      <input type=submit value="Go">
+    </form>
+    <p>
+      <select onchange="window.open('<?php echo $config['base_url']; ?>curator_data/delete_experiment.php?genoexptuid='+this.options[this.selectedIndex].value,'_top')">
+	<option value=''>or choose from below...</option>
+<?php
+  $sql = "select trial_code, experiment_uid as uid 
+          from experiments where experiment_type_uid = 2 
+          order by trial_code";
+  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
+  while($row = mysql_fetch_assoc($r)) {
+    $tc = $row['trial_code'];
+    $uid = $row['uid'];
+    echo "<option value='$uid'>$tc</option>\n";
+  }
+?>
+  </select>
+  </div>
 <?php
 
   } // end of "if (!isset($_GET) OR empty($_GET))"
@@ -75,6 +100,11 @@ include($config['root_dir'].'theme/admin_header.php');
 elseif ($_GET['doit'] == "trial") {
   //A trial has been selected and confirmed.
   delete_trial($_GET['exptuid']); // function defined below
+  print "<p><input type='Button' value='Return' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\" style='font: bold 13px Arial'>";
+}
+elseif ($_GET['doit'] == "genoexpt") {
+  //A genotyping experiment has been selected and confirmed.
+  delete_genoexpt($_GET['exptuid']); // function defined below
   print "<p><input type='Button' value='Return' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\" style='font: bold 13px Arial'>";
 }
 elseif ($_GET['trialcode'] OR $_GET['exptuid']) {
@@ -155,9 +185,54 @@ elseif ($_GET['exptsetname'] OR $_GET['exptsetuid']) {
     echo "<b>Trials</b>:<br>";
     while ($tr = mysql_fetch_row($r))
       echo "$tr[0]<br>";
-    echo "<br><input type='Button' value='Return' onClick=\"location.href='".$config['base_url']."curator_data/delete_experimen\
-t.php'\" style='font: bold 13px Arial'>";    
+    echo "<br><input type='Button' value='Return' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\" style='font: bold 13px Arial'>";    
   }
+}
+elseif ($_GET['genoexptname'] OR $_GET['genoexptuid']) {
+   // A genotyping experiment has been selected. Display its contents and confirm.
+  if(!empty($_GET['genoexptname'])) {
+    // submitted from the textbox form
+     $tc = $_GET['genoexptname'];
+     $sql = "select experiment_uid from experiments where trial_code = '$tc'";
+     $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
+     $r2 = mysql_fetch_row($r);
+     $exptuid = $r2[0];
+     if (empty($exptuid))
+       exit("Genotyping Experiment <b>'$tc'</b> not found.<p><input type='Button' value='Back' onClick='history.go(-1)'>");
+  }
+  elseif (!empty($_GET['genoexptuid'])) 
+    // submitted from the pick'n'go dropdown menu
+    $exptuid = $_GET['genoexptuid'];
+
+  // Show the curator what he's doing:
+  $sql = "select trial_code, experiment_desc_name, experiment_short_name, platform_name, marker_type_name
+	  from experiments, genotype_experiment_info
+	  left join platform on genotype_experiment_info.platform_uid = platform.platform_uid
+	  left join marker_types on genotype_experiment_info.marker_type_uid = marker_types.marker_type_uid
+	  where genotype_experiment_info.experiment_uid = experiments.experiment_uid
+	  and experiments.experiment_uid = $exptuid";
+  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
+  $r2 = mysql_fetch_row($r);
+  $trialcode = $r2[0];
+  $exptdescnm = $r2[1];
+  $exptshortnm = $r2[2];
+  $platform = $r2[3];
+  $markertype = $r2[4];
+  echo "<p>Trial to delete: <b>$trialcode</b><br>";
+  if (!empty($exptdescnm))
+    echo "Description: $exptdescnm<br>";
+  if (!empty($exptshortnm))
+    echo "Short name: $exptshortnm<br>";
+  if (!empty($platform))
+    echo "Platform: $platform<br>";
+  if (!empty($markertype))
+    echo "Marker type: $markertype<br>";
+   print "<p><input type='Button' value='Yikes! No' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\" style='font: bold 13px Arial'>";
+   ?>
+   <input type='Button' value='Do it.' onClick="window.open('<?php echo $config['base_url']; ?>curator_data/delete_experiment.php?doit=genoexpt&exptuid=<?php echo $exptuid ?>', '_top')">
+   <p>To undelete you must reload the original files, including the experiment annotation file.
+
+      <?php
 }
 else echo "Error, invalid _GET[] value. See script line ".__LINE__;
 
@@ -185,6 +260,24 @@ function delete_trial($uid) {
   $sql = "delete from experiments where experiment_uid = $uid";
   $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   echo "Trial deleted.";
+  return;
+}
+
+function delete_genoexpt($uid) {
+  // Order necessary: first delete alleles, then genotyping_data, then tht_base, then experiment.
+  $sql = "delete from alleles where genotyping_data_uid in
+	   (select genotyping_data_uid from genotyping_data where tht_base_uid in
+	     (select tht_base_uid from tht_base where experiment_uid = $uid) )";
+  $sql = "delete from genotyping_data where tht_base_uid in
+           (select tht_base_uid from tht_base where experiment_uid = $uid)";
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+  $sql = "delete from tht_base where experiment_uid = $uid";
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+  $sql = "delete from genotype_experiment_info where experiment_uid = $uid";
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+  $sql = "delete from experiments where experiment_uid = $uid";
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+  echo "Genotyping experiment deleted.";
   return;
 }
 

@@ -1043,10 +1043,9 @@ function SelcExperiment ($arr) {
         and e.experiment_uid = t.experiment_uid";
   // faster query but may include markers with no data
   $sql = "select distinct marker_uid
-        from tht_base t, experiments e, allele_frequencies af
+        from experiments e, allele_frequencies af
         where trial_code in ($exptlist)
-        and af.experiment_uid = t.experiment_uid
-        and e.experiment_uid = t.experiment_uid";
+        and af.experiment_uid = e.experiment_uid";
   $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
   while ($row = mysql_fetch_row($res)) {
     $clkmkrs[] = $row[0];

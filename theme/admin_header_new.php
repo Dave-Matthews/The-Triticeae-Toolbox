@@ -27,11 +27,23 @@
 
   <base href="<?php echo $config['base_url']; ?>" >
   <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
-  <script type="text/javascript" src="<?php echo $config['base_url']; ?>includes/core.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/new.js"></script>
-  <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
-  <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
-
+  <!--script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script-->
+  <style>
+body { font-size: 62.5%; }
+label, input { display:block; }
+input.text { margin-bottom:12px; width:95%; padding: .4em; }
+fieldset { padding:0; border:0; margin-top:25px; }
+h1 { font-size: 1.2em; margin: .6em 0; }
+div#users-contain { width: 350px; margin: 20px 0; }
+div#users-contain table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+div#users-contain table td, div#users-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
+.ui-dialog .ui-state-error { padding: .3em; }
+.validateTips { border: 1px solid transparent; padding: 0.3em; }
+</style>
 <?php
    connect();
    // clear session if it contains variables from another database
@@ -159,12 +171,12 @@ EOD;
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
-        <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value vs Trials">Compare Trials</a>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/compare_index.php" title="Compare Trait value for 2 Trials">Compare Trials</a>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
 	    Track Alleles through Pedigree</a>
 	<li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
-	<li><a href="<?php echo $config['base_url']; ?>genotyping/sum_lines.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
+	<li><a href="<?php echo $config['base_url']; ?>genotyping/allele_conflicts.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
 	<li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
 	    BLAST Search against Markers</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
@@ -177,6 +189,8 @@ EOD;
             Genotype and Phenotype Data</a>
 	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
 	    SNP Alleles and Sequences</a> 
+        <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
+            Experiment Design</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
@@ -200,7 +214,7 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_csr_router.php" title="Phenotype CSR data">
       CSR Data</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/delete_experiment.php" title="Careful!">
-      Delete Trials and Experiments</a></li>
+      Delete Trials</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_trait_router.php" title="Must precede loading data about the traits">
       Traits and Genetic Characters</a></li>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/genotype_annotations_upload.php" title="Add Genotype Annotations Data">
@@ -217,12 +231,6 @@ EOD;
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
       </ul>
-      <?php else: ?>
-      <li> <a href="" title="Manage">Manage</a>
-        <ul>
-        <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
-            Phenotype Trials</a>
-        </ul>
       <?php endif ?>
 
       <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
@@ -276,7 +284,7 @@ EOD;
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
             <?php else: ?>
     <li>
-      <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
+      <a title="Login" href="<?php echo $config['base_url']; ?>login.php"><strong>Login/Register</strong></a>
    <?php endif; ?>
 
 <?php
@@ -296,14 +304,7 @@ EOD;
    } else {
      echo "0";
    }
-   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
-   if (isset($_SESSION['selected_trials'])) {
-       echo ": " . count($_SESSION['selected_trials']);
-   }
-   echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
-   if (isset($_SESSION['geno_exps'])) {
-       echo ": " . count($_SESSION['geno_exps']);
-   }
+   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Trials:</a> " . count($_SESSION['selected_trials']);
 ?>
 			
   </ul>
