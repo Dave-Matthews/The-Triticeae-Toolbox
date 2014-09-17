@@ -78,7 +78,7 @@ echo "done rewriting allele_bymarker_idx\n";
 
 $sql = "create table temp_allele (marker_uid INT NOT NULL, marker_name VARCHAR(50), alleles MEDIUMTEXT, PRIMARY KEY (marker_uid))";
 echo "$sql\n";
-$res = mysql_query($sql) or die(mysql_error());
+$res = mysql_query($sql) or die(mysql_error() . $sql);
 $empty = array_fill(0, $max_lines, '');
 $k = 0;
 echo "$max_markers markers\n";
@@ -87,7 +87,7 @@ for ($j=0; $j<$max_markers; $j++) {
     $marker_name = $marker_name_list[$j];
     $allele = $empty;
     $sql = "select line_record_uid, alleles from allele_cache where marker_uid = $marker_uid";
-    $res = mysql_query($sql) or die(mysql_error());
+    $res = mysql_query($sql) or die(mysql_error() . $sql);
     $count = 0;
     $count_dup = 0;
     $dup = array();
@@ -163,7 +163,7 @@ for ($j=0; $j<$max_markers; $j++) {
         $string = implode(',', $allele);
         $length=strlen($string);
         $sql = "insert into temp_allele (marker_uid, marker_name, alleles) values ($marker_uid, '$marker_name', '$string')";
-        $res = mysql_query($sql) or die(mysql_error());
+        $res = mysql_query($sql) or die(mysql_error() . $sql);
     }
 }
 $sql = "DROP TABLE IF EXISTS allele_bymarker";
