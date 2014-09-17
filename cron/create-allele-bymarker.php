@@ -5,13 +5,16 @@
  *
  * PHP version 5
  *
- * @author Clay Birkett <claybirkett@gmail.com>
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/cron/create-allele-bymarker.php
 */
 
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap_curator.inc';
 connect();
 set_time_limit(7200);  /* allow script up to 2 hours */
+ini_set('memory_limit', '2G');
 
 $exp_list = array();
 $marker_uid_list = array();
@@ -24,7 +27,7 @@ $max_exp = 0;
 $sql = "select experiment_uid from experiments order by experiment_uid";
 $res = mysql_query($sql) or die(mysql_error());
 while ($row = mysql_fetch_array($res)) {
-    array_push($exp_list, $row[0]);
+    $exp_list[] = $row[0];
     $max_exp++;
 }
 echo "$max_exp experiments\n";
@@ -33,8 +36,8 @@ $max_markers=0;
 $sql = "select marker_uid, marker_name from markers order by marker_uid";
 $res = mysql_query($sql) or die(mysql_error());
 while ($row = mysql_fetch_array($res)) {
-    array_push($marker_uid_list, $row[0]);
-    array_push($marker_name_list, $row[1]);
+    $marker_uid_list[] = $row[0];
+    $marker_name_list[] = $row[1];
     $max_markers++;
 }
 echo "$max_markers markers\n";
@@ -75,16 +78,16 @@ echo "done rewriting allele_bymarker_idx\n";
 
 $sql = "create table temp_allele (marker_uid INT NOT NULL, marker_name VARCHAR(50), alleles MEDIUMTEXT, PRIMARY KEY (marker_uid))";
 echo "$sql\n";
-$res = mysql_query($sql) or die(mysql_error());
+$res = mysql_query($sql) or die(mysql_error() . $sql);
 $empty = array_fill(0, $max_lines, '');
 $k = 0;
 echo "$max_markers markers\n";
-for ($j=0; $j<$max_markers; $j++) { 
+for ($j=0; $j<$max_markers; $j++) {
     $marker_uid = $marker_uid_list[$j];
     $marker_name = $marker_name_list[$j];
     $allele = $empty;
     $sql = "select line_record_uid, alleles from allele_cache where marker_uid = $marker_uid";
-    $res = mysql_query($sql) or die(mysql_error());
+    $res = mysql_query($sql) or die(mysql_error() . $sql);
     $count = 0;
     $count_dup = 0;
     $dup = array();
@@ -105,16 +108,24 @@ for ($j=0; $j<$max_markers; $j++) {
         $count++;
     }
     if ($count > 0) {
-        if ($count_dup > 0) { 
+        if ($count_dup > 0) {
             /* echo "$j duplicates found $count_dup\n"; */
             foreach ($dup as $loc => $value) {
                 $duplicates = explode(',', $value);
                 $cntaa = $cntbb = $cntab = $cntba = 0;
                 foreach ($duplicates as $dup_allele) {
-                    if ($dup_allele == 'AA') $cntaa++;
-                    if ($dup_allele == 'BB') $cntbb++;
-                    if ($dup_allele == 'AB') $cntab++;
-                    if ($dup_allele == 'BA') $cntba++;
+                    if ($dup_allele == 'AA') {
+                        $cntaa++;
+                    }
+                    if ($dup_allele == 'BB') {
+                        $cntbb++;
+                    }
+                    if ($dup_allele == 'AB') {
+                        $cntab++;
+                    }
+                    if ($dup_allele == 'BA') {
+                        $cntba++;
+                    }
                 }
                 $max = 0;
                 if ($cntaa == $max) {
@@ -152,7 +163,7 @@ for ($j=0; $j<$max_markers; $j++) {
         $string = implode(',', $allele);
         $length=strlen($string);
         $sql = "insert into temp_allele (marker_uid, marker_name, alleles) values ($marker_uid, '$marker_name', '$string')";
-        $res = mysql_query($sql) or die(mysql_error());
+        $res = mysql_query($sql) or die(mysql_error() . $sql);
     }
 }
 $sql = "DROP TABLE IF EXISTS allele_bymarker";
@@ -162,4 +173,3 @@ $sql = "RENAME TABLE temp_allele to allele_bymarker";
 echo "$sql\n";
 $res = mysql_query($sql) or die(mysql_error());
 echo "done with table allele_bymarker\n";
-?>
