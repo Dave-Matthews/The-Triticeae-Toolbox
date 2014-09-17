@@ -6,18 +6,16 @@
  *
  * PHP version 5
  *
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <claybirkett@gmail.com>
+ * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ * @link     http://triticeaetoolbox.org/wheat/create-allele_byline.php
 */
 
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap_curator.inc';
 connect();
 set_time_limit(7200);  /* allow script up to 2 hours */
+ini_set('memory_limit', '2G');
 
 $exp_list = array();
 $line_uid_list = array();
