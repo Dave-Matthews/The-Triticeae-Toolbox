@@ -60,18 +60,23 @@ function generic_sel_options ($table) {
  */
 function showMarkerForLine($line_id, $order="marker_name") {
 	
+$query = "SELECT experiments.trial_code, marker_name, alleles
+          FROM experiments, allele_cache
+          WHERE allele_cache.line_record_uid = '$line_id'
+          AND experiments.experiment_uid = allele_cache.experiment_uid
+          ORDER BY $order";
 
-$query = 	"SELECT experiments.trial_code, marker_type_name, marker_name, alleles.allele_1,alleles.allele_2
-			FROM experiments, tht_base, genotyping_data, alleles, markers, marker_types, experiment_types
-			WHERE tht_base.line_record_uid = '$line_id'
-			AND experiments.experiment_uid = tht_base.experiment_uid
-				AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
-				AND  experiment_types.experiment_type_name = 'genotype'
-				AND genotyping_data.marker_uid = markers.marker_uid
-				AND genotyping_data.tht_base_uid = tht_base.tht_base_uid
-				AND alleles.genotyping_data_uid = genotyping_data.genotyping_data_uid
-				AND marker_types.marker_type_uid = markers.marker_type_uid
-			ORDER BY $order";
+//$query = 	"SELECT experiments.trial_code, marker_type_name, marker_name, alleles.allele_1,alleles.allele_2
+//			FROM experiments, tht_base, genotyping_data, alleles, markers, marker_types, experiment_types
+//			WHERE tht_base.line_record_uid = '$line_id'
+//			AND experiments.experiment_uid = tht_base.experiment_uid
+//				AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
+//				AND  experiment_types.experiment_type_name = 'genotype'
+//				AND genotyping_data.marker_uid = markers.marker_uid
+//				AND genotyping_data.tht_base_uid = tht_base.tht_base_uid
+//				AND alleles.genotyping_data_uid = genotyping_data.genotyping_data_uid
+//				AND marker_types.marker_type_uid = markers.marker_type_uid
+//			ORDER BY $order";
 
 	$resource = mysql_query($query) or die(mysql_error());
 
