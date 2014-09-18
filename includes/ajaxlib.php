@@ -1050,7 +1050,11 @@ function SelcExperiment ($arr) {
   while ($row = mysql_fetch_row($res)) {
     $clkmkrs[] = $row[0];
   }
-  $_SESSION['clicked_buttons'] = $clkmkrs;
+  $tmp = count($clkmkrs);
+  if ($tmp < 100000) {
+      $_SESSION['clicked_buttons'] = $clkmkrs;
+  } 
+  $_SESSION['geno_exps'] = $expt[0];    
   if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
     print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
   print "<table><tr><td>\n";
