@@ -961,7 +961,7 @@ function DispExperiment ($arr) {
     while ($row=mysql_fetch_assoc($result)) {
         $uid=$row['experiment_uid'];
         $val=$row['trial_code'];
-        print "<option value=$val>$val</option>\n";
+        print "<option value=$uid>$val</option>\n";
     }
     ?>
     </select>
@@ -1022,7 +1022,8 @@ function SelcMarkerSet ($arr) {
     } 
 }
 
-function SelcExperiment ($arr) {
+function SelcExperiment($arr)
+{
     if (! isset($arr['experiment'])) {
         print "Invalid input of experiment";
         return;
@@ -1030,77 +1031,85 @@ function SelcExperiment ($arr) {
         $expt_str = $arr['experiment'];
         $expt = explode(",", $expt_str);
     }
-    echo "<h3>Currently selected markers</h3>"; 
+    echo "<h3>Currently selected markers</h3>";
     $clkmkrs=array();
-  foreach ($expt as $ex)
-    $exptquoted[] = "'$ex'";
-  $exptlist = implode(",", $exptquoted);
-  echo "Markers added from experiment(s) <b>$exptlist</b><p>";
-  $sql = "select distinct marker_uid
+    $trial_code = "";
+    $sql = "select trial_code from experiments
+        where experiment_uid IN ($expt_str)";
+    $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
+    while ($row = mysql_fetch_row($res)) {
+        if ($trial_code == "") {
+            $trial_code = $row[0];
+        } else {
+            $trial_code .= ", $row[0]";
+        }
+    }
+    echo "Markers added from experiment(s) <b>$trial_code</b><p>";
+    $sql = "select distinct marker_uid
         from tht_base t, genotyping_data gd, experiments e
-        where trial_code in ($exptlist)
+        where trial_code in ($expt_str)
         and gd.tht_base_uid = t.tht_base_uid
         and e.experiment_uid = t.experiment_uid";
-  // faster query but may include markers with no data
-  $sql = "select distinct marker_uid
-        from experiments e, allele_frequencies af
-        where trial_code in ($exptlist)
-        and af.experiment_uid = e.experiment_uid";
-  $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
-  while ($row = mysql_fetch_row($res)) {
-    $clkmkrs[] = $row[0];
-  }
-  $tmp = count($clkmkrs);
-  if ($tmp < 100000) {
-      $_SESSION['clicked_buttons'] = $clkmkrs;
-  } 
-  $_SESSION['geno_exps'] = $expt[0];    
-  if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
-    print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
-  print "<table><tr><td>\n";
-  print "<select id='mlist' name='deselMkrs[]' multiple='multiple' size=10>";
-  $mapids = $_SESSION['mapids'];
-  if (!isset($mapids) || !is_array($mapids))
-    $mapids = array();
-  reset($mapids);
-
-  $chrlist = array();
-  $markerlist = array();
-  $count_markers = 0;
-  foreach ($_SESSION['clicked_buttons'] as $mkruid) {
-    $count_markers++;
-    $mapid = current($mapids);
-    next($mapids);
-    $sql = "select marker_name from markers where marker_uid=$mkruid";
-    $result=mysql_query($sql)
-      //        or die("invalid marker uid\n");
-      or die(mysql_error());
-    while ($row=mysql_fetch_assoc($result)) {
-      $selval=$row['marker_name'];
-      $selchr=$row['chromosome'];
-      if(! in_array($selval,$markerlist)) {
-        array_push($markerlist, $selval);
-        array_push($chrlist, $selchr);
-        print "<option value='$mkruid'>$selval</option>\n";
-      }
+    // faster query but may include markers with no data
+    $sql = "select distinct marker_uid
+        from allele_frequencies af
+        where experiment_uid IN ($expt_str)";
+    $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
+    while ($row = mysql_fetch_row($res)) {
+        $clkmkrs[] = $row[0];
     }
-  }
-  $chrlist = array_unique($chrlist);
- print "</select></table>";
- //print "</td><td>\n";
-  }
-  if ((count($_SESSION['clicked_buttons']) > 0)) {
-      $count = count($_SESSION['clicked_buttons']); 
-       print "$count markers selected. ";
-       print "<a href=genotyping/display_markers.php>Download selected markers</a><br>\n";
-  }
+    $totalSel = count($clkmkrs);
+    if ($totalSel < 100000) {
+        $_SESSION['clicked_buttons'] = $clkmkrs;
+        print "$totalSel markers selected. ";
+    } else {
+        unset($_SESSION['clicked_buttons']);
+        print "$totalSel markers in experiment<br>\n";
+    }
+    $_SESSION['geno_exps'] = $expt;
+    if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
+        print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
+        print "<table><tr><td>\n";
+        print "<select id='mlist' name='deselMkrs[]' multiple='multiple' size=10>";
+        $mapids = $_SESSION['mapids'];
+        if (!isset($mapids) || !is_array($mapids)) {
+            $mapids = array();
+        }
+        reset($mapids);
+
+        $chrlist = array();
+        $markerlist = array();
+        $count_markers = 0;
+        foreach ($_SESSION['clicked_buttons'] as $mkruid) {
+            $count_markers++;
+            $mapid = current($mapids);
+            next($mapids);
+            $sql = "select marker_name from markers where marker_uid=$mkruid";
+            $result=mysql_query($sql)
+            or die(mysql_error());
+            while ($row=mysql_fetch_assoc($result)) {
+                $selval=$row['marker_name'];
+                $selchr=$row['chromosome'];
+                if (! in_array($selval, $markerlist)) {
+                    array_push($markerlist, $selval);
+                    array_push($chrlist, $selchr);
+                    print "<option value='$mkruid'>$selval</option>\n";
+                }
+            }
+        }
+        $chrlist = array_unique($chrlist);
+        print "</select></table>";
+        //print "</td><td>\n";
+    }
+    print "<a href=genotyping/display_markers.php>Download selected markers</a><br>\n";
 }
 
 /**
  * Display markers in marker_selection.php
  */
-function DispMarkers ($arr) {
-	if (! isset($arr['mapuid']) || ! isset($arr['mapstt']) || ! isset($arr['mapend'])) {
+function DispMarkers($arr)
+{
+    if (! isset($arr['mapuid']) || ! isset($arr['mapstt']) || ! isset($arr['mapend'])) {
 		print "Invalid inputs";
 		return;
 	}
