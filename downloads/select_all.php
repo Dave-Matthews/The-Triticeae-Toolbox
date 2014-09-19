@@ -177,7 +177,8 @@ class SelectPhenotypeExp
 		?>
 		<p>1.
 		<select name="select1" onchange="javascript: update_select1(this.options)">
-		<option value="BreedingProgram">Program</option>
+		<option value="BreedingProgram">Breeding Program</option>
+                <option value="DataProgram">Data Program</option>
 		<option value="Lines">Lines</option>
 		<option value="Locations">Locations</option>
 		<option value="Phenotypes">Trait Category</option>
@@ -242,12 +243,13 @@ class SelectPhenotypeExp
 		<div id="step1" style="float: left; margin-bottom: 1.5em;">
 		<p>1. 
 		<select name="select1" onchange="javascript: update_select1(this.options)">
-		  <option value="BreedingProgram">Program</option>
+		  <option value="BreedingProgram">Breeding Program</option>
+                  <option value="DataProgram">Data Program</option>
 		  <option value="Lines">Lines</option> 
 		  <option value="Locations">Locations</option>
 		  <option value="Phenotypes">Trait Category</option>
 		</select></p>
-		        <script type="text/javascript" src="downloads/downloads01.js"></script>
+		        <script type="text/javascript" src="downloads/downloads09.js"></script>
                 <?php 
                 $this->step1_breedprog();
                 ?>
@@ -805,13 +807,11 @@ class SelectPhenotypeExp
     <tr><td>
     <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
     <?php
-    $sql = "SELECT e.experiment_year AS year 
-    FROM experiments AS e, experiment_types AS et, datasets AS ds, datasets_experiments AS d_e
+    $sql = "SELECT e.experiment_year AS year, trial_code 
+    FROM experiments AS e, experiment_types AS et
     WHERE e.experiment_type_uid = et.experiment_type_uid
-    AND e.experiment_uid = d_e.experiment_uid
-    AND d_e.datasets_uid = ds.datasets_uid
     AND et.experiment_type_name = 'phenotype'
-    AND ds.CAPdata_programs_uid IN ('$CAPdata_programs')
+    AND e.CAPdata_programs_uid IN ('$CAPdata_programs')
     GROUP BY e.experiment_year DESC";
     $res = mysql_query($sql) or die(mysql_error());
     while ($row = mysql_fetch_assoc($res))
@@ -842,8 +842,7 @@ class SelectPhenotypeExp
                         <th>Breeding Program</th>
                 </tr>
 		<tr>
-                                        <td>
-                                                <select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
+                <td>
                 <?php
 
                 // Select breeding programs for the drop down menu
@@ -853,17 +852,21 @@ class SelectPhenotypeExp
                   AND dp.CAPdata_programs_uid = e.CAPdata_programs_uid
                   order by data_program_name asc";
                 $res = mysql_query($sql) or die(mysql_error());
-                while ($row = mysql_fetch_assoc($res))
-                {
+                if (mysql_num_rows($res) > 0) {
+                    ?>
+                    <select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
+                    <?php
+                    while ($row = mysql_fetch_assoc($res))
+                    {
                         ?>
                                 <option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
                         <?php
+                    }
+                    echo "</select>";
+                } else {
+                    echo "none";
                 }
-                ?>
-                                                </select>
-                                        </td>
-                </tr></table>
-                <?php
+                echo "</tr></table>";
          }
 
      /**
@@ -912,16 +915,18 @@ class SelectPhenotypeExp
 	{
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
                 $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
-?>		
-		<table>
+?>	
+                <div id="step11">	
+		<table class="tableclass1">
 		<tr>
 			<th>Data Program</th>
-			<th>Year</th>
 		</tr>
 <tr><td><select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
 <?php
 		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
-                                FROM CAPdata_programs WHERE program_type='data' ORDER BY name";
+                  FROM CAPdata_programs AS dp
+                  WHERE program_type='data'
+                  ORDER BY name";
       		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res)) {
 			?>
@@ -930,27 +935,6 @@ class SelectPhenotypeExp
 		}
 ?>
 </select>
-	</td><td>
-<select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-<?php
-		$sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-                                WHERE e.experiment_type_uid = et.experiment_type_uid
-                                        AND et.experiment_type_name = 'phenotype'";
-                if (!authenticate(array(USER_TYPE_PARTICIPANT,
-                                        USER_TYPE_CURATOR,
-                                        USER_TYPE_ADMINISTRATOR)))
-                        $sql .= " and data_public_flag > 0";
-                $sql .= " GROUP BY e.experiment_year ASC";
-                $res = mysql_query($sql) or die(mysql_error());
-                while ($row = mysql_fetch_assoc($res)) {
-                        ?>
-                                <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-                        <?php
-                }
-                ?>
-                                                </select>
-                                        </td>
-                                </tr>
 </table>
 <?php
 	}	
@@ -1692,11 +1676,9 @@ class SelectPhenotypeExp
 //	linking table.
 
 		$sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year
-				FROM experiments AS e, datasets AS ds, datasets_experiments AS d_e, experiment_types AS e_t
-				WHERE e.experiment_uid = d_e.experiment_uid
-				AND d_e.datasets_uid = ds.datasets_uid
-				AND ds.breeding_year IN ($years)
-				AND ds.CAPdata_programs_uid IN ($CAPdata_programs)
+				FROM experiments AS e, experiment_types AS e_t
+				WHERE e.experiment_year IN ($years)
+				AND e.CAPdata_programs_uid IN ($CAPdata_programs)
 				AND e.experiment_type_uid = e_t.experiment_type_uid
 				AND e_t.experiment_type_name = 'phenotype'";
 		        if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
