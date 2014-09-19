@@ -65,40 +65,40 @@ class Downloads
             case 'type1build_tassel_v3':
                 echo $this->type1_build_tassel_v3();
                 break;
-        case 'step2lines':
-            echo $this->step2_lines();
-            break;
-        case 'searchLines':
-            echo $this->step1_search_lines();
-            break;
-        case 'download_session_v4':
-            echo $this->type1_session(V4);
-            break;
-        case 'download_session_v5':
-            echo $this->type1_session(V5);
-            break;
-        case 'download_session_v6':
-            echo $this->type1_session(V6);
-            break;
-        case 'download_session_v7':
-            echo $this->type1_session(V7);
-            break;
-        case 'download_session_v8':
-            echo $this->type2_session(V8);
-            break;
-        case 'download_session_v9':
-            echo $this->type2_session(V9);
-            break;
-        case 'refreshtitle':
-            echo $this->refresh_title();
-            break;
-        case 'verifyLines':
-            echo $this->verifyLines();
-            break;
-        default:
-            $this->_type1Select();
-            break;
-        }	
+            case 'step2lines':
+                echo $this->step2_lines();
+                break;
+            case 'searchLines':
+                echo $this->step1_search_lines();
+                break;
+            case 'download_session_v4':
+                echo $this->type1_session(V4);
+                break;
+            case 'download_session_v5':
+                echo $this->type1_session(V5);
+                break;
+            case 'download_session_v6':
+                echo $this->type1_session(V6);
+                break;
+            case 'download_session_v7':
+                echo $this->type1_session(V7);
+                break;
+            case 'download_session_v8':
+                echo $this->type2_session(V8);
+                break;
+            case 'download_session_v9':
+                echo $this->type2_session(V9);
+                break;
+            case 'refreshtitle':
+                echo $this->refresh_title();
+                break;
+            case 'verifyLines':
+                echo $this->verifyLines();
+                break;
+            default:
+                $this->type1Select();
+                break;
+        }
     }
 
     /**
@@ -106,11 +106,11 @@ class Downloads
      *
      * @return null
      */
-    private function _type1Select()
+    private function type1Select()
     {
         global $config;
         include $config['root_dir'].'theme/normal_header.php';
-        $this->_type1Checksession();
+        $this->type1Checksession();
         ?>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
@@ -118,14 +118,14 @@ class Downloads
         <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
-    }	
+    }
 
     /**
      * Checks the session variable, if there is lines data saved then go directly to the lines menu
      *
      * @return null
      */
-    private function _type1Checksession()
+    private function type1Checksession()
     {
         ?>
         <div id="title">
@@ -263,8 +263,9 @@ class Downloads
 		    $markers = $_SESSION['filtered_markers'];
 		    $markers_str = implode(",", $markers);
         }
-        if (isset($_SESSION['phenotype'])) {
-		    $phenotype = $_SESSION['phenotype'];
+        if (isset($_SESSION['selected_traits'])) {
+		    $phenotype = $_SESSION['selected_traits'];
+                    $phenotype = implode(",", $phenotype);
 	} else {
 		    $phenotype = "";
 	}
@@ -414,8 +415,9 @@ class Downloads
         } else {
                         $experiments_t = "";
         }
-        if (isset($_SESSION['phenotype'])) {
-                    $phenotype = $_SESSION['phenotype'];
+        if (isset($_SESSION['selected_traits'])) {
+                    $phenotype = $_SESSION['selected_traits'];
+                    $phenotype = implode(",", $phenotype);
         } else {
                     $phenotype = "";
         }
