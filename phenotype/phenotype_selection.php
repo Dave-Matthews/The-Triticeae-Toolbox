@@ -114,7 +114,7 @@ class Downloads
          ?>        
         </div>
 		<div id="step1" style="float: left; margin-bottom: 1.5em;">
-		<script type="text/javascript" src="phenotype/downloads01.js"></script><br>
+		<script type="text/javascript" src="phenotype/downloads02.js"></script><br>
                 <?php 
                 $this->type1_phenotype();
                 ?>
@@ -156,10 +156,10 @@ class Downloads
         if (isset($_GET['pi'])) {
           $deselect_str = $_GET['pi'];
           $deselect_ary = explode(",",$deselect_str);
-          $ntraits=substr_count($_SESSION['phenotype'], ',')+1;
+          $ntraits=count($_SESSION['selected_traits']);
           if ($deselect_str == "") {
           } elseif ($ntraits > 1) {
-            $phenotype_ary = explode(",",$_SESSION['phenotype']);
+            $phenotype_ary = $_SESSION['selected_traits'];
             foreach ($deselect_ary as $uid)
               if (($lineidx = array_search($uid, $phenotype_ary)) !== false) {
               array_splice($phenotype_ary, $lineidx,1);
@@ -190,12 +190,12 @@ class Downloads
           }
         }
       }
-      if (isset($_SESSION['phenotype'])) {
-        $ntraits=substr_count($_SESSION['phenotype'], ',')+1;
+      if (isset($_SESSION['selected_traits'])) {
+        $ntraits=count($_SESSION['selected_traits']);
         echo "<table>";
         echo "<tr><th>Currently selected traits</th><td><th>Currently selected trials</th>";
         print "<tr><td><select name=\"deselLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_phenotype_items(this.options)\">";
-          $phenotype_ary = explode(",",$_SESSION['phenotype']);
+          $phenotype_ary = $_SESSION['selected_traits'];
           foreach ($phenotype_ary as $uid) {
             $result=mysqli_query($mysqli, "select phenotypes_name from phenotypes where phenotype_uid=$uid") or die("invalid line uid\n");
             while ($row=mysqli_fetch_assoc($result)) {
