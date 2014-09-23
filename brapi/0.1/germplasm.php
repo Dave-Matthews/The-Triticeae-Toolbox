@@ -1,7 +1,8 @@
 <?php
-// brapi/0.1/genotype.php, DEM jun 2014
-// Deliver genotyping data for a line according to 
-// http://docs.breeding.apiary.io/
+// brapi/0.1/germplasm.php, DEM jul 2014
+// Deliver Line names according to http://docs.breeding.apiary.io/
+// from ./genotype.php
+// Todo: everything
 
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');

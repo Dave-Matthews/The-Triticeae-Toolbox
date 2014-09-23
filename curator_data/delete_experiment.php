@@ -268,6 +268,7 @@ function delete_genoexpt($uid) {
   $sql = "delete from alleles where genotyping_data_uid in
 	   (select genotyping_data_uid from genotyping_data where tht_base_uid in
 	     (select tht_base_uid from tht_base where experiment_uid = $uid) )";
+  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
   $sql = "delete from genotyping_data where tht_base_uid in
            (select tht_base_uid from tht_base where experiment_uid = $uid)";
   $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");

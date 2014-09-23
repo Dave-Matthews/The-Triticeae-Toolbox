@@ -12,11 +12,22 @@ connect();
 <div class="section">
 
   <h1>Breeding API</h1>
-  See the documentation that will be at <a href="http://docs.breeding.apiary.io/">http://docs.breeding.apiary.io/</a>
-  <h3>Get Marker Count By Germplasm Id</h3>
+  See the documentation at <a href="http://docs.breeding.apiary.io/">http://docs.breeding.apiary.io/</a>
+
+  <h3>Allele Count By Germplasm Id</h3>
   <b>GET</b> /brapi/0.1/genotype/{id}/count?analysisMethod={platform}<br>
-  Returns: JSON containing Germplasm Id, experiment Id, analysis method, and number of allele calls<br>
-  Example: <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate</a>
+  <b>Returns:</b> JSON containing Germplasm Id, experiment Id, analysis method, and number of allele calls<br>
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate</a>
+
+  <h3>Alleles By Germplasm Id</h3>
+  <b>GET</b> /brapi/0.1/genotype/{id}?runId={runId}&analysisMethod={method}&pageSize={pageSize}&page={page}<br>
+  <b>Returns:</b> JSON containing Germplasm Id, experiment Id, analysis method, encoding, and allele calls<br>
+  &nbsp;&nbsp;&nbsp;by marker.  Missing data are omitted.  Analysis method is T3's "platform."<br>
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993?analysisMethod=GoldenGate&pagesize=2000&page=1">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993?analysisMethod=GoldenGate&pagesize=2000&page=1</a>
+
+  <h3>Experiment Design, for Fieldbooks</h3>
+  <b>GET</b> http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/design/list
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/design/list">http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/design/list</a>
 
 <p>
 </div>
