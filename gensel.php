@@ -216,6 +216,13 @@ class Downloads
                     if (isset($_SESSION['geno_exps'])) {
                         $geno_exp = $_SESSION['geno_exps'];
                         $geno_str = $geno_exp[0];
+                        $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
+                        $res = mysql_query($sql) or die(mysql_error() . $sql);
+                        if ($row = mysql_fetch_array($res)) {
+                        } else {
+                            echo "<font color=red>Select a genetic map.</font>";
+                            echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
+                        }
                     } else {
                         echo "<font color=red>Select a genetic map.</font>";
                         echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
@@ -493,15 +500,13 @@ class Downloads
         if (isset($_SESSION['geno_exps'])) {
             $geno_exp = $_SESSION['geno_exps'];
             $geno_str = $geno_exp[0];
-            $sql = "select count(*) from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null";
+            $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
             $res = mysql_query($sql) or die(mysql_error() . $sql);
-            $row = mysql_fetch_array($res);
-            $count = $row[0];
-            $sql = "select trial_code from experiments where experiment_uid = $geno_str";
-            $res = mysql_query($sql) or die(mysql_error() . $sql);
-            $row = mysql_fetch_array($res);
-            $name = $row[0];
-            if ($count > 0) {
+            if ($row = mysql_fetch_array($res)) {
+                $sql = "select trial_code from experiments where experiment_uid = $geno_str";
+                $res = mysql_query($sql) or die(mysql_error() . $sql);
+                $row = mysql_fetch_array($res);
+                $name = $row[0];
                 echo "$name";
             }
         } elseif (isset($_SESSION['selected_map'])) {
