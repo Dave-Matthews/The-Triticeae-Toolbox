@@ -1,18 +1,8 @@
 <?php
-/**
- * Download Gateway New
- * 
- * PHP version 5.3
- * Prototype version 1.5.0
- * 
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/select_genotype.php
- */
 
 /** functions specific to genotype experiment
  *
- * @author   Clay Birkett <claybirkett@gmail.com>
+ * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/select_genotype.php
  */
@@ -51,19 +41,19 @@ class SelectGenotypeExp
                 break;
 
             case 'refreshtitle':
-		echo $this->refresh_title();
-		break;
-				
-	    case 'step1breedprog':
-	        echo $this->step1_breedprog();
-	        break;
-		      
-	    case 'step1lines':
-	        echo $this->step1_lines();
-	        break;
-		        
-	    case 'step2lines':
-	        echo $this->step2_lines();
+                echo $this->refresh_title();
+                break;
+
+            case 'step1breedprog':
+                echo $this->step1_breedprog();
+                break;
+     
+            case 'step1lines':
+                echo $this->step1_lines();
+                break;
+
+           case 'step2lines':
+                echo $this->step2_lines();
 	        break;
                       
             case 'step3lines':
@@ -111,7 +101,7 @@ private function refresh_title()
           $_SESSION['selected_lines'] = $lines;
       } elseif (!empty($_GET['exps'])) {
           $experiments = $_GET['exps'];
-          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
           $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
           if ($row = mysql_fetch_array($res)) {
               $lines = explode(",", $row[0]);
@@ -124,7 +114,7 @@ private function refresh_title()
       }
       if ($subset == "no") {
           $experiments = $_GET['exps'];
-          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
           $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
           if ($row = mysql_fetch_array($res)) {
               $lines = explode(",", $row[0]);
@@ -133,7 +123,7 @@ private function refresh_title()
           }
       } elseif ($subset == "comb") {
           $experiments = $_GET['exps'];
-          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
           $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
           if ($row = mysql_fetch_array($res)) {
               $lines_fnd = explode(",", $row[0]);
@@ -148,7 +138,7 @@ private function refresh_title()
           $lines_str = implode(",", $lines);
       } elseif ($subset == "yes") {
           $experiments = $_GET['exps'];
-          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
           $res = mysql_query($sql) or die(mysql_error() . $sql);
           if ($row = mysql_fetch_array($res)) {
               $temp = explode(",", $row[0]);
@@ -490,7 +480,7 @@ private function step3_lines() {
   if (preg_match("/\d/",$experiments)) {
       $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
   }
-  $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+  $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
   if ($row = mysql_fetch_array($res)) {
       $line_index = explode(",", $row[0]);
@@ -513,7 +503,7 @@ private function step3_lines() {
             if (preg_match("/\d/",$datasets)) {
               $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
             }
-            $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+            $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
             if ($row = mysql_fetch_array($res)) {
               $line_index = explode(",", $row[0]);
@@ -751,7 +741,7 @@ private function type1_markers() {
             FROM line_records, tht_base
             WHERE line_records.line_record_uid=tht_base.line_record_uid
             $sql_option";
-      $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $experiments";
+      $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
       if ($row = mysql_fetch_array($res)) {
           $lines = explode(",", $row[0]);
