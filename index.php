@@ -59,12 +59,21 @@ $name = get_unique_name("datasets");
   <option selected value=''>Search by Breeding Program</option>
    <?php
   // dem jan13: Only include programs that have phenotype experiment trials.
-  $sql = "select distinct
-     data_program_name, data_program_code, cp.CAPdata_programs_uid as uid
-     FROM CAPdata_programs cp, experiments e
-     WHERE program_type = 'breeding'
-     AND cp.CAPdata_programs_uid = e.CAPdata_programs_uid
-     order by data_program_name asc;";
+  // dem sep14: Only include programs whose lines are in phenotype experiment trials.
+  /* $sql = "select distinct */
+  /*    data_program_name, data_program_code, cp.CAPdata_programs_uid as uid */
+  /*    FROM CAPdata_programs cp, experiments e */
+  /*    WHERE program_type = 'breeding' */
+  /*    AND cp.CAPdata_programs_uid = e.CAPdata_programs_uid */
+  /*    order by data_program_name asc;"; */
+  $sql = "SELECT DISTINCT
+	  data_program_name, data_program_code, cp.CAPdata_programs_uid as uid
+	  FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
+	  WHERE program_type = 'breeding'
+	  AND lr.breeding_program_code = data_program_code
+	  AND tb.experiment_uid = e.experiment_uid
+	  AND tb.line_record_uid = lr.line_record_uid
+	  ORDER BY data_program_name asc;";
    $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
    while ($row = mysql_fetch_assoc($r)) {
        $progname = $row['data_program_name']." - ".$row['data_program_code'];
