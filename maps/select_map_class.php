@@ -54,10 +54,21 @@ class Maps
         if (isset($_SESSION['geno_exps'])) {
             $this->typeGenoExpDisplay();
         }
+        $mapset_list = "";
+        $sql = "select mapset_uid from mapset";
+        $res = mysql_query($sql) or die (mysql_error());
+        while ($row = mysql_fetch_array($res)) {
+            $uid = $row[0];
+            if ($mapset_list == "") {
+                $mapset_list = $uid;
+            } else {
+                $mapset_list .= ", $uid";
+            }
+        }
         ?>
         <div id=step3></div>
         <div id=step4><br>
-        <button onclick="javascript: load_markersInMap()">Calculate markers in map for selected lines</button>
+        <button onclick="javascript: load_markersInMap(<?php echo $mapset_list ?>)">Calculate markers in map for selected lines</button>
         </div>
         <?php
         if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) {
@@ -91,7 +102,7 @@ class Maps
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script type="text/javascript" src="maps/select_map02.js">
+        <script type="text/javascript" src="maps/select_map03.js">
         </script>
         <form name="myForm" action="maps/select_map.php">
         <?php
@@ -106,7 +117,7 @@ class Maps
         echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
         $res = mysql_query($sql) or die (mysql_error());
         echo "<table>\n";
-        echo "<tr><td>select<td>markers<br>(total)<td>map set name<td>comment (mouse over item for complete text)\n";
+        echo "<tr><td>select<td>markers<br>(total)<td>markers<br>(in selected lines)<td>map set name<td>comment (mouse over item for complete text)\n";
         while ($row = mysql_fetch_assoc($res)) {
             $count = $row["countm"];
             $val = $row["mapset_name"];
@@ -118,7 +129,8 @@ class Maps
             } else {
                 $checked = "";
             }
-            echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: save_map(this.value)\"><td>$count<td>$val<td><article title=\"$comment\">$comm</article>\n";
+            echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: save_map(this.value)\"><td>$count";
+            echo "<td><div id=$uid></div><td>$val<td><article title=\"$comment\">$comm</article>\n";
         }
         echo "</table>";
         echo "</form><br>";
@@ -160,6 +172,7 @@ class Maps
      */
     public function typeMapMarker()
     {
+        $mapset_uid = $_GET['mapset'];
         if (isset($_SESSION['clicked_buttons'])) {
             $markers = $_SESSION['clicked_buttons'];
             $marker_str = implode(',', $markers);
@@ -182,8 +195,6 @@ class Maps
             }
             $marker_str = implode(',', $markers);
             $num_mark = count($markers);
-            $msg = "There  are $num_mark markers that have genotype data for the selected $num_line lines.<br>
-            This table lists the portion of markers included in each map.<br>Selecting the map with the largest count will give the best coverage.<br><br>";
         } else {
             die("Error - must select lines or markers<br>\n");
         }
@@ -192,20 +203,14 @@ class Maps
           WHERE mim.map_uid = map.map_uid
           AND map.mapset_uid = mapset.mapset_uid
           AND mim.marker_uid IN ($marker_str) 
-          GROUP BY mapset.mapset_uid";
+          AND mapset.mapset_uid = $mapset_uid";
         $res = mysql_query($sql) or die (mysql_error());
-        while ($row = mysql_fetch_assoc($res)) {
-            if ($found == 0) {
-                echo "<br><br>$msg\n";
-                echo "<table><tr><td>markers<br>(in selected lines)<td>map set name\n";
-                $found = 1;
-            }
+        if ($row = mysql_fetch_assoc($res)) {
             $count = $row["countm"];
             $val = $row["mapset_name"];
             $uid = $row["mapuid"];
-            echo "<tr><td>$count<td>$val\n";
+            echo "$count";
         }
-        echo "</table>";
     }
 
     /**
