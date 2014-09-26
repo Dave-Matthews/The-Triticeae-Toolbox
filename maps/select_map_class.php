@@ -192,7 +192,7 @@ class Maps
         }
         $marker_str = implode(',', $markers);
         foreach ($selected_lines as $line_uid) {
-            $sql = "select marker_uid from allele_cache where line_record_uid = $line_uid and marker_uid IN ($marker_str)";
+            $sql = "select distinct(marker_uid) from allele_cache where line_record_uid = $line_uid and marker_uid IN ($marker_str)";
             $res = mysql_query($sql) or die (mysql_error() . $sql);
             while ($row = mysql_fetch_row($res)) {
                 $marker_uid = $row[0];
