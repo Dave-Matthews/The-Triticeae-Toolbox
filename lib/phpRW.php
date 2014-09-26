@@ -4,24 +4,18 @@
  *
  * PHP version 5.3
  *
- * @category External 
- * @package  R_Wrapper
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/lib/RWrap.php
  */
 
 /**
  * PHP R interface
  *
- * @category External 
- * @package  R_Wrapper 
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/lib/RWrap.php
  */
-namespace T3;
 
 class RWrap
 {
