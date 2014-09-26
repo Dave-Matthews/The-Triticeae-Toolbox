@@ -10,8 +10,6 @@
  * 
  */
 
-namespace T3;
-
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');

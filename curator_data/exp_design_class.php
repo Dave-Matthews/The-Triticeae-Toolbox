@@ -19,8 +19,6 @@
  * @link     http://triticeaetoolbox.org/wheat/curator_data/exp_design.php
  **/
 
-namespace T3;
-
 class Fieldbook
 {
     /**
