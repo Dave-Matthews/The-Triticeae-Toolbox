@@ -28,7 +28,6 @@ function save_map() {
 
 function load_one_marker(mapset) {
   var url = "";
-  Element.show('spinner');
   markersInMap = jQuery.ajax({
     type: "GET",
     url: php_self,
@@ -36,7 +35,6 @@ function load_one_marker(mapset) {
     success: function(data, textStatus) {
         url = "#" + mapset;
         jQuery(url).html(data);
-        Element.hide('spinner');
     },
     error: function(request, status, error) {
         alert(request.responseText);
@@ -48,8 +46,10 @@ function load_markersInMap(mapset_list) {
   var i = 0;
   var url = "";
   document.getElementById("step4").innerHTML = "Calculating portion of markers in each map.";
+  Element.show('spinner');
   for (i = 0; i < arguments.length; i++) {
     load_one_marker(arguments[i]);
   }
+  Element.hide('spinner');
   document.getElementById("step4").innerHTML = "Finished calculateion of markers in each map.";
 }
