@@ -185,21 +185,47 @@ class Maps
             AND map.mapset_uid = $mapset_uid";
             $res = mysql_query($sql) or die (mysql_error());
             while ($row = mysql_fetch_array($res)) {
-                $markers[] = $row[0];
+                $marker_uid = $row[0];
+                $markers_inmap[$marker_uid] = 1;
             }
         } else {
             die("Error - must select lines or markers<br>\n");
         }
-        $marker_str = implode(',', $markers);
+
+        $sql = "select marker_uid from allele_byline_idx order by marker_uid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+        $i=0;
+        while ($row = mysqli_fetch_array($res)) {
+            $uid = $row[0];
+            $marker_list[$i] = $row[0];
+            $i++;
+        }
+
         foreach ($selected_lines as $line_uid) {
-            $sql = "select distinct(marker_uid) from allele_cache where line_record_uid = $line_uid and marker_uid IN ($marker_str)";
+            $sql = "select alleles from allele_byline where line_record_uid = $line_uid";
             $res = mysql_query($sql) or die (mysql_error() . $sql);
-            while ($row = mysql_fetch_row($res)) {
-                $marker_uid = $row[0];
-                $markers_inmap[$marker_uid] = 1; 
+            if ($row = mysql_fetch_row($res)) {
+                $alleles = $row[0];
+                $outarray = explode(',', $alleles);
+                $i = 0;
+                foreach ($outarray as $allele) {
+                    if ($allele != '') {
+                        $marker_cnt[$i]++;
+                    }
+                    $i++;
+                }
             }
         }
-        $count = count($markers_inmap);
+       
+        $i=0; 
+        foreach ($marker_list as $i=>$marker_uid) {
+            if (isset($markers_inmap[$marker_uid])) {
+                if ($marker_cnt[$i] > 0) {
+                    $count++;
+                }
+            }
+        } 
+
         echo "$count";
     }
 
