@@ -343,12 +343,12 @@ class Fieldbook
         <option value="">select trial</option>
         <?php
         $sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year
-                                FROM experiments AS e, datasets AS ds, datasets_experiments AS d_e, experiment_types AS e_t
-                                WHERE e.experiment_uid = d_e.experiment_uid
-                                AND d_e.datasets_uid = ds.datasets_uid
-                                AND ds.CAPdata_programs_uid IN ($CAPdata_program)
+                                FROM experiments AS e, CAPdata_programs, experiment_types AS e_t
+                                WHERE e.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
+                                AND CAPdata_programs.CAPdata_programs_uid IN ($CAPdata_program)
                                 AND e.experiment_type_uid = e_t.experiment_type_uid
-                                AND e_t.experiment_type_name = 'phenotype'";
+                                AND e_t.experiment_type_name = 'phenotype'
+                                order by name";
         $res = mysql_query($sql) or die(mysql_error());
         while ($row = mysql_fetch_assoc($res)) {
            ?>
