@@ -221,7 +221,7 @@ class Fieldbook
         <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
         <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
-        <script type="text/javascript" src="curator_data/design04.js"></script>
+        <script type="text/javascript" src="curator_data/design05.js"></script>
         <script type="text/javascript">
         if ( window.addEventListener ) {
             window.addEventListener( "load", select_trial(), false );
@@ -392,7 +392,7 @@ class Fieldbook
         ?>
         </select>
         <td>Program responsible for data collection
-        <tr><td>Trial Name:<td colspan=2><input type="text" id="trial" onchange="javascript: update_step1()">
+        <tr><td>Trial Name:<td colspan=2><input type="text" id="trial_name" onchange="javascript: update_step1()">
         <td>Format: "Experiment_YYYY_Location", where Experiment is short but descriptive, YYYY=Trial Year.<br>
                 Trial Names should be unique across T3 for a crop. A trial is carried out at one location in one year.  
         <tr><td>Year:<td colspan=2>
@@ -495,6 +495,10 @@ class Fieldbook
             $res = mysql_query($sql) or die(mysql_error());
             if ($row = mysql_fetch_row($res)) {
                 $count = $row[0];
+            } elseif (isset($_SESSION['selected_lines'])) {
+                $count = count($_SESSION['selected_lines']);
+            } else {
+                $msg = "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>"; 
             }
         } elseif (isset($_SESSION['selected_lines'])) {
             $count = count($_SESSION['selected_lines']);
@@ -787,17 +791,23 @@ class Fieldbook
             if ($row = mysql_fetch_row($res)) {
                 $trial_code = $row[0];
             }
-            $sql = "select distinct lr.line_record_uid from tht_base as tb, line_records as lr
+            $sql = "select distinct lr.line_record_uid, tb.check_line from tht_base as tb, line_records as lr
                 where lr.line_record_uid = tb.line_record_uid
+                and tb.check_line = \"no\"
                 and tb.experiment_uid = $trial";
             $res = mysql_query($sql) or die(mysql_error());
             while ($row = mysql_fetch_row($res)) {
-                $tmp[] = $row[0];
+                $line_list[] = $row[0];
             }
-            $count_lines = count($tmp);
+            $count_lines = count($line_list);
+            /* if there are no lines in selected experiment then use lines from session */
+            if (($count_lines < 1) && isset($_SESSION['selected_lines'])) {
+                $line_list = $_SESSION['selected_lines'];
+            }
+            $count_lines = count($line_list); 
             if ($count_lines > 1) {
                 $exp = "";
-                foreach ($tmp as $item) {
+                foreach ($line_list as $item) {
                     $sql = "select line_record_name from line_records where line_record_uid = $item";
                     $res = mysql_query($sql) or die(mysql_error() . $sql);
                     if ($row = mysql_fetch_assoc($res)) {
@@ -812,8 +822,6 @@ class Fieldbook
                     }
                 }
                 $cmd = "trt <-c($exp)\n";
-            } else {
-                $cmd = "trt <-c($tmp_str)\n";
             }
             $objRWrap->addCommand($cmd);
         } elseif (isset($_SESSION['selected_lines'])) {
@@ -836,14 +844,48 @@ class Fieldbook
                     }
                 }
                 $cmd = "trt <-c($exp)\n";
-            } else {
-                $cmd = "trt <-c($tmp_str)\n";
             }
             $objRWrap->addCommand($cmd);
         } else {
             die("Error: no lines selected");
         }
-        if (isset($_SESSION['check_lines'])) {
+        if (preg_match("/\d/", $trial)) {
+            $sql = "select trial_code from experiments where experiment_uid = $trial";
+            $res = mysql_query($sql) or die(mysql_error());
+            if ($row = mysql_fetch_row($res)) {
+                $trial_code = $row[0];
+            }
+            $sql = "select distinct lr.line_record_uid, tb.check_line from tht_base as tb, line_records as lr
+                where lr.line_record_uid = tb.line_record_uid
+                and tb.check_line = \"yes\"
+                and tb.experiment_uid = $trial";
+            $res = mysql_query($sql) or die(mysql_error());
+            while ($row = mysql_fetch_row($res)) {
+                $check_list[] = $row[0];
+            }
+            $count_check = count($check_list);
+            /* if there are no lines in selected experiment then use lines from session */
+            if (($count_checks < 1) && isset($_SESSION['check_lines'])) {
+                $check_list = $_SESSION['check_lines'];
+            }
+            $exp = "";
+            foreach ($check_list as $item) {
+                $sql = "select line_record_name from line_records where line_record_uid = $item";
+                $res = mysql_query($sql) or die(mysql_error() . $sql);
+                if ($row = mysql_fetch_assoc($res)) {
+                    $name = $row['line_record_name'];
+                } else {
+                    die("Error: could not find line record $item<br>\n");
+                }
+                if ($exp == "") {
+                    $exp = $exp . "\"$name\"";
+                } else {
+                    $exp = $exp . ",\"$name\"";
+                }
+            }
+            $cmd = "trt2 <-c($exp)\n";
+            $objRWrap->addCommand($cmd);
+        } elseif (isset($_SESSION['check_lines'])) {
             $tmp = $_SESSION['check_lines'];
             $count_lines = count($tmp);
             $exp = "";
@@ -912,6 +954,9 @@ class Fieldbook
             $nChksPerBlk = $_GET['nChksPerBlk'];
             $cmd = "nChksPerBlk <- $nChksPerBlk\n";
             $objRWrap->addCommand($cmd);
+        }
+        if (isset($_GET['trial_name']) && !empty($_GET['trial_name'])) {
+            $trial_code = $_GET['trial_name'];
         }
  
         /*error checking*/
