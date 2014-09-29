@@ -150,17 +150,17 @@ private function refresh_title()
           $exps_str = $_GET['exps'];
           $experiments = explode(',', $exps_str);
           $_SESSION['geno_exps'] = $experiments;
+          $sql = "select count(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
+          $res = mysql_query($sql) or die(mysql_error() . $sql);
+          if ($row = mysql_fetch_array($res)) {
+              $_SESSION['geno_exps_cnt'] = number_format($row[0]);
+          }
       }
         $username=$_SESSION['username'];
         if ($username) {
           store_session_variables('selected_lines', $username);
         }
       }
-      /** if (isset($_GET['exps'])) {
-          $trials_ary = explode(",",$_GET['exps']);
-          $_SESSION['selected_trials'] = $trials_ary;
-          $_SESSION['experiments'] = $_GET['exps'];
-      } **/
    if (isset($_SESSION['selected_lines'])) {
      ?>
      <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
@@ -188,6 +188,8 @@ private function type1()
   unset($_SESSION['phenotype']);
   unset($_SESSION['clicked_buttons']);
   unset($_SESSION['filtered_markers']);
+  unset($_SESSION['geno_exps']);
+  unset($_SESSION['geno_exps_cnt']);
 
   ?>
   <p>1.
