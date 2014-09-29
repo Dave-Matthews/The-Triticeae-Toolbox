@@ -413,7 +413,8 @@ class Downloads
         <td><b>Genome Wide Association (single genotype experiment)</b><br>
         1. Select a <a href="downloads/select_genotype.php">set of lines by genotype experiment</a>.<br>
         2. Select a <a href="phenotype/phenotype_selection.php">trait and phenotype trial</a>.<br>
-        3. Return to this page and select model options then GWAS Analysis<br> 
+        3. Select the <a href="maps/select_map.php">genetic map</a> which has the best coverage for this set.<br>
+        4. Return to this page and select model options then GWAS Analysis<br> 
 
         <tr><td colspan=2><b>Genomic Prediction</b><br>
         1. Select a <a href="downloads/select_all.php">set of lines, trait, and trials</a> (one trait).<br>
@@ -2504,21 +2505,15 @@ class Downloads
             die("<font color=red>Error - markers should be selected before download</font>");
         }
 
-        //calculate number of lines for selected experiment
-        $sql = "select max(total) from allele_frequencies where experiment_uid = $geno_exp";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        if ($row = mysql_fetch_row($res)) {
-            $measured_lines = $row[0];
-            $max_missing_count = round($max_missing * ($measured_lines / 100));
-        }
-
-        $sql = "SELECT marker_uid, maf, missing from allele_frequencies where experiment_uid = $geno_exp";
+        $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $geno_exp";
         $res = mysql_query($sql) or die(mysql_error() . $sql);
         while ($row = mysql_fetch_row($res)) {
             $marker_uid = $row[0];
             $maf = $row[1];
             $miss = $row[2];
-            if (($miss > $max_missing_count) OR ($maf < $min_maf)) {
+            $total = $row[3];
+            $miss_per = 100 * ($miss / $total);
+            if (($miss_per > $max_missing) OR ($maf < $min_maf)) {
             } else {
                 $markers_filtered[] = $marker_uid;
                 $marker_lookup[$marker_uid] = 1;
@@ -2591,7 +2586,7 @@ class Downloads
         $outputheader = str_replace(" ", "", $outputheader);
 
         $pos_index = 0;
-        $sql = "select marker_uid, marker_name, chrom, pos, alleles from allele_bymarker_exp_101 where experiment_uid = $geno_exp order by BINARY chrom, pos";
+        $sql = "select marker_uid, marker_name, chrom, pos, alleles from allele_bymarker_exp_101 where experiment_uid = $geno_exp order by chrom, pos";
         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
         while ($row = mysql_fetch_array($res)) {
             $marker_id = $row[0];

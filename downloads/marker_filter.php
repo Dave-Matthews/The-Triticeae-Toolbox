@@ -32,23 +32,40 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
     }
     $selectedlines = implode(",", $lines);
 
+    if (isset($_SESSION['geno_exps'])) {
+        $experiment_uid = $_SESSION['geno_exps'];
+        $experiment_uid = $experiment_uid[0];
+        $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $experiment_uid";
+        $res = mysql_query($sql) or die(mysql_error() . $sql);
+        while ($row = mysql_fetch_row($res)) {
+            $marker_uid = $row[0];
+            $maf = $row[1];
+            $miss = $row[2];
+            $total = $row[3];
+            $miss_per = 100 * ($miss / $total);
+            if (($miss_per > $max_missing) or ($maf < $min_maf)) {
+            } else {
+                $markers_filtered[$marker_uid] = 1;
+            }
+        }
+    } else {
+
     //get genotype experiments that correspond with the Datasets (BP and year)
     //selected for the experiments
-    $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-    FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
-    WHERE
-    e.experiment_type_uid = et.experiment_type_uid
-    AND lr.line_record_uid = tb.line_record_uid
-    AND e.experiment_uid = tb.experiment_uid
-    AND lr.line_record_uid in ($selectedlines)
-    AND et.experiment_type_name = 'genotype'";
-    $res = mysqli_query($mysqli, $sql_exp) or die(mysqli_error($mysqli) . "<br>" . $sql_exp);
-    if (mysqli_num_rows($res)>0) {
-        while ($row = mysqli_fetch_array($res)) {
-            $exp[] = $row["exp_uid"];
+        $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
+        FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
+        WHERE e.experiment_type_uid = et.experiment_type_uid
+        AND lr.line_record_uid = tb.line_record_uid
+        AND e.experiment_uid = tb.experiment_uid
+        AND lr.line_record_uid in ($selectedlines)
+        AND et.experiment_type_name = 'genotype'";
+        $res = mysqli_query($mysqli, $sql_exp) or die(mysqli_error($mysqli) . "<br>" . $sql_exp);
+        if (mysqli_num_rows($res)>0) {
+            while ($row = mysqli_fetch_array($res)) {
+                $exp[] = $row["exp_uid"];
+            }
+            $exp = implode(',', $exp);
         }
-        $exp = implode(',', $exp);
-    }
 
     $sql_mstat = "SELECT af.marker_uid as marker, SUM(af.aa_cnt) as sumaa,
          SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
@@ -67,19 +84,14 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
         $maf2 = ($row["sumab"]+2*$row["sumbb"])/(2*$row["total"]);
         $maf = round(100*min($maf1, $maf2), 1);
         $miss = round(100*$row["summis"]/$row["total"], 1);
-        if ($maf >= $min_maf) {
-            $num_maf++;
-        }
-        if ($miss > $max_missing) {
-            $num_miss++;
-        }
         if (($miss > $max_missing) or ($maf < $min_maf)) {
-            $num_removed++;
         } else {
             $markers_filtered[] = $marker_uid;
         }
     }
-    $_SESSION['filtered_markers'] = $markers_filtered;
+    }
+    $count = count($markers_filtered);
+    return $count;
 }
 
     /**
@@ -273,16 +285,6 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
 function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
 {
     global $mysqli;
-    if (isset($_SESSION['clicked_buttons'])) {
-        $tmp = count($_SESSION['clicked_buttons']);
-        $saved_session = $saved_session . ", $tmp markers";
-        $markers = $_SESSION['clicked_buttons'];
-        $marker_str = implode(',', $markers);
-    } else {
-        $markers_filtered = array();
-        $markers = array();
-        $marker_str = "";
-    }
     if (isset($_SESSION['geno_exps'])) {
         $experiment_uid = $_SESSION['geno_exps'];
         $experiment_uid = $experiment_uid[0];
@@ -290,21 +292,13 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
         echo "Error: should select genotype experiment befor download\n";
     }
 
-    //calculate number of lines for selected experiment
-    $sql = "select max(total) from allele_frequencies where experiment_uid = $experiment_uid";
-    $res = mysql_query($sql) or die(mysql_error() . $sql);
-    if ($row = mysql_fetch_row($res)) {
-        $measured_lines = $row[0];
-        $max_missing_count = round($max_missing * ($measured_lines / 100));
-    }
-
     $num_maf = 0;
     $num_miss = 0;
     $num_mark = 0;
     $num_removed = 0;
     $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $experiment_uid";
-    $res = mysql_query($sql) or die(mysql_error() . $sql);
-    while ($row = mysql_fetch_row($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    while ($row = mysqli_fetch_row($res)) {
         $marker_uid = $row[0];
         $maf = $row[1];
         $miss = $row[2];
