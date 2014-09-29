@@ -285,6 +285,8 @@ EOD;
    echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers:</a> ";
    if (isset($_SESSION['clicked_buttons'])) {
      echo count($_SESSION['clicked_buttons']);
+   } elseif (isset($_SESSION['geno_exps_cnt'])) {
+     echo $_SESSION['geno_exps_cnt'];
    } else {
      echo "All";
    }
