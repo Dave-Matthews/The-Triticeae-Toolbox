@@ -764,7 +764,7 @@ class Fieldbook
         $objPHPExcel->getActiveSheet()->SetCellValue('B17', $greenhouse);
         $objPHPExcel->getActiveSheet()->SetCellValue('A18', 'Seeding rate (seeds/m2)');
         $objPHPExcel->getActiveSheet()->SetCellValue('B18', $seed);
-        $objPHPExcel->getActiveSheet()->SetCellValue('A19', 'Experiment design');
+        $objPHPExcel->getActiveSheet()->SetCellValue('A19', 'Experimental design');
         $objPHPExcel->getActiveSheet()->SetCellValue('B19', $design);
         $objPHPExcel->getActiveSheet()->SetCellValue('A20','Irrigation (yes or no)');
         $objPHPExcel->getActiveSheet()->SetCellValue('B20',$irrigation);
