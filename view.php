@@ -1,60 +1,63 @@
-<?php
-/**
- * View database entry
- * 
- * PHP version 5.3
- * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/view.php
- * 
- */
-
-require "includes/bootstrap.inc";
+<?php 
+include("includes/bootstrap.inc");
 connect();
-require "theme/normal_header.php";
+include("theme/normal_header.php");
 
 // Will take both uids and names
-if (isset($_REQUEST['name']) && !isset($_REQUEST['uid'])) {
-    $_REQUEST['uid'] = $_REQUEST['name'];
-}
-if (isset($_REQUEST['uid'])) {
-    if (strpos($_REQUEST['uid'], "=", strlen($_REQUEST['uid'])-1) !== false) {
-        $_REQUEST['uid'] = base64_decode($_REQUEST['uid']);
-    }
-}
+// DEM sep2014: But treat them differently!
 
-if ( ($record = isRecord($_REQUEST['table'], $_REQUEST['uid'])) !== false) { 
+$table = $_REQUEST['table'];
+$pkey = get_pkey($table);
+$name = get_unique_name($table);		   
+$prettified = beautifulTableName($table, 0);
+$id = $_REQUEST['uid'];
+$nm = $_REQUEST['name'];
+if ($id) {
+  // Argument is a record uid.
+  $sql = "SELECT * FROM $table WHERE $pkey = $id";
+  $record = mysql_query($sql) or die(mysql_error()."<br>Query was<br>".$sql);
+  if(@mysql_num_rows($record) > 0) {
     $row = mysql_fetch_assoc($record);
-    $pkey = get_pkey($_REQUEST['table']);
-    $name = get_unique_name($_REQUEST['table']);		   
-    ?>
-
-    <h1>
-    <?php echo beautifulTableName($_REQUEST['table'], 0) . " " . $row[$name] ?></h1>
-    <div class="boxContent">
-
-    <?php 
-    $func = "show_" . $_REQUEST['table'];
+    $n = $row[$name];
+    echo "<h1>$prettified $n</h1>";
+    echo "<div class=boxContent>";
+    $func = "show_" . $table;
     // Is there a custom function for that table in includes/general.inc
     // or includes/pedigree.inc?  examples:
     //  line_records = includes/pedigree.inc/show_line_records()
     //  markers = includes/general.inc/show_markers()
     //  breeding_programs = includes/general.inc/show_breeding_programs()
-    if (function_exists($func)) {
-        call_user_func($func, $row[$pkey]);
-    } else {
-        // Default to raw table dump using includes/general.inc:show_general().
-        show_general($_REQUEST['table'], $row[$pkey]);
+    if(function_exists($func))
+      call_user_func($func, $row[$pkey]);
+    else {
+      // Default to raw table dump using includes/general.inc:show_general().
+      show_general($table, $row[$pkey]);
     }
     echo "</div>";
-} else {
+  } 
+  else 
     error(1, "No Record Found"); 
 }
+elseif ($nm) {
+  // Argument is a record name.
+  $sql = "SELECT * FROM $table WHERE $name = $nm";
+  $record = mysql_query($sql) or die(mysql_error()."<br>Query was<br>".$sql);
+  if(@mysql_num_rows($record) > 0) {
+    $row = mysql_fetch_assoc($record);
+    $n = $row[$name];
+    echo "<h1>$prettified $n</h1>";
+    echo "<div class=boxContent>";
+    $func = "show_" . $table;
+    if(function_exists($func))
+      call_user_func($func, $row[$pkey]);
+    else 
+      show_general($table, $row[$pkey]);
+    echo "</div>";
+  } 
+  else 
+    error(1, "No Record Found"); 
+}
+
 echo "</div>";
-require "theme/footer.php";
+include("theme/footer.php");
 ?>
