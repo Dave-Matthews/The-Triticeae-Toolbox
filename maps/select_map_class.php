@@ -145,11 +145,9 @@ class Maps
     public function typeGenoExpDisplay()
     {
         if (isset($_SESSION['geno_exps'])) {
+            $found = 0;
             $geno_exp = $_SESSION['geno_exps'];
             $geno_str = implode(",", $geno_exp);
-            echo "When the map information has been loaded into the database with the genotype experiment you do not have to select a map set.";
-            echo "<table>";
-            echo "<tr><td>Genotype Experiment<td>map information";
             $sql = "select experiment_uid, trial_code from experiments where experiment_uid IN ($geno_str)";
             $res = mysql_query($sql) or die(mysql_error() . $sql);
             while ($row = mysql_fetch_array($res)) {
@@ -158,12 +156,16 @@ class Maps
                 $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $uid and pos is not null limit 10";
                 $res2 = mysql_query($sql) or die(mysql_error() . $sql);
                 if ($row = mysql_fetch_array($res2)) {
-                    echo "<tr><td>$name<td>loaded";
-                } else {
-                    echo "<tr><td>$name<td>not loaded";
+                    if ($found == 0) {
+                        echo "<table><tr><td>Genotype Experiment<td>map information";
+                        $found++;
+                    }
+                    echo "<tr><td>$name<td>map information has been loaded into the database with the genotype experiment<br>you do not have to select a map set";
                 }
             }
-            echo "</table>";
+            if ($found > 0) {
+                echo "</table>";
+            }
         }
     }
 
