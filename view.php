@@ -40,7 +40,7 @@ if ($id) {
 }
 elseif ($nm) {
   // Argument is a record name.
-  $sql = "SELECT * FROM $table WHERE $name = $nm";
+  $sql = "SELECT * FROM $table WHERE $name = '$nm'";
   $record = mysql_query($sql) or die(mysql_error()."<br>Query was<br>".$sql);
   if(@mysql_num_rows($record) > 0) {
     $row = mysql_fetch_assoc($record);
