@@ -11,6 +11,8 @@
 
 namespace T3;
 
+set_time_limit(0);
+
 class Maps
 {
     /**
@@ -49,7 +51,7 @@ class Maps
         $this->typeMapSetDisplay();
         echo "</div>";
         echo "<div id=\"step2\">";
-        echo "<img id=\"spinner\" src=\"images/ajax-loader.gif\" style=\"display:none;\" />";
+        //echo "<img id=\"spinner\" src=\"images/ajax-loader.gif\" style=\"display:none;\" />";
         echo "</div>";
         if (isset($_SESSION['geno_exps'])) {
             $this->typeGenoExpDisplay();
@@ -102,7 +104,7 @@ class Maps
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script type="text/javascript" src="maps/select_map03.js">
+        <script type="text/javascript" src="maps/select_map04.js">
         </script>
         <form name="myForm" action="maps/select_map.php">
         <?php
@@ -130,7 +132,7 @@ class Maps
                 $checked = "";
             }
             echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: save_map(this.value)\"><td>$count";
-            echo "<td><div id=$uid></div><td>$val<td><article title=\"$comment\">$comm</article>\n";
+            echo "<td><div id=$uid><img id=\"spinner$uid\" src=\"images/ajax-loader.gif\" style=\"display:none;\"></div><td>$val<td><article title=\"$comment\">$comm</article>\n";
         }
         echo "</table>";
         echo "</form><br>";
@@ -185,47 +187,40 @@ class Maps
             AND map.mapset_uid = $mapset_uid";
             $res = mysql_query($sql) or die (mysql_error());
             while ($row = mysql_fetch_array($res)) {
-                $marker_uid = $row[0];
-                $markers_inmap[$marker_uid] = 1;
+                $markers[] = $row[0];
             }
         } else {
             die("Error - must select lines or markers<br>\n");
         }
 
-        $sql = "select marker_uid from allele_byline_idx order by marker_uid";
+        //get location information for markers
+        $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
         $i=0;
         while ($row = mysqli_fetch_array($res)) {
             $uid = $row[0];
             $marker_list[$i] = $row[0];
+            $marker_list_loc[$uid] = $i;
             $i++;
         }
-
-        foreach ($selected_lines as $line_uid) {
-            $sql = "select alleles from allele_byline where line_record_uid = $line_uid";
-            $res = mysql_query($sql) or die (mysql_error() . $sql);
-            if ($row = mysql_fetch_row($res)) {
+ 
+        $outarray = array(); 
+        foreach ($selected_lines as $line_record_uid) {
+            $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+            if ($row = mysqli_fetch_array($res)) {
                 $alleles = $row[0];
-                $outarray = explode(',', $alleles);
-                $i = 0;
-                foreach ($outarray as $allele) {
-                    if ($allele != '') {
-                        $marker_cnt[$i]++;
-                    }
-                    $i++;
-                }
+                $outarray = $outarray + explode(',', $alleles);
             }
         }
-       
-        $i=0; 
-        foreach ($marker_list as $i=>$marker_uid) {
-            if (isset($markers_inmap[$marker_uid])) {
-                if ($marker_cnt[$i] > 0) {
-                    $count++;
-                }
-            }
-        } 
 
+        foreach ($markers as $i => $marker_uid) { 
+            $loc = $marker_list_loc[$marker_uid];
+            if (isset($outarray[$loc]) && !empty($outarray[$loc])) {
+                $markers_filtered[] = $marker_uid;
+            }
+        }
+        $count = count($markers_filtered);
         echo "$count";
     }
 
