@@ -114,7 +114,7 @@ class Downloads
         ?>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+        <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
         <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
@@ -188,19 +188,18 @@ class Downloads
         ?>        
         </div>
         <div id="title2">
+                    <b>Phenotype and Consensus Genotype data</b><br>
         <?php
-                    echo "To download phenotype and consensus genotype data<br>";
                     echo "1. Select a set of <a href=\"" . $config['base_url'];
                     echo "downloads/select_all.php\">Lines, Traits, and Trials</a>.<br>";
                     ?>
                     2. Select a genetic map which has the best coverage for your selection.<br><br>
-                    To download phenotype and genotype data for a single experiment<br>
+                    <b>Phenotype and Single Experiment Genotype data</b><br>
                     <?php
                     echo "1. Select a set of <a href=\"" . $config['base_url'];
                     echo "downloads/select_genotype.php\">Lines by Genotype Experiment</a>.<br>";
                     ?>
                     2. Select a genetic map which has the best coverage for your selection.<br><br>
-                    Note: Genotype data for genotype experiments with over 100K markers can only be downloaded as a single experiment. List of <a href=genotyping/genotype_selection.php>Genotype experiments</a>.<br>Markers with no map location are not excluded.
         <input type="button" value="Detailed instruction" onclick="javascript: define_terms()"><br><br>
                     <?php
         
@@ -737,19 +736,18 @@ class Downloads
                     and experiments.experiment_uid = $geno_str";
                 $res = mysql_query($sql) or die(mysql_error());
                 $row = mysql_fetch_assoc($res);
-                $geno_str = $row['trial_code'];
-                $platform_uid = $row['platform_uid'];
-                $sql = "select platform_name from platform where platform_uid = $platform_uid";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_assoc($res);
-                $platform_name = $row['platform_name'];
+                $geno_name = $row['trial_code'];
                 if ($saved_session == "") {
-                    $saved_session = "genotype experiment = $geno_str";
+                    $saved_session = "genotype experiment = $geno_name";
                 } else {
                     $saved_session = $saved_session . ", genotype experiment = $geno_str";
                 }
-                if (preg_match("/GBS/", $platform_name)) {
-                    $saved_session = $saved_session . ", map from vcf file";
+                $sql = "select count(*) from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null";
+                $res = mysql_query($sql) or die(mysql_error() . $sql);
+                $row = mysql_fetch_array($res);
+                $count = $row[0];
+                if ($count > 0) {
+                    $saved_session = $saved_session . ", map information loaded with this experiment";
                 } elseif (isset($_SESSION['selected_map'])) {
                     $selected_map = $_SESSION['selected_map'];
                     $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
