@@ -33,6 +33,8 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
     $selectedlines = implode(",", $lines);
 
     if (isset($_SESSION['geno_exps'])) {
+        $count = $_SESSION['geno_exps_cnt'];
+        return $count;
         $experiment_uid = $_SESSION['geno_exps'];
         $experiment_uid = $experiment_uid[0];
         $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $experiment_uid";
