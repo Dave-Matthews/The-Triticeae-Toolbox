@@ -148,19 +148,22 @@ class Maps
             $found = 0;
             $geno_exp = $_SESSION['geno_exps'];
             $geno_str = implode(",", $geno_exp);
-            $sql = "select experiment_uid, trial_code from experiments where experiment_uid IN ($geno_str)";
+            $sql = "select experiments.experiment_uid, trial_code, genotype_experiment_info.comments from experiments, genotype_experiment_info
+                where experiments.experiment_uid = genotype_experiment_info.experiment_uid
+                and experiments.experiment_uid IN ($geno_str)";
             $res = mysql_query($sql) or die(mysql_error() . $sql);
             while ($row = mysql_fetch_array($res)) {
                 $uid = $row[0];
                 $name = $row[1];
+                $comments = $row[2];
                 $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $uid and pos is not null limit 10";
                 $res2 = mysql_query($sql) or die(mysql_error() . $sql);
                 if ($row = mysql_fetch_array($res2)) {
                     if ($found == 0) {
-                        echo "<table><tr><td>Genotype Experiment<td>map information";
+                        echo "<table><tr><td>Genotype Experiment<td>comment";
                         $found++;
                     }
-                    echo "<tr><td>$name<td>map information has been loaded into the database with the genotype experiment<br>you do not have to select a map set";
+                    echo "<tr><td>$name<td>$comments<br><br>map information has been loaded into the database with the genotype experiment<br>you do not have to select a map set";
                 }
             }
             if ($found > 0) {
