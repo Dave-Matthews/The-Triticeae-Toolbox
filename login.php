@@ -319,9 +319,10 @@ function HTMLProcessLogin() {
   $email = $_POST['email'];
   $password = $_POST['password'];
   $rv = '';
-  
-  if (!isVerified($_POST['email']))
-	$rv = HTMLLoginForm("You cannot login until you confirm your email (the link was sent to you at the time of registration)");
+  if (!isRegistered($email))
+    $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
+  elseif (!isVerified($_POST['email']))
+    $rv = HTMLLoginForm("You cannot login until you confirm your email address, using the link was sent to you at the time of registration.");
   else {
         if (isUser($email, $password)) {
           // Successful login
