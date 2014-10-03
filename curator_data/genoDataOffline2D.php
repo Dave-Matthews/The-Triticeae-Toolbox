@@ -33,6 +33,7 @@ require "$progPath" . "curator_data/lineuid.php";
 require_once "$progPath" . "includes/email.inc";
 
 ini_set("auto_detect_line_endings", true);
+ini_set('mysql.connect_timeout', '0');
 
 $num_args = $_SERVER["argc"];
 $fnames = $_SERVER["argv"];
@@ -49,7 +50,7 @@ $lineDsHash = array ();
 $curTrialCode = '';
 $gName = '';
 
-echo "Start time - ". date("m/d/y : H:i:s", time()) ."\n"; 
+echo "Start time - ". date("m/d/y : H:i:s", time()) ."\n";
 echo "Start time - " . microtime(true) ."\n";
 echo "Translate File - ". $lineTransFile. "\n";
 echo "Genotype Data File - ". $gDataFile. "\n";
@@ -65,7 +66,7 @@ echo "Email - ". $emailAddr."\n";
  * 
  * @return number (0=not found 1=found)
  */
-function findUnambig ($snp, $offset)
+function findUnambig($snp, $offset)
 {
     global $strand, $a_allele, $b_allele;
     $pattern = "/([A-Z])\/([A-Z])/";
@@ -129,7 +130,7 @@ function findUnambig ($snp, $offset)
  * 
  * @return NULL
  */
-function findIllumina ($seq, $marker_ab)
+function findIllumina($seq, $marker_ab)
 {
     global $strand, $a_allele, $b_allele;
     $strand = "";
@@ -146,7 +147,7 @@ function findIllumina ($seq, $marker_ab)
  * 
  * @return string converted base calls
  */
-function convert2Illumina ($alleles)
+function convert2Illumina($alleles)
 {
     global $a_allele, $b_allele;
     $results = "";
@@ -173,7 +174,7 @@ function convert2Illumina ($alleles)
  * 
  * @return string converted base calls
  */
-function convertDArT2Illumina ($alleles)
+function convertDArT2Illumina($alleles)
 {
     global $a_allele, $b_allele;
     $results = "";
@@ -191,7 +192,7 @@ function convertDArT2Illumina ($alleles)
     return $results;
 }
  
-connect(); 
+connect();
 $mysqli = connecti();
 
 $target_Path = substr($lineTransFile, 0, strrpos($lineTransFile, '/')+1);
@@ -214,7 +215,7 @@ while ($row = mysqli_fetch_array($res)) {
 
 // ******* Email Stuff *********
 //senders name
-$Name = "Genotype Data Importer"; 
+$Name = "Genotype Data Importer";
 //senders e-mail adress
 $sql ="SELECT value FROM  settings WHERE  name = 'capmail'";
 $res = mysqli_query($mysqli, $sql) or die("Database Error: setting lookup - ". mysqli_error($mysqli)."\n\n$sql");
@@ -225,12 +226,12 @@ $subject = "Genotype import results";
 
 //Check inputs
 if ($lineTransFile == "") {
-    exitFatal($errFile,  "No Line Translation File Uploaded.");
+    exitFatal($errFile, "No Line Translation File Uploaded.");
 }
   
 if ($gDataFile == "") {
     exitFatal($errFile, "No Genotype Data Uploaded.");
-}  
+}
 
 if ($emailAddr == "") {
     echo "No email address. \n";
