@@ -151,9 +151,8 @@
   if (file_exists("$raw_file")) {
       print "<h3>3. Save Results</h3>\n";
       print "<table>";
-      print "<tr><td><form action=\"raw/phenotype/$filename4\" target=\"_blank\">";
-      print "<input type=submit value=\"Download\"><td>";
-      print "</form>";
+      $url = "raw/phenotype/$filename4";
+      print "<tr><td><input type=\"button\" value=\"Download\" onclick=\"javascript: start_download('$url')\"><td>";
       if (isset($_SESSION['username'])) {
           if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
               print "<tr><td><form action=\"curator_data/input_experiments_plot_check.php\" method=post>\n";
