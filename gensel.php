@@ -53,67 +53,67 @@ class Downloads
      * @param string $function action to perform
      */
     public function __construct($function = null)
-    {	
+    {
         switch($function)
         {
-        case 'genomic_prediction':
-            $this->genomic_prediction();
-            break;
-        case 'run_histo':
-            $this->run_histo();
-            break;
-        case 'run_gwa':
-            $this->run_gwa();
-            break;
-        case 'run_gwa2':
-            $this->run_gwa2();
-            break;
-        case 'run_rscript':
-            $this->run_rscript();
-            break;
-        case 'run_rscript2':
-            $this->run_rscript2();
-            break;
-        case 'download_session_v2':
-            echo $this->type1_session(V2);
-            break;
-        case 'download_session_v3':
-            echo $this->type1_session(V3);
-            break;
-        case 'download_session_v4':
-            echo $this->type1_session(V4);
-            break;
-        case 'type2_build_tassel_v2':
-            echo $this->type2_build_tassel(V2);
-            break;
-        case 'type2_build_tassel_v3':
-            echo $this->type2_build_tassel(V3);
-            break;
-        case 'type2_build_tassel_v4':
-            echo $this->type2_build_tassel(V4);
-            break;
-        case 'refreshtitle':
-            echo $this->refresh_title();
-            break;
-        case 'gwas_status':
-            echo $this->status_gwas();
-            break;
-        case 'pred_status':
-            echo $this->status_pred();
-            break;
-        case 'filter_lines':
-            echo $this->filter_lines();
-            break;
-	default:
-            $this->type1_select();
-            break;
-	}	
+            case 'genomic_prediction':
+                $this->genomic_prediction();
+                break;
+            case 'run_histo':
+                $this->run_histo();
+                break;
+            case 'run_gwa':
+                $this->run_gwa();
+                break;
+            case 'run_gwa2':
+                $this->run_gwa2();
+                break;
+            case 'run_rscript':
+                $this->run_rscript();
+                break;
+            case 'run_rscript2':
+                $this->run_rscript2();
+                break;
+            case 'download_session_v2':
+                echo $this->type1_session(V2);
+                break;
+            case 'download_session_v3':
+                echo $this->type1_session(V3);
+                break;
+            case 'download_session_v4':
+                echo $this->type1_session(V4);
+                break;
+            case 'type2_build_tassel_v2':
+                echo $this->type2_build_tassel(V2);
+                break;
+            case 'type2_build_tassel_v3':
+                echo $this->type2_build_tassel(V3);
+                break;
+            case 'type2_build_tassel_v4':
+                echo $this->type2_build_tassel(V4);
+                break;
+            case 'refreshtitle':
+                echo $this->refresh_title();
+                break;
+            case 'gwas_status':
+                echo $this->status_gwas();
+                break;
+            case 'pred_status':
+                echo $this->status_pred();
+                break;
+            case 'filter_lines':
+                echo $this->filter_lines();
+                break;
+            default:
+                $this->type1_select();
+                break;
+        }
     }
 
-	/**
+        /**
 	 * load header and footer then check session to use existing data selection
 	 */
-	private function type1_select()
+        private function type1_select()
 	{
 		global $config;
                 require_once $config['root_dir'].'theme/normal_header.php';
@@ -703,7 +703,7 @@ class Downloads
 
     private function display_gwas_hits($h) {
         echo "Top five marker scores from GWAS analysis<br>";
-        echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>linke to genome browser";
+        echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>link to genome browser";
         $line= fgetcsv($h);
         while ($line= fgetcsv($h)) {
             if (preg_match("/WCSS1_contig([^_]+)_[A-Z0-9]+/", $line[1], $match)) {
