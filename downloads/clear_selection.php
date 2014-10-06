@@ -2,13 +2,8 @@
 /**
  * Clear saved selection
  *
- * PHP version 5.3
- * 
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/downloads/clear_selection.php
  * 
  */
@@ -32,9 +27,12 @@ if (isset($_GET['clearSel'])) {
     unset($_SESSION['selected_map']);
     unset($_SESSION['check_lines']);
     unset($_SESSION['geno_exps']);
-    $_SESSION['training_traits'] = null; unset($_SESSION['training_traits']);
-    $_SESSION['training_trials'] = null; unset($_SESSION['training_trials']);
-    if ( isset( $_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ) {
+    unset($_SESSION['geno_exps_cnt']);
+    $_SESSION['training_traits'] = null;
+    unset($_SESSION['training_traits']);
+    $_SESSION['training_trials'] = null;
+    unset($_SESSION['training_trials']);
+    if (isset( $_SESSION['username'] ) && !isset( $_REQUEST['logout'] )) {
         $user = $_SESSION['username'];
         clearSessionVariables($user);
     }
