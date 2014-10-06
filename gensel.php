@@ -188,10 +188,7 @@ class Downloads
 			}	
             $this->refresh_title();
                 if (empty($_SESSION['phenotype'])) { 
-                    echo "<font color=red>Select training set using ";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "downloads/select_all.php>Wizard</a></font><br><br>";
+                    echo "<font color=red>Select a set of traits and phenotype trials</font><br><br>";
                 } elseif (empty($_SESSION['selected_lines'])) {
                     echo "<br>Select validation set containing trait measurements to plot prediction vs observed. ";
                     echo "<a href=";
@@ -698,6 +695,24 @@ class Downloads
         }
     }
 
+    private function display_gwas_hits($h) {
+        echo "Top five marker scores from GWAS analysis<br>";
+        echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>linke to genome browser";
+        $line= fgetcsv($h);
+        while ($line= fgetcsv($h)) {
+            if (preg_match("/WCSS1_contig([^_]+)_[A-Z0-9]+/", $line[1], $match)) {
+                $contig = $match[1];
+                $link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$line[2]_$contig\" target=\"_new\">Gbrowse</a>";
+            }
+            if ($count < 5) {
+                echo "<tr><td>$line[1]<td>$line[2]<td>$line[3]<td>$line[4]<td>$link\n";
+            }
+            $count++;
+        }
+        fclose($h);
+        echo "</table>";
+    }
+
     /**
      * display gwas results
      */
@@ -738,15 +753,28 @@ class Downloads
            fclose($h);
         }
         if ($found) {
-          print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
-          print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
-          print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
-          print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
-          print "with columns for marker name, chromosome, position, marker score<br><br>";
-          print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
+            print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
+            print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
+            print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+            print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
+            print "with columns for marker name, chromosome, position, marker score<br><br>";
+            print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a><br><br>";
+            $count = 0;
+            $h = fopen("/tmp/tht/$filename1", "r");
+            if ($h) {
+                $this->display_gwas_hits($h);
+            }
         } else {
-          $lines = $_SESSION['filtered_lines'];
-          $markers = $_SESSION['filtered_markers'];
+          if (isset($_SESSION['filtered_ines'])) {
+              $lines = $_SESSION['filtered_lines'];
+          } else {
+              $lines = $_SESSION['selected_lines'];
+          }
+          if (isset($_SESSION['filtered_markers'])) {
+              $markers = $_SESSION['filtered_markers'];
+          } else {
+              $markers = $_SESSION['geno_exps_cnt'];
+          }
           $estimate = count($lines) * count($markers);
           $estimate = round($estimate/6000000,1);
           echo "Results not ready yet. Estimated analysis time is $estimate minutes using default options.<br>";
@@ -890,10 +918,17 @@ class Downloads
                   print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
         }
         if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
-                  print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
-                  print "with columns for marker name, chromosome, position, marker score<br><br>";
-                  print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a> ";
+            print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+            print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
+            print "with columns for marker name, chromosome, position, marker score<br><br>";
+            print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a><br><br>";
+            $count = 0;
+            $h = fopen("/tmp/tht/$filename1", "r");
+            if($h) {
+                display_gwas_hits($h);
+            } else {
+                echo "error - could not open $filename1\n";
+            }
         }
         if (file_exists("/tmp/tht/$filename5")) {
            $h = fopen("/tmp/tht/$filename5", "r");
@@ -976,8 +1011,16 @@ class Downloads
         }
         exec("cat /tmp/tht/$filename3 R/GSforGWA.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5 &");
        
-        $lines = $_SESSION['filtered_lines']; 
-        $markers = $_SESSION['filtered_markers'];
+        if (isset($_SESSION['filtered_lines'])) {
+            $lines = $_SESSION['filtered_lines']; 
+        } else {
+            $lines = $_SESSION['selected_lines'];
+        }
+        if (isset($_SESSION['filtered_markers'])) {
+            $markers = $_SESSION['filtered_markers'];
+        } else {
+            $markers = $_SESSION['geno_exps_cnt'];
+        }
         $estimate = count($lines) * count($markers);
         $estimate = round($estimate/600000,1);
         echo "Estimated analysis time is $estimate minutes using default options.<br>";

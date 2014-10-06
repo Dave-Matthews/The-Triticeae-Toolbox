@@ -52,7 +52,8 @@ if (moreThan1Trial) {
 } else {
     results <- GWAS(pheno, mrkData, K=mrkRelMat, n.core=nCores, fixed=NULL, n.PC=model_opt, P3D=p3d)
 }
-write.csv(results, file=fileout, quote=FALSE)
+resultSort <- results[order(results["y"], decreasing=TRUE),]
+write.csv(resultSort, file=fileout, quote=FALSE)
 if (exists("email")) {
   command <- paste("echo \"GWAS analysis is done\n", result_url, "\" | mail -s \"Results from T3 GWAS\"", email)
   system(command)
