@@ -925,7 +925,7 @@ class Downloads
             $count = 0;
             $h = fopen("/tmp/tht/$filename1", "r");
             if($h) {
-                display_gwas_hits($h);
+                $this->display_gwas_hits($h);
             } else {
                 echo "error - could not open $filename1\n";
             }
