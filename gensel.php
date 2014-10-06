@@ -506,6 +506,12 @@ class Downloads
                 $row = mysql_fetch_array($res);
                 $name = $row[0];
                 echo "$name";
+            } elseif (isset($_SESSION['selected_map'])) {
+                $sql = "select mapset_name from mapset where mapset_uid = $map";
+                $res = mysql_query($sql) or die(mysql_error());
+                $row = mysql_fetch_assoc($res);
+                $map_name = $row['mapset_name'];
+                echo "$map_name";
             }
         } elseif (isset($_SESSION['selected_map'])) {
             $sql = "select mapset_name from mapset where mapset_uid = $map";
