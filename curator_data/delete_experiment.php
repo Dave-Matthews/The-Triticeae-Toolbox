@@ -280,7 +280,7 @@ function delete_genoexpt($uid)
     $cmd = "php delete_genoexpt_offline.php $uid $emailAddr > $processOut &";
     echo "Started deletion of genotyping experiment.<br>\n";
     echo "An email will be sent upon completion.<br>\n";
-    echo "output is logged to " . $config['base_url'] . "curator_data/" . $processOut\n";
+    echo "output is logged to " . $config['base_url'] . "curator_data/$processOut\n";
     exec($cmd);
     return;
 }
