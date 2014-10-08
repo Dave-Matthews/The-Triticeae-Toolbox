@@ -702,13 +702,13 @@ class Downloads
     }
 
     private function display_gwas_hits($h) {
-        echo "Top five marker scores from GWAS analysis<br>";
+        echo "Top five marker scores from GWAS analysis (GBrowse works best using Safari or Chrome browsers)<br>";
         echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>link to genome browser";
         $line= fgetcsv($h);
         while ($line= fgetcsv($h)) {
             if (preg_match("/WCSS1_contig([^_]+)_[A-Z0-9]+/", $line[1], $match)) {
                 $contig = $match[1];
-                $link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$line[2]_$contig\" target=\"_new\">Gbrowse</a>";
+                $link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$line[2]_$contig\" target=\"_new\">GBrowse</a>";
             }
             if ($count < 5) {
                 echo "<tr><td>$line[1]<td>$line[2]<td>$line[3]<td>$line[4]<td>$link\n";
@@ -2621,11 +2621,9 @@ class Downloads
         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
         if ($row = mysql_fetch_array($res)) {
             $name = $row[0];
-            $outputheader .= "\t$name";
-            if (isset($unique[$name])) {
-                echo "duplicate name $name<br>\n";
-            } else {
-                $unique[$name] = 1;
+            $name_ary = explode(",", $name);
+            foreach ($name_ary as $item) {
+                $outputheader .= "\t\"$item\"";
             }
         } else {
             die("<font color=red>Error - genotype experiment should be selected before download</font>");
