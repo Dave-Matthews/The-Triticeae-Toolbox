@@ -24,15 +24,15 @@ class Maps
     public function __construct($function = null)
     {
         switch($function) {
-        case 'Save':
-            $this->typeMapSave();
-            break;
-        case 'Markers':
-            $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
-            break;
-        default:
-            $this->typeMapSet(); /* initial case */
-            break;
+            case 'Save':
+                $this->typeMapSave();
+                break;
+            case 'Markers':
+                $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
+                break;
+            default:
+                $this->typeMapSet(); /* initial case */
+                break;
         }
     }
 
@@ -183,6 +183,15 @@ class Maps
     {
         global $mysqli;
         $mapset_uid = $_GET['mapset'];
+        $sql = "select marker_uid from mapset, markers_in_maps as mim, map
+            WHERE mim.map_uid = map.map_uid
+            AND map.mapset_uid = mapset.mapset_uid
+            AND map.mapset_uid = $mapset_uid";
+        $res = mysql_query($sql) or die (mysql_error());
+        while ($row = mysql_fetch_array($res)) {
+            $markers_map[] = $row[0];
+        }
+
         if (isset($_SESSION['clicked_buttons'])) {
             $markers = $_SESSION['clicked_buttons'];
         } elseif (isset($_SESSION['geno_exps'])) {
@@ -192,50 +201,47 @@ class Maps
             $res = mysql_query($sql) or die(mysql_error());
             while ($row = mysql_fetch_row($res)) {
                 $uid = $row[0];
-                $markers[] = $uid;
+                $markers[$uid] = 1;
             }
+   
+            foreach ($markers_map as $i => $marker_uid) {
+                if (isset($markers[$marker_uid])) {
+                    $markers_filtered[] = $marker_uid;
+                }
+            }
+            
         } elseif (isset($_SESSION['selected_lines'])) {
             $selected_lines = $_SESSION['selected_lines'];
-            $num_line = count($selected_lines);
-            $sql = "select marker_uid from mapset, markers_in_maps as mim, map
-            WHERE mim.map_uid = map.map_uid
-            AND map.mapset_uid = mapset.mapset_uid
-            AND map.mapset_uid = $mapset_uid";
-            $res = mysql_query($sql) or die (mysql_error());
-            while ($row = mysql_fetch_array($res)) {
-                $markers[] = $row[0];
+            $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+            $i=0;
+            while ($row = mysqli_fetch_array($res)) {
+                $uid = $row[0];
+                $marker_list[$i] = $row[0];
+                $marker_list_loc[$uid] = $i;
+                $i++;
             }
+            $outarray = array(); 
+            foreach ($selected_lines as $line_record_uid) {
+                $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+                if ($row = mysqli_fetch_array($res)) {
+                    $alleles = $row[0];
+                    $outarray = $outarray + explode(',', $alleles);
+                }
+            }
+
+            foreach ($markers_map as $i => $marker_uid) {
+                $loc = $marker_list_loc[$marker_uid];
+                if (isset($outarray[$loc]) && !empty($outarray[$loc])) {
+                    $markers_filtered[] = $marker_uid;
+                }
+            }
+
         } else {
             die("Error - must select lines or markers<br>\n");
         }
-
-        //get location information for markers
-        $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
-        $i=0;
-        while ($row = mysqli_fetch_array($res)) {
-            $uid = $row[0];
-            $marker_list[$i] = $row[0];
-            $marker_list_loc[$uid] = $i;
-            $i++;
-        }
- 
-        $outarray = array(); 
-        foreach ($selected_lines as $line_record_uid) {
-            $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
-            if ($row = mysqli_fetch_array($res)) {
-                $alleles = $row[0];
-                $outarray = $outarray + explode(',', $alleles);
-            }
-        }
-
-        foreach ($markers as $i => $marker_uid) { 
-            $loc = $marker_list_loc[$marker_uid];
-            if (isset($outarray[$loc]) && !empty($outarray[$loc])) {
-                $markers_filtered[] = $marker_uid;
-            }
-        }
+     
         $count = count($markers_filtered);
         echo "$count";
     }
