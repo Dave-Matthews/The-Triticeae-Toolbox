@@ -1,13 +1,14 @@
 <?php
 
-/** Using a PHP class to implement the "Select Map" feature
+/**
+ *  Using a PHP class to implement the "Select Map" feature
  *
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/maps/select_map.php
- **/
+ * PHP version 5.3
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/maps/select_map.php
+ */
 
 namespace T3;
 
@@ -57,20 +58,23 @@ class Maps
             $this->typeGenoExpDisplay();
         }
         $mapset_list = "";
-        $sql = "select mapset_uid from mapset";
+        $sql = "select distinct(mapset.mapset_uid) from mapset, markers_in_maps as mim, map
+               WHERE mim.map_uid = map.map_uid
+               AND map.mapset_uid = mapset.mapset_uid";
         $res = mysql_query($sql) or die (mysql_error());
         while ($row = mysql_fetch_array($res)) {
             $uid = $row[0];
             if ($mapset_list == "") {
                 $mapset_list = $uid;
             } else {
-                $mapset_list .= ", $uid";
+                $mapset_list .= ",$uid";
             }
         }
         ?>
         <div id=step3></div>
         <div id=step4><br>
-        <button onclick="javascript: load_markersInMap(<?php echo $mapset_list ?>)">Calculate markers in map for selected lines</button>
+        <button onclick="javascript: load_markersInMap(<?php echo $mapset_list ?>)">
+        Calculate markers in map for selected lines</button>
         </div>
         <?php
         if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) {
@@ -104,7 +108,7 @@ class Maps
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script type="text/javascript" src="maps/select_map04.js">
+        <script type="text/javascript" src="maps/select_map05.js">
         </script>
         <form name="myForm" action="maps/select_map.php">
         <?php
@@ -181,50 +185,65 @@ class Maps
     {
         global $mysqli;
         $mapset_uid = $_GET['mapset'];
-        if (isset($_SESSION['clicked_buttons'])) {
-            $markers = $_SESSION['clicked_buttons'];
-        } elseif (isset($_SESSION['selected_lines'])) {
-            $selected_lines = $_SESSION['selected_lines'];
-            $num_line = count($selected_lines);
-            $sql = "select marker_uid from mapset, markers_in_maps as mim, map
+        $sql = "select marker_uid from mapset, markers_in_maps as mim, map
             WHERE mim.map_uid = map.map_uid
             AND map.mapset_uid = mapset.mapset_uid
             AND map.mapset_uid = $mapset_uid";
-            $res = mysql_query($sql) or die (mysql_error());
-            while ($row = mysql_fetch_array($res)) {
-                $markers[] = $row[0];
+        $res = mysql_query($sql) or die (mysql_error());
+        while ($row = mysql_fetch_array($res)) {
+            $markers_map[] = $row[0];
+        }
+
+        if (isset($_SESSION['clicked_buttons'])) {
+            $markers = $_SESSION['clicked_buttons'];
+        } elseif (isset($_SESSION['geno_exps'])) {
+            $experiments_g = $_SESSION['geno_exps'];
+            $geno_str = $experiments_g[0];
+            $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $geno_str";
+            $res = mysql_query($sql) or die(mysql_error());
+            while ($row = mysql_fetch_row($res)) {
+                $uid = $row[0];
+                $markers[$uid] = 1;
             }
+   
+            foreach ($markers_map as $i => $marker_uid) {
+                if (isset($markers[$marker_uid])) {
+                    $markers_filtered[] = $marker_uid;
+                }
+            }
+            
+        } elseif (isset($_SESSION['selected_lines'])) {
+            $selected_lines = $_SESSION['selected_lines'];
+            $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+            $i=0;
+            while ($row = mysqli_fetch_array($res)) {
+                $uid = $row[0];
+                $marker_list[$i] = $row[0];
+                $marker_list_loc[$uid] = $i;
+                $i++;
+            }
+            $outarray = array(); 
+            foreach ($selected_lines as $line_record_uid) {
+                $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+                if ($row = mysqli_fetch_array($res)) {
+                    $alleles = $row[0];
+                    $outarray = $outarray + explode(',', $alleles);
+                }
+            }
+
+            foreach ($markers_map as $i => $marker_uid) {
+                $loc = $marker_list_loc[$marker_uid];
+                if (isset($outarray[$loc]) && !empty($outarray[$loc])) {
+                    $markers_filtered[] = $marker_uid;
+                }
+            }
+
         } else {
             die("Error - must select lines or markers<br>\n");
         }
-
-        //get location information for markers
-        $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
-        $i=0;
-        while ($row = mysqli_fetch_array($res)) {
-            $uid = $row[0];
-            $marker_list[$i] = $row[0];
-            $marker_list_loc[$uid] = $i;
-            $i++;
-        }
- 
-        $outarray = array(); 
-        foreach ($selected_lines as $line_record_uid) {
-            $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
-            if ($row = mysqli_fetch_array($res)) {
-                $alleles = $row[0];
-                $outarray = $outarray + explode(',', $alleles);
-            }
-        }
-
-        foreach ($markers as $i => $marker_uid) { 
-            $loc = $marker_list_loc[$marker_uid];
-            if (isset($outarray[$loc]) && !empty($outarray[$loc])) {
-                $markers_filtered[] = $marker_uid;
-            }
-        }
+     
         $count = count($markers_filtered);
         echo "$count";
     }
