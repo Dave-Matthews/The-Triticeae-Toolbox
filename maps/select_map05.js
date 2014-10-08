@@ -1,4 +1,4 @@
-/*global, alert, jQuery, $, Element */
+/*global, alert, jQuery, $ */
 
 var map = 1;
 var markersInMap = null;
@@ -6,7 +6,6 @@ var php_self = document.location.href;
 $.noConflict(); //when prototype.js is removed then this is not necessary
 
 function save_map() {
-  /*Element.hide('spinner');*/
   var i;
   for (i=0; i<document.myForm.map.length; i++) {
       if (document.myForm.map[i].checked===true) {
@@ -21,7 +20,7 @@ function save_map() {
         jQuery("#step3").html(data);
     },
     error: function() {
-        alert('Error in selecting design type');
+        alert('Error in saving map selection');
       }
   });
 }
@@ -29,7 +28,8 @@ function save_map() {
 function load_one_marker(mapset) {
   var url = "";
   var spn = "spinner" + mapset;
-  /*    Element.show(spn);*/
+  /*Element.show(spn);*/
+  document.getElementById(spn).style.display = "inline";
   markersInMap = jQuery.ajax({
     type: "GET",
     url: php_self,

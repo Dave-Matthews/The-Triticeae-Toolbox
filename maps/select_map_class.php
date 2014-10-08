@@ -58,14 +58,16 @@ class Maps
             $this->typeGenoExpDisplay();
         }
         $mapset_list = "";
-        $sql = "select mapset_uid from mapset";
+        $sql = "select distinct(mapset.mapset_uid) from mapset, markers_in_maps as mim, map
+               WHERE mim.map_uid = map.map_uid
+               AND map.mapset_uid = mapset.mapset_uid";
         $res = mysql_query($sql) or die (mysql_error());
         while ($row = mysql_fetch_array($res)) {
             $uid = $row[0];
             if ($mapset_list == "") {
                 $mapset_list = $uid;
             } else {
-                $mapset_list .= ", $uid";
+                $mapset_list .= ",$uid";
             }
         }
         ?>
@@ -106,7 +108,7 @@ class Maps
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script type="text/javascript" src="maps/select_map04.js">
+        <script type="text/javascript" src="maps/select_map05.js">
         </script>
         <form name="myForm" action="maps/select_map.php">
         <?php
