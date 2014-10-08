@@ -243,66 +243,46 @@ include($config['root_dir'].'theme/footer.php');
 
 /* Local functions */
 
-function delete_trial($uid) {
-  $sql = "delete from phenotype_experiment_info where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  $sql = "delete from datasets_experiments where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  $sql = "delete from  phenotype_mean_data where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  $sql = "delete from phenotype_data where tht_base_uid in
+function delete_trial($uid)
+{
+    $sql = "delete from phenotype_experiment_info where experiment_uid = $uid";
+    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $sql = "delete from datasets_experiments where experiment_uid = $uid";
+    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $sql = "delete from  phenotype_mean_data where experiment_uid = $uid";
+    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $sql = "delete from phenotype_data where tht_base_uid in
           (select tht_base_uid from tht_base where experiment_uid = $uid)";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  $sql = "delete from tht_base where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  $sql = "delete from csr_measurement where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  $sql = "delete from experiments where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  echo "Trial deleted.";
-  return;
+    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $sql = "delete from tht_base where experiment_uid = $uid";
+    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $sql = "delete from csr_measurement where experiment_uid = $uid";
+    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $sql = "delete from experiments where experiment_uid = $uid";
+    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    echo "Trial deleted.";
+    return;
 }
 
-function delete_genoexpt($uid) {
-  // Order necessary: first delete alleles, then genotyping_data, then tht_base, then experiment.
-  //$sql = "delete from alleles where genotyping_data_uid in
-  //	   (select genotyping_data_uid from genotyping_data where tht_base_uid in
-  //	     (select tht_base_uid from tht_base where experiment_uid = $uid) )";
-  $sql = "select tht_base_uid from tht_base where experiment_uid = $uid";
-  $res = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  while ($row = mysql_fetch_array($res)) {
-      $tht_base_uid = $row['tht_base_uid'];
-      echo "deleting alleles tht_base_uid = $tht_base_uid<br>\n";
-      $sql = "select genotyping_data_uid from genotyping_data where tht_base_uid = $tht_base_uid";
-      $res2 = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-      while ($row2 = mysql_fetch_array($res2)) {
-          $genotyping_data_uid = $row2['genotyping_data_uid'];
-          $sql = "delete from alleles where genotyping_data_uid = $genotyping_data_uid";
-          $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-      }
-      flush();
-      ob_flush();
-  }
-
-  $sql = "select tht_base_uid from tht_base where experiment_uid = $uid";
-  $res = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  while ($row = mysql_fetch_array($res)) {
-      $tht_base_uid = $row['tht_base_uid'];
-      echo "deleting genotype_data tht_base_uid = $tht_base_uid<br>\n";
-      $sql = "delete from genotyping_data where tht_base_uid = $tht_base_uid"; 
-      $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-      flush();
-      ob_flush();
-  }
-
-  $sql = "delete from tht_base where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  $sql = "delete from genotype_experiment_info where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  $sql = "delete from experiments where experiment_uid = $uid";
-  $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
-  echo "Genotyping experiment deleted.";
-  return;
+function delete_genoexpt($uid)
+{
+    global $config;
+    $emailAddr = $_SESSION['username'];
+    $row = loadUser($_SESSION['username']);
+    $username=$row['name'];
+    $username = str_replace(" ", "", $username);
+    $tmp_dir="./uploads/".$username."_".rand();
+    if (!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
+        mkdir($tmp_dir, 0777);
+    }
+    $target_path=$tmp_dir."/";
+    $processOut = $target_path. "genoProc.out";
+    $cmd = "php delete_genoexpt_offline.php $uid $emailAddr > $processOut &";
+    echo "Started deletion of genotyping experiment.<br>\n";
+    echo "An email will be sent upon completion.<br>\n";
+    echo "output is logged to " . $config['base_url'] . "curator_data/" . $processOut\n";
+    exec($cmd);
+    return;
 }
 
 ?>
