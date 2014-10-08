@@ -1,13 +1,14 @@
 <?php
 
-/** Using a PHP class to implement the "Select Map" feature
+/**
+ *  Using a PHP class to implement the "Select Map" feature
  *
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/maps/select_map.php
- **/
+ * PHP version 5.3
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/maps/select_map.php
+ */
 
 namespace T3;
 
@@ -23,15 +24,15 @@ class Maps
     public function __construct($function = null)
     {
         switch($function) {
-            case 'Save':
-                $this->typeMapSave();
-                break;
-            case 'Markers':
-                $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
-                break;
-            default:
-                $this->typeMapSet(); /* initial case */
-                break;
+        case 'Save':
+            $this->typeMapSave();
+            break;
+        case 'Markers':
+            $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
+            break;
+        default:
+            $this->typeMapSet(); /* initial case */
+            break;
         }
     }
 
@@ -70,7 +71,8 @@ class Maps
         ?>
         <div id=step3></div>
         <div id=step4><br>
-        <button onclick="javascript: load_markersInMap(<?php echo $mapset_list ?>)">Calculate markers in map for selected lines</button>
+        <button onclick="javascript: load_markersInMap(<?php echo $mapset_list ?>)">
+        Calculate markers in map for selected lines</button>
         </div>
         <?php
         if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) {
@@ -183,6 +185,15 @@ class Maps
         $mapset_uid = $_GET['mapset'];
         if (isset($_SESSION['clicked_buttons'])) {
             $markers = $_SESSION['clicked_buttons'];
+        } elseif (isset($_SESSION['geno_exps'])) {
+            $experiments_g = $_SESSION['geno_exps'];
+            $geno_str = $experiments_g[0];
+            $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $geno_str";
+            $res = mysql_query($sql) or die(mysql_error());
+            while ($row = mysql_fetch_row($res)) {
+                $uid = $row[0];
+                $markers[] = $uid;
+            }
         } elseif (isset($_SESSION['selected_lines'])) {
             $selected_lines = $_SESSION['selected_lines'];
             $num_line = count($selected_lines);
