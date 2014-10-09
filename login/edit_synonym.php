@@ -1,6 +1,7 @@
 <?php
 // login/edit_synonym.php, dem 13feb2012
 // dem 26aug13 Add merging of lines.
+// dem  7oct14 Make sure the "new" synonym proposed doesn't already exist.
 
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
@@ -33,12 +34,24 @@ if(!is_null($_REQUEST['newsyn'])) {
   $changed = array("unchanged", "updated");
   $flag = 0;
   if (!empty($newsyn)) {
-    // Add a new value.
-    $sql = "insert into line_synonyms 
+    // Does the name already exist as either a synonym or a line name?
+    $lsid = mysql_grab("select line_record_uid from line_records where line_record_name = '$newsyn'");
+    if ($lsid)
+      echo "'$newsyn' already exists as a Line Name.<br>";
+    else {
+      // If not a primary name, check for synonym.
+      $lname = mysql_grab("select line_record_name from line_synonyms ls, line_records lr where line_synonym_name = '$newsyn' and ls.line_record_uid = lr.line_record_uid");
+      if ($lname)
+	echo "'$newsyn' is already a synonym for a different line, $lname.<br>";
+      else {
+	// No problems. Add a new value.
+	$sql = "insert into line_synonyms 
            (line_record_uid, line_synonym_name, updated_on, created_on) 
            values ($line_uid, '$newsyn', now(), now())";
-    $res = mysql_query($sql) or die(mysql_error()."<br>Query: ".$sql);
-    $flag = 1;
+	$res = mysql_query($sql) or die(mysql_error()."<br>Query: ".$sql);
+	$flag = 1;
+      }
+    }
   }
   foreach($input as $k=>$v) {
     if (empty($v)) {
@@ -151,7 +164,7 @@ echo "</div>";
       <input type="submit" value="Search" /></p>
   </form>
 <?php
-  // Have we Seached for the two lines?  Show what data they have.
+  // Have we Searched for the two lines?  Show what data they have.
   if (isset($_REQUEST[keepline]) AND isset($_REQUEST[oldline])) {
     $keepline = $_REQUEST[keepline];
     $oldline = $_REQUEST[oldline];
@@ -160,11 +173,11 @@ echo "</div>";
     $notfound = "";
     if (empty($kline_uid))
       $notfound = "Line name '$keepline' not found.<br>";
-    echo $notfound;
     if (empty($oline_uid))
       $notfound = "Line name '$oldline' not found.<br>";
     echo $notfound;
-    if (empty($notfound)) {
+    if (empty($notfound) ) {
+      if (!$_REQUEST['confirm']) {
       // Show details about these lines.
       // Get the properly capitalized names.
       $keepline = mysql_grab("select line_record_name from line_records where line_record_uid = $kline_uid");
@@ -278,9 +291,12 @@ echo "</div>";
 	    $allelediff++;
 	}
       }
-      $percent = round( (($allelediff / $markerct) * 100), 2);
+      if ($markerct > 0)
+	$percent = round( (($allelediff / $markerct) * 100), 2);
+      else 
+	$percent = 0;
       echo "<p>$keepline and $oldline alleles differ for <b>$allelediff</b> of <b>$markerct</b> markers, <b>$percent</b>%.<p>";
-
+    }
       // Validate.
       if (!empty($refuse))
 	echo "<p><b>$keepline and $oldline cannot be merged because:</b> $refuse";
@@ -293,6 +309,7 @@ echo "</div>";
 	echo "<input type=hidden name=oldline value=$oldline>";
 	echo "<input type=submit name=confirm value=Yes> <input type=submit name=confirm value=No> ";
 	echo "<br>There is no Undo.</form>";
+      
 	// Confirmed?  I.e. "Yes" button clicked?
 	if ($_REQUEST[confirm] == "Yes") {
 	  // No action, since old line can't be accessed.  Will go away when alleles next added:

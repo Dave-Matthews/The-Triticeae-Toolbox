@@ -303,21 +303,21 @@ while (($line = fgets($reader)) !== false) {
     // Trial Code processing
     if (($curTrialCode != $trialCodeStr) && ($trialCodeStr != '')) {
         $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'";
-    $res = mysqli_query($mysqli,$sql)
+        $res = mysqli_query($mysqli, $sql)
             or exitFatal($errFile, "Database Error: Experiment uid lookup - ".mysqli_error($mysqli));
         if ($row = mysqli_fetch_assoc($res)) {
-          $exp_uid = implode(",",$row);
+            $exp_uid = implode(",",$row);
         } else {
-	  exitFatal($errFile, "not found - $sql");
+            exitFatal($errFile, "not found - $sql");
         }
         
-	$sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
-	$res = mysqli_query($mysqli,$sql)
+        $sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
+        $res = mysqli_query($mysqli,$sql)
             or exitFatal($errFile, "Database Error: Dataset experiment uid lookup - ".mysql_error());
         if ($row = mysqli_fetch_assoc($res)) {
-          $de_uid=implode(",",$row);
+            $de_uid=implode(",",$row);
 	} else {
-          exitFatal($errFile, "not found - $sql");
+            exitFatal($errFile, "not found - $sql");
         }
 
         $curTrialCode = $trialCodeStr;
@@ -598,9 +598,7 @@ while ($inputrow= fgets($reader))  {
         }
 
 	if (($alleles == 'AA') || ($alleles == 'BB') || ($alleles == '--') || ($alleles == 'AB') || ($alleles == 'BA')) {
-            $result =mysqli_query($mysqli, "SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid") or exitFatal($errFile, "Database Error: gd lookup $sql");
-            $rgen=mysqli_num_rows($result);
-            if ($rgen < 1) {
+            if (!$found_genotype_data) {
                 if (!$stmt1->execute()) {
                     $msg = "Execute failed: (" . $stmt1->errno .") " . $stmt1->error;
                     fwrite($errFile, $msg);
@@ -849,9 +847,11 @@ echo $body;
 send_email($emailAddr, "Genotype import step 3", $body);
 
 $cmd = "/usr/bin/php " . $progPath . "cron/create-allele-byline.php";
-exec($cmd);
+echo exec($cmd);
 $cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker.php";
-exec($cmd);
+echo exec($cmd);
+$cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker-exp.php $expID";
+//echo exec($cmd);
 
 // Send out final email.
 if (filesize($errorFile)  > 0) {
