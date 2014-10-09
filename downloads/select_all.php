@@ -178,7 +178,7 @@ class SelectPhenotypeExp
 		<p>1.
 		<select name="select1" onchange="javascript: update_select1(this.options)">
 		<option value="BreedingProgram">Breeding Program</option>
-                <option value="DataProgram">Data Program</option>
+                <!--option value="DataProgram">Data Program</option-->
 		<option value="Lines">Lines</option>
 		<option value="Locations">Locations</option>
 		<option value="Phenotypes">Trait Category</option>
@@ -244,12 +244,12 @@ class SelectPhenotypeExp
 		<p>1. 
 		<select name="select1" onchange="javascript: update_select1(this.options)">
 		  <option value="BreedingProgram">Breeding Program</option>
-                  <option value="DataProgram">Data Program</option>
+                  <!--option value="DataProgram">Data Program</option-->
 		  <option value="Lines">Lines</option> 
 		  <option value="Locations">Locations</option>
 		  <option value="Phenotypes">Trait Category</option>
 		</select></p>
-		        <script type="text/javascript" src="downloads/downloads09.js"></script>
+		        <script type="text/javascript" src="downloads/downloads10.js"></script>
                 <?php 
                 $this->step1_breedprog();
                 ?>
@@ -793,6 +793,12 @@ class SelectPhenotypeExp
     private function step1_yearprog()
     {
     $CAPdata_programs = $_GET['bp'];
+    $program_type = $_GET['pt'];
+    if ($program_type == "BreedingProgram") {
+        $program_type = "breeding";
+    } elseif ($program_type == "DataProgram") { 
+        $program_type = "data";
+    }
      ?>
     <div id="step21">
                         <p>2.
@@ -813,6 +819,15 @@ class SelectPhenotypeExp
     AND et.experiment_type_name = 'phenotype'
     AND e.CAPdata_programs_uid IN ('$CAPdata_programs')
     GROUP BY e.experiment_year DESC";
+    $sql = "SELECT DISTINCT
+          e.experiment_year as year, data_program_code
+          FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
+          WHERE program_type = \"$program_type\" 
+          AND lr.breeding_program_code = data_program_code
+          AND tb.experiment_uid = e.experiment_uid
+          AND tb.line_record_uid = lr.line_record_uid
+          AND cp.CAPdata_programs_uid IN ('$CAPdata_programs')
+          ORDER BY e.experiment_year DESC;";
     $res = mysql_query($sql) or die(mysql_error());
     while ($row = mysql_fetch_assoc($res))
     {
@@ -851,6 +866,14 @@ class SelectPhenotypeExp
                   WHERE program_type = 'breeding'
                   AND dp.CAPdata_programs_uid = e.CAPdata_programs_uid
                   order by data_program_name asc";
+                $sql = "SELECT DISTINCT
+                  data_program_name as name, data_program_code as code, cp.CAPdata_programs_uid as id
+                  FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
+                  WHERE program_type = 'breeding'
+                  AND lr.breeding_program_code = data_program_code
+                  AND tb.experiment_uid = e.experiment_uid
+                  AND tb.line_record_uid = lr.line_record_uid
+                  ORDER BY data_program_name asc;";
                 $res = mysql_query($sql) or die(mysql_error());
                 if (mysql_num_rows($res) > 0) {
                     ?>
@@ -921,12 +944,18 @@ class SelectPhenotypeExp
 		<tr>
 			<th>Data Program</th>
 		</tr>
-<tr><td><select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
+<tr><td><select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_data_programs(this.options)">
 <?php
 		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
                   FROM CAPdata_programs AS dp
                   WHERE program_type='data'
                   ORDER BY name";
+                $sql = "SELECT DISTINCT
+          data_program_name as name, data_program_code as code, cp.CAPdata_programs_uid as id
+          FROM CAPdata_programs cp, experiments e
+          WHERE program_type = 'data'
+          AND cp.CAPdata_programs_uid = e.CAPdata_programs_uid
+          ORDER BY data_program_name asc;";
       		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res)) {
 			?>
@@ -1658,6 +1687,13 @@ class SelectPhenotypeExp
 	{
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
 		$years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
+                $program_type = $_GET['pt'];
+                if ($program_type == "BreedingProgram") {
+                $program_type = "breeding";
+                } elseif ($program_type == "DataProgram") {
+                $program_type = "data";
+                }
+
 ?>
 <p>3. 
 <select>
@@ -1681,6 +1717,12 @@ class SelectPhenotypeExp
 				AND e.CAPdata_programs_uid IN ($CAPdata_programs)
 				AND e.experiment_type_uid = e_t.experiment_type_uid
 				AND e_t.experiment_type_name = 'phenotype'";
+                $sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year
+                                FROM CAPdata_programs cp, experiments AS e, tht_base tb 
+                                where tb.experiment_uid = e.experiment_uid
+                                AND e.experiment_year IN ($years)
+                                AND cp.CAPdata_programs_uid IN ($CAPdata_programs)
+                                AND program_type = \"$program_type\"";
 		        if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
 		        $sql .= " and data_public_flag > 0";
 				$sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
