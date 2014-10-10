@@ -5,11 +5,8 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  * 
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/genoDataOffline2D.php
  *  
  * pieces of import code by Julie's team @ iowaStateU  
@@ -847,11 +844,20 @@ echo $body;
 send_email($emailAddr, "Genotype import step 3", $body);
 
 $cmd = "/usr/bin/php " . $progPath . "cron/create-allele-byline.php";
-echo exec($cmd);
+exec($cmd, $output);
+foreach ($output as $line) {
+    echo "$line<br>\n";
+}
 $cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker.php";
-echo exec($cmd);
+exec($cmd, $output);
+foreach ($output as $line) {
+    echo "$line<br>\n";
+}
 $cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker-exp.php $expID";
-//echo exec($cmd);
+exec($cmd, $output);
+foreach ($output as $line) {
+    echo "$line<br>\n";
+}
 
 // Send out final email.
 if (filesize($errorFile)  > 0) {
