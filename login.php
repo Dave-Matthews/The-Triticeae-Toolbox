@@ -185,14 +185,12 @@ function HTMLLoginForm($msg = "")
   <b>Participants</b>
   <ul>
     <li>have pre-release access to all phenotype and genotype data from the project.
-    <li>will be allowed to add their own private data to the database (feature to be added).
-    <li>can test-load their data files in the "Sandbox" database before submitting them to the curator. 
-    <li>can create unique germplasm line panels (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>)
  </ul>
 
   <b>All Registered Users</b>
   <ul>
-    <li> Selections made during searches are saved from session to session.
+    <li>can create private germplasm line panels. (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_line_panels.pdf">Tutorial</a>)
+    <li>can use the "Current Selections" they created during the previous session.
   </ul>
 
     <h3>What is your email address?</h3>
