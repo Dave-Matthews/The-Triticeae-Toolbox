@@ -122,7 +122,7 @@ $sql = "select distinct experiment_year from experiments order by experiment_yea
 		      onchange="DispPropSel(this.value, 'PropCategory')">
 	<?php showTableOptions("phenotype_category"); ?>
 	      </select>
-	    <td><p>Select a property category.</p>
+	    <td><p>Select a Category.</p>
 	    <td>
 	    <td>
 	  </tr>
