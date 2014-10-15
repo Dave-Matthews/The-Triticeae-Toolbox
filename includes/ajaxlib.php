@@ -1356,7 +1356,7 @@ function DispPropCategorySel($arr) {
       echo "</select>";
     }
     else
-      echo "<p style='color: red;'>No properties available in this category.</p>";
+      echo "<p style='color: red;'>Nothing available in this category.</p>";
   }
 }
 
