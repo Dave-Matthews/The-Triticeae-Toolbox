@@ -74,8 +74,10 @@ class ShowData
         $res = mysql_query($sql) or die(mysql_error() . $sql);
         if ($row = mysql_fetch_array($res)) {
             $_SESSION['geno_exps_cnt'] = number_format($row[0]);
+            echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/genotype_selection.php\">";
+        } else {
+            echo "Error: no markers could be found\n";
         }
-        echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/genotype_selection.php\">";
     }
 
     // The wrapper action for the type1 download. Handles outputting the header
