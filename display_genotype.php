@@ -1,9 +1,9 @@
-<?php 
+<?php
 /**
  * Report for a single genotyping experiment.
  *
  * PHP version 5.3
- * 
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/display_genotype.php
@@ -20,6 +20,7 @@ require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
 require_once 'Spreadsheet/Excel/Writer.php';
 require 'display_genotype_class.php';
+require 'downloads/marker_filter.php';
 connect();
 
 new ShowData($_REQUEST['function']);
