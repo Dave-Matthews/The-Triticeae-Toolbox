@@ -67,7 +67,14 @@ class ShowData
     /** Store the genotype experiment selection in a session variable, and jump to genotype experiments list*/
     private function typeSelectMarkers()
     {
-        $_SESSION[geno_exps] = explode(",", $_POST[genoexp]);
+        $exps_str = $_POST[genoexp];
+        $experiments = explode(',', $exps_str);
+        $_SESSION['geno_exps'] = $experiments;
+        $sql = "select count(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
+        $res = mysql_query($sql) or die(mysql_error() . $sql);
+        if ($row = mysql_fetch_array($res)) {
+            $_SESSION['geno_exps_cnt'] = number_format($row[0]);
+        }
         echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/genotype_selection.php\">";
     }
 
