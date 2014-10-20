@@ -8,14 +8,13 @@ require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 connect();
 
-// URI is something like genotype/{id}/[count][?analysisMethod={platform}][..]
+// URI is something like germplasm/find?q={name}
 // Extract the pseudo-path part of the REST args.
 $self = $_SERVER['PHP_SELF'];
 $script = $_SERVER["SCRIPT_NAME"]."/";
 $rest = str_replace($script, "", $self);
 $rest = explode("/", $rest);
-$lineuid = $rest[0];
-$command = $rest[1];
+$command = $rest[0];
 // Get the URI's querystring.
 if ($_GET) {
   $getkeys = array_keys($_GET);
@@ -27,35 +26,21 @@ if ($_GET) {
   $analmeth = $_GET['analysisMethod'];
 }
 // Is there a command?
-if ($rest[1]) {
-  if ($rest[1] != count) {
-    echo "Unknown genotype command <b>'$rest[1]'</b>. <p>";
+if ($command) {
+  if ($command != "find") {
+    echo "Unknown germplasm command <b>'$rest[1]'</b>. <p>";
     exit;
   }
-  // "Get Marker Count By Germplasm Id"
-  // URI is genotype/{id}/count[?analysisMethod={platform}]
-  $linearray['gid'] = $lineuid;
-  // Get the number of non-missing allele data points for this line, by experiment.
-  $sql = "select experiment_uid, count(experiment_uid) from allele_cache 
-             where line_record_uid = $lineuid 
-             and not alleles = '--' 
-            group by experiment_uid;";
-  $res = mysql_query($sql);
-  while ($row = mysql_fetch_row($res)) {
-    $runId = $row[0];
-    $resultCount = $row[1];
-    $analysisMethod = mysql_grab("select platform_name from platform p, genotype_experiment_info g
-                                 where p.platform_uid = g.platform_uid
-                                 and g.experiment_uid = $runId");
-    // Restrict to the requested analysis method if any.
-    if (!$analmeth or $analmeth == $analysisMethod ) {
-      $datarray['runId'] = $runId;
-      $datarray['analysisMethod'] = $analysisMethod;
-      $datarray['resultCount'] = $resultCount;
-      $markerCountarray['markerCounts'][] = $datarray;
-    }
-  }
-  $response = array($linearray, $markerCountarray);
+  // "Germplasm ID by Name"
+  // URI is germplasm/find?q={name}
+  $linename = $_GET['q'];
+  $lineuid = mysql_grab("select line_record_uid from line_records where line_record_name = '$linename'");
+  $syns = array();
+  $response[] = array("queryName" => "$linename");
+  $response[] = array("uniqueName" => "$linename");
+  $response[] = array("synonyms" => $syns );
+  $response[] = array("germplasmId" => $lineuid);
+  header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json");
   /* Requires PHP 5.4.0: */
   /* echo json_encode($response, JSON_PRETTY_PRINT); */
@@ -64,7 +49,7 @@ if ($rest[1]) {
 }
 else {
   // $rest[1] is undefined, no command.
-  echo "<b>genotype/$rest[0]</b>: No action implemented yet.<p>";
+  echo "<b>germplasm/$rest[0]</b>: No action implemented yet.<p>";
   // "Get Genotype By Id"
   // URI is something like genotype/{id}[?runId={runId}][&analysisMethod={method}][&pageSize={pageSize}&page={page}]
 

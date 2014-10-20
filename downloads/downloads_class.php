@@ -312,7 +312,12 @@ class Downloads
             $output = $this->type1_build_geneticMap($lines, $markers, $dtype);
             fwrite($h, $output);
             fclose($h);
-        } 
+        }
+        $filename = "selection_paramaters.txt";
+        $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+        fwrite($h, "Minimum MAF = $min_maf\n");
+        fwrite($h, "Maximum Missing = $max_missing\n");
+        fclose($h); 
         if ($version == "V3") {
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
@@ -329,7 +334,7 @@ class Downloads
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             if ($typeGE == "true") {
-                $output = $this->type4BuildMarkersDownload($markers, $min_maf, $max_missing, $dtype, $h);
+                $output = type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
             } else {
                 $output = $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
             }
@@ -353,7 +358,7 @@ class Downloads
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             if ($typeGE == "true") {
-                $output = $this->type4BuildMarkersDownload($markers, $min_maf, $max_missing, $dtype, $h);
+                $output = type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
             } else {
                 $output = $this->type3BuildMarkersDownload($lines, $markers, $dtype,$h);
             }
@@ -742,7 +747,7 @@ class Downloads
                 } else {
                     $saved_session = $saved_session . ", genotype experiment = $geno_str";
                 }
-                $sql = "select count(*) from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null";
+                $sql = "select count(*) from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
                 $res = mysql_query($sql) or die(mysql_error() . $sql);
                 $row = mysql_fetch_array($res);
                 $count = $row[0];
@@ -1816,7 +1821,7 @@ class Downloads
          *
          * @return null
          */
-    function type4BuildMarkersDownload($markers, $min_maf, $max_missing, $dtype,$h)
+    function type4BuildMarkersDownload_old($markers, $min_maf, $max_missing, $dtype,$h)
     {
         $output = '';
         $outputheader = '';
