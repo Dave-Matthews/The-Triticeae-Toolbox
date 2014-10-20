@@ -1,7 +1,7 @@
 <?php
 
 /** Using a PHP class to implement the "Download Gateway" feature
- * 
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
@@ -16,7 +16,7 @@ class Downloads
      */
     public $delimiter = "\t";
     
-    /** 
+    /**
      * Using the class's constructor to decide which action to perform
      *
      * @param string $function action to perform
@@ -50,59 +50,58 @@ class Downloads
                 echo $this->refresh_title();
                 break;
             default:
-                $this->type1_select();
+                $this->type1Select();
                 break;
-        }	
+        }
     }
 
-	/**
-	 * load header and footer then check session to use existing data selection
-	 */
-	private function type1_select()
-	{
-		global $config;
-                include($config['root_dir'].'theme/normal_header.php');
-		$phenotype = "";
-                $lines = "";
-		$markers = "";
-		$saved_session = "";
-		$this->type1_checksession();
-		include($config['root_dir'].'theme/footer.php');
-	}	
-	
-	/**
-	 * Checks the session variable, if there is lines data saved then go directly to the lines menu
-	 */
-	private function type1_checksession()
+    /**
+     * load header and footer then check session to use existing data selection
+     */
+    private function type1Select()
     {
-            ?>
-            <style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-		<div id="title">
-		<?php
-            $phenotype = "";
-            $this->refresh_title();
-         ?>        
+        global $config;
+        include $config['root_dir'].'theme/normal_header.php';
+        $phenotype = "";
+        $lines = "";
+        $markers = "";
+        $saved_session = "";
+        $this->type1Checksession();
+        include $config['root_dir'].'theme/footer.php';
+    }
+
+    /**
+     * Checks the session variable, if there is lines data saved then go directly to the lines menu
+     */
+    private function type1Checksession()
+    {
+        ?>
+        <style type="text/css">
+        th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+        table {background: none; border-collapse: collapse}
+        td {border: 1px solid #eee !important;}
+        h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+        </style>
+        <div id="title">
+        <?php
+        $phenotype = "";
+        $this->refresh_title();
+        ?>        
         </div>
-		<div id="step1" style="float: left; margin-bottom: 1.5em;">
-		<script type="text/javascript" src="phenotype/downloads03.js"></script><br>
-                <?php 
-                $this->type1_phenotype();
-                ?>
-                </div>
-                
-                <?php
-        }
+        <div id="step1" style="float: left; margin-bottom: 1.5em;">
+        <script type="text/javascript" src="phenotype/downloads03.js"></script><br>
+        <?php
+        $this->type1_phenotype();
+        ?>
+        </div>
+        <?php
+    }
 
     /**
      * 1. display a spinning activity image when a slow function is running
      * 2. show button to clear sessin data
      * 3. show button to save current selection
-     */    
+     */
     private function refresh_title() {
       global $mysqli;
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
@@ -214,32 +213,31 @@ class Downloads
 	/**
 	 * starting with phenotype display phenotype categories
 	 */
-	private function step1_phenotype()
-	{
-                global $mysqli;
-                $lines_within = $_GET['lw'];
-                if ($lines_within == "yes") {
-                  $sub_ckd = "checked";
-                  $all_ckd = "";
-                } elseif ($lines_within == "no") {
-                  $sub_ckd = "";
-                  $all_ckd = "checked";
-                } elseif (isset($_SESSION['selected_lines'])) {
-                  $sub_ckd = "checked";
-                  $all_ckd = "";
-                } else {
-                  $sub_ckd = "";
-                  $all_ckd = "checked";
-                }
-
-		?>
-        <table id="phenotypeSelTab" class="tableclass1">
-		<tr>
-			<th>Category</th>
-		</tr>
-		<tr><td>
-			<select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
-                <?php
+        private function step1_phenotype()
+        {
+            global $mysqli;
+            $lines_within = $_GET['lw'];
+            if ($lines_within == "yes") {
+              $sub_ckd = "checked";
+              $all_ckd = "";
+            } elseif ($lines_within == "no") {
+              $sub_ckd = "";
+              $all_ckd = "checked";
+            } elseif (isset($_SESSION['selected_lines'])) {
+              $sub_ckd = "checked";
+              $all_ckd = "";
+            } else {
+              $sub_ckd = "";
+              $all_ckd = "checked";
+            }
+	    ?>
+            <table id="phenotypeSelTab" class="tableclass1">
+            <tr>
+		<th>Category</th>
+	    </tr>
+	    <tr><td>
+	    <select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
+            <?php
 		$sql = "SELECT phenotype_category_uid AS id, phenotype_category_name AS name from phenotype_category";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		while ($row = mysqli_fetch_assoc($res))
@@ -260,6 +258,10 @@ class Downloads
 	        Show only traits and trials<br>
                 <input type="checkbox" name = "subset" id="selectwithin" <?php echo "$sub_ckd"; ?> onclick="javascript: update_lines_within(this.value)">contained in selected lines<br>
 		<?php
+                } else {
+                ?>
+                <input type="hidden" name = "subset" id="selectwithin">
+                <?php
                 }
 	}
 
