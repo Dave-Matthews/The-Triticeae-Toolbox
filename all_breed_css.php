@@ -11,7 +11,6 @@ connect();
 
 <?php
 // Table 1, breeding programs
-echo "<p><b>Breeding</b> programs are contributors of both lines and phenotype trials.";
 $sql = "
   SELECT CAPdata_programs_uid, data_program_name, data_program_code, collaborator_name, description, institutions_uid
   FROM CAPdata_programs 
@@ -19,6 +18,7 @@ $sql = "
   ORDER BY data_program_name";
 $query = mysql_query($sql) or die(mysql_error());
 if (mysql_num_rows($query) > 0) {
+  echo "<p><b>Breeding</b> programs are contributors of both lines and phenotype trials.";
   echo "<table><tr><th>Breeding Program<th>Code<th>Collaborator<th>Description<th>Institution";
   while ($row = mysql_fetch_assoc($query)) {
     $CAP_uid=$row['CAPdata_programs_uid'];
@@ -34,7 +34,6 @@ if (mysql_num_rows($query) > 0) {
 }
 
 // Table 2, data programs
-echo "<br><p><b>Data</b> programs contribute results of phenotype trials or genotyping experiments.";
 $sql = "
   SELECT CAPdata_programs_uid, data_program_name, data_program_code, collaborator_name, description, institutions_uid
   FROM CAPdata_programs 
@@ -42,6 +41,7 @@ $sql = "
   ORDER BY data_program_name";
 $query = mysql_query($sql) or die(mysql_error());
 if (mysql_num_rows($query) > 0) {
+  echo "<br><p><b>Data</b> programs contribute results of phenotype trials or genotyping experiments.";
   echo "<table><tr><th>Data Program<th>Code<th>Collaborator<th>Description<th>Institution";
   while ($row = mysql_fetch_assoc($query)) {
     $CAP_uid=$row['CAPdata_programs_uid'];
@@ -57,7 +57,6 @@ if (mysql_num_rows($query) > 0) {
 }
 
 // Table 3, mapping programs
-echo "<br><p><b>Mapping</b> programs contribute results of genotyping experiments on mapping populations.";
 $sql = "
   SELECT CAPdata_programs_uid, data_program_name, data_program_code, collaborator_name, description, institutions_uid
   FROM CAPdata_programs 
@@ -65,6 +64,7 @@ $sql = "
   ORDER BY data_program_name";
 $query = mysql_query($sql) or die(mysql_error());
 if (mysql_num_rows($query) > 0) {
+  echo "<br><p><b>Mapping</b> programs contribute results of genotyping experiments on mapping populations.";
   echo "<table><tr><th>Mapping Program<th>Code<th>Collaborator<th>Description<th>Institution";
   while ($row = mysql_fetch_assoc($query)) {
     $CAP_uid=$row['CAPdata_programs_uid'];
