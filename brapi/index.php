@@ -6,15 +6,19 @@ connect();
 ?>
 <style type="text/css">
   pre {font-size: 1.1em}
+  #main h2 {color:#de5414; font-size: 1.4em; }
 </style>
 
 <h1>T3 Web Application Programming Interface</h1>
 <div class="section">
 
   <h1>Breeding API</h1>
-  See the documentation at <a href="http://docs.breeding.apiary.io/">http://docs.breeding.apiary.io/</a>
+  See the documentation at <a href="http://docs.breeding.apiary.io/">http://docs.breeding.apiary.io/</a><p>
 
-  <h3>Allele Count By Germplasm Id</h3>
+  <h2>Genotype</h2>
+
+  <h3>Count</h3>
+  Allele Count for a Germplasm, by Run<br>
   <b>GET</b> /brapi/0.1/genotype/{id}/count?analysisMethod={platform}<br>
   <b>Returns:</b> JSON containing Germplasm Id, experiment Id, analysis method, and number of allele calls<br>
   <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate</a>
@@ -23,17 +27,30 @@ connect();
   <b>GET</b> /brapi/0.1/genotype/{id}?runId={runId}&analysisMethod={method}&pageSize={pageSize}&page={page}<br>
   <b>Returns:</b> JSON containing Germplasm Id, experiment Id, analysis method, encoding, and allele calls<br>
   &nbsp;&nbsp;&nbsp;by marker.  Missing data are omitted.  Analysis method is T3's "platform."<br>
-  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993?analysisMethod=GoldenGate&pagesize=2000&page=1">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993?analysisMethod=GoldenGate&pagesize=2000&page=1</a>
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993</a><br>
+  <br>
 
-  <h3>Experiment Design, for Fieldbooks</h3>
-  <b>GET</b> http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/design/list
-  <b>Example:</b> <a href="http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/design/list">http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/design/list</a>
+  <h2>Germplasm</h2>
+
+  <h3>Germplasm ID by Name</h3>
+  <b>GET</b> /brapi/0.1/germplasm/find?q={name}&matchMethod={matchMethod}&include={synonyms}&page={page}&pageSize={pageSize}<br>
+  <b>Example: </b><a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/germplasm/find?q=STEPTOE">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/germplasm/find?q=STEPTOE</a>
+  <br><br>
+
+  <h2>Field Data Collection</h2>
+
+  <h3>List Study Summaries</h3>
+  Experiment Design<br>
+  <b>GET</b> http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/study/list<br>
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/study/list">http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/study/list</a>
 
 <p>
 </div>
 
 <div class="section">
-  <h1>Other</h1>
+
+  <h2>Ideas</h2>
+
   <h3>Keyword search ("Quick search")</h3>
   URL: http://triticeaetoolbox.org/wheat/search.php?keywords=&lt;query><br>
   Method: GET<br>
@@ -54,31 +71,6 @@ connect();
   Returns: Report page, HTML format<br>
   Example: <a href="http://triticeaetoolbox.org/wheat/view.php?table=markers&name=iwa55">http://triticeaetoolbox.org/wheat/view.php?table=markers&name=iwa55</a>
   <p>
-
-</div>
-
-<div class="section">
-
-  <h1>Ideas</h1>
-
-  <h3>Retrieve all Allele data for a Line</h3>
-  URL: http://triticeaetoolbox.org/wheat/api/allelesbyline.php?name=&lt;name><br>
-  Method: GET<br>
-  Parameter: &lt;name> = T3 primary name or T3 synonym<br>
-  Returns: JSON Array of [String: "T3 primary name", Object: {"Marker name":"corresponding consensus Allele call"}]<br>
-  Example: http://triticeaetoolbox.org/wheat/api/allelesbyline.php?name=caledonia<br>
-  Sample output: 
-  <pre>
-    ["CALEDONIA",
-    {
-    "BobWhite_c10015_641":"B,B"
-    "BobWhite_c10016_302":"A,A"
-    ...
-    "Kukri_c65663_642":"-,-"
-    ...
-    "wsnp_CF133109A_Ta_2_1":"A,A"
-    }]
-  </pre>
 
   <h3>Arbitrary SQL SELECT query (cf. <a href="http://wheat.pw.usda.gov/cgi-bin/graingenes/sql.cgi">GrainGenes</a>)</h3>
   URL: http://triticeaetoolbox.org/wheat/api/sql.php?q=&lt;query><br>
