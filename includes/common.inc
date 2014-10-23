@@ -118,17 +118,18 @@ function showTableOptions($table, $selected="null", $orderby="uid") {
 
 	$uid = get_pkey($table);
 	$name = get_unique_name($table);
-	
-	if($table=='CAPdata_programs')
-	{
-	$q = mysql_query("SELECT $uid, $name
-			  FROM $table WHERE program_type='breeding'
-			  ORDER BY $uid
-			")
-	     or die(mysql_error());
-	}
-	else
-	{
+
+	// dem 23oct14: No, let's show all programs whether breeding or not.
+	/* if($table=='CAPdata_programs') */
+	/* { */
+	/* $q = mysql_query("SELECT $uid, $name */
+	/* 		  FROM $table WHERE program_type='breeding' */
+	/* 		  ORDER BY $uid */
+	/* 		") */
+	/*      or die(mysql_error()); */
+	/* } */
+	/* else */
+	/* { */
 	  // DEM 9feb11: I think it's (almost?) always better to sort by name than by uid.
 	  // To do it, use optional third parameter = "name".
 // 	$q = mysql_query("SELECT $uid, $name
@@ -145,7 +146,7 @@ function showTableOptions($table, $selected="null", $orderby="uid") {
 			  ORDER BY $sortorder
 			")
 	     or die(mysql_error());
-	}
+	/* } */
 
 	while($row = mysql_fetch_assoc($q)) {
 		$sel = ($row[$uid] == $selected) ? "selected=\"selected\"" : "";
