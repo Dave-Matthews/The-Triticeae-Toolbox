@@ -214,7 +214,7 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>login/edit_programs.php">
       Contributing Data Programs</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_whatsnew.php">
-      Edit "What's New"</a>
+      "What's New"</a>
       <!-- Too dangerous. -->
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
@@ -242,17 +242,18 @@ EOD;
       <li><a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">Usage Analytics</a>
     </ul>
   </li>
-<?php endif; ?>
+<?php endif; 
 
-  <?php  			
-//   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-    ?>
-  <li> <a href="" title="Manage access to my data">Share data</a>
-  <ul>
-  <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a>
-  </ul>
-  <?php endif ?>
+/* //   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
+/*   if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
+/*     ?> */
+/*   <li> <a href="" title="Manage access to my data">Share data</a> */
+/*   <ul> */
+/*   <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a> */
+/*   </ul> */
+/*      <?php endif;  */
+
+?>
 
   <li>
   <a href="" title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
