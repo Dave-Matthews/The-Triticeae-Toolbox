@@ -212,7 +212,9 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
       Markers</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_programs.php">
-      CAP Data Programs</a></li>
+      Contributing Data Programs</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>login/edit_whatsnew.php">
+      Edit "What's New"</a>
       <!-- Too dangerous. -->
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
