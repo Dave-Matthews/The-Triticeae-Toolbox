@@ -28,18 +28,26 @@ if ($row = mysql_fetch_array($res)) {
 }
   
 //create file of SNP fasta
-$tmp = $config['root_dir'] . "viroblast/db/nucleotide/wheat-markers";
-if ($fh = fopen("$tmp", "w")) {
-    echo "opened output file $tmp<br>\n";
+$file1 = $config['root_dir'] . "viroblast/db/nucleotide/wheat-markers";
+$file2 = $config['root_dir'] . "viroblast/db/nucleotide/index.csv";
+if ($fh1 = fopen("$file1", "w")) {
+    echo "opened output file $file1<br>\n";
 } else {
-    die("can not open output $tmp\n");
+    die("can not open output $file1\n");
 }
+if ($fh2 = fopen("$file2", "w")) {
+    echo "opened output file $file2<br>\n";
+} else {
+    die("can not open output $file2\n");
+}
+
 $count = 0;
-$sql = "select marker_uid, marker_name, sequence from markers where sequence is not NULL";
+$sql = "select marker_name, marker_type_name, sequence from markers, marker_types
+     where markers.marker_type_uid = marker_types.marker_type_uid";
 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
 while ($row = mysql_fetch_array($res)) {
-    $uid = $row[0];
-    $name = $row[1];
+    $name = $row[0];
+    $marker_type = $row[1];
     $seq = $row[2];
     $pattern = "/[A-Za-z0-9-_\.]+/";
     if (preg_match($pattern, $name, $match)) {
@@ -82,8 +90,11 @@ while ($row = mysql_fetch_array($res)) {
         $seq = preg_replace($pattern, $replace, $seq);
         $pattern = "/\[T\/A\]/";
         $seq = preg_replace($pattern, $replace, $seq);
+
+        $length = strlen($seq);
         //fwrite($fh,">gnl|$database|$name\n$seq\n");
-        fwrite($fh, ">$name\n$seq\n");
+        fwrite($fh1, ">$name\n$seq\n");
+        fwrite($fh2, "$name,$length,$marker_type\n");
         $count++;
     } else {
         echo "skip $name $seq<br>\n";

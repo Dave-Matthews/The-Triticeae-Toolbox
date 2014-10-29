@@ -73,10 +73,11 @@ class Markers {
  	<tr><td><strong>SNP Sequence File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
         <tr><td><td><a href="curator_data/examples/SNP_assay.txt">Illumina Manifest (opa) Format</a>
  , <a href="curator_data/examples/Marker_import_sample5.txt">Illumina Manifest (Infinium) Format</a>
- , <a href="curator_data/examples/Generic_SNP.txt">Generic Format(csv)</a> <font color=red> Updated 02/04/2014</font>
+ , <a href="curator_data/examples/Generic_SNP.txt">Generic Format(csv)</a>
  , or <a href="curator_data/examples/DArT.csv">DArT Format(csv)</a>
         </table><br>
-	<p><input type="submit" value="Upload Marker Import Files" /></p>
+        <p><input type="submit" name="blast" value="BLAST Import File" /> Use BLAST to check for sequence matches to existing markers.</p>
+        <p><input type="submit" value="Upload Marker Import Files" /></p>
     </form>
 	<br>
 	<br>
