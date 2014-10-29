@@ -19,7 +19,8 @@ while ($row = mysql_fetch_array($cats)) {
   $catid = $row['phenotype_category_uid'];
   $catname = $row['phenotype_category_name'];
   $res = mysql_query("select phenotypes_name,description,TO_number, unit_uid, min_pheno_value, max_pheno_value
-                      from phenotypes where phenotype_category_uid = $catid");
+                      from phenotypes where phenotype_category_uid = $catid
+                      order by phenotypes_name");
   if (mysql_num_rows($res) > 0) {
     print "<tr><th>$catname<th>Ontology<th>Description<th>Min<th>Max<th>Unit<th>Unit info";
     while ($trow = mysql_fetch_array($res)) {
