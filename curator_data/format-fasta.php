@@ -97,7 +97,7 @@ while ($row = mysql_fetch_array($res)) {
         fwrite($fh2, "$name,$length,$marker_type\n");
         $count++;
     } else {
-        echo "skip $name $seq<br>\n";
+        //echo "skip $name $seq<br>\n";
     }
 }
 
