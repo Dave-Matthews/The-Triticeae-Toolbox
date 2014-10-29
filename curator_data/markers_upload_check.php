@@ -1483,6 +1483,7 @@ class Markers_Check
     private function type_DatabaseSNP() {
 
         global $config;
+        $progPath = realpath(dirname(__FILE__).'/../').'/';
         
         //echo "You are in DB portion of SNP import." . "<br>";
          
@@ -1720,6 +1721,13 @@ class Markers_Check
                         WHERE input_file_log_uid = '$input_uid'"; 
         }
         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
+        echo "<br><br>Running update of BLAST database<br>\n";
+        $cmd = "/usr/bin/php " . $progPath . "curator_data/format-fasta.php";
+        exec($cmd, $output);
+        foreach ($output as $line) {
+            echo "$line<br>\n";
+        }
+
     } /* end of function type_databaseSNP */
     
 } /* end of class */
