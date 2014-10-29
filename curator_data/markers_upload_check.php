@@ -76,6 +76,9 @@ class Markers_Check
         case 'typeCheckSynonym';
             $this->type_MarkersSNP(); /* check marker sequence */
             break;
+        case 'typeCheckBlast';
+            $this->type_MarkersSNP2(); /* check marker sequence */
+            break;
         case 'typeCheckProgress';
             $this->typeMarkersProgress(); /* check progress of typeMarkersSynonym */
             break;
@@ -100,7 +103,7 @@ class Markers_Check
             ?>
             <h2>Enter/Update Markers: Validation</h2>
             <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-            <script type="text/javascript" src="curator_data/marker03.js"></script>
+            <script type="text/javascript" src="curator_data/marker04.js"></script>
             <div id=update></div>
             <div id=checksyn>
             <?php
@@ -551,6 +554,7 @@ class Markers_Check
         $error_flag = 0;
         $row = loadUser($_SESSION['username']);
 		$username=$row['name'];
+                $username = preg_replace("/\s/", "", $username);
 		$tmp_dir="./uploads/tmpdir_".$username."_".rand();
         //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
         //	copy($_FILES['file']['tmp_name'][1], $raw_path);
@@ -729,6 +733,7 @@ class Markers_Check
         $error_flag = 0;
         $row = loadUser($_SESSION['username']);
                 $username=$row['name'];
+                $username = preg_replace("/\s/", "", $username);
                 $tmp_dir="./uploads/tmpdir_".$username."_".rand();
         $infile = "";
         umask(0);
@@ -815,13 +820,61 @@ class Markers_Check
         <input type=hidden name="orderAllele" id="order_yes" value"">
         <script type="text/javascript">
         if ( window.addEventListener ) {
-            window.addEventListener( "load", CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>'), false );
+            window.addEventListener( "load", CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>','<?php echo $_POST['blast']?>'), false );
         } else if ( window.onload ) {
-            window.onload = "CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')";
+            window.onload = "CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>','<?php echo $_POST['blast']?>')";
         }
         </script>
         <?php
     }
+
+    private function type_MarkersSNP2() {
+        global $config;
+        ?>
+        <style type="text/css">
+                th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+                table {background: none; border-collapse: collapse}
+                td {border: 0px solid #eee !important;}
+                h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+        </style>
+
+        <style type="text/css">
+        table.marker {background: none; border-collapse: collapse}
+        th.marker { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
+        td.marker { padding: 5px 0; border: 0 !important; }
+        </style>
+        <?php
+
+        $infile = $_GET['linedata'];
+        $uploadfile = $_GET['file_name'];
+        $fileFormat = $_GET['file_type'];
+        $overwrite = $_GET['overwrite'];
+        $expand = $_GET['expand'];
+        $orderAllele = $_GET['orderAllele'];
+
+        $emailAddr = $_SESSION['username'];
+        $row = loadUser($_SESSION['username']);
+        $username=$row['name'];
+        $username = preg_replace("/\s/", "", $username);
+        $target_path="uploads/".$username."_".rand();
+        $target_path = substr($infile, 0, strrpos($infile, '/')+1);
+        $processOut = "$target_path/genoProc.out";
+        $tPath = str_replace('./', '', $target_path);
+        $outfile1 = preg_replace("/(\.)/", '_filtered.', $uploadfile);
+        $outfile2 = preg_replace("/(\.)/", '_synonym.', $uploadfile);
+        $urlAddr = $config['base_url'] . "curator_data/$tPath";
+
+        $cmd = "/usr/bin/php check_synonym_offline.php $infile $emailAddr $urlAddr> ". $processOut . " &";
+        echo "Running BLAST to compare import file to markers sequences in database.<br>\n";
+        echo "The results files for this analysis are<br><br>\n";
+        echo "$outfile1 - import file with entries matching to markers in the database removed.<br>\n";
+        echo "$outfile2 - markers that match to existing entries.(Formated as Marker Annotation file)<br><br>\n";
+        echo "An email will be sent to $emailAddr when completed.<br><br>\n";
+        echo "<a href=\"curator_data/$target_path\" target=\"_new\">Working files</a><br>\n";
+        //echo "$cmd<br>\n";
+        exec($cmd);
+    }
+
 
     private function type_MarkersSNP() {
 	?>
@@ -1430,6 +1483,7 @@ class Markers_Check
     private function type_DatabaseSNP() {
 
         global $config;
+        $progPath = realpath(dirname(__FILE__).'/../').'/';
         
         //echo "You are in DB portion of SNP import." . "<br>";
          
@@ -1667,6 +1721,13 @@ class Markers_Check
                         WHERE input_file_log_uid = '$input_uid'"; 
         }
         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
+        echo "<br><br>Running update of BLAST database<br>\n";
+        $cmd = "/usr/bin/php " . $progPath . "curator_data/format-fasta.php";
+        exec($cmd, $output);
+        foreach ($output as $line) {
+            echo "$line<br>\n";
+        }
+
     } /* end of function type_databaseSNP */
     
 } /* end of class */
