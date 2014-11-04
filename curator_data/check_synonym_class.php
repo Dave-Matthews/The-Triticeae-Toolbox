@@ -51,7 +51,7 @@ function typeBlastRun($infile)
             $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
             fwrite($fh2, $seq);
             fclose($fh2);
-            $command = "/home/cbirkett/blast-2.2.26/bin/megablast -D 3 -F F -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout";
+            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout";
             exec($command);
         }
     }
