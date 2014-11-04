@@ -139,7 +139,7 @@ class Downloads
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
             <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
-            <script type="text/javascript" src="downloads/download_gs02.js"></script>
+            <script type="text/javascript" src="downloads/download_gs03.js"></script>
             <script src="//code.jquery.com/jquery-1.11.1.js"></script>
             <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
             <script type="text/javascript" src="downloads/downloadsjq02.js"></script>

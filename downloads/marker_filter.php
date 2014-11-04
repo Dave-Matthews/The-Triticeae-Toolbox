@@ -157,9 +157,9 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                     $marker_abcnt[$i]++;
                 } elseif ($allele=='BB') {
                     $marker_bbcnt[$i]++;
-                } elseif ($allele=='--') {
+                //need to check for both conditions otherwise the output will include markers with missing data
+                } elseif (($allele=='--') || ($allele=='')) {
                     $marker_misscnt[$i]++;
-                } elseif ($allele=='') {
                 } else {
                     echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
                 }
@@ -256,19 +256,18 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     <br><?php echo ($num_miss) ?><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
     <br><b><?php echo ($num_removed) ?></b><i> markers removed</i>
     <td><b><?php echo ("$count") ?></b><i> markers</i>
-    <tr><td>
-    <?php
+    <tr><td><?php
     if ($lines_removed == 1) {
-          echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
-          <?php
+        echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
+        <?php
     } else {
-          echo ("</i><b>$lines_removed") ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data </b></i>
-          <?php
+        echo ("</i><b>$lines_removed") ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data </b></i>
+        <?php
     }
     if ($lines_removed_name != "") {
-          ?>
-          <br>(<a onclick="linesRemoved('<?php echo ($lines_removed_name) ?>')"><?php echo ($comm) ?></a>)
-          <?php
+        ?>
+        <br>(<a onclick="linesRemoved('<?php echo ($lines_removed_name) ?>')"><?php echo ($comm) ?></a>)
+        <?php
     }
     echo "<td><b>$count2</b><i> lines</a>";
     echo ("</table>");
@@ -276,12 +275,12 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
 
     /**
      * calculate allele frequence and missing data using selected lines and allele_frequencies table
-     * 
+     *
      * @param array  $lines         selected lines
      * @param floats $min_maf       minimum marker allele frequency
      * @param floats $max_missing   maximum missing markers
      * @param floats $max_miss_line maximum missing lines
-     * 
+     *
      * @return $markers_filtered, $lines_filtered
     */
 function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
@@ -306,14 +305,18 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
         $miss = $row[2];
         $total = $row[3];
         $miss_per = 100 * ($miss / $total);
-        if ($maf < $min_maf) $num_maf++;
-        if ($miss_per > $max_missing) $num_miss++;
-        if (($miss_per > $max_missing) OR ($maf < $min_maf)) {
+        if ($maf < $min_maf) {
+            $num_maf++;
+        }
+        if ($miss_per > $max_missing) {
+            $num_miss++;
+        }
+        if (($miss_per > $max_missing) or ($maf < $min_maf)) {
             $num_removed++;
         } else {
-            $markers_filtered[$marker_uid] = 1; 
+            $markers_filtered[$marker_uid] = 1;
         }
-        $num_mark++;        
+        $num_mark++;
     }
     $count = count($markers_filtered);
     ?>
