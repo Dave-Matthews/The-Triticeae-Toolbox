@@ -3,9 +3,18 @@ include('../../includes/bootstrap.inc');
 connect();
 $mysqli = connecti();
 
+$self = $_SERVER['PHP_SELF'];
+$script = $_SERVER["SCRIPT_NAME"]."/";
+$rest = str_replace($script, "", $self);
+$rest = explode("/", $rest);
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
     //echo "cmd = $action<br>\n";
+}
+if ($rest[0] == "list") {
+    $action = "list";
+} else {
+    $uid = $rest[0];
 }
 if (isset($_GET['uid'])) {
     $uid = $_REQUEST['uid'];
@@ -13,46 +22,54 @@ if (isset($_GET['uid'])) {
 }
 header("Content-Type: application/json");
 if ($action == "list") {
-    $sql = "select phenotype_uid, phenotypes_name, description from phenotypes";
+    $sql = "select phenotype_uid, phenotypes_name, unit_name, description
+    from phenotypes, units
+    WHERE phenotypes.unit_uid = units.unit_uid";
     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
-        $uid = $row[0];
-        $name = $row[1];
-        $desc = $row[2];
-        $temp["phenoID"][] = $row[0];
-        $temp["Name"][] = $row[1];
-        $temp["Description"][] = $row[2];
+        $temp["uid"] = $row[0];
+        $temp["name"] = $row[1];
+        $temp["unit"] = $row[2];
+        $temp["method"] = $row[3];
+        $results[] = $temp;
     }
-    $return = json_encode($temp);
+    $return = json_encode($results);
     echo "$return";
 } elseif ($uid != "") {
+    $pos = 1;
     $pheno_list =  explode(",", $uid);
     //allowed values for Android Field Book are numeric, qualitative, percent, date, boolean, text, audio
-    $sql = "select phenotype_uid, phenotypes_name, datatype, description, unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid";
+    $sql = "select phenotype_uid, phenotypes_name, datatype, unit_name, description
+        from phenotypes, units
+        WHERE phenotypes.unit_uid = units.unit_uid
+        AND phenotype_uid IN ($uid)";
     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
-            $uid= $row[0];
-            $trait[$uid] = $row[1];
-            $fmt = $row[2];
-            $detail[$uid] = $row[3];
-            $units = $row[4];
-            if ($units == "percent") {
-                $fmt = "percent";
-            } elseif ($fmt == "continuous") {
-                $fmt = "numeric";
-            } elseif ($fmt == "discrete") {
-                $fmt = "numeric";
-            }
-            $format[$uid] = $fmt;
-    }
-    $pos = 1;
-    $results["header"] = array("trait","format","defaultValue","minimum","maximum","details","categories","isVisible","realPosition");
-    foreach ($pheno_list as $item) {
-           $results["trait"][] = array("$trait[$item]","$format[$item]","","","","$detail[$item]","","TRUE","$pos");
-           $pos++;
+        $temp["uid"]= $row[0];
+        $temp["name"] = $row[1];
+        $fmt = $row[2];
+        $units = $row[4];
+        if ($units == "percent") {
+            $fmt = "percent";
+        } elseif ($fmt == "continuous") {
+            $fmt = "numeric";
+        } elseif ($fmt == "discrete") {
+            $fmt = "numeric";
+        }
+        $temp["format"] = $fmt;
+        $temp["unit"] = $row[3];
+        $temp["method"] = $row[4];
+        $temp["defaultValue"] = "";
+        $temp["minimum"] = "";
+        $temp["maximum"] = "";
+        $temp["categories"] = "";
+        $temp["isVisible"] = "";
+        $temp["realPosition"] = $pos;
+        $results[] = $temp;
+        $pos++;
     }
 
-    $return = json_encode($results);
+    $return = json_encode($temp);
     echo "$return";
 } else {
     echo "Error: missing experiment id<br>\n";
