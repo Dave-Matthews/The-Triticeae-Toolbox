@@ -3,6 +3,7 @@ function getListStudies()
 {
   var items = [];
   var apiUrlList = document.getElementById("url").value + "/study/list";
+  items.push("API call = " + apiUrlList);
   jQuery.ajax({
     type: "GET",
     dataType: "json",
@@ -42,6 +43,7 @@ function get_detail(exp)
 {
   var items = [];
   var apiUrl = document.getElementById("url").value + "/study/" + exp;
+  items.push("API call = " + apiUrl)
   jQuery.ajax({
     type: "GET",
     dataType: "json",
@@ -79,6 +81,7 @@ function getListTraits()
 {
   var items = [];
   var apiUrl = document.getElementById("url").value + "/traits/list";
+  items.push("API call = " + apiUrl);
   jQuery.ajax({
     type: "GET",
     dataType: "json",
@@ -119,6 +122,7 @@ function get_detail_trait(exp)
 {
   var items = [];
   var apiUrl = document.getElementById("url").value + "/traits/" + exp;
+  items.push("API call = " + apiUrl);
   jQuery.ajax({
     type: "GET",
     dataType: "json",
