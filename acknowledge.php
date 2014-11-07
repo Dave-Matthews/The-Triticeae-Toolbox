@@ -1,7 +1,8 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
+$pageTitle = "Acknowledgements";
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/normal_header.php';
 ?>
 
 <h1>Acknowledgments</h1>
@@ -26,8 +27,5 @@ include($config['root_dir'].'theme/normal_header.php');
       <input type=submit value=Datasets>
     </form>
 </div>
-
-
-
 </div>
-<?php include($config['root_dir'].'theme/footer.php');?>
+<?php require $config['root_dir'].'theme/footer.php';
