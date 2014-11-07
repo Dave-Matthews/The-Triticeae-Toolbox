@@ -1,4 +1,10 @@
 <?php
+/**
+ * Data submission
+ *
+ * PHP version 5.3
+ *
+ */
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/admin_header.php';
@@ -28,7 +34,7 @@ connect();
       or <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a> Sandbox database
       for test-loading your files.  When they&apos;re ready,
       click here to submit them to the T3 Curator for loading into the official database.
-      <br><input type="Button" value="Submit" onclick="window.open('curator_data/queue.php','_self')">
+      <br><input type="Button" value="Submit" onclick="window.open('<?php echo $config['base_url']?>/curator_data/queue.php','_self')">
   </ul>
 
   <p>
@@ -128,9 +134,23 @@ connect();
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Experiment results", "TCAPbarley9K-sample.txt", "") ?>
-      <td>2D table of alleles for lines and markers <b>(Preferred!)</b>
+      <td><?php filelink("Illumina data", "TCAPbarley9K-sample.txt", "") ?>
+      <td>alleles for lines and markers (coded as A or B)
     </tr>
+    <tr>
+      <td>
+      <td><?php filelink("GBS data", "GBS_Genotype_template.txt", "") ?>
+      <td>alleles for lines and markers (coded as ACTG, N = missing, H = heterozygous)
+    </tr>
+    <tr>
+      <td>
+      <td><a href="curator_data/gbs_import_instructions.php">GBS data, over 100K markers</a><td>07Nov14
+      <td>instructions for loading large GBS data sets using the command line
+    </tr>
+    <tr>
+      <td>
+      <td><?php filelink("DArT data", "DArT_Genotype_template.txt", "") ?>
+      <td>alleles for lines and markers (coded as 1 = present, 0 = absent)
     <tr>
       <td>
       <td><?php filelink("Experiment results (1D)", "genotypeData_T3.txt", "") ?>
@@ -138,55 +158,68 @@ connect();
     </tr>
     <tr>
       <td><b>Markers</b>
-      <td><?php filelink("Sequence", "Generic_SNP.txt", "") ?>
-      <td>Marker sequences and A/B allele definitions
+      <td><?php filelink("Sequence Generic", "Generic_SNP.txt", "") ?>
+      <td>Marker sequences and allele definitions
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Gene function","Marker_import_sample4.txt", "") ?>
+      <td><?php filelink("Sequence Illumina OPA", "SNP_assay.txt", "") ?>
+      <td>Markers from Illumina Manifest, Golden Gate OPA format
+    </tr>
+    <tr>
+      <td>
+      <td><?php filelink("Sequence Illumina Infinium", "Marker_import_sample5.txt", "") ?>
+      <td>Markers from Illumina Manifest, Infinium HD format
+    </tr>
+    <tr>
+      <td>
+      <td><?php filelink("Markers from DArT", "DArT.csv", "") ?>
+      <td>Markers from Diversity Array Technologies
+    <tr>
+      <td>
+      <td><?php filelink("Gene function", "Marker_import_sample4.txt", "") ?>
       <td>Sequence annotations and name synonyms
     </tr>
     <tr>
       <td>
-      <td><?php filelink("Genetic Character markers","property_template.xls", "T3") ?>
+      <td><?php filelink("Genetic Character markers", "property_template.xls", "T3") ?>
       <td>Trait-linked markers named for their associated gene or QTL
     <tr>
     </tr>
       <td>
-      <td><?php filelink("Map location","mapupload_example.txt", "") ?>
+      <td><?php filelink("Map location", "mapupload_example.txt", "") ?>
       <td>Genetic maps
     </tr>
   </table>
 </div></div>
 
 <?php
-/** Date-stamp the template files, in red if they're new.
- * $subdir is relative to curator_data/examples/.
- */
+// Date-stamp the template files, in red if they're new.
+// $subdir is relative to curator_data/examples/.
 function filelink($label, $filenm, $subdir)
 {
-  global $config;
-  echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
-  $fullpath = $config['root_dir'] . "curator_data/examples/$subdir/$filenm";
-  // Paint in red if newer than 30 days.
-  if (time() - filemtime($fullpath) < 2592000)
-    echo "<font  color=red>". date("dMy", filemtime($fullpath)) . "</font>";
-  else
-    echo date("dMy", filemtime($fullpath));
-    //echo "</td><td>$filenm";
+    global $config;
+    echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
+    $fullpath = $config['root_dir'] . "curator_data/examples/$subdir/$filenm";
+    // Paint in red if newer than 30 days.
+    if (time() - filemtime($fullpath) < 2592000) {
+        echo "<font  color=red>". date("dMy", filemtime($fullpath)) . "</font>";
+    } else {
+        echo date("dMy", filemtime($fullpath));
+    }
 }
 
-/** Variation of filelink(), for items in text instead of in the table.
- */
-function filelink2($label, $filenm, $subdir) {
-  global $config;
-  echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
-  // Add "(new <date>)" if newer than 30 days.
-  $fullpath = $config['root_dir'] . "curator_data/examples/$subdir/$filenm";
-  if (time() - filemtime($fullpath) < 2592000)
-    echo " <font size= -2 color=red>(new ". date("dMY", filemtime($fullpath)) . ")</font>";
+// Variation of filelink(), for items in text instead of in the table.
+function filelink2($label, $filenm, $subdir)
+{
+    global $config;
+    echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
+    // Add "(new <date>)" if newer than 30 days.
+    $fullpath = $config['root_dir'] . "curator_data/examples/$subdir/$filenm";
+    if (time() - filemtime($fullpath) < 2592000) {
+        echo " <font size= -2 color=red>(new ". date("dMY", filemtime($fullpath)) . ")</font>";
+    }
 }
 
 $footer_div=1;
-require $config['root_dir'].'theme/footer.php'; 
-?>
+require $config['root_dir'].'theme/footer.php';
