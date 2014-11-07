@@ -1,9 +1,9 @@
 <?php
 /**
  * Data submission
- * 
+ *
  * PHP version 5.3
- * 
+ *
  */
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
@@ -144,6 +144,11 @@ connect();
     </tr>
     <tr>
       <td>
+      <td><a href="curator_data/gbs_import_instructions.php">GBS data, over 100K markers</a><td>07Nov14
+      <td>instructions for loading large GBS data sets using the command line
+    </tr>
+    <tr>
+      <td>
       <td><?php filelink("DArT data", "DArT_Genotype_template.txt", "") ?>
       <td>alleles for lines and markers (coded as 1 = present, 0 = absent)
     <tr>
@@ -191,28 +196,30 @@ connect();
 <?php
 // Date-stamp the template files, in red if they're new.
 // $subdir is relative to curator_data/examples/.
-function filelink($label, $filenm, $subdir) {
-  global $config;
-  echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
-  $fullpath = $config['root_dir'] . "curator_data/examples/$subdir/$filenm";
-  // Paint in red if newer than 30 days.
-  if (time() - filemtime($fullpath) < 2592000)
-    echo "<font  color=red>". date("dMy", filemtime($fullpath)) . "</font>";
-  else
-    echo date("dMy", filemtime($fullpath));
-    //echo "</td><td>$filenm";
+function filelink($label, $filenm, $subdir)
+{
+    global $config;
+    echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
+    $fullpath = $config['root_dir'] . "curator_data/examples/$subdir/$filenm";
+    // Paint in red if newer than 30 days.
+    if (time() - filemtime($fullpath) < 2592000) {
+        echo "<font  color=red>". date("dMy", filemtime($fullpath)) . "</font>";
+    } else {
+        echo date("dMy", filemtime($fullpath));
+    }
 }
 
 // Variation of filelink(), for items in text instead of in the table.
-function filelink2($label, $filenm, $subdir) {
+function filelink2($label, $filenm, $subdir)
+{
     global $config;
     echo "<a href='".$config['base_url']."curator_data/examples/$subdir/$filenm'>$label</a></td><td>";
     // Add "(new <date>)" if newer than 30 days.
     $fullpath = $config['root_dir'] . "curator_data/examples/$subdir/$filenm";
-    if (time() - filemtime($fullpath) < 2592000)
-      echo " <font size= -2 color=red>(new ". date("dMY", filemtime($fullpath)) . ")</font>";
+    if (time() - filemtime($fullpath) < 2592000) {
+        echo " <font size= -2 color=red>(new ". date("dMY", filemtime($fullpath)) . ")</font>";
+    }
 }
 
 $footer_div=1;
-require $config['root_dir'].'theme/footer.php'; 
-?>
+require $config['root_dir'].'theme/footer.php';

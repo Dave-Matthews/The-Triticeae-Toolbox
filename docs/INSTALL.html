@@ -50,6 +50,13 @@ data in several housekeeping tables.  You will want to modify
 some of these values for your installation, especially in table
 'settings'.
 
+If you have more than one instance of T3 on the same host machine, add
+an entry to table 'settings' with name = "database", value = "&lt;unique
+name>". The code checks this entry to prevent transfer of session
+variables (cookies) between instances.  This is important, since the
+session variables include the user's login status and privileges, which
+otherwise can be transferred simply by opening a new tab in the browser.
+
 If using GBrowse, create the GBrowse database "gtht" and grant
 permissions:
 
@@ -87,16 +94,16 @@ T3wheat_writeaccess.inc:
                      'db_host' => 'localhost');
 ?>
 
-<b>cron jobs</b>
+<b>command line scripts</b>
 
 Some pages use "materialized view" tables of allele data rather than the
-source table 'alleles' itself.  Some of these view tables are created
-and updated from the source table with scripts in the cron/ directory.
-These scripts can be executed automatically using crontab entries like
-this:
+source table 'alleles' itself. These tables are normally updated after 
+importing new data. If database data is deleted then the materialized view
+tables can be updated using scripts in the scripts\ directory.
 
-0 3 * * * &lt;root_dir>/cron/&lt;script>
-
+For GBS import files with over 100K markers it is necessary to use command line
+scripts to format and import the data. The scripts for doing these imports are
+located in the scripts/ directory.
 
 <b>Directories for uploaded and output files</b>
 
