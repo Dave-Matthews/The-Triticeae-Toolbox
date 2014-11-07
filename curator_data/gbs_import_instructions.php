@@ -46,5 +46,5 @@ The second column contains the chromosome. The third column contains the positio
 <tr><td>0/2<td>NA
 <tr><td>1/2<td>NA
 </table><br>
-5. Load each of these file with the script <a href=load_gbs_bymarker.php>load_gbs_bymarker</a>.<br><br>
-6. Calculate and load allele frequencies with the script <a href=load_gbs_frequencies.php>load_gbs_frequencies</a>.<br><br>
+5. Load each of these file with the script <a href=scripts/load_gbs_bymarker.php>load_gbs_bymarker</a>.<br><br>
+6. Calculate and load allele frequencies with the script <a href=scripts/load_gbs_frequencies.php>load_gbs_frequencies</a>.<br><br>

@@ -1,22 +1,35 @@
-<body bgcolor=white>
-<pre>
-<h4>Requirements</h4>
+<body bgcolor=white><pre>
+<b>Requirements</b>
+
 - For any functionality at all
   - Unix.  Ubuntu and Solaris work.
   - Apache
   - MySQL
   - PHP, including PEAR
-  - Spreadsheet_Excel_Writer.  Can be installed with this command:
+  - php5-mysql
+  - Spreadsheet_Excel_Writer and OLE.  Can be installed with:
+    % sudo pear install OLE-1.0.0RC2
     % sudo pear install Spreadsheet_Excel_Writer-0.9.2
+  - PHPExcel read, write Excel including .xlsx
+    copy source files into lib/PHPExcel/Classes
+  - R, version at least 2.15.2
+    - additional packages: rrBLUP, multicore, rpart, lme4, pheatmap, agricolae
 - For some functions
   - GBrowse
-  - R
   - pclzip.lib.php
   - libzzip
-  - PHP-libgd (?)
+  - for ViroBLAST.  
+    - DBD::CSV and XML::DOM. Can be installed with these commands:
+      % sudo cpan DBD::CSV
+      % sudo cpan XML::DOM
+    - NCBI BLAST+, ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
+      Edit viroblast/viroblast.ini to use the path to these executables.
 
-<h4>Setting up the MySQL databases</h4>
-Load the schema and some initializing data.  
+<b>Setting up the MySQL databases</b>
+
+Load the schema and some initializing data from the .sql files in this
+docs/ directory:
+
 mysql> create database T3wheat;
 mysql> use T3wheat;
 mysql> source T3wheat_schema.sql;
@@ -32,14 +45,26 @@ Grant write permission to another user such as "curator":
 
 mysql> grant all on T3wheat.* to curator@localhost identified by '&lt;password>';
 
-Similarly, create the GBrowse database "gtht" and grant permissions.
+The skeleton file T3wheat_skeleton.sql loads some initializing 
+data in several housekeeping tables.  You will want to modify 
+some of these values for your installation, especially in table
+'settings'.
+
+If you have more than one instance of T3 on the same host machine, add
+an entry to table 'settings' with name = "database", value = "&lt;unique
+name>". The code checks this entry to prevent transfer of session
+variables (cookies) between instances.  This is important, since the
+session variables include the user's login status and privileges, which
+otherwise can be transferred simply by opening a new tab in the browser.
+
+If using GBrowse, create the GBrowse database "gtht" and grant
+permissions:
 
 mysql> create database gtht;
-mysql> grant all on gtht.* to curator@localhost identified by '&lt;password>';
+mysql> grant select on gtht.* to publicuser@localhost identified by '&lt;password>';
 
+<b>Database connection scripts</b>
 
-
-<h4>Database connection scripts</h4>
 For security, the password information to connect to the MySQL database
 is not stored within the T3 source code repository or even within the
 Apache directory.  For example ours is in
@@ -69,24 +94,54 @@ T3wheat_writeaccess.inc:
                      'db_host' => 'localhost');
 ?>
 
-<h4>Directories for uploaded and output files</h4>
-Uploaded data files are stored in the curator_data/uploads directory,
-which must be writable by the Apache user, e.g. www-data. 
+<b>command line scripts</b>
+
+Some pages use "materialized view" tables of allele data rather than the
+source table 'alleles' itself. These tables are normally updated after 
+importing new data. If database data is deleted then the materialized view
+tables can be updated using scripts in the scripts\ directory.
+
+For GBS import files with over 100K markers it is necessary to use command line
+scripts to format and import the data. The scripts for doing these imports are
+located in the scripts/ directory.
+
+<b>Directories for uploaded and output files</b>
+
+Uploaded data files are stored in the curator_data/uploads/ directory,
+which must be writable by the Apache user, e.g. www-data.  
 
 % cd curator_data
 % mkdir uploads
 % sudo chown www-data uploads
 
-The plan is to store all output and temporary files in directory
-/tmp/tht/, where write-access for the scripts isn't a problem and
-they're all in one place to be purged daily or hourly with a cron() job.
-In order for this to work there must be a symbolic link from the Apache
-webserver's DocumentRoot to /tmp/tht.  If your webserver top directory
-is /www/htdocs, say
+Likewise, certain raw data files that are not parsed into the database
+are archived in the "raw/" directory, so this must be writable by the
+Apache user too.  In the Git distribution, "raw/" is a symbolic link to
+a directory outside the repository, with the writable permission.
 
-% cd /www/htdocs; mdkir tmp; ln -s /tmp/tht tmp/tht
+All output and temporary files are stored in directory /tmp/tht/, where
+write-access for the scripts isn't a problem and they're all in one
+place to be purged daily or hourly with a cron() job.  In order for this
+to work there must be a symbolic link from somewhere in the webserver's
+documents directory to /tmp/tht.  For example if your T3 repositories
+are in a subdirectory "t3" of the webserver's top directory
+"/www/htdocs", this would make the link:
 
-<h4>PHP configuration</h4>
+% cd /www/htdocs/t3; mkdir tmp; ln -s /tmp/tht tmp/tht
+
+<b>ViroBLAST</b>
+
+The built-in BLAST interface, ViroBLAST, is not included in the GitHub
+repository but is <a href="http://c4c.uwc4c.com/express_license_technologies/viroblast">available</a> for academic and nonprofit 
+use at no charge.  It should be installed in directory 'viroblast/' at the
+top level of the T3 distribution.
+
+If you have installed ViroBLAST, the sequences of the markers will be
+maintained in a BLAST database in the directory 'viroblast/db/nucleotide/'.
+This directory must be writable by Apache user.
+
+<b>PHP configuration</b>
+
 Some helpful modifications for the php.ini file, such as 
 /etc/php5/apache2/php.ini:
 
@@ -103,23 +158,25 @@ e.g. www-data
 
 Then restart the Apache server to read the new php.ini configuration.
 
-<h4>GBrowse</h4>
-Installing GBrowse should have created a gbrowse.conf/ directory in the
-Apache configuration directory, e.g. in /etc/apache2/.  Link from here
-to the tht.conf file in the repository's gbrowse-generated/ directory.
+<b>GBrowse</b>
 
-% sudo ln -s /www/htdocs/t3/wheat/gbrowse-generated/tht.conf
+Installing GBrowse should have created a gbrowse.conf/ directory in the
+Apache configuration directory, e.g. in /etc/apache2/.  Edit the
+tht.conf file in the repository's gbrowse-generated/ directory to
+replace "&lt;password>" with the publicuser password you assigned for
+the gtht database above, and move tht.conf to the gbrowse.conf/
+directory.
 
 Add the following stanza to your Apache configuration file, e.g.
 /etc/apache2/sites-available/default, and restart Apache.
 
 Alias /perl/ "/cgi-bin/"
-<Location /perl/>
+&lt;Location /perl/>
      SetHandler perl-script
      PerlResponseHandler ModPerl::Registry
      PerlOptions +ParseHeaders
      Options +ExecCGI
      Order allow,deny
      Allow from all
-</Location>
+&lt;/Location>
 
