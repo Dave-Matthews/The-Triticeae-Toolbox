@@ -45,6 +45,9 @@
    $_SESSION['database'] = $database;
    // Create <title> for browser to show.
    $title = mysql_grab("select value from settings where name='title'");
+   if (isset($pageTitle)) {
+        $title .= " - $pageTitle";
+   }
    if (empty($title))
      $title = "The Triticeae Toolbox";
    echo "<title>$title</title>";

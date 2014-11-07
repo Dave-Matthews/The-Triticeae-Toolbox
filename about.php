@@ -1,6 +1,9 @@
-<?php require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php'); ?>
+<?php
+require 'config.php';
+$pageTitle = "About T3";
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/normal_header.php';
+?>
 
 <h1>About T3</h1>
 <div class="section">
@@ -136,4 +139,4 @@ format and <a href="docs/T3wheat_schema_May2012.png">.png</a> format.
 </div>
 </div>
 
-<?php include($config['root_dir'].'theme/footer.php');?>
+<?php require $config['root_dir'].'theme/footer.php';
