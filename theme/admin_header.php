@@ -45,6 +45,9 @@
    $_SESSION['database'] = $database;
    // Create <title> for browser to show.
    $title = mysql_grab("select value from settings where name='title'");
+   if (isset($pageTitle)) {
+        $title .= " - $pageTitle";
+   }
    if (empty($title))
      $title = "The Triticeae Toolbox";
    echo "<title>$title</title>";
@@ -212,7 +215,9 @@ EOD;
       <li><a href="<?php echo $config['base_url']; ?>curator_data/markers_upload.php" title="Must precede loading data about the markers">
       Markers</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_programs.php">
-      CAP Data Programs</a></li>
+      Contributing Data Programs</a></li>
+      <li><a href="<?php echo $config['base_url']; ?>login/edit_whatsnew.php">
+      "What's New"</a>
       <!-- Too dangerous. -->
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
@@ -240,17 +245,18 @@ EOD;
       <li><a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">Usage Analytics</a>
     </ul>
   </li>
-<?php endif; ?>
+<?php endif; 
 
-  <?php  			
-//   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-    ?>
-  <li> <a href="" title="Manage access to my data">Share data</a>
-  <ul>
-  <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a>
-  </ul>
-  <?php endif ?>
+/* //   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
+/*   if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
+/*     ?> */
+/*   <li> <a href="" title="Manage access to my data">Share data</a> */
+/*   <ul> */
+/*   <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a> */
+/*   </ul> */
+/*      <?php endif;  */
+
+?>
 
   <li>
   <a href="" title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
@@ -259,7 +265,7 @@ EOD;
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
     <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Traits and units used">Trait Descriptions</a>
     <li><a href="<?php echo $config['base_url']; ?>properties.php" title="Environment-independent line properties">Genetic Character Descriptions</a>
-    <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">CAP Data Programs</a>
+    <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">Contributing Data Programs</a>
     <li><a href="<?php echo $config['base_url']; ?>toronto.php" title="Toronto Statement">Data Usage Policy</a>
     <!-- <li><a href="<?php echo $config['base_url']; ?>acknowledge.php" title="Contributions from other projects">Acknowledgments</a> -->
     <!-- <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of the data">Terms of Use</a> -->
