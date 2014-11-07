@@ -1,6 +1,6 @@
 <?php
 require 'config.php';
-$pageTitle = "About T3";
+$pageTitle = "About";
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/normal_header.php';
 ?>
