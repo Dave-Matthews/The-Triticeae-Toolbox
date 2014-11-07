@@ -98,7 +98,7 @@ class GenotypeData {
     <p>Note:<br>
     1. Both files (line translation and genotype data) are required.<br>
     2. Due to size of the Genotype Data File, it can be compressed with a "zip" application before submitting it.<br>
-    3. Genotype files with over 100K makers should be imported via the command line as described in <a href="curator_data/gbs_import_instruction.html" target="_new">GBS import instruction</a>.<br>
+    3. Genotype files with over 100K makers should be imported via the command line as described in <a href="curator_data/gbs_import_instructions.php" target="_new">GBS import instruction</a>.<br>
     4. This upload process may take several hours to complete depending on size of the data file.  Please leave your email address for us to contact you with the results.</p>
 	<p> <strong> Your Email Address: </strong> <input type="text" name="emailAddr" value="<?php echo $_SESSION['username'] ?>"  size="50%"/>
 	</form>
