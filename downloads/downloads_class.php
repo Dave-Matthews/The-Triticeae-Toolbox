@@ -1,23 +1,21 @@
 <?php
 /**
  * Download Gateway New
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
- * 
+ *
  */
 // |                                                                      |
 // | The purpose of this script is to provide the user with an interface  |
 // | for downloading certain kinds of files from T3.                     |
 
 /** Using a PHP class to implement the "Download Gateway" feature
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
@@ -32,7 +30,7 @@ class Downloads
      */
     public $delimiter = "\t";
     
-    /** 
+    /**
      * Using the class's constructor to decide which action to perform
      *
      * @param string $function action to perform
@@ -226,13 +224,13 @@ class Downloads
      * display a spinning activity image when a slow function is running
      *
      * @return null
-     */    
+     */
     function refresh_title()
     {
         ?>
         <h2>Download Genotype and Phenotype Data</h2>
         <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
-        <?php 
+        <?php
     }
     
     /**
@@ -518,7 +516,7 @@ class Downloads
             <script type="text/javascript" src="downloads/downloads07.js"></script>
             <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <script type="text/javascript">
-            var mm = 10;
+            var mm = 50;
             var mmaf = 5;
             if ( window.addEventListener ) {
                     window.addEventListener( "load", select_download(), false );
