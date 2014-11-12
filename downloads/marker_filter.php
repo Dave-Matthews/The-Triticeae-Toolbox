@@ -187,6 +187,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 $num_maf++;
             }
             if ($miss > $max_missing) {
+                //echo "$total_af $total $miss<br>\n";
                 $num_miss++;
             }
             if (($miss > $max_missing) or ($maf < $min_maf)) {
@@ -251,7 +252,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
 
     ?>
     <table>
-    <tr><td><a onclick="filterDesc( <?php echo ($min_maf) ?>, <?php echo ($max_miss_line) ?>, <?php echo ($max_miss_line) ?>)">Removed by filtering</a><td>Remaining
+    <tr><td>Removed by filtering <a onclick="filterDesc( <?php echo ($min_maf) ?>, <?php echo ($max_missing) ?>, <?php echo ($max_miss_line) ?>)">(description)</a><td>Remaining
     <tr><td><?php echo ($num_maf) ?><i> markers have a minor allele frequency (MAF) less than </i><b><?php echo ($min_maf) ?></b><i>%
     <br><?php echo ($num_miss) ?><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
     <br><b><?php echo ($num_removed) ?></b><i> markers removed</i>
@@ -340,42 +341,42 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
      *
      * @return null
      */
-    function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype,$h)
-    {
-        $output = '';
-        $outputheader = '';
-        $delimiter ="\t";
+function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h)
+{
+    $output = '';
+    $outputheader = '';
+    $delimiter ="\t";
 
-        if (isset($_SESSION['selected_map'])) {
-            $selected_map = $_SESSION['selected_map'];
+    if (isset($_SESSION['selected_map'])) {
+        $selected_map = $_SESSION['selected_map'];
+    } else {
+        $selected_map = "";
+    }
+
+    $sql = "SELECT marker_uid, maf, missing,total from allele_frequencies where experiment_uid = $geno_exp";
+    $res = mysql_query($sql) or die(mysql_error() . $sql);
+    while ($row = mysql_fetch_row($res)) {
+        $marker_uid = $row[0];
+        $maf = $row[1];
+        $miss = $row[2];
+        $total = $row[3];
+        $miss_per = 100 * ($miss / $total);
+        if (($miss_per > $max_missing) or ($maf < $min_maf)) {
         } else {
-           $selected_map = "";
+            $markers_filtered[] = $marker_uid;
+            $marker_lookup[$marker_uid] = 1;
         }
-
-        $sql = "SELECT marker_uid, maf, missing,total from allele_frequencies where experiment_uid = $geno_exp";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        while ($row = mysql_fetch_row($res)) {
-            $marker_uid = $row[0];
-            $maf = $row[1];
-            $miss = $row[2];
-            $total = $row[3];
-            $miss_per = 100 * ($miss / $total);
-            if (($miss_per > $max_missing) OR ($maf < $min_maf)) {
-            } else {
-                $markers_filtered[] = $marker_uid;
-                $marker_lookup[$marker_uid] = 1;
-            }
-            $num_mark++;
-        }
-        $markers_str = implode(",", $markers_filtered);
+        $num_mark++;
+    }
+    $markers_str = implode(",", $markers_filtered);
 
         //order the markers by map location
         //tassel v5 needs markers sorted when position is not unique
-        if ($selected_map == "") {
-            $marker_list_mapped = array();
-            $marker_list_chr = array();
-         } else {
-             $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
+    if ($selected_map == "") {
+        $marker_list_mapped = array();
+        $marker_list_chr = array();
+    } else {
+        $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
              where markers.marker_uid IN ($markers_str)
              AND mim.marker_uid = markers.marker_uid
              AND mim.map_uid = map.map_uid
@@ -383,42 +384,42 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
              AND mapset.mapset_uid = $selected_map 
              order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
              $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-             while ($row = mysql_fetch_array($res)) {
+        while ($row = mysql_fetch_array($res)) {
                $marker_uid = $row[0];
                $pos = $row[1];
                $chr = $row[2];
                $marker_list_mapped[$marker_uid] = $pos;
                $marker_list_chr[$marker_uid] = $chr;
-             }
-         }
+        }
+    }
 
         //generate an array of selected markers and add map position if available
-        $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
+    $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
         where marker_uid IN ($markers_str)
         AND markers.marker_type_uid = marker_types.marker_type_uid
         order by BINARY marker_name";
-        $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-        while ($row = mysql_fetch_array($res)) {
+    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+    while ($row = mysql_fetch_array($res)) {
             $marker_uid = $row[0];
             $marker_name = $row[1];
-            if (preg_match("/[A-Z]/", $row[2]) && preg_match("/[A-Z]/", $row[3])) {
-                $allele = $row[2] . "/" . $row[3];
-            } elseif (preg_match("/DArT/", $row[4])) {
-                $allele = $row[2] . "/" . $row[3];
-            } else {
-                $allele = "N/N";
-            }
-            $marker_list_name[$marker_uid] = $marker_name;
-            $marker_list_allele[$marker_uid] = $allele;
-            $marker_list_type[$marker_uid] = $row[4];
+        if (preg_match("/[A-Z]/", $row[2]) && preg_match("/[A-Z]/", $row[3])) {
+            $allele = $row[2] . "/" . $row[3];
+        } elseif (preg_match("/DArT/", $row[4])) {
+            $allele = $row[2] . "/" . $row[3];
+        } else {
+            $allele = "N/N";
         }
+        $marker_list_name[$marker_uid] = $marker_name;
+        $marker_list_allele[$marker_uid] = $allele;
+        $marker_list_type[$marker_uid] = $row[4];
+    }
 
         //get header, tassel requires all fields even if they are empty
-        if ($dtype == "qtlminer") {
-            $outputheader = "rs\talleles\tchrom\tpos";
-        } else {
-            $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode";
-        }
+    if ($dtype == "qtlminer") {
+        $outputheader = "rs\talleles\tchrom\tpos";
+    } else {
+        $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode";
+    }
         $sql = "select line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
         if ($row = mysql_fetch_array($res)) {
