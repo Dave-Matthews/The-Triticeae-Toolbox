@@ -84,8 +84,8 @@ function typeBlastRun($infile)
         }
         if ($count == 1000) {
             fclose($fh2);
-            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout";
-            $tmp = shell_exec(sprintf('%s > /dev/null 2>&1 & echo $!', $command));
+            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+            $tmp = shell_exec($command);
             $pidList[$count_file] = rtrim($tmp);
             echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
             if (isRunning($pidList) > $numCpus) {
