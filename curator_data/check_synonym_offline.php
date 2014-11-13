@@ -4,7 +4,7 @@
     //needed for mac compatibility
     ini_set('auto_detect_line_endings', true);
     //needed to hold all marker sequences in memory
-    //ini_set('memory_limit', '2G');
+    ini_set('memory_limit', '2G');
 
     $error_flag = 0;
     if ($argc < 3) {
