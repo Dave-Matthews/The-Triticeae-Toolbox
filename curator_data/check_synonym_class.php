@@ -67,9 +67,9 @@ function typeBlastRun($infile)
     echo "marker\tpid\n";
     $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
     $tPath = str_replace('./', '', $target_Path);
-    $blastout = $tPath . "blast.out";
     $blastfile = $infile . ".blast";
     $tmpfile = $tPath . "temp" . $count_file . ".fasta";
+    $blastout = $tPath . "blast" . $count_file . ".out";
     $fh = fopen($blastfile, "r") or die("Unable to open file $blastfile");
     $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
     while (!feof($fh)) {
@@ -97,6 +97,7 @@ function typeBlastRun($infile)
            
             $count_file++;
             $tmpfile = $tPath . "temp" . $count_file . ".fasta";
+            $blastout = $tPath . "blast" . $count_file . ".out";
             $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
             $count = 0;
         }
@@ -118,6 +119,9 @@ function typeBlastRun($infile)
         }
     }
     echo "Stop time - ". date("m/d/y : H:i:s", time()) ."\n";
+    $command = "cat " . $tPath . "blast*.out >> " . $tPath . "sumblast.out";
+    echo "$command\n";
+    exec($command);
 }
 
 function die_nice($msg)
@@ -130,7 +134,7 @@ function typeBlastParse($infile)
 {
     $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
     $tPath = str_replace('./', '', $target_Path);
-    $blastout = $tPath . "blast.out";
+    $blastout = $tPath . "sumblast.out";
     $blastfile = $infile . ".blast";
     $blastfileindex = $infile . ".index";
     $outfile1 = $infile;
@@ -183,10 +187,18 @@ function typeBlastParse($infile)
             $name = $match[1];
             $name2 = $match[2];
             $length = $match[4];
-            $querySize = $queryList[$name];
-            $queryType = $queryListType[$name];
-            $subjSize = $subjList[$name2];
-            $subjType = $subjListType[$name2];
+            if (isset($queryList[$name])) {
+                $querySize = $queryList[$name];
+                $queryType = $queryListType[$name];
+            } else {
+                die("Error: $name not defined in $blastfileindex\n");
+            }
+            if (isset($subjList[$name2])) {
+                $subjSize = $subjList[$name2];
+                $subjType = $subjListType[$name2];
+            } else {
+                die("Error: $name2 not defined in $blastindex\n");
+            }
             if ($match[1] != $match[2]) {
                 //echo "$name $name2 $length $querySize $subjSize\n";
                 if (($match[3] == "100.00") && ($querySize == $length)) {
