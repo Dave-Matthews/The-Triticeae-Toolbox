@@ -32,17 +32,44 @@ function error($type, $text)
 
     }
 }
-//* break query into files of 1000 to improve performance
+
+/* check how many processes are running */
+function isRunning($pidList)
+{
+    $count = 0;
+    foreach ($pidList as $pid) {
+        $result = shell_exec(sprintf('ps %d', $pid));
+        if (count(preg_split("/\n/", $result)) > 2) {
+            $count++;
+        }
+    }
+    return $count;
+}
+ 
+/* break query into files of 1000 to improve performance
+ * use word size of half the shortest marker to find all matches
+ * detect number of processors
+ */
 function typeBlastRun($infile)
 {
+    if (is_file('/proc/cpuinfo')) {
+        $cpuinfo = file_get_contents('/proc/cpuinfo');
+        preg_match_all('/^processor/m', $cpuinfo, $matches);
+        $numCpus = count($matches[0]);
+        echo "this computer has $numCpus for parallel processing\n";
+    }
     $seq = "";
     $count = 0;
+    $count2 = 0;
+    $count_file = 1;
+    $pidList = array();
     echo "Start time - ". date("m/d/y : H:i:s", time()) ."\n";
+    echo "marker\tpid\n";
     $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
     $tPath = str_replace('./', '', $target_Path);
     $blastout = $tPath . "blast.out";
     $blastfile = $infile . ".blast";
-    $tmpfile = $tPath . "temp.fasta";
+    $tmpfile = $tPath . "temp" . $count_file . ".fasta";
     $fh = fopen($blastfile, "r") or die("Unable to open file $blastfile");
     $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
     while (!feof($fh)) {
@@ -53,21 +80,43 @@ function typeBlastRun($infile)
             $seq .= $line;
             fwrite($fh2, $seq);
             $count++;
+            $count2++;
         }
         if ($count == 1000) {
-            echo "running BLAST on 1000 queries\n";
             fclose($fh2);
-            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout";
-            exec($command);
+            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+            $tmp = shell_exec($command);
+            $pidList[$count_file] = rtrim($tmp);
+            echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
+            if (isRunning($pidList) > $numCpus) {
+                sleep(20);
+                echo "\twaiting 20 seconds for free processor\n";
+            } else {
+                echo "\n";
+            }
+           
+            $count_file++;
+            $tmpfile = $tPath . "temp" . $count_file . ".fasta";
             $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
             $count = 0;
         }
     }
-    echo "running BLAST on $count queries\n";
     fclose($fh2);
-    $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout";
-    exec($command);
+    $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout";
+    $tmp = shell_exec(sprintf('%s > /dev/null 2>&1 & echo $!', $command));
+    $pidList[$count_file] = rtrim($tmp);
+    echo "$count2\t$pidList[$count_file] running BLAST on $count queries\n";
     fclose($fh);
+    $running = 1;
+    while ($running) {
+        $count = isRunning($pidList);
+        if ($count == 0) {
+            break;
+        } else {
+            echo "$count BLAST processes running\n";
+            sleep(10);
+        }
+    }
     echo "Stop time - ". date("m/d/y : H:i:s", time()) ."\n";
 }
 
@@ -151,7 +200,7 @@ function typeBlastParse($infile)
                 }
             }
         } else {
-           //echo "bad $line\n";
+            //echo "bad $line\n";
         }
     }
     echo "$count blast matches found\n";
