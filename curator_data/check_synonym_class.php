@@ -39,6 +39,7 @@ function isRunning($pidList)
     $count = 0;
     foreach ($pidList as $pid) {
         $result = shell_exec(sprintf('ps %d', $pid));
+        echo "$pid $result\n";
         if (count(preg_split("/\n/", $result)) > 2) {
             $count++;
         }
