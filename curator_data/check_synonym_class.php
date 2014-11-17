@@ -3,9 +3,10 @@
 /**
  * Takes a needle and haystack (just like in_array()) and does a wildcard search on it's values.
  *
- * @param    string        $string        Needle to find
- * @param    array        $array        Haystack to look through
- * @result    array                    Returns the elements that the $string was found in
+ * @param string $string Needle to find
+ * @param array  $array  Haystack to look through
+ *
+ * @result array Returns the elements that the $string was found in
 */
 function find($string, $array = array ())
 {
@@ -33,12 +34,13 @@ function error($type, $text)
     }
 }
 
-/* check how many processes are running */
+/** check how many processes are running */
 function isRunning($pidList)
 {
     $count = 0;
     foreach ($pidList as $pid) {
         $result = shell_exec(sprintf('ps %d', $pid));
+        //echo "$pid $result\n";
         if (count(preg_split("/\n/", $result)) > 2) {
             $count++;
         }
@@ -46,7 +48,7 @@ function isRunning($pidList)
     return $count;
 }
  
-/* break query into files of 1000 to improve performance
+/** break query into files of 1000 to improve performance
  * use word size of half the shortest marker to find all matches
  * detect number of processors
  */
@@ -89,8 +91,8 @@ function typeBlastRun($infile)
             $pidList[$count_file] = rtrim($tmp);
             echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
             if (isRunning($pidList) > $numCpus) {
-                sleep(20);
                 echo "\twaiting 20 seconds for free processor\n";
+                sleep(20);
             } else {
                 echo "\n";
             }
