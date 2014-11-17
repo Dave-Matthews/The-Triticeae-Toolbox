@@ -40,7 +40,7 @@ function isRunning($pidList)
     $count = 0;
     foreach ($pidList as $pid) {
         $result = shell_exec(sprintf('ps %d', $pid));
-        echo "$pid $result\n";
+        //echo "$pid $result\n";
         if (count(preg_split("/\n/", $result)) > 2) {
             $count++;
         }
@@ -110,8 +110,6 @@ function typeBlastRun($infile)
     $pidList[$count_file] = rtrim($tmp);
     echo "$count2\t$pidList[$count_file] running BLAST on $count queries\n";
     fclose($fh);
-    echo "waiting 5 seconds for processes to start\n";
-    sleep(5);
     $running = 1;
     while ($running) {
         $count = isRunning($pidList);
