@@ -64,10 +64,10 @@
         echo " Overview.prototype.initialize(); Details.prototype.initialize()"; ?>">
     <?php 
     require_once $config['root_dir'].'includes/analyticstracking.php';
-    if (isset($usegbrowse) && $usegbrowse)
-    echo <<<EOD
-      <script>
-      var balloon500 = new Balloon;
+    if (isset($usegbrowse) && $usegbrowse) {
+        echo <<<EOD
+        <script>
+        var balloon500 = new Balloon;
 BalloonConfig(balloon500,'GBubble');
 balloon500.images              = './gbrowse/images/balloons';
 balloon500.balloonImage        = 'balloon.png';
@@ -92,6 +92,7 @@ balloon.closeButton         = 'close.png';
 balloon.delayTime = 50;
 </script>
 EOD;
+    }
 ?>
 <div id="container">
   <div id="barleyimg">
