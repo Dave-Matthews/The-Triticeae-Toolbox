@@ -90,7 +90,9 @@ function typeBlastRun($infile)
             $tmp = shell_exec($command);
             $pidList[$count_file] = rtrim($tmp);
             echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
-            if (isRunning($pidList) > $numCpus) {
+            $countRunning = isRunning($pidList);
+            echo "\trunning $countRunning";
+            if ($countRunning > $numCpus) {
                 echo "\twaiting 20 seconds for free processor\n";
                 sleep(20);
             } else {
