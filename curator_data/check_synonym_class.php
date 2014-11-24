@@ -3,9 +3,10 @@
 /**
  * Takes a needle and haystack (just like in_array()) and does a wildcard search on it's values.
  *
- * @param    string        $string        Needle to find
- * @param    array        $array        Haystack to look through
- * @result    array                    Returns the elements that the $string was found in
+ * @param string $string Needle to find
+ * @param array  $array  Haystack to look through
+ *
+ * @result array Returns the elements that the $string was found in
 */
 function find($string, $array = array ())
 {
@@ -33,32 +34,100 @@ function error($type, $text)
     }
 }
 
+/** check how many processes are running */
+function isRunning($pidList)
+{
+    $count = 0;
+    foreach ($pidList as $pid) {
+        $result = shell_exec(sprintf('ps %d', $pid));
+        //echo "$pid $result\n";
+        if (count(preg_split("/\n/", $result)) > 2) {
+            $count++;
+        }
+    }
+    return $count;
+}
+ 
+/** break query into files of 1000 to improve performance
+ * use word size of half the shortest marker to find all matches
+ * detect number of processors
+ */
 function typeBlastRun($infile)
 {
+    if (is_file('/proc/cpuinfo')) {
+        $cpuinfo = file_get_contents('/proc/cpuinfo');
+        preg_match_all('/^processor/m', $cpuinfo, $matches);
+        $numCpus = count($matches[0]);
+        echo "this computer has $numCpus for parallel processing\n";
+    }
     $seq = "";
+    $count = 0;
+    $count2 = 0;
+    $count_file = 1;
+    $pidList = array();
+    echo "Start time - ". date("m/d/y : H:i:s", time()) ."\n";
+    echo "marker\tpid\n";
     $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
     $tPath = str_replace('./', '', $target_Path);
-    $blastout = $tPath . "blast.out";
     $blastfile = $infile . ".blast";
-    $tmpfile = $tPath . "temp.fasta";
+    $tmpfile = $tPath . "temp" . $count_file . ".fasta";
+    $blastout = $tPath . "blast" . $count_file . ".out";
     $fh = fopen($blastfile, "r") or die("Unable to open file $blastfile");
+    $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
     while (!feof($fh)) {
         $line = fgets($fh);
         if (preg_match("/>/", $line)) {
             $seq = $line;
         } else {
             $seq .= $line;
-            $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
             fwrite($fh2, $seq);
+            $count++;
+            $count2++;
+        }
+        if ($count == 1000) {
             fclose($fh2);
-            $command = "/home/cbirkett/blast-2.2.26/bin/megablast -D 3 -F F -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout";
-            exec($command);
+            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+            $tmp = shell_exec($command);
+            $pidList[$count_file] = rtrim($tmp);
+            echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
+            if (isRunning($pidList) > $numCpus) {
+                echo "\twaiting 20 seconds for free processor\n";
+                sleep(20);
+            } else {
+                echo "\n";
+            }
+           
+            $count_file++;
+            $tmpfile = $tPath . "temp" . $count_file . ".fasta";
+            $blastout = $tPath . "blast" . $count_file . ".out";
+            $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
+            $count = 0;
         }
     }
+    fclose($fh2);
+    $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+    $tmp = shell_exec($command);
+    $pidList[$count_file] = rtrim($tmp);
+    echo "$count2\t$pidList[$count_file] running BLAST on $count queries\n";
     fclose($fh);
+    $running = 1;
+    while ($running) {
+        $count = isRunning($pidList);
+        if ($count == 0) {
+            break;
+        } else {
+            echo "$count BLAST processes running\n";
+            sleep(10);
+        }
+    }
+    echo "Stop time - ". date("m/d/y : H:i:s", time()) ."\n";
+    $command = "cat " . $tPath . "blast*.out >> " . $tPath . "sumblast.out";
+    echo "$command\n";
+    exec($command);
 }
 
-function die_nice($msg) {
+function die_nice($msg)
+{
     echo $msg;
     die();
 }
@@ -67,7 +136,7 @@ function typeBlastParse($infile)
 {
     $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
     $tPath = str_replace('./', '', $target_Path);
-    $blastout = $tPath . "blast.out";
+    $blastout = $tPath . "sumblast.out";
     $blastfile = $infile . ".blast";
     $blastfileindex = $infile . ".index";
     $outfile1 = $infile;
@@ -76,8 +145,8 @@ function typeBlastParse($infile)
     $outfile2 = preg_replace("/(\.\w+)$/", '_synonym$1', $outfile2);
     $blastdb = "../viroblast/db/nucleotide/wheat-markers";
     $blastindex = "../viroblast/db/nucleotide/index.csv";
-   
-    //get lenghth of sequence from import file 
+
+    //get lenghth of sequence from import file
     $count = 0;
     echo "reading size and type from $blastfileindex\n";
     $fh = fopen($blastfileindex, "r") or die_nice("Unable to open file $blastfile\n");
@@ -117,27 +186,35 @@ function typeBlastParse($infile)
         $line = fgets($fh);
         if (preg_match("/^\# /", $line)) {
         } elseif (preg_match("/([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)/", $line, $match)) {
-           $name = $match[1];
-           $name2 = $match[2];
-           $length = $match[4];
-           $querySize = $queryList[$name];
-           $queryType = $queryListType[$name];
-           $subjSize = $subjList[$name2];
-           $subjType = $subjListType[$name2];
-           if ($match[1] != $match[2]) {
-               echo "$name $name2 $length $querySize $subjSize\n";
-               if (($match[3] == "100.00") && ($querySize == $length)) {
-                   fwrite($fh2, "$name,$queryType,$name2,$subjType\n");
-                   $matched[$name] = 1;
-                   $count++;
-               } elseif (($match[3] == "100.00") && ($subjSize == $length)) {
-                   fwrite($fh2, "$name,$queryType,$name2,$subjType\n");
-                   $matched[$name] = 1;
-                   $count++;
-               }
+            $name = $match[1];
+            $name2 = $match[2];
+            $length = $match[4];
+            if (isset($queryList[$name])) {
+                $querySize = $queryList[$name];
+                $queryType = $queryListType[$name];
+            } else {
+                die("Error: $name not defined in $blastfileindex\n");
+            }
+            if (isset($subjList[$name2])) {
+                $subjSize = $subjList[$name2];
+                $subjType = $subjListType[$name2];
+            } else {
+                die("Error: $name2 not defined in $blastindex\n");
+            }
+            if ($match[1] != $match[2]) {
+                //echo "$name $name2 $length $querySize $subjSize\n";
+                if (($match[3] == "100.00") && ($querySize == $length)) {
+                    fwrite($fh2, "$name,$queryType,$name2,$subjType\n");
+                    $matched[$name] = 1;
+                    $count++;
+                } elseif (($match[3] == "100.00") && ($subjSize == $length)) {
+                    fwrite($fh2, "$name,$queryType,$name2,$subjType\n");
+                    $matched[$name] = 1;
+                    $count++;
+                }
             }
         } else {
-           //echo "bad $line\n";
+            //echo "bad $line\n";
         }
     }
     echo "$count blast matches found\n";
@@ -147,7 +224,7 @@ function typeBlastParse($infile)
     $fh2 = fopen($outfile1, "w") or die("Unable to open file $outfile1\n");
     while (!feof($fh)) {
         $line = fgets($fh);
-        $data = str_getcsv($line,",");
+        $data = str_getcsv($line, ",");
         $name = $data[0];
         if (!isset($matched[$name])) {
             fwrite($fh2, $line);
@@ -201,89 +278,80 @@ function typeCheckSynonym($infile)
             flush();
         }
         $name = $storageArr[$i][$nameIdx];
-            $seq = strtoupper($storageArr[$i][$sequenceIdx]);
-            $found_name = 0;
-            $found_seq = 0;
-            $found_seq_name = "";
-            $seq_match = "";
-            if (preg_match("/[A-Za-z0-9]/", $name)) {
-                //if (isset($marker_name[$name]) || isset($marker_syn_list[$name])) {
-                if (isset($marker_name[$name])) {
-                    $found_name = 1;
-                    $name_match = "yes";
-                    $count_dup_name++;
-                } else {
-                    $name_match = "";
-                }
+        $seq = strtoupper($storageArr[$i][$sequenceIdx]);
+        $found_name = 0;
+        $found_seq = 0;
+        $found_seq_name = "";
+        $seq_match = "";
+        if (preg_match("/[A-Za-z0-9]/", $name)) {
+            //if (isset($marker_name[$name]) || isset($marker_syn_list[$name])) {
+            if (isset($marker_name[$name])) {
+                $found_name = 1;
+                $name_match = "yes";
+                $count_dup_name++;
             } else {
-                echo "Error: bad name $name line $i<br>\n";
+                $name_match = "";
             }
-            if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
-                $count_total++;
-                $allele = $match[2] . $match[3];
-                if (($allele == "AC") || ($allele == "CA")) {
-                    $allele = "M";
-                } elseif (($allele == "AG") || ($allele == "GA")) {
-                    $allele = "R";
-                } elseif (($allele == "AT") || ($allele == "TA")) {
-                    $allele = "W";
-                } elseif (($allele == "CG") || ($allele == "GC")) {
-                    $allele = "S";
-                } elseif (($allele == "CT") || ($allele == "TC")) {
-                    $allele = "Y";
-                } elseif (($allele == "GT") || ($allele == "TG")) {
-                    $allele = "K";
-                } else {
-                    echo "bad SNP in import file<br>$name<br>$allele<br>\n";
+        } else {
+            echo "Error: bad name $name line $i<br>\n";
+        }
+        if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
+            $count_total++;
+            $allele = $match[2] . $match[3];
+            if (($allele == "AC") || ($allele == "CA")) {
+                $allele = "M";
+            } elseif (($allele == "AG") || ($allele == "GA")) {
+                $allele = "R";
+            } elseif (($allele == "AT") || ($allele == "TA")) {
+                $allele = "W";
+            } elseif (($allele == "CG") || ($allele == "GC")) {
+                $allele = "S";
+            } elseif (($allele == "CT") || ($allele == "TC")) {
+                $allele = "Y";
+            } elseif (($allele == "GT") || ($allele == "TG")) {
+                $allele = "K";
+            } else {
+                echo "bad SNP in import file<br>$name<br>$allele<br>\n";
+            }
+            $seq = $match[1] . $allele . $match[4];
+            foreach ($marker_seq as $seqdb => $namedb) {
+                $pos = strpos($seqdb, $seq);
+                if (($pos !== false) && ($namedb != $name)) {
+                    $found_seq = 1;
+                    $found_seq_name = $namedb;
                 }
-                $seq = $match[1] . $allele . $match[4];
-                foreach ($marker_seq as $seqdb => $namedb) {
-                      $pos = strpos($seqdb, $seq);
-                      if (($pos !== false) && ($namedb != $name)) {
-                          $found_seq = 1;
-                          $found_seq_name = $namedb;
-                      }
-                }
+            }
                 //if (isset($marker_seq[$seq]) && ($marker_seq[$seq] != $name)) {
                 //    $found_seq = 1;
                 //    $found_seq_name = $marker_seq[$seq];
                 //}
                 //if sequence match found then change name in import file
                 //if more than one match found then latest one will be used
-                if ($found_seq && $overwrite) {
-                    $storageArr[$i]["syn"] = $found_seq_name;
-                }
-                if ($found_seq) {
-                    if ($seq_match == "") {
-                        $seq_match = $found_seq_name;
-                    } else {
-                        $seq_match = $seq_match . ", $found_seq_name";
-                    }
-                }
-            } else {
-                echo "bad sequence $seq<br>\n";
+            if ($found_seq && $overwrite) {
+                $storageArr[$i]["syn"] = $found_seq_name;
             }
-
             if ($found_seq) {
-                $count_dup_seq++;
-                if ($overwrite == 1) {
-                    if ($found_name) {
-                        $count_update++;
-                        $action = "update marker";
-                        fwrite($fh2, "$name\t$name_match\t$seq_match\t$action\n");
-                    } else {
-                        $count_add_syn++;
-                        $action = "add synonym";
-                        fwrite($fh4, "$name\t$name_match\t$seq_match\t$action\n");
-                    }
-                } elseif ($found_name) {
+                if ($seq_match == "") {
+                    $seq_match = $found_seq_name;
+                } else {
+                    $seq_match = $seq_match . ", $found_seq_name";
+                }
+            }
+        } else {
+            echo "bad sequence $seq<br>\n";
+        }
+
+        if ($found_seq) {
+            $count_dup_seq++;
+            if ($overwrite == 1) {
+                if ($found_name) {
                     $count_update++;
                     $action = "update marker";
                     fwrite($fh2, "$name\t$name_match\t$seq_match\t$action\n");
                 } else {
-                    $count_insert++;
-                    $action = "add marker";
-                    fwrite($fh3, "$name\t$name_match\t$seq_match\t$action\n");
+                    $count_add_syn++;
+                    $action = "add synonym";
+                    fwrite($fh4, "$name\t$name_match\t$seq_match\t$action\n");
                 }
             } elseif ($found_name) {
                     $count_update++;
@@ -294,8 +362,17 @@ function typeCheckSynonym($infile)
                     $action = "add marker";
                     fwrite($fh3, "$name\t$name_match\t$seq_match\t$action\n");
             }
-            fwrite($fh5, "$name\t$name_match\t$seq_match\t$action\n");
-            $results .= "<tr><td>$name<td>$name_match<td><font color=blue>$seq_match</font><td>$action\n";
+        } elseif ($found_name) {
+                    $count_update++;
+                    $action = "update marker";
+                    fwrite($fh2, "$name\t$name_match\t$seq_match\t$action\n");
+        } else {
+                    $count_insert++;
+                    $action = "add marker";
+                    fwrite($fh3, "$name\t$name_match\t$seq_match\t$action\n");
+        }
+        fwrite($fh5, "$name\t$name_match\t$seq_match\t$action\n");
+        $results .= "<tr><td>$name<td>$name_match<td><font color=blue>$seq_match</font><td>$action\n";
     }
     if ($expand == 1) {
         $display1 = "display:none;";

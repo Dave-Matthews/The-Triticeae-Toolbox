@@ -33,33 +33,38 @@
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
 
 <?php
-   connect();
-   // clear session if it contains variables from another database
-   $database = mysql_grab("select value from settings where name='database'");
-   $temp = $_SESSION['database'];
-   if (empty($database)) {
-     //error, settings table should have this entry
-   } elseif ($temp != $database) {
-     session_unset();
-   }
-   $_SESSION['database'] = $database;
-   // Create <title> for browser to show.
-   $title = mysql_grab("select value from settings where name='title'");
-   if (empty($title))
-     $title = "The Triticeae Toolbox";
-   echo "<title>$title</title>";
-   global $usegbrowse;
+    connect();
+    // clear session if it contains variables from another database
+    $database = mysql_grab("select value from settings where name='database'");
+    $temp = $_SESSION['database'];
+    if (empty($database)) {
+        //error, settings table should have this entry
+    } elseif ($temp != $database) {
+        session_unset();
+    }
+    $_SESSION['database'] = $database;
+    // Create <title> for browser to show.
+    $title = mysql_grab("select value from settings where name='title'");
+    if (isset($pageTitle)) {
+        $title .= " - $pageTitle";
+    }
+    if (empty($title)) {
+        $title = "The Triticeae Toolbox";
+    }
+    echo "<title>$title</title>";
+    global $usegbrowse;
 
-if (isset($usegbrowse) && $usegbrowse)
-  require_once $config['root_dir'] . 'includes/gbrowse-deps.inc';
-?>
-</head>
-<body onload="javascript:setup();<?php
-if (isset($usegbrowse) && $usegbrowse)
-  echo " Overview.prototype.initialize(); Details.prototype.initialize()"; ?>">
-  <?php 
-  require_once $config['root_dir'].'includes/analyticstracking.php';
-  if (isset($usegbrowse) && $usegbrowse)
+    if (isset($usegbrowse) && $usegbrowse) {
+        include_once $config['root_dir'] . 'includes/gbrowse-deps.inc';
+    }
+    ?>
+    </head>
+    <body onload="javascript:setup();<?php
+    if (isset($usegbrowse) && $usegbrowse)
+        echo " Overview.prototype.initialize(); Details.prototype.initialize()"; ?>">
+    <?php 
+    require_once $config['root_dir'].'includes/analyticstracking.php';
+    if (isset($usegbrowse) && $usegbrowse)
     echo <<<EOD
       <script>
       var balloon500 = new Balloon;
@@ -168,7 +173,7 @@ EOD;
 	<li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
 	    BLAST Search against Markers</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
-        <li><a href="<?php echo $config['base_url']; ?>downloads/downloads_tassel.php" title="Open TASSEL with selected data">Open TASSEL</a>
+        <!-- li><a href="<?php echo $config['base_url']; ?>downloads/downloads_tassel.php" title="Open TASSEL with selected data">Open TASSEL</a-->
 	  <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
       </ul>
     <li><a href="" title="">Download</a>

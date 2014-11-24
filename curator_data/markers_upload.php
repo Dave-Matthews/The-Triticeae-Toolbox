@@ -1,13 +1,9 @@
-<?php 
-// Marker data importer
-
-// Author: JLee 
+<?php
+/** Marker data importer
+ */
 
 require 'config.php';
-/*
- * Logged in page initialization
- */
-include($config['root_dir'] . 'includes/bootstrap.inc');
+require $config['root_dir'] . 'includes/bootstrap.inc';
 
 connect();
 loginTest();
@@ -24,35 +20,36 @@ ob_end_flush();
 
 new Markers($_GET['function']);
 
-class Markers {
+class Markers
+{
     
     private $delimiter = "\t";
-    	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function) {
-							
-			default:
-				$this->typeMarkers(); /* intial case*/
-				break;
-		}	
-	}
 
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch($function) {
 
-    private function typeMarkers() 	{
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
+            default:
+                $this->typeMarkers(); /* intial case*/
+                break;
+        }
+    }
 
-		echo "<h2>Add/Edit Marker Information </h2>"; 
-		$this->type_Marker_Data();
-		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-	}
-	
-	
-	private function type_Marker_Data() {
-	?>
+    private function typeMarkers()
+    {
+        global $config;
+        include($config['root_dir'] . 'theme/admin_header.php');
+
+        echo "<h2>Add/Edit Marker Information </h2>";
+        $this->typeMarkerData();
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
+
+    private function typeMarkerData()
+    {
+        ?>
 	<script type="text/javascript">
 	</script>
 	
@@ -75,10 +72,15 @@ class Markers {
  , <a href="curator_data/examples/Marker_import_sample5.txt">Illumina Manifest (Infinium) Format</a>
  , <a href="curator_data/examples/Generic_SNP.txt">Generic Format(csv)</a>
  , or <a href="curator_data/examples/DArT.csv">DArT Format(csv)</a>
-        </table><br>
-        <p><input type="submit" name="blast" value="BLAST Import File" /> Use BLAST to check for sequence matches to existing markers.</p>
-        <p><input type="submit" value="Upload Marker Import Files" /></p>
-    </form>
+        </table>
+        <br>
+        <table>
+        <tr><td><input type="submit" name="blast" value="BLAST Import File"><td>Use BLAST to check for sequence matches to existing markers. A marker will be
+        identified as a synonym if the match is 100% over the length of either the subject or query sequence. The SNP is replaced with the IUPAC Ambiguity code.
+        The BLAST process will take about 1 minute for each 10,000 markers when the existing database contains 1 million markers. 
+        <tr><td><input type="submit" value="Upload Import Files" />
+        </table>
+        </form>
 	<br>
 	<br>
 	<p>
@@ -87,11 +89,7 @@ class Markers {
         1. Use Illumina format for files with AB base calls. Use Generic format for ACTG base calls. Use A_allele = 1 and B_allele = 0 for DArT markers.<br>
         2. For Illumina and DArT format the marker names should already be defined by importing the marker annotation file.<br>
         3. For Generic format you can skip the annotation file and a new database entry will be created by the sequence file import.<br>
-	</p>
-<?php
- 
-	} /* end of function*/
-	
-} /* end of class */
-
-?>
+        </p>
+        <?php
+    } /* end of function*/
+}

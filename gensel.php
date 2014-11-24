@@ -139,7 +139,7 @@ class Downloads
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 		</style>
             <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
-            <script type="text/javascript" src="downloads/download_gs02.js"></script>
+            <script type="text/javascript" src="downloads/download_gs03.js"></script>
             <script src="//code.jquery.com/jquery-1.11.1.js"></script>
             <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
             <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
@@ -1301,11 +1301,13 @@ class Downloads
                   } 
                 } elseif ($version == "V3") {
                   if (isset($_SESSION['geno_exps'])) {
+                    $experiment = $_SESSION['geno_exps'];
+                    $geno_str = $experiment[0]; 
                     $tmp = count($markers);
                     if(!file_exists($dir.$filename9)){
                       $dtype = "qtlminer";
                       $h = fopen($dir.$filename9, "w+");
-                      fwrite($h,$this->type4_build_markers_download($markers, $min_maf, $max_missing, $dtype));
+                      $output = type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
                       fclose($h);
                     }
                   } elseif ($training_lines == "") {
@@ -2529,139 +2531,6 @@ class Downloads
 	 }
 	 return $outputheader."\n".$output;
 	}
-
-        function type4_build_markers_download($markers, $min_maf, $max_missing, $dtype)
-    {
-        $tmp = count($markers);
-        $output = '';
-        $outputheader = '';
-        $delimiter ="\t";
-
-        if (isset($_SESSION['selected_map'])) {
-            $selected_map = $_SESSION['selected_map'];
-        } else {
-           $selected_map = "";
-        }
-        if (isset($_SESSION['geno_exps'])) {
-            $geno_exp = $_SESSION['geno_exps'];
-            $geno_exp = $geno_exp[0];
-        } else {
-            die("<font color=red>Error - genotype experiment should be selected before download</font>");
-        }
-
-        if (count($markers)>0) {
-        } else {
-            die("<font color=red>Error - markers should be selected before download</font>");
-        }
-
-        $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $geno_exp";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        while ($row = mysql_fetch_row($res)) {
-            $marker_uid = $row[0];
-            $maf = $row[1];
-            $miss = $row[2];
-            $total = $row[3];
-            $miss_per = 100 * ($miss / $total);
-            if (($miss_per > $max_missing) OR ($maf < $min_maf)) {
-            } else {
-                $markers_filtered[] = $marker_uid;
-                $marker_lookup[$marker_uid] = 1;
-            }
-            $num_mark++;
-        }
-        $markers_str = implode(",", $markers_filtered);
-
-        //order the markers by map location
-        //tassel v5 needs markers sorted when position is not unique
-        if ($selected_map == "") {
-            $marker_list_mapped = array();
-            $marker_list_chr = array();
-         } else {
-             $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
-             where markers.marker_uid IN ($markers_str)
-             AND mim.marker_uid = markers.marker_uid
-             AND mim.map_uid = map.map_uid
-             AND map.mapset_uid = mapset.mapset_uid
-             AND mapset.mapset_uid = $selected_map 
-             order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
-             $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-             while ($row = mysql_fetch_array($res)) {
-               $marker_uid = $row[0];
-               $pos = $row[1];
-               $chr = $row[2];
-               $marker_list_mapped[$marker_uid] = $pos;
-               $marker_list_chr[$marker_uid] = $chr;
-             }
-         }
-
-        //generate an array of selected markers and add map position if available
-        $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
-        where marker_uid IN ($markers_str)
-        AND markers.marker_type_uid = marker_types.marker_type_uid
-        order by BINARY marker_name";
-        $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-        while ($row = mysql_fetch_array($res)) {
-            $marker_uid = $row[0];
-            $marker_name = $row[1];
-            if (preg_match("/[A-Z]/", $row[2]) && preg_match("/[A-Z]/", $row[3])) {
-                $allele = $row[2] . "/" . $row[3];
-            } elseif (preg_match("/DArT/", $row[4])) {
-                $allele = $row[2] . "/" . $row[3];
-            } else {
-                $allele = "N/N";
-            }
-            $marker_list_name[$marker_uid] = $marker_name;
-            $marker_list_allele[$marker_uid] = $allele;
-            $marker_list_type[$marker_uid] = $row[4];
-        }
-
-        //get header, tassel requires all fields even if they are empty
-        $outputheader .= "rs\talleles\tchrom\tpos";
-        $sql = "select line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
-        $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-        if ($row = mysql_fetch_array($res)) {
-            $name = $row[0];
-            $name_ary = explode(",", $name);
-            foreach ($name_ary as $item) {
-                $outputheader .= "\t\"$item\"";
-            }
-        } else {
-            die("<font color=red>Error - genotype experiment should be selected before download</font>");
-        }
-        $nelem = count($line_names);
-        $outputheader = preg_replace("/,/", "\t", $outputheader);
-        $outputheader = str_replace(" ", "", $outputheader);
-
-        $pos_index = 0;
-        $sql = "select marker_uid, marker_name, chrom, pos, alleles from allele_bymarker_exp_101 where experiment_uid = $geno_exp order by chrom, pos";
-        $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-        while ($row = mysql_fetch_array($res)) {
-            $marker_id = $row[0];
-            $marker_name = $row[1];
-            $chrom = $row[2];
-            $pos = $row[3];
-            $alleles = $row[4];
-            $allele = $marker_list_allele[$marker_id];
-            $marker_type = $marker_list_type[$marker_id];
-            if (empty($chrom)) {
-                if (isset($marker_list_mapped[$marker_id])) {
-                    $chrom = $marker_list_chr[$marker_id];
-                    $pos = $marker_list_mapped[$marker_id];
-                }
-            }
-            if (isset($marker_lookup[$marker_id])) {
-                if (empty($chrom)) {
-                    $chrom = 'UNK';
-                    $pos = $pos_index;
-                    $pos_index += 10;
-                }
-                $output .= "$marker_name\t$allele\t$chrom\t$pos";
-                $alleles = preg_replace("/,/", "\t", $alleles);
-                $output .= "\t$alleles\n";
-            }
-        }
-        return $outputheader."\n".$output;
-    }
 
 	/**
 	 * build genotype conflicts file when given set of lines and markers
