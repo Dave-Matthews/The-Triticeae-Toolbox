@@ -58,10 +58,7 @@ function typeBlastRun($infile)
         $cpuinfo = file_get_contents('/proc/cpuinfo');
         preg_match_all('/^processor/m', $cpuinfo, $matches);
         $numCpus = count($matches[0]);
-        $maxload = $numCpus * 1000;
         echo "this computer has $numCpus for parallel processing\n";
-    } else {
-        die("Error: can not open /proc/cpuinfo\n");
     }
     $seq = "";
     $count = 0;
@@ -89,17 +86,13 @@ function typeBlastRun($infile)
         }
         if ($count == 1000) {
             fclose($fh2);
-            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -e 100 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
             $tmp = shell_exec($command);
             $pidList[$count_file] = rtrim($tmp);
             echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
-            $load = sys_getloadavg();
-            if ($load[0] > $numCpus) {
+            if (isRunning($pidList) > $numCpus) {
                 echo "\twaiting 20 seconds for free processor\n";
                 sleep(20);
-            } elseif ($count2 > $maxload) {
-                echo "\twaiting 2 second before starting process\n";
-                sleep(2);
             } else {
                 echo "\n";
             }
@@ -112,7 +105,7 @@ function typeBlastRun($infile)
         }
     }
     fclose($fh2);
-    $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -e 100 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+    $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
     $tmp = shell_exec($command);
     $pidList[$count_file] = rtrim($tmp);
     echo "$count2\t$pidList[$count_file] running BLAST on $count queries\n";
