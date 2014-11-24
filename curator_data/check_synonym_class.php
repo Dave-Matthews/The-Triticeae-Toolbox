@@ -58,10 +58,7 @@ function typeBlastRun($infile)
         $cpuinfo = file_get_contents('/proc/cpuinfo');
         preg_match_all('/^processor/m', $cpuinfo, $matches);
         $numCpus = count($matches[0]);
-        $maxload = $numCpus * 1000;
         echo "this computer has $numCpus for parallel processing\n";
-    } else {
-        die("Error: can not open /proc/cpuinfo\n");
     }
     $seq = "";
     $count = 0;
@@ -74,10 +71,9 @@ function typeBlastRun($infile)
     $tPath = str_replace('./', '', $target_Path);
     $blastfile = $infile . ".blast";
     $tmpfile = $tPath . "temp" . $count_file . ".fasta";
-    $blastout = $tPath . "blast.out";
+    $blastout = $tPath . "blast" . $count_file . ".out";
     $fh = fopen($blastfile, "r") or die("Unable to open file $blastfile");
     $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
-    $fh3 = fopen($blastout, "w") or die("Unable to open file $blastout");
     while (!feof($fh)) {
         $line = fgets($fh);
         if (preg_match("/>/", $line)) {
@@ -90,44 +86,43 @@ function typeBlastRun($infile)
         }
         if ($count == 1000) {
             fclose($fh2);
-            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -e 100 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers & echo $!";
-            $handle = popen($command, "r");
-            $pidList[$count_file] = $handle;
+            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+            $tmp = shell_exec($command);
+            $pidList[$count_file] = rtrim($tmp);
             echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
-            $load = sys_getloadavg();
-            if ($load[0] > $numCpus) {
+            if (isRunning($pidList) > $numCpus) {
                 echo "\twaiting 20 seconds for free processor\n";
                 sleep(20);
-            } elseif ($count2 > $maxload) {
-                echo "\twaiting 2 second before starting process\n";
-                sleep(2);
             } else {
                 echo "\n";
             }
            
             $count_file++;
             $tmpfile = $tPath . "temp" . $count_file . ".fasta";
+            $blastout = $tPath . "blast" . $count_file . ".out";
             $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
             $count = 0;
         }
     }
     fclose($fh2);
-    $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -e 100 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers & echo $!";
-    $handle = popen($command, "r");
-    $pidList[$count_file] = $handle;
+    $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+    $tmp = shell_exec($command);
+    $pidList[$count_file] = rtrim($tmp);
     echo "$count2\t$pidList[$count_file] running BLAST on $count queries\n";
     fclose($fh);
-    foreach ($pidList as $count=>$handle) {
-        echo "reading process $count\n";
-        while (!feof($handle)) {
-            $line = fgets($handle);
-            fwrite($fh3, $line);
+    $running = 1;
+    while ($running) {
+        $count = isRunning($pidList);
+        if ($count == 0) {
+            break;
+        } else {
+            echo "$count BLAST processes running\n";
+            sleep(10);
         }
-        pclose($handle);
     }
     echo "Stop time - ". date("m/d/y : H:i:s", time()) ."\n";
-    //$command = "cat " . $tPath . "blast*.out >> " . $tPath . "sumblast.out";
-    //echo "$command\n";
+    $command = "cat " . $tPath . "blast*.out >> " . $tPath . "sumblast.out";
+    echo "$command\n";
     exec($command);
 }
 
@@ -141,7 +136,7 @@ function typeBlastParse($infile)
 {
     $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
     $tPath = str_replace('./', '', $target_Path);
-    $blastout = $tPath . "blast.out";
+    $blastout = $tPath . "sumblast.out";
     $blastfile = $infile . ".blast";
     $blastfileindex = $infile . ".index";
     $outfile1 = $infile;
