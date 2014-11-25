@@ -6,52 +6,47 @@ require  $config['root_dir'].'theme/normal_header.php';
 ?>
 <title>GBS import instructions</title>
 <h1>Genotype by Sequencing (GBS) Data, over 100K markers</h1>
-How large GBS experiments are processed differently from other genotype data.
+<b>Genotype Experiment</b>
 <ul>
-<li>Genotype data is stored as a text string containing all the measurements for a specific marker.<br>
-<li>Genotype data is converted into two formats for quick retrieval (ACTG and -1,0,1).<br>
-<li>The chromosome and position information is stored in the same table as the genotype data.<br>
-<li>The genotype files (VCF) are imported from the command line instead of through the web interface.<br>
+<li>For loading into  the T3 website the submitter should include a description of the experiment, how the GBS data was processed, a marker load file, and a genotype results file.
+<li>Additional files like the TagsByTaxa and VCF can be included as raw files and will be available for download from the T3 website.
 </ul>
-How to select large GBS experiments using T3 website
+
+<b>Markers</b>
 <ul>
-<li>GBS experiments are selected by using "Select Lines by Genotype Experiment".
-<li>When a genotype experiment is selected the associated lines and marekrs are also selected.
+<li>The  marker_name and sequence should be unique. If there is no reference genome then the A and B alleles should be ordered alphabetically (there is a tool to order the alleles on the import page).
+<li>The marker sequence should be check for synonyms to existing entries in the database (there is a BLAST tool to check sequence synonyms on the import page).
+<li>We will BLAST newly submitted marker flanking sequences to flanking sequences previously submitted. For sequence pairs that are identical along the full length of the shorter of the two sequences, we will assume identity of the SNP.  Thus, the newly submitted marker will become a synonym of the previously submitted marker. 
+<li>The sequence for each marker should be long enough to uniquely define the marker within the genome. For the wheat genome we choose to use a marker sequence of 128 bases.
+<li>file format - comma separated<pre>
+WCSS1_marker_name,marker_type,A_allele,B_allele,sequence
+contig3917765_1al-5470,GBS,G,A,GCCGGACTGAGGCGGCAACTTGATGCGGCGGATGCCAACATTGCGCTTGTGAACAAGCGGCTTG[G/A]CGAGGCACAGGGTATGTATTTTCGGGTGGTCAACAAATATTAAGAGGAGCATGATGCTAGTAT
+WCSS1_contig3917765_1al-5481,GBS,G,T,GCGGCAACTTGATGCGGCGGATGCCAACATTGCGCTTGTGAACAAGCGGCTTGGCGAGGCACAG[G/T]GTATGTATTTTCGGGTGGTCAACAAATATTAAGAGGAGCATGATGCTAGTATCTATAATATGC
+WCSS1_contig3917765_1al-5493,GBS,C,T,TGCGGCGGATGCCAACATTGCGCTTGTGAACAAGCGGCTTGGCGAGGCACAGGGTATGTATTTT[C/T]GGGTGGTCAACAAATATTAAGAGGAGCATGATGCTAGTATCTATAATATGCTGTGACTGCAGA</pre>
+<li>fields<pre>
+marker_name = valid characters are alphanumeric and “_-.“
+marker_type = GBS
+A_allele = reference allele
+B_allele = alternate allele
+sequence = ACTG, the SNP should be embedded in the sequence with the reference allele first and the alternate allele second</pre>
 </ul>
-Instructions for importing genotype results from a Variant Call Format (VCF) file when there are over 100K markers.
+
+<b>Genotype Results</b>
+<ul>
+<li>The import file is tab delimited similar to HapMap
+<li>The columns contain the lines and the rows contain the markers
+<li>Each cell of the matrix should be a IUPAC nucleotide (A, T, C, G) for a homozygote or (K, Y, W, S, R, M) for a heterozygote, and "N" for missing data
+<li>Genotype files with over 100K markers should be imported via the command line as described in the GBS import instructions
+<li>file format<pre>
+SNP     Chrom	Pos	2174-05 2180    Above   Agate   Alice   Alliance
+WCSS1_contig3917765_1AL-5470    1AL     5905    N      A      N      N
+WCSS1_contig3917765_1AL-5481    1AL     5916    N      G      G      T
+WCSS1_contig3917765_1AL-5493    1AL     5928    N      C      C      C</pre>
+</ul>
+<b>Import Instructions</b>
 <ol>
-<li>Prepare the import files with one line for each marker and one column for each line. The files should be tab delimited.<br>
-The first line of the file contains the line names. The first column of the files contains the marker names.<br>
-The second column contains the chromosome. The third column contains the position.<br><br>
-<li>The VCF file contains the CHROM, POS, ID, REF, ALT<br>
-<table>
-<tr><td>CHROM<td>chromosome: An identifier from the reference genome<br>
-<tr><td>POS<td>position: The reference position, with the 1st base having position 1<br>
-<tr><td>ID<td>identifier: Semi-colon separated list of unique identifiers<br>
-<tr><td>REF<td>reference base(s): Each base must be one of A,C,G,T,N<br>
-<tr><td>ALT<td>alternate base(s): Comma separated list of alternate non-reference alleles called on at least one of the samples<br>
-</table><br>
-<li>The first file is in TASSEL format and should be coded with ACTGN notation. Use script "get_genotype_tassel.pl".<br>
-<table>
-<tr><td>genotype from VCF<td>Import format
-<tr><td>./.<td>N   N
-<tr><td>0/0<td>REF REF 
-<tr><td>0/1<td>REF ALT
-<tr><td>1/1<td>ALT ALT
-<tr><td>0/2<td>REF N 
-<tr><td>1/2<td>ALT N
-</table><br>
-<li>The second file is in R Script format and should be coded with -1,0,1. Use script "get_genotype_rrblup.pl".<br>
-<table>
-<tr><td>genotype from VCF<td>Import format
-<tr><td>./.<td>NA
-<tr><td>0/1<td>0
-<tr><td>1/0<td>0
-<tr><td>0/0<td>1
-<tr><td>1/1<td>-1
-<tr><td>0/2<td>NA
-<tr><td>1/2<td>NA
-</table><br>
-<li>Load each of these files with the script <a href=scripts/load_gbs_bymarker.php>load_gbs_bymarker</a>.<br><br>
-<li>Calculate and load allele frequencies with the script <a href=scripts/load_gbs_frequencies.php>load_gbs_frequencies</a>.<br><br>
-</ol>
+<li>Load each of these files with the script <a href=scripts/load_gbs_bymarker.php>load_gbs_bymarker</a>.
+<li>Calculate and load allele frequencies with the script <a href=scripts/load_gbs_frequencies.php>load_gbs_frequencies</a>.
+</ol></div>
+<?php
+require  $config['root_dir'].'theme/footer.php';
