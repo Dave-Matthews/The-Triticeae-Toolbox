@@ -86,7 +86,7 @@ function typeBlastRun($infile)
         }
         if ($count == 1000) {
             fclose($fh2);
-            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+            $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -e 1 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
             $tmp = shell_exec($command);
             $pidList[$count_file] = rtrim($tmp);
             echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
@@ -107,18 +107,19 @@ function typeBlastRun($infile)
         }
     }
     fclose($fh2);
-    $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
+    $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -e 1 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
     $tmp = shell_exec($command);
     $pidList[$count_file] = rtrim($tmp);
-    echo "$count2\t$pidList[$count_file] running BLAST on $count queries\n";
+    echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
     fclose($fh);
     $running = 1;
     while ($running) {
-        $count = isRunning($pidList);
-        if ($count == 0) {
+        $countRunning = isRunning($pidList);
+        echo "\trunning $countRunning";
+        if ($countRunning == 0) {
             break;
         } else {
-            echo "$count BLAST processes running\n";
+            echo "\twaiting 10 seconds for process\n";
             sleep(10);
         }
     }
