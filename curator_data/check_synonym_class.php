@@ -77,14 +77,14 @@ function typeBlastRun($infile)
     while (!feof($fh)) {
         $line = fgets($fh);
         if (preg_match("/>/", $line)) {
-            $seq = $line;
+            $seq .= $line;
         } else {
             $seq .= $line;
-            fwrite($fh2, $seq);
             $count++;
             $count2++;
         }
         if ($count == 1000) {
+            fwrite($fh2, $seq);
             fclose($fh2);
             $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -e 1 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
             $tmp = shell_exec($command);
@@ -100,12 +100,14 @@ function typeBlastRun($infile)
             }
            
             $count_file++;
+            $seq = "";
             $tmpfile = $tPath . "temp" . $count_file . ".fasta";
             $blastout = $tPath . "blast" . $count_file . ".out";
             $fh2 = fopen($tmpfile, "w") or die("Unable to open file $tmpfile");
             $count = 0;
         }
     }
+    fwrite($fh2, $seq);
     fclose($fh2);
     $command = "../viroblast/blastplus/bin/megablast -D 3 -F F -W 14 -e 1 -i $tmpfile -d ../viroblast/db/nucleotide/wheat-markers >> $blastout & echo $!";
     $tmp = shell_exec($command);
