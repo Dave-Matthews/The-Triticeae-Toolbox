@@ -35,16 +35,10 @@ function error($type, $text)
 }
 
 /** check how many processes are running */
-function isRunning($pidList)
+function isRunning()
 {
-    $count = 0;
-    foreach ($pidList as $pid) {
-        $result = shell_exec(sprintf('ps %d', $pid));
-        //echo "$pid $result\n";
-        if (count(preg_split("/\n/", $result)) > 2) {
-            $count++;
-        }
-    }
+    $count = shell_exec('ps | grep -c megablast');
+    $count = rtrim($count);
     return $count;
 }
  
@@ -90,7 +84,7 @@ function typeBlastRun($infile)
             $tmp = shell_exec($command);
             $pidList[$count_file] = rtrim($tmp);
             echo "$count2\t$pidList[$count_file] running BLAST on $count queries";
-            $countRunning = isRunning($pidList);
+            $countRunning = isRunning();
             echo "\trunning $countRunning";
             if ($countRunning > $numCpus) {
                 echo "\twaiting 20 seconds for free processor\n";
@@ -116,9 +110,10 @@ function typeBlastRun($infile)
     fclose($fh);
     $running = 1;
     while ($running) {
-        $countRunning = isRunning($pidList);
+        $countRunning = isRunning();
         echo "\trunning $countRunning";
         if ($countRunning == 0) {
+            echo "\n";
             break;
         } else {
             echo "\twaiting 10 seconds for process\n";
