@@ -65,7 +65,8 @@ else {
       $datasets_exp_uid=$experiment_uid;
       $exptname=$row['experiment_desc_name'];
       $year=$row['experiment_year'];
-
+      if (!$experiment_uid)
+	die ("Trial $trial_code not found.");
         
       $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'"; 
       $result_pei=mysqli_query($mysqli,$query) or die(mysqli_error($mysqli));
