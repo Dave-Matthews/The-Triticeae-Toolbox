@@ -24,10 +24,12 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
+// Define reserved words that are trial summary statistics instead of Line names.
+$stats = array('*Trial Mean', '*Std. Error', '*Replications');
+// Translate to the corresponding column name in table phenotype_mean_data.
 $col_lookup = array('trialmean' => 'mean_value', 'std.error' => 'standard_error', 
 		    'std.errordiff.' => 'std_err_diff', 'prob>f' => 'prob_gt_F', 
 		    'coef.var.' => 'cv', 'replications' => 'number_replicates');
-$stats = array('*Trial Mean', '*Std. Error', '*Replications');
 
 /* Returns $arg1 if it is set, else fatal with error message $msg. */
 function ForceValue(& $arg1, $msg) {
@@ -450,6 +452,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
      /* Figure out which experiment to use */
      $trial_code = $means['cells'][4][2];
      $experiment_uid = mysql_grab("select experiment_uid as id from experiments where trial_code = '$trial_code'");
+     $exptids[$trial_code] = $experiment_uid;
      // dem 22feb14: Don't use this value! Use the one loaded already in the Trial Annotation. 
      /* $breeding_program_name = $means['cells'][3][2]; */
      $breeding_program_name = mysql_grab("select data_program_code
@@ -502,8 +505,8 @@ File:  <i><?php echo $uploadfile ?></i><br>
    // Process the data cells.
    global $col_lookup;
    $current = NULL;	// the current row
-   $num_exp = 0;
-   $experiment_uids[$num_exp] = -1;
+   /* $num_exp = 0; */
+   /* $experiment_uids[$num_exp] = -1; */
    if ($singletrial === TRUE) {
      // Case 1: We're using the single-trial template format.
      $BeginLinesInput = FALSE;   
@@ -514,8 +517,6 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	 $statname = str_replace(array(" ", "*"),"",strtolower(trim($current[$namecolumn])));
 	 if (preg_match('/^trialinformationgoesabove/', $statname)) {
 	   $BeginLinesInput = TRUE;
-	   /* $i++; */
-	   /* $current = $means['cells'][$i]; */
 	   break;
 	 } 
 	 if ($BeginLinesInput === FALSE) {
@@ -525,8 +526,8 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	   for ($j=0;$j<$pheno_num;$j++) {
 	     $pheno_uid =$phenoids[$j];
 	     $phenotype_data = trim($current[$offset+$j]);
-	     // insert NULL value if empty
-	     if (strlen($phenotype_data) == 0) 
+	     // If the spreadsheet cell is either empty or "--", set the MySQL table's phenotype_data.value to NULL.
+	     if (strlen($phenotype_data) == 0 OR $phenotype_data == "--") 
 	       $phenotype_data = "NULL";
 	     else
 	       $phenotype_data = "'".$phenotype_data."'";
@@ -535,14 +536,13 @@ File:  <i><?php echo $uploadfile ?></i><br>
                                 WHERE phenotype_uid = '$phenoids[$j]'
                                 AND experiment_uid = '$experiment_uid'";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	     if ( mysql_num_rows($res)>0) {
+	     if (mysql_num_rows($res) > 0) 
 	       $sql = "UPDATE phenotype_mean_data SET $fieldname = $phenotype_data, updated_on=NOW()
                                     WHERE experiment_uid = '$experiment_uid' AND phenotype_uid = '$phenoids[$j]'";
-	     } else {
+	     else 
 	       $sql = "INSERT INTO phenotype_mean_data SET $fieldname = $phenotype_data,
                                     experiment_uid = '$experiment_uid', phenotype_uid = '$phenoids[$j]',
                                     updated_on=NOW(), created_on = NOW()";
-	     }
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 	   }
 	 } // end of if ($BeginLinesInput === FALSE), finished collecting trial statistics
@@ -550,31 +550,27 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	   // All remaining rows are for individual lines.
 	   $line_name = ForceValue($current[$COL_LINENAME], "<b>Error</b>: Missing line name at row " . $i);
 	   $check =	ForceValue($current[$COL_CHECK], "<b>Error</b>: Missing Check value at row " . $i);
-	   // Store experiment_uids for this file.
-	   if (!in_array($experiment_uid,$experiment_uids)) {
-	     $experiment_uids[$num_exp] = $experiment_uid;
-	     $num_exp++;
-	     /* DEM may14: Don't do this.  We're no longer supporting multiple values for a Check within a trial. */
-	     /* // Remove checkline data for the phenotypes in this experiment from phenotype_data table.  */
-	     /* // This will help deal with multiple copies of a check_line. */
-	     /* // Get tht-base_uids for checklines. Only do this the first time through for an experiment. */
-	     /* $pheno_uids = implode(",",$phenoids); */
-	     /* $sql = "SELECT tht_base_uid FROM tht_base */
-             /*        WHERE check_line='yes' AND experiment_uid='$experiment_uid'"; */
-	     /* $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-	     /* if (mysql_num_rows($res) > 0) { */
-	     /*   while ($row = mysql_fetch_array($res))  */
-	     /* 	 $tht_base_uids[] = $row['tht_base_uid']; */
-	     /*   $tht_base_uids = implode(',',$tht_base_uids); */
-	     /*   $sql = "DELETE FROM phenotype_data */
-	     /* 		WHERE tht_base_uid in ($tht_base_uids) AND phenotype_uid IN ($pheno_uids)"; */
-	     /*   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql"); */
-	     /*   unset($tht_base_uids); */
-	     /* } */
+	   if (!in_array($experiment_uid, $experiment_uids)) {
+	     // Remove checkline data for the phenotypes in this experiment from phenotype_data table.
+	     // This will help deal with multiple copies of a check_line.
+	     // Get tht-base_uids for checklines. Only do this the first time through for an experiment.
+	     $pheno_uids = implode(",", $phenoids);
+	     $sql = "SELECT tht_base_uid FROM tht_base
+                    WHERE check_line = 'yes' AND experiment_uid = '$experiment_uid'";
+	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	     if (mysql_num_rows($res) > 0) {
+	       while ($row = mysql_fetch_array($res))
+	     	 $tht_base_uids[] = $row['tht_base_uid'];
+	       $tht_base_uids = implode(',',$tht_base_uids);
+	       $sql = "DELETE FROM phenotype_data
+	     		WHERE tht_base_uid IN ($tht_base_uids) AND phenotype_uid IN ($pheno_uids)";
+	       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	       unset($tht_base_uids);
+	     }
 	   } // end of first time through for this experiment
-
 	   if ($check == 0) {
-	     /* Figure out which dataset to use if this is not a checkline  */
+	     /* Figure out which dataset to use if this is not a checkline.
+	        Checks are not considered part of the dataset. */
 	     $BPcode_uid = mysql_grab("SELECT CAPdata_programs_uid FROM CAPdata_programs
                                       WHERE data_program_code = '$breeding_program_name'");
 	     // Is there already a dataset for this experiment?
@@ -670,32 +666,33 @@ File:  <i><?php echo $uploadfile ?></i><br>
 		 // Fix occasional excel problem with zeros coming up as very small negative numbers (E-12-E-15).
 		 if (abs($phenotype_data) < .00001)
 		   $phenotype_data = '0';
-		 //Check if phenotype data is within the specified range given in the database.
-		 if (($pheno_min[$j]!=$pheno_max[$j])&&(($phenotype_data<$pheno_min[$j])||($phenotype_data>$pheno_max[$j]))){
-		   echo "<font color=red><b>Error:</b></font> Out of bounds 
-                     line,trait,value: ".$line_name.",".$phenonames[$j].",".$phenotype_data."<p>";
-		   exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><p>");
-		 } 
+		 /* //Check if phenotype data is within the specified range given in the database. */
+		 /* if (($pheno_min[$j]!=$pheno_max[$j])&&(($phenotype_data<$pheno_min[$j])||($phenotype_data>$pheno_max[$j]))){ */
+		 /*   echo "<font color=red><b>Error:</b></font> Out of bounds  */
+                 /*     line,trait,value: ".$line_name.",".$phenonames[$j].",".$phenotype_data."<p>"; */
+		 /*   exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><p>"); */
+		 /* }  */
 	       }
 	       if ($check == 0) {
-		 // check if there is existing data for this experiment if yes then update
+		 // It's an experimental line entry, not a Check.
+		 // Test if there is existing data for this experiment, if yes then update.
 		 $sql = "SELECT phenotype_data_uid FROM phenotype_data
 			WHERE phenotype_uid = '$phenoids[$j]'
 			AND tht_base_uid = '$tht_base_uid'";
 		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		 if ( mysql_num_rows($res)>0) {
-		   if ($phenotype_data != "NULL") {
-		     $phenotype_data = "'".$phenotype_data."'";
-		   }
+		 // If the phenotype value is the string 'NULL', don't quote it in the SQL statement.
+		 if ($phenotype_data != "NULL") 
+		   $phenotype_data = "'".$phenotype_data."'";
+		 if ( mysql_num_rows($res) > 0) 
 		   $sql = "UPDATE phenotype_data SET value = $phenotype_data, updated_on=NOW()
 		       WHERE tht_base_uid = '$tht_base_uid' AND phenotype_uid = '$phenoids[$j]'";
-		 } else {
+		 else
 		   $sql = "INSERT INTO phenotype_data SET phenotype_uid = '$phenoids[$j]',
-                                       tht_base_uid = '$tht_base_uid', value = '$phenotype_data',
+                                       tht_base_uid = '$tht_base_uid', value = $phenotype_data,
                                        updated_on=NOW(), created_on = NOW()";
-		 }
 		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	       } elseif ($check == 1) {
+	       } // end if $check is 0, not a Check
+	       elseif ($check == 1) {
 		 //Insert only as all checklines were deleted at the beginning. The problem
 		 //occurs when an experiment has multiple values for the same checklines (e.g., MN data)
 		 if (DEBUG>2) {echo "checkline data ".$phenotype_data."\n";}
@@ -708,22 +705,201 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	       }
 	     }
 	   }
-	 }
-
-       } // end skipping a line
+	 } // end handling a Line's data
+       } // end row isn't empty, don't skip
      } // end for loop through rows $i
-
-   } // end single-trial format
+   } // end Case 1, single-trial format
    else {
      // Case 2: We're using the multi-trial template format.
+     // First, cycle through and populate the arrays of Trials.
+     $exptids = array();
+     for($i = $headerrow + 1; $i <= $rows; $i++)    {
+       $current = $means['cells'][$i];
+       // If first cell of the row is empty then skip to the next row.
+       if (!empty($current[1])) {
+	 $trial_code = $current[1];
+	 if (!in_array($trial_code, array_keys($exptids))) {
+	   // If we haven't seen this Trial before, add it.
+	   $exptids[$trial_code] = mysql_grab("select experiment_uid from experiments where trial_code = '$trial_code'");
+	   $breeding_program_name[$trial_code] = mysql_grab("select data_program_code
+						  from CAPdata_programs c, experiments e
+						  where trial_code = '$trial_code' 
+						  and c.CAPdata_programs_uid = e.CAPdata_programs_uid");
+	   $BPcode_uid[$trial_code] = mysql_grab("SELECT CAPdata_programs_uid FROM CAPdata_programs
+                                                  WHERE data_program_code = '$breeding_program_name[$trial_code]'");
+	   // Remove checkline data for the phenotypes in this experiment from phenotype_data table.
+	   // This will help deal with multiple copies of a check_line.
+	   // Get tht-base_uids for checklines. Only do this the first time through for an experiment.
+	   $pheno_uids = implode(",", $phenoids);
+	   $sql = "SELECT tht_base_uid FROM tht_base
+                   WHERE check_line = 'yes' AND experiment_uid = '$exptids[$trial_code]'";
+	   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	   if (mysql_num_rows($res) > 0) {
+	     while ($row = mysql_fetch_array($res))
+	       $tht_base_uids[] = $row['tht_base_uid'];
+	     $tht_base_uids = implode(',', $tht_base_uids);
+	     $sql = "DELETE FROM phenotype_data
+                     WHERE tht_base_uid IN ($tht_base_uids) AND phenotype_uid IN ($pheno_uids)";
+	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	     unset($tht_base_uids);
+	   }
+	 } // end if haven't seen this Trial before
+       } // end if (!empty($current)) 
+     } // end for each row $i, first cycle-through
+     // Cycle through again to collect the values for each trial and trait.
+     for($i = $headerrow + 1; $i <= $rows; $i++)    {
+       $current = $means['cells'][$i];
+       // If first cell of the row is empty then skip to the next row.
+       if (!empty($current[1])) {
+	 $trial_code = $current[1];
+	 $nm = $current[$namecolumn];
+	 if (preg_match('/^\*/', $nm)) {
+	   // Name begins with '*' so this row is a summary statistic.
+	   $statname = str_replace(array(" ", "*"),"",strtolower(trim($current[$namecolumn])));
+	   $fieldname = $col_lookup[$statname];
+	   for ($j = 0; $j < $pheno_num; $j++) {
+	     $pheno_uid =$phenoids[$j];
+	     $phenotype_data = trim($current[$offset+$j]);
+	     // If the spreadsheet cell is either empty or "--", set the MySQL table's phenotype_data.value to NULL.
+	     if (strlen($phenotype_data) == 0 OR $phenotype_data == "--") 
+	       $phenotype_data = "NULL";
+	     /* else */
+	     /*   $phenotype_data = "'".$phenotype_data."'"; */
+	     // Check if there are existing statistics data for this experiment. If yes then update.
+	     $sql = "SELECT phenotype_mean_data_uid FROM phenotype_mean_data
+                                WHERE phenotype_uid = '$phenoids[$j]'
+                                AND experiment_uid = '$exptids[$trial_code]'";
+	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	     if (mysql_num_rows($res) > 0) 
+	       $sql = "UPDATE phenotype_mean_data SET $fieldname = $phenotype_data, updated_on=NOW()
+                                    WHERE experiment_uid = '$exptids[$trial_code]' AND phenotype_uid = '$phenoids[$j]'";
+	     else 
+	       $sql = "INSERT INTO phenotype_mean_data SET $fieldname = $phenotype_data,
+                                    experiment_uid = '$exptids[$trial_code]', phenotype_uid = '$phenoids[$j]',
+                                    updated_on=NOW(), created_on = NOW()";
+	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	   } // end for($j) over columns, stats for each trait
+	 } // end 'Line Name' begins with '*', summary stat.
+	 else {
+	   // It's the name of a Line.
+	   $line_name = ForceValue($nm, "<b>Error</b>: Missing line name at row " . $i);
+	   $line_record_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$line_name'");
+	   if (!$line_record_uid) {  
+	     /* Translate synonyms */
+	     $line_record_uid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$line_name'");
+	   }
+	   $check = ForceValue($current[$COL_CHECK], "<b>Error</b>: Missing Check value at row " . $i);
+	   if ($check == 0) {
+	     /* not a Check line.  Checks are not considered part of a dataset. */
+	     // Figure out which dataset to use. Is there already a dataset linked to this trial?
+	     $de_uid = mysql_grab("SELECT de.datasets_experiments_uid
+                     FROM datasets_experiments de, datasets ds
+                     WHERE de.datasets_uid = ds.datasets_uid
+		     AND experiment_uid = '$exptids[$trial_code]' limit 1");
+ 	     if (empty($de_uid)) {
+ 	       // Not yet so link to one.  Does the appropriate dataset already exist?
+ 	       // Dataset name is data program name plus year.  
+ 	       // Get year from previously loaded experiment annotation.
+ 	       $year = mysql_grab("select experiment_year from experiments where trial_code = '$trial_code'");
+ 	       $ds_name = $breeding_program_name . substr($year, -2);
+ 	       // Get datasets_uid if the dataset already exists.
+	       $ds_uid = mysql_grab("SELECT datasets_uid FROM datasets WHERE dataset_name ='$ds_name'");
+	       if (empty($ds_uid)) {
+		   // Dataset doesn't exist so create it.
+		   $sql = "INSERT INTO datasets SET CAPdata_programs_uid='$BPcode_uid[$trial_code]',
+                           breeding_year = '$year', dataset_name = '$ds_name', updated_on=NOW(),
+                           created_on = NOW()";
+		   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		   $ds_uid = mysql_insert_id();
+		 }
+	       // Add dataset/experiment link.
+	       $sql = "INSERT INTO datasets_experiments SET experiment_uid='$exptids[$trial_code]',
+                           datasets_uid = '$ds_uid', updated_on=NOW(),
+                           created_on = NOW()";
+	       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	       $de_uid = mysql_insert_id();
+	     } // end if (empty($de_uid)), add datasets_experiments link
+	   } // end if $check is 0, not a Check
+	   /* Insert line into tht-base.  */
+	   if ($check == 1) $check_val = 'yes';
+	   else $check_val = 'no';
+	   // Test whether tht_base_uid already exists for this line, check condition, and trial.
+	   $tht_base_uid = mysql_grab("SELECT tht_base_uid FROM tht_base
+                   WHERE line_record_uid='$line_record_uid' AND experiment_uid='$exptids[$trial_code]'
+  	  	   AND check_line ='$check_val' limit 1");
+	   if (!empty($tht_base_uid)) {
+	     // The tht_base entry exists, so update it.
+	     $sql = "UPDATE tht_base SET line_record_uid = '$line_record_uid',
+		       experiment_uid = '$exptids[$trial_code]', check_line = '$check_val', 
+		       datasets_experiments_uid = $de_uid, updated_on=NOW() 
+                     WHERE tht_base_uid = '$tht_base_uid'";
+	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	   }
+	   else {
+	     // No tht_base entry yet.  Add it.
+	     $sql = "INSERT INTO tht_base SET line_record_uid = '$line_record_uid',
+                     experiment_uid = '$exptids[$trial_code]', check_line = '$check_val',
+                     datasets_experiments_uid = $de_uid, updated_on=NOW(), created_on = NOW()";
+	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	     $tht_base_uid = mysql_insert_id();
+	   }
 
-   }
+	   /* Enter phenotype values into the database for this particular line in this
+	    * particular experiment. First check if data just needs to be updated. If not, insert it. */
+	   for ($j=0; $j < $pheno_num; $j++) {
+	     $pheno_uid = $phenoids[$j];
+	     $phenotype_data = $current[$offset+$j];
+	     if (!is_null($phenotype_data)) {
+	       $dt = $datatypes[$j];
+	       if ( ($dt != "string") AND ($dt != "text") ) {
+		 // Fix occasional excel problem with zeros coming up as very small negative numbers (E-12-E-15).
+		 if (is_numeric($phenotype_data) AND abs($phenotype_data) < .00001)
+		   $phenotype_data = '0';
+		 // If the spreadsheet cell is either empty or "--", set the MySQL table's phenotype_data.value to empty.
+		 if (strlen($phenotype_data) == 0 OR $phenotype_data == "--") 
+		   $phenotype_data = "";
+		 // If the phenotype value is the string 'NULL', don't quote it in the SQL statement.
+		 if ($phenotype_data !== "NULL") 
+		   $phenotype_data = "'".$phenotype_data."'";
+	       }
+	       if ($check == 0) {
+		 // It's an experimental line entry, not a Check.
+		 // Test if there is existing data for this experiment, if yes then update, else insert.
+		 $sql = "SELECT phenotype_data_uid FROM phenotype_data
+			WHERE phenotype_uid = '$phenoids[$j]'
+			AND tht_base_uid = '$tht_base_uid'";
+		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		 if ( mysql_num_rows($res) > 0) 
+		   $sql = "UPDATE phenotype_data SET value = $phenotype_data, updated_on=NOW()
+		           WHERE tht_base_uid = '$tht_base_uid' AND phenotype_uid = '$phenoids[$j]'";
+		 else 
+		   $sql = "INSERT INTO phenotype_data SET phenotype_uid = '$phenoids[$j]',
+			   tht_base_uid = '$tht_base_uid', value = $phenotype_data,
+			   updated_on=NOW(), created_on = NOW()";
+		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	       } // end if $check is 0, not a Check
+	       elseif ($check == 1) {
+		 //Insert only as all checklines were deleted at the beginning. The problem
+		 //occurs when an experiment has multiple values for the same checklines (e.g., MN data)
+		 if (DEBUG>2) {echo "checkline data ".$phenotype_data."\n";}
+		 if (!is_null($phenotype_data)) {
+		   $sql = "insert into phenotype_data set phenotype_uid = '$phenoids[$j]',
+                             tht_base_uid = '$tht_base_uid', value = $phenotype_data,
+                             updated_on=NOW(), created_on = NOW()";
+		   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		 }
+	       }
+	     } // end if $phenotype_data not null
+	   } // end for each phenoids[$j]
+	 } // end it's the name of a Line, not a statistic
+       } // end if !empty($current)
+     } // end for each row $i
+   } // end of Case 2, multitrial format 
 
-   // Update trait statistics
+   // Update statistics for all traits in the database.
    $trait_stats = calcPhenoStats_mysql ($phenoids);
    if ($trait_stats === FALSE) die ("Calculating stats on non-numeric data.");
    if (count($trait_stats) == 0) die ("Calculating stats on non-numeric data.");
-   
    for ($i = 0;$i<count($phenoids);$i++){
      //check if record there
      $max_val= $trait_stats[$i][max_val];
@@ -732,118 +908,67 @@ File:  <i><?php echo $uploadfile ?></i><br>
      $std_val= $trait_stats[$i][std_val];
      $sample_size= $trait_stats[$i][sample_size];
      $pheno_uid = $trait_stats[$i][phenotype_uid];
-		
+     // Store back to the database.
      $sql = "SELECT * FROM phenotype_descstat WHERE phenotype_uid = $pheno_uid";
      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-     if (mysql_num_rows($res)>0) {
+     if (mysql_num_rows($res)>0) 
        $sql = "UPDATE phenotype_descstat SET mean_val = $mean_val,
-						max_val = '$max_val', min_val = '$min_val',
-						std_val = $std_val, sample_size = $sample_size,updated_on=NOW()
-                        WHERE phenotype_uid = '$pheno_uid'";
-     } else {
+	       max_val = '$max_val', min_val = '$min_val',
+	       std_val = $std_val, sample_size = $sample_size,updated_on=NOW()
+	       WHERE phenotype_uid = '$pheno_uid'";
+     else 
        $sql = "INSERT INTO phenotype_descstat SET mean_val = $mean_val,
-						max_val = $max_val, min_val = $min_val,
-						std_val = $std_val, sample_size = $sample_size,
-						phenotype_uid = $pheno_uid, updated_on=NOW(), created_on = NOW()
-						";
-     }
-     //echo $sql."\n";
+	       max_val = $max_val, min_val = $min_val,
+	       std_val = $std_val, sample_size = $sample_size,
+	       phenotype_uid = $pheno_uid, updated_on=NOW(), created_on = NOW()";
      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
    }
     
    // Go through experiments in this file to update string of measured traits in
    // the experiment and file name
-   for ($i=0;$i<$num_exp;$i++){
+   //for ($i = 0; $i < $num_exp; $i++){
+   foreach (array_values($exptids) as $exid) {
      unset($phenotypes);
      $sql = "SELECT p.phenotype_uid AS id, p.phenotypes_name AS name
-					FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
-					WHERE pd.tht_base_uid = t.tht_base_uid
-					AND p.phenotype_uid = pd.phenotype_uid
-					AND t.experiment_uid=$experiment_uids[$i]
-					GROUP BY p.phenotype_uid";
+	     FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
+	     WHERE pd.tht_base_uid = t.tht_base_uid
+	     AND p.phenotype_uid = pd.phenotype_uid
+	     AND t.experiment_uid = $exid
+	     GROUP BY p.phenotype_uid";
+     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+     while ($row = mysql_fetch_array($res))
+       $phenotypes[] = $row['name'];
+     $countfound = count($phenotypes);
+     if ($countfound > 0) {
+       $phenotypes = implode(', ',$phenotypes);
+       $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid = $exid";
+       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+     } 
+     else 
+       echo "Error - No traits for experiment id = <b>'$exid'</b>.<br>$sql<p>";
 		
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            while ($row = mysql_fetch_array($res)){
-				$phenotypes[]=$row['name'];
-            }
-            $countfound = count($phenotypes);
-            if ($countfound > 0) {
-              $phenotypes = implode(',',$phenotypes);
-              $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid=$experiment_uids[$i]";
-              $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            } else {
-              echo "error - experiments not found<br>$sql<br>\n";
-            }
-		
-            // Add meansfile name to the field for meansfile name, append to existing list if different
-            $sql = "SELECT input_data_file_name
-                    FROM experiments 
-					WHERE experiment_uid = '$experiment_uids[$i]'";
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            $row = mysql_fetch_assoc($res);
-            $meansfile = basename($meansfile);
-            if ($row["input_data_file_name"]===NULL) {
-                $infile = $meansfile;
-            } else {
-                $infile = $row["input_data_file_name"];
-            }
-            if (stripos($infile,$meansfile)===FALSE) {
-				$infile .= ", ".$meansfile;
-            }
-			$sql = "UPDATE experiments SET input_data_file_name = '$infile', updated_on=NOW()
-                  WHERE experiment_uid = '$experiment_uids[$i]'";
-			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		
-			// Add rawdata name to the field for raw_data_file_name , append to existing list if different
-	
-            /* this part id not necessary as we want to replace the raw data file name and append to the existing raw data file name */		
-            /* $sql = "SELECT raw_data_file_name
-					FROM experiments 
-					WHERE experiment_uid = '$experiment_uids[$i]'";
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            $row = mysql_fetch_assoc($res);
-            //$meansfile = basename($meansfile);
-			$infile_raw = $rawdatafile;
-	
-            if ($row["raw_data_file_name"]===NULL) {
-                $infile_raw = $rawdatafile;
-            } else {
-                $infile_raw = $row["raw_data_file_name"];
-            }
-            if (stripos($infile_raw,$rawdatafile)===FALSE) {
-                $infile_raw .= ", ".$rawdatafile;
-            }   
-		
-            /* this part id not necessary as we want to replace the raw data file name and append to the existing raw data file name */	
-            /*  if ($rawdatafile) {
-                $sql = "UPDATE experiments SET raw_data_file_name = '$infile_raw', updated_on=NOW()
-                    WHERE experiment_uid = '$experiment_uids[$i]'";
-                $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-			}
-            */
-        }
-    //calling this function to calculate the statistics for phenotype data.
-    // echo"statistics function call";
-        calcPhenoStats_mysql($empty);
-	
-    // testing recent data
-        $sql = "select input_data_file_name  from experiments where experiment_uid = '10'";
-        $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-        //$row = mysql_fetch_array($res);
-        while ($row = mysql_fetch_array($res)){
-			$data[]=$row['input_data_file_name'];
-		}
-        //$data = explode(",",$row);
-        //echo"input data files";
-        //print_r($data);
-// end of testing recent data 
-	?>
+     // Add meansfile name to experiments.input_data_file_name, append to existing list if different.
+     $meansfile = basename($meansfile);
+     $input_data_file_name = mysql_grab("SELECT input_data_file_name FROM experiments WHERE experiment_uid = '$exid'");
+     if ($input_data_file_name === NULL) 
+       $infile = $meansfile;
+     else 
+       $infile = $input_data_file_name;
+     if (stripos($infile, $meansfile) === FALSE) 
+       $infile .= ", ".$meansfile;
+     $sql = "UPDATE experiments SET input_data_file_name = '$infile', updated_on=NOW()
+             WHERE experiment_uid = '$exid'";
+     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+   }
 
-        <b>The data was inserted/updated successfully. </b><br>
-	<a href="<?php echo $config['base_url']; ?>display_phenotype.php?trial_code=<?php echo $trial_code ?>"> View </a><br>
-	<a href="<?php echo $config['base_url']; ?>curator_data/input_experiments_upload_excel.php"> Go Back To Main Page </a>
-	<?php
-   	$footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
-	}/* end of type_database function */
-} /* end of class */
+   // Announce success.
+   echo "Data was added or updated for the following Trials.<br><ul>";
+   foreach (array_keys($exptids) as $tc)
+     echo "<li><a href='$config[base_url]display_phenotype.php?trial_code=$tc'>$tc</a><br>";
+   echo "</ul><input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><p>";
+
+   $footer_div = 1;
+   include($config['root_dir'].'theme/footer.php');
+
+   }/* end of function type_Database() */
+ } /* end of class */

@@ -242,6 +242,10 @@ and bcr.line_record_uid = '$linerecorduid'";
 			        $val = "--"; 
 			        $val_long = "--";
 		        }
+		if (empty($val)) {
+		  $val = "--";
+		  $val_long = "--";
+		}
                 $single_row[$i+2]=$val;
 		        $single_row_long[$i+2]=$val_long;
             }
