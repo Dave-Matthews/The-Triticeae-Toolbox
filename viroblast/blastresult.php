@@ -432,7 +432,7 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 						$target_name = $element[7];
                                                 if (preg_match("/^(\d[A-Z]+_\d+)/",$target_name,$match)) {
                                                   $contig = $match[1];
-                                                  $target_link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$contig\" target=\"_new\">$contig</a>";;
+                                                  $target_link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$contig\" target=\"_new\">$contig</a>";
                                                 } else {
                                                   $marker_name = $target_name;
                                                   $target_link = "<a href=./view.php?table=markers&name=$marker_name>$marker_name</a>";
