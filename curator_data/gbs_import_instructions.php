@@ -77,8 +77,8 @@ WCSS1_contig3917765_1AL-5493    1AL     5928    N      C      C      C</pre>
 </ul>
 <b>Command line import instructions</b>
 <ol>
-<li>Load file for tassel and rrBLUP format with the script <a href=scripts>load_gbs_bymarker</a>.
-<li>Calculate and load allele frequencies with the script <a href=scripts>load_gbs_frequencies</a>.
+<li>Load file for tassel and rrBLUP format with the script <a href=scripts/>load_gbs_bymarker</a>.
+<li>Calculate and load allele frequencies with the script <a href=scripts/>load_gbs_frequencies</a>.
 </ol></div>
 <?php
 require  $config['root_dir'].'theme/footer.php';
