@@ -1,14 +1,11 @@
-<?php 
+<?php
 /**
  * Genotype data importer
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/genotype_data_upload.php
  *
  */
@@ -37,20 +34,20 @@ ob_end_flush();
 
 new GenotypeData($_GET['function']);
 
-class GenotypeData {
-    
+class GenotypeData
+{
     private $delimiter = "\t";
-    	
-	// Using the class's constructor to decide which action to perform
-        public function __construct($function = null)
-	{	
-		switch($function) {
-							
-			default:
-				$this->typeDataResults(); /* intial case*/
-				break;
-		}	
-	}
+
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch($function) {
+
+        default:
+            $this->typeDataResults(); /* intial case*/
+            break;
+        }	
+    }
 
 
     private function typeDataResults() 	{
@@ -81,7 +78,7 @@ class GenotypeData {
      	<p><table>
 	<tr><td><strong>Line Translation File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
 	<tr><td><td><a href="curator_data/examples/LinesTrialCode_Sample.txt">Example Line Translation File</a></p>
- 	<tr><td><strong>Genotype Data File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />
+ 	<tr><td><strong>Genotype Data File:</strong><td><input id="file[]" type="file" name="file[]" size="80%" />Size limit 100M
         <tr><td><strong>Data File Format:</strong><td><input type="radio" name="data_format" value="1D"> 1D Example
 <a href="curator_data/examples/genotypeData_T3.txt">Genotype Data File</a>
                           <tr><td><td><input type="radio" name="data_format" value="2D" checked> 2D Example

@@ -507,7 +507,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
    $current = NULL;	// the current row
    /* $num_exp = 0; */
    /* $experiment_uids[$num_exp] = -1; */
-   if ($singletrial === TRUE) {
+   if ($singletrial) {
      // Case 1: We're using the single-trial template format.
      $BeginLinesInput = FALSE;   
      for($i = $headerrow + 1; $i <= $rows; $i++)    {
@@ -517,7 +517,8 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	 $statname = str_replace(array(" ", "*"),"",strtolower(trim($current[$namecolumn])));
 	 if (preg_match('/^trialinformationgoesabove/', $statname)) {
 	   $BeginLinesInput = TRUE;
-	   break;
+	   $i++;
+	   $current = $means['cells'][$i];
 	 } 
 	 if ($BeginLinesInput === FALSE) {
 	   // Not yet down to the data for individual lines. Deal with statistics.
@@ -549,8 +550,12 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	 else {
 	   // All remaining rows are for individual lines.
 	   $line_name = ForceValue($current[$COL_LINENAME], "<b>Error</b>: Missing line name at row " . $i);
+	   $line_record_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$line_name'");
+	   if (!$line_record_uid) {  
+	     /* Translate synonyms */
+	     $line_record_uid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$line_name'");
+	   }
 	   $check =	ForceValue($current[$COL_CHECK], "<b>Error</b>: Missing Check value at row " . $i);
-	   if (!in_array($experiment_uid, $experiment_uids)) {
 	     // Remove checkline data for the phenotypes in this experiment from phenotype_data table.
 	     // This will help deal with multiple copies of a check_line.
 	     // Get tht-base_uids for checklines. Only do this the first time through for an experiment.
@@ -567,7 +572,6 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 	       unset($tht_base_uids);
 	     }
-	   } // end of first time through for this experiment
 	   if ($check == 0) {
 	     /* Figure out which dataset to use if this is not a checkline.
 	        Checks are not considered part of the dataset. */
@@ -898,6 +902,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 
    // Update statistics for all traits in the database.
    $trait_stats = calcPhenoStats_mysql ($phenoids);
+   //print_h($trait_stats);
    if ($trait_stats === FALSE) die ("Calculating stats on non-numeric data.");
    if (count($trait_stats) == 0) die ("Calculating stats on non-numeric data.");
    for ($i = 0;$i<count($phenoids);$i++){
