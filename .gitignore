@@ -6,5 +6,8 @@ includes/bootstrap_curator.inc
 #
 # ViroBLAST temp files. 
 viroblast/data/*
+# ViroBLAST database specific
+viroblast/blastresult.php
+viroblast/viroblast.ini
 # Other:
 downloads/old
