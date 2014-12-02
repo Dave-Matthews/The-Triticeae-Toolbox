@@ -509,6 +509,22 @@ File:  <i><?php echo $uploadfile ?></i><br>
    /* $experiment_uids[$num_exp] = -1; */
    if ($singletrial) {
      // Case 1: We're using the single-trial template format.
+     // Remove checkline data for the phenotypes in this experiment from phenotype_data table.
+     // This will help deal with multiple copies of a check_line.
+     // Get tht-base_uids for checklines. Only do this the first time through for an experiment.
+     $pheno_uids = implode(",", $phenoids);
+     $sql = "SELECT tht_base_uid FROM tht_base
+                    WHERE check_line = 'yes' AND experiment_uid = '$experiment_uid'";
+     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+     if (mysql_num_rows($res) > 0) {
+       while ($row = mysql_fetch_array($res))
+	 $tht_base_uids[] = $row['tht_base_uid'];
+       $tht_base_uids = implode(',',$tht_base_uids);
+       $sql = "DELETE FROM phenotype_data
+	     		WHERE tht_base_uid IN ($tht_base_uids) AND phenotype_uid IN ($pheno_uids)";
+       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+       unset($tht_base_uids);
+     }
      $BeginLinesInput = FALSE;   
      for($i = $headerrow + 1; $i <= $rows; $i++)    {
        $current = $means['cells'][$i];
@@ -556,22 +572,6 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	     $line_record_uid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$line_name'");
 	   }
 	   $check =	ForceValue($current[$COL_CHECK], "<b>Error</b>: Missing Check value at row " . $i);
-	     // Remove checkline data for the phenotypes in this experiment from phenotype_data table.
-	     // This will help deal with multiple copies of a check_line.
-	     // Get tht-base_uids for checklines. Only do this the first time through for an experiment.
-	     $pheno_uids = implode(",", $phenoids);
-	     $sql = "SELECT tht_base_uid FROM tht_base
-                    WHERE check_line = 'yes' AND experiment_uid = '$experiment_uid'";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	     if (mysql_num_rows($res) > 0) {
-	       while ($row = mysql_fetch_array($res))
-	     	 $tht_base_uids[] = $row['tht_base_uid'];
-	       $tht_base_uids = implode(',',$tht_base_uids);
-	       $sql = "DELETE FROM phenotype_data
-	     		WHERE tht_base_uid IN ($tht_base_uids) AND phenotype_uid IN ($pheno_uids)";
-	       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	       unset($tht_base_uids);
-	     }
 	   if ($check == 0) {
 	     /* Figure out which dataset to use if this is not a checkline.
 	        Checks are not considered part of the dataset. */
@@ -623,7 +623,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	   $check_val ='no';
 	   if ($check == 1) 
 	     $check_val ='yes';
-	   // check if tht_base_uid already exists for this line, check condition, and experiment
+	   // Test whether tht_base_uid already exists for this line, Check condition, and trial.
 	   $sql = "SELECT tht_base_uid FROM tht_base
                    WHERE line_record_uid='$line_record_uid' AND experiment_uid='$experiment_uid'
   	  	   AND check_line ='$check_val' limit 1";
@@ -699,7 +699,6 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	       elseif ($check == 1) {
 		 //Insert only as all checklines were deleted at the beginning. The problem
 		 //occurs when an experiment has multiple values for the same checklines (e.g., MN data)
-		 if (DEBUG>2) {echo "checkline data ".$phenotype_data."\n";}
 		 if (!is_null($phenotype_data)) {
 		   $sql = "insert into phenotype_data set phenotype_uid = '$phenoids[$j]',
                              tht_base_uid = '$tht_base_uid', value = '$phenotype_data',
@@ -716,6 +715,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
    else {
      // Case 2: We're using the multi-trial template format.
      // First, cycle through and populate the arrays of Trials.
+		 echo "checkline data, tbuid = $tht_base_uid, line = $line_name, ".$phenotype_data."<br>";
      $exptids = array();
      for($i = $headerrow + 1; $i <= $rows; $i++)    {
        $current = $means['cells'][$i];
@@ -881,6 +881,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 			   tht_base_uid = '$tht_base_uid', value = $phenotype_data,
 			   updated_on=NOW(), created_on = NOW()";
 		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		 echo "checkline data, tbuid = $tht_base_uid, line = $line_name, ".$phenotype_data."<br>";
 	       } // end if $check is 0, not a Check
 	       elseif ($check == 1) {
 		 //Insert only as all checklines were deleted at the beginning. The problem
