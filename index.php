@@ -50,7 +50,7 @@ $name = get_unique_name("datasets");
   <p>
   <table cellpadding="0" cellspacing="0"><tbody>
   <tr>
-  <th>Search Type</th>
+  <th>Search Experiments</th>
   <th>&nbsp;</th>
   </tr>
 	
@@ -113,7 +113,24 @@ $name = get_unique_name("datasets");
   }
 ?>
 </select></td>
-<td>All experiment data from the selected year</td></tr>
+<td>All experiments from the selected year</td></tr>
+
+  <tr><td>
+  <select onchange="window.open('<?php echo $config['base_url']; ?>search_expt.php?expt='+this.options[this.selectedIndex].value,'_top')">
+  <option selected value=''>Search Trials by Experiment</option>
+  <?php
+  $sql = "select experiment_set_uid, experiment_set_name from experiment_set
+          order by experiment_set_name";
+  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
+  while ($row = mysql_fetch_assoc($r)) {
+      $euid = $row['experiment_set_uid'];
+      $ename = $row['experiment_set_name'];
+      echo "<option value=$euid>$ename</option>\n";
+  }
+?>
+</select></td>
+<td>All phenotype trials in the Experiment</td></tr>
+
 
 </tbody></table></div></div></div>
 
