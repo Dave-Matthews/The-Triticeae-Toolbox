@@ -715,7 +715,6 @@ File:  <i><?php echo $uploadfile ?></i><br>
    else {
      // Case 2: We're using the multi-trial template format.
      // First, cycle through and populate the arrays of Trials.
-		 echo "checkline data, tbuid = $tht_base_uid, line = $line_name, ".$phenotype_data."<br>";
      $exptids = array();
      for($i = $headerrow + 1; $i <= $rows; $i++)    {
        $current = $means['cells'][$i];
@@ -793,6 +792,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	     $line_record_uid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$line_name'");
 	   }
 	   $check = ForceValue($current[$COL_CHECK], "<b>Error</b>: Missing Check value at row " . $i);
+	   $extrasql = ""; // Initialize to empty. Leave it that way for Check lines.
 	   if ($check == 0) {
 	     /* not a Check line.  Checks are not considered part of a dataset. */
 	     // Figure out which dataset to use. Is there already a dataset linked to this trial?
@@ -822,6 +822,8 @@ File:  <i><?php echo $uploadfile ?></i><br>
                            created_on = NOW()";
 	       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 	       $de_uid = mysql_insert_id();
+	       // for editing table tht_base. Experimental lines go into datasets_experiments, Check lines don't.
+	       $extrasql = "datasets_experiments_uid = $de_uid, ";
 	     } // end if (empty($de_uid)), add datasets_experiments link
 	   } // end if $check is 0, not a Check
 	   /* Insert line into tht-base.  */
@@ -835,7 +837,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	     // The tht_base entry exists, so update it.
 	     $sql = "UPDATE tht_base SET line_record_uid = '$line_record_uid',
 		       experiment_uid = '$exptids[$trial_code]', check_line = '$check_val', 
-		       datasets_experiments_uid = $de_uid, updated_on=NOW() 
+		       $extrasql updated_on=NOW() 
                      WHERE tht_base_uid = '$tht_base_uid'";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 	   }
@@ -843,7 +845,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	     // No tht_base entry yet.  Add it.
 	     $sql = "INSERT INTO tht_base SET line_record_uid = '$line_record_uid',
                      experiment_uid = '$exptids[$trial_code]', check_line = '$check_val',
-                     datasets_experiments_uid = $de_uid, updated_on=NOW(), created_on = NOW()";
+                     $extrasql updated_on=NOW(), created_on = NOW()";
 	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
 	     $tht_base_uid = mysql_insert_id();
 	   }
@@ -881,7 +883,6 @@ File:  <i><?php echo $uploadfile ?></i><br>
 			   tht_base_uid = '$tht_base_uid', value = $phenotype_data,
 			   updated_on=NOW(), created_on = NOW()";
 		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		 echo "checkline data, tbuid = $tht_base_uid, line = $line_name, ".$phenotype_data."<br>";
 	       } // end if $check is 0, not a Check
 	       elseif ($check == 1) {
 		 //Insert only as all checklines were deleted at the beginning. The problem
