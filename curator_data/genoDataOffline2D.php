@@ -597,15 +597,25 @@ while ($inputrow= fgets($reader))  {
 	if (($alleles == 'AA') || ($alleles == 'BB') || ($alleles == '--') || ($alleles == 'AB') || ($alleles == 'BA')) {
             if (!$found_genotype_data) {
                 if (!$stmt1->execute()) {
-                    $msg = "Execute failed: (" . $stmt1->errno .") " . $stmt1->error;
+                    $msg = "Execute insert failed: " . $stmt1->error . "\n";
                     fwrite($errFile, $msg);
                     $errLines++;
                 }
             } else {
-                if (!$stmt2->execute()) {
-                     $msg = "Execute failed: (" . $stmt2->errno .") " . $stmt2->error;
-                     fwrite($errFile, $msg);
-                     $errLines++;
+                $result =mysql_query("SELECT genotyping_data_uid FROM alleles WHERE genotyping_data_uid = $gen_uid") or exitFatal($errFile, "Database Error: gd lookup $sql");
+                $rgen=mysql_num_rows($result);
+                if ($rgen < 1) {
+                    if (!$stmt1->execute()) {
+                        $msg = "Execute insert failed: " . $stmt1->error . "\n";
+                        fwrite($errFile, $msg);
+                        $errLines++;
+                    }
+                } else {
+                    if (!$stmt2->execute()) {
+                        $msg = "Execute update failed: " . $stmt2->error . "\n";
+                        fwrite($errFile, $msg);
+                        $errLines++;
+                    }
                 }
 	    }
         } elseif ($alleles == '') {
