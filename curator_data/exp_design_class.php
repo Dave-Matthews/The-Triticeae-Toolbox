@@ -1,11 +1,11 @@
 <?php
 /**
  * Experiment Design
- * 
+ *
  * PHP version 5.3
  * jQuery version 1.11
  * jQueryUI version 1.11
- * 
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/exp_design.php
@@ -216,12 +216,13 @@ class Fieldbook
         <div class="step1"></div><div class="step1a"></div><div class="step1b"></div>
         <div class="step2"></div>
         <div class="step3"></div>
+        <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
         <div class="step4"></div>
         <div class="step5"></div>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
-        <script type="text/javascript" src="curator_data/design06.js"></script>
+        <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+        <script type="text/javascript" src="curator_data/design07.js"></script>
         <script type="text/javascript">
         if ( window.addEventListener ) {
             window.addEventListener( "load", select_trial(), false );
@@ -397,6 +398,7 @@ class Fieldbook
                 Trial Names should be unique across T3 for a crop. A trial is carried out at one location in one year.  
         <tr><td>Year:<td colspan=2>
         <select id="year" name="year" onchange="javascript: update_step1()">
+        <option value="2015">2015</option>
         <option value="2014">2014</option>
         <option value="2013">2013</option>
         <option value="2012">2012</option>
@@ -726,7 +728,7 @@ class Fieldbook
             $database = "unknown";
         }
          
-        $filename = "/tmp/tht/testfile.xls";
+        $filename = "/tmp/tht/TrialSubmission.xls";
         $objPHPExcel = new PHPExcel();
         $objPHPExcel->setActiveSheetIndex(0);
         $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
