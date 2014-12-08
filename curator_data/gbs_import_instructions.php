@@ -74,6 +74,11 @@ SNP     Chrom	Pos	2174-05 2180    Above   Agate   Alice   Alliance
 WCSS1_contig3917765_1AL-5470    1AL     5905    N      A      N      N
 WCSS1_contig3917765_1AL-5481    1AL     5916    N      G      G      T
 WCSS1_contig3917765_1AL-5493    1AL     5928    N      C      C      C</pre>
+<li>fields<pre>
+SNP = identifier
+Chrom = chromosome that SNP maps to (optional)
+Pos = chromosome position of the SNP (optional), for example the position on the ordered contigs
+Col4 and on = observed genotypes of samples</pre>
 </ul>
 <b>Command line import instructions</b>
 <ol>
