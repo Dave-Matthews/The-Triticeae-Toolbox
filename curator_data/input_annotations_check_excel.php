@@ -267,14 +267,15 @@ private function typeAnnotationCheck()
 	    $n_trials++;
 	}
 
-	// Check for current version of the Template file, using check_version() from includes/common.inc.
-	$version = trim($version_row[2]);
-	$template = $config['root_dir']."curator_data/examples/T3/TrialSubmissionForm.xls";
-	if (!check_version($version, $template)) {
-	  echo "<b>Error</b>: The template file has been updated since your version, <b>$version</b>.<br>
-          Please use the new one.<br>";
-	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-	};
+	// dem dec14 Removed.  Not a terrible idea but badly implemented.
+	/* // Check for current version of the Template file, using check_version() from includes/common.inc. */
+	/* $version = trim($version_row[2]); */
+	/* $template = $config['root_dir']."curator_data/examples/T3/TrialSubmissionForm.xls"; */
+	/* if (!check_version($version, $template)) { */
+	/*   echo "<b>Error</b>: The template file has been updated since your version, <b>$version</b>.<br> */
+        /*   Please use the new one.<br>"; */
+	/*   exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">"); */
+	/* }; */
 
 	// Check for Breeding Program.
 	$bp = trim($bp_row[2]);
