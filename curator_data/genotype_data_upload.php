@@ -89,6 +89,7 @@ class GenotypeData
 <a href="curator_data/examples/DArT_Genotype_template.txt">DArT_Genotype_template.txt</a> (1 = Present, 0 = Absent, "-" =  missing)</p>
 	</table>
     <p><input type="submit" name="submitButton" value="Upload Line Translation and Genotype Data File" /></p>
+    <p><input type="submit" name="submitButton" value="Insert" /> New entries</p>
     <p><input type="submit" name="submitButton" value="Verify Files" /> Check if lines and markers exist in database</p>
  
     <p></p>

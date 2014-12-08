@@ -25,6 +25,8 @@ require 'config.php';
  */
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require $config['root_dir'] . 'curator_data/lineuid.php';
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
 //require_once $config['root_dir'] . 'includes/email.inc';
 
 
@@ -159,6 +161,11 @@ class gLineNames_Check
               }
               fclose($h);
             }
+        } elseif ($_POST['submitButton'] == 'Insert') {
+            $cmd = "php genoDataVerify3D.php \"$translateFile\" \"$genoDataFile\" $userEmail $url $username" ." > " . $processOut ;
+            exec($cmd);
+            echo "<h3>The files have been uploaded and submitted to the off-line processor.<br>";
+            echo "A report will be emailed to you once the data import to the database has been completed. </h3>";
        	} elseif ($_POST['data_format'] == '1D') { 
        	    $cmd = "php genoDataOffline.php \"$translateFile\" $genoDataFile $userEmail $url $username" ." > " . $processOut . " &";
             exec($cmd);
