@@ -22,14 +22,14 @@ and a genotype results file.
  the full length of the shorter of the two sequences, we will assume identity of the SNP.  Thus, the newly submitted marker will become a synonym of<br>
  the previously submitted marker.
 <li>The sequence for each marker should be long enough to uniquely define the marker within the genome. For the wheat genome anchored to the IWGSC assembly we use a marker sequence of 128 bases.
-<li>File format - comma separated
+<li>file format - comma separated
 <pre style="overflow: auto">
 WCSS1_marker_name,marker_type,A_allele,B_allele,sequence
 WCSS1_contig3917765_1al-5470,GBS,G,A,GCCGGACTGAGGCGGCAACTTGATGCGGCGGATGCCAACATTGCGCTTGTGAACAAGCGGCTTG[G/A]CGAGGCACAGGGTATGTATTTTCGGGTGGTCAACAAATATTAAGAGGAGCATGATGCTAGTAT
 WCSS1_contig3917765_1al-5481,GBS,G,T,GCGGCAACTTGATGCGGCGGATGCCAACATTGCGCTTGTGAACAAGCGGCTTGGCGAGGCACAG[G/T]GTATGTATTTTCGGGTGGTCAACAAATATTAAGAGGAGCATGATGCTAGTATCTATAATATGC
 WCSS1_contig3917765_1al-5493,GBS,C,T,TGCGGCGGATGCCAACATTGCGCTTGTGAACAAGCGGCTTGGCGAGGCACAGGGTATGTATTTT[C/T]GGGTGGTCAACAAATATTAAGAGGAGCATGATGCTAGTATCTATAATATGCTGTGACTGCAGA
 </pre>
-<li>Fields<pre>
+<li>fields<pre>
 marker_name = valid characters are alphanumeric and “_-.“
 marker_type = GBS
 A_allele = reference allele

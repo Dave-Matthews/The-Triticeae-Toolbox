@@ -340,6 +340,9 @@ class LineNames_Check {
 	      if (in_array($line, $lines_seen)) 
 		die_nice ("Line Name '$line' is used more than once in this file.");
 	      else array_push($lines_seen, $line);
+	      // Have we seen it as an Alias?
+	      if (in_array($line, $syns_seen))
+		die_nice ("Line Name '$line' is the same as an Alias in this file.");
 	      // Check if line is in database, as either a line name or synonym.
 	      // dem mar2014: Don't use this semi-fuzzy match; insist on exact (case-insensitive).
 	      //$line_uid = get_lineuid($line);
@@ -384,10 +387,13 @@ class LineNames_Check {
 	      // Validate Aliases.
 	      foreach ($synonyms as $syn) {
 		if (!empty($syn)) {
-		  // Have we already seen this this synonym in this file?
+		  // Have we already seen this synonym in this file?
 		  if (in_array($syn, $syns_seen)) 
 		    die_nice ("Alias '$syn' is used more than once in this file.");
 		  else array_push($syns_seen, $syn);
+		  // Have we seen it as a Line Name?
+		  if (in_array($syn, $lines_seen))
+		    die_nice ("Alias '$syn' is the same as a Line Name in this file.");
 		  // Does the name already exist as either a synonym or a line name?
 		  // dem mar2014: Don't use this semi-fuzzy match; insist on exact (case-insensitive).
 		  //$linesyn_uid = get_lineuid($syn);
