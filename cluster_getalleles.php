@@ -1,36 +1,32 @@
 <?php
 /**
  * Download Gateway New
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/cluster_getalleles.php
- * 
+ *
  */
 
 require 'config.php';
 //Need write access to update the cache table.
-//include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'includes/bootstrap_curator.inc');
+include $config['root_dir'].'includes/bootstrap_curator.inc';
 set_time_limit(3000);
 
 connect();
 $mysqli = connecti();
 
-include($config['root_dir'].'downloads/marker_filter.php');
+include $config['root_dir'].'downloads/marker_filter.php';
 
-  foreach ($_SESSION['selected_lines'] as $lineuid) {
+foreach ($_SESSION['selected_lines'] as $lineuid) {
     $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
     while ($row=mysql_fetch_assoc($result)) {
-      $selval=$row['line_record_name'];
+        $selval=$row['line_record_name'];
     }
-  }
+}
 
 $starttime = time();
 $selected_lines = $_SESSION['selected_lines'];
@@ -108,18 +104,11 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
 		    'BB' => '0',
 		    'AB' => '0.5');
     // Compute global allele frequencies.
-    $sql = "select marker_uid, aa_cnt, ab_cnt, total from allele_frequencies";
+    $sql = "select marker_uid, maf from allele_frequencies";
     $res = mysql_query($sql) or die(mysql_error());
     while ($row = mysql_fetch_array($res)){
-      $aa_sum[$row[0]] += $row[1];
-      $ab_sum[$row[0]] += $row[2];
-      $total_sum[$row[0]] += $row[3];
+      $afreq[$row[0]] = $row[1];
     }
-    // Store in the same order as $markerids[], i.e. table allele_byline_idx.
-    foreach ($markerids as $id) {
-      $afreq[$id] = ($aa_sum[$id] + 0.5 * $ab_sum[$id]) / $total_sum[$id];
-      $afreq[$id] = number_format($afreq[$id], 3);
-    } 
     // Read in the allele_byline table.
     $sql = "select * from allele_byline";
     $res = mysql_query($sql) or die(mysql_error());
