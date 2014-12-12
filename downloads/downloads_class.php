@@ -1892,13 +1892,7 @@ class Downloads
         while ($row = mysql_fetch_array($res)) {
             $marker_uid = $row[0];
             $marker_name = $row[1];
-            if (preg_match("/[A-Z]/", $row[2]) && preg_match("/[A-Z]/", $row[3])) {
-                $allele = $row[2] . "/" . $row[3];
-            } elseif (preg_match("/DArT/", $row[4])) {
-                $allele = $row[2] . "/" . $row[3];
-            } else {
-                $allele = "N/N";
-            }
+            $allele = $row[2] . "/" . $row[3];
             $marker_list_name[$marker_uid] = $marker_name;
             $marker_list_allele[$marker_uid] = $allele;
             $marker_list_type[$marker_uid] = $row[4];
