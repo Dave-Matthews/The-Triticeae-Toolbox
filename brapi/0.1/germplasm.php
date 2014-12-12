@@ -3,6 +3,10 @@
 // Deliver Line names according to http://docs.breeding.apiary.io/
 // from ./genotype.php
 
+// Cassavabase response:
+/* % curl "http://cassava-test.sgn.cornell.edu/brapi/0.1/germplasm/find?q=95NA-00063" */
+/* [{"queryName":"95NA-00063","germplasmId":29417,"uniqueName":"95NA-00063"}] */
+
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 connect();
@@ -36,9 +40,9 @@ if ($command) {
   $lineuid = intval($lineuid);
   $syns = array();
   $response["queryName"] = $linename;
-  $response["uniqueName"] = $linename;
-  $response["synonyms"] = $syns ;
   $response["germplasmId"] = $lineuid;
+  $response["uniqueName"] = $linename;
+  /* $response["synonyms"] = $syns ; */
   $r = array($response);
   header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json");
