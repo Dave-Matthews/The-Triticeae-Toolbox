@@ -77,7 +77,7 @@ WCSS1_contig3917765_1AL-5493    1AL     5928    N      C      C      C</pre>
 <li>fields<pre>
 SNP = identifier
 Chrom = chromosome that SNP maps to (optional)
-Pos = chromosome position of the SNP (optional), for example the position on the ordered contigs
+Pos = chromosome position of the SNP (optional), for example the position on the map of ordered contigs
 Col4 and on = observed genotypes of samples</pre>
 </ul>
 <b>Command line import instructions</b>

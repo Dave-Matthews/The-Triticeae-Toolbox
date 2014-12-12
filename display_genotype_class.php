@@ -1,22 +1,22 @@
-<?php 
+<?php
 /**
  * Report for a single genotyping experiment.
  *
  * PHP version 5.3
- * 
+ *
  * @author  Clay Birkett <clb343@cornell.edu>
  * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link    http://triticeaetoolbox.org/wheat/display_genotype.php
  *
  * dem 23mar12 Handle large dataset downloads. Output one row at a time
- *             instead of catenating the whole thing into $output first.
+ *         instead of catenating the whole thing into $output first.
  * J.Lee 5/9/2011 Fix problem with query while restricting mmaf and max missing
- *	          values, prevent download operation when 0 markers match condition.
- * J.Lee 8/17/2010 Modify alelle download to work in Linux and Solaris 
+ *         values, prevent download operation when 0 markers match condition.
+ * J.Lee 8/17/2010 Modify alelle download to work in Linux and Solaris
  */
 
 /** Using a PHP class to implement the report feature
- * 
+ *
  * @author  Clay Birkett <clb343@cornell.edu>
  * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link    http://triticeaetoolbox.org/wheat/display_genotype.php
@@ -67,6 +67,7 @@ class ShowData
     /** Store the genotype experiment selection in a session variable, and jump to genotype experiments list*/
     private function typeSelectMarkers()
     {
+        $_SESSION[selected_lines] = explode(",", $_POST[linelist]);
         $exps_str = $_POST[genoexp];
         $experiments = explode(',', $exps_str);
         $_SESSION['geno_exps'] = $experiments;
@@ -106,7 +107,7 @@ class ShowData
     $res = mysql_query($sql) or die("Error: unable to retrieve experiment record with trial code.<br>".mysql_error());
     $row = mysql_fetch_assoc($res);
     $experiment_uid = $row['experiment_uid'];
-    $CAPdata_programs_uid = $row['CAPdata_programs_uid'];	
+    $CAPdata_programs_uid = $row['CAPdata_programs_uid'];
     $experiment_short_name = $row['experiment_short_name'];
 		
     $sql_data_code = "SELECT data_program_code, data_program_name FROM CAPdata_programs where CAPdata_programs_uid = '".$CAPdata_programs_uid."' ";
@@ -206,12 +207,13 @@ class ShowData
 <form method=POST action="<?php echo $SERVER[PHP_SELF] ?>">
 <input type=hidden name=function value=select_lines>
 <input type=hidden name=linelist value=<?php echo "\"$line_list\""; ?>>
-<input type="submit" value="Select these lines" style="color:blue">
+<input type="submit" value="Select lines" style="color:blue">
 </form>
 <form method=POST action="<?php echo $SERVER[PHP_SELF] ?>">
 <input type=hidden name=function value=select_markers>
+<input type=hidden name=linelist value=<?php echo "\"$line_list\""; ?>>
 <input type=hidden name=genoexp value=<?php echo "\"$experiment_uid\""; ?>>
-<input type="submit" value="Select these markers" style="color:blue">
+<input type="submit" value="Select experiment" style="color:blue"> (lines and markers)
 </form>
 
 <p>
@@ -419,10 +421,9 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
     }
     //save data from the last line
     $output .= "$last_line$delimiter";
-    $outarray = implode($delimiter,$outarray);
+    $outarray = implode($delimiter, $outarray);
     $output .= $outarray."\n";
     $num_lines++;
     echo $output;
   }
-
-} /* End of class*/
+}
