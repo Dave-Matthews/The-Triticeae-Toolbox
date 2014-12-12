@@ -1858,12 +1858,10 @@ class Downloads
             $miss = $row[2];
             if (($miss > $max_missing_count) OR ($maf < $min_maf)) {
             } else {
-                $markers_filtered[] = $marker_uid;
                 $marker_lookup[$marker_uid] = 1;
             }
             $num_mark++;
         }
-        $markers_str = implode(",", $markers_filtered);
 
         //order the markers by map location
         //tassel v5 needs markers sorted when position is not unique
@@ -1871,13 +1869,11 @@ class Downloads
             $marker_list_mapped = array();
             $marker_list_chr = array();
          } else {
-             $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
-             where markers.marker_uid IN ($markers_str)
-             AND mim.marker_uid = markers.marker_uid
+             $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, allele_bymarker_exp_101
+             where mim.marker_uid = markers.marker_uid
              AND mim.map_uid = map.map_uid
-             AND map.mapset_uid = mapset.mapset_uid
-             AND mapset.mapset_uid = $selected_map 
-             order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
+             AND markers.marker_uid = allele_bymarker_exp_101.marker_uid
+             AND map.mapset_uid = $selected_map";
              $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
              while ($row = mysql_fetch_array($res)) {
                $marker_uid = $row[0];
@@ -1889,10 +1885,9 @@ class Downloads
          }
 
         //generate an array of selected markers and add map position if available
-        $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
-        where marker_uid IN ($markers_str)
-        AND markers.marker_type_uid = marker_types.marker_type_uid
-        order by BINARY marker_name";
+        $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, marker_type_name from markers, marker_types, allele_bymarker_exp_101
+        where markers.marker_uid = allele_bymarker_exp_101.marker_uid
+        and markers.marker_type_uid = marker_types.marker_type_uid";
         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
         while ($row = mysql_fetch_array($res)) {
             $marker_uid = $row[0];
