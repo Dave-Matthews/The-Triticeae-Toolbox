@@ -57,33 +57,33 @@ class Experiments
     {
         switch($function)
         {
-        case 'display':
-            $this->typeDisplay();
-            break;
-        case 'selDateTime':
-            $this->selectDateTime();
-            break;
-        case 'statusLines':
-            $this->statusLines();
-            break;
-        case 'selLines':
-            $this->selectLines();
-            break;
-        case 'showExper':
-            $this->showExper();
-            break;
-        case 'save':
-            $this->saveSession();
-            break;
-        case 'selectDownload';
-            $this->selectDownload();
-            break;
-        case 'download';
-            $this->download();
-            break;
-        default:
-            $this->typeExperiments(); /* intial case*/
-            break;
+            case 'display':
+                $this->typeDisplay();
+                break;
+            case 'selDateTime':
+                $this->selectDateTime();
+                break;
+            case 'statusLines':
+                $this->statusLines();
+                break;
+            case 'selLines':
+                $this->selectLines();
+                break;
+            case 'showExper':
+                $this->showExper();
+                break;
+            case 'save':
+                $this->saveSession();
+                break;
+            case 'selectDownload':
+                $this->selectDownload();
+                break;
+            case 'download':
+                $this->download();
+                break;
+            default:
+                $this->typeExperiments(); /* intial case*/
+                break;
         }
     }
 
@@ -92,7 +92,7 @@ class Experiments
      *
      * @return NULL
      */
-    function typeDisplay()
+    private function typeDisplay()
     {
         global $config;
         include $config['root_dir'] . 'theme/admin_header.php';
@@ -155,7 +155,7 @@ class Experiments
      *
      * @return NULL
      */
-    function typeExperiments()
+    private function typeExperiments()
     {
         global $config;
         global $mysqli;
@@ -189,7 +189,7 @@ class Experiments
      *
      * @return NULL
      */
-    function saveSession()
+    private function saveSession()
     {
         global $mysqli;
         $exp[] = $_GET['trial'];
@@ -227,7 +227,7 @@ class Experiments
         global $mysqli;
         ?>
 
-        <script type="text/javascript" src="curator_data/csr.js"></script>
+        <script type="text/javascript" src="curator_data/csr01.js"></script>
         <table style="heidht:100px">
         <tr><th>Trial</th>
         <tr><td style="height:100px; vertical-align:text-top"><select id="trial" name="trial" onchange="javascript: update_trial()">
@@ -528,7 +528,7 @@ class Experiments
      *
      * @return file
      */
-    function download()
+    private function download()
     {
         //header('Content-type: application/pdf');
         //header('Content-Disposition: attachment; filename=download.pdf');
@@ -541,7 +541,7 @@ class Experiments
      *
      * @return NULL
      */
-    function calculateIndex()
+    private function calculateIndex()
     {
         ?>
         <h3>2. Calculate CSR Index</h3>
@@ -575,7 +575,7 @@ class Experiments
         <tr><td><strong>W1:</strong><td><input type="text" id="W1" name="W1" onchange="javascript: update_w1()"><td>
         <tr><td><strong>W2:</strong><td><input type="text" id="W2" name="W2" onchange="javascript: update_w2()"><td>
         <tr><td><strong>W3:</strong><td><input type="text" id="W3" name="W3" onchange="javascript: update_w3()"><td>
-        <tr><td><strong>Formula:</strong><td><input type="text" id="formula2" name="formula2" onchange="javascript: update_f2()"><td>
+        <tr><td><strong>Formula:</strong><td><input type="text" id="formula2" name="formula2" size="40" onchange="javascript: update_f2()"><td>
         <tr><td><strong>plot CSR:</strong><td>
         <input type="radio" name="xrange" value="zoomout" onchange="javascript: update_zoom(this.form)">entire range
         <input type="radio" name="xrange" value="zoomin" checked onchange="javascript: update_zoom(this.form)">within (W1,W2,W3)
@@ -591,6 +591,4 @@ class Experiments
         </div>
         <?php
     } /* end of type_Experiment_Name function*/
-} /* end of class */
-
-?>
+}

@@ -1,17 +1,17 @@
 <?php
 /**
  * Curator Import
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
+ *
  * @category PHP
  * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_exper_check.php
- * 
+ *
  */
 
 require 'config.php';
@@ -48,21 +48,22 @@ new Data_Check($_GET['function']);
 
 class Data_Check
 {
-  /**
-   * Using the class's constructor to decide which action to perform
-   * @param unknown_type $function
-   */
-  public function __construct($function = null) {
-    switch($function)
-      {
-      case 'typeDatabase':
-        $this->type_Database(); /* update database */
-        break;
-      default:
-        $this->typeExperimentCheck(); /* intial case*/
-        break;
-      }
-  }
+    /**
+     * Using the class's constructor to decide which action to perform
+     * @param unknown_type $function
+     */
+    public function __construct($function = null)
+    {
+        switch($function)
+        {
+        case 'typeDatabase':
+          $this->type_Database(); /* update database */
+          break;
+        default:
+          $this->typeExperimentCheck(); /* intial case*/
+          break;
+        }
+    }
 
 /**
  * check experiment data before loading into database
@@ -73,6 +74,10 @@ private function typeExperimentCheck()
     global $mysqli;
     include($config['root_dir'] . 'theme/admin_header.php');
     echo "<h2>CSR Phenotype Data Validation</h2>";
+    $csr_dir="../raw/phenotype/CSR";
+    if(!file_exists("$csr_dir") || !is_dir($csr_dir)) {
+        mkdir($csr_dir, 0777);
+    }
     $systemName = $this->type_ExperimentType();
     if ($systemName != "") {
         $sql = "select instrument from csr_system where system_name = '$systemName'";
@@ -137,7 +142,7 @@ private function type_ExperimentCropScan()
             die("missing Raw file\n");
         } else {
             $filename1 = $_POST['filename1'];
-            $raw_path = "../raw/phenotype/".$_POST['filename1'];
+            $raw_path = "../raw/phenotype/CSR/".$_POST['filename1'];
             $unq_file_name = $filename1;
         }
     } 
@@ -148,9 +153,9 @@ private function type_ExperimentCropScan()
         umask(0);
         if (!empty($_FILES['file']['name'][1])) {
             $filename1 = $_FILES['file']['name'][1];
-            $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+            $raw_path= "../raw/phenotype/CSR/".$_FILES['file']['name'][1];
             if (file_exists($raw_path)) {
-                $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
+                list($usec, $unique_str) = explode(" ", microtime());
                 $unq_file_name = $unique_str . "_" . $filename1;
                 $raw_path = str_replace("$filename1","$unq_file_name","$raw_path",$count);
                 /* echo "renaming file to $raw_path<br>\n";*/
@@ -308,11 +313,11 @@ private function type_ExperimentCropScan()
     if (!empty($_FILES['file']['name'][0])) {
       $uploadfile=$_FILES['file']['name'][0];
       $rawdatafile = $_FILES['file']['name'][1];
-      $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
+      $raw_path= "../raw/phenotype/CSR/".$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
       $metafile = $raw_path;
     } else {
-      $metafile = "../raw/phenotype/".$metafile0;
+      $metafile = "../raw/phenotype/CSR/".$metafile0;
     }
       //echo "using $metafile<br>\n";
       $FileType = PHPExcel_IOFactory::identify($metafile);
@@ -500,7 +505,7 @@ private function type_ExperimentType()
     if (!empty($_FILES['file']['name'][0])) {
       $uploadfile=$_FILES['file']['name'][0];
       $rawdatafile = $_FILES['file']['name'][1];
-      $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
+      $raw_path= "../raw/phenotype/CSR/".$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
       if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
         echo "error - could not upload file $uploadfile<br>\n";
@@ -510,7 +515,7 @@ private function type_ExperimentType()
       $metafile = $raw_path;
     } elseif (!empty($_POST['filename0'])) {
       $metafile0 = $_POST['filename0'];
-      $raw_path = "../raw/phenotype/".$metafile0;
+      $raw_path = "../raw/phenotype/CSR/".$metafile0;
     } else {
       die("missing Annotation file\n");
     }
@@ -573,14 +578,14 @@ private function type_ExperimentType()
       die("missing Raw file\n");
     } else {
       $filename1 = $_POST['filename1'];
-      $raw_path = "../raw/phenotype/".$_POST['filename1'];
+      $raw_path = "../raw/phenotype/CSR/".$_POST['filename1'];
       $unq_file_name = $filename1;
     }
   } else {
     $filename1 = $_FILES['file']['name'][1];
-    $raw_path= "../raw/phenotype/".$_FILES['file']['name'][1];
+    $raw_path= "../raw/phenotype/CSR/".$_FILES['file']['name'][1];
     if (file_exists($raw_path)) {
-      $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80));
+      list($usec, $unique_str) = explode(" ", microtime());
       $unq_file_name = $unique_str . "_" . $filename1;
       $raw_path = str_replace("$filename1","$unq_file_name","$raw_path",$count);
       /* echo "renaming file to $raw_path<br>\n";*/
@@ -815,11 +820,11 @@ private function type_ExperimentType()
     if (!empty($_FILES['file']['name'][0])) {
       $uploadfile=$_FILES['file']['name'][0];
       $rawdatafile = $_FILES['file']['name'][1];
-      $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
+      $raw_path= "../raw/phenotype/CSR/".$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
       $metafile = $raw_path;
     } else {
-      $metafile = "../raw/phenotype/".$metafile0;
+      $metafile = "../raw/phenotype/CSR/".$metafile0;
     }
       echo "using $metafile<br>\n"; 
       $FileType = PHPExcel_IOFactory::identify($metafile);
