@@ -507,6 +507,12 @@ private function type_ExperimentType()
       $rawdatafile = $_FILES['file']['name'][1];
       $raw_path= "../raw/phenotype/CSR/".$_FILES['file']['name'][0];
       $uftype=$_FILES['file']['type'][0];
+      if (file_exists($raw_path)) {
+          list($usec, $unique_str) = explode(" ", microtime());
+          $unq_file_name = $unique_str . "_" . $uploadfile;
+          $raw_path = str_replace("$uploadfile","$unq_file_name","$raw_path",$count);
+          /* echo "renaming file to $raw_path<br>\n";*/
+      }
       if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
         echo "error - could not upload file $uploadfile<br>\n";
       } else {
