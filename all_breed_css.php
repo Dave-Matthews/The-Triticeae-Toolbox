@@ -27,7 +27,7 @@ if (mysql_num_rows($query) > 0) {
     $c_name=$row['collaborator_name'];
     $desc = $row['description'];
     $insti_uid=$row['institutions_uid'];
-    $insti_name = mysql_grab("SELECT institutions_name FROM institutions WHERE institutions_uid=$insti_uid");
+    $insti_name = mysql_grab("SELECT institutions_name FROM institutions WHERE institutions_uid='$insti_uid'");
     echo("<tr><td><a href='search_bp.php?uid=$CAP_uid'>$name</a><td>$CAP_code<td>$c_name<td>$desc<td>$insti_name");
   }
   echo "</table><p>";
@@ -50,7 +50,7 @@ if (mysql_num_rows($query) > 0) {
     $c_name=$row['collaborator_name'];
     $desc = $row['description'];
     $insti_uid=$row['institutions_uid'];
-    $insti_name = mysql_grab("SELECT institutions_name FROM institutions WHERE institutions_uid=$insti_uid");
+    $insti_name = mysql_grab("SELECT institutions_name FROM institutions WHERE institutions_uid='$insti_uid'");
     echo("<tr><td><a href='search_bp.php?uid=$CAP_uid'>$name</a><td>$CAP_code<td>$c_name<td>$desc<td>$insti_name");
   }
   echo "</table><p>";
@@ -73,7 +73,7 @@ if (mysql_num_rows($query) > 0) {
     $c_name=$row['collaborator_name'];
     $desc = $row['description'];
     $insti_uid=$row['institutions_uid'];
-    $insti_name = mysql_grab("SELECT institutions_name FROM institutions WHERE institutions_uid=$insti_uid");
+    $insti_name = mysql_grab("SELECT institutions_name FROM institutions WHERE institutions_uid='$insti_uid'");
     echo("<tr><td><a href='search_bp.php?uid=$CAP_uid'>$name</a><td>$CAP_code<td>$c_name<td>$desc<td>$insti_name");
   }
   echo "</table><p>";
