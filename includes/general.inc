@@ -1,16 +1,15 @@
 <?php
 
-
 /**
  * Functions specific to the general area of the database are stored here
  *
  * Related Tables:
- *	users
- *	user_types
- *	breeding_programs
- *      datasets
- *      experiments
- *	institutions 
+ * users
+ * user_types
+ * breeding_programs
+ * datasets
+ * experiments
+ * institutions
  */
 
 /**
@@ -24,13 +23,13 @@
  */
 function weakContains(&$arr, &$o)
 {
-	if (is_null($o) || empty($arr)) return FALSE;
-	foreach($arr as &$v){
-		if ($o->weakEquals($v)){
+    if (is_null($o) || empty($arr)) return false;
+        foreach($arr as &$v){
+	    if ($o->weakEquals($v)){
 			return true;
-		}
-	}
-	return false;
+        }
+    }
+    return false;
 }
  
 
@@ -70,6 +69,16 @@ function loadUser($user) {
 	return $r;
 
 }
+
+/**
+ * This function is a special function when viewing line_records.
+ * It is used by view.php.
+ *
+ * @param $id - unique id of the dataset.
+ */
+// function show_line_records($id) {
+//   Defined in includes/pedigree.inc
+// }
 
 /**
  * This function is a special function when viewing datasets. It will go ahead and retrieve the breeding
@@ -124,8 +133,21 @@ function show_datasets($id) {
 
 // Security mechanism
 function show_users($id) {
-	error(1, "Restricted");
+// dem 6sep13: We decided to unrestrict.  Just omit the users.pass field.
+	/* error(1, "Restricted"); */
+  echo "<table>";
+  $sql = "select name, email, institution, lastaccess from users where users_uid = $id";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($r = mysql_fetch_row($res)) {
+    echo "<tr><td>Name<td>$r[0]";
+    echo "<tr><td>Email<td>$r[1]";
+    echo "<tr><td>Institution<td>$r[2]";
+    echo "<tr><td>Last login<td>$r[3]";
+  }
+  echo "</table>";
 }
+
+
 
 /* *
  * This is a special case function used in view.php to view the experimetns table. This will select all the 
@@ -157,30 +179,32 @@ function show_experiments($id) {
  * Show markers with view.php.  Example marker 11_11346.
  */
 function show_markers($id) {
-
   show_general("markers", $id);
-
   echo "<p><h3>Annotations</h3>";
-  echo "<table><thead><tr><th>Dataset<th>Entry</tr></thead>";
-  $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation 
+  $sql = "SELECT mat.name_annotation, ma.value, ma.description, mat.linkout_string_for_annotation, mat.comments 
           FROM  markers m, marker_annotations ma, marker_annotation_types mat
           WHERE m.marker_uid = $id AND
 	    m.marker_uid = ma.marker_uid AND
 	    ma.marker_annotation_type_uid = mat.marker_annotation_type_uid 
           ORDER BY mat.name_annotation";
   $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_assoc($res)) {
-    $reg_pattern = "XXXX";
-    $replace_string = $row['value'];
-    $source_string = $row['linkout_string_for_annotation'];
-    $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
-    $url = "<a href=\"$linkString\" target=\"_blank\">";
-    if ($linkString == "")
-      echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."</tr>";
-    else 
-      echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."</a></tr>";    
+  if (mysql_num_rows($res) == 0) 
+    echo "None";
+  else {
+    echo "<table><thead><tr><th>Dataset<th>Entry<th>Entry Description<th>Dataset Description</tr></thead>";
+    while ($row = mysql_fetch_assoc($res)) {
+      $reg_pattern = "XXXX";
+      $replace_string = $row['value'];
+      $source_string = $row['linkout_string_for_annotation'];
+      $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
+      $url = "<a href=\"$linkString\" target=\"_blank\">";
+      if ($linkString == "")
+	echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['description']."<td>".$row['comments']."</tr>";
+      else 
+	echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['description']."<td>".$row['comments']."</a></tr>";    
+    }
+    echo "</table>";
   }
-  echo "</table>";
 
   // Marker Synonyms
   $sql = "select ms.marker_synonym_uid, ms.value, mst.name
@@ -205,14 +229,20 @@ function show_markers($id) {
   $mapname = $row[0];
   // Don't do it if the marker isn't mapped.
   if (!empty($mapname)) {
-    echo "<h3>Selection List</h3>";
-    echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
-    echo "<input type='hidden' name='selMkrs[]' value='$id'>";
-    echo "<input type='hidden' name='mapname' value='$mapname'>";
-    echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
-    echo "</form>";
-    
     echo "<h3>Map locations</h3>";
+    // Display in table
+    $sql = "select map_name, chromosome, start_position, end_position
+	from map, markers_in_maps
+	where marker_uid = $id and markers_in_maps.map_uid = map.map_uid
+	";
+    $r = mysql_query($sql) or die(mysql_error());
+    if (mysql_num_rows($r) > 0) {
+      echo "<table><thead><tr><th>Map<th>Chromosome<th>Start<th>End";
+      while ($row = mysql_fetch_assoc($r)) 
+	echo "<tr><td>$row[map_name]<td>$row[chromosome]<td>$row[start_position]<td>$row[end_position]";
+      echo "</table>";
+    }
+    // View in GBrowse
     $sql = "select marker_name from markers where marker_uid = $id";
     $r = mysql_query($sql);
     $row = mysql_fetch_row($r);
@@ -220,6 +250,13 @@ function show_markers($id) {
     echo "<form method='GET' action=http://".$_SERVER['HTTP_HOST']."/cgi-bin/gbrowse/tht>";
     echo "<input type='hidden' name='name' value='$markername'>";
     echo "<input type='submit' value='View in GBrowse'></p>";
+    echo "</form>";
+    // add to Selection List
+    echo "<h3>Selection List</h3>";
+    echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
+    echo "<input type='hidden' name='selMkrs[]' value='$id'>";
+    echo "<input type='hidden' name='mapname' value='$mapname'>";
+    echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
     echo "</form>";
   }
 }
@@ -261,6 +298,87 @@ function show_CAPdata_programs($id) {
 
 	echo viewTable($datasets, "datasets");
 }
+
+/**
+ * Traits special case for view.php. This will show all the experiments associated with a trait ("phenotype").
+*/
+function show_phenotypes($id) {
+  show_general("phenotypes", $id);
+
+  // Get selected experiments and verify that the user is authorized to see the experiment.
+  $sql="select distinct e.trial_code, e.experiment_year, e.experiment_uid
+		FROM tht_base as tb, phenotype_data as pd, experiments as e
+		WHERE pd.phenotype_uid='$id'
+			AND tb.tht_base_uid = pd.tht_base_uid
+			AND e.experiment_uid = tb.experiment_uid";
+  if (!authenticate(array(USER_TYPE_PARTICIPANT,
+			  USER_TYPE_CURATOR,
+			  USER_TYPE_ADMINISTRATOR)))
+    $sql .= " and e.data_public_flag > 0";
+  $sql .= " order by e.experiment_year, e.trial_code asc";
+  $res=mysql_query($sql) or die(mysql_error());
+  if (mysql_num_rows($res) > 0) {
+    ?>
+<h3>Available Datasets for this Phenotype</h3>
+<p>
+  <table cellpadding="0" cellspacing="0">
+    <tr>
+      <th>Year</th>
+      <th>Trial Name</th>
+      <th>Traits</th>
+    </tr>
+<?php
+     while($row_expuid=mysql_fetch_array($res)) {
+       $trial_code=$row_expuid['trial_code'];
+       $year=$row_expuid['experiment_year'];
+       $expuid=$row_expuid['experiment_uid'];
+       $traits=experimentListPhenotypes($expuid);
+       echo( "<tr> <td>$year</td> <td><a href='display_phenotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
+     }
+    echo "</tbody></table>";
+  }
+}
+
+function show_experiment_set ($id) {
+  $sql="select distinct e.trial_code, e.experiment_year, pei.location
+        from experiments as e, 
+             phenotype_experiment_info as pei
+        where experiment_set_uid = $id
+        and e.experiment_uid = pei.experiment_uid";
+  // Authenticate, or hide private trials.
+  if (!authenticate(array(USER_TYPE_PARTICIPANT,
+                          USER_TYPE_CURATOR,
+                          USER_TYPE_ADMINISTRATOR))) {
+    $sql .= " and e.data_public_flag > 0";
+  }
+  $sql .= " order by experiment_year, location asc";
+  $res=mysql_query($sql) or die(mysql_error());
+  if (mysql_num_rows($res) > 0) {
+    ?>
+<h3>Trials in this Experiment</h3>
+<p>
+  <table cellpadding="0" cellspacing="0" style="text-align: left;">
+    <tr>
+      <th>Year</th>
+      <th>Location</th>
+      <th>Trial</th>
+    </tr>
+<?php
+    while ($row = mysql_fetch_array($res)) {
+      $trial=$row['trial_code'];
+      $year=$row['experiment_year'];
+      $loc=$row['location'];
+       echo( "<tr> 
+                <td>$year</td> 
+                <td>$loc</td>
+                <td><a href='display_phenotype.php?trial_code=$trial'>$trial</a></td>
+              </tr>");
+      /* echo "$year, $loc, $trial<br>"; */
+    }
+    echo "</table>";
+  }
+}
+
 /**
  * This function is a general function that will display the contents of a particular row
  * in a particular table. It is used in correlation with view.php as the default action.
@@ -275,67 +393,46 @@ function show_CAPdata_programs($id) {
  * 		querying the database again.
  */
 function show_general($tabl, $id, $resource="") {
-
-	$pkey = get_pkey($tabl);
-
-	// Get foreign keys
-	$foreign_tables = chk_tbl_references($tabl);
-	$foreign_keys = array();
-
-	foreach($foreign_tables as $table) {
-		$foreign_keys[$table] = get_pkey($table);
-	}
-
-	if($resource == "") {	//if there is no resource, get a resource
-
-		$resource = mysql_query("
+  $pkey = get_pkey($tabl);
+  // Get foreign keys
+  $foreign_tables = chk_tbl_references($tabl);
+  $foreign_keys = array();
+  foreach($foreign_tables as $table) 
+    $foreign_keys[$table] = get_pkey($table);
+  if($resource == "") {	//if there is no resource, get a resource
+    $resource = mysql_query("
 				SELECT *
 				FROM $tabl
 				WHERE $pkey = '$id'
 			") or die(mysql_error());
 
-		if(mysql_num_rows($resource) < 1)
-			error(1, "No Record Found");
+    if(mysql_num_rows($resource) < 1)
+      error(1, "No Record Found");
+  }
+  while($row = mysql_fetch_assoc($resource)) {
+    // Display the main table
+    echo "<table class=\"tableclass1\">\n";				
+    foreach($row as $k=>$v) {
+      if(!in_array($k, $foreign_keys)) {
+	// Omit the _uid and created_on columns.
+	if (! strpos($k, "_uid") && ($k != "created_on")) {
+	  echo "\t<tr>\n";
+	  echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
+	  echo "\t\t<td>$v</td>\n";
+	  echo "\t</tr>\n";
 	}
-
-	while($row = mysql_fetch_assoc($resource)) {
-		// Display the main table
-
-		echo "<table class=\"tableclass1\">\n";				
-		foreach($row as $k=>$v) {
-
-			if(!in_array($k, $foreign_keys)) {
-			  // Omit the _uid and created_on columns.
-			  if (! strpos($k, "_uid") && ($k != "created_on")) {
-			  //if ( ($k != "created_on")) {
-				echo "\t<tr>\n";
-				echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
-				echo "\t\t<td>$v</td>\n";
-				echo "\t</tr>\n";
-			}
-			}
-
-		}
-		echo "</table>";
-
-		// Display the associated tables
-		foreach($foreign_tables as $table) {
-
-			//echo "<h3>Associated " . beautifulTableName($table, 1) . "</h3><br />";
-			$fpkey = $foreign_keys[$table];
-
-			$qstring = getQueryJoin($table, $tabl, $fpkey, $id);
-
-			//echo $qstring;
-
-			$q = mysql_query($qstring) or die(mysql_error());
-
-			//Display the table
-			
-			echo viewTable($q, $table);
-		}
-	}
-
+      }
+    }
+    echo "</table>";
+    // Display the associated tables
+    foreach($foreign_tables as $table) {
+      $fpkey = $foreign_keys[$table];
+      $qstring = getQueryJoin($table, $tabl, $fpkey, $id);
+      $q = mysql_query($qstring) or die(mysql_error());
+      //Display the table
+      echo viewTable($q, $table);
+    }
+  }
 }
 
 /**
@@ -382,46 +479,34 @@ function getQueryJoin($foreign_table, $main_table, $foreign_key, $main_id) {
  * @return a string containing the HTML table. This does not echo its result.
  */
 function viewTable($resource, $table) {
-
-	$pkey = get_pkey($table);
-
-	// DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
-	//$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
-       $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
-
-	if(mysql_num_rows($resource) < 1) {
-		return $ret  .=  "<p>No Records Found </p>";
-	}
-
-	$first = TRUE;
-	$ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n";
-
-	while($row = mysql_fetch_assoc($resource)) {
-		if($first) {
-
-			foreach($row as $k=>$v) {
-				if($k != $pkey)
-					$ret .= "\t\t<td><strong>" . ucwords(str_replace("_", " ", $k)) . "</strong></td>\n";
-			}
-
-			//$ret.= "\t\t<td><strong>View</strong></td>\n\t</tr>\n</thead><tbody>\n";		
-			$ret.= "</tr></thead><tbody>\n";
-			$first = FALSE;
-		}
-
-		$ret .= "\t<tr>\n";
-		foreach($row as $k=>$v) {
-			if($k != $pkey)
-				$ret .= "\t<td>$v</td>\n";
-		}
-
-		$ret .= "\t<td><a href=\"view.php?table=$table&uid=$row[$pkey]\">View</a></td>\n\t</tr>\n";
-	}
-
-	$ret .= "</tbody>\n</table>\n";
-
-	return $ret;
-
+  $pkey = get_pkey($table);
+  // DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
+  //$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
+  $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
+  if(mysql_num_rows($resource) < 1) 
+    return $ret  .=  "<p>No Records Found </p>";
+  $first = TRUE;
+  /* dem aug2013: Change style of all tables controlled by this function! Hope it's okay. */  
+  /* $ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n"; */                         
+  $ret .= "<table><thead><tr>";                                                               
+  while($row = mysql_fetch_assoc($resource)) {
+    if($first) {
+      foreach($row as $k=>$v) {
+	if($k != $pkey)
+	  $ret .= "<th>" . ucwords(str_replace("_", " ", $k)) . "</th>";
+      }
+      $ret.= "<th></tr></thead><tbody>";
+      $first = FALSE;
+    }
+    $ret .= "\t<tr>\n";
+    foreach($row as $k=>$v) {
+      if($k != $pkey)
+	$ret .= "\t<td>$v</td>\n";
+    }
+    $ret .= "\t<td><a href=\"view.php?table=$table&uid=$row[$pkey]\">View</a></td>\n\t</tr>\n";
+  }
+  $ret .= "</tbody>\n</table>\n";
+  return $ret;
 }
 
 
