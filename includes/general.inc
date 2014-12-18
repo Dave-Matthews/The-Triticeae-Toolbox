@@ -1,16 +1,15 @@
 <?php
 
-
 /**
  * Functions specific to the general area of the database are stored here
  *
  * Related Tables:
- *	users
- *	user_types
- *	breeding_programs
- *      datasets
- *      experiments
- *	institutions 
+ * users
+ * user_types
+ * breeding_programs
+ * datasets
+ * experiments
+ * institutions
  */
 
 /**
@@ -24,13 +23,13 @@
  */
 function weakContains(&$arr, &$o)
 {
-	if (is_null($o) || empty($arr)) return FALSE;
-	foreach($arr as &$v){
-		if ($o->weakEquals($v)){
+    if (is_null($o) || empty($arr)) return false;
+        foreach($arr as &$v){
+	    if ($o->weakEquals($v)){
 			return true;
-		}
-	}
-	return false;
+        }
+    }
+    return false;
 }
  
 
@@ -182,7 +181,7 @@ function show_experiments($id) {
 function show_markers($id) {
   show_general("markers", $id);
   echo "<p><h3>Annotations</h3>";
-  $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation, mat.comments 
+  $sql = "SELECT mat.name_annotation, ma.value, ma.description, mat.linkout_string_for_annotation, mat.comments 
           FROM  markers m, marker_annotations ma, marker_annotation_types mat
           WHERE m.marker_uid = $id AND
 	    m.marker_uid = ma.marker_uid AND
@@ -192,7 +191,7 @@ function show_markers($id) {
   if (mysql_num_rows($res) == 0) 
     echo "None";
   else {
-    echo "<table><thead><tr><th>Dataset<th>Entry<th>Dataset Description</tr></thead>";
+    echo "<table><thead><tr><th>Dataset<th>Entry<th>Entry Description<th>Dataset Description</tr></thead>";
     while ($row = mysql_fetch_assoc($res)) {
       $reg_pattern = "XXXX";
       $replace_string = $row['value'];
@@ -200,9 +199,9 @@ function show_markers($id) {
       $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
       $url = "<a href=\"$linkString\" target=\"_blank\">";
       if ($linkString == "")
-	echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['comments']."</tr>";
+	echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['description']."<td>".$row['comments']."</tr>";
       else 
-	echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['comments']."</a></tr>";    
+	echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['description']."<td>".$row['comments']."</a></tr>";    
     }
     echo "</table>";
   }
