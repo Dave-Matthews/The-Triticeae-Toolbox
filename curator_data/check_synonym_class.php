@@ -144,7 +144,7 @@ function typeBlastParse($infile)
     $outfile2 = $infile;
     $outfile2 = preg_replace("/(\.\w+)$/", '_synonym$1', $outfile2);
     $blastdb = "../viroblast/db/nucleotide/wheat-markers";
-    $blastindex = "../viroblast/db/nucleotide/index.csv";
+    $blastindex = "../viroblast/db/nucleotide/wheat-index.csv";
 
     //get lenghth of sequence from import file
     $count = 0;
