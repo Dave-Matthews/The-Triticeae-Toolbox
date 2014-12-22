@@ -107,28 +107,22 @@ private function refresh_title()
               $lines = explode(",", $row[0]);
               //*check for duplicates
               foreach ($lines as $line_record) {
-                  if (!isset($unique_list[$line_record])) { 
+                  if (isset($unique_list[$line_record])) { 
+                      $skipped .= "$line_record ";
+                  } else {
                       $lines_unique[] = $line_record;
                       $unique_list[$line_record] = 1;
                   }
               }
               $_SESSION['selected_lines'] = $lines_unique;
+              //echo "skiped duplicates $skipped\n";
           } else {
               echo "error - no selection found";
           }
       } else {
           echo "error - no selection found";
       }
-      if ($subset == "no") {
-          $experiments = $_GET['exps'];
-          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-          $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-          if ($row = mysql_fetch_array($res)) {
-              $lines = explode(",", $row[0]);
-          } else {
-              echo "error - no selection found";
-          }
-      } elseif ($subset == "comb") {
+      if ($subset == "comb") {
           $experiments = $_GET['exps'];
           $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
           $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
@@ -142,7 +136,7 @@ private function refresh_title()
                 array_push($lines,$row['id']);
             }
           }
-          $lines_str = implode(",", $lines);
+          $_SESSION['selected_lines'] = $lines;
       } elseif ($subset == "yes") {
           $experiments = $_GET['exps'];
           $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
@@ -151,8 +145,8 @@ private function refresh_title()
               $temp = explode(",", $row[0]);
           }
           $lines = array_intersect($lines, $temp);
+          $_SESSION['selected_lines'] = $lines;
       }
-      $_SESSION['selected_lines'] = $lines;
       if (!empty($_GET['exps'])) {
           $exps_str = $_GET['exps'];
           $experiments = explode(',', $exps_str);
@@ -746,21 +740,34 @@ private function type1_markers() {
       if (preg_match("/\d/",$datasets)) {
               $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
       }
-      $sql = "SELECT DISTINCT line_records.line_record_name as name, line_records.line_record_uid as id
-            FROM line_records, tht_base
-            WHERE line_records.line_record_uid=tht_base.line_record_uid
-            $sql_option";
+      $skipped = "";
       $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
       if ($row = mysql_fetch_array($res)) {
           $lines = explode(",", $row[0]);
+          //*check for duplicates
+          foreach ($lines as $line_record) {
+              if (isset($unique_list[$line_record])) {
+                  if ($skipped == "") {
+                      $skipped = "$line_record";
+                  } else {
+                      $skipped .= ", $line_record";
+                  }
+              } else {
+                  $lines_unique[] = $line_record;
+                  $unique_list[$line_record] = 1;
+              }
+          }
+      }
+      if ($skipped != "") {
+          echo "skipped duplicate line_records $skipped\n";
       }
     }
   } else {
     $lines_str = $_GET['lines'];
     $lines = explode(',', $lines_str);
   }
-  $count1 = count($lines);
+  $count1 = count($lines_unique);
   $trials = explode(',', $experiments);
   $count2 = count($trials);
   echo "<table><tr><td>";
