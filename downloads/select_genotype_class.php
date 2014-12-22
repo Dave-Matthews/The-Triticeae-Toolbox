@@ -108,10 +108,11 @@ private function refresh_title()
               //*check for duplicates
               foreach ($lines as $line_record) {
                   if (!isset($unique_list[$line_record])) { 
-                      $_SESSION['selected_lines'] = $lines;
+                      $lines_unique[] = $line_record;
                       $unique_list[$line_record] = 1;
                   }
               }
+              $_SESSION['selected_lines'] = $lines_unique;
           } else {
               echo "error - no selection found";
           }
