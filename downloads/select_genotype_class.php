@@ -105,7 +105,13 @@ private function refresh_title()
           $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
           if ($row = mysql_fetch_array($res)) {
               $lines = explode(",", $row[0]);
-              $_SESSION['selected_lines'] = $lines;
+              //*check for duplicates
+              foreach ($lines as $line_record) {
+                  if (!isset($unique_list[$line_record])) { 
+                      $_SESSION['selected_lines'] = $lines;
+                      $unique_list[$line_record] = 1;
+                  }
+              }
           } else {
               echo "error - no selection found";
           }
