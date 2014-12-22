@@ -185,7 +185,7 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
         $i++;
       }
       $outarray = implode($delimiter,$outarray2);
-      file_put_contents($outfile, "\"$line_name\"" . $delimiter.$outarray."\n", FILE_APPEND);
+      file_put_contents($outfile, $line_name.$delimiter.$outarray."\n", FILE_APPEND);
     }
     $elapsed = time() - $starttime;
     $_SESSION['timmer'] = $elapsed;
