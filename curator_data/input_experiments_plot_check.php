@@ -156,7 +156,7 @@ private function typeExperimentCheck()
       $trial_code = "";
       $trial_code_array = array();
       while ($found) {
-        if ($sheetData[$i]["B"] == "Plot") {
+        if (strtoupper($sheetData[$i]["B"]) == "PLOT") {
            for ($j = "A"; $j <= "Z"; $j++) {
              $tmp = $sheetData[$i]["$j"];
              if (preg_match("/[A-Za-z0-9]/",$tmp)) {
