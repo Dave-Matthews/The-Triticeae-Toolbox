@@ -32,6 +32,9 @@ if ($action == "list") {
         from fieldbook, experiments, phenotype_experiment_info
         where fieldbook.experiment_uid = experiments.experiment_uid
         and phenotype_experiment_info.experiment_uid = experiments.experiment_uid " . $sql_opt;
+    //$sql = "select distinct(experiments.experiment_uid), trial_code, planting_date, collaborator, location, experiment_design, CAPdata_programs_uid
+    //    from experiments, phenotype_experiment_info
+    //    where phenotype_experiment_info.experiment_uid = experiments.experiment_uid " . $sql_opt;
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
         $uid = $row[0];
@@ -94,7 +97,7 @@ if ($action == "list") {
         $temp["replication"] = $row[5];
         $temp["checkId"] = $row[6];
         $temp["lineId"] = $row[7];
-        $temp["lineRecordName"] = $name_list[$line_uid];
+        $temp["lineRecordName"] = $name_list[$row[7]];
         if (!preg_match("/\d+/", $row_id)) {
               $error = 1;
         }
