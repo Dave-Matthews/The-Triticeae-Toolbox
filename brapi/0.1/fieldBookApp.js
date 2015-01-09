@@ -108,7 +108,7 @@ function get_detail(exp)
               jQuery.each( data["design"][i], function ( key2, val2 ) {
                 items.push("<td>" + val2);
                 if (key2 == "lineRecordName") {
-                  if (lineStr == "") {
+                  if (lineStr === "") {
                     lineStr = val2;
                   } else {
                     lineStr += "\r\n" + val2;
@@ -143,7 +143,7 @@ function getListTraits()
     dataType: "json",
     url: apiUrl,
     success: function(data, textStatus) {
-      items.push("<h3>List of studies</h3><table>");
+      items.push("<h3>List of traits</h3><table>");
       items.push("<tr>");
       jQuery.each( data[0], function( key, val ) {
          if (key == "uid") {
