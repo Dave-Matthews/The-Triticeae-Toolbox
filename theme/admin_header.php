@@ -172,12 +172,13 @@ EOD;
 	    BLAST Search against Markers</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
         <?php
-        if (file_exists("genotyping/marker_report_ref.php")) {
+        if (file_exists($config['root_dir']."genotyping/marker_report_ref.php")) {
             ?>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
             <?php
-        } ?>
+        }
+        ?>
         <!--li><a href="<?php echo $config['base_url']; ?>downloads/downloads_tassel.php" title="Open TASSEL with selected data">Open TASSEL</a-->
 	  <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
       </ul>
