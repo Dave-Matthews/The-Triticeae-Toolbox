@@ -198,7 +198,7 @@ function show_markers($id) {
       $source_string = $row['linkout_string_for_annotation'];
       $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
       $url = "<a href=\"$linkString\" target=\"_blank\">";
-      $url2 = "<form method='GET' target='_blank' action=$linkString><input type='submit' value='View in GBrowse'></form>";
+      $url2 = "<form method='GET' target='_blank' action='$linkString'><input type='submit' value='View in GBrowse'></form>";
 
       if ($linkString == "") {
            echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['description']."<td>".$row['comments']."</tr>";
