@@ -62,7 +62,7 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
     require('marker.inc');
 	require('search.inc');
 	require('globals.inc');
-        include_once("analyticstracking.php");
+
 
 
 /*
@@ -81,31 +81,54 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
  */
 
 	if($dontconnect == FALSE || !isset($dontconnect)){
-		$initial_connect = connect();
+		$initial_connect = connecti();
 
 	foreach($_POST as $k=>$v) {
 
 		if(!is_array($v)) {
 			$v = htmlentities(trim($v));
-			$_POST[$k] = mysql_real_escape_string($v);
+			$_POST[$k] = mysqli_real_escape_string($initial_connect, $v);
 		}
 	}
 	foreach($_REQUEST as $k=>$v) {
 
 		if(!is_array($v)) {
-			$v = html2txt(trim($v));
-			$_REQUEST[$k] = mysql_real_escape_string(trim($v));
-		}
-	}
+		    $v = html2txt(trim($v));
+                    if (preg_match("/SELECT/i", $v)) {
+                        if (preg_match("/UNION/i", $v)) {
+                            $v = "";
+                        } elseif (preg_match("/AND/i", $v)) {
+                            $v = "";
+                        } elseif (preg_match("/FROM/i", $v)) {
+                            $v = "";
+                        }
+                    } elseif (preg_match("/information_schema/i", $v)) {
+                        $v = "";
+                    }
+                    $v = mysqli_real_escape_string($initial_connect, trim($v));
+                    $_REQUEST[$k] = $v;
+                }
+        }
 	foreach($_GET as $k=>$v) {
 
 		if(!is_array($v)) {
-			$v = html2txt(trim($v));;
-			$_GET[$k] = mysql_real_escape_string(trim($v));
+		    $v = html2txt(trim($v));
+                    if (preg_match("/SELECT/i", $v)) {
+                        if (preg_match("/UNION/i", $v)) {
+                            $v = "";
+                        } elseif (preg_match("/AND/i", $v)) {
+                            $v = "";
+                        } elseif (preg_match("/FROM/i", $v)) {
+                            $v = "";
+                        }
+                    } elseif (preg_match("/information_schema/i", $v)) {
+                        $v = "";
+                    }
+                    $v = mysqli_real_escape_string($initial_connect, trim($v));
+		    $_GET[$k] = mysqli_real_escape_string($initial_connect, trim($v));
 		}
 	}
-
-		mysql_close($initial_connect);
+	mysqli_close($initial_connect);
 	}
 
 
@@ -235,6 +258,11 @@ function connecti() {
   } else {
     mysqli_select_db($mysqli, $db_name);
   }
+  //if (!mysqli_set_charset($mysqli, "utf8")) {
+  //  printf("Error loading character set utf8: %s\n", mysqli_error($mysqli));
+  //} else {
+  //  printf("Current character set: %s\n", mysqli_character_set_name($mysqli));
+  //}
   return $mysqli;
 }
 
