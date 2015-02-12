@@ -22,12 +22,12 @@ $root .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAM
 $config['base_url'] = "$root";
 $root = preg_replace("/\/\/$/", "/", $root);
 $config['root_dir'] = (dirname(__FILE__) . '/');
-require_once 'includes/bootstrap_curator.inc';
+require 'includes/bootstrap_curator.inc';
 require_once 'includes/email.inc';
 require_once 'includes/aes.inc';
 require_once 'theme/normal_header.php';
 require_once 'securimage/securimage.php';
-connect();
+$mysqli = connecti();
 ?>
 <h1>Login/Register</h1>
 <div class="section">
@@ -59,11 +59,11 @@ function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="
     if (!empty($msg))
       $retval .= "<div id='form_error'>$msg</div>\n";
     $sql = "select institutions_name, email_domain from institutions";
-    $result = mysql_query($sql) or die("<pre>".mysql_error()."\n$sql");
+    $result = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n$sql");
     $domainMap = array();
     $email_domain = split('@', $email);
     $email_domain = $email_domain[1];
-    while ($row = mysql_fetch_assoc($result)) {
+    while ($row = mysqli_fetch_assoc($result)) {
         $edomain = $row['email_domain'];
         $iname = $row['institutions_name'];
         if ($edomain) {
@@ -260,25 +260,27 @@ HTML;
  * registered user that can be logged in.
  */
 function isUser($email, $pass) {
-  $sql_email = mysql_real_escape_string($email);
-  $sql_pass = mysql_real_escape_string($pass);
+  global $mysqli;
+  $sql_email = mysqli_real_escape_string($mysqli, $email);
+  $sql_pass = mysqli_real_escape_string($mysqli, $pass);
   $public_type_id = USER_TYPE_PUBLIC;
   $sql = "select * from users where users_name='$sql_email' and
 pass = MD5('$sql_pass') and (abs(email_verified) > 0 or
 user_types_uid=$public_type_id) limit 1";
-  $query = mysql_query($sql) or die("<pre>".mysql_error()."\n\n\n".$sql."</pre>");
-  return mysql_num_rows($query) > 0;
+  $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+  return mysqli_num_rows($query) > 0;
 }
 
 /**
  * Check if the user+password confirmed his email.
  */
 function isVerified($email) {
-  $sql_email = mysql_real_escape_string($email);
+  global $mysqli;
+  $sql_email = mysqli_real_escape_string($mysqli, $email);
   $sql = "select email_verified from users where
 users_name='$sql_email'";
-  $r = mysql_query($sql);
-  $row = mysql_fetch_assoc($r);
+  $r = mysqli_query($mysqli, $sql);
+  $row = mysqli_fetch_assoc($r);
   if ($row)
     return $row['email_verified'];
   return FALSE;
@@ -288,12 +290,13 @@ users_name='$sql_email'";
  * See if the password is right for the user.
  */
 function passIsRight($email, $pass) {
-  $sql_email = mysql_real_escape_string($email);
-  $sql_pass = mysql_real_escape_string($pass);
+  global $mysqli;
+  $sql_email = mysqli_real_escape_string($mysqli, $email);
+  $sql_pass = mysqli_real_escape_string($mysqli, $pass);
   $sql = "select pass=MD5('$sql_pass') as passIsRight from users
 where users_name='$sql_email'";
-  $r = mysql_query($sql);
-  $row = mysql_fetch_assoc($r);
+  $r = mysqli_query($mysqli, $sql);
+  $row = mysqli_fetch_assoc($r);
   if ($row)
     return $row['passIsRight'];
   return FALSE;
@@ -303,10 +306,11 @@ where users_name='$sql_email'";
  * See if the given email belongs to a registered user at all.
  */
 function isRegistered($email) {
-  $sql_email = mysql_real_escape_string($email);
+  global $mysqli;
+  $sql_email = mysqli_real_escape_string($mysqli, $email);
   $sql = "select * from users where users_name = '$sql_email'";
-  $query = mysql_query($sql) or die("<pre>".mysql_error()."\n\n\n".$sql."</pre>");
-  return mysql_num_rows($query) > 0;
+  $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+  return mysqli_num_rows($query) > 0;
 }
 
 /**
@@ -314,6 +318,7 @@ function isRegistered($email) {
  * fragment re that
  */
 function HTMLProcessLogin() {
+  global $mysqli;
   $email = $_POST['email'];
   $password = $_POST['password'];
   $rv = '';
@@ -328,7 +333,7 @@ function HTMLProcessLogin() {
           $_SESSION['password'] = md5($password);
           $sql = "update users set lastaccess = now() where
       users_name = '$email'";
-          mysql_query($sql) or die("<pre>" . mysql_error() .
+          mysqli_query($mysqli, $sql) or die("<pre>" . mysql_error() .
                                    "\n\n\n$sql.</pre>");
           // Retrieve stored selection of lines, markers and maps.
           $stored = retrieve_session_variables('selected_lines', $email);
@@ -399,11 +404,11 @@ function HTMLProcessChange() {
   if (isset($email)) {
     if (isUser($email, $pass))
       if ($_POST['NewPass1'] == $_POST['NewPass2']) {
-	$sql_email = mysql_real_escape_string($email);
-	$sql_pass = mysql_real_escape_string($_POST['NewPass1']);
+	$sql_email = mysqli_real_escape_string($mysqli, $email);
+	$sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
 	$sql = "update users  set pass=MD5('$sql_pass')
 where users_name='$sql_email'";
-	if (mysql_query($sql))
+	if (mysqli_query($mysqli, $sql))
 	  $rv .= "<h3>Password successfully updated</h3>";
 	else
 	  $rv .= "<div id='form_error'>unexpected error while updating your password..</div>";
@@ -496,10 +501,10 @@ if (isset($_POST['submit_login'])) {
      echo HTMLRegistrationForm($error_msg, $name, $email, $cemail,
 			       $answer, $institution);
    else {
-     $safe_email = mysql_real_escape_string($email);
-     $safe_password = mysql_real_escape_string($password);
-     $safe_name = mysql_real_escape_string($name);
-     $safe_institution = $institution ? "'" . mysql_real_escape_string($institution) . "'" : 'NULL';
+     $safe_email = mysql_real_escape_string($mysqli, $email);
+     $safe_password = mysql_real_escape_string($mysqli, $password);
+     $safe_name = mysql_real_escape_string($mysqli, $name);
+     $safe_institution = $institution ? "'" . mysql_real_escape_string($mysqli, $institution) . "'" : 'NULL';
      $desired_usertype = ($answer == 'yes' ? USER_TYPE_PARTICIPANT :
 			  USER_TYPE_PUBLIC);
      $safe_usertype = USER_TYPE_PUBLIC;
@@ -507,7 +512,7 @@ if (isset($_POST['submit_login'])) {
 name, email, institution) values ($safe_usertype, '$safe_email',
 MD5('$safe_password'), '$safe_name', '$safe_email',
 $safe_institution)";
-     mysql_query($sql) or die("<pre>" . mysql_error() .
+     mysqli_query($mysqli, $sql) or die("<pre>" . mysql_error() .
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
