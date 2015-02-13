@@ -37,17 +37,18 @@ load_user_types();
 function setting($name, $default = null)
 {
     global $mysqli;
-    $name = mysql_real_escape_string($name);
+    $name = mysqli_real_escape_string($mysqli, $name);
     $sql = "select value from settings where name='$name';";
     $result = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
       "\n$sql");
-    $row = mysqli_fetch_assoc($result);
-    if (!$row) {
+    if ($row = mysqli_fetch_assoc($result)) { 
+        return $row['value'];
+    } else {
         if ($default === null) {
             die("no value found for $name setting");
+        } else {
+           return $default;
         }
-    } else {
-        return $default;
     }
     return $row['value'];
 }
