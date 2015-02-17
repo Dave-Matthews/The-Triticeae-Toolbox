@@ -388,7 +388,7 @@ function HTMLProcessLogin()
             $rv = HTMLLoginSuccess();
         } else {
             if (!passIsRight($_POST['email'], $_POST['password'])) {
-                if (isOldUser($email, $password) {
+                if (isOldUser($email, $password)) {
                     $rv = HTMLLoginForm("You hava an old account. Please selet \"I forgot my password\" link to reset your password");
                 } else {
                     $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
