@@ -11,20 +11,20 @@ require_once($config['root_dir'].'includes/aes.inc');
 if (!isset($_GET['token'])) 
   die('This script only handles email confirmations.');
 
-connect();
+$mysqli = connecti();
 $token = $_GET['token'];
 $email = AESDecryptCtr($token, setting('encryptionkey'), 128);
-$email = mysql_real_escape_string($email);
+$email = mysqli_real_escape_string($mysqli, $email);
 /* $sql = "select users_uid, name from users where users_name = '$email' and email_verified=0;"; */
-$sql = "select users_uid, name, email_verified from users where users_name = '$email'";
-$r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
-if (!mysql_num_rows($r)) 
+$sql = "select users_uid, name, email_verified from users where users_name = SHA1('$email')";
+$r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
+if ($row = mysqli_fetch_assoc($r)) {
+  $name = $row['name'];
+  $uid = $row['users_uid'];
+  $vrfy = $row['email_verified'];
+} else {
   die("Couldn't find your record in the database.");
-
-$row = mysql_fetch_assoc($r);
-$name = $row['name'];
-$uid = $row['users_uid'];
-$vrfy = $row['email_verified'];
+}
 
 require_once $config['root_dir'].'theme/normal_header.php';
 ?>
@@ -53,7 +53,7 @@ HTML;
       $sql = "update users set email_verified=1 where users_uid=$uid";
     else 
       $sql = "delete from users where users_uid=$uid;";
-    mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
+    mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
     if (isset($_GET['yes']))
       echo "<h3>Your registration was confirmed.</h3>";
     else 

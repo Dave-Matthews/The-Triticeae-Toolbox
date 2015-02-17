@@ -47,6 +47,7 @@ $mysqli = connecti();
 function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="no",$institution="")
 {
     // ensure that we go back to home..
+    global $mysqli;
     $_SESSION['login_referer_override'] = '/';
     $c_no = "";
     $c_yes = "";
@@ -264,8 +265,8 @@ function isUser($email, $pass) {
   $sql_email = mysqli_real_escape_string($mysqli, $email);
   $sql_pass = mysqli_real_escape_string($mysqli, $pass);
   $public_type_id = USER_TYPE_PUBLIC;
-  $sql = "select * from users where users_name='$sql_email' and
-pass = MD5('$sql_pass') and (abs(email_verified) > 0 or
+  $sql = "select * from users where users_name = SHA1('$sql_email') and
+pass = SHA1('$sql_pass') and (abs(email_verified) > 0 or
 user_types_uid=$public_type_id) limit 1";
   $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
   return mysqli_num_rows($query) > 0;
@@ -278,7 +279,7 @@ function isVerified($email) {
   global $mysqli;
   $sql_email = mysqli_real_escape_string($mysqli, $email);
   $sql = "select email_verified from users where
-users_name='$sql_email'";
+users_name = SHA1('$sql_email')";
   $r = mysqli_query($mysqli, $sql);
   $row = mysqli_fetch_assoc($r);
   if ($row)
@@ -293,8 +294,8 @@ function passIsRight($email, $pass) {
   global $mysqli;
   $sql_email = mysqli_real_escape_string($mysqli, $email);
   $sql_pass = mysqli_real_escape_string($mysqli, $pass);
-  $sql = "select pass=MD5('$sql_pass') as passIsRight from users
-where users_name='$sql_email'";
+  $sql = "select pass=SHA1('$sql_pass') as passIsRight from users
+where users_name = SHA1('$sql_email')";
   $r = mysqli_query($mysqli, $sql);
   $row = mysqli_fetch_assoc($r);
   if ($row)
@@ -308,7 +309,7 @@ where users_name='$sql_email'";
 function isRegistered($email) {
   global $mysqli;
   $sql_email = mysqli_real_escape_string($mysqli, $email);
-  $sql = "select * from users where users_name = '$sql_email'";
+  $sql = "select * from users where users_name = SHA1('$sql_email')";
   $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
   return mysqli_num_rows($query) > 0;
 }
@@ -330,10 +331,17 @@ function HTMLProcessLogin() {
         if (isUser($email, $password)) {
           // Successful login
           $_SESSION['username'] = $email;
-          $_SESSION['password'] = md5($password);
+          $sql = "SELECT SHA1(\"$password\") AS password";
+          $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
+          if ($row = mysqli_fetch_assoc($res)) {
+              $password = $row['password'];
+              $_SESSION['password'] = $row['password'];
+          } else {
+              die("SQL Error hashing password\n");
+          }
           $sql = "update users set lastaccess = now() where
       users_name = '$email'";
-          mysqli_query($mysqli, $sql) or die("<pre>" . mysql_error() .
+          mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
                                    "\n\n\n$sql.</pre>");
           // Retrieve stored selection of lines, markers and maps.
           $stored = retrieve_session_variables('selected_lines', $email);
@@ -386,7 +394,7 @@ function HTMLProcessForgot() {
     send_email($email, "T3: Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
-{$root}resetpass.php?token=$urltoken");
+http:{$root}resetpass.php?token=$urltoken");
     return "An email has been sent to you with a link to reset your
 password.";
   }
@@ -397,6 +405,7 @@ password.";
  * fragment
  */
 function HTMLProcessChange() {
+  global $mysqli;
   $_SESSION['login_referer_override'] = '/';
   $email = $_POST['txt_email'];
   $pass = $_POST['OldPass'];
@@ -406,8 +415,8 @@ function HTMLProcessChange() {
       if ($_POST['NewPass1'] == $_POST['NewPass2']) {
 	$sql_email = mysqli_real_escape_string($mysqli, $email);
 	$sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
-	$sql = "update users  set pass=MD5('$sql_pass')
-where users_name='$sql_email'";
+	$sql = "update users  set pass=SHA1('$sql_pass')
+where users_name=SHA1('$sql_email')";
 	if (mysqli_query($mysqli, $sql))
 	  $rv .= "<h3>Password successfully updated</h3>";
 	else
@@ -501,18 +510,32 @@ if (isset($_POST['submit_login'])) {
      echo HTMLRegistrationForm($error_msg, $name, $email, $cemail,
 			       $answer, $institution);
    else {
-     $safe_email = mysql_real_escape_string($mysqli, $email);
-     $safe_password = mysql_real_escape_string($mysqli, $password);
-     $safe_name = mysql_real_escape_string($mysqli, $name);
-     $safe_institution = $institution ? "'" . mysql_real_escape_string($mysqli, $institution) . "'" : 'NULL';
+     $safe_email = mysqli_real_escape_string($mysqli, $email);
+     $safe_password = mysqli_real_escape_string($mysqli, $password);
+     $safe_name = mysqli_real_escape_string($mysqli, $name);
+     $sql = "SELECT SHA1('$safe_password') AS password";
+     $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
+     if ($row = mysqli_fetch_assoc($res)) {
+         $hash_password = $row['password'];
+     } else {
+         die("SQL Error hashing password\n");
+     }
+     $sql = "SELECT SHA1('$safe_email') AS email";
+     $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing email\n");
+     if ($row = mysqli_fetch_assoc($res)) {
+         $hash_email = $row['email'];
+     } else {
+         die("SQL Error hashing email\n");
+     }
+     $safe_institution = $institution ? "'" . mysqli_real_escape_string($mysqli, $institution) . "'" : 'NULL';
      $desired_usertype = ($answer == 'yes' ? USER_TYPE_PARTICIPANT :
 			  USER_TYPE_PUBLIC);
      $safe_usertype = USER_TYPE_PUBLIC;
      $sql = "insert into users (user_types_uid, users_name, pass,
-name, email, institution) values ($safe_usertype, '$safe_email',
-MD5('$safe_password'), '$safe_name', '$safe_email',
+name, email, institution) values ($safe_usertype, '$hash_email',
+'$hash_password', '$safe_name', '$hash_email',
 $safe_institution)";
-     mysqli_query($mysqli, $sql) or die("<pre>" . mysql_error() .
+     mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
@@ -523,7 +546,7 @@ Thank you for requesting an account on T3.
 
 To complete your registration, please confirm that you requested it 
 by visiting the following URL:
-{$root}fromemail.php?token=$urltoken
+http:{$root}fromemail.php?token=$urltoken
 
 Your registration will be complete when you have performed this step.
 

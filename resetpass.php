@@ -12,19 +12,27 @@ if (!isset($_GET['token'])) {
   die('This script only handles password reset');
  }
 
-connect();
+$mysqli = connecti();
 $token = $_GET['token'];
 $urltoken = urlencode($token);
 $email = AESDecryptCtr($token, setting('passresetkey'), 128);
-$sql_email = mysql_real_escape_string($email);
+$sql_email = mysqli_real_escape_string($mysqli, $email);
 $sql = "select users_uid, name from users where users_name='$sql_email';";
-$r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
-if (!mysql_num_rows($r)) {
-  header('HTTP/1.0 404 Not Found');
-  die("Couldn't find your record in the database");
- }
-$row = mysql_fetch_assoc($r);
-extract($row);
+$r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
+if (mysqli_num_rows($r)) {
+  $row = mysqli_fetch_assoc($r);
+  extract($row);
+} else {
+  $sql = "select users_uid, name from users where users_name = SHA1('$sql_email');";
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
+  if (mysqli_num_rows($r)) {
+    $row = mysqli_fetch_assoc($r);
+    extract($row);
+  } else {
+    header('HTTP/1.0 404 Not Found');
+    die("Couldn't find your record in the database");
+  }
+}
 
 require_once $config['root_dir'] . 'theme/normal_header.php';
 ?>
@@ -53,10 +61,10 @@ match, please try again</h3>\n";
 HTML;
  }
  else {
-   $sql_password = mysql_real_escape_string($_POST['password']);
-   $sql = "update users set pass=MD5('$sql_password') where
+   $sql_password = mysqli_real_escape_string($mysqli, $_POST['password']);
+   $sql = "update users set pass=SHA1('$sql_password'), email = SHA1('$email'), users_name = SHA1('$email')  where
 users_uid=$users_uid;";
-   mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
+   mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
    echo "<h3>Your password was updated.</h3>";
  }
 
