@@ -343,6 +343,18 @@ function isRegistered($email)
 }
 
 /**
+ * See if the given email belongs to a old account.
+ */
+function isOldRegistered($email)
+{
+    global $mysqli;
+    $sql_email = mysqli_real_escape_string($mysqli, $email);
+    $sql = "select * from users where users_name = '$sql_email'";
+    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+    return mysqli_num_rows($query) > 0;
+}
+
+/**
  * Process the login attempt and return the appropriate html
  * fragment re that
  */
@@ -353,7 +365,11 @@ function HTMLProcessLogin()
     $password = $_POST['password'];
     $rv = '';
     if (!isRegistered($email)) {
-        $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
+        if (isOldRegistered($email)) {
+            $rv = HTMLLoginForm("Address <b>'$email'</b> is an old account. Please selet \"I forgot my password\" link to reset your password.");
+        } else {
+            $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
+        }
     } elseif (!isVerified($_POST['email'])) {
         $rv = HTMLLoginForm("You cannot login until you confirm your email address, using the link was sent to you at the time of registration.");
     } else {
