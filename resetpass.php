@@ -8,9 +8,9 @@ require_once $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require_once $config['root_dir'] . 'includes/aes.inc';
 
 if (!isset($_GET['token'])) {
-  header('HTTP/1.0 404 Not Found');
-  die('This script only handles password reset');
- }
+    header('HTTP/1.0 404 Not Found');
+    die('This script only handles password reset');
+}
 
 $mysqli = connecti();
 $token = $_GET['token'];
@@ -20,18 +20,18 @@ $sql_email = mysqli_real_escape_string($mysqli, $email);
 $sql = "select users_uid, name from users where users_name='$sql_email';";
 $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
 if (mysqli_num_rows($r)) {
-  $row = mysqli_fetch_assoc($r);
-  extract($row);
-} else {
-  $sql = "select users_uid, name from users where users_name = SHA1('$sql_email');";
-  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
-  if (mysqli_num_rows($r)) {
     $row = mysqli_fetch_assoc($r);
     extract($row);
-  } else {
-    header('HTTP/1.0 404 Not Found');
-    die("Couldn't find your record in the database");
-  }
+} else {
+    $sql = "select users_uid, name from users where users_name = SHA1('$sql_email');";
+    $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
+    if (mysqli_num_rows($r)) {
+        $row = mysqli_fetch_assoc($r);
+        extract($row);
+    } else {
+        header('HTTP/1.0 404 Not Found');
+        die("Couldn't find your record in the database");
+    }
 }
 
 require_once $config['root_dir'] . 'theme/normal_header.php';
@@ -40,10 +40,11 @@ require_once $config['root_dir'] . 'theme/normal_header.php';
 <?php
 if (!isset($_POST['password']) ||
     ($_POST['password'] != $_POST['cpassword'])) {
-  if ($_POST['password'] != $_POST['cpassword'])
-    echo "<h3 style='color: red'>Two values you provided do not
+    if ($_POST['password'] != $_POST['cpassword']) {
+        echo "<h3 style='color: red'>Two values you provided do not
 match, please try again</h3>\n";
-  echo <<<HTML
+    }
+    echo <<<HTML
 <p>Hi {$name}, to reset your password please type your new
   password in the input boxes below:<br />
   <form action="" method="post">
@@ -59,15 +60,13 @@ match, please try again</h3>\n";
     <input type="submit" value="Change My Password"></input>
 </form></p>
 HTML;
- }
- else {
-   $sql_password = mysqli_real_escape_string($mysqli, $_POST['password']);
-   $sql = "update users set pass=SHA1('$sql_password'), email = SHA1('$email'), users_name = SHA1('$email')  where
+} else {
+    $sql_password = mysqli_real_escape_string($mysqli, $_POST['password']);
+    $sql = "update users set pass=SHA1('$sql_password'), email = SHA1('$email'), users_name = SHA1('$email')  where
 users_uid=$users_uid;";
-   mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
-   echo "<h3>Your password was updated.</h3>";
- }
+    mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql");
+    echo "<h3>Your password was updated.</h3>";
+}
 
 $footer_div = 1;
 include($config['root_dir'].'theme/footer.php');
-?>

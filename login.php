@@ -3,16 +3,13 @@
  * Login
  *
  * PHP version 5.3
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/login.php
  *
  * 12/14/2010 JLee  Change to use curator bootstrap
- * 
+ *
  */
 
 
@@ -42,9 +39,9 @@ $mysqli = connecti();
  * @param string $answer      response to do you have password
  * @param string $institution institution
  *
- * @return registration form 
+ * @return registration form
  */
-function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="no",$institution="")
+function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", $answer = "no", $institution = "")
 {
     // ensure that we go back to home..
     global $mysqli;
@@ -52,13 +49,16 @@ function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="
     $c_no = "";
     $c_yes = "";
     $c_forgot="";
-    if ($answer == "no")
-      $c_no = 'checked="checked"';
-    if ($answer == "yes")
-      $c_yes = 'checked="checked"';
+    if ($answer == "no") {
+        $c_no = 'checked="checked"';
+    }
+    if ($answer == "yes") {
+        $c_yes = 'checked="checked"';
+    }
     $retval = "";
-    if (!empty($msg))
-      $retval .= "<div id='form_error'>$msg</div>\n";
+    if (!empty($msg)) {
+        $retval .= "<div id='form_error'>$msg</div>\n";
+    }
     $sql = "select institutions_name, email_domain from institutions";
     $result = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n$sql");
     $domainMap = array();
@@ -69,8 +69,9 @@ function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="
         $iname = $row['institutions_name'];
         if ($edomain) {
             array_push($domainMap, "'$edomain': '$iname'");
-        if ($edomain == $email_domain)
-            $institution = $iname;
+            if ($edomain == $email_domain) {
+                $institution = $iname;
+            }
         }
     }
     $domainMap = '{' . join(", ", $domainMap) . '}';
@@ -79,7 +80,7 @@ function HTMLRegistrationForm($msg="", $name="", $email="", $cemail="",$answer="
 <h2>Registration</h2>
 <script type="text/javascript">
   function validatePassword(pw) {
-    if (pw.length < 6) {
+    if (pw.length < 8) {
       alert("Please supply a password of at least 6 characters.");
       return false;
     }
@@ -164,8 +165,9 @@ HTML;
 function HTMLLoginForm($msg = "")
 {
     $email = "";
-    if (isset($_GET['e']) && !empty($_GET['e']))
-      $email = base64_decode($_GET['e']);
+    if (isset($_GET['e']) && !empty($_GET['e'])) {
+        $email = base64_decode($_GET['e']);
+    }
     $c_no = "";
     $c_yes = "checked=\"checked\"";
     if (isset($_GET['a']) && !empty($_GET['a'])) {
@@ -174,12 +176,14 @@ function HTMLLoginForm($msg = "")
     }
 
     $retval = "";
-    if (!empty($msg))
+    if (!empty($msg)) {
         $retval .= "<div id='form_error'>$msg</div>";
+    }
     global $config;
     $dir = explode("/", $config['root_dir']);
     // Pop twice.
-    $crop = array_pop($dir); $crop = array_pop($dir);
+    $crop = array_pop($dir);
+    $crop = array_pop($dir);
     $retval .= <<<HTML
   <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
   <h3>Why Register?</h3>
@@ -240,11 +244,12 @@ HTML;
 /**
  * Return the html fragment associated with successful registration.
  */
-function HTMLRegistrationSuccess($name, $email) {
-  $_SESSION['login_referer_override'] = '/';
-  $em = $email;
-  $email = base64_encode($email);
-  return <<< HTML
+function HTMLRegistrationSuccess($name, $email)
+{
+    $_SESSION['login_referer_override'] = '/';
+    $em = $email;
+    $email = base64_encode($email);
+    return <<< HTML
 <p>Welcome, $name. You are being registered. An email has been sent to
 $em describing how to confirm your registration.
 <!--
@@ -260,128 +265,160 @@ HTML;
  * Check if the given user/password pair belongs to a properly
  * registered user that can be logged in.
  */
-function isUser($email, $pass) {
-  global $mysqli;
-  $sql_email = mysqli_real_escape_string($mysqli, $email);
-  $sql_pass = mysqli_real_escape_string($mysqli, $pass);
-  $public_type_id = USER_TYPE_PUBLIC;
-  $sql = "select * from users where users_name = SHA1('$sql_email') and
+function isUser($email, $pass)
+{
+    global $mysqli;
+    $sql_email = mysqli_real_escape_string($mysqli, $email);
+    $sql_pass = mysqli_real_escape_string($mysqli, $pass);
+    $public_type_id = USER_TYPE_PUBLIC;
+    $sql = "select * from users where users_name = SHA1('$sql_email') and
 pass = SHA1('$sql_pass') and (abs(email_verified) > 0 or
 user_types_uid=$public_type_id) limit 1";
-  $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
-  return mysqli_num_rows($query) > 0;
+    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+    return mysqli_num_rows($query) > 0;
 }
+
+/**
+ * Check if the given user/passrod pair belongs to a old account. 
+ */
+function isOldUser($email, $pass)
+{
+    global $mysqli;
+    $sql_email = mysqli_real_escape_string($mysqli, $email);
+    $sql_pass = mysqli_real_escape_string($mysqli, $pass);
+    $public_type_id = USER_TYPE_PUBLIC;
+    $sql = "select * from users where users_name = '$sql_email' and
+pass = MD5('$sql_pass') and (abs(email_verified) > 0 or
+user_types_uid=$public_type_id) limit 1";
+    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+    return mysqli_num_rows($query) > 0;
+}
+
 
 /**
  * Check if the user+password confirmed his email.
  */
-function isVerified($email) {
-  global $mysqli;
-  $sql_email = mysqli_real_escape_string($mysqli, $email);
-  $sql = "select email_verified from users where
-users_name = SHA1('$sql_email')";
-  $r = mysqli_query($mysqli, $sql);
-  $row = mysqli_fetch_assoc($r);
-  if ($row)
-    return $row['email_verified'];
-  return FALSE;
+function isVerified($email)
+{
+    global $mysqli;
+    $sql_email = mysqli_real_escape_string($mysqli, $email);
+    $sql = "select email_verified from users where
+    users_name = SHA1('$sql_email')";
+    $r = mysqli_query($mysqli, $sql);
+    $row = mysqli_fetch_assoc($r);
+    if ($row) {
+        return $row['email_verified'];
+    }
+    return false;
 }
 
 /**
  * See if the password is right for the user.
  */
-function passIsRight($email, $pass) {
-  global $mysqli;
-  $sql_email = mysqli_real_escape_string($mysqli, $email);
-  $sql_pass = mysqli_real_escape_string($mysqli, $pass);
-  $sql = "select pass=SHA1('$sql_pass') as passIsRight from users
-where users_name = SHA1('$sql_email')";
-  $r = mysqli_query($mysqli, $sql);
-  $row = mysqli_fetch_assoc($r);
-  if ($row)
-    return $row['passIsRight'];
-  return FALSE;
+function passIsRight($email, $pass)
+{
+    global $mysqli;
+    $sql_email = mysqli_real_escape_string($mysqli, $email);
+    $sql_pass = mysqli_real_escape_string($mysqli, $pass);
+    $sql = "select pass=SHA1('$sql_pass') as passIsRight from users
+    where users_name = SHA1('$sql_email')";
+    $r = mysqli_query($mysqli, $sql);
+    $row = mysqli_fetch_assoc($r);
+    if ($row) {
+        return $row['passIsRight'];
+    }
+    return false;
 }
 
 /**
  * See if the given email belongs to a registered user at all.
  */
-function isRegistered($email) {
-  global $mysqli;
-  $sql_email = mysqli_real_escape_string($mysqli, $email);
-  $sql = "select * from users where users_name = SHA1('$sql_email')";
-  $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
-  return mysqli_num_rows($query) > 0;
+function isRegistered($email)
+{
+    global $mysqli;
+    $sql_email = mysqli_real_escape_string($mysqli, $email);
+    $sql = "select * from users where users_name = SHA1('$sql_email')";
+    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+    return mysqli_num_rows($query) > 0;
 }
 
 /**
  * Process the login attempt and return the appropriate html
  * fragment re that
  */
-function HTMLProcessLogin() {
-  global $mysqli;
-  $email = $_POST['email'];
-  $password = $_POST['password'];
-  $rv = '';
-  if (!isRegistered($email))
-    $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
-  elseif (!isVerified($_POST['email']))
-    $rv = HTMLLoginForm("You cannot login until you confirm your email address, using the link was sent to you at the time of registration.");
-  else {
+function HTMLProcessLogin()
+{
+    global $mysqli;
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    $rv = '';
+    if (!isRegistered($email)) {
+        $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
+    } elseif (!isVerified($_POST['email'])) {
+        $rv = HTMLLoginForm("You cannot login until you confirm your email address, using the link was sent to you at the time of registration.");
+    } else {
         if (isUser($email, $password)) {
-          // Successful login
-          $_SESSION['username'] = $email;
-          $sql = "SELECT SHA1(\"$password\") AS password";
-          $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
-          if ($row = mysqli_fetch_assoc($res)) {
-              $password = $row['password'];
-              $_SESSION['password'] = $row['password'];
-          } else {
-              die("SQL Error hashing password\n");
-          }
-          $sql = "update users set lastaccess = now() where
-      users_name = '$email'";
-          mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
+            // Successful login
+            $_SESSION['username'] = $email;
+            $sql = "SELECT SHA1(\"$password\") AS password";
+            $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
+            if ($row = mysqli_fetch_assoc($res)) {
+                $password = $row['password'];
+                $_SESSION['password'] = $row['password'];
+            } else {
+                die("SQL Error hashing password\n");
+            }
+            $sql = "update users set lastaccess = now() where
+            users_name = '$email'";
+            mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
                                    "\n\n\n$sql.</pre>");
-          // Retrieve stored selection of lines, markers and maps.
-          $stored = retrieve_session_variables('selected_lines', $email);
-          if (-1 != $stored)
-            $_SESSION['selected_lines'] = $stored;
-          $stored = retrieve_session_variables('clicked_buttons', $email);
-          if (-1 != $stored)
-            $_SESSION['clicked_buttons'] = $stored;
-          $stored = retrieve_session_variables('mapids', $email);
-          if (-1 != $stored)
-            $_SESSION['mapids'] = $stored;
-          $rv = HTMLLoginSuccess();
-        }
-        else {
-            if (!passIsRight($_POST['email'], $_POST['password']))
-                $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
-            else
+            // Retrieve stored selection of lines, markers and maps.
+            $stored = retrieve_session_variables('selected_lines', $email);
+            if (-1 != $stored) {
+                $_SESSION['selected_lines'] = $stored;
+            }
+            $stored = retrieve_session_variables('clicked_buttons', $email);
+            if (-1 != $stored) {
+                $_SESSION['clicked_buttons'] = $stored;
+            }
+            $stored = retrieve_session_variables('mapids', $email);
+            if (-1 != $stored) {
+                $_SESSION['mapids'] = $stored;
+            }
+            $rv = HTMLLoginSuccess();
+        } else {
+            if (!passIsRight($_POST['email'], $_POST['password'])) {
+                if (isOldUser($email, $password) {
+                    $rv = HTMLLoginForm("You hava an old account. Please selet \"I forgot my password\" link to reset your password");
+                } else {
+                    $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
+                }
+            } else {
                 $rv = HTMLLoginForm("Login failed for unknown reason.");
+            }
         }
-  }
-  return $rv;
+    }
+    return $rv;
 }
 
 /**
  * Process registration attempt and return appropriate html fragment
  */
-function HTMLProcessRegistration() {
-  if (isRegistered($_POST['email']))
-    return HTMLLoginForm("That e-mail address already has an account associated with it. Please, try again.");
-  else
-    return HTMLRegistrationForm("", "", $_POST['email'], "",
-				$_POST['answer'],
-				$_POST['institution']);
+function HTMLProcessRegistration()
+{
+    if (isRegistered($_POST['email'])) {
+        return HTMLLoginForm("That e-mail address already has an account associated with it. Please, try again.");
+    } else {
+        return HTMLRegistrationForm("", "", $_POST['email'], "", $_POST['answer'], $_POST['institution']);
+    }
 }
 
 /**
  * Process forgotten password situation and return appropriate html
  * fragment.
  */
-function HTMLProcessForgot() {
+function HTMLProcessForgot()
+{
   global $root;
   // ensure that we go back to home..
   $_SESSION['login_referer_override'] = '/';
@@ -394,7 +431,7 @@ function HTMLProcessForgot() {
     send_email($email, "T3: Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
-http:{$root}resetpass.php?token=$urltoken");
+https:{$root}resetpass.php?token=$urltoken");
     return "An email has been sent to you with a link to reset your
 password.";
   }
