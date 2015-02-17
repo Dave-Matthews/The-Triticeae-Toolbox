@@ -366,7 +366,7 @@ function HTMLProcessLogin()
     $rv = '';
     if (!isRegistered($email)) {
         if (isOldRegistered($email)) {
-            $rv = HTMLLoginForm("Address <b>'$email'</b> is an old account. Please selet \"I forgot my password\" link to reset your password.");
+            $rv = HTMLLoginForm("Address <b>'$email'</b> is an old account. Please select \"I forgot my password\" link to reset your password.");
         } else {
             $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
         }
