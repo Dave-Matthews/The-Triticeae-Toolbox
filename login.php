@@ -435,22 +435,22 @@ function HTMLProcessRegistration()
  */
 function HTMLProcessForgot()
 {
-  global $root;
-  // ensure that we go back to home..
-  $_SESSION['login_referer_override'] = '/';
-  $email = $_POST['email'];
-  if (!isRegistered($email))
-    return "<h3 style='color: red'>No such user, please register.</h3>";
-  else {
-    $key = setting('passresetkey');
-    $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-    send_email($email, "T3: Reset Your Password",
+    global $root;
+    // ensure that we go back to home..
+    $_SESSION['login_referer_override'] = '/';
+    $email = $_POST['email'];
+    if (isRegistered($email) || isOldRegistered($email)) {
+        $key = setting('passresetkey');
+        $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
+        send_email($email, "T3: Reset Your Password",
 	       "Hi,
 Per your request, please visit the following URL to reset your password:
 https:{$root}resetpass.php?token=$urltoken");
     return "An email has been sent to you with a link to reset your
 password.";
-  }
+    } else {
+        return "<h3 style='color: red'>No such user, please register.</h3>";
+    }
 }
 
 /**
