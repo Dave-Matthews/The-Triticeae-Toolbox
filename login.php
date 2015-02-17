@@ -279,6 +279,23 @@ user_types_uid=$public_type_id) limit 1";
 }
 
 /**
+ * Check if the given user/passrod pair belongs to a old account. 
+ */
+function isOldUser($email, $pass)
+{
+    global $mysqli;
+    $sql_email = mysqli_real_escape_string($mysqli, $email);
+    $sql_pass = mysqli_real_escape_string($mysqli, $pass);
+    $public_type_id = USER_TYPE_PUBLIC;
+    $sql = "select * from users where users_name = '$sql_email' and
+pass = MD5('$sql_pass') and (abs(email_verified) > 0 or
+user_types_uid=$public_type_id) limit 1";
+    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+    return mysqli_num_rows($query) > 0;
+}
+
+
+/**
  * Check if the user+password confirmed his email.
  */
 function isVerified($email)
@@ -371,7 +388,11 @@ function HTMLProcessLogin()
             $rv = HTMLLoginSuccess();
         } else {
             if (!passIsRight($_POST['email'], $_POST['password'])) {
-                $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
+                if (isOldUser($email, $password) {
+                    $rv = HTMLLoginForm("You hava an old account. Please selet \"I forgot my password\" link to reset your password");
+                } else {
+                    $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
+                }
             } else {
                 $rv = HTMLLoginForm("Login failed for unknown reason.");
             }
