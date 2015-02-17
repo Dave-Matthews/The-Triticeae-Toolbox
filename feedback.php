@@ -59,6 +59,7 @@ $us_feedback=isset($_POST['feedback']) ? $_POST['feedback']:'';
 $us_feedback = str_replace('\r\n', "\n", $us_feedback);
 // Try to remove the \ being inserted before all ' characters.
 $us_feedback = stripslashes($us_feedback);
+$baseurl = $config['base_url'];
 
 $footer_div = 1;
 $securimage = new Securimage();
@@ -66,8 +67,9 @@ $capcha_pass = $securimage->check($_POST['captcha_code']);
 //if ($us_feedback && $capcha_pass) {
 if ($us_feedback && $us_email && $capcha_pass) {
   send_email_from(setting('feedbackmail'), 'T3 Feedback', $us_email, 
-"User's reported name: $us_name
-User's reported email: $us_email
+"Name: $us_name
+Email: $us_email
+Database: $baseurl
 
 Feedback:
 $us_feedback");
