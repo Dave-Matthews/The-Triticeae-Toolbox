@@ -951,8 +951,11 @@ File:  <i><?php echo $uploadfile ?></i><br>
        $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid = $exid";
        $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
      } 
-     else 
-       echo "Error - No traits for experiment id = <b>'$exid'</b>.<br>$sql<p>";
+     else {
+       $badtc = mysql_grab("select trial_code from experiments where experiment_uid = $exid");
+       echo "Warning: There are no trait values for Trial <b>$badtc</b>.<br>";
+       $emptytrials[$badtc] = $exid;
+     }
 		
      // Add meansfile name to experiments.input_data_file_name, append to existing list if different.
      $meansfile = basename($meansfile);
@@ -968,8 +971,10 @@ File:  <i><?php echo $uploadfile ?></i><br>
      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
    }
 
-   // Announce success.
-   echo "Data was added or updated for the following Trials.<br><ul>";
+   // Announce success. Exclude any trials which have no data.
+   echo "<p>Data was added or updated for the following Trials.<br><ul>";
+   if ($emptytrials)
+     $exptids = array_diff($exptids, $emptytrials);
    foreach (array_keys($exptids) as $tc)
      echo "<li><a href='$config[base_url]display_phenotype.php?trial_code=$tc'>$tc</a><br>";
    echo "</ul><input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\"><p>";

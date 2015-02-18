@@ -7,28 +7,20 @@ require_once($config['root_dir'] . 'theme/normal_header.php');
 ini_set('magic_quotes_gpc', '0');
 
 require_once $config['root_dir'] . 'securimage/securimage.php';
-?>
 
-<h1>Feedback</h1>
-
-Please send your questions, suggestions, or complaints to the 
-T3 curators.
-<p>
-
-<?php
-function feedbackForm($name='', $email='', $feedback='') {
-  if (!$email) {
-    $email = $_SESSION['username'];
-    if (!$name) {
-      $sql_email = mysql_real_escape_string($email);
-      $sql = "select name from users where users_name='$sql_email';";
-      $r = mysql_query($sql);
-      if ($r) {
-	$row = mysql_fetch_assoc($r);
-	if ($row)
-	  $name = $row['name'];
-      }
-    }
+function feedbackForm($name='', $email='', $feedback='')
+{
+    global $mysqli;
+    if (!$email) {
+        $email = $_SESSION['username'];
+        if (!$name) {
+            $sql_email = mysqli_real_escape_string($mysqli, $email);
+            $sql = "select name from users where users_name = SHA1('$sql_email');";
+            $r = mysqli_query($mysqli, $sql);
+	    if ($row = mysql_fetch_assoc($r)) {
+	        $name = $row['name'];
+            }
+        }
   }
   $html_name=htmlspecialchars($name, ENT_QUOTES);
   $html_email=htmlspecialchars($email, ENT_QUOTES);
@@ -81,19 +73,31 @@ Feedback:
 $us_feedback");
 
   echo "<h3>Thank you for your feedback. It has been sent to the T3 curators.</h3>";
+} elseif ($_POST) {
+    ?>
+    <h1>Feedback</h1>
+    Please send your questions, suggestions, or complaints to the
+    T3 curators.
+    <p>
+    <?php
+    if (!$capcha_pass) {
+        echo "<h3 style='color: red'>Please enter the CAPTCHA code</h3>";
+    }
+    if (!$us_email) {
+        echo "<h3 style='color: red'>Your email address is required.</h3>";
+    }
+    if (!$us_feedback) {
+        echo "<h3 style='color: red'>No message entered.</h3>";
+    }
+    echo feedbackForm($us_name, $us_email, $us_feedback);
+} else {
+    ?>
+    <h1>Feedback</h1>
+    Please send your questions, suggestions, or complaints to the
+    T3 curators.
+    <p>
+    <?php
+    echo feedbackForm($us_name, $us_email, $us_feedback);
 }
-elseif ($_POST) {
-  if (!$capcha_pass)  {
-    echo "<h3 style='color: red'>Please enter the CAPTCHA code</h3>";
-  }
-  if (!$us_email)  {
-    echo "<h3 style='color: red'>Your email address is required.</h3>";
-  }
-  if (!$us_feedback)  {
-    echo "<h3 style='color: red'>No message entered.</h3>";
-  }
-}
-echo feedbackForm($us_name, $us_email, $us_feedback);
 
-require_once($config['root_dir'] . 'theme/footer.php');
-?>
+require_once $config['root_dir'] . 'theme/footer.php';

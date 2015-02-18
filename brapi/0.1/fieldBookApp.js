@@ -6,7 +6,7 @@
 //  });
 //};
 
-var lineAry = [];
+var lineStr = "";
 
 window.onload = function() {
 $("#tabs").tabs({
@@ -82,7 +82,7 @@ function getListStudies()
 function get_detail(exp)
 {
   var items = [];
-  lineAry = [];
+  lineStr = "";
   var apiUrl = document.getElementById("url").value + "/study/" + exp;
   if (document.getElementById("YesDebug").checked === true) {
     items.push("API call = " + apiUrl);
@@ -108,7 +108,11 @@ function get_detail(exp)
               jQuery.each( data["design"][i], function ( key2, val2 ) {
                 items.push("<td>" + val2);
                 if (key2 == "lineRecordName") {
-                  lineAry.push(val2);
+                  if (lineStr === "") {
+                    lineStr = val2;
+                  } else {
+                    lineStr += "\r\n" + val2;
+                  }
                 }
               });
             });
@@ -139,7 +143,7 @@ function getListTraits()
     dataType: "json",
     url: apiUrl,
     success: function(data, textStatus) {
-      items.push("<h3>List of studies</h3><table>");
+      items.push("<h3>List of traits</h3><table>");
       items.push("<tr>");
       jQuery.each( data[0], function( key, val ) {
          if (key == "uid") {
