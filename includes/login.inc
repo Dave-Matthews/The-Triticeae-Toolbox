@@ -139,7 +139,7 @@ function login($user, $password) { //attempt to login false if invalid true if c
 function isLoggedIn($user, $hashpass) { 
 	$auth = FALSE;
 	if($hashpass != "") { 
-	   $result = mysql_query("SELECT pass FROM users WHERE users_name='$user'") or die(mysql_error());
+           $result = mysql_query("SELECT pass FROM users WHERE users_name = SHA1('$user')") or die(mysql_error());
    	   $pass = mysql_fetch_row($result);
 
 	   if ($hashpass === $pass[0]) {

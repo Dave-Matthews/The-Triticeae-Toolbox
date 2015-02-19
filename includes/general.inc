@@ -59,7 +59,7 @@ function loadUser($user) {
 
 	$q = mysql_query("SELECT * 
 			  FROM users 
-			  WHERE users_name = '$user'
+			  WHERE users_name = SHA1('$user')
 			")
 	     or die(mysql_error());
 
