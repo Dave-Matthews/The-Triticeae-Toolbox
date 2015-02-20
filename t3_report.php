@@ -13,7 +13,6 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require_once 'includes/excel/Writer.php';
-date_default_timezone_set('America/Los_Angeles');
 
 //query for count of genotyping_data table takes too long
 //cache the results of the queries 
