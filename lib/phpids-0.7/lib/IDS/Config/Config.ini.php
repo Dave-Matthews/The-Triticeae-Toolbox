@@ -34,6 +34,7 @@
     exceptions[]    = GET.__utmz
     exceptions[]    = GET.__utmc
     exceptions[]    = COOKIE.__utmz
+    exceptions[]    = REQUEST.__utmz
 
     ; you can use regular expressions for wildcard exceptions - example: /.*foo/i
 
