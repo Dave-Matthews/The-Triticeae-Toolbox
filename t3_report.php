@@ -13,12 +13,12 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require_once 'includes/excel/Writer.php';
+date_default_timezone_set('America/Los_Angeles');
 
 //query for count of genotyping_data table takes too long
 //cache the results of the queries 
 //updating the cache is done every 24 hours
 
-$mysql = connect();
 $mysqli = connecti();
 
 $user_agent = $_SERVER['HTTP_USER_AGENT'];
@@ -233,32 +233,32 @@ if ($query == 'geno') {
   }
 } elseif ($query == 'cache') {
      $sql = "select count(genotyping_data_uid) from genotyping_data";
-     $res = mysql_query($sql) or die(mysql_error());
-     if ($row = mysql_fetch_row($res)) {
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+     if ($row = mysqli_fetch_row($res)) {
        $allele_count = $row[0];
      } else {
        print "error $sql<br>\n";
      }
      $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
-     $res = mysql_query($sql) or die(mysql_error());
-     if ($row = mysql_fetch_row($res)) {
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+     if ($row = mysqli_fetch_row($res)) {
        $allele_update = $row[0];
      } else {
        print "error $sql<br>\n";
      }
      $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
-     $res = mysql_query($sql) or die(mysql_error());
-     if ($row = mysql_fetch_row($res)) {
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+     if ($row = mysqli_fetch_row($res)) {
         $LinesWithGeno = $row[0];
      }
      $sql = "select count(markers.marker_uid) from markers where marker_uid IN (Select marker_uid from allele_frequencies)";
-     $res = mysql_query($sql) or die(mysql_error());
-     if ($row=mysql_fetch_row($res)) {
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+     if ($row=mysqli_fetch_row($res)) {
       $MarkersWithGeno = $row[0];
      }
      $sql = "select count(markers.marker_uid) from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
-     $res = mysql_query($sql) or die(mysql_error());
-     if ($row=mysql_fetch_row($res)) {
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+     if ($row=mysqli_fetch_row($res)) {
        $MarkersNoGeno = $row[0];
      }
 
@@ -275,14 +275,14 @@ if ($query == 'geno') {
    print "<table border=0>";
    print "<tr><td>Trial Code<td>Year<td>Files loaded\n";
    $sql = "select distinct(csr_measurement.experiment_uid), experiments.trial_code, experiments.experiment_year from csr_measurement, experiments where csr_measurement.experiment_uid = experiments.experiment_uid order by experiments.experiment_year";
-   $res = mysql_query($sql) or die(mysql_error());
-   while ($row = mysql_fetch_row($res)) {
+   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+   while ($row = mysqli_fetch_row($res)) {
        $uid = $row[0];
        $trial_code = $row[1];
        $year = $row[2];
        $sql = "select count(measurement_uid) from csr_measurement where experiment_uid = $uid";
-       $res2 = mysql_query($sql) or die(mysql_error());
-       if ($row2 = mysql_fetch_row($res2)) {
+       $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+       if ($row2 = mysqli_fetch_row($res2)) {
            $count = $row2[0];
        } else {
            $count = "";
