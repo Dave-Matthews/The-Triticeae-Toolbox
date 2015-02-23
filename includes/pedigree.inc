@@ -43,7 +43,7 @@ function show_line_records($id) {
   // Passport info
   echo "<div style='float: left; margin-left: 10px;'>";
   echo "<h3>Passport</h3>";
-  echo "<table class='tableclass1'>";
+  echo "<table>";
   // Custom instead of show_general():
   $res= mysql_query("
      select line_record_name, species, breeding_program_code, pedigree_string, generation, description, updated_on
@@ -67,7 +67,7 @@ function show_line_records($id) {
   // Synonyms and links to GRIN
   echo "<div style='float: left; margin-left: 10px;'>";
   echo "<h3>Synonyms</h3>";
-  echo "<table class='tableclass1' cellspacing=0 cellpadding=0>";
+  echo "<table cellspacing=0 cellpadding=0>";
   $synonyms = getSynonymNames($id);
   if ($synonyms===FALSE)
     echo "<tr><td>No synonyms";
@@ -84,15 +84,15 @@ function show_line_records($id) {
   }
   echo "</table>";
   // Pheno/Geno data links
-  // part of the Synonym <div>
+  // part of the Synonyms div
   echo "<h3>Phenotype,<br>Genotype Data</h3>";
-  echo "<table class='tableclass1'>";
+  echo "<table>";
   $phenotype = lineHasPhenotypeData($id) ? "<a href=\"phenotype/show.php?line=$id\">Show</a>" : "None";
-  echo "<tr><td><strong>Phenotype Results:</strong>";
+  echo "<tr><td><strong>Phenotype Results</strong>";
   echo "<td>$phenotype";
   $genotype = lineHasGenotypeData($id) ? "<a href=\"genotyping/show.php?line=$id\">Show</a>" : "None";
   echo "<tr>";
-  echo "<td><strong>Marker Alleles:</strong>";
+  echo "<td><strong>Marker Alleles</strong>";
   echo "<td>$genotype";
   echo "</table><br>";
   echo "</div>";
@@ -119,11 +119,11 @@ function show_line_records($id) {
   // Pedigree
   echo "<div style='float: left; margin-left: 10px;'>";
   echo "<h3>Pedigree</h3>";
-  echo "<table class='tableclass1' cellspacing=0 cellpadding=0>";
+  echo "<table cellspacing=0 cellpadding=0>";
   $tree = getPedigrees($name);
   $pedigree = (!is_array($tree[$name])) ? "No Record" : tree2str($tree, $name);
   if (is_array($tree[$name])) {
-    echo "<tr><td><strong>Ancestor<br>Expansion:</strong>";
+    echo "<tr><td><strong>Ancestor<br>Expansion</strong>";
     // break-all required for long pedigrees like MOREX, except in Firefox
     echo "<td style='word-break:break-all;'>$pedigree<br>";
     echo "<a href=\"pedigree/pedigree_tree.php?line=".urlencode($name)."\">Graphical Tree</a>";

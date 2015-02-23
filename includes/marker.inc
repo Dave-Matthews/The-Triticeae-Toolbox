@@ -112,15 +112,22 @@ function showLineForMarker($markername, $order="ORDER BY line_record_name") {
     $marker_type = "SNP";
   }
   
-  $query = "SELECT lr.line_record_name, a.allele_1, a.allele_2           
-	    FROM markers as m, line_records as lr, alleles as a,                                                      
-		 tht_base as tb, genotyping_data as gd
-            WHERE m.marker_name = '$markername'
-	      AND m.marker_uid = gd.marker_uid               
-	      AND a.genotyping_data_uid = gd.genotyping_data_uid                     
-	      AND tb.line_record_uid = lr.line_record_uid    
-	      AND gd.tht_base_uid = tb.tht_base_uid
-            $order";
+  /* $query = "SELECT lr.line_record_name, a.allele_1, a.allele_2            */
+  /* 	    FROM markers as m, line_records as lr, alleles as a,                                                       */
+  /* 		 tht_base as tb, genotyping_data as gd */
+  /*           WHERE m.marker_name = '$markername' */
+  /* 	      AND m.marker_uid = gd.marker_uid                */
+  /* 	      AND a.genotyping_data_uid = gd.genotyping_data_uid                      */
+  /* 	      AND tb.line_record_uid = lr.line_record_uid     */
+  /* 	      AND gd.tht_base_uid = tb.tht_base_uid */
+  /*           $order"; */
+
+$query = "SELECT experiments.trial_code, line_record_name, alleles
+          FROM experiments, allele_cache
+          WHERE allele_cache.marker_name = '$markername'
+          AND experiments.experiment_uid = allele_cache.experiment_uid
+          $order";
+
   $resource = mysql_query($query) or die(mysql_error());
 
   if(mysql_num_rows($resource) < 1) {
