@@ -822,7 +822,7 @@ function circularParentTest($line, $parent) {
 
 
 function pediStr2SQL($line, $str) {
-    global $myslqi
+    global $myslqi;
 	$duplicates = 0;
 
 	//generate array tree based off string 
