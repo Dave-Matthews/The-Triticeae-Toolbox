@@ -32,11 +32,12 @@ function check_version($submitted, $file) {
    No result is okay, returns empty string, ''.
 */
 function mysql_grab($querystring) {
-  $result = mysql_query($querystring);
-  $mmessage = mysql_error();
-  if (mysql_num_rows($result) > 1)
+  global $mysqli;
+  $result = mysqli_query($mysqli, $querystring);
+  $mmessage = mysqli_error($mysqli);
+  if (mysqli_num_rows($result) > 1)
     $err = "row";
-  $vals = mysql_fetch_row($result);
+  $vals = mysqli_fetch_row($result);
   if (count($vals) > 1)
     $err = "column";
   if (!empty($err))
@@ -114,21 +115,22 @@ function validateForm($array) {
  * @return void - this function prints its output.
  */
 function showTableOptions($table, $selected="null", $orderby="uid") {
-
+    global $mysqli;
 
 	$uid = get_pkey($table);
 	$name = get_unique_name($table);
-	
-	if($table=='CAPdata_programs')
-	{
-	$q = mysql_query("SELECT $uid, $name
-			  FROM $table WHERE program_type='breeding'
-			  ORDER BY $uid
-			")
-	     or die(mysql_error());
-	}
-	else
-	{
+
+	// dem 23oct14: No, let's show all programs whether breeding or not.
+	/* if($table=='CAPdata_programs') */
+	/* { */
+	/* $q = mysql_query("SELECT $uid, $name */
+	/* 		  FROM $table WHERE program_type='breeding' */
+	/* 		  ORDER BY $uid */
+	/* 		") */
+	/*      or die(mysql_error()); */
+	/* } */
+	/* else */
+	/* { */
 	  // DEM 9feb11: I think it's (almost?) always better to sort by name than by uid.
 	  // To do it, use optional third parameter = "name".
 // 	$q = mysql_query("SELECT $uid, $name
@@ -140,14 +142,14 @@ function showTableOptions($table, $selected="null", $orderby="uid") {
 	  if (isset($orderby) && $orderby == "name") {
 	      $sortorder = $name;
 	    }
-	$q = mysql_query("SELECT $uid, $name
+	$q = mysqli_query($mysqli, "SELECT $uid, $name
 			  FROM $table 
 			  ORDER BY $sortorder
 			")
-	     or die(mysql_error());
-	}
+	     or die(mysqli_error($mysqli));
+	/* } */
 
-	while($row = mysql_fetch_assoc($q)) {
+	while($row = mysqli_fetch_assoc($q)) {
 		$sel = ($row[$uid] == $selected) ? "selected=\"selected\"" : "";
 		echo "\n\t<option value=\"$row[$uid]\" $sel>$row[$name]</option>";
 	}
@@ -162,10 +164,11 @@ function showTableOptions($table, $selected="null", $orderby="uid") {
  * @param $pkey - the primary key of the table
  */
 function get_pkey ($tablename) {
-  $result = mysql_query("DESC $tablename") or die("Error in includes/common.inc:get_pkey():<br>".mysql_error().
+  global $mysqli;
+  $result = mysqli_query($mysqli, "DESC $tablename") or die("Error in includes/common.inc:get_pkey():<br>".mysqli_error($mysqli).
 "<br>Query was: 'DESC ".$tablename."'");
   $pkey="";
-  while($row = mysql_fetch_assoc($result)) {
+  while($row = mysqli_fetch_assoc($result)) {
     foreach($row as $k=>$v) {
       if (strtolower($k)=='field') 
 	$pkey=$v;
@@ -185,11 +188,12 @@ function get_pkey ($tablename) {
  */
 function get_unique_name($table) {
   // dem feb13: ugly special case:
+  global $mysqli;
   if ($table == "experiments")
     return "trial_code";
   else {
-    $q = mysql_query("SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>".mysql_error());
-    $row = mysql_fetch_row($q);
+    $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>".mysqli_error($mysqli));
+    $row = mysqli_fetch_row($q);
     $parts = explode("\n", $row[1]);
     for($i = 2; $i<count($parts); $i++) {
       // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
@@ -210,12 +214,11 @@ function get_unique_name($table) {
  * @return - the maximum field value.
  */
 function getMaxId($table, $id) {
-
-	$res = mysql_query("SELECT max($id) FROM $table");
-	$t = mysql_fetch_row($res);
+    global $mysqli;
+	$res = mysqli_query($mysqli, "SELECT max($id) FROM $table");
+	$t = mysqli_fetch_row($res);
 	return $t[0];
 }
-
 
 /**
  * This function gets the total number of entries in a particular table. 
@@ -224,13 +227,11 @@ function getMaxId($table, $id) {
  * @return the number of entries in that table.
  */
 function getNumEntries($table) {
-
-	$res = mysql_query("SELECT count(*) FROM $table");
-	$a = mysql_fetch_row($res);
-	return $a[0];
+    global $mysqli;
+    $res = mysqli_query($mysqli, "SELECT count(*) FROM $table");
+    $a = mysqli_fetch_row($res);
+    return $a[0];
 }
-
-
 
 function display_uploaded_file($filename) {
 
@@ -274,7 +275,7 @@ function display_uploaded_file($filename) {
  * @return array ( int $flag, int $id) $flag=-1->N/A, 0->duplicate, 1->OK, $id the record number
  */ 
 function add_attribute ($key, $value, $tablename, $keyid) {
-
+global $mysqli;
 	$id=-1;
 	$flag=-1;
 	$value = addslashes($value);
@@ -283,16 +284,16 @@ function add_attribute ($key, $value, $tablename, $keyid) {
 		$value="N/A";
 	}
 
-	$result=mysql_query("SELECT * FROM $tablename WHERE $key=\"$value\"");
+	$result=mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $key=\"$value\"");
 	$num_rows=mysql_num_rows($result);
 
 	if ($num_rows <= 0) {
 		mysql_query("insert into $tablename ($key, created_on) values (\"$value\", NOW())") || die (mysql_error());
-		$id = mysql_insert_id();
+		$id = mysqli_insert_id($mysqli);
 		$flag = 1;
 	}
 	else {
-		while( $row = mysql_fetch_assoc($result)) {
+		while( $row = mysqli_fetch_assoc($result)) {
 
 			$id = $row[$keyid];
 			$flag = 0;
@@ -305,7 +306,7 @@ function add_attribute ($key, $value, $tablename, $keyid) {
 }	
 
 function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $idkey) {
-
+global $myslqi;
 	$keystr="";
 	$valstr="";
 
@@ -317,9 +318,9 @@ function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $id
 	/* 
 	 * Does this entry exist in the database already? 
 	 */
-	$testResult = mysql_query("SELECT * FROM $tablename WHERE $testKey = \"$testVal\"");
-	if(mysql_num_rows($testResult) > 0) {
-		$row = mysql_fetch_assoc($testResult);
+	$testResult = mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $testKey = \"$testVal\"");
+	if(mysqli_num_rows($testResult) > 0) {
+		$row = mysqli_fetch_assoc($testResult);
 		$id=$row[$idkey];
 		return array(0,$id); 			//execution will end here
 	}
@@ -353,9 +354,9 @@ function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $id
 
 	}
 	$cmd = "insert into $tablename ($keystr) values ($valstr)";
-	mysql_query($cmd)|| die("insert failed " .mysql_errno() . ":" . mysql_error(). "<br>". $cmd );
+	mysqli_query($mysqli, $cmd)|| die("insert failed " .mysqli_errno($mysqli) . ":" . mysqli_error($mysqli). "<br>". $cmd );
 
-	$id=mysql_insert_id();
+	$id=mysqli_insert_id();
 	return array(1,$id);
 }
 
@@ -373,6 +374,7 @@ function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $id
  * 
  */
 function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, $action) {
+global $mysqli;
 	$keystr="";
 	$valstr="";
 
@@ -396,9 +398,9 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
 			if ($i<count($testKey)-1) $testStr.=" AND ";
 		}
 		// print "SELECT * FROM $tablename WHERE $testStr<br>";
-		$testResult = mysql_query("SELECT * FROM $tablename WHERE $testStr");
-		if(mysql_num_rows($testResult) > 0) {
-			$row = mysql_fetch_assoc($testResult);
+		$testResult = mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $testStr");
+		if(mysqli_num_rows($testResult) > 0) {
+			$row = mysqli_fetch_assoc($testResult);
 			$id=$row[$idkey];
 			$dup_flag++;
 		}
@@ -426,7 +428,7 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
 				if ($i<$vsize-1) $update_str.=",";
 			}
 			$update_str.=" where $testStr";
-			mysql_query($update_str) or die(mysql_errno() . ":" . mysql_error());
+			mysqli_query($mysqli, $update_str) or die(mysql_errno($mysqli) . ":" . mysql_error($mysqli));
  			if ($cflt_flag>0 || $update_flag>0) {return array(0.5, $id);}
 			else {return array(0, $id);}
 		}
@@ -453,8 +455,8 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
 		if ($action=="print") print "insert into $tablename ($keystr) values ($valstr)\n";
 		// print "insert into $tablename ($keystr) values ($valstr)\n";
 		$sql = "insert into $tablename ($keystr) values ($valstr)";
- 		mysql_query($sql) or die($sql . "<br>" . mysql_error());
-		$id=mysql_insert_id();
+ 		mysqli_query($mysqli, $sql) or die($sql . "<br>" . mysqli_error($mysqli));
+		$id=mysqli_insert_id($mysqli);
  		return array(1,$id);
 //  		return array(1,$id, $cflt_flag, $update_flag, $testStr);
 	}
@@ -481,6 +483,7 @@ function add_array_data ($vals, $isnum, $tablename, $testKey, $testVal, $idkey, 
  * Note: The update query utilizes LIMIT 1 forcing the query to update only 1 row.
  */
 function updateTable(array $values, $table, array $pkey) {
+  global $mysqli;
   $updateStr = "UPDATE $table SET ";
   $strs = array();
   $count = 0;
@@ -521,10 +524,10 @@ function updateTable(array $values, $table, array $pkey) {
   // put the update string together
   $updateStr .= implode(",", $strs) . " WHERE $where LIMIT 1";
   // query	
-  if(mysql_query($updateStr)) 
+  if(mysqli_query($mysqli, $updateStr)) 
     return TRUE;
   else {
-    error(1, mysql_error()."<br>The query was:<br>".$updateStr."</br>in function updateTable().<p>");
+    error(1, mysqli_error($mysqli)."<br>The query was:<br>".$updateStr."</br>in function updateTable().<p>");
     return FALSE;
   }
 }
@@ -537,17 +540,17 @@ function updateTable(array $values, $table, array $pkey) {
  *		    and who's value is the type. 
  */
 function getTableColumns($table) {
-
-	$t = mysql_real_escape_string($table);
+    global $mysqli;
+	$t = mysqli_real_escape_string($mysqli, $table);
 	$names = array();
 	$types = array();
 
-	$query = mysql_query("
+	$query = mysqli_query($mysqli, "
 		DESCRIBE $t
-	") or die(mysql_error());
+	") or die(mysqli_error($mysqli));
 
 	// each name is on $row[0], push that onto the list of names
-	while($row = mysql_fetch_assoc($query)) {
+	while($row = mysqli_fetch_assoc($query)) {
 		array_push($names, $row['Field']);
 		array_push($types, $row['Type']);
 	}
@@ -674,7 +677,7 @@ function clean_up_temporary($tmpdir) {
  * 
  */
 function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $start="0") {
-
+    global $mysqli;
 	//get the primary key of this table
 	$pkey = get_pkey($table);
 
@@ -685,7 +688,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 			ORDER BY $pkey";
 	
 	//query the DB
-	$lines = mysql_query("
+	$lines = mysqli_query($mysqli, "
 			$queryString 
 			LIMIT $limit OFFSET $start
 			") or die(mysql_error());
@@ -794,7 +797,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
  * it will generate its own limits.
  */
 function showPages($queryString, $page, $current=0, $limit=20) {
-
+global $mysqli;
 	//get rid of the start= if it already exists in the page string
 	if (($pos = strpos($page, "start=")) !== FALSE) {
 		$found = substr($page, $pos);
@@ -808,11 +811,11 @@ function showPages($queryString, $page, $current=0, $limit=20) {
 		$delim = "?";
 	
 
-	$query = mysql_query("
+	$query = mysqli_query($mysqli, "
 			$queryString
-			") or die(mysql_error() . "<br>Query was:<br>" . $queryString);
+			") or die(mysqli_error($mysqli) . "<br>Query was:<br>" . $queryString);
 
-	$max = mysql_num_rows($query);
+	$max = mysqli_num_rows($query);
 
 	echo "Page: ";
 
@@ -842,7 +845,7 @@ function showPages($queryString, $page, $current=0, $limit=20) {
  * @return array $refernced_tables referenced tables
  */
 function chk_tbl_references($nm) {
-
+    global $mysqli;
 	// searching for foreign tables stop at datasets
 	$dptbls=array();
 
@@ -852,9 +855,9 @@ function chk_tbl_references($nm) {
 	// the tables to ignore
 	$tbl_ignore = array('barley_pedigree_catalog');
 	
-	$result = mysql_query("SHOW CREATE TABLE $nm");
+	$result = mysqli_query($mysqli, "SHOW CREATE TABLE $nm");
 
-	while( $row = mysql_fetch_assoc($result) ) {
+	while( $row = mysqli_fetch_assoc($result) ) {
 
 		$cstr=$row['Create Table'];
 		preg_match_all('/REFERENCES\s`(.*?)`/', $cstr, $mts);
@@ -906,10 +909,11 @@ function chk_tbl_field ($tblname, $fldname) {
  * 
  */
 function chk_tbl_dep ($nm1) {
+    global $mysqli;
 	$dptblkey=array();
 	$flag=0;
-	$result=mysql_query("show create table $nm1");
-	while( $row = mysql_fetch_assoc($result) ) {
+	$result=mysqli_query($mysqli, "show create table $nm1");
+	while( $row = mysqli_fetch_assoc($result) ) {
 		$cstr=$row['Create Table'];
 		preg_match_all('/REFERENCES\s`(.*?)`\s*\(`(.*?)`\)/', $cstr, $mts);
 		for($i=0; $i<count($mts[1]); $i++) {
@@ -1034,12 +1038,12 @@ function store_file_process_info() {
 	NOTE: this function DOES NOT direcly output its result.
  */
 function displayTable($query, $sortable=FALSE, $link="") {
-
+    global $mysqli;
 	$tables = array();
 	$ret = "\n<table class='tableclass1'>\n";
 
 	$first = TRUE;
-	while($row = mysql_fetch_assoc($query)) {
+	while($row = mysqli_fetch_assoc($query)) {
 		
 		$ret .= "\n<tr>\n";
 
@@ -1088,12 +1092,12 @@ function displayTable($query, $sortable=FALSE, $link="") {
  * into ACTG
  */
 function displayTableConvert($query, $sortable=FALSE, $lookup) {
-
+    global $mysqli;
         $tables = array();
         $ret = "\n<table class='tableclass1'>\n";
 
         $first = TRUE;
-        while($row = mysql_fetch_assoc($query)) {
+        while($row = mysqli_fetch_assoc($query)) {
 
                 $ret .= "\n<tr>\n";
 
@@ -1304,39 +1308,32 @@ function kvimplode($delim, array $array) {
  * @param $id - the unique id of the specific record to fetch
  * @return FALSE if the given is not a table record,
  *	   the result mysql resource if the given is a table record.
+ * DEM 4sep14: OMG. $id can be either a uid or a name.  This is an error waiting 
+ *    to happen.  In particular in view.php if the name is numeric we're 
+ *    assuming it's a uid.  Changed this.
  */
 function isRecord($table, $id) {
+  if(!is_numeric($table)) {
+    $pkey = @get_pkey($table);
+    if(!$pkey) // not a valid table, return FALSE
+      return FALSE;
 
-	if(!is_numeric($table)) {
-
-		$pkey = @get_pkey($table);
-
-		if(!$pkey) // not a valid table, return FALSE
-			return FALSE;
-
-		if(is_numeric($id)) {
-
-			$source = mysql_query("
-				SELECT *
-				FROM $table
-				WHERE $pkey = '$id'
-			");
-		}
-
-		if(!$source || mysql_num_rows($source) < 1 || !is_numeric($id)) {	// maybe the id was a name
-
-			$name = get_unique_name($table);
-			$source = mysql_query("
-				SELECT *
-				FROM $table
-				WHERE $name = '$id'
-				");
-		}
-
-		if(@mysql_num_rows($source) > 0) {
-			return $source;
-		}
-	} 	return FALSE;
+    // Test for a name match first, then for a uid match.
+    /* if(is_numeric($id)) { */
+    /*   $source = mysql_query("	SELECT * */
+    /* 				FROM $table */
+    /* 				WHERE $pkey = '$id'"); */
+    /* } */
+    $name = get_unique_name($table);
+    $source = mysql_query("SELECT * FROM $table WHERE $name = '$id'");
+    if(@mysql_num_rows($source) > 0) 
+      return $source;
+    $source = mysql_query("SELECT * FROM $table WHERE $pkey = '$id'");
+    if(@mysql_num_rows($source) > 0) 
+      return $source;
+    // else, nothing found
+    return FALSE;
+  } 	
 }
  
 

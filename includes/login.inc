@@ -20,10 +20,10 @@ function addAdmin() {
  * @return true if the username IS NOT already being used, false if it is.
  */
 function checkForUser($username) {
+    global $mysqli;
+	$query = mysqli_query($mysqli, "SELECT pass FROM users WHERE users_name = '$username'");
 
-	$query = mysql_query("SELECT pass FROM users WHERE users_name = '$username'");
-
-	if(mysql_num_rows($query) > 0)
+	if(mysqli_num_rows($query) > 0)
 		return FALSE;
 	else
 		return TRUE;
@@ -38,7 +38,7 @@ function checkForUser($username) {
  */
 function checkGoodPassword($password) {
 
-	$length = strlen($password) > 5;	    //length greater than 5?
+	$length = strlen($password) > 7;	    //length greater than 5?
 	$number = preg_match("/[0-9]/", $password); //find any number?
 
 	if($length && $number)
@@ -56,13 +56,13 @@ function checkGoodPassword($password) {
  *	 this will be the main reason this function returns false.
  */
 function addUser($username, $password, $type, $institute, $name, $email) { //add user to table
-
+    global $mysqli;
     	$password = encrypt($password);
 
 	$str = "INSERT INTO users (users_name, user_types_uid, institutions_uid, pass, name, email, lastaccess, created_on) 
 			VALUES('$username', '$type', '$institute', '$password', '$name', '$email', NOW(), NOW())";
 
-    	$query = mysql_query($str) or die(mysql_error());
+    	$query = mysqli_query($mysqli, $str) or die(mysqli_error($mysqli));
 	if(!$query) 
 		return false;
 	else
@@ -75,9 +75,9 @@ function addUser($username, $password, $type, $institute, $name, $email) { //add
  * @return true if the query is successful
  */
 function removeUser($username) { //remove user from table
-
+    global $mysqli;
     	$user = $username;
-    	$query = mysql_query("DELETE FROM users WHERE users_name = '$user' LIMIT 1");
+    	$query = mysqli_query($mysqli, "DELETE FROM users WHERE users_name = '$user' LIMIT 1");
 	if(!$query) 
 		return false;
 	else
@@ -96,12 +96,12 @@ function removeUser($username) { //remove user from table
  * @return true if the change was successful
  */
 function changePass($username, $newpass, $oldpass) {
-
+    global $mysqli;
 	if(login($username, $oldpass)) {
 
 		$password = encrypt($newpass);
 		$updateString = "UPDATE users SET pass='$password' WHERE users_name='$username' LIMIT 1";
-		$query = mysql_query($updateString);
+		$query = mysqli_query($mysqli, $updateString);
 
 		if(!$query)
 			return false;
@@ -119,9 +119,10 @@ function changePass($username, $newpass, $oldpass) {
  * @return the encrypted password on successful match - false on failure
  */
 function login($user, $password) { //attempt to login false if invalid true if correct
+    global $mysqli;
 	$auth = FALSE;
-	$result = mysql_query("SELECT pass FROM users WHERE users_name='$user'");
-	$pass = mysql_fetch_row($result);
+	$result = mysqli_query($mysqli, "SELECT pass FROM users WHERE users_name='$user'");
+	$pass = mysqli_fetch_row($result);
 	if (encrypt($password) === $pass[0]) {
     	   $auth = $pass[0];
 	}
@@ -137,10 +138,11 @@ function login($user, $password) { //attempt to login false if invalid true if c
  * @return true on successful match - false on failure
  */
 function isLoggedIn($user, $hashpass) { 
+    global $mysqli;
 	$auth = FALSE;
 	if($hashpass != "") { 
-	   $result = mysql_query("SELECT pass FROM users WHERE users_name='$user'") or die(mysql_error());
-   	   $pass = mysql_fetch_row($result);
+           $result = mysqli_query($mysqli, "SELECT pass FROM users WHERE users_name = SHA1('$user')") or die(mysqli_error($mysqli));
+   	   $pass = mysqli_fetch_row($result);
 
 	   if ($hashpass === $pass[0]) {
     	      $auth = TRUE;

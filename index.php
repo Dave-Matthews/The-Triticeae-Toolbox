@@ -4,18 +4,15 @@
  *
  * PHP version 5.3
  *
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/index.html
  *
  */
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/normal_header.php';
-connect();
+$mysqli = connecti();
 $name = get_unique_name("datasets");
 ?>
 
@@ -50,7 +47,7 @@ $name = get_unique_name("datasets");
   <p>
   <table cellpadding="0" cellspacing="0"><tbody>
   <tr>
-  <th>Search Type</th>
+  <th>Search Experiments</th>
   <th>&nbsp;</th>
   </tr>
 	
@@ -59,14 +56,23 @@ $name = get_unique_name("datasets");
   <option selected value=''>Search by Breeding Program</option>
    <?php
   // dem jan13: Only include programs that have phenotype experiment trials.
-  $sql = "select distinct
-     data_program_name, data_program_code, cp.CAPdata_programs_uid as uid
-     FROM CAPdata_programs cp, experiments e
-     WHERE program_type = 'breeding'
-     AND cp.CAPdata_programs_uid = e.CAPdata_programs_uid
-     order by data_program_name asc;";
-   $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-   while ($row = mysql_fetch_assoc($r)) {
+  // dem sep14: Only include programs whose lines are in phenotype experiment trials.
+  /* $sql = "select distinct */
+  /*    data_program_name, data_program_code, cp.CAPdata_programs_uid as uid */
+  /*    FROM CAPdata_programs cp, experiments e */
+  /*    WHERE program_type = 'breeding' */
+  /*    AND cp.CAPdata_programs_uid = e.CAPdata_programs_uid */
+  /*    order by data_program_name asc;"; */
+  $sql = "SELECT DISTINCT
+	  data_program_name, data_program_code, cp.CAPdata_programs_uid as uid
+	  FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
+	  WHERE program_type = 'breeding'
+	  AND lr.breeding_program_code = data_program_code
+	  AND tb.experiment_uid = e.experiment_uid
+	  AND tb.line_record_uid = lr.line_record_uid
+	  ORDER BY data_program_name asc;";
+   $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+   while ($row = mysqli_fetch_assoc($r)) {
        $progname = $row['data_program_name']." - ".$row['data_program_code'];
        $uid = $row['uid'];
        echo "<option value='$uid'>$progname</option>\n";
@@ -82,8 +88,8 @@ $name = get_unique_name("datasets");
   <?php
   $sql = "select distinct phenotypes_name from phenotypes
   order by phenotypes_name";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-  while ($row = mysql_fetch_assoc($r)) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+  while ($row = mysqli_fetch_assoc($r)) {
       $pheno_name = $row['phenotypes_name'];
       echo "<option value='$pheno_name'>$pheno_name</option>\n";
   }
@@ -97,17 +103,34 @@ $name = get_unique_name("datasets");
   <?php
   $sql = "select distinct experiment_year from experiments
   order by experiment_year desc";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-  while ($row = mysql_fetch_assoc($r)) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+  while ($row = mysqli_fetch_assoc($r)) {
       $year = $row['experiment_year'];
       echo "<option value='$year'>$year</option>\n";
   }
 ?>
 </select></td>
-<td>All experiment data from the selected year</td></tr>
+<td>All experiments from the selected year</td></tr>
+
+  <tr><td>
+  <select onchange="window.open('<?php echo $config['base_url']; ?>search_expt.php?expt='+this.options[this.selectedIndex].value,'_top')">
+  <option selected value=''>Search Trials by Experiment</option>
+  <?php
+  $sql = "select experiment_set_uid, experiment_set_name from experiment_set
+          order by experiment_set_name";
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+  while ($row = mysqli_fetch_assoc($r)) {
+      $euid = $row['experiment_set_uid'];
+      $ename = $row['experiment_set_name'];
+      echo "<option value=$euid>$ename</option>\n";
+  }
+?>
+</select></td>
+<td>All phenotype trials in the Experiment</td></tr>
+
 
 </tbody></table></div></div></div>
 
-<?php 
+<?php
   $footer_div=1;
-require $config['root_dir'].'theme/footer.php'; ?>
+require $config['root_dir'].'theme/footer.php';

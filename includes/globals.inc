@@ -41,13 +41,13 @@ function setting($name, $default = null)
     $sql = "select value from settings where name='$name';";
     $result = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
       "\n$sql");
-    if ($row = mysqli_fetch_assoc($result)) { 
+    if ($row = mysqli_fetch_assoc($result)) {
         return $row['value'];
     } else {
         if ($default === null) {
             die("no value found for $name setting");
         } else {
-           return $default;
+            return $default;
         }
     }
     return $row['value'];
