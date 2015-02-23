@@ -4,10 +4,10 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
-connect();
+include $config['root_dir'] . 'includes/bootstrap.inc';
+$mysqli = connecti();
 
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 /*******************************/
 ?>
 
@@ -17,28 +17,29 @@ include($config['root_dir'] . 'theme/admin_header.php');
 	<h2>Alleles for all lines</h2>
 
 <?php
-  if(isset($_GET['marker']) && ($_GET['marker'] != "")) {
-  $sql = "select marker_name from markers where marker_uid = '".$_GET['marker']."'";
-  $res = mysql_query($sql) or die(mysql_error());
-  $row = mysql_fetch_row($res);
-  $markername = $row[0];
-  }
-elseif(isset($_GET['markername']) && ($_GET['markername'] != "")) {
-  $markername = $_GET['markername'];
+if (isset($_GET['marker']) && ($_GET['marker'] != "")) {
+    $sql = "select marker_name from markers where marker_uid = '".$_GET['marker']."'";
+    $stmt = mysqli_prepare($mysqli, "SELECT marker_name from markers where marker_uid = ?");
+    mysqli_stmt_bind_param($stmt, "i", $_GET['marker']);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $markername);
+    mysqli_stmt_fetch($stmt);
+    mysqli_stmt_close($stmt);
+} elseif (isset($_GET['markername']) && ($_GET['markername'] != "")) {
+    $markername = $_GET['markername'];
 }
 
 echo "<h3>Marker $markername</h3>";
 
-if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
-  $orderby = $_GET['sortby'] . " " . $_GET['sorttype'];
-  showLineForMarker($markername, $orderby);
- }
- else
-   showLineForMarker($markername);
+if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
+    $orderby = $_GET['sortby'] . " " . $_GET['sorttype'];
+    showLineForMarker($markername, $orderby);
+} else {
+    showLineForMarker($markername);
+}
 ?>
 
 <div class="boxContent">
-
 
    <form action="<?php echo $config['base_url']; ?>genotyping/showlines.php" method="get">
    <p><strong>Marker: </strong>
@@ -52,5 +53,4 @@ if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
 </div>
 </div>
 
-
-<?php include($config['root_dir'] . 'theme/footer.php'); ?>
+<?php include $config['root_dir'] . 'theme/footer.php';

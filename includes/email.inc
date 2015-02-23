@@ -1,17 +1,14 @@
 <?php
 /**
  * Download Gateway New
- * 
+ *
  * PHP version 5.3
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/includes/email.inc
- * 
- * The purpose of this script is to provide a wrapper for Mail.php   
+ *
+ * The purpose of this script is to provide a wrapper for Mail.php
  */
 
 require_once 'globals.inc';
@@ -28,7 +25,6 @@ require_once 'Mail.php';
  */
 function send_email($to, $subject, $message, $attachments = array())
 {
-    connect();
     //$smtpserver = split(":", setting('smtpserver','mailhub.iastate.edu'));
     //$smtpserver = split(":", setting('smtpserver','graingenes.org'));
     //$smtpserver = split(":", setting('smtpserver', 'mail.authsmtp.com'));
@@ -85,8 +81,7 @@ function send_email($to, $subject, $message, $attachments = array())
     }
     $mobj = &Mail::factory(
         setting('mailbackend', 'sendmail'),
-        array('host' => $smtpserver,
-        'port' => $smtpport));
+        array('host' => $smtpserver, 'port' => $smtpport));
     return $mobj->send(array($to), $headers, $message);
 }
 
@@ -103,7 +98,6 @@ function send_email($to, $subject, $message, $attachments = array())
  */
 function send_email_from($to, $subject, $from, $message, $attachments = array())
 {
-    connect();
     //$smtpserver = split(":", setting('smtpserver','mailhub.iastate.edu'));
     //$smtpserver = split(":", setting('smtpserver','graingenes.org'));
     //$smtpserver = split(":", setting('smtpserver', 'mail.authsmtp.com'));
@@ -163,5 +157,3 @@ $message . "\r\n" .
                                'port' => $smtpport));
   return $mobj->send(array($to), $headers, $message);
   }
-
-?>
