@@ -7,14 +7,17 @@ require "theme/normal_header.php";
 // DEM sep2014: But treat them differently!
 
 $table = $_REQUEST['table'];
-$pkey = get_pkey($table);
-$name = get_unique_name($table);
 $prettified = beautifulTableName($table, 0);
 // CLB feb2015: Can not do a prepared statement for select * query so next best thing is to sanitize input
 $id = intval($_REQUEST['uid']);
 $nm = $_REQUEST['name'];
-if ($id) {
+$pattern = '/user/i';
+if (preg_match($pattern, $table)) {
+    error(1, "No Record Found");
+} elseif ($id) {
     // Argument is a record uid.
+    $pkey = get_pkey($table);
+    $name = get_unique_name($table);
     $sql = "SELECT * FROM $table WHERE $pkey = $id";
     $record = mysqli_query($mysqli, $sql);
     if (mysqli_num_rows($record) > 0) {
@@ -40,12 +43,15 @@ if ($id) {
     }
 } elseif ($nm) {
     // Argument is a record name.
+    $pkey = get_pkey($table);
+    $name = get_unique_name($table);
     $sql = "SELECT $pkey FROM $table WHERE $name = '$nm'";
     if ($stmt = mysqli_prepare($mysqli, "SELECT $pkey FROM $table WHERE $name = ?")) {
         mysqli_stmt_bind_param($stmt, "s", $nm);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $rec);
         mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
         echo "<h1>$prettified $nm</h1>";
         echo "<div class=boxContent>";
         $func = "show_" . $table;

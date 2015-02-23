@@ -10,11 +10,11 @@
     ; basic settings - customize to make the PHPIDS work at all
     filter_type     = xml
     
-    base_path       = /www/htdocs/t3/wheat/lib/phpids-0.7/lib/IDS/ 
-    use_base_path   = true 
+    base_path       = /full/path/to/IDS
+    use_base_path   = false 
     
-    filter_path     = default_filter.xml
-    tmp_path        = tmp
+    filter_path     = /www/htdocs/t3/wheat/lib/phpids-0.7/lib/IDS/default_filter.xml
+    tmp_path        = /var/log
     scan_keys       = false
     
     ; in case you want to use a different HTMLPurifier source, specify it here
@@ -34,6 +34,7 @@
     exceptions[]    = GET.__utmz
     exceptions[]    = GET.__utmc
     exceptions[]    = COOKIE.__utmz
+    exceptions[]    = REQUEST.__utmz
 
     ; you can use regular expressions for wildcard exceptions - example: /.*foo/i
 
@@ -46,7 +47,7 @@
 [Logging]
 
     ; file logging
-    path            = tmp/phpids_log.txt
+    path            = /tmp/tht/phpids_log.txt
 
     ; email logging
 
@@ -76,7 +77,7 @@
     expiration_time = 600
 
     ; file cache    
-    path            = tmp/default_filter.cache
+    path            = /tmp/tht/default_filter.cache
 
     ; database cache
     wrapper         = "mysql:host=localhost;port=3306;dbname=phpids"   
