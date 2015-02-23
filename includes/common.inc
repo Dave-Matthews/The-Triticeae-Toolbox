@@ -714,7 +714,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 	echo "\n<table class=\"tableclass1\" cellpadding=0 cellspacing=0>\n";
 
 	$count = 0;
-	while($row = mysql_fetch_assoc($lines)) {
+	while($row = mysqli_fetch_assoc($lines)) {
 
 		if($count == 0) {  //first time, display column names
 
