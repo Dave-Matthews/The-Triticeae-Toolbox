@@ -4,18 +4,15 @@
  *
  * PHP version 5.3
  *
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/index.html
  *
  */
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/normal_header.php';
-connect();
+$mysqli = connecti();
 $name = get_unique_name("datasets");
 ?>
 
@@ -74,8 +71,8 @@ $name = get_unique_name("datasets");
 	  AND tb.experiment_uid = e.experiment_uid
 	  AND tb.line_record_uid = lr.line_record_uid
 	  ORDER BY data_program_name asc;";
-   $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-   while ($row = mysql_fetch_assoc($r)) {
+   $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+   while ($row = mysqli_fetch_assoc($r)) {
        $progname = $row['data_program_name']." - ".$row['data_program_code'];
        $uid = $row['uid'];
        echo "<option value='$uid'>$progname</option>\n";
@@ -91,8 +88,8 @@ $name = get_unique_name("datasets");
   <?php
   $sql = "select distinct phenotypes_name from phenotypes
   order by phenotypes_name";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-  while ($row = mysql_fetch_assoc($r)) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+  while ($row = mysqli_fetch_assoc($r)) {
       $pheno_name = $row['phenotypes_name'];
       echo "<option value='$pheno_name'>$pheno_name</option>\n";
   }
@@ -106,8 +103,8 @@ $name = get_unique_name("datasets");
   <?php
   $sql = "select distinct experiment_year from experiments
   order by experiment_year desc";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-  while ($row = mysql_fetch_assoc($r)) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+  while ($row = mysqli_fetch_assoc($r)) {
       $year = $row['experiment_year'];
       echo "<option value='$year'>$year</option>\n";
   }
@@ -121,8 +118,8 @@ $name = get_unique_name("datasets");
   <?php
   $sql = "select experiment_set_uid, experiment_set_name from experiment_set
           order by experiment_set_name";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n$sql");
-  while ($row = mysql_fetch_assoc($r)) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+  while ($row = mysqli_fetch_assoc($r)) {
       $euid = $row['experiment_set_uid'];
       $ename = $row['experiment_set_name'];
       echo "<option value=$euid>$ename</option>\n";
@@ -134,6 +131,6 @@ $name = get_unique_name("datasets");
 
 </tbody></table></div></div></div>
 
-<?php 
+<?php
   $footer_div=1;
-require $config['root_dir'].'theme/footer.php'; ?>
+require $config['root_dir'].'theme/footer.php';

@@ -1,62 +1,62 @@
 <?php
 /**
  * Quick search
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/search.php
- * 
+ *
  */
 include("includes/bootstrap.inc");
 include("theme/normal_header.php");
-connect();
+$mysqli = connecti();
 ?>
 
 <div class="box">
-  <h2>Quick Search <?php echo beautifulTableName($_REQUEST['table'], 1) ?></h2>
-  <div class="boxContent">
+<h2>Quick Search <?php echo beautifulTableName($_REQUEST['table'], 1) ?></h2>
+<div class="boxContent">
 
-  <?php 
+<?php
 
 /****************************************************************************************/
 /* Quick Search */
-if(isset($_REQUEST['keywords']) ) {	//sidebar general search term has been submitted
-//generic keyword search has been made
-  $allTables = array();
-  $searchTree = array();
-  $found = array();
+/* sidebar general search term has been submitted */
+if (isset($_REQUEST['keywords'])) {
+    //generic keyword search has been made
+    $allTables = array();
+    $searchTree = array();
+    $found = array();
 
-  /* Populate the allTables array */
-  if(isset($_REQUEST['table'])) 
-    array_push($allTables, mysql_real_escape_string($_REQUEST['table']));			
-  else { 
-    $tableQ = mysql_query("SHOW TABLES");
-    while($row = mysql_fetch_row($tableQ)) 
-      array_push($allTables, $row[0]);
-  }
-
-  /* get unique keys of each table */
-  foreach($allTables as $table) {
-    $ukeys = get_ukey($table);
-    $names = array();
-    /* do not search through _uids */
-    /* do not add duplicates */
-    for($i=0; $i<count($ukeys); $i++) {
-      if (strpos($ukeys[$i], "_uid")  === FALSE) {
-	if (!in_array($ukeys[$i],$names)) 
-	  array_push($names, $ukeys[$i] );
-      }
+    /* Populate the allTables array */
+    if (isset($_REQUEST['table'])) {
+        array_push($allTables, mysqli_real_escape_string($mysqli, $_REQUEST['table']));
+    } else {
+        $tableQ = mysqli_query($mysqli, "SHOW TABLES");
+        while($row = mysqli_fetch_row($tableQ)) {
+            array_push($allTables, $row[0]);
+        }
     }
-    /* add this table to the search tree if there are fields to search */
-    if(count($names) > 0) 
-      $searchTree[$table] = $names;
-  }  // end foreach($allTables)
+
+    /* get unique keys of each table */
+    foreach($allTables as $table) {
+        $ukeys = get_ukey($table);
+        $names = array();
+        /* do not search through _uids */
+        /* do not add duplicates */
+        for($i=0; $i<count($ukeys); $i++) {
+            if (strpos($ukeys[$i], "_uid")  === FALSE) {
+	    if (!in_array($ukeys[$i],$names)) 
+	      array_push($names, $ukeys[$i] );
+          }
+        }
+        /* add this table to the search tree if there are fields to search */
+        if(count($names) > 0) {
+            $searchTree[$table] = $names;
+        }
+    }  // end foreach($allTables)
   // Cool! Here are all the unique keys in the database:
   //print_h($searchTree); 
 
@@ -84,8 +84,9 @@ if(isset($_REQUEST['keywords']) ) {	//sidebar general search term has been submi
     }
   }
 
- if(count($found) < 1)
-   echo "<p>Keyword \"$_REQUEST[keywords]\" not found.<p>";
+    if (count($found) < 1) {
+        echo "<p>Keyword \"$_REQUEST[keywords]\" not found.<p>";
+    }
 }
 
 /* Handle the results */
@@ -142,11 +143,11 @@ if(isset($_POST['haplotype'])) {
 	      where A.line_record_uid=B.line_record_uid and B.tht_base_uid=C.tht_base_uid and 
 	      C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid and 
   	      D.marker_uid in (".$marker_instr.")";
-  $result=mysql_query($query_str);
+  $result=mysqli_query($mysqli, $query_str);
   $lines = array();
   $line_uids=array();
   $line_names=array();
-  while ($row=mysql_fetch_assoc($result)) {
+  while ($row=mysqli_fetch_assoc($result)) {
     $linename=$row['line_record_name'];
     $lineuid=$row['line_record_uid'];
     $mkruid=$row['marker_uid'];
@@ -192,32 +193,32 @@ if(isset($_POST['haplotype'])) {
     $phenotype = $_POST['phenotype'];
     if(isset($_POST['na_value']) && $_POST['na_value'] != "") {	// no range specified, single value
       $value = $_POST['na_value'] == "" ? " " : $_POST['na_value'];
-      $search = mysql_query("
+      $search = mysqli_query($mysqli, "
 		  SELECT line_records.line_record_uid, line_record_name
 		  FROM line_records, tht_base, phenotype_data
 		  WHERE value REGEXP '$value'
 			  AND line_records.line_record_uid = tht_base.line_record_uid
 			  AND tht_base.tht_base_uid = phenotype_data.tht_base_uid
 			  AND phenotype_data.phenotype_uid = '$phenotype'
-		  ") or die(mysql_error());
+		  ") or die(mysqli_error($mysqli));
     }
     else {
       $first = $_POST['first_value'] == "" ? getMaxMinPhenotype("min", $phenotype) : $_POST['first_value'];
       $last = $_POST['last_value'] == "" ? getMaxMinPhenotype("max", $phenotype) : $_POST['last_value'];
-      $search = mysql_query("
+      $search = mysqli_query($mysqli, "
 		  SELECT line_records.line_record_uid, line_record_name
 		  FROM line_records, tht_base, phenotype_data
 		  WHERE value BETWEEN $first AND $last
 			  AND line_records.line_record_uid = tht_base.line_record_uid
 			  AND tht_base.tht_base_uid = phenotype_data.tht_base_uid
 			  AND phenotype_data.phenotype_uid = '$phenotype'
-		  ") or die(mysql_error());
+		  ") or die(mysqli_error($mysqli));
     }
-    if(mysql_num_rows($search) < 1) 
+    if(mysqli_num_rows($search) < 1) 
       echo "<p>Sorry, no records found<p>";
     else {
       $found = array();
-      while($line = mysql_fetch_assoc($search)) 
+      while($line = mysqli_fetch_assoc($search)) 
 	array_push($found, "line_records@@line_record_name@@$line[line_record_uid]");
     }
   }
@@ -229,4 +230,4 @@ if(isset($_POST['haplotype'])) {
 </div>
 </div>
 
-<?php include("theme/footer.php"); ?>
+<?php include("theme/footer.php");

@@ -8,14 +8,14 @@
  * @return nothing - this function echos its results.  
  */
 function showMapsetOptions() {
-
-	$res = mysql_query("
+    global $mysqli;
+	$res = mysqli_query($mysqli, "
 		SELECT mapset_uid, mapset_name
 		FROM mapset
 		ORDER BY mapset_uid
-		") or die(mysql_error());
+		") or die(mysqli_error($mysqli));
 
-	while($row = mysql_fetch_assoc($res)) {
+	while($row = mysqli_fetch_assoc($res)) {
 		echo "\t\t<option value=\"$row[mapset_id]\">$row[mapset_name]</option>\n";
 	}
 
@@ -23,6 +23,7 @@ function showMapsetOptions() {
 }
 
 function generic_sel_options ($table) {
+    global $mysqli;
 	$uniquekeys=get_ukey($table);
 	$ids="";
 	for ($i=0; $i<count($uniquekeys); $i++) {
@@ -38,10 +39,10 @@ function generic_sel_options ($table) {
 	else {
 		$ids=$pid;
 	}
-	$result = mysql_query("SELECT $ids FROM $table"); // || mysql_error();
+	$result = mysqli_query($mysqli, "SELECT $ids FROM $table"); // || mysqli_error($mysqli);
 	$rstr="";
 	$optcount=0;
-	while($row = mysql_fetch_assoc($result)) {
+	while($row = mysqli_fetch_assoc($result)) {
 		$sel = implode(" ", array_splice($row, 0, count($uniquekeys)));
 		$pidval=$row[$pid];
 		$rstr.="\n\t<option value=\"$pidval\">$sel</option>";
@@ -59,8 +60,8 @@ function generic_sel_options ($table) {
  * @return void - this function outputs its result .
  */
 function showMarkerForLine($line_id, $order="marker_name") {
-	
-$query = "SELECT experiments.trial_code, marker_name, alleles
+    global $mysqli;
+    $query = "SELECT experiments.trial_code, marker_name, alleles
           FROM experiments, allele_cache
           WHERE allele_cache.line_record_uid = '$line_id'
           AND experiments.experiment_uid = allele_cache.experiment_uid
@@ -78,9 +79,9 @@ $query = "SELECT experiments.trial_code, marker_name, alleles
 //				AND marker_types.marker_type_uid = markers.marker_type_uid
 //			ORDER BY $order";
 
-	$resource = mysql_query($query) or die(mysql_error());
+	$resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
 
-	if(mysql_num_rows($resource) < 1) {
+	if(mysqli_num_rows($resource) < 1) {
 		echo "No genotype data found<br />";
 	}
 	else {
@@ -99,13 +100,13 @@ $query = "SELECT experiments.trial_code, marker_name, alleles
  * @return void - this function outputs its result .
  */
 function showLineForMarker($markername, $order="ORDER BY line_record_name") {
-
+  global $mysqli;
   if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
     $order = "ORDER BY " . $_GET['sortby'] . " " . $_GET['sorttype'];
   }
   $query = "SELECT marker_type_name, A_allele, B_allele from markers, marker_types where markers.marker_type_uid = marker_types.marker_type_uid and marker_name = '$markername'";
-  $resource = mysql_query($query) or die(mysql_error());
-  if ($row = mysql_fetch_assoc($resource)) {
+  $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+  if ($row = mysqli_fetch_assoc($resource)) {
     $marker_type = $row['marker_type_name'];
     $allele = $row['A_allele'] . $row['B_allele'];
   } else {
@@ -128,9 +129,9 @@ $query = "SELECT experiments.trial_code, line_record_name, alleles
           AND experiments.experiment_uid = allele_cache.experiment_uid
           $order";
 
-  $resource = mysql_query($query) or die(mysql_error());
+  $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
 
-  if(mysql_num_rows($resource) < 1) {
+  if(mysqli_num_rows($resource) < 1) {
     echo "No genotype data found<br />";
   }
   else {
@@ -162,18 +163,15 @@ $query = "SELECT experiments.trial_code, line_record_name, alleles
  *		   FALSE if the line record DOES NOT.
  */
 function lineHasGenotypeData($lineid) {
-
-	$resource = mysql_query("
+    global $mysqli;
+	$resource = mysqli_query($mysqli, "
 			SELECT experiments.experiment_uid
 			FROM tht_base, experiments, experiment_types
 			WHERE tht_base.line_record_uid = '$lineid'
 				AND experiments.experiment_uid = tht_base.experiment_uid
 				AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
 				AND  experiment_types.experiment_type_name = 'genotype'
-			") or die(mysql_error());
+			") or die(mysqli_error($mysqli));
 
-	return (mysql_num_rows($resource) > 0);
+	return (mysqli_num_rows($resource) > 0);
 }
-
-
-?>
