@@ -306,7 +306,7 @@ global $mysqli;
 }	
 
 function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $idkey) {
-global $myslqi;
+global $mysqli;
 	$keystr="";
 	$valstr="";
 
