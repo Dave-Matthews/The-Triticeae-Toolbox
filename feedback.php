@@ -17,7 +17,7 @@ function feedbackForm($name='', $email='', $feedback='')
             $sql_email = mysqli_real_escape_string($mysqli, $email);
             $sql = "select name from users where users_name = SHA1('$sql_email');";
             $r = mysqli_query($mysqli, $sql);
-	    if ($row = mysqli_fetch_assoc($mysqli, $r)) {
+	    if ($row = mysqli_fetch_assoc($r)) {
 	        $name = $row['name'];
             }
         }
