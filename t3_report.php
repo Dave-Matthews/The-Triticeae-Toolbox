@@ -12,7 +12,6 @@
 
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-require_once 'includes/excel/Writer.php';
 
 //query for count of genotyping_data table takes too long
 //cache the results of the queries 
@@ -290,10 +289,10 @@ if ($query == 'geno') {
    }
    print "</table>";
 } else {
-  if ($output == 'html') {
+  if ($output == 'excel') {
+    include 'includes/excel/Writer.php';
     header('Content-Type: application/vnd.ms-excel');
     header('Content-Disposition:attachment;filename=t3_report.xls');
-  } elseif ($output == 'excel') {
     $workbook = new Spreadsheet_Excel_Writer();
     $workbook->send('t3_report.xls');
     $format_header =& $workbook->addFormat();
@@ -334,8 +333,8 @@ if ($query == 'geno') {
        print "error $sql<br>\n";
      }
      $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
-     $res = mysql_query($sql) or die(mysql_error());
-     if ($row = mysql_fetch_row($res)) {
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+     if ($row = mysqli_fetch_row($res)) {
        $allele_update = $row[0];
      }
      $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
@@ -349,8 +348,8 @@ if ($query == 'geno') {
       $MarkersWithGeno = $row[0];
      }
      $sql = "select count(markers.marker_uid) from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
-     $res = mysql_query($sql) or die(mysql_error($mysqli));
-     if ($row=mysql_fetch_row($res)) {
+     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+     if ($row=mysqli_fetch_row($res)) {
        $MarkersNoGeno = $row[0];
      }
 
@@ -491,8 +490,8 @@ if ($query == 'geno') {
   }
 
   $sql = "select date_format(max(created_on),'%m-%d-%Y') from line_records";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if ($row = mysqli_fetch_row($res)) {
     $count = $row[0];
   }
   if ($output == "excel") {
@@ -506,8 +505,8 @@ if ($query == 'geno') {
   $index= 12;
   //* Phenotype data */
   $sql = "select count(phenotype_uid) from phenotypes";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row=mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if ($row=mysqli_fetch_row($res)) {
     $count = $row[0];
   }
   if ($output == "excel") {
@@ -522,8 +521,8 @@ if ($query == 'geno') {
     print "<tr><td>Traits<td>$count<td><a href=traits.php>Trait descriptions and units</a>\n";
   }
   $sql = "select count(phenotype_uid) from phenotype_data";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row=mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if ($row=mysqli_fetch_row($res)) {
     $count = $row[0];
   }
     if ($output == "excel") {
@@ -534,8 +533,8 @@ if ($query == 'geno') {
         print "<tr><td>Total phenotype data<td>$count<td><a href=phenotype_report.php>List phenotype data by year and trait</a>\n";
   }
   $sql = "select date_format(max(created_on),'%m-%d-%Y') from phenotype_data";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if ($row = mysqli_fetch_row($res)) {
       $count = $row[0];
   }
   if ($output == "excel") {
@@ -549,8 +548,8 @@ if ($query == 'geno') {
 
   //* CSR data */
   $sql = "select count(distinct(experiment_uid)) from csr_measurement"; 
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row=mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if ($row=mysqli_fetch_row($res)) {
     $count = $row[0];
   }
   if ($output == "excel") {
@@ -560,8 +559,8 @@ if ($query == 'geno') {
     print "<tr><td>Trials<td>$count<td><a href=t3_report.php?query=csr1>List of experiments</a>\n";
   }
   $sql = "select count(measurement_uid) from csr_measurement";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row=mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if ($row=mysqli_fetch_row($res)) {
     $count = $row[0];
   }
   if ($output == "excel") {
@@ -582,8 +581,8 @@ if ($query == 'geno') {
   $sql = "select count(marker_uid), marker_type_name, markers.marker_type_uid from markers, marker_types
     where markers.marker_type_uid = marker_types.marker_type_uid
     group by markers.marker_type_uid";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($row=mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  while ($row=mysqli_fetch_row($res)) {
     $count = $row[0];
     $name = $row[1];
     $marker_type_uid = $row[2];
