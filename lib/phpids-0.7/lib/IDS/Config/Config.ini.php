@@ -14,7 +14,7 @@
     use_base_path   = false 
     
     filter_path     = /www/htdocs/t3/wheat/lib/phpids-0.7/lib/IDS/default_filter.xml
-    tmp_path        = /var/log
+    tmp_path        = /tmp/tht
     scan_keys       = false
     
     ; in case you want to use a different HTMLPurifier source, specify it here

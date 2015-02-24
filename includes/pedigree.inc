@@ -704,7 +704,7 @@ function getBarleyPedigreeCatalogIDs($id) {
  */ 
 function getBarleyPedigreeCatalogLink($id) {
     global $mysqli;
-	$sql_bpc = mysql_query($mysqli, "
+	$sql_bpc = mysqli_query($mysqli, "
 			SELECT b_ref.barley_ref_number as value, b.link_out
 			FROM barley_pedigree_catalog_ref AS b_ref, barley_pedigree_catalog AS b
 			WHERE b_ref.line_record_uid = '$id'
@@ -765,7 +765,7 @@ function getPedigreeId($name) {
  */
 function deletePedigree($line_record_uid, $parent_id) {
     global $mysqli;
-	$pedigree = mysql_query($mysqli, "
+	$pedigree = mysqli_query($mysqli, "
 			DELETE
 			FROM pedigree_relations
 			WHERE line_record_uid = '$line_record_uid' AND parent_id = '$parent_id'
@@ -822,7 +822,7 @@ function circularParentTest($line, $parent) {
 
 
 function pediStr2SQL($line, $str) {
-    global $myslqi
+    global $myslqi;
 	$duplicates = 0;
 
 	//generate array tree based off string 

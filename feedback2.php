@@ -79,7 +79,7 @@ $us_feedback");
     ?>
     <h1>Website Error</h1>
     The website has encountered an error.<br>
-    Help us to improve the website but submitting an explanation of what you where doing when the error occurred.
+    Please help us to improve the website by submitting an explanation of what you were doing when the error occurred.
     <p>
     <?php
     if (!$capcha_pass) {
@@ -96,7 +96,7 @@ $us_feedback");
     ?>
     <h1>Website Error</h1>
     The website has encountered an error.<br>
-    Help us to improve the website but submitting an explanation of what you where doing when the error occurred.
+    Please help us to improve the website by submitting an explanation of what you were doing when the error occurred.
     <p>
     <?php
     echo feedbackForm($us_name, $us_email, $us_feedback);
