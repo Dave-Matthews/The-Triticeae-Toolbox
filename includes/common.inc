@@ -356,7 +356,7 @@ global $mysqli;
 	$cmd = "insert into $tablename ($keystr) values ($valstr)";
 	mysqli_query($mysqli, $cmd)|| die("insert failed " .mysqli_errno($mysqli) . ":" . mysqli_error($mysqli). "<br>". $cmd );
 
-	$id=mysqli_insert_id();
+	$id=mysqli_insert_id($mysqli);
 	return array(1,$id);
 }
 
@@ -428,7 +428,7 @@ global $mysqli;
 				if ($i<$vsize-1) $update_str.=",";
 			}
 			$update_str.=" where $testStr";
-			mysqli_query($mysqli, $update_str) or die(mysql_errno($mysqli) . ":" . mysql_error($mysqli));
+			mysqli_query($mysqli, $update_str) or die(mysqli_errno($mysqli) . ":" . mysqli_error($mysqli));
  			if ($cflt_flag>0 || $update_flag>0) {return array(0.5, $id);}
 			else {return array(0, $id);}
 		}
