@@ -6,7 +6,7 @@ require 'config.php';
  * Logged in page initialization
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-connect();
+$mysqli = connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
 
@@ -26,7 +26,7 @@ if(isset($_SESSION['DupTraitRecords'])) {
 }
 
 if(count($drds) == 0) {
-	session_unregister("DupTraitRecords");
+	unset($_SESSION['DupTraitRecords']);
 	unset($drds);
 }
 
@@ -41,17 +41,29 @@ elseif (!empty($_POST['Delete'])) {
   $id = ($_POST['Delete']);
   $name = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $id");
   echo "Attempting to delete Trait id = $id, <b>$name</b>...<p>";
-  $sql = "delete from phenotypes where phenotype_uid = $id";
-  $res = mysql_query($sql);
-  $err = mysql_error();
-  if (!empty($err)) {
-    if (strpos($err, "a foreign key constraint fails"))
-      echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this program. The error message is:<br>$err";
+  // Is there data for this trait?
+  $sql = "select * from phenotype_data where phenotype_uid = $id";
+  $res = mysqli_query($mysqli, $sql);
+  $datacount = mysqli_num_rows($res);
+  if ($datacount > 0) 
+    echo "<font color=red><b>Can't delete.</b></font> There are <b>$datacount</b> phenotype data points for this trait.";
+  else {
+    // First clean phenotype_descstat.
+    $sql = "delete from phenotype_descstat where phenotype_uid = $id";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    // Delete the trait.
+    $sql = "delete from phenotypes where phenotype_uid = $id";
+    $res = mysqli_query($mysqli, $sql);
+    $err = mysqli_error($mysqli);
+    if (!empty($err)) {
+      if (strpos($err, "a foreign key constraint fails"))
+	echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this trait. The error message is:<br>$err";
+      else
+	echo "<font color=red><b>Can't delete.</b></font> The error message is:<br>$err";
+    }
     else
-      echo "<font color=red><b>Can't delete.</b></font> The error message is:<br>$err";
+      echo "Success.  Trait <b>$name</b> deleted.<p>";
   }
-  else
-    echo "Success.  Trait <b>$name</b> deleted.<p>";
 }
 
 $searchstring = '';
@@ -103,4 +115,4 @@ else
 </div>
 </div>
 
-<?php include($config['root_dir'] . 'theme/footer.php');?>
+<?php include($config['root_dir'] . 'theme/footer.php');
