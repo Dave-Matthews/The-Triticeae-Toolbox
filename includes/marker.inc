@@ -102,7 +102,7 @@ function showMarkerForLine($line_id, $order="marker_name") {
 function showLineForMarker($markername, $order="ORDER BY line_record_name") {
   global $mysqli;
   if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
-    $order = "ORDER BY " . $_GET['sortby'] . " " . $_GET['sorttype'];
+  /*  $order = "ORDER BY " . $_GET['sortby'] . " " . $_GET['sorttype']; */
   }
   $query = "SELECT marker_type_name, A_allele, B_allele from markers, marker_types where markers.marker_type_uid = marker_types.marker_type_uid and marker_name = '$markername'";
   $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
