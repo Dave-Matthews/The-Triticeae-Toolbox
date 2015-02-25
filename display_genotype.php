@@ -10,15 +10,12 @@
  *
  */
 
-namespace T3;
-
 // dem 23mar12: Default 30 sec is too short for experiment 2011_9K_NB_allplates.
 ini_set("max_execution_time", "300");
 // dem 23mar12: Default 500M is too small for experiment 2011_9K_NB_allplates.
 ini_set('memory_limit', '4096M');
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
-require_once 'Spreadsheet/Excel/Writer.php';
 require 'display_genotype_class.php';
 require 'downloads/marker_filter.php';
 connect();

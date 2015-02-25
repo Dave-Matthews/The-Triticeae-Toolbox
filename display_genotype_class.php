@@ -22,8 +22,6 @@
  * @link    http://triticeaetoolbox.org/wheat/display_genotype.php
  **/
 
-namespace T3;
-
 class ShowData
 {
     public $delimiter = "\t";
