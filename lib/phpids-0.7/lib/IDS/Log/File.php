@@ -186,6 +186,14 @@ class IDS_Log_File implements IDS_Log_Interface
 
         if (is_string($data)) {
 
+            if (!file_exists($this->logfile)) {
+                $handle = @fopen($this->logfile, 'w+');
+                if (!handle) {
+                    throw new Exception("Log file couldn't be created");
+                } else {
+                    fclose($handle);
+                }
+            }
             if (file_exists($this->logfile)) {
                 $data = trim($data);
 
