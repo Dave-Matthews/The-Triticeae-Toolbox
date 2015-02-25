@@ -79,7 +79,7 @@ foreach ($trialids as $tid) {
   }
 }
 
-if (empty($_REQUEST) or $_REQUEST['reselect']) { 
+if (empty($_GET) or $_GET['reselect']) { 
   // Initial entry to the script or resetting parameters.
 ?>
 Choose relative weights and a scaling method to combine the traits into an index.
