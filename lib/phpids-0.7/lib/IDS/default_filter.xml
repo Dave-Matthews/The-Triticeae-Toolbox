@@ -562,8 +562,8 @@
     </filter>
     <filter>
         <id>54</id>
-        <rule><![CDATA[(?:select\s*pg_sleep)|(?:waitfor\s*delay\s?"+\s?\d)|(?:;\s*shutdown\s*(?:;|--|#|\/\*|{))]]></rule>
-        <description>Detects Postgres pg_sleep injection, waitfor delay attacks and database shutdown attempts</description>
+        <rule><![CDATA[(?:make_set)|(?:waitfor\s*delay\s?"+\s?\d)|(?:;\s*shutdown\s*(?:;|--|#|\/\*|{))]]></rule>
+        <description>Detects make_set injection, waitfor delay attacks and database shutdown attempts</description>
         <tags>
             <tag>sqli</tag>
             <tag>id</tag>
@@ -796,14 +796,4 @@
         </tags>
         <impact>3</impact>
     </filter>        
-    <filter>
-        <id>78</id>
-        <rule><![CDATA[(?:(make_set))]]></rule>
-        <description>Detects SQL make_set injection attempts</description>
-        <tags>
-            <tag>sqli</tag>
-            <tag>id</tag>
-        </tags>
-        <impact>4</impact>
-    </filter>
 </filters>
