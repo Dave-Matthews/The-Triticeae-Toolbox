@@ -796,4 +796,14 @@
         </tags>
         <impact>3</impact>
     </filter>        
+    <filter>
+        <id>78</id>
+        <rule><![CDATA[(?:(make_set))]]></rule>
+        <description>Detects SQL make_set injection attempts</description>
+        <tags>
+            <tag>sqli</tag>
+            <tag>id</tag>
+        </tags>
+        <impact>4</impact>
+    </filter>
 </filters>
