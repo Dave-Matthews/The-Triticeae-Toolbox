@@ -160,6 +160,7 @@ EOD;
  	<li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
 	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value vs Trials">Compare Trials</a>
