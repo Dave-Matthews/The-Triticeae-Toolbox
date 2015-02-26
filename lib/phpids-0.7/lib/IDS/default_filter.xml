@@ -795,5 +795,14 @@
             <tag>id</tag>
         </tags>
         <impact>3</impact>
-    </filter>        
+    </filter>
+    <filter>
+        <id>78</id>
+        <rule><![CDATA[(?:%23.*?%0a)]]></rule>
+        <description>Detects SQL comment filter evasion</description>
+        <tags>
+            <tag>format string</tag>
+        </tags>
+        <impact>4</impact>
+    </filter>
 </filters>
