@@ -67,4 +67,5 @@ if (preg_match($pattern, $table)) {
 }
 
 echo "</div>";
+mysqli_close($mysqli);
 require"theme/footer.php";
