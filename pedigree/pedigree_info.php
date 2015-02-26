@@ -245,7 +245,7 @@ function exclude_none() {
 
 <?php
 if (count($linelist) > 2000) {
-    echo "Download does not work with over 2000 lines\n";
+    echo "Warning: Download does not work with over 2000 lines\n";
 }
 } /* End of function type_LineInformation*/
   
