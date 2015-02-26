@@ -1,0 +1,25 @@
+div.boxplot-element {
+	/* background: #fff; */
+	position: absolute;
+	left: 40px;
+	border: thin solid #000;
+	width:30px;
+	height: 0px;
+}
+
+div.boxplot-label {
+      position: absolute;
+      border: none;
+      font-size: smaller;
+}
+
+/***************************************
+   * Positioning of the box plot containers
+   ****************************************/
+div.boxplot-container {
+                        border: none;
+                        padding-bottom: 30px;
+                        position: relative;
+                        left: 0px;
+                        top: 0px;
+                        }
