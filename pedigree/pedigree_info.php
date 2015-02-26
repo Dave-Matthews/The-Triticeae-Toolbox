@@ -1,17 +1,14 @@
-<?php 
+<?php
 /**
  * Pedigree Info
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <cbirkett@gmail.com>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/pedigree/pedigree_info.php
- * 
+ *
  */
 
 session_start();
@@ -244,9 +241,12 @@ function exclude_none() {
 </table>
 </div>
 
-<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel2();"/>
+<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/>
 
 <?php
+if (count($linelist) > 2000) {
+    echo "Warning: Download does not work with over 2000 lines\n";
+}
 } /* End of function type_LineInformation*/
   
 private function type_Line_Excel() {
@@ -376,4 +376,3 @@ private function type_Line_Excel() {
 }
 
 } /* End of class Pedigree */
-?>
