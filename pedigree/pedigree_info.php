@@ -244,6 +244,9 @@ function exclude_none() {
 <br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/>
 
 <?php
+if (count($linelist) > 2000) {
+    echo "Download does not work with over 2000 lines\n";
+}
 } /* End of function type_LineInformation*/
   
 private function type_Line_Excel() {
