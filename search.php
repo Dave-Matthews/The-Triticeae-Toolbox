@@ -230,4 +230,6 @@ if(isset($_POST['haplotype'])) {
 </div>
 </div>
 
-<?php include("theme/footer.php");
+<?php
+mysqli_close($mysqli);
+include("theme/footer.php");

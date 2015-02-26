@@ -3,7 +3,7 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
 
 
@@ -27,7 +27,7 @@ if (isset($_GET['line']) && ($_GET['line'] != "")) {
 } else {
     include $config['root_dir'].'theme/normal_header.php';
 
-/*******************************/
+    /*******************************/
 
     ?>
     <h1>Browse Line Records</h1>
@@ -44,4 +44,6 @@ if (isset($_GET['line']) && ($_GET['line'] != "")) {
 </p>
 </div>
 </div>
-<?php include $config['root_dir'].'theme/footer.php';
+<?php
+mysqli_close($mysqli);
+require $config['root_dir'].'theme/footer.php';

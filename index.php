@@ -132,5 +132,6 @@ $name = get_unique_name("datasets");
 </tbody></table></div></div></div>
 
 <?php
-  $footer_div=1;
+mysqli_close($mysqli);
+$footer_div=1;
 require $config['root_dir'].'theme/footer.php';

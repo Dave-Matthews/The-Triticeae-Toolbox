@@ -4,10 +4,10 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'includes/bootstrap.inc';
 $mysqli = connecti();
 
-include $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'theme/admin_header.php';
 /*******************************/
 ?>
 
@@ -53,4 +53,6 @@ if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
 </div>
 </div>
 
-<?php include $config['root_dir'] . 'theme/footer.php';
+<?php
+mysqli_close($mysqli);
+require $config['root_dir'] . 'theme/footer.php';
