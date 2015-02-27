@@ -99,12 +99,12 @@ function showMarkerForLine($line_id, $order="marker_name") {
  * 
  * @return void - this function outputs its result .
  */
-function showLineForMarker($markername, $order="ORDER BY line_record_name") {
+function showLineForMarker($marker_uid, $order="ORDER BY line_record_name") {
   global $mysqli;
   if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
-    $order = "ORDER BY " . $_GET['sortby'] . " " . $_GET['sorttype'];
+  /*  $order = "ORDER BY " . $_GET['sortby'] . " " . $_GET['sorttype']; */
   }
-  $query = "SELECT marker_type_name, A_allele, B_allele from markers, marker_types where markers.marker_type_uid = marker_types.marker_type_uid and marker_name = '$markername'";
+  $query = "SELECT marker_type_name, A_allele, B_allele from markers, marker_types where markers.marker_type_uid = marker_types.marker_type_uid and marker_uid = $marker_uid";
   $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
   if ($row = mysqli_fetch_assoc($resource)) {
     $marker_type = $row['marker_type_name'];
@@ -112,20 +112,10 @@ function showLineForMarker($markername, $order="ORDER BY line_record_name") {
   } else {
     $marker_type = "SNP";
   }
-  
-  /* $query = "SELECT lr.line_record_name, a.allele_1, a.allele_2            */
-  /* 	    FROM markers as m, line_records as lr, alleles as a,                                                       */
-  /* 		 tht_base as tb, genotyping_data as gd */
-  /*           WHERE m.marker_name = '$markername' */
-  /* 	      AND m.marker_uid = gd.marker_uid                */
-  /* 	      AND a.genotyping_data_uid = gd.genotyping_data_uid                      */
-  /* 	      AND tb.line_record_uid = lr.line_record_uid     */
-  /* 	      AND gd.tht_base_uid = tb.tht_base_uid */
-  /*           $order"; */
 
 $query = "SELECT experiments.trial_code, line_record_name, alleles
           FROM experiments, allele_cache
-          WHERE allele_cache.marker_name = '$markername'
+          WHERE allele_cache.marker_uid = $marker_uid 
           AND experiments.experiment_uid = allele_cache.experiment_uid
           $order";
 

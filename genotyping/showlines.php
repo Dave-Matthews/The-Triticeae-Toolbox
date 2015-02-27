@@ -4,10 +4,10 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'includes/bootstrap.inc';
 $mysqli = connecti();
 
-include $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'theme/admin_header.php';
 /*******************************/
 ?>
 
@@ -18,9 +18,10 @@ include $config['root_dir'] . 'theme/admin_header.php';
 
 <?php
 if (isset($_GET['marker']) && ($_GET['marker'] != "")) {
-    $sql = "select marker_name from markers where marker_uid = '".$_GET['marker']."'";
+    $marker_uid = intval($_GET['marker']);
+    $sql = "select marker_name from markers where marker_uid = $marker_uid";
     $stmt = mysqli_prepare($mysqli, "SELECT marker_name from markers where marker_uid = ?");
-    mysqli_stmt_bind_param($stmt, "i", $_GET['marker']);
+    mysqli_stmt_bind_param($stmt, "i", $marker_uid);
     mysqli_stmt_execute($stmt);
     mysqli_stmt_bind_result($stmt, $markername);
     mysqli_stmt_fetch($stmt);
@@ -33,9 +34,9 @@ echo "<h3>Marker $markername</h3>";
 
 if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
     $orderby = $_GET['sortby'] . " " . $_GET['sorttype'];
-    showLineForMarker($markername, $orderby);
+    showLineForMarker($marker_uid, $orderby);
 } else {
-    showLineForMarker($markername);
+    showLineForMarker($marker_uid);
 }
 ?>
 
@@ -53,4 +54,6 @@ if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
 </div>
 </div>
 
-<?php include $config['root_dir'] . 'theme/footer.php';
+<?php
+mysqli_close($mysqli);
+require $config['root_dir'] . 'theme/footer.php';
