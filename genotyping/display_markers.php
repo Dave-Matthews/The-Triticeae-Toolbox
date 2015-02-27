@@ -117,11 +117,10 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
     while ($row=mysqli_fetch_array($result)) {
         $mkruid = $row[0];
         $name = $row[1];
-        if ($use_file) {
-            fwrite($h, "$name\n");
-        } else {
-            echo "<tr><td><a href=view.php?table=markers&uid=$mkruid>$name</a>\n";
-        }
+        $marker_list[] = $name;
+    }
+    foreach ($marker_list as $marker) {
+        fwrite($h, "$marker\n");
     }
 }
 if ($use_file) {
