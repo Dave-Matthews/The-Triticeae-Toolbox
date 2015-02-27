@@ -71,66 +71,10 @@ class Pedigree {
 ?>
 
 <script type="text/javascript">
-
-// Read PHP array $linelist into Javascript array line[].
-var line = new Array();
-<?php
-      for ($i=0; $i<count($linelist); $i++) { ?>
-        line[<?php echo $i ?>] = <?php echo $linelist[$i] ?> 
-<?php 
-      } 
-?> 
-var sellineids = line;
-		
 function load_excel() {
-    excel_str1 = sellineids;
-    arry_length = (sellineids.length);
-    var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + arry_length;
-    // Opens the url in the same window
-     window.open(url, "_self");
-}
-//this works better with large data sets
-function load_excel2() {
-    var myForm = document.createElement("form");
-    var p = new Array();
-    p["function"] = "typeLineExcel";
-    p["mxls1"] = sellineids;
-    p["mxls2"] = (sellineids.length);
-    
-    myForm.method="post";
-    myForm.action = '<?php $_SERVER[PHP_SELF];?>';
-    for (var k in p) {
-        var myInput = document.createElement("input") ;
-        myInput.setAttribute("type", "hidden");
-        myInput.setAttribute("name", k);
-        myInput.setAttribute("value", p[k]);
-        myForm.appendChild(myInput);
-     }
-     document.body.appendChild(myForm) ;
-     myForm.submit() ;
-     document.body.removeChild(myForm) ;
-}
-
-// select/deselect
-function sm(exbx, id) {
-    if (exbx.checked == true)
-        sellineids.push(id);
-    else
-        sellineids = sellineids.without(id);
-}
-// Select All
-function exclude_all() {
-    for (var i=0; i<line.length; ++i) {
-        $('exbx_'+line[i]).checked = true;
-    }
-    sellineids = line; // all
-}
-// select none
-function exclude_none() {
-    for (var i=0; i<line.length; ++i) {
-        $('exbx_'+line[i]).checked = false;
-    }
-    sellineids = new Array(); // empty
+      var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel';
+      // Opens the url in the same window
+      window.open(url, "_self");
 }
 </script>
 
@@ -147,9 +91,6 @@ function exclude_none() {
 <div style="width: 940px;">
   <table style="table-layout:fixed; width: 940px">
     <tr> 
-      <th class="marker" style="width: 50px; text-align: left"> &nbsp;&nbsp;Check <br/>
-	<input type="radio" name="btn1" value="" onclick="javascript:exclude_all();"/>All<br>
-	<input type="radio" name="btn1" value="" onclick="javascript:exclude_none();"/>None</th>
       <th style="width: 80px;" class="marker">Name</th>
       <th style="width: 50px;" class="marker">GRIN</th>
       <th style="width: 80px;" class="marker">Synonym</th>
@@ -193,9 +134,6 @@ function exclude_none() {
       while ($row=mysql_fetch_assoc($result)) {
 ?>
 	<tr>
-        <td style="width: 50px;" class="marker">
-	  <input type="checkbox" checked name="btn1" value="<?php echo $lineuid ?>" id="exbx_<?php echo $lineuid ?>" onchange="sm(this, <?php echo $lineuid ?>);" class="exbx"/>&nbsp;&nbsp;&nbsp;
-        <input type="hidden" id="muids" name="muids" value="<?php echo $lineuid ?>" />
         <td style="width: 80px; text-align: center" class="marker">
         <?php $line_name = $row['line_record_name'];
 	   $GETable_name = str_replace('#', '%23', $line_name);
@@ -240,28 +178,20 @@ function exclude_none() {
 ?>
 </table>
 </div>
-
 <br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/>
 
 <?php
-if (count($linelist) > 2000) {
-    echo "Warning: Download does not work with over 2000 lines\n";
-}
 } /* End of function type_LineInformation*/
   
 private function type_Line_Excel() {
-
-  if (!empty($_POST['mxls1'])) 
-    $sample = $_POST['mxls1'];
-  else {
-    // If we clicked on the button for Lines Found, retrieve that cookie instead.
-    if ($_GET['lf'] == "yes") 
-      $linelist = $_SESSION['linesfound'];
-    else 
-      $linelist = $_SESSION['selected_lines'];
-    $sample = implode(",", $linelist);
-  }
+  // If we clicked on the button for Lines Found, retrieve that cookie instead.
+  if ($_GET['lf'] == "yes") 
+    $linelist = $_SESSION['linesfound'];
+  else 
+    $linelist = $_SESSION['selected_lines'];
+  $sample = implode(",", $linelist);
   $linelist = explode(",", $sample);
+  // Get the Genetic Characters known for this set of lines.
   $ourprops = array();
   foreach ($linelist as $lineuid) {
     $propresult = mysql_query("select property_uid                                                   
