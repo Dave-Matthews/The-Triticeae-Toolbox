@@ -65,17 +65,25 @@ class ShowData
     /** Store the genotype experiment selection in a session variable, and jump to genotype experiments list*/
     private function typeSelectMarkers()
     {
+        global $mysqli;
         $_SESSION[selected_lines] = explode(",", $_POST[linelist]);
         $exps_str = $_POST[genoexp];
         $experiments = explode(',', $exps_str);
         $_SESSION['geno_exps'] = $experiments;
         $sql = "select count(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        if ($row = mysql_fetch_array($res)) {
-            $_SESSION['geno_exps_cnt'] = number_format($row[0]);
-            echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/genotype_selection.php\">";
+        if ($stmt = mysqli_prepare($mysqli, "select count(marker_uid) from allele_bymarker_exp_101 where experiment_uid in (?)")) {
+            mysqli_stmt_bind_param($stmt, "s", $exps_str);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $countMarkers);
+            if (mysqli_stmt_fetch($stmt)) {
+              $_SESSION['geno_exps_cnt'] = number_format($countMarkers);
+              echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/genotype_selection.php\">";
+            } else {
+              echo "Error: no markers could be found";
+            }
+            mysqli_stmt_close($stmt);
         } else {
-            echo "Error: no markers could be found\n";
+            echo "Error: " . mysqli_error($mysqli);
         }
     }
 
@@ -100,29 +108,37 @@ class ShowData
 
   private function type_DataInformation($trial_code)
   {
+    global $mysqli;
     $line_ids = array();
     $sql = "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code = '".$trial_code."' ";
-    $res = mysql_query($sql) or die("Error: unable to retrieve experiment record with trial code.<br>".mysql_error());
-    $row = mysql_fetch_assoc($res);
-    $experiment_uid = $row['experiment_uid'];
-    $CAPdata_programs_uid = $row['CAPdata_programs_uid'];
-    $experiment_short_name = $row['experiment_short_name'];
-		
-    $sql_data_code = "SELECT data_program_code, data_program_name FROM CAPdata_programs where CAPdata_programs_uid = '".$CAPdata_programs_uid."' ";
-    $res_data_code = mysql_query($sql_data_code) or die("Error: unable to retrieve CAP data info from data prog id.<br>".mysql_error());
-    $row_data_code = mysql_fetch_assoc($res_data_code);
-    $data_program_code = $row_data_code['data_program_code'];
-    $data_program_name = $row_data_code['data_program_name'];
+    if ($stmt = mysqli_prepare($mysqli, "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code = ?")) {
+        mysqli_stmt_bind_param($stmt, "s", $trial_code);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $CAPdata_programs_uid, $experiment_type_uid, $experiment_uid, $experiment_short_name);
+        if (mysqli_stmt_fetch($stmt)) { 
+            mysqli_stmt_close($stmt);
+            $sql_data_code = "SELECT data_program_code, data_program_name FROM CAPdata_programs where CAPdata_programs_uid = '".$CAPdata_programs_uid."' ";
+            $res_data_code = mysqli_query($mysqli, $sql_data_code) or die("Error: unable to retrieve CAP data info from data prog id.<br>".mysqli_error($mysqli));
+            $row_data_code = mysqli_fetch_assoc($res_data_code);
+            $data_program_code = $row_data_code['data_program_code'];
+            $data_program_name = $row_data_code['data_program_name'];
+        } else {
+            mysqli_stmt_close($stmt);
+            echo "Error: no experiment found";
+        }
+    } else {
+        echo "Error: " . mysqli_error($mysqli);
+    } 
 
     $sql_lines = "select line_record_uid from tht_base where experiment_uid = $experiment_uid";
-    $res_lines = mysql_query($sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysql_error() . $sql_lines);
-    while ($line = mysql_fetch_row($res_lines))
+    $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli) . $sql_lines);
+    while ($line = mysqli_fetch_row($res_lines))
       $line_ids[] = $line[0];
     $line_total = count($line_ids);
     if ($line_total == 0) {
         $sql_lines = "select line_index from allele_bymarker_expidx where experiment_uid = $experiment_uid";
-        $res_lines = mysql_query($sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysql_error());
-        if ($line = mysql_fetch_row($res_lines)) {
+        $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli));
+        if ($line = mysqli_fetch_row($res_lines)) {
             $gbs_exp = "yes";
             $line_list = $line[0];
             $line_ids = explode(",", $line_list);
@@ -133,8 +149,8 @@ class ShowData
     }
 
     $sql_Gen_Info = "SELECT * FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
-    $res_Gen_Info = mysql_query($sql_Gen_Info) or die("Error: No experiment information for genotype experiment $trial_code..<br> " .mysql_error());
-    $row_Gen_Info = mysql_fetch_assoc($res_Gen_Info);
+    $res_Gen_Info = mysqli_query($mysqli, $sql_Gen_Info) or die("Error: No experiment information for genotype experiment $trial_code..<br> " .mysqli_error($mysqli));
+    $row_Gen_Info = mysqli_fetch_assoc($res_Gen_Info);
     $manifest_file_name = $row_Gen_Info['manifest_file_name'];
     $cluster_file_name = $row_Gen_Info['cluster_file_name'];
     $OPA_name = $row_Gen_Info['OPA_name'];
@@ -144,8 +160,8 @@ class ShowData
     $comments = $row_Gen_Info['comments'];
     $platform_uid = $row_Gen_Info['platform_uid'];
     $sql = "SELECT platform_name from platform where platform_uid = $platform_uid";;
-    $res = mysql_query($sql) or die("Error: No platform information for genotype experiment $trial_code..<br> " .mysql_error());
-    $row = mysql_fetch_assoc($res);
+    $res = mysqli_query($mysqli, $sql) or die("Error: No platform information for genotype experiment $trial_code..<br> " .mysqli_error($mysqli));
+    $row = mysqli_fetch_assoc($res);
     $platform_name = $row['platform_name'];
 	
     $max_missing = 10; //IN PERCENT
@@ -167,11 +183,11 @@ class ShowData
 		    af.bb_cnt as sumbb, af.total as total, af.ab_cnt AS sumab, maf
 		    FROM allele_frequencies AS af
 		    WHERE af.experiment_uid = '".$experiment_uid."'";
-	$res = mysql_query($sql_mstat) or die("Error: Unable to sum allele frequency values.<br>".mysql_error());
-	$num_mark = mysql_num_rows($res);
+	$res = mysqli_query($mysqli, $sql_mstat) or die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
+	$num_mark = mysqli_num_rows($res);
 	$num_maf = $num_miss = 0;
 			
-	while ($row = mysql_fetch_array($res)){
+	while ($row = mysqli_fetch_array($res)){
 	  $marker_uid[] = $row["marker"];
           $total_af = $row["sumaa"] + $row["sumab"] + $row["sumbb"];
 	  //$maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$total_af),($row["sumab"]+2*$row["sumbb"])/(2*$total_af)),1);
@@ -249,6 +265,7 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
   } /* End of function type_DataInformation*/
 
   private function type_Tab_Delimiter_GBS() {
+      global $mysqli;
       $experiment_uid = $_GET['expuid'];
       $max_missing = 99.9;//IN PERCENT
       if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
@@ -269,8 +286,8 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
       $filename = "download_" . $unique_str;
       mkdir("/tmp/tht/$filename");
       $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $experiment_uid";
-      $res = mysql_query($sql) or die(mysql_error());
-      while ($row = mysql_fetch_row($res)) {
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+      while ($row = mysqli_fetch_row($res)) {
           $uid = $row[0];
           $markers[] = $uid;
       }
@@ -287,6 +304,7 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
   }
   
   private function type_Tab_Delimiter() {
+    global $mysqli;
     $experiment_uid = $_GET['expuid'];
     $max_missing = 99.9;//IN PERCENT
     if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
@@ -313,13 +331,13 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
 		    SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
 		    FROM allele_frequencies AS af, markers as m
 		    WHERE m.marker_uid = af.marker_uid
-			    AND af.experiment_uid ='".$experiment_uid."'
+			    AND af.experiment_uid = $experiment_uid
 		    group by af.marker_uid"; 
-    $res = mysql_query($sql_mstat) or die("Error: user criteria select query.<br>".mysql_error());
-    $num_mark = mysql_num_rows($res);
+    $res = mysqli_query($mysqli, $sql_mstat) or die("Error: user criteria select query.<br>".mysqli_error($mysqli));
+    $num_mark = mysqli_num_rows($res);
     $num_maf = $num_miss = 0;
 
-    while ($row = mysql_fetch_array($res)){
+    while ($row = mysqli_fetch_array($res)){
       $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
       $miss = round(100*$row["summis"]/$row["total"],1);
       if (($maf >= $min_maf) AND ($miss <= $max_missing)) {
@@ -332,8 +350,8 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
     //get a list of GBS markers used to convert format
     $query = "SELECT marker_uid, marker_type_name, A_allele, B_allele from markers, marker_types 
                   where markers.marker_type_uid = marker_types.marker_type_uid and marker_type_name = 'GBS'";
-    $resource = mysql_query($query) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($resource)) {
+    $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($resource)) {
       $uid = $row['marker_uid'];
       $a_allele = $row['A_allele'];
       $b_allele = $row['B_allele'];
@@ -382,10 +400,10 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
         AND experiment_uid =$experiment_uid
         ORDER BY line_record_name, marker_uid";
     $last_line = "some really silly name that no one would call a plant";
-    $res = mysql_query($sql) or die("Error:allele output dataset<br>". mysql_error());
+    $res = mysqli_query($mysqli, $sql) or die("Error:allele output dataset<br>". mysqli_error($mysqli));
     $outarray = $empty;
     $cnt = $num_lines = 0;
-    while ($row = mysql_fetch_array($res)) {
+    while ($row = mysqli_fetch_array($res)) {
       //first time through loop
       $uid = $row['marker_uid'];
       if ($cnt == 0) 
