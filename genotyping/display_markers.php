@@ -5,11 +5,8 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/genotyping/display_markers.php
  *
  */
@@ -105,6 +102,25 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
             } else {
             }
         }
+    }
+} elseif (isset($_SESSION['geno_exps'])) {
+    $use_file = 1;
+    $dir = "/tmp/tht/";
+    $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
+    $filename = "selected_markers_" . $unique_str . ".csv";
+    $h = fopen($dir.$filename, "w+");
+    fwrite($h, "name\n");
+    $exp = $_SESSION['geno_exps'];
+    $exp = $exp[0];
+    $sql = "select marker_uid, marker_name from allele_bymarker_exp_101 where experiment_uid = $exp";
+    $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row=mysqli_fetch_array($result)) {
+        $mkruid = $row[0];
+        $name = $row[1];
+        $marker_list[] = $name;
+    }
+    foreach ($marker_list as $marker) {
+        fwrite($h, "$marker\n");
     }
 }
 if ($use_file) {
