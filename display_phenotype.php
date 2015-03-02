@@ -5,11 +5,8 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  * 
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/display_phenotype.php
  * 
  */
@@ -52,7 +49,19 @@ $display_name=ucwords($trial_code); //used to display a beautiful name as the pa
 echo "<h1>Trial ".$display_name."</h1>";
         
 // Restrict if private data.
-$data_public_flag = mysql_grab("SELECT data_public_flag FROM experiments WHERE trial_code='$trial_code'");
+// $data_public_flag = mysql_grab("SELECT data_public_flag FROM experiments WHERE trial_code='$trial_code'");
+if ($stmt = mysqli_prepare($mysqli, "SELECT data_public_flag FROM experiments WHERE trial_code = ?")) {
+    mysqli_stmt_bind_param($stmt, "s", $trial_code);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $data_public_flag);
+    if (!mysqli_stmt_fetch($stmt)) {
+        mysqli_stmt_close($stmt);
+        die("Error: trial not found\n");
+    }
+    mysqli_stmt_close($stmt);
+}  else {
+    die("Error: bad sql statement\n");
+}
 if ( ($data_public_flag == 0) AND (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) )
   echo "Results of this trial are restricted to project participants.";
 else {
@@ -65,7 +74,8 @@ else {
       $datasets_exp_uid=$experiment_uid;
       $exptname=$row['experiment_desc_name'];
       $year=$row['experiment_year'];
-
+      if (!$experiment_uid)
+	die ("Trial $trial_code not found.");
         
       $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'"; 
       $result_pei=mysqli_query($mysqli,$query) or die(mysqli_error($mysqli));
@@ -232,15 +242,21 @@ and bcr.line_record_uid = '$linerecorduid'";
                 //echo $sql_val."<br>";
                 $result_val=mysql_query($sql_val);
                 if (mysql_num_rows($result_val) > 0){
-                	$row_val=mysql_fetch_assoc($result_val);
-                	$val=$row_val['value'];
-			        $val_long=$val;
-			        if ($sigdig >= 0)
-			            $val=number_format($val,$sigdig);
-		        } else {
-			        $val = "--"; 
-			        $val_long = "--";
-		        }
+                    $row_val=mysql_fetch_assoc($result_val);
+                    $val=$row_val['value'];
+		    $val_long=$val;
+		    if ($sigdig >= 0) {
+                          $val = floatval($val);
+		          $val=number_format($val,$sigdig);
+                    }
+		} else {
+		    $val = "--"; 
+		    $val_long = "--";
+		}
+		if (empty($val)) {
+		  $val = "--";
+		  $val_long = "--";
+		}
                 $single_row[$i+2]=$val;
 		        $single_row_long[$i+2]=$val_long;
             }
