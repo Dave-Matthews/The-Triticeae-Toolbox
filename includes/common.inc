@@ -1231,7 +1231,7 @@ function displayLinePheno($query, $sortable=TRUE, $sigdig, $link="") {
       if(strcmp($k,"Trial") == 0) 
 	$v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
       if(strcmp($k,"value") == 0 && $sigdig>=0) {
-        $v = floatval($v)
+        $v = floatval($v);
 	$v = number_format($v,$sigdig);
       }
       $ret .= "\t<td>$v</td>\n";
