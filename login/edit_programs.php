@@ -20,7 +20,7 @@ if(isset($_SESSION['DupProgRecords'])) {
   $drds = $_SESSION['DupProgRecords'];
 }
 if(count($drds) == 0) {
-  session_unregister("DupProgRecords");
+  unset($_SESSION['DupProgRecords']);
   unset($drds);
 }
 
