@@ -81,7 +81,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
 <script type="text/javascript">
   function validatePassword(pw) {
     if (pw.length < 8) {
-      alert("Please supply a password of at least 6 characters.");
+      alert("Please supply a password of at least 8 characters.");
       return false;
     }
     return true;
@@ -116,7 +116,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
     <tr><td style="border: none; text-align: right;">
 	<label for="password">I want my password to be:</label></td>
       <td style="border: none;">
-	<input type="password" name="password" id="password" /></td></tr>
+	<input type="password" name="password" id="password" /> At least 8 characters but not special characters "!@#$".</td></tr>
     <tr><td style="border: none; text-align: right;">
 	<label for="cpassword">Type it again:</label></td>
       <td style="border:none;">
