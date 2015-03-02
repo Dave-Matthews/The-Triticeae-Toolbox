@@ -1230,8 +1230,10 @@ function displayLinePheno($query, $sortable=TRUE, $sigdig, $link="") {
 	$v = "<a href=\"view.php?table=phenotypes" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
       if(strcmp($k,"Trial") == 0) 
 	$v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
-      if(strcmp($k,"value") == 0 && $sigdig>=0) 
+      if(strcmp($k,"value") == 0 && $sigdig>=0) {
+        $v = floatval($v)
 	$v = number_format($v,$sigdig);
+      }
       $ret .= "\t<td>$v</td>\n";
     }
     $ret .= "\n</tr>\n";
