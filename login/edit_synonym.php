@@ -19,13 +19,13 @@ ob_end_flush();
   <!-- Select which line to edit. -->
   <form method="get">
     <p><strong>Line Name</strong><br>
-      <input type="text" name="line" value="<?php echo $_REQUEST['line']; ?>">
+      <input type="text" name="line" value="<?php echo $_GET['line']; ?>">
       <input type="submit" value="Search" /></p>
   </form>
 <?php
 // Has a Synonym update been submitted?
-if(!is_null($_REQUEST['newsyn'])) {
-  $input = $_REQUEST;
+if(!is_null($_GET['newsyn'])) {
+  $input = $_GET;
   foreach($input as $k=>$v)
     $input[$k] = addslashes($v);
   array_pop($input); // Remove line name.
@@ -74,8 +74,8 @@ if(!is_null($_REQUEST['newsyn'])) {
 }
 
 // Has a GRIN Accession update been submitted?
-if(!is_null($_REQUEST['newgrin'])) {
-  $input = $_REQUEST;
+if(!is_null($_GET['newgrin'])) {
+  $input = $_GET;
   foreach($input as $k=>$v)
     $input[$k] = addslashes($v);
   array_pop($input); // Remove line name.
@@ -113,8 +113,8 @@ if(!is_null($_REQUEST['newgrin'])) {
 }
 
 // Have we searched?
-if(isset($_REQUEST['line'])) {
-  $line = $_REQUEST['line'];
+if(isset($_GET['line'])) {
+  $line = $_GET['line'];
   $line_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$line'");
   if (empty($line_uid))
     echo "Line name not found.<p>";
@@ -158,16 +158,16 @@ echo "</div>";
   <!-- Select which lines to merge. -->
   <form method="get">
     <p><strong>Line to keep</strong><br>
-      <input type="text" name="keepline" value="<?php echo $_REQUEST['keepline']; ?>">
+      <input type="text" name="keepline" value="<?php echo $_GET['keepline']; ?>">
     <p><strong>Line to merge into it</strong><br>
-      <input type="text" name="oldline" value="<?php echo $_REQUEST['oldline']; ?>">
+      <input type="text" name="oldline" value="<?php echo $_GET['oldline']; ?>">
       <input type="submit" value="Search" /></p>
   </form>
 <?php
   // Have we Searched for the two lines?  Show what data they have.
-  if (isset($_REQUEST[keepline]) AND isset($_REQUEST[oldline])) {
-    $keepline = $_REQUEST[keepline];
-    $oldline = $_REQUEST[oldline];
+  if (isset($_GET[keepline]) AND isset($_GET[oldline])) {
+    $keepline = $_GET[keepline];
+    $oldline = $_GET[oldline];
     $kline_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$keepline'");
     $oline_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$oldline'");
     $notfound = "";
@@ -177,7 +177,7 @@ echo "</div>";
       $notfound = "Line name '$oldline' not found.<br>";
     echo $notfound;
     if (empty($notfound) ) {
-      if (!$_REQUEST['confirm']) {
+      if (!$_GET['confirm']) {
       // Show details about these lines.
       // Get the properly capitalized names.
       $keepline = mysql_grab("select line_record_name from line_records where line_record_uid = $kline_uid");
@@ -311,7 +311,7 @@ echo "</div>";
 	echo "<br>There is no Undo.</form>";
       
 	// Confirmed?  I.e. "Yes" button clicked?
-	if ($_REQUEST[confirm] == "Yes") {
+	if ($_GET[confirm] == "Yes") {
 	  // No action, since old line can't be accessed.  Will go away when alleles next added:
 	  // allele_cache, allele_byline, allele_byline_clust, allele_conflicts
 	  // ?: What about allele_bymarker, allele_bymarker_idx?
@@ -337,7 +337,7 @@ echo "</div>";
 	  }
 	  echo "<p>Line <b>$oldline</b> deleted. Phenotype and genotype data merged into <b>$keepline</b>.";
 	} // end of confirm = Yes
-	if ($_REQUEST[confirm] == "No")
+	if ($_GET[confirm] == "No")
 	  echo "<p><b>Merge canceled!</b>";
       } // end of else ($refuse is empty.)
     } // end if (empty($notfound))
