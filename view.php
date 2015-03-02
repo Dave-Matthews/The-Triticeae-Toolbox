@@ -50,7 +50,10 @@ if (preg_match($pattern, $table)) {
         mysqli_stmt_bind_param($stmt, "s", $nm);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $rec);
-        mysqli_stmt_fetch($stmt);
+        if (!mysqli_stmt_fetch($stmt)) {
+            mysqli_stmt_close($stmt);
+            die("Error: No Record Found\n");
+        }
         mysqli_stmt_close($stmt);
         echo "<h1>$prettified $nm</h1>";
         echo "<div class=boxContent>";
