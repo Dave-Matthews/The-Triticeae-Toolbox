@@ -18,7 +18,7 @@ $sql_email = mysql_real_escape_string($email);
 
 $user_type_participant = USER_TYPE_PARTICIPANT;
 //$sql = "select users_uid, name, institution from users where users_name='$sql_email' and user_types_uid<>$user_type_participant";
-$sql = "select users_uid, name, institution from users where users_name='$sql_email'";
+//$sql = "select users_uid, name, institution from users where users_name='$sql_email'";
 $sql = "select users_uid, name, institution from users where users_name= SHA1('$sql_email')";
 $r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
 if (!mysql_num_rows($r)) {
