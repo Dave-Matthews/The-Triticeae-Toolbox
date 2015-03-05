@@ -82,7 +82,8 @@ function print_h($variable)
  *
  * Note: this function was taken from ethanwilder.com with the permission of Ethan Wilder (me)
  */
-function validateForm($array) {
+function validateForm($array)
+{
 	$ret = TRUE;
 	$error = array();	//this was originally part of an object with an error array we're not using it here.
 		
@@ -1399,7 +1400,7 @@ function retrieve_session_variables($svkey, $user)
     global $mysqli;
     if (isset($svkey) && strlen($svkey) > 0 && isset($user) && strlen($user)>1) {
         $sql_user = mysqli_real_escape_string($mysqli, $user);
-        $result=mysqli_query(
+        $result=mysqli_query($mysqli, 
             "select serialized_values
             from session_variables where session_variables_name=\"$svkey\" and
             users_uid=(select users_uid from users
@@ -1444,5 +1445,3 @@ function clearSessionVariables($user)
         die("Error: invalid user\n");
     }
 }
-
-?>
