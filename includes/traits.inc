@@ -8,22 +8,20 @@
  * 
  * @return nothing - this function outputs to the screen.
  */
-function editPhenotypeRow($where, $page, $start="0") {
-
-	$ignore = array("phenotype_uid", "datatype");
-	editGeneral("phenotypes", $where, $page, $ignore, "20", $start);
+function editPhenotypeRow($where, $page, $start = "0")
+{
+    $ignore = array("phenotype_uid", "datatype");
+    // see includes/common.inc
+    editGeneral("phenotypes", $where, $page, $ignore, "20", $start);
 }
-
-
 
 /*
  * This is an example of using the above function. This should display every line (minus the gramene data) in the same format 
  * as the spreadsheet. The problem is the 0 value in the units table. It's killing us unless we put something for 0 in there.
  */
-function editAllPhenotypes($page, $start) {
-
-	editPhenotypeRow("1", $page, $start);
-
+function editAllPhenotypes($page, $start)
+{
+    editPhenotypeRow("1", $page, $start);
 }
 
 /*
@@ -38,11 +36,10 @@ function editAllPhenotypes($page, $start) {
  * @return nothing
  * @see editPhenotypeRow()
  */
-function editRangePhenotypes($minID, $maxID, $page) {
-	
-	$where = "phenotype_uid < '$maxID' AND phenotype_uid > '$minID'";
-	editPhenotypeRow($where, $page);
-
+function editRangePhenotypes($minID, $maxID, $page)
+{
+    $where = "phenotype_uid < '$maxID' AND phenotype_uid > '$minID'";
+    editPhenotypeRow($where, $page);
 }
 
 /*
@@ -56,12 +53,11 @@ function editRangePhenotypes($minID, $maxID, $page) {
  *
  * @return nothing
  * @see editPhenotypeRow()
- */ 
-function editSelectPhenotypes($IDRange, $page, $start) {
-
-	if(is_array($IDRange)) {
-
-		$where = "";
+ */
+function editSelectPhenotypes($IDRange, $page, $start)
+{
+    if (is_array($IDRange)) {
+        $where = "";
 		for($i=0; $i<count($IDRange); $i++) {
 			if($i != 0) 
 				$where .= " OR ";
@@ -99,14 +95,14 @@ function editSinglePhenotype($ID, $page) {
  * @return name - the name of the associated category.
  */
 function getCategoryName($id) {
-
-	$resource = mysql_query("
+    global $mysqli;
+	$resource = mysqli_query($mysqli, "
 			SELECT phenotype_category_name
 			FROM phenotype_category
 			WHERE phenotype_category_uid = '$id'
-			") or die(mysql_error());
+			") or die(mysqli_error($mysqli));
 
-	$row = mysql_fetch_assoc($resource);
+	$row = mysqli_fetch_assoc($resource);
 	return $row['name'];
 }
 
@@ -121,31 +117,53 @@ function getCategoryName($id) {
  * @return void - this function outputs its result.
  */
 function showPhenotypeForLine($line_id, $order="phenotype_category_name") {
-
-	$query = "SELECT experiments.trial_code, 
-				phenotype_category.phenotype_category_name, phenotypes.phenotypes_name, 
-				phenotype_data.value, units.unit_name
-			FROM line_records, phenotype_category, phenotypes, phenotype_data, units, 
-				experiment_types, tht_base, experiments
-			WHERE line_records.line_record_uid = '$line_id'
-				AND phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid
-				AND phenotypes.unit_uid = units.unit_uid
-				AND line_records.line_record_uid = tht_base.line_record_uid
-				AND phenotype_data.tht_base_uid = tht_base.tht_base_uid
-				AND experiments.experiment_uid = tht_base.experiment_uid
-				AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
-				AND  experiment_types.experiment_type_name = 'phenotype'
-				AND phenotypes.phenotype_uid = phenotype_data.phenotype_uid
-			ORDER BY $order";
-
-	$resource = mysql_query($query) or die(mysql_error());
-	
-	if(mysql_num_rows($resource) < 1) {
-		echo "No phenotype data found<br />";
-	}
+    global $mysqli;
+	// Show only public trials unless signed in as at least Participant.
+	if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
+	  $filter = "";
+	else
+	  $filter = " AND data_public_flag = 1";
+	// dem dec13: Change the order of the columns.
+	/* $query = "SELECT experiments.trial_code,  */
+	/* 			phenotype_category.phenotype_category_name, phenotypes.phenotypes_name,  */
+	/* 			phenotype_data.value, units.unit_name */
+	/* 		FROM line_records, phenotype_category, phenotypes, phenotype_data, units,  */
+	/* 			experiment_types, tht_base, experiments */
+	/* 		WHERE line_records.line_record_uid = '$line_id' */
+	/* 			AND phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid */
+	/* 			AND phenotypes.unit_uid = units.unit_uid */
+	/* 			AND line_records.line_record_uid = tht_base.line_record_uid */
+	/* 			AND phenotype_data.tht_base_uid = tht_base.tht_base_uid */
+	/* 			AND experiments.experiment_uid = tht_base.experiment_uid */
+	/* 			AND experiment_types.experiment_type_uid = experiments.experiment_type_uid */
+	/* 			AND  experiment_types.experiment_type_name = 'phenotype' */
+	/* 			AND phenotypes.phenotype_uid = phenotype_data.phenotype_uid */
+        /*                         $filter */
+	/* 		ORDER BY $order"; */
+	$query = "SELECT phenotypes.phenotypes_name as Trait, 
+                       experiments.trial_code as Trial, 
+		       phenotype_data.value, units.unit_name as Unit,
+		       phenotype_category.phenotype_category_name as Category
+	       FROM line_records, phenotype_category, phenotypes, phenotype_data, units, 
+		       experiment_types, tht_base, experiments
+	       WHERE line_records.line_record_uid = '$line_id'
+		       AND phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid
+		       AND phenotypes.unit_uid = units.unit_uid
+		       AND line_records.line_record_uid = tht_base.line_record_uid
+		       AND phenotype_data.tht_base_uid = tht_base.tht_base_uid
+		       AND experiments.experiment_uid = tht_base.experiment_uid
+		       AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
+		       AND  experiment_types.experiment_type_name = 'phenotype'
+		       AND phenotypes.phenotype_uid = phenotype_data.phenotype_uid
+		       $filter
+	       ORDER BY Trait, Trial";
+	$resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+	if(mysqli_num_rows($resource) < 1) 
+	  echo "No phenotype data found<br />";
 	else {
-		echo displayTable($resource, TRUE);
-		echo "<form action='dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . base64_encode($query) ."' /></form>";
+	  /* echo displayTable($resource, TRUE); */
+	  echo displayLinePheno($resource, FALSE, 1);  // includes/common.inc
+	  echo "<p><form action='dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . base64_encode($query) ."' /></form>";
   	}
 }
 
@@ -154,8 +172,9 @@ function showPhenotypeForLine($line_id, $order="phenotype_category_name") {
  * This functions checks to see if there is phenotype data available for a specific phenotype.
  */
 function isPhenotypeData($uid) {
-	$query = mysql_query("SELECT COUNT(*) FROM phenotype_data WHERE phenotype_uid = $uid") or die(mysql_error());
-	$r = mysql_fetch_row($query);
+    global $mysqli;
+	$query = mysqli_query($mysqli, "SELECT COUNT(*) FROM phenotype_data WHERE phenotype_uid = $uid") or die(mysqli_error($mysqli));
+	$r = mysqli_fetch_row($query);
 	return $r[0] > 0;
 }
 
@@ -170,17 +189,17 @@ function isPhenotypeData($uid) {
  *		   FALSE if the line record DOES NOT.
  */
 function lineHasPhenotypeData($lineid) {
-
-	$resource = mysql_query("
+    global $mysqli;
+	$resource = mysqli_query($mysqli, "
 			SELECT experiments.experiment_uid
 			FROM tht_base, experiments, experiment_types
 			WHERE tht_base.line_record_uid = '$lineid'
 				AND experiments.experiment_uid = tht_base.experiment_uid
 				AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
 				AND  experiment_types.experiment_type_name = 'phenotype'
-			") or die(mysql_error());
+			") or die(mysqli_error($mysqli));
 
-	return (mysql_num_rows($resource) > 0);
+	return (mysqli_num_rows($resource) > 0);
 }
 
 /**
@@ -191,8 +210,8 @@ function lineHasPhenotypeData($lineid) {
  *		   FALSE if the experiment DOES NOT.
  */
 function experimentListPhenotypes($expid) {
-
-	$resource = mysql_query("
+    global $mysqli;
+	$resource = mysqli_query($mysqli, "
 			SELECT DISTINCT phenotypes.phenotypes_name
 			FROM tht_base, experiments, experiment_types, phenotypes, phenotype_data
 			WHERE phenotypes.phenotype_uid = phenotype_data.phenotype_uid
@@ -203,10 +222,10 @@ function experimentListPhenotypes($expid) {
 				AND  experiment_types.experiment_type_name = 'phenotype'
 			GROUP BY phenotypes.phenotype_uid
 			ORDER BY phenotypes.phenotypes_name
-			") or die(mysql_error());
+			") or die(mysqli_error($mysqli));
 
-	if (mysql_num_rows($resource) > 0){
-		while ($row = mysql_fetch_array($resource)) {
+	if (mysqli_num_rows($resource) > 0){
+		while ($row = mysqli_fetch_array($resource)) {
 			$phenoarray[] = $row['phenotypes_name'];
 		}
 		$phenostr = implode(",",$phenoarray);
@@ -224,11 +243,12 @@ function calcPhenoStats_mysql($phenoids)
  * and min computations, so you may want to use the function getMaxMinPhenotype to find those values
  */
 {
-
+    global $mysqli;
 	$sql_c ="SELECT p.phenotype_uid, avg(cast(pd.value AS DECIMAL(9,1))) as mean_val, count(pd.value) as sample_size,
 					stddev_samp(cast(pd.value AS DECIMAL(9,1))) as std_val, max(cast(pd.value AS DECIMAL(9,3))) as max_val, min(cast(pd.value AS DECIMAL(9,3))) as min_val
 				FROM phenotypes as p, phenotype_data as pd
-				WHERE p.datatype IN ('continuous')
+--				WHERE p.datatype IN ('continuous')
+				WHERE p.datatype IN ('numeric')
 					AND pd.phenotype_uid = p.phenotype_uid
 				GROUP BY p.phenotype_uid";
 				
@@ -239,13 +259,13 @@ function calcPhenoStats_mysql($phenoids)
 				WHERE p.datatype IN ('discrete')
 					AND pd.phenotype_uid = p.phenotype_uid
 				GROUP BY p.phenotype_uid";
-	$res_c = mysql_query($sql_c) or die(mysql_error() . "<br>$sql");
-	$res_d = mysql_query($sql_d) or die(mysql_error() . "<br>$sql");
+	$res_c = mysqli_query($mysqli, $sql_c) or die(mysqli_error($mysqli) . "<br>$sql");
+	$res_d = mysqli_query($mysqli, $sql_d) or die(mysqli_error($mysqli) . "<br>$sql");
 	if ((count($res_c)>0)||(count($res_d)>0)) {
-		while ($row = mysql_fetch_array($res_c)) {
+		while ($row = mysqli_fetch_array($res_c)) {
 			$output[] =$row;
 		}
-		while ($row = mysql_fetch_array($res_d)) {
+		while ($row = mysqli_fetch_array($res_d)) {
 			$output[] =$row;
 		}
 		return($output);
@@ -263,14 +283,14 @@ function calcPhenoStats_mysql($phenoids)
  * @param $phenoID - the unique id of the phenotype to search through the phenotype_data table for.
  */
 function getMaxMinPhenotype($maxmin, $phenoID) {
-
-	$query = mysql_query("SELECT max_val,min_val from phenotype_descstat 
-					WHERE phenotype_uid = $phenoID") or die(mysql_error());
-	if (mysql_num_rows($query)<1) {
+    global $mysqli;
+	$query = mysqli_query($mysqli, "SELECT max_val,min_val from phenotype_descstat 
+					WHERE phenotype_uid = $phenoID") or die(mysqli_error($mysqli));
+	if (mysqli_num_rows($query)<1) {
 		$max_val = -99999;
 		$min_val = -99999;
 	}else{
-		$row = mysql_fetch_assoc($query);
+		$row = mysqli_fetch_assoc($query);
 		if (is_numeric($row['max_val']))
 			$max_val = $row['max_val'];
 		else
@@ -288,5 +308,3 @@ function getMaxMinPhenotype($maxmin, $phenoID) {
 		return $min_val;
 
 }
-
-?>
