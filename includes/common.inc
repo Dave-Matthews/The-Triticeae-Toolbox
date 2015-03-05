@@ -1,10 +1,10 @@
 <?php
 
-// 8/29/2012 CBirkett added displayTableConvert to display GBS data
-// DEM 20jun12: Added check_version().
-// DEM 17oct11: Added functions mysql_grab() and print_h().
-// 7/1/2011   JLee  Change to use excel reader in ../lib/Excel
-/* DEM 7dec10: Revised updateTable() to handle enum and longtext columns. */
+/** 8/29/2012 CBirkett added displayTableConvert to display GBS data
+ * DEM 20jun12: Added check_version().
+ * DEM 17oct11: Added functions mysql_grab() and print_h().
+ * 7/1/2011   JLee  Change to use excel reader in ../lib/Excel
+ * DEM 7dec10: Revised updateTable() to handle enum and longtext columns. */
 
 /*
  * Generic / Common functions are stored here. 
@@ -12,61 +12,75 @@
 
 /* Check whether the curator is submitting data using the current version
  * of the data input template, $file. */
-function check_version($submitted, $file) {
-  $latest = date("jMy", filemtime($file));
-  echo "User's submitted template version: $submitted<br>";
-  echo "Current version: $latest<br>";
-  $phpsubmitted =  date_create_from_format('jMy', $submitted);
-  $phplatest = date_create_from_format('jMy', $latest);
-  if ($phpsubmitted < $phplatest) 
-    return FALSE;
-  /* Allow a day of slack in the Too-new direction. */
-  /* if ($phpsubmitted > $phplatest) */
-  if ($phpsubmitted > date_add($phplatest, date_interval_create_from_date_string('1 day'))) 
-    echo "Template too new!<p>";
-  return TRUE;
+function check_version($submitted, $file)
+{
+    $latest = date("jMy", filemtime($file));
+    echo "User's submitted template version: $submitted<br>";
+    echo "Current version: $latest<br>";
+    $phpsubmitted =  date_create_from_format('jMy', $submitted);
+    $phplatest = date_create_from_format('jMy', $latest);
+    if ($phpsubmitted < $phplatest) {
+        return false;
+    }
+    /* Allow a day of slack in the Too-new direction. */
+    /* if ($phpsubmitted > $phplatest) */
+    if ($phpsubmitted > date_add($phplatest, date_interval_create_from_date_string('1 day'))) {
+        echo "Template too new!<p>";
+    }
+    return true;
 }
 
 /* Shorthand MySQL query for a single value. Returns the value.
    Dies if there's more than one result or a MySQL error. 
    No result is okay, returns empty string, ''.
 */
-function mysql_grab($querystring) {
-  global $mysqli;
-  $result = mysqli_query($mysqli, $querystring);
-  $mmessage = mysqli_error($mysqli);
-  if (mysqli_num_rows($result) > 1)
-    $err = "row";
-  $vals = mysqli_fetch_row($result);
-  if (count($vals) > 1)
-    $err = "column";
-  if (!empty($err))
-    $out = "<b>Programmer error</b>: Query result contains more than one $err. How embarrassing!<br>";
-  if (!empty($mmessage))
-    $out = "<b>MySQL error:</b> $mmessage.<br>";
-  if (!empty($err) OR (!empty($mmessage)))
-    die($out . "Query was:<br>\"$querystring\"<p>");
-  return $vals[0];
+function mysql_grab($querystring)
+{
+    global $mysqli;
+    if ($result = mysqli_query($mysqli, $querystring)) {
+        if (mysqli_num_rows($result) > 1) {
+            $err = "row";
+        }
+        $vals = mysqli_fetch_row($result);
+        if (count($vals) > 1) {
+            $err = "column";
+        }
+    } else {
+        $mmessage = mysqli_error($mysqli);
+    }
+    if (!empty($err)) {
+        $out = "<b>Programmer error</b>: Query result contains more than one $err. How embarrassing!<br>";
+    }
+    if (!empty($mmessage)) {
+        $out = "<b>MySQL error:</b> $mmessage.<br>";
+    }
+    if (!empty($err) or (!empty($mmessage))) {
+        die($out . "Query was:<br>\"$querystring\"<p>");
+    }
+    return $vals[0];
 }
 
 /* A nicer print_r() for output to the HTML page. */
-function print_h($variable) {
-  echo "<pre>"; print_r($variable); echo "</pre>";
+function print_h($variable)
+{
+    echo "<pre>";
+    print_r($variable);
+    echo "</pre>";
 }
 
 /**
  * This function validates the input as best as generically possible.
- * It checks every value in the array to see if it is "". If it is then it is invalid 
- * and the associated key is added to the "error" array for searching. 
+ * It checks every value in the array to see if it is "". If it is then it is invalid
+ * and the associated key is added to the "error" array for searching.
  *
- * It also checks if the key is "email". If it is then it additionally checks to see if the 
- * value is a proper e-mail address by ensuring that '@' and '.' are both present in the 
- * string. 
+ * It also checks if the key is "email". If it is then it additionally checks to see if the
+ * value is a proper e-mail address by ensuring that '@' and '.' are both present in the
+ * string.
  *
- * @return TRUE if and only if all of the values in the array are valid according to the 
- * 	above definition. 
+ * @return TRUE if and only if all of the values in the array are valid according to the
+ * above definition.
  *
- * Note: this function was taken from ethanwilder.com with the permission of Ethan Wilder (me) 
+ * Note: this function was taken from ethanwilder.com with the permission of Ethan Wilder (me)
  */
 function validateForm($array) {
 	$ret = TRUE;
@@ -285,10 +299,10 @@ global $mysqli;
 	}
 
 	$result=mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $key=\"$value\"");
-	$num_rows=mysql_num_rows($result);
+	$num_rows=mysqli_num_rows($result);
 
 	if ($num_rows <= 0) {
-		mysql_query("insert into $tablename ($key, created_on) values (\"$value\", NOW())") || die (mysql_error());
+		mysqli_query($mysqli, "insert into $tablename ($key, created_on) values (\"$value\", NOW())") || die (mysqli_error($mysqli));
 		$id = mysqli_insert_id($mysqli);
 		$flag = 1;
 	}
@@ -691,7 +705,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 	$lines = mysqli_query($mysqli, "
 			$queryString 
 			LIMIT $limit OFFSET $start
-			") or die(mysql_error());
+			") or die(mysqli_error($mysqli));
 
 	//ignore created and updated on fields.
 	array_push($ignore, "created_on");
@@ -883,9 +897,10 @@ function chk_tbl_references($nm) {
  * @return int $flddef 0 - not exist, 1 - exist && default NULL, 2 - exist && NOT NULL
  */
 function chk_tbl_field ($tblname, $fldname) {
+    global $mysqli;
 	$flddef=0;
-	$showtable = mysql_query("show create table $tblname");
-	while ( $row=mysql_fetch_assoc($showtable)) {
+	$showtable = mysqli_query($mysqli, "show create table $tblname");
+	while ( $row=mysqli_fetch_assoc($showtable)) {
 		$cstrs=explode("\n",$row['Create Table']);
 		for ($i=1; $i<count($cstrs)-1; $i++) {
 			if (preg_match('/KEY|CONSTRAINT/',$cstrs[$i])) continue;
@@ -928,11 +943,12 @@ function chk_tbl_dep ($nm1) {
  * get the field names that are in the unikey key in a table
  */
 function get_ukey ($tblname) {
+    global $mysqli;
 	$ukeys=array();
-	$ukeyres = mysql_query("SHOW CREATE TABLE $tblname");
+	$ukeyres = mysqli_query($mysqli, "SHOW CREATE TABLE $tblname");
 	// Avoid PHP error if there are no Quick Search hits so $tblname is invalid.
 	if ($ukeyres !== FALSE ) {
-	while( $row = mysql_fetch_assoc($ukeyres) ) {
+	while( $row = mysqli_fetch_assoc($ukeyres) ) {
 		$cstr=$row['Create Table'];
 		preg_match_all('/UNIQUE\sKEY\s`(.*?)`\s*\(`(.*?)`\)/', $cstr, $mts);
 		for($i=0; $i<count($mts[1]); $i++) {
@@ -949,9 +965,10 @@ function get_ukey ($tblname) {
  * get the information for a table
  */
 function get_table_info ($tablename) {
-	$result = mysql_query("desc $tablename");
+    global $mysqli;
+	$result = mysqli_query($mysqli, "desc $tablename");
 	$tbl_info=array();
-	while($row = mysql_fetch_assoc($result)) {
+	while($row = mysqli_fetch_assoc($result)) {
 		$row_info=array();
 		foreach($row as $k=>$v) {
 			if (strtolower($k)=='field') {
@@ -1013,12 +1030,13 @@ function beautifulTableName($tname, $plural=0) {
  * Store the file process information into the file_process table
  */
 function store_file_process_info() {
+  global $mysqli;
 	$tblkeys=array('file_name', 'def_file_name','dir_destination','file_desc','dataset_name','process_program', 'target_tables', 'users_name', 'process_result');
 	$vals=array();
 	$isnum=array();
 	foreach ($tblkeys as $tblkey) {
 		if (isset($_SESSION['fileProcessInfo'][$tblkey])) {
-			$vals[$tblkey]=mysql_escape_string($_SESSION['fileProcessInfo'][$tblkey]);
+			$vals[$tblkey]=mysqli_real_escape_string($mysqli, $_SESSION['fileProcessInfo'][$tblkey]);
 			array_push($isnum, 0);
 		} 
 	}
@@ -1149,11 +1167,12 @@ function displayTableConvert($query, $sortable=FALSE, $lookup) {
  * truncation according to units.sigdigits_display.  DEM 11aug10
  */
 function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
+  global $mysqli;
   $tables = array();
   /* $ret = "\n<table class='tableclass1'>\n"; */
   $ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n";
   $first = TRUE;
-  while($row = mysql_fetch_assoc($query)) {
+  while($row = mysqli_fetch_assoc($query)) {
     // header
     if($first) {
       $ret .= "<thead>\n";
@@ -1196,12 +1215,13 @@ function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
  * Used by phenotype/show.php?line=<line_record_uid>.
  */
 function displayLinePheno($query, $sortable=TRUE, $sigdig, $link="") {
+  global $mysqli;
   $tables = array();
   /* $ret = "\n<table class='tableclass1'>\n"; */
   /* $ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n"; */
   $ret = "\n<div style='max-height: 500px; overflow: auto'><table>\n";
   $first = TRUE;
-  while($row = mysql_fetch_assoc($query)) {
+  while($row = mysqli_fetch_assoc($query)) {
     // header
     if($first) {
       $ret .= "<thead>\n";
@@ -1252,7 +1272,7 @@ function displayLinePheno($query, $sortable=TRUE, $sigdig, $link="") {
  * @param $name - the name of the field to find the table.
  */
 function getTableByName($name) {
-
+    global $mysqli;
 	$parts = explode("_", $name);
 	$parts[count($parts)-1] = "";
 
@@ -1265,8 +1285,8 @@ function getTableByName($name) {
 		return $possible_name;
 	else {
 		$possible_name .= "_";
-		$search = mysql_query("SHOW TABLES LIKE '$possible_name'");
-		$t = mysql_fetch_row($search);
+		$search = mysqli_query($mysqli, "SHOW TABLES LIKE '$possible_name'");
+		$t = mysqli_fetch_row($search);
 		return $t[0];
 	}
 }
@@ -1315,6 +1335,7 @@ function kvimplode($delim, array $array) {
  *    assuming it's a uid.  Changed this.
  */
 function isRecord($table, $id) {
+  global $mysqli;
   if(!is_numeric($table)) {
     $pkey = @get_pkey($table);
     if(!$pkey) // not a valid table, return FALSE
@@ -1327,11 +1348,11 @@ function isRecord($table, $id) {
     /* 				WHERE $pkey = '$id'"); */
     /* } */
     $name = get_unique_name($table);
-    $source = mysql_query("SELECT * FROM $table WHERE $name = '$id'");
-    if(@mysql_num_rows($source) > 0) 
+    $source = mysqli_query($mysqli, "SELECT * FROM $table WHERE $name = '$id'");
+    if(@mysqli_num_rows($source) > 0) 
       return $source;
-    $source = mysql_query("SELECT * FROM $table WHERE $pkey = '$id'");
-    if(@mysql_num_rows($source) > 0) 
+    $source = mysqli_query($mysqli, "SELECT * FROM $table WHERE $pkey = '$id'");
+    if(@mysqli_num_rows($source) > 0) 
       return $source;
     // else, nothing found
     return FALSE;
@@ -1345,21 +1366,22 @@ function isRecord($table, $id) {
  * @param string $svkey key for the session variable to be stored
  */
 function store_session_variables ($svkey, $user) {
+  global $mysqli;
   if (!isset($_SESSION[$svkey]))
     return 0;
-  $sql_users_name = mysql_real_escape_string($user);
+  $sql_users_name = mysqli_real_escape_string($mysqli, $user);
   $sql = "select users_uid from users
 where users_name='$sql_users_name'";
-  $r = mysql_query($sql);
+  $r = mysqli_query($mysqli, $sql);
   if (!$r)
     return 0;
-  $r = mysql_fetch_assoc($r);
+  $r = mysqli_fetch_assoc($r);
   if (!$r)
     return 0;
   $users_uid = $r['users_uid'];
   $vals = array();
   $isnum = array();
-  $vals['session_variables_name'] = mysql_escape_string($svkey);
+  $vals['session_variables_name'] = mysqli_real_escape_string($mysqli, $svkey);
   array_push($isnum, 0);
   $vals['serialized_values'] = base64_encode(serialize($_SESSION[$svkey]));
   array_push($isnum, 0);
@@ -1374,16 +1396,17 @@ where users_name='$sql_users_name'";
 
 function retrieve_session_variables($svkey, $user)
 {
+    global $mysqli;
     if (isset($svkey) && strlen($svkey) > 0 && isset($user) && strlen($user)>1) {
-        $sql_user = mysql_real_escape_string($user);
-        $result=mysql_query(
+        $sql_user = mysqli_real_escape_string($mysqli, $user);
+        $result=mysqli_query(
             "select serialized_values
             from session_variables where session_variables_name=\"$svkey\" and
             users_uid=(select users_uid from users
             where users_name='$sql_user')"
         );
-        if (mysql_num_rows($result)>0) {
-            $row = mysql_fetch_assoc($result);
+        if (mysqli_num_rows($result)>0) {
+            $row = mysqli_fetch_assoc($result);
             $str = base64_decode($row['serialized_values']);
             $vals = unserialize($str);
             return $vals;
