@@ -54,20 +54,30 @@ global $mysqli;
  * 
  * @return an array containing all the user related information. The last access time is also 
  *         formatted specifically for an easy to read date. 
+ * DEM mar2015: Use the $_SESSION values only, don't check the database again.
+ *              We don't want table 'users' being examined anonymously.
  */
 function loadUser($user) {
-global $mysqli;
-	$q = mysqli_query($mysqli, "SELECT * 
-			  FROM users 
-			  WHERE users_name = SHA1('$user')
-			")
-	     or die(mysqli_error($mysqli));
+  global $mysqli;
+  /* $q = mysqli_query($mysqli, "SELECT *  */
+  /* 		  FROM users  */
+  /* 		  WHERE users_name = SHA1('$user') */
+  /* 		") */
+  /*      or die(mysqli_error($mysqli)); */
 
-	$r = mysqli_fetch_assoc($q);
-	$r['lastaccess'] = date("F j, Y \a\\t g:i:s a", strtotime($r['lastaccess']));
-	
-	return $r;
-
+  /* $r = mysqli_fetch_assoc($q); */
+  /* $r['lastaccess'] = date("F j, Y \a\\t g:i:s a", strtotime($r['lastaccess'])); */
+  // Move the values from $_SESSION to a mysqli resource.
+  if ($user == $_SESSION['username']) {
+    $pass = $_SESSION['password'];
+    $usertype = $_SESSION['usertype'];
+    $sql = "select '$user' as users_name, '$pass' as password, $usertype as user_types_uid";
+    $q = mysqli_query($mysqli, $sql);
+    $r = mysqli_fetch_assoc($q);
+    return $r;
+  }
+  else
+    return FALSE;
 }
 
 /**

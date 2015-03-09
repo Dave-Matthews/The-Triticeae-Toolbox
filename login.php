@@ -381,9 +381,16 @@ function HTMLProcessLogin()
             if ($row = mysqli_fetch_assoc($res)) {
                 $password = $row['password'];
                 $_SESSION['password'] = $row['password'];
-            } else {
+            } 
+	    else 
                 die("SQL Error hashing password\n");
-            }
+	    // Store user_types_uid in $_SESSION.
+	    $sql = "select user_types_uid from users where users_name = SHA1('$email')";
+	    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_row($res);
+	    if ($row[0])
+	      $_SESSION['usertype'] = $row[0];
+	    else die("No usertype!");
             $sql = "update users set lastaccess = now() where
             users_name = '$email'";
             mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
@@ -583,7 +590,9 @@ if (isset($_POST['submit_login'])) {
      $safe_institution = $institution ? "'" . mysqli_real_escape_string($mysqli, $institution) . "'" : 'NULL';
      $desired_usertype = ($answer == 'yes' ? USER_TYPE_PARTICIPANT :
 			  USER_TYPE_PUBLIC);
-     $safe_usertype = USER_TYPE_PUBLIC;
+     /* DEM jan2014 For Sandbox databases, make any registrant a Curator. */
+     /* $safe_usertype = USER_TYPE_PUBLIC; */
+     $safe_usertype = USER_TYPE_CURATOR;
      $sql = "insert into users (user_types_uid, users_name, pass,
 name, email, institution) values ($safe_usertype, '$hash_email',
 '$hash_password', '$safe_name', '$hash_email',
@@ -607,24 +616,26 @@ Sincerely,
 The Triticeae Toolbox Team
 ");
 
-     if ($desired_usertype == USER_TYPE_PARTICIPANT) {
-       $capkey = setting('capencryptionkey');
-       $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
-       send_email(setting('capmail'),
-		  "[T3] Validate Participant $email",
-"Email: $email
-Name: $name
-Institution: $institution
+/* DEM jan2014 For Sandbox databases, don't require confirmation by tht_curator. */
+/*      if ($desired_usertype == USER_TYPE_PARTICIPANT) { */
+/*        $capkey = setting('capencryptionkey'); */
+/*        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128)); */
+/*        send_email(setting('capmail'), */
+/* 		  "[T3] Validate Participant $email", */
+/* "Email: $email */
+/* Name: $name */
+/* Institution: $institution */
 
-Please use the following link to confirm or reject participant status 
-of this user:
-{$root}fromcapemail.php?token=$capurltoken
+/* Please use the following link to confirm or reject participant status  */
+/* of this user: */
+/* {$root}fromcapemail.php?token=$capurltoken */
 
-A message has been sent to the user that he must confirm his email 
-address at
-{$root}fromemail.php?token=$urltoken
-");
-     }
+/* A message has been sent to the user that he must confirm his email  */
+/* address at */
+/* {$root}fromemail.php?token=$urltoken */
+/* "); */
+/*      } */
+
      echo HTMLRegistrationSuccess($name, $email);
    }
  }

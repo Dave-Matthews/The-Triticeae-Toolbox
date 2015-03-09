@@ -1,36 +1,33 @@
 <?php
 /**
  * Display Map information from database
- * 
+ *
  * PHP version 5.3
- * 
- * @category PHP
- * @package  T3
+ *
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/maps.php
- * 
+ *
  * 04/04/2013   C.Birkett make column height dynamic so scroll bars are not used
  * 06/22/2012   C.Birkett sort each column so rows are aligned, move style sheet to top
  * 1apr12 dem: Small cleanups.  Needs work.
  * 10/19/2010   J.Lee use dynamic GBrowse tracks generation
- * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks 
+ * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks
 */
-$usegbrowse = True;
-require_once('config.php');
-include_once($config['root_dir'].'includes/bootstrap.inc');
-require_once 'Spreadsheet/Excel/Writer.php';
+$usegbrowse = true;
+require_once 'config.php';
+include_once $config['root_dir'].'includes/bootstrap.inc';
 connect();
 
 $mapsetStr = "";
 $sql = "select mapset_name from mapset";
-$sql_r = mysql_query($sql) or die (mysql_error()); 
+$sql_r = mysql_query($sql) or die (mysql_error());
 
 while ($row = mysql_fetch_assoc($sql_r)) {
-	  $val = $row["mapset_name"];
-	  //echo 	$row["mapset_name"];
-	  $mapsetStr.= $val.",";
+    $val = $row["mapset_name"];
+    //echo 	$row["mapset_name"];
+    $mapsetStr.= $val.",";
 }
-$mapsetStr = (substr($mapsetStr, 0, (strlen($mapsetStr)-1)));  
+$mapsetStr = (substr($mapsetStr, 0, (strlen($mapsetStr)-1)));
 
 new Maps($_GET['function']);
 
@@ -39,7 +36,8 @@ new Maps($_GET['function']);
  * @author claybirkett
  *
  */
-class Maps {
+class Maps
+{
   /**
    * delimiter used for output files
    */
@@ -693,6 +691,7 @@ private function type_Annotation_Comments()
 }
 private function type_Marker_Excel()
 	{
+require_once 'Spreadsheet/Excel/Writer.php';
 	
 		$excel_markername = $_GET['mxls1'];
 		$excel_mapname = $_GET['mxls2'];  
