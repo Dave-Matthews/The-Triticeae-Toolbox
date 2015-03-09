@@ -69,10 +69,11 @@ function loadUser($user) {
   /* $r['lastaccess'] = date("F j, Y \a\\t g:i:s a", strtotime($r['lastaccess'])); */
   // Move the values from $_SESSION to a mysqli resource.
   if ($user == $_SESSION['username']) {
+    $userid = $_SESSION['userid'];
     $pass = $_SESSION['password'];
     $usertype = $_SESSION['usertype'];
-    $sql = "select '$user' as users_name, '$pass' as password, $usertype as user_types_uid";
-    $q = mysqli_query($mysqli, $sql);
+    $sql = "select '$user' as users_name, $userid as users_uid, '$pass' as password, $usertype as user_types_uid";
+    $q = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $r = mysqli_fetch_assoc($q);
     return $r;
   }
