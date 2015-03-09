@@ -14,7 +14,6 @@
 
 
 session_start();
-session_regenerate_id();
 $root = "//" . $_SERVER['HTTP_HOST'];
 $root .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
 $config['base_url'] = "$root";
@@ -275,12 +274,12 @@ function isUser($email, $pass)
     $sql = "select * from users where users_name = SHA1('$sql_email') and
 pass = SHA1('$sql_pass') and (abs(email_verified) > 0 or
 user_types_uid=$public_type_id) limit 1";
-    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."</pre>\n");
+    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
     return mysqli_num_rows($query) > 0;
 }
 
 /**
- * Check if the given user/passrod pair belongs to a old account.
+ * Check if the given user/passrod pair belongs to a old account. 
  */
 function isOldUser($email, $pass)
 {
@@ -291,7 +290,7 @@ function isOldUser($email, $pass)
     $sql = "select * from users where users_name = '$sql_email' and
 pass = MD5('$sql_pass') and (abs(email_verified) > 0 or
 user_types_uid=$public_type_id) limit 1";
-    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."</pre>\n");
+    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
     return mysqli_num_rows($query) > 0;
 }
 
@@ -382,9 +381,16 @@ function HTMLProcessLogin()
             if ($row = mysqli_fetch_assoc($res)) {
                 $password = $row['password'];
                 $_SESSION['password'] = $row['password'];
-            } else {
+            } 
+	    else 
                 die("SQL Error hashing password\n");
-            }
+	    // Store user_types_uid in $_SESSION.
+	    $sql = "select user_types_uid from users where users_name = SHA1('$email')";
+	    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_row($res);
+	    if ($row[0])
+	      $_SESSION['usertype'] = $row[0];
+	    else die("No usertype!");
             $sql = "update users set lastaccess = now() where
             users_name = '$email'";
             mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
@@ -443,14 +449,11 @@ function HTMLProcessForgot()
     if (isRegistered($email) || isOldRegistered($email)) {
         $key = setting('passresetkey');
         $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-        send_email(
-            $email,
-            "T3: Reset Your Password",
-            "Hi,
+        send_email($email, "T3: Reset Your Password",
+	       "Hi,
 Per your request, please visit the following URL to reset your password:
-https:{$root}resetpass.php?token=$urltoken"
-        );
-        return "An email has been sent to you with a link to reset your
+https:{$root}resetpass.php?token=$urltoken");
+    return "An email has been sent to you with a link to reset your
 password.";
     } else {
         return "<h3 style='color: red'>No such user, please register.</h3>";
@@ -461,32 +464,31 @@ password.";
  * Process password change situation and return appropriate html
  * fragment
  */
-function HTMLProcessChange()
-{
-    global $mysqli;
-    $_SESSION['login_referer_override'] = '/';
-    $email = $_POST['txt_email'];
-    $pass = $_POST['OldPass'];
-    $rv = "";
-    if (isset($email)) {
-        if (isUser($email, $pass)) {
-            if ($_POST['NewPass1'] == $_POST['NewPass2']) {
-                $sql_email = mysqli_real_escape_string($mysqli, $email);
-                $sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
-                $sql = "update users  set pass=SHA1('$sql_pass') where users_name=SHA1('$sql_email')";
-                if (mysqli_query($mysqli, $sql)) {
-                    $rv .= "<h3>Password successfully updated</h3>";
-                } else {
-                    $rv .= "<div id='form_error'>unexpected error while updating your password..</div>";
-                }
-            } else {
-                $rv .= "<div id='form_error'>the two values you provided do not match..</div>";
-            }
-        } else {
-            $rv .= "<div id='form_error'>username/password pair not recognized</div>";
-        }
-    } else {
-        $rv .= <<<HTML
+function HTMLProcessChange() {
+  global $mysqli;
+  $_SESSION['login_referer_override'] = '/';
+  $email = $_POST['txt_email'];
+  $pass = $_POST['OldPass'];
+  $rv = "";
+  if (isset($email)) {
+    if (isUser($email, $pass))
+      if ($_POST['NewPass1'] == $_POST['NewPass2']) {
+	$sql_email = mysqli_real_escape_string($mysqli, $email);
+	$sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
+	$sql = "update users  set pass=SHA1('$sql_pass')
+where users_name=SHA1('$sql_email')";
+	if (mysqli_query($mysqli, $sql))
+	  $rv .= "<h3>Password successfully updated</h3>";
+	else
+	  $rv .= "<div id='form_error'>unexpected error while updating your password..</div>";
+      }
+      else
+	$rv .= "<div id='form_error'>the two values you provided do not match..</div>";
+    else
+      $rv .= "<div id='form_error'>username/password pair not recognized</div>";
+  }
+  else
+    $rv .= <<<HTML
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
 <input type="hidden" name="answer" value="change">
 <input type="hidden" name="submit_login" value="">
@@ -499,8 +501,7 @@ Retype New Password: <input name="NewPass2" type="password"></input>
 <input name="cmd_submit" type="submit" value="Submit"></input>
 </form>
 HTML;
-    }
-    return $rv;
+  return $rv;
 }
 
 if (isset($_POST['submit_login'])) {
@@ -589,7 +590,9 @@ if (isset($_POST['submit_login'])) {
      $safe_institution = $institution ? "'" . mysqli_real_escape_string($mysqli, $institution) . "'" : 'NULL';
      $desired_usertype = ($answer == 'yes' ? USER_TYPE_PARTICIPANT :
 			  USER_TYPE_PUBLIC);
-     $safe_usertype = USER_TYPE_PUBLIC;
+     /* DEM jan2014 For Sandbox databases, make any registrant a Curator. */
+     /* $safe_usertype = USER_TYPE_PUBLIC; */
+     $safe_usertype = USER_TYPE_CURATOR;
      $sql = "insert into users (user_types_uid, users_name, pass,
 name, email, institution) values ($safe_usertype, '$hash_email',
 '$hash_password', '$safe_name', '$hash_email',
@@ -613,24 +616,26 @@ Sincerely,
 The Triticeae Toolbox Team
 ");
 
-     if ($desired_usertype == USER_TYPE_PARTICIPANT) {
-       $capkey = setting('capencryptionkey');
-       $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128));
-       send_email(setting('capmail'),
-		  "[T3] Validate Participant $email",
-"Email: $email
-Name: $name
-Institution: $institution
+/* DEM jan2014 For Sandbox databases, don't require confirmation by tht_curator. */
+/*      if ($desired_usertype == USER_TYPE_PARTICIPANT) { */
+/*        $capkey = setting('capencryptionkey'); */
+/*        $capurltoken = urlencode(AESEncryptCtr($email, $capkey, 128)); */
+/*        send_email(setting('capmail'), */
+/* 		  "[T3] Validate Participant $email", */
+/* "Email: $email */
+/* Name: $name */
+/* Institution: $institution */
 
-Please use the following link to confirm or reject participant status 
-of this user:
-{$root}fromcapemail.php?token=$capurltoken
+/* Please use the following link to confirm or reject participant status  */
+/* of this user: */
+/* {$root}fromcapemail.php?token=$capurltoken */
 
-A message has been sent to the user that he must confirm his email 
-address at
-{$root}fromemail.php?token=$urltoken
-");
-     }
+/* A message has been sent to the user that he must confirm his email  */
+/* address at */
+/* {$root}fromemail.php?token=$urltoken */
+/* "); */
+/*      } */
+
      echo HTMLRegistrationSuccess($name, $email);
    }
  }
