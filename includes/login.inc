@@ -136,17 +136,18 @@ function login($user, $password) { //attempt to login false if invalid true if c
  * That password is what's given here to reconfirm that the user is logged in. 
  *
  * @return true on successful match - false on failure
+ * DEM mar2015: Use the $_SESSION value directly, don't check the database again.
+ *              We don't want table 'users' being examined anonymously.
  */
 function isLoggedIn($user, $hashpass) { 
     global $mysqli;
 	$auth = FALSE;
 	if($hashpass != "") { 
-           $result = mysqli_query($mysqli, "SELECT pass FROM users WHERE users_name = SHA1('$user')") or die(mysqli_error($mysqli));
-   	   $pass = mysqli_fetch_row($result);
-
-	   if ($hashpass === $pass[0]) {
-    	      $auth = TRUE;
-	   }
+           /* $result = mysqli_query($mysqli, "SELECT pass FROM users WHERE users_name = SHA1('$user')") or die(mysqli_error($mysqli)); */
+   	   /* $pass = mysqli_fetch_row($result); */
+	  if ($hashpass === $_SESSION['password']) {
+	    $auth = TRUE;
+	  }
 	}
 	return $auth;
 }
