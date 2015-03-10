@@ -26,7 +26,7 @@ try {
         $getVar['exps'] = explode(",", $getVar['exps']);
     }
     if (isset($getVar['pi'])) {
-        $getVar['pi'] = explode(",", $getVar['exps']);
+        $getVar['pi'] = explode(",", $getVar['pi']);
     }
     $request = array(
     'GET' => $getVar,
@@ -42,7 +42,7 @@ try {
             $compositeLog->addLogger(IDS_Log_file::getInstance($init));
             $compositeLog->execute($result);
     }
-    if ($impact > 25) {
+    if ($impact > 20) {
         error_log("A phpids event impact = $impact");
         $url = $config['base_url'] . 'feedback2.php';
         echo "Error: Please help us to improve the website by submitting <a href=\"$url\">feedback</a>.";
