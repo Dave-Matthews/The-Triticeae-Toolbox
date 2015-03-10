@@ -31,39 +31,39 @@
 
 Load the schema and some initializing data from the .sql files in this
 docs/ directory:
-
 mysql> create database T3wheat;
 mysql> use T3wheat;
 mysql> source T3wheat_schema.sql;
 mysql> source T3wheat_skeleton.sql;
 
-Grant read-permission (only) to a user such as "publicuser".
+The skeleton file T3wheat_skeleton.sql loads some initializing data in
+several housekeeping tables.  You will want to modify some of these
+values for your installation, especially in table 'settings'.
 
+Grant read-permission (only) to a user such as "publicuser".
 mysql> grant select on T3wheat.* to publicuser@localhost identified by '&lt;password>';
-mysql> grant update, insert, delete on T3wheat.session_variables to publicuser@localhost;
 mysql> grant execute on T3wheat.* to publicuser@localhost;
+mysql> grant update, insert, delete on T3wheat.session_variables to publicuser@localhost;
+
+To help prevent table T3wheat.users from being read by hackers, revoke
+the SELECT permission on that table by running the script publicuser.php
+in this docs/ directory.  If you add more tables to the database later,
+you will have to grant SELECT on them individually.
 
 Grant write permission to another user such as "curator":
-
 mysql> grant all on T3wheat.* to curator@localhost identified by '&lt;password>';
-
-The skeleton file T3wheat_skeleton.sql loads some initializing 
-data in several housekeeping tables.  You will want to modify 
-some of these values for your installation, especially in table
-'settings'.
 
 If you have more than one instance of T3 on the same host machine, add
 an entry to table 'settings' with name = "database", value = "&lt;unique
 name>". The code checks this entry to prevent transfer of session
-variables (cookies) between instances.  This is important, since the
+variables (cookies) between instances.  This is important because the
 session variables include the user's login status and privileges, which
 otherwise can be transferred simply by opening a new tab in the browser.
 
 If using GBrowse, create the GBrowse database "gtht" and grant
 permissions:
-
 mysql> create database gtht;
-mysql> grant select on gtht.* to publicuser@localhost identified by '&lt;password>';
+mysql> grant select on gtht.* to publicuser@localhost;
 
 <b>Database connection scripts</b>
 
