@@ -89,7 +89,7 @@ class Downloads
         ?>        
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="phenotype/downloads03.js"></script><br>
+        <script type="text/javascript" src="phenotype/downloads04.js"></script><br>
         <?php
         $this->type1_phenotype();
         ?>
@@ -204,7 +204,7 @@ class Downloads
         $selection_ready = 1;
       } elseif (isset($_GET['pi']) && !empty($_GET['pi'])) {
         $selection_ready = 1;
-      } elseif (isset($_GET['e']) && !empty($_GET['e'])) {
+      } elseif (isset($_GET['exps']) && !empty($_GET['exps'])) {
         $selection_ready = 1;
       }
       
@@ -581,7 +581,7 @@ class Downloads
     {
         global $mysqli;
         $phen_item = $_GET['pi'];
-        $experiments = $_GET['e'];
+        $experiments = $_GET['exps'];
         $subset = $_GET['lw'];
         if (isset($_SESSION['selected_lines'])) {
             $selectedlines= $_SESSION['selected_lines'];

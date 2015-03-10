@@ -4,7 +4,6 @@ $config['root_dir'] = (dirname(__FILE__) . '/');
 require_once($config['root_dir'] . 'includes/bootstrap.inc');
 require_once($config['root_dir'] . 'includes/email.inc');
 require_once($config['root_dir'] . 'theme/normal_header.php');
-ini_set('magic_quotes_gpc', '0');
 
 require_once $config['root_dir'] . 'securimage/securimage.php';
 
@@ -40,7 +39,8 @@ function feedbackForm($name = '', $email = '', $feedback = '')
        style="border: none; background: none">
   <tr><td><img id="captcha" src="./securimage/securimage_show.php"
 	       alt="CAPTCHA image" /><br />
-      <a href="#" onclick="document.getElementById('captcha').src = './securimage/securimage_show.php?' + Math.random(); return false">
+  <a href="#" onclick="document.getElementById('captcha').src = './securimage/securimage_show.php?' + Math.random();
+  return false">
 	Reload image</a></td>
     <td><input type="text" name="captcha_code" size="10"
 	       maxlength="6" /> - Please enter the four characters shown.</td></tr></table>
@@ -66,19 +66,20 @@ $securimage = new Securimage();
 $capcha_pass = $securimage->check($_POST['captcha_code']);
 //if ($us_feedback && $capcha_pass) {
 if ($us_feedback && $us_email && $capcha_pass) {
-    send_email_from(setting('feedbackmail'), 'T3 Error', $us_email,
-    "Name: $us_name
-Email: $us_email
-Database: $baseurl
-
-Feedback:
-$us_feedback");
+    send_email_from(
+        setting('feedbackmail'),
+        'T3 Error',
+        $us_email,
+        "Name: $us_name 
+        Email: $us_email
+        Database: $baseurl
+        Feedback: $us_feedback"
+    );
 
     echo "<h2>Thank you for your feedback. It has been sent to the T3 curators.</h2>";
 } elseif ($_POST) {
     ?>
     <h1>Website Error</h1>
-    The website has encountered an error.<br>
     Please help us to improve the website by submitting an explanation of what you were doing when the error occurred.
     <p>
     <?php
