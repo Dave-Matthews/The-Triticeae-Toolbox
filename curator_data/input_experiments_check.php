@@ -11,11 +11,9 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-//include($config['root_dir'] . 'includes/bootstrap_dev.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
-//include($config['root_dir'] . 'curator_data/boot_test.php');
-require_once("../lib/Excel/reader.php"); // Microsoft Excel library
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'curator_data/lineuid.php';
+require_once "../lib/Excel/reader.php"; // Microsoft Excel library
 
 connect();
 loginTest();
@@ -151,7 +149,7 @@ private function typeExperimentCheck()
     		 //echo $meansfile."\n";
 
 /* Read the annotation file */
-	$reader = & new Spreadsheet_Excel_Reader();
+	$reader = new Spreadsheet_Excel_Reader();
 	$reader->setOutputEncoding('CP1251');
 	if (strpos($meansfile,'.xls')>0)
 	{
@@ -762,7 +760,7 @@ function ForceValue(& $arg1, $msg)
 	$username = $_GET['user_name'];
 	$rawdatafile = $_GET['raw_data_file'];
 	
-	$reader = & new Spreadsheet_Excel_Reader();
+	$reader = new Spreadsheet_Excel_Reader();
 	$reader->setOutputEncoding('CP1251');
 	if (strpos($meansfile,'.xls')>0)
 	{

@@ -9,10 +9,10 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'curator_data/lineuid.php';
 
-require_once("../lib/Excel/excel_reader2.php"); // Microsoft Excel library
+require_once "../lib/Excel/excel_reader2.php"; // Microsoft Excel library
 
 connect();
 loginTest();
@@ -161,7 +161,7 @@ private function typeAnnotationCheck()
 		
 						
 		/* Read the annotation file */
-	$reader = & new Spreadsheet_Excel_Reader();
+	$reader = new Spreadsheet_Excel_Reader();
 	$reader->setOutputEncoding('CP1251');
 	if (strpos($annotfile,'.xls')>0)
 	{
@@ -230,21 +230,20 @@ private function typeAnnotationCheck()
 	// Identify the Rows.
 	$version_row =                  $annots['cells'][$VERSION];
         $crop_row = 			$annots['cells'][$CROP];
-
 	$bp_row =			$annots['cells'][$BREEDINGPROGRAM];
 	$trialcode_row =		$annots['cells'][$TRIALCODE];
    	$year_row = 			$annots['cells'][$TRIALYEAR];
+	$experimentset_row =	        $annots['cells'][$EXPERIMENT_SET];
 	$location_row =			$annots['cells'][$LOCATION];
 	$latitude_row =			$annots['cells'][$LATIT];
         $longitude_row = 		$annots['cells'][$LONGI];
 	$collaborator_row =		$annots['cells'][$COLLABORATOR];
+	$trialdesc_row =	        $annots['cells'][$TRIAL_DESC];
 	$plantingdate_row =		$annots['cells'][$PLANTINGDATE];
 	$harvestdate_row =		$annots['cells'][$HARVESTDATE];
 	$beginweatherdate_row = 	$annots['cells'][$BEGINWEATHER];
 	$greenhouse_row = 		$annots['cells'][$GREENHOUSE];
 	$seedingrate_row =		$annots['cells'][$SEEDINGRATE];
-	$experimentset_row =	        $annots['cells'][$EXPERIMENT_SET];
-	$trialdesc_row =	        $annots['cells'][$TRIAL_DESC];
 	$experimentaldesign_row =	$annots['cells'][$EXPERIMENTALDESIGN];
 	$numberofentries_row =	        $annots['cells'][$NUMBEROFENTRIES];
 	$numberofreplications_row =	$annots['cells'][$NUMBEROFREPLICATIONS];
@@ -268,14 +267,15 @@ private function typeAnnotationCheck()
 	    $n_trials++;
 	}
 
-	// Check for current version of the Template file, using check_version() from includes/common.inc.
-	$version = trim($version_row[2]);
-	$template = $config['root_dir']."curator_data/examples/T3/TrialSubmissionForm.xls";
-	if (!check_version($version, $template)) {
-	  echo "<b>Error</b>: The template file has been updated since your version, <b>$version</b>.<br>
-          Please use the new one.<br>";
-	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-	};
+	// dem dec14 Removed.  Not a terrible idea but badly implemented.
+	/* // Check for current version of the Template file, using check_version() from includes/common.inc. */
+	/* $version = trim($version_row[2]); */
+	/* $template = $config['root_dir']."curator_data/examples/T3/TrialSubmissionForm.xls"; */
+	/* if (!check_version($version, $template)) { */
+	/*   echo "<b>Error</b>: The template file has been updated since your version, <b>$version</b>.<br> */
+        /*   Please use the new one.<br>"; */
+	/*   exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">"); */
+	/* }; */
 
 	// Check for Breeding Program.
 	$bp = trim($bp_row[2]);
@@ -295,6 +295,14 @@ private function typeAnnotationCheck()
 	    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	  }
 	}
+
+        // get list of current locations in database
+        $sql = "select location from phenotype_experiment_info";
+        $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+        while ($row = mysql_fetch_assoc($res)) {
+          $loc = $row['location'];
+          $valid_loc[$loc] = 1;
+        }
 
 	// Create the array to hold the data, $experiments[$index]:
 	$experiments = array();
@@ -329,21 +337,24 @@ private function typeAnnotationCheck()
 	      exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	    }
 	  }
-		
-	  $experiments[$index]->location = addslashes($location_row[$i]);
+
+	  /* dem may13: Use mysql_real_escape_string consistently. */		
+	  /* $experiments[$index]->location = addslashes($location_row[$i]); */
+	  $experiments[$index]->location = mysql_real_escape_string($location_row[$i]);
 	  $experiments[$index]->latitude = mysql_real_escape_string($latitude_row[$i]);
 	  $experiments[$index]->longitude = mysql_real_escape_string($longitude_row[$i]);
 	  $experiments[$index]->collaborator = mysql_real_escape_string($collaborator_row[$i]);
-	  $experiments[$index]->seedingrate = $seedingrate_row[$i];
 	  $experiments[$index]->trialdesc = mysql_real_escape_string(trim($trialdesc_row[$i]));
-	  $experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
 	  $experiments[$index]->greenhouse = mysql_real_escape_string($greenhouse_row[$i]);
+	  /* $experiments[$index]->seedingrate = $seedingrate_row[$i]; */
+	  $experiments[$index]->seedingrate = mysql_real_escape_string($seedingrate_row[$i]);
+	  $experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
 	  $experiments[$index]->experimentset = mysql_real_escape_string(trim($experimentset_row[$i]));
 
 	  // Check key data fields in the experiment to ensure valid values
 	  // Required fields include: year, location, collaborator (who performed experiment)
 
-	  $year = $year_row[$i];
+	  $year = mysql_real_escape_string($year_row[$i]);
 	  $experiments[$index]->year = $year;
 	  $today = getdate();
 	  // dem may12: Allow old data, and next year.
@@ -358,7 +369,9 @@ private function typeAnnotationCheck()
 	  if (!$location) {
 	    echo "Column <b>$colname</b>: Location (city, state/province/country) is required.<br>";
 	    $error_flag = ($error_flag) | (2);
-}
+          } elseif (!isset($valid_loc[$location])) {
+            echo "<font color=red>Warning: $location is not defined in the database, is the spelling correct?</font><br>";
+          }
 
 	  $collab = $experiments[$index]->collaborator;
 	  if (!$collab) {
@@ -409,32 +422,32 @@ private function typeAnnotationCheck()
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
 	
-	// Harvest Date
+	// Harvest Date.  Making it optional, dec2012.
 	$teststr= addcslashes(trim($harvestdate_row[$i]),"\0..\37!@\177..\377");
-	$phpdate = date_create_from_format('n/j/Y', $teststr);
-	if ($phpdate === FALSE) {
-	  echo "Couldn't parse Harvest Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
-	  //print_h(date_get_last_errors());  // debug
-	}
-	else {
-	  $fdate = date_format($phpdate, 'n/j/Y');
-	  if ($fdate == $teststr) 
-	    $experiments[$index]->harvestdate = $teststr;
-	}
-	if ($phpdate === FALSE OR $fdate != $teststr) {
-	  $experiments[$index]->harvestdate = '';
-	  echo "<b>Error</b>: Please use <i>m/d/yyyy</i> format for Harvest date, e.g. \"8/9/2012\"<br>
+	if ($teststr) {
+	  $phpdate = date_create_from_format('n/j/Y', $teststr);
+	  if ($phpdate === FALSE) {
+	    echo "Couldn't parse Harvest Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
+	  }
+	  else {
+	    $fdate = date_format($phpdate, 'n/j/Y');
+	    if ($fdate == $teststr) 
+	      $experiments[$index]->harvestdate = $teststr;
+	  }
+	  if ($phpdate === FALSE OR $fdate != $teststr) {
+	    $experiments[$index]->harvestdate = '';
+	    echo "<b>Error</b>: Please use <i>m/d/yyyy</i> format for Harvest date, e.g. \"8/9/2012\"<br>
                   instead of <font color=red>\"$teststr\"</font>.<br>";
-	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+	    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+	  }
 	}
 	
 	// Weather Date, optional
-	$teststr= addcslashes(($beginweatherdate_row[$i]),"\0..\37!@\177..\377");
+	$teststr= addcslashes(trim($beginweatherdate_row[$i]),"\0..\37!@\177..\377");
 	if ($teststr) {
 	  $phpdate = date_create_from_format('n/j/Y', $teststr);
 	  if ($phpdate === FALSE) {
 	    echo "Couldn't parse Begin Weather Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
-	    //print_h(date_get_last_errors());  // debug
 	  }
 	  else {
 	    $fdate = date_format($phpdate, 'n/j/Y');
@@ -580,7 +593,7 @@ private function typeAnnotationCheck()
 	  $username = $_GET['user_name'];
 	  $data_public_flag = $_GET['public'];
 	
-	  $reader = & new Spreadsheet_Excel_Reader();
+	  $reader = new Spreadsheet_Excel_Reader();
 	  $reader->setOutputEncoding('CP1251');
 	  if (strpos($datafile,'.xls')>0)
 	      $reader->read($datafile);
@@ -747,14 +760,13 @@ private function typeAnnotationCheck()
 	      // Harvest Date
 	      // convert Microsoft Excel timestamp to Unix timestamp
 	      $teststr= addcslashes(trim($harvestdate_row[$i]),"\0..\37!@\177..\377");
-	      if (DEBUG>2) {echo $teststr."\n";}
 	      if (preg_match("/\d+\/\d+\/\d+/",$teststr)) {	
-		if (DEBUG>2) {echo $teststr."\n";}
 		$experiments[$index]->harvestdate = $teststr;
 	      } else {
 		$experiments[$index]->harvestdate = '';
-		echo "<b>ERROR: Please use correct format for harvest date (4/14/2009) </b><br>";
-		exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+		/* Now optional */
+		/* echo "<b>ERROR: Please use correct format for harvest date (4/14/2009) </b><br>"; */
+		/* exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">"); */
 	      }
 		
 	      //Check number of entries
@@ -880,7 +892,10 @@ private function typeAnnotationCheck()
 		    mysql_query($sql) or die(mysql_error() . "<br>$sql");
 
 		    //update phenotype experiment information
-		    if($experiment->beginweatherdate) 
+		    /* Filter invisible non-empty string in beginweatherdate. */
+		    /* if($experiment->beginweatherdate)  */
+		    $trimmed = trim($experiment->beginweatherdate);
+		    if(!empty($trimmed)) 
 		      /* $bwd = str_to_date('$experiment->beginweatherdate','%m/%d/%Y'); */
 		      $bwd = "'".date_format(date_create_from_format('n/j/Y', $experiment->beginweatherdate), 'Y-m-d')."'";
 		    else
@@ -973,11 +988,11 @@ private function typeAnnotationCheck()
 	      }// end foreach
 
 	    echo "Data inserted or updated successfully. ";
-	    if ($experiment_set_uid)
+	    if ($experiment_set_uid != "NULL") 
 	      echo "<p><a href=".$config['base_url']."view.php?table=experiment_set&uid=$experiment_set_uid>View</a><p>";
 	    else {
 	    ?>
-	    <a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"> Go Back To Main Page </a>
+	    <p><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"> Return </a>
 	    <?php
 		}
 	       // Timestamp, e.g. _28Jan12_23:01
