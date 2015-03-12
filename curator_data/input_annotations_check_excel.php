@@ -9,10 +9,10 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'curator_data/lineuid.php';
 
-require_once("../lib/Excel/excel_reader2.php"); // Microsoft Excel library
+require_once "../lib/Excel/excel_reader2.php"; // Microsoft Excel library
 
 connect();
 loginTest();
@@ -161,7 +161,7 @@ private function typeAnnotationCheck()
 		
 						
 		/* Read the annotation file */
-	$reader = & new Spreadsheet_Excel_Reader();
+	$reader = new Spreadsheet_Excel_Reader();
 	$reader->setOutputEncoding('CP1251');
 	if (strpos($annotfile,'.xls')>0)
 	{
@@ -593,7 +593,7 @@ private function typeAnnotationCheck()
 	  $username = $_GET['user_name'];
 	  $data_public_flag = $_GET['public'];
 	
-	  $reader = & new Spreadsheet_Excel_Reader();
+	  $reader = new Spreadsheet_Excel_Reader();
 	  $reader->setOutputEncoding('CP1251');
 	  if (strpos($datafile,'.xls')>0)
 	      $reader->read($datafile);
