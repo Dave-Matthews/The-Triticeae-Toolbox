@@ -15,9 +15,9 @@
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
-require_once("../lib/Excel/reader.php"); // Microsoft Excel library
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'curator_data/lineuid.php';
+require_once "../lib/Excel/reader.php"; // Microsoft Excel library
 connect();
 loginTest();
 ob_start();
@@ -102,7 +102,7 @@ class LineNames_Check {
 	  // if successful upload
 	  $meansfile = $target_path.$uploadfile;
 	  /* Read the Means file */
-	  $reader = & new Spreadsheet_Excel_Reader();
+	  $reader = new Spreadsheet_Excel_Reader();
 	  $reader->setOutputEncoding('CP1251');
 	  $reader->read($meansfile);
 	  $means = $reader->sheets[0];
@@ -429,7 +429,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
    $username = $_GET['user_name'];
    $rawdatafile = $_GET['raw_data_file'];
 	
-   $reader = & new Spreadsheet_Excel_Reader();
+   $reader = new Spreadsheet_Excel_Reader();
    $reader->setOutputEncoding('CP1251');
    $reader->read($meansfile);
    $means = $reader->sheets[0];
