@@ -1357,57 +1357,53 @@ function isRecord($table, $id) {
       return $source;
     // else, nothing found
     return FALSE;
-  } 	
+  }
 }
  
 
 /**
  * Store session variables for users, currently handles only simple arrays
- * 
+ *
  * @param string $svkey key for the session variable to be stored
  * DEM mar2015: Get users_uid from $_SESSION instead of database.
  */
-function store_session_variables ($svkey, $user) {
-  global $mysqli;
-  if (!isset($_SESSION[$svkey]))
-    return 0;
-/*   $sql_users_name = mysqli_real_escape_string($mysqli, $user); */
-/*   $sql = "select users_uid from users */
-/* where users_name='$sql_users_name'"; */
-/*   $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)); */
-/*   if (!$r) */
-/*     return 0; */
-/*   $r = mysqli_fetch_assoc($r); */
-/*   if (!$r) */
-/*     return 0; */
-/*   $users_uid = $r['users_uid']; */
-  $users_uid = $_SESSION['userid'];
-  $vals = array();
-  $isnum = array();
-  $vals['session_variables_name'] = mysqli_real_escape_string($mysqli, $svkey);
-  array_push($isnum, 0);
-  $vals['serialized_values'] = base64_encode(serialize($_SESSION[$svkey]));
-  array_push($isnum, 0);
-  $vals['users_uid'] = $users_uid;
-  array_push($isnum, 1);
-  add_array_data($vals, $isnum, "session_variables",
-		 array('users_uid', 'session_variables_name'),
-		 array($users_uid, mysql_escape_string($svkey)),
-		 "session_variables_uid", "force_update");
-  return 1;
+function store_session_variables($svkey, $user)
+{
+    if (!isset($_SESSION[$svkey])) {
+        return 0;
+    }
+    if (!isset($_SESSION['users_uid'])) {
+        return 0;
+    }
+    $users_uid = $_SESSION['userid'];
+    $vals = array();
+    $isnum = array();
+    $vals['session_variables_name'] = mysqli_real_escape_string($mysqli, $svkey);
+    array_push($isnum, 0);
+    $vals['serialized_values'] = base64_encode(serialize($_SESSION[$svkey]));
+    array_push($isnum, 0);
+    $vals['users_uid'] = $users_uid;
+    array_push($isnum, 1);
+    add_array_data(
+        $vals,
+        $isnum,
+        "session_variables",
+        array('users_uid', 'session_variables_name'),
+        array($users_uid, mysql_escape_string($svkey)),
+        "session_variables_uid",
+        "force_update"
+    );
+    return 1;
 }
 
 /* DEM mar2015: Get users_uid from $_SESSION instead of database. */
-function retrieve_session_variables($svkey, $user) {
+function retrieve_session_variables($svkey, $user)
+{
   global $mysqli;
+  if (!isset($_SESSION['users_uid'])) {
+    return 0;
+  }
   if (isset($svkey) && strlen($svkey) > 0 && isset($user) && strlen($user)>1) {
-        /* $sql_user = mysqli_real_escape_string($mysqli, $user); */
-	/* $result=mysqli_query($mysqli,  */
-        /*     "select serialized_values */
-        /*     from session_variables where session_variables_name=\"$svkey\" and */
-        /*     users_uid=(select users_uid from users */
-        /*     where users_name='$sql_user')" */
-	/* 		     ) or die(mysqli_error($mysqli)); */
 	$users_uid = $_SESSION['userid'];
         $result=mysqli_query($mysqli, 
             "select serialized_values
