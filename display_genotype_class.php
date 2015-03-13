@@ -175,45 +175,49 @@ class ShowData
         if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
 	  $min_maf = $_GET['mmaf'];
 	if ($min_maf > 100)
-	  $min_maf = 100;
-	elseif ($min_maf < 0)
-	  $min_maf = 0;
-	
-	$sql_mstat = "SELECT af.marker_uid as marker, af.aa_cnt as sumaa, af.missing as summis, 
+          $min_maf = 100;
+        elseif ($min_maf < 0)
+          $min_maf = 0;
+
+        $sql_mstat = "SELECT af.marker_uid as marker, af.aa_cnt as sumaa, af.missing as summis, 
 		    af.bb_cnt as sumbb, af.total as total, af.ab_cnt AS sumab, maf
 		    FROM allele_frequencies AS af
-		    WHERE af.experiment_uid = '".$experiment_uid."'";
-	$res = mysqli_query($mysqli, $sql_mstat) or die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
-	$num_mark = mysqli_num_rows($res);
-	$num_maf = $num_miss = 0;
-			
-	while ($row = mysqli_fetch_array($res)){
-	  $marker_uid[] = $row["marker"];
-          $total_af = $row["sumaa"] + $row["sumab"] + $row["sumbb"];
-	  //$maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$total_af),($row["sumab"]+2*$row["sumbb"])/(2*$total_af)),1);
-          $maf = $row["maf"];
-	  $miss = round(100*$row["summis"]/$row["total"],1);
-	  if ($maf >= $min_maf)
-	    $num_maf++;
-	  if ($miss > $max_missing)
-	    $num_miss++;
-          if (($miss > $max_missing) OR ($maf < $min_maf)) {
-            } else {
-            $count_remain++;
-            }
+		    WHERE af.experiment_uid = $experiment_uid";
+        $res = mysqli_query($mysqli, $sql_mstat) or
+             die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
+        $num_mark = mysqli_num_rows($res);
+        $num_maf = $num_miss = 0;
 
-	}
-	echo "<h3>Description</h3><p>";
-	echo "<table>";
-	echo "<tr> <td>Experiment Short Name</td><td>".$experiment_short_name."</td></tr>";
-        echo "<tr> <td>Platform</td><td>".$platform_name."</td></tr>";
-	echo "<tr> <td>Data Program</td><td>".$data_program_name." (".$data_program_code.")</td></tr>";
-	echo "<tr> <td>OPA Name</td><td>".$row_Gen_Info['OPA_name']."</td></tr>";
-	echo "<tr> <td>Processing Date</td><td>".$row_Gen_Info['processing_date']."</td></tr>";
-	echo "<tr> <td>Software</td><td>".$row_Gen_Info['analysis_software']."</td></tr>";
-	echo "<tr> <td>Software version</td><td>".$row_Gen_Info['BGST_version_number']."</td></tr>";
-	echo "<tr> <td>Comments</td><td>".$row_Gen_Info['comments']."</td></tr>";
-	echo "</table><p>";
+    while ($row = mysqli_fetch_array($res)) {
+        $marker_uid[] = $row["marker"];
+        $total_af = $row["sumaa"] + $row["sumab"] + $row["sumbb"];
+        $maf = $row["maf"];
+        if ($row["total"] > 0) {
+            $miss = round(100*$row["summis"]/$row["total"], 1);
+            if ($maf >= $min_maf) {
+                $num_maf++;
+            }
+            if ($miss > $max_missing) {
+                $num_miss++;
+            }
+            if (($miss > $max_missing) or ($maf < $min_maf)) {
+            } else {
+                $count_remain++;
+            }
+        }
+    }
+
+    echo "<h3>Description</h3><p>";
+    echo "<table>";
+    echo "<tr> <td>Experiment Short Name</td><td>".$experiment_short_name."</td></tr>";
+    echo "<tr> <td>Platform</td><td>".$platform_name."</td></tr>";
+    echo "<tr> <td>Data Program</td><td>".$data_program_name." (".$data_program_code.")</td></tr>";
+    echo "<tr> <td>OPA Name</td><td>".$row_Gen_Info['OPA_name']."</td></tr>";
+    echo "<tr> <td>Processing Date</td><td>".$row_Gen_Info['processing_date']."</td></tr>";
+    echo "<tr> <td>Software</td><td>".$row_Gen_Info['analysis_software']."</td></tr>";
+    echo "<tr> <td>Software version</td><td>".$row_Gen_Info['BGST_version_number']."</td></tr>";
+    echo "<tr> <td>Comments</td><td>".$row_Gen_Info['comments']."</td></tr>";
+    echo "</table><p>";
 ?>
 
 <h3>Download</h3>
