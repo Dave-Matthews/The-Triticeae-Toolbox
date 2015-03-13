@@ -16,6 +16,7 @@
  */
 
 set_include_path(get_include_path() . PATH_SEPARATOR . $config['root_dir'] . 'lib/phpids-0.7/lib/');
+set_include_path(get_include_path() . PATH_SEPARATOR . $config['root_dir'] . 'includes/');
 require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Init.php';
 require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Log/Composite.php';
 require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Log/File.php';
