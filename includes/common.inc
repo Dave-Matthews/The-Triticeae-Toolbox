@@ -1369,10 +1369,11 @@ function isRecord($table, $id) {
  */
 function store_session_variables($svkey, $user)
 {
+    global $mysqli;
     if (!isset($_SESSION[$svkey])) {
         return 0;
     }
-    if (!isset($_SESSION['users_uid'])) {
+    if (!isset($_SESSION['userid'])) {
         return 0;
     }
     $users_uid = $_SESSION['userid'];
@@ -1380,6 +1381,7 @@ function store_session_variables($svkey, $user)
     $isnum = array();
     $vals['session_variables_name'] = mysqli_real_escape_string($mysqli, $svkey);
     array_push($isnum, 0);
+    $tmp = serialize($_SESSION[$svkey]);
     $vals['serialized_values'] = base64_encode(serialize($_SESSION[$svkey]));
     array_push($isnum, 0);
     $vals['users_uid'] = $users_uid;
@@ -1389,7 +1391,7 @@ function store_session_variables($svkey, $user)
         $isnum,
         "session_variables",
         array('users_uid', 'session_variables_name'),
-        array($users_uid, mysql_escape_string($svkey)),
+        array($users_uid, mysqli_escape_string($mysqli, $svkey)),
         "session_variables_uid",
         "force_update"
     );
@@ -1400,7 +1402,7 @@ function store_session_variables($svkey, $user)
 function retrieve_session_variables($svkey, $user)
 {
   global $mysqli;
-  if (!isset($_SESSION['users_uid'])) {
+  if (!isset($_SESSION['userid'])) {
     return 0;
   }
   if (isset($svkey) && strlen($svkey) > 0 && isset($user) && strlen($user)>1) {
