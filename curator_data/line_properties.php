@@ -132,7 +132,7 @@ class LineNames_Check
 	  if(move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
 	    /* start reading the excel */
 	    $datafile = $target_path.$uploadfile;
-	    $reader = & new Spreadsheet_Excel_Reader();
+	    $reader = new Spreadsheet_Excel_Reader();
 	    $reader->setOutputEncoding('CP1251');
 	    $reader->read($datafile);
 	    $linedata = $reader->sheets[0];
@@ -278,7 +278,7 @@ class LineNames_Check
       $filename = $_GET['file_name'];
       $username = $_GET['user_name'];
 	
-      $reader = & new Spreadsheet_Excel_Reader();
+      $reader = new Spreadsheet_Excel_Reader();
       $reader->setOutputEncoding('CP1251');
       $reader->read($datafile);
       $linedata = $reader->sheets[0];

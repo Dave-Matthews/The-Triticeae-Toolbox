@@ -173,7 +173,7 @@ private function typeAnnotationCheck()
 		
 						
 		/* Read the annotation file */
-	$reader = & new Spreadsheet_Excel_Reader();
+	$reader = new Spreadsheet_Excel_Reader();
 	$reader->setOutputEncoding('CP1251');
 	if (strpos($annotfile,'.xls')>0)
 	{
@@ -642,7 +642,7 @@ private function typeAnnotationCheck()
 	$username = $_GET['user_name'];
 	$data_public_flag = $_GET['data_public_flag'];
 
-		$reader = & new Spreadsheet_Excel_Reader();
+	$reader = new Spreadsheet_Excel_Reader();
 	$reader->setOutputEncoding('CP1251');
 	if (strpos($datafile,'.xls')>0)
 	{
