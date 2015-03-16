@@ -592,7 +592,7 @@ class LineNames_Check
       $filename = $_GET['file_name'];
       $username = $_GET['user_name'];
 	
-      $reader = & new Spreadsheet_Excel_Reader();
+      $reader = new Spreadsheet_Excel_Reader();
       $reader->setOutputEncoding('CP1251');
       $reader->read($datafile);
       $linedata = $reader->sheets[0];
