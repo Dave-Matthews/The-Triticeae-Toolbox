@@ -290,7 +290,7 @@ if ($query == 'geno') {
    print "</table>";
 } else {
   if ($output == 'excel') {
-    include 'includes/excel/Writer.php';
+    include 'Spreadsheet/Excel/Writer.php';
     header('Content-Type: application/vnd.ms-excel');
     header('Content-Disposition:attachment;filename=t3_report.xls');
     $workbook = new Spreadsheet_Excel_Writer();
