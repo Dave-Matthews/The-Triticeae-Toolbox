@@ -23,10 +23,12 @@
  */
 function weakContains(&$arr, &$o)
 {
-    if (is_null($o) || empty($arr)) return false;
-        foreach($arr as &$v){
-	    if ($o->weakEquals($v)){
-			return true;
+    if (is_null($o) || empty($arr)) {
+        return false;
+    }
+    foreach ($arr as &$v) {
+        if ($o->weakEquals($v)) {
+            return true;
         }
     }
     return false;
@@ -40,34 +42,43 @@ function weakContains(&$arr, &$o)
  * @param $time - the last access time stored in a session variable right after the last login time.
  * @return void
  */
-function updateLastAccess($account, $time) {
-
-	mysql_query("UPDATE users SET lastaccess='$time' WHERE users_name = '$account'") 
-		   or die(mysql_error());
+function updateLastAccess($account, $time)
+{
+global $mysqli;
+	mysqli_query($mysqli, "UPDATE users SET lastaccess='$time' WHERE users_name = '$account'") 
+		   or die(mysqli_error($mysqli));
 	return;
 }
 
 
 /**
  * This function is used with the main index page after logging in. It loads all the user info into
- * an array for display on the page. 
- * 
- * @return an array containing all the user related information. The last access time is also 
- *         formatted specifically for an easy to read date. 
+ * an array for display on the page.
+ *
+ * @return an array containing all the user related information. The last access time is also
+ *         formatted specifically for an easy to read date.
+ * DEM mar2015: Use the $_SESSION values only, don't check the database again.
+ *              We don't want table 'users' being examined anonymously.
  */
-function loadUser($user) {
-
-	$q = mysql_query("SELECT * 
-			  FROM users 
-			  WHERE users_name = '$user'
-			")
-	     or die(mysql_error());
-
-	$r = mysql_fetch_assoc($q);
-	$r['lastaccess'] = date("F j, Y \a\\t g:i:s a", strtotime($r['lastaccess']));
-	
-	return $r;
-
+function loadUser($user)
+{
+    global $mysqli;
+    // Move the values from $_SESSION to a mysqli resource.
+    if ($user == $_SESSION['username']) {
+        if (isset($_SESSION['userid'])) {
+            $userid = $_SESSION['userid'];
+            $pass = $_SESSION['password'];
+            $usertype = $_SESSION['usertype'];
+            $sql = "select '$user' as users_name, $userid as users_uid, '$pass' as password, $usertype as user_types_uid";
+            $q = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $r = mysqli_fetch_assoc($q);
+            return $r;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
 }
 
 /**
@@ -87,15 +98,15 @@ function loadUser($user) {
  * @param $id - unique id of the dataset.
  */
 function show_datasets($id) {
-
-	$q = mysql_query("SELECT dataset_name, breeding_year
+global $mysqli;
+	$q = mysqli_query($mysqli, "SELECT dataset_name, breeding_year
 			  FROM datasets
 			  WHERE datasets_uid = '$id'
 			")
-	     or die(mysql_error());
+	     or die(mysqli_error($mysqli));
 
-	if(mysql_num_rows($q) > 0) {
-		$row = mysql_fetch_assoc($q);
+	if(mysqli_num_rows($q) > 0) {
+		$row = mysqli_fetch_assoc($q);
 
 		echo "<table class=\"tableclass1\">\n";				
 		foreach($row as $k=>$v) {
@@ -106,24 +117,24 @@ function show_datasets($id) {
 		}
 		echo "</table>\n<br />\n";
 
-		$bp = mysql_query("SELECT CAPdata_programs.CAPdata_programs_uid, institutions_name as institution, data_program_name as data_program
+		$bp = mysqli_query($mysqli, "SELECT CAPdata_programs.CAPdata_programs_uid, institutions_name as institution, data_program_name as data_program
 			  FROM datasets, CAPdata_programs, institutions
 			  WHERE datasets.datasets_uid = '$id'
 				AND CAPdata_programs.CAPdata_programs_uid = datasets.CAPdata_programs_uid
 				AND institutions.institutions_uid = CAPdata_programs.institutions_uid
 			")
-	    	      or die(mysql_error());
+	    	      or die(mysqli_error($mysqli));
 
 		echo viewTable($bp, "CAPdata_programs");
 
-		$exp = mysql_query("SELECT experiments.experiment_uid, experiment_type_name as type, trial_code as trial_code, experiment_year as year
+		$exp = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiment_type_name as type, trial_code as trial_code, experiment_year as year
 			FROM datasets, experiments, datasets_experiments, experiment_types
 			WHERE datasets.datasets_uid = '$id'
                                 AND datasets_experiments.datasets_uid = datasets.datasets_uid
                                 AND experiments.experiment_uid = datasets_experiments.experiment_uid
 				AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
 			")
-	    	      or die(mysql_error());
+	    	      or die(mysqli_error($mysqli));
 
 		echo viewTable($exp, "experiments");
 		
