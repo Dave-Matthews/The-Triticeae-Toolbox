@@ -23,10 +23,12 @@
  */
 function weakContains(&$arr, &$o)
 {
-    if (is_null($o) || empty($arr)) return false;
-        foreach($arr as &$v){
-	    if ($o->weakEquals($v)){
-			return true;
+    if (is_null($o) || empty($arr)) {
+        return false;
+    }
+    foreach ($arr as &$v) {
+        if ($o->weakEquals($v)) {
+            return true;
         }
     }
     return false;
@@ -40,7 +42,8 @@ function weakContains(&$arr, &$o)
  * @param $time - the last access time stored in a session variable right after the last login time.
  * @return void
  */
-function updateLastAccess($account, $time) {
+function updateLastAccess($account, $time)
+{
 global $mysqli;
 	mysqli_query($mysqli, "UPDATE users SET lastaccess='$time' WHERE users_name = '$account'") 
 		   or die(mysqli_error($mysqli));
@@ -50,35 +53,32 @@ global $mysqli;
 
 /**
  * This function is used with the main index page after logging in. It loads all the user info into
- * an array for display on the page. 
- * 
- * @return an array containing all the user related information. The last access time is also 
- *         formatted specifically for an easy to read date. 
+ * an array for display on the page.
+ *
+ * @return an array containing all the user related information. The last access time is also
+ *         formatted specifically for an easy to read date.
  * DEM mar2015: Use the $_SESSION values only, don't check the database again.
  *              We don't want table 'users' being examined anonymously.
  */
-function loadUser($user) {
-  global $mysqli;
-  /* $q = mysqli_query($mysqli, "SELECT *  */
-  /* 		  FROM users  */
-  /* 		  WHERE users_name = SHA1('$user') */
-  /* 		") */
-  /*      or die(mysqli_error($mysqli)); */
-
-  /* $r = mysqli_fetch_assoc($q); */
-  /* $r['lastaccess'] = date("F j, Y \a\\t g:i:s a", strtotime($r['lastaccess'])); */
-  // Move the values from $_SESSION to a mysqli resource.
-  if ($user == $_SESSION['username']) {
-    $userid = $_SESSION['userid'];
-    $pass = $_SESSION['password'];
-    $usertype = $_SESSION['usertype'];
-    $sql = "select '$user' as users_name, $userid as users_uid, '$pass' as password, $usertype as user_types_uid";
-    $q = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    $r = mysqli_fetch_assoc($q);
-    return $r;
-  }
-  else
-    return FALSE;
+function loadUser($user)
+{
+    global $mysqli;
+    // Move the values from $_SESSION to a mysqli resource.
+    if ($user == $_SESSION['username']) {
+        if (isset($_SESSION['userid'])) {
+            $userid = $_SESSION['userid'];
+            $pass = $_SESSION['password'];
+            $usertype = $_SESSION['usertype'];
+            $sql = "select '$user' as users_name, $userid as users_uid, '$pass' as password, $usertype as user_types_uid";
+            $q = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $r = mysqli_fetch_assoc($q);
+            return $r;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
 }
 
 /**
