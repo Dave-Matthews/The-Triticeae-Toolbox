@@ -26,60 +26,53 @@ loginTest();
 $row = loadUser($_SESSION['username']);
 
 ////////////////////////////////////////////////////////////////////////////////
-//needed for mac compatibility
-ini_set('auto_detect_line_endings', true);
-
 ob_start();
 
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
 
-new Maps_Check($_GET['function']);
+new MapsCheck($_GET['function']);
 
-class Maps_Check
+class MapsCheck
 {
     
     private $delimiter = "\t";
     
-	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-			case 'typeDatabase':
-				$this->type_Database(); /* update database */
-				break;
-				
-			case 'typeLineData':
-				$this->type_Line_Data(); /* Handle Line Data */
-				break;
-			
-			default:
-				$this->typeMapsCheck(); /* intial case*/
-				break;
-			
-		}	
-	}
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch($function)
+        {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
 
+            case 'typeLineData':
+                $this->type_Line_Data(); /* Handle Line Data */
+                break;
 
-private function typeMapsCheck()
-	{
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
+            default:
+                $this->typeMapsCheck(); /* intial case*/
+                break;
 
-		echo "<h2> Enter/Update Maps Information: Validation</h2>"; 
-		
-			
-		$this->type_Maps();
+        }
+    }
 
-		$footer_div = 1;
+    private function typeMapsCheck()
+    {
+        global $config;
+        include($config['root_dir'] . 'theme/admin_header.php');
+
+        echo "<h2> Enter/Update Maps Information: Validation</h2>";
+
+        $this->type_Maps();
+
+        $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
-	}
+    }
 	
-	
-	private function type_Maps()
+    private function type_Maps()
 	{
 	?>
 	<script type="text/javascript">
@@ -124,6 +117,10 @@ private function typeMapsCheck()
 
 $row = loadUser($_SESSION['username']);
 
+        // Need more memory for 35K markers in a map.	    
+	//ini_set("memory_limit","24M");
+	ini_set("memory_limit","96M");
+	
 	$username=$row['name'];
 	
 	$tmp_dir="uploads/tmpdir_".$username."_".rand();
@@ -219,8 +216,8 @@ $row = loadUser($_SESSION['username']);
         while (($data = fgetcsv($handledata, 0, "\t")) !== FALSE) {
                 $num = count($data);		// number of fields
                 $row++;				// number of lines
-                if ($row>100) {
-                    exit();
+                if ($row>50) {
+                    break;
                 }
                 //print_r($data);
                 $marker[] .= trim($data[$m_idx]);
@@ -250,7 +247,7 @@ $row = loadUser($_SESSION['username']);
 	}
 	fclose($handledata);
 	?>
-	<h3>We are reading following data from the uploaded Input Data File</h3>
+	<h3>Here is a sample of the first 50 lines of data from the uploaded Input Data File</h3>
 				
 				
 			<table>
