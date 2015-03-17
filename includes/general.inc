@@ -68,8 +68,9 @@ function loadUser($user)
         if (isset($_SESSION['userid'])) {
             $userid = $_SESSION['userid'];
             $pass = $_SESSION['password'];
+            $name = $_SESSION['name'];
             $usertype = $_SESSION['usertype'];
-            $sql = "select '$user' as users_name, $userid as users_uid, '$pass' as password, $usertype as user_types_uid";
+            $sql = "select '$user' as users_name, '$name' as name, $userid as users_uid, '$pass' as password, $usertype as user_types_uid";
             $q = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $r = mysqli_fetch_assoc($q);
             return $r;

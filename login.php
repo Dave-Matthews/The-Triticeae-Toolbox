@@ -385,11 +385,12 @@ function HTMLProcessLogin()
 	    else 
                 die("SQL Error hashing password\n");
 	    // Store user_types_uid in $_SESSION.
-	    $sql = "select users_uid, user_types_uid from users where users_name = SHA1('$email')";
+	    $sql = "select users_uid, user_types_uid, name from users where users_name = SHA1('$email')";
 	    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $row = mysqli_fetch_row($res);
 	    $_SESSION['userid'] = $row[0];
 	    $_SESSION['usertype'] = $row[1];
+            $_SESSION['name'] = $row[2];
             $sql = "update users set lastaccess = now() where
             users_name = '$email'";
             mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
