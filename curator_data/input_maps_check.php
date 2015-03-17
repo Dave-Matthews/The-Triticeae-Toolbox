@@ -26,6 +26,9 @@ loginTest();
 $row = loadUser($_SESSION['username']);
 
 ////////////////////////////////////////////////////////////////////////////////
+//needed for mac compatibility
+ini_set('auto_detect_line_endings', true);
+
 ob_start();
 
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
@@ -121,10 +124,6 @@ private function typeMapsCheck()
 
 $row = loadUser($_SESSION['username']);
 
-        // Need more memory for 35K markers in a map.	    
-	//ini_set("memory_limit","24M");
-	ini_set("memory_limit","96M");
-	
 	$username=$row['name'];
 	
 	$tmp_dir="uploads/tmpdir_".$username."_".rand();
@@ -220,9 +219,9 @@ $row = loadUser($_SESSION['username']);
         while (($data = fgetcsv($handledata, 0, "\t")) !== FALSE) {
                 $num = count($data);		// number of fields
                 $row++;				// number of lines
-               /*if ($row>100) {
+                if ($row>100) {
                     exit();
-                }*/
+                }
                 //print_r($data);
                 $marker[] .= trim($data[$m_idx]);
                 $chrom[] .= trim($data[$c_idx]);
