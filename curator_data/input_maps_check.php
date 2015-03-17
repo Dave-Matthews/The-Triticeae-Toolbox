@@ -3,19 +3,8 @@
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-//require_once("../includes/common_import.inc");
-/*
- * Logged in page initialization
- */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-//include($config['root_dir'] . 'includes/common_import.inc');
-
-//include($config['root_dir'] . 'SumanDirectory/bootstrap_dev.inc');
-
-//include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
-include($config['root_dir'] . 'curator_data/lineuid.php');
-
-
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'curator_data/lineuid.php';
 
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
@@ -117,10 +106,6 @@ class MapsCheck
 
 $row = loadUser($_SESSION['username']);
 
-        // Need more memory for 35K markers in a map.	    
-	//ini_set("memory_limit","24M");
-	ini_set("memory_limit","96M");
-	
 	$username=$row['name'];
 	
 	$tmp_dir="uploads/tmpdir_".$username."_".rand();
