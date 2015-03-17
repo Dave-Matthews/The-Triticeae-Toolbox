@@ -12,7 +12,6 @@ include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 
 //include($config['root_dir'] . 'SumanDirectory/bootstrap_dev.inc');
 
-//include($config['root_dir'] . 'curator_data/boot_test.php');
 //include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
 include($config['root_dir'] . 'curator_data/lineuid.php');
 
@@ -33,51 +32,47 @@ authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
 
-new Maps_Check($_GET['function']);
+new MapsCheck($_GET['function']);
 
-class Maps_Check
+class MapsCheck
 {
     
     private $delimiter = "\t";
     
-	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-			case 'typeDatabase':
-				$this->type_Database(); /* update database */
-				break;
-				
-			case 'typeLineData':
-				$this->type_Line_Data(); /* Handle Line Data */
-				break;
-			
-			default:
-				$this->typeMapsCheck(); /* intial case*/
-				break;
-			
-		}	
-	}
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch($function)
+        {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
 
+            case 'typeLineData':
+                $this->type_Line_Data(); /* Handle Line Data */
+                break;
 
-private function typeMapsCheck()
-	{
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
+            default:
+                $this->typeMapsCheck(); /* intial case*/
+                break;
 
-		echo "<h2> Enter/Update Maps Information: Validation</h2>"; 
-		
-			
-		$this->type_Maps();
+        }
+    }
 
-		$footer_div = 1;
+    private function typeMapsCheck()
+    {
+        global $config;
+        include($config['root_dir'] . 'theme/admin_header.php');
+
+        echo "<h2> Enter/Update Maps Information: Validation</h2>";
+
+        $this->type_Maps();
+
+        $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
-	}
+    }
 	
-	
-	private function type_Maps()
+    private function type_Maps()
 	{
 	?>
 	<script type="text/javascript">
@@ -121,8 +116,10 @@ private function typeMapsCheck()
 
 
 $row = loadUser($_SESSION['username']);
-	
-	ini_set("memory_limit","24M");
+
+        // Need more memory for 35K markers in a map.	    
+	//ini_set("memory_limit","24M");
+	ini_set("memory_limit","96M");
 	
 	$username=$row['name'];
 	
@@ -219,9 +216,9 @@ $row = loadUser($_SESSION['username']);
         while (($data = fgetcsv($handledata, 0, "\t")) !== FALSE) {
                 $num = count($data);		// number of fields
                 $row++;				// number of lines
-               /*if ($row>100) {
-                    exit();
-                }*/
+                if ($row>50) {
+                    break;
+                }
                 //print_r($data);
                 $marker[] .= trim($data[$m_idx]);
                 $chrom[] .= trim($data[$c_idx]);
@@ -250,7 +247,7 @@ $row = loadUser($_SESSION['username']);
 	}
 	fclose($handledata);
 	?>
-	<h3>We are reading following data from the uploaded Input Data File</h3>
+	<h3>Here is a sample of the first 50 lines of data from the uploaded Input Data File</h3>
 				
 				
 			<table>
@@ -305,12 +302,12 @@ $row = loadUser($_SESSION['username']);
 				
 				if (empty($mapset_uid))
 				{
-					echo "<br/> <br/>" ."Mapeset  name&nbsp;&nbsp;" ."<b>" . $mapset_name . "</b>" . "&nbsp;&nbsp; doesnot exist. Do you want to create a new one?"."<br/><br/>";
+					echo "<br/> <br/>" ."Mapset  name&nbsp;&nbsp;" ."<b>" . $mapset_name . "</b>" . "&nbsp;&nbsp; does not exist and will be created."."<br/><br/>";
 				}
 				
 				else
 				{
-					echo "<br/> <br/>" ."Mapeset  name &nbsp;&nbsp;" ."<b>" . $mapset_name . "</b>" . " &nbsp;&nbsp;already exists. Do you want to update?"."<br/><br/>";
+					echo "<br/> <br/>" ."Mapset &nbsp;&nbsp;" ."<b>" . $mapset_name . "</b>" . " &nbsp;&nbsp;already exists and will be updated."."<br/><br/>";
 				}
 				?>
 				
@@ -517,60 +514,79 @@ $row = loadUser($_SESSION['username']);
 
 
 	for ($cnt=0;$cnt<count($marker);$cnt++){  
-	// check if marker is in THT by looking at synonyms
-		//if ($cnt>10) {exit();}
-		$ins_flag = 0;
-                $sql_m = "SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE  ms.value ='$marker[$cnt]'";
-	//echo $sql_m,"\n";
-                $res = mysql_query($sql_m) or die(mysql_error());
-                $rdata = mysql_fetch_assoc($res);
-                $marker_uid=$rdata['marker_uid'];
-		//echo $marker[$cnt]." ".$marker_uid."\n";
-    		/* If marker not in THT, then add the marker as type 
-			DArT, QTL, historical SNP */
-		if (empty($marker_uid)) {
-			// check if DArT or historical marker in OWB map
-			if ((strpos($marker[$cnt],"bPb")!==false)||(strpos($marker[$cnt],"[")!==false)) {
-				$sql_get_markertype = "SELECT marker_type_uid FROM marker_types
-					WHERE marker_type_name LIKE '%DA%'";
-				$sql_get_syntype = "SELECT marker_synonym_type_uid FROM marker_synonym_types
-					WHERE name LIKE '%DA%'";
-			}  elseif (strpos($marker[$cnt],"QTL")!==false){
-				$sql_get_markertype = "SELECT marker_type_uid FROM marker_types
-					WHERE marker_type_name LIKE '%QTL%'";
-				$sql_get_syntype = "SELECT marker_synonym_type_uid FROM marker_synonym_types
-					WHERE name LIKE '%QTL%'";
-			}else{
-				$sql_get_markertype = "SELECT marker_type_uid FROM marker_types
-					WHERE marker_type_name LIKE '%Histor%'";
-				$sql_get_syntype = "SELECT marker_synonym_type_uid FROM marker_synonym_types
-					WHERE name LIKE '%Histor%'";
-			}
-		//echo $sql_get_markertype,"\n";	
-			$res = mysql_query($sql_get_markertype) or die(mysql_error());
-			$rdata = mysql_fetch_assoc($res);
-			$marker_type_uid=$rdata['marker_type_uid'];
-			// Insert marker into marker and marker synonym table
-			$sql_addmarker = "INSERT INTO markers (marker_name, marker_type_uid, updated_on, created_on)
-				VALUES ('$marker[$cnt]',$marker_type_uid,NOW(),NOW())";
-		//echo $sql_addmarker,"\n";
-			$res = mysql_query($sql_addmarker) or die(mysql_error());
-			//get marker_uid
-			$sql_m = "SELECT ms.marker_uid FROM  markers AS ms WHERE  ms.marker_name ='$marker[$cnt]'";
-			$res = mysql_query($sql_m) or die(mysql_error());
-			$rdata = mysql_fetch_assoc($res);
-			$marker_uid=$rdata['marker_uid'];
-			//echo $marker[$cnt]." ".$marker_uid."\n";
-			// add into synonyms table
-		//echo $sql_get_syntype,"\n";
-			$res = mysql_query($sql_get_syntype) or die(mysql_error());
-			$rdata = mysql_fetch_assoc($res);
-			$syn_type_uid=$rdata['marker_synonym_type_uid'];
-			$sql_addmarker = "INSERT INTO marker_synonyms (value, marker_uid, marker_synonym_type_uid, updated_on)
-				VALUES ('$marker[$cnt]',$marker_uid, $syn_type_uid,NOW())";
-			$res = mysql_query($sql_addmarker) or die(mysql_error());
-			$ins_flag = 1;
-		}
+
+	/* // DEM 25jun12: DON'T look only in marker_synonyms, and DON'T add any new markers. */
+	/* // check if marker is in THT by looking at synonyms */
+	/* 	//if ($cnt>10) {exit();} */
+	/* 	$ins_flag = 0; */
+        /*         $sql_m = "SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE  ms.value ='$marker[$cnt]'"; */
+	/* //echo $sql_m,"\n"; */
+        /*         $res = mysql_query($sql_m) or die(mysql_error()); */
+        /*         $rdata = mysql_fetch_assoc($res); */
+        /*         $marker_uid=$rdata['marker_uid']; */
+	/* 	//echo $marker[$cnt]." ".$marker_uid."\n"; */
+    	/* 	/\* If marker not in THT, then add the marker as type  */
+	/* 		DArT, QTL, historical SNP *\/ */
+	/* 	if (empty($marker_uid)) { */
+	/* 		// check if DArT or historical marker in OWB map */
+	/* 		if ((strpos($marker[$cnt],"bPb")!==false)||(strpos($marker[$cnt],"[")!==false)) { */
+	/* 			$sql_get_markertype = "SELECT marker_type_uid FROM marker_types */
+	/* 				WHERE marker_type_name LIKE '%DA%'"; */
+	/* 			$sql_get_syntype = "SELECT marker_synonym_type_uid FROM marker_synonym_types */
+	/* 				WHERE name LIKE '%DA%'"; */
+	/* 		}  elseif (strpos($marker[$cnt],"QTL")!==false){ */
+	/* 			$sql_get_markertype = "SELECT marker_type_uid FROM marker_types */
+	/* 				WHERE marker_type_name LIKE '%QTL%'"; */
+	/* 			$sql_get_syntype = "SELECT marker_synonym_type_uid FROM marker_synonym_types */
+	/* 				WHERE name LIKE '%QTL%'"; */
+	/* 		}else{ */
+	/* 			$sql_get_markertype = "SELECT marker_type_uid FROM marker_types */
+	/* 				WHERE marker_type_name LIKE '%Histor%'"; */
+	/* 			$sql_get_syntype = "SELECT marker_synonym_type_uid FROM marker_synonym_types */
+	/* 				WHERE name LIKE '%Histor%'"; */
+	/* 		} */
+	/* 	//echo $sql_get_markertype,"\n";	 */
+	/* 		$res = mysql_query($sql_get_markertype) or die(mysql_error()); */
+	/* 		$rdata = mysql_fetch_assoc($res); */
+	/* 		$marker_type_uid=$rdata['marker_type_uid']; */
+	/* 		// Insert marker into marker and marker synonym table */
+	/* 		$sql_addmarker = "INSERT INTO markers (marker_name, marker_type_uid, updated_on, created_on) */
+	/* 			VALUES ('$marker[$cnt]',$marker_type_uid,NOW(),NOW())"; */
+	/* 	//echo $sql_addmarker,"\n"; */
+	/* 		$res = mysql_query($sql_addmarker) or die(mysql_error()); */
+	/* 		//get marker_uid */
+	/* 		$sql_m = "SELECT ms.marker_uid FROM  markers AS ms WHERE  ms.marker_name ='$marker[$cnt]'"; */
+	/* 		$res = mysql_query($sql_m) or die(mysql_error()); */
+	/* 		$rdata = mysql_fetch_assoc($res); */
+	/* 		$marker_uid=$rdata['marker_uid']; */
+	/* 		//echo $marker[$cnt]." ".$marker_uid."\n"; */
+	/* 		// add into synonyms table */
+	/* 	//echo $sql_get_syntype,"\n"; */
+	/* 		$res = mysql_query($sql_get_syntype) or die(mysql_error()); */
+	/* 		$rdata = mysql_fetch_assoc($res); */
+	/* 		$syn_type_uid=$rdata['marker_synonym_type_uid']; */
+	/* 		$sql_addmarker = "INSERT INTO marker_synonyms (value, marker_uid, marker_synonym_type_uid, updated_on) */
+	/* 			VALUES ('$marker[$cnt]',$marker_uid, $syn_type_uid,NOW())"; */
+	/* 		$res = mysql_query($sql_addmarker) or die(mysql_error()); */
+	/* 		$ins_flag = 1; */
+
+	  /* Check if marker is a synonym. If not found, then check name. */
+	  $sql ="SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE ms.value='$marker[$cnt]'";
+	  $res = mysql_query($sql) or die("Database Error: Marker synonym lookup - ". mysql_error()."<br>$sql");
+	  $rdata = mysql_fetch_assoc($res);
+	  $marker_uid=$rdata['marker_uid'];
+	  if (empty($marker_uid)) {
+	    $sql = "SELECT m.marker_uid FROM  markers AS m WHERE m.marker_name ='$marker[$cnt]'";
+	    $res = mysql_query($sql) or die("Database Error: Marker lookup - ". mysql_error()."<br>$sql");
+	    if (mysql_num_rows($res) < 1) {
+	      echo "<b>Error</b>: marker <b>\"$marker[$cnt]\"</b> not found.<p>";
+	      exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");	  
+	    } 
+	    else {
+	      $rdata = mysql_fetch_assoc($res);
+	      $marker_uid=$rdata['marker_uid'];
+	    }
+	  }
 		
 		// Find map_uid for marker using the chromosome name
 		
@@ -645,7 +661,11 @@ $row = loadUser($_SESSION['username']);
 		
 		 //if not in a current map then insert a new record
                     //echo "in insert";
-                    
+
+		  if (empty($mmap_uid)) {
+		    echo "No Map Set Prefix entered.<br>";
+		    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");	  
+		  }
                   
                     $sql_beg = "INSERT INTO markers_in_maps (marker_uid,map_uid, start_position, end_position,chromosome,";
                     $sql_mid = "updated_on,created_on) VALUES ($marker_uid,$mmap_uid,$start_pos[$cnt],$end_pos[$cnt],'$chrom[$cnt]',";
@@ -680,7 +700,7 @@ $row = loadUser($_SESSION['username']);
                         $sql = $sql_beg.$sql_end;
                     }
 		    //echo $sql,"\n";
-             mysql_query($sql) or die(mysql_error() . "\n\n$sql");    
+             mysql_query($sql) or die(mysql_error() . "<br>Command was:<br><pre>$sql</pre>");    
              
 	}
 	
