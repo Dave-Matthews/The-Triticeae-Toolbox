@@ -106,7 +106,8 @@ class MapsCheck
 
 $row = loadUser($_SESSION['username']);
 
-	$username=$row['name'];
+	$username = $row['name'];
+        $username = preg_replace('/\s+/', '', $username);
 	
 	$tmp_dir="uploads/tmpdir_".$username."_".rand();
 	umask(0);
@@ -314,13 +315,10 @@ $row = loadUser($_SESSION['username']);
 
 	} /* end of type_GenoType_Display function*/
 	
-	private function type_Database()
-	{
-	
-	global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
-
-	//connect_dev();  /* Connect with write-access. */
+    private function type_Database()
+    {
+        global $config;
+	include $config['root_dir'] . 'theme/admin_header.php';
 	
 	$mapfilename = $_GET['file_name'];
 	$mapset_name = $_GET['mapset_name'];
@@ -329,15 +327,13 @@ $row = loadUser($_SESSION['username']);
 	$species = $_GET['species'];
 	$map_type = $_GET['map_type'];
 	$map_unit = $_GET['map_unit'];
-//	echo "mapname and file name".$mapfilename;
 	
-	
-	
-	$handledata = fopen($mapfilename, "r");
-  $data = fgetcsv($handledata, 0, "\t");
-	//print_r($data);
-	
-	
+        $handledata = fopen($mapfilename, "r");
+        if ($handledata) {
+            $data = fgetcsv($handledata, 0, "\t");
+        } else {
+            die("Can't open file $mapfilename\n");
+        }
 
         $header = $data;	// read first line
         $m_idx = 1.0 * array_search("Marker", $header);	// numeric typecasting
