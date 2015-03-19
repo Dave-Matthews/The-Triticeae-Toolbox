@@ -8,7 +8,7 @@ include $config['root_dir'] . 'curator_data/lineuid.php';
 
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */
@@ -62,25 +62,9 @@ class MapsCheck
     }
 	
     private function type_Maps()
-	{
+    {
 	?>
-	<script type="text/javascript">
-	
-	function update_database(filename, mapsetname, mapsetprefix, comments, species, map_type, map_unit)
-	{
-			
-			
-			var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&file_name=' + filename + '&mapset_name=' + mapsetname + '&mapset_prefix=' + mapsetprefix + '&comments=' + comments + '&species=' + species + '&map_type=' + map_type + '&map_unit=' + map_unit;
-	
-			// Opens the url in the same window
-	   	window.open(url, "_self");
-	}
-	
-	
-	
-	
-	</script>
-	
+        <script type="text/javascript" src="curator_data/input_maps.js"></script>
 	<style type="text/css">
 			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
 			table {background: none; border-collapse: collapse}
@@ -103,8 +87,8 @@ class MapsCheck
 <?php
 
 
-
-$row = loadUser($_SESSION['username']);
+        global $mysqli;
+        $row = loadUser($_SESSION['username']);
 
 	$username = $row['name'];
         $username = preg_replace('/\s+/', '', $username);
@@ -184,8 +168,8 @@ $row = loadUser($_SESSION['username']);
     			
     		// get map ID
         $sql = "SELECT mapset_uid FROM mapset WHERE mapset_name = '$mapset_name'";
-        $res = mysql_query($sql) or die(mysql_error());
-        $rdata = mysql_fetch_assoc($res);
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $rdata = mysqli_fetch_assoc($res);
         $mapset_uid=$rdata['mapset_uid'];
 				
 			//	echo "checking for the map id". $mapset_uid. "<br/>";
@@ -317,6 +301,7 @@ $row = loadUser($_SESSION['username']);
 	
     private function type_Database()
     {
+        global $mysqli;
         global $config;
 	include $config['root_dir'] . 'theme/admin_header.php';
 	
@@ -347,8 +332,8 @@ $row = loadUser($_SESSION['username']);
         
         // get map ID
 	$sql = "SELECT mapset_uid FROM mapset WHERE mapset_name = '$mapset_name'";
-	$res = mysql_query($sql) or die(mysql_error());
-	$rdata = mysql_fetch_assoc($res);
+	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	$rdata = mysqli_fetch_assoc($res);
 	$mapset_uid=$rdata['mapset_uid'];
 //	echo $sql.'UID '.$mapset_uid."\n";
 	
@@ -359,22 +344,22 @@ $row = loadUser($_SESSION['username']);
 		$new_map = "TRUE";
 		$sql = "INSERT INTO mapset (mapset_name, species, map_type, map_unit, comments, updated_on, created_on)
 			VALUE ('$mapset_name','$species','$map_type','$map_unit','$comments', NOW(),NOW())";
-		$res = mysql_query($sql) or die(mysql_error());
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		$sql = "SELECT mapset_uid FROM mapset WHERE mapset_name = '$mapset_name'";
 
-		$res = mysql_query($sql) or die(mysql_error());
-		$rdata = mysql_fetch_assoc($res);
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		$rdata = mysqli_fetch_assoc($res);
 		$mapset_uid=$rdata['mapset_uid'];
 	 } else {
 		$new_map ="FALSE";
 		$sql = "UPDATE mapset SET updated_on=NOW()";// update date
-		$res = mysql_query($sql) or die(mysql_error());
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
 		// get maps in the mapset
 		$sql = "SELECT map_uid, map_name FROM map WHERE mapset_uid = $mapset_uid";
-		$res = mysql_query($sql) or die(mysql_error());
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		$cnt = 0;
-		while ($row = mysql_fetch_array($res)){
+		while ($row = mysqli_fetch_array($res)){
 			$map_uid[] = $row['map_uid'];
 			$map_name[] =$row['map_name'];			
 		//	echo $map_uid[$cnt]."".$map_name[$cnt]."\n";
@@ -453,9 +438,9 @@ $row = loadUser($_SESSION['username']);
 			$mapnametmp = $mapset_prefix."_".$cstr;
 			$sql = "INSERT INTO map (mapset_uid, map_name, map_start, map_end, updated_on, created_on)
 				VALUES ($mapset_uid, '$mapnametmp', $minval,$maxval, NOW(),NOW())";
-			$res = mysql_query($sql);
+			$res = mysqli_query($mysqli, $sql);
 			if (!$res) { //catch it and go on if duplicate key message comes up for the first time through a new map
-				$message  = 'Invalid query: ' . mysql_error() . "i have an error"."\n";
+				$message  = 'Invalid query: ' . mysqli_error($myslqi) . "i have an error"."\n";
 				$message .= 'Whole query: ' . $query. "\n";
 				if (strpos($query,"uplicate")) {echo $message;
 				} else {die($message);}
@@ -465,9 +450,9 @@ $row = loadUser($_SESSION['username']);
 		/* map uid's exist only for the existing mapsets so for new ones we need to read it from the map table after we create */
 		
 		$sql = "SELECT map_uid, map_name FROM map WHERE mapset_uid = $mapset_uid";
-		$res = mysql_query($sql) or die(mysql_error());
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		//$cnt = 0;
-		while ($row = mysql_fetch_array($res)){
+		while ($row = mysqli_fetch_array($res)){
 			$map_uid[] = $row['map_uid'];
 			$map_name_new[] =$row['map_name'];			
 		//	echo $map_uid[$cnt]."".$map_name[$cnt]."\n";
@@ -491,120 +476,42 @@ $row = loadUser($_SESSION['username']);
 
         /* Begin main insertion loop. Data is already read out of file.*/
         $sql_fk="SET FOREIGN_KEY_CHECKS = 0";
-	$result_fk=mysql_query($sql_fk) or die(mysql_error());
+	$result_fk=mysqli_query($mysqli, $sql_fk) or die(mysqli_error($mysqli));
 
 
 	for ($cnt=0;$cnt<count($marker);$cnt++){  
 
-	/* // DEM 25jun12: DON'T look only in marker_synonyms, and DON'T add any new markers. */
-	/* // check if marker is in THT by looking at synonyms */
-	/* 	//if ($cnt>10) {exit();} */
-	/* 	$ins_flag = 0; */
-        /*         $sql_m = "SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE  ms.value ='$marker[$cnt]'"; */
-	/* //echo $sql_m,"\n"; */
-        /*         $res = mysql_query($sql_m) or die(mysql_error()); */
-        /*         $rdata = mysql_fetch_assoc($res); */
-        /*         $marker_uid=$rdata['marker_uid']; */
-	/* 	//echo $marker[$cnt]." ".$marker_uid."\n"; */
-    	/* 	/\* If marker not in THT, then add the marker as type  */
-	/* 		DArT, QTL, historical SNP *\/ */
-	/* 	if (empty($marker_uid)) { */
-	/* 		// check if DArT or historical marker in OWB map */
-	/* 		if ((strpos($marker[$cnt],"bPb")!==false)||(strpos($marker[$cnt],"[")!==false)) { */
-	/* 			$sql_get_markertype = "SELECT marker_type_uid FROM marker_types */
-	/* 				WHERE marker_type_name LIKE '%DA%'"; */
-	/* 			$sql_get_syntype = "SELECT marker_synonym_type_uid FROM marker_synonym_types */
-	/* 				WHERE name LIKE '%DA%'"; */
-	/* 		}  elseif (strpos($marker[$cnt],"QTL")!==false){ */
-	/* 			$sql_get_markertype = "SELECT marker_type_uid FROM marker_types */
-	/* 				WHERE marker_type_name LIKE '%QTL%'"; */
-	/* 			$sql_get_syntype = "SELECT marker_synonym_type_uid FROM marker_synonym_types */
-	/* 				WHERE name LIKE '%QTL%'"; */
-	/* 		}else{ */
-	/* 			$sql_get_markertype = "SELECT marker_type_uid FROM marker_types */
-	/* 				WHERE marker_type_name LIKE '%Histor%'"; */
-	/* 			$sql_get_syntype = "SELECT marker_synonym_type_uid FROM marker_synonym_types */
-	/* 				WHERE name LIKE '%Histor%'"; */
-	/* 		} */
-	/* 	//echo $sql_get_markertype,"\n";	 */
-	/* 		$res = mysql_query($sql_get_markertype) or die(mysql_error()); */
-	/* 		$rdata = mysql_fetch_assoc($res); */
-	/* 		$marker_type_uid=$rdata['marker_type_uid']; */
-	/* 		// Insert marker into marker and marker synonym table */
-	/* 		$sql_addmarker = "INSERT INTO markers (marker_name, marker_type_uid, updated_on, created_on) */
-	/* 			VALUES ('$marker[$cnt]',$marker_type_uid,NOW(),NOW())"; */
-	/* 	//echo $sql_addmarker,"\n"; */
-	/* 		$res = mysql_query($sql_addmarker) or die(mysql_error()); */
-	/* 		//get marker_uid */
-	/* 		$sql_m = "SELECT ms.marker_uid FROM  markers AS ms WHERE  ms.marker_name ='$marker[$cnt]'"; */
-	/* 		$res = mysql_query($sql_m) or die(mysql_error()); */
-	/* 		$rdata = mysql_fetch_assoc($res); */
-	/* 		$marker_uid=$rdata['marker_uid']; */
-	/* 		//echo $marker[$cnt]." ".$marker_uid."\n"; */
-	/* 		// add into synonyms table */
-	/* 	//echo $sql_get_syntype,"\n"; */
-	/* 		$res = mysql_query($sql_get_syntype) or die(mysql_error()); */
-	/* 		$rdata = mysql_fetch_assoc($res); */
-	/* 		$syn_type_uid=$rdata['marker_synonym_type_uid']; */
-	/* 		$sql_addmarker = "INSERT INTO marker_synonyms (value, marker_uid, marker_synonym_type_uid, updated_on) */
-	/* 			VALUES ('$marker[$cnt]',$marker_uid, $syn_type_uid,NOW())"; */
-	/* 		$res = mysql_query($sql_addmarker) or die(mysql_error()); */
-	/* 		$ins_flag = 1; */
-
 	  /* Check if marker is a synonym. If not found, then check name. */
 	  $sql ="SELECT ms.marker_uid FROM  marker_synonyms AS ms WHERE ms.value='$marker[$cnt]'";
-	  $res = mysql_query($sql) or die("Database Error: Marker synonym lookup - ". mysql_error()."<br>$sql");
-	  $rdata = mysql_fetch_assoc($res);
+	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker synonym lookup - ". mysqli_error($mysqli)."<br>$sql");
+	  $rdata = mysqli_fetch_assoc($res);
 	  $marker_uid=$rdata['marker_uid'];
 	  if (empty($marker_uid)) {
 	    $sql = "SELECT m.marker_uid FROM  markers AS m WHERE m.marker_name ='$marker[$cnt]'";
-	    $res = mysql_query($sql) or die("Database Error: Marker lookup - ". mysql_error()."<br>$sql");
-	    if (mysql_num_rows($res) < 1) {
+	    $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker lookup - ". mysqli_error($mysqli)."<br>$sql");
+	    if (mysqli_num_rows($res) < 1) {
 	      echo "<b>Error</b>: marker <b>\"$marker[$cnt]\"</b> not found.<p>";
 	      exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");	  
 	    } 
 	    else {
-	      $rdata = mysql_fetch_assoc($res);
+	      $rdata = mysqli_fetch_assoc($res);
 	      $marker_uid=$rdata['marker_uid'];
 	    }
 	  }
 		
 		// Find map_uid for marker using the chromosome name
-		
-						//	echo " checking the chrom and map name values". $chrom[$cnt]."<br/>";
-							//print_r($map_name); /* array of 20 elements */
-				//	print_r(find($chrom[$cnt],$map_name));
-					
-					
-									
-					// echo " map idx". $chrom[$cnt]. ",,,,,,".$map_name ."<br/>";
-				//	print_r($map_name_new);
-				//	echo"<br/>". "count". ;
-					
-				//	echo "chrom". $chrom[$cnt] . "<br/>";
 															 
-							if ($new_map == 'TRUE')
-							{								 
-							 $map_idx = implode(find($chrom[$cnt],$map_name_new));
-							 }
+		if ($new_map == 'TRUE')
+		{								 
+		    $map_idx = implode(find($chrom[$cnt],$map_name_new));
+		}
+
+		if ($new_map == 'FALSE')
+		{
+		    $map_idx = implode(find($chrom[$cnt],$map_name));
+		}
 							 
-							 if ($new_map == 'FALSE')
-							 {
-							 $map_idx = implode(find($chrom[$cnt],$map_name));
-							 }
-							 
-					//		 print_r($map_idx);
-						//	 echo"<br/>";
-							// echo " map idx". $map_idx ."<br/>";
-              //  echo "i'm in map idx"." \n".$map_idx." ".$chrom."<br/>" ; //." marker:".$marker[$cnt].$marker_uid." \n";
                 $mmap_uid = $map_uid[$map_idx];
-                
-         //      echo "map uid". $mmap_uid;
-           //    echo"<br/>";
-                
-              // echo " map uid". $mmap_uid. "<br/>";
-                
-                //echo "map name ".$map_name[$map_idx]." map_uid ".$map_uid[$map_idx]." ".$mmap_uid."\n";
                 
 		// store in markers_in_maps
                 // If this mapset, marker combination exists already, then update only
@@ -623,20 +530,15 @@ $row = loadUser($_SESSION['username']);
 			$map_string = "";
 		}
 		
-	//	echo "map string" . $map_string. "<br/>";
-		
 		$sql = "SELECT mim.markers_in_maps_uid as mimu, count(mim.markers_in_maps_uid) as cntm, mim.map_uid,
 			mim.marker_uid
 			FROM markers_in_maps as mim
 			WHERE mim.marker_uid=$marker_uid AND mim.map_uid IN ($map_string)
 			GROUP BY (markers_in_maps_uid)";
 			
-                $res = mysql_query($sql) or die(mysql_error());
-                $rdata = mysql_fetch_assoc($res);
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $rdata = mysqli_fetch_assoc($res);
                 $mim_uid=$rdata['mimu'];
-              //  echo "mim_uid ".$mim_uid." ".$mmap_uid."\n";
-                
-      
                 
 		if (empty($mim_uid)) {
 		
@@ -659,16 +561,8 @@ $row = loadUser($_SESSION['username']);
 			$sql_beg .= "bin_name,";
 			$sql_mid .= "'$bin[$cnt]',";
 		  	}
-                  
-									  $sql = $sql_beg.$sql_mid.$sql_end;
-									  
-									  
-									 // echo "sql statement".$sql."<br/>";
-									  
-                } 
-								
-								else
-                    {
+			$sql = $sql_beg.$sql_mid.$sql_end;
+                } else { 
                         $sql_beg = "UPDATE markers_in_maps SET map_uid =$mmap_uid,
                         start_position=$start_pos[$cnt], end_position=$end_pos[$cnt],chromosome='$chrom[$cnt]',";
                         $sql_end = "updated_on=NOW() WHERE markers_in_maps_uid=$mim_uid";
@@ -680,21 +574,13 @@ $row = loadUser($_SESSION['username']);
                         }
                         $sql = $sql_beg.$sql_end;
                     }
-		    //echo $sql,"\n";
-             mysql_query($sql) or die(mysql_error() . "<br>Command was:<br><pre>$sql</pre>");    
-             
+             mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>Command was:<br><pre>$sql</pre>");    
 	}
-	
-	
-	
 	
 	/* end inserting main data */
 
-
-
 $sql_fk="SET FOREIGN_KEY_CHECKS = 1";
-	$result_fk=mysql_query($sql_fk) or die(mysql_error());
-
+	$result_fk=mysqli_query($mysqli, $sql_fk) or die(mysqli_error($mysqli));
 
 
  echo " <b>The Data is inserted/updated successfully </b>";
@@ -702,14 +588,9 @@ $sql_fk="SET FOREIGN_KEY_CHECKS = 1";
 	?>
 	<a href="./curator_data/input_map_upload.php"> Go Back To Main Page </a>
 	<?php
-
-	
 	
 		$footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
-	
-	
-	
 	
 	} /* end of function type_database */
 
@@ -723,8 +604,6 @@ $sql_fk="SET FOREIGN_KEY_CHECKS = 1";
      */
     function find ($string, $array = array ())
     {   
-		
-				   
         foreach ($array as $key => $value) {
             unset ($array[$key]);
             if (strpos($value, $string) !== false) {
@@ -734,12 +613,5 @@ $sql_fk="SET FOREIGN_KEY_CHECKS = 1";
         return $array;
     } 
 
-
-
-
 } /* end of class */
-
-
-
-?>
 
