@@ -5,8 +5,9 @@
 require 'config.php';
 include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 include $config['root_dir'] . 'curator_data/lineuid.php';
+set_time_limit(3000);
 
-require_once("../lib/Excel/reader.php"); // Microsoft Excel library
+//require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
 $mysqli = connecti();
 loginTest();
@@ -467,11 +468,7 @@ class MapsCheck
 
 /* end of handling new mapset */
 
-
-
 /* begin inserting main data */
-
-
 
 
         /* Begin main insertion loop. Data is already read out of file.*/
