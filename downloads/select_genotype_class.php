@@ -716,14 +716,17 @@ private function type2_experiments()
         $uid=$row['experiment_uid'];
         $val=$row['trial_code'];
         $name=$row['data_program_name'];
-        if ($name != $prev_name) {
-          print "<optgroup label=\"$name\"</optgroup>\n";
+        if ($prev_name == "") {
+          print "<optgroup label=\"$name\">\n";
+          $prev_name = $name;
+        } elseif ($name != $prev_name) {
+          print "</optgroup>\n<optgroup label=\"$name\">\n";
           $prev_name = $name;
         }
         print "<option value=$uid>$val</option>\n";
     }
     ?>
-    </select>
+    </optgroup></select></table>
     <?php
 }	
 
