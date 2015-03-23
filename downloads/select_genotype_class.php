@@ -104,7 +104,7 @@ private function refresh_title()
           $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
           $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
           if ($row = mysql_fetch_array($res)) {
-              $lines = explode(",", $row[0]);
+              $lines = json_decode($row[0], true);
               //*check for duplicates
               foreach ($lines as $line_record) {
                   if (isset($unique_list[$line_record])) { 
@@ -127,7 +127,7 @@ private function refresh_title()
           $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
           $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
           if ($row = mysql_fetch_array($res)) {
-              $lines_fnd = explode(",", $row[0]);
+              $lines_fnd = json_decode($row[0], true);
           } else {
               echo "error - no selection found";
           }
@@ -142,7 +142,7 @@ private function refresh_title()
           $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
           $res = mysql_query($sql) or die(mysql_error() . $sql);
           if ($row = mysql_fetch_array($res)) {
-              $temp = explode(",", $row[0]);
+              $tmp = json_decode($row[0], true);
           }
           $lines = array_intersect($lines, $temp);
           $_SESSION['selected_lines'] = $lines;
@@ -486,7 +486,7 @@ private function step3_lines() {
   $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
   if ($row = mysql_fetch_array($res)) {
-      $line_index = explode(",", $row[0]);
+      $line_index = json_decode($row[0], true);
       $count1 = count($line_index);
   }
   
@@ -509,8 +509,8 @@ private function step3_lines() {
             $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
             $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
             if ($row = mysql_fetch_array($res)) {
-              $line_index = explode(",", $row[0]);
-              $line_name_index = explode(",", $row[1]);
+              $line_idx = json_decode($row[0], true);
+              $line_name_index = json_decode($row[1], true);
               $count = count($line_index);
             } else {
               $line_index = array();
@@ -707,12 +707,19 @@ private function type2_experiments()
     </select>
     <table><tr><td><select name='expt[]' style="height: 12em;" multiple onchange="javascript: update_experiments(this.options)">
     <?php
-    $result=mysql_query("select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
-        where experiments.experiment_uid = genotype_experiment_info.experiment_uid
-        and genotype_experiment_info.platform_uid IN ($platform)") or die(mysql_error);
+    $prev_name = "";
+    $result=mysql_query("select experiments.experiment_uid, trial_code, data_program_name from experiments, genotype_experiment_info, CAPdata_programs
+        where experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
+        and experiments.experiment_uid = genotype_experiment_info.experiment_uid
+        and genotype_experiment_info.platform_uid IN ($platform) order by data_program_name") or die(mysql_error);
     while ($row=mysql_fetch_assoc($result)) {
         $uid=$row['experiment_uid'];
         $val=$row['trial_code'];
+        $name=$row['data_program_name'];
+        if ($name != $prev_name) {
+          print "<optgroup label=\"$name\"</optgroup>\n";
+          $prev_name = $name;
+        }
         print "<option value=$uid>$val</option>\n";
     }
     ?>
@@ -744,23 +751,26 @@ private function type1_markers() {
       $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
       if ($row = mysql_fetch_array($res)) {
-          $lines = explode(",", $row[0]);
+          $lines = json_decode($row[0], true);
+          $line_names = json_decode($row[1], true);
           //*check for duplicates
-          foreach ($lines as $line_record) {
+          foreach ($lines as $key=>$line_record) {
               if (isset($unique_list[$line_record])) {
                   if ($skipped == "") {
-                      $skipped = "$line_record";
+                      $skipped = "$line_names[$key]";
                   } else {
-                      $skipped .= ", $line_record";
+                      $skipped .= ", $line_names[$key]";
                   }
+                  //echo "$line_names[$key] duplicate<br>\n";
               } else {
+                  //echo "$key $line_names[$key]<br>\n";
                   $lines_unique[] = $line_record;
-                  $unique_list[$line_record] = 1;
+                  $unique_list[$line_record] =  $line_names[$key];
               }
           }
       }
       if ($skipped != "") {
-          echo "skipped duplicate line_records $skipped\n";
+          echo "skipped duplicate line names<br>$skipped\n";
       }
     }
   } else {
