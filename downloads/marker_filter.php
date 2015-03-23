@@ -411,26 +411,19 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
 
         //get header, tassel requires all fields even if they are empty
     if ($dtype == "qtlminer") {
-        $outputheader = "rs\talleles\tchrom\tpos";
+        $outputheader = "rs\talleles\tchrom\tpos\t";
     } else {
-        $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode";
+        $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode\t";
     }
     $sql = "select line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
     if ($row = mysql_fetch_array($res)) {
-        $name = $row[0];
-        $outputheader .= "\t$name";
-        if (isset($unique[$name])) {
-            echo "duplicate name $name<br>\n";
-        } else {
-            $unique[$name] = 1;
-        }
+        $name = json_decode($row[0], true);
+        $outputheader .= implode("\t", $name);
     } else {
         die("<font color=red>Error - genotype experiment should be selected before download</font>");
     }
     $nelem = count($line_names);
-    $outputheader = preg_replace("/,/", "\t", $outputheader);
-    $outputheader = str_replace(" ", "", $outputheader);
     fwrite($h, "$outputheader\n");
 
     $pos_index = 0;
