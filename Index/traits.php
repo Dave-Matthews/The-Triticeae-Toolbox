@@ -1,35 +1,40 @@
 <?php
 
-/* Index/trait.php, DEM 26jun13 */
-/* Create a user-defined Selection Index, a weighted combination of Trait values
-   in a specified set of Trials. */
-// dem 7jan13: Use mean over trials to calculate index, in case of
-//    missing data in some trials.  Fixed bug in normalization.
-// Todo: - Show correlation of each trait vs. Index.
-//       - Allow download of the result tables.
+/**
+   Index/trait.php, DEM 26jun13
+   Create a user-defined Selection Index, a weighted combination of Trait values
+   in a specified set of Trials.
+   dem 7jan13: Use mean over trials to calculate index, in case of
+      missing data in some trials.  Fixed bug in normalization.
+   Todo: - Show correlation of each trait vs. Index.
+         - Allow download of the result tables.
+ */
 
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
-include($config['root_dir'] . 'theme/admin_header.php');
+require $config['root_dir'] . 'theme/admin_header.php';
 connect();
 $mysqli = connecti();
 $row = loadUser($_SESSION['username']);
 
-// Scale the measured phenotype values according to user's chosen method.
-function scaled($rawvalue, $trait, $trial) {
-  global $scaling, $mean, $SD, $basevalue;
-  if ($scaling == 'actual') {
-    return $rawvalue;
-  }
-  if ($scaling == 'normalized') {
-    // For each trait, subtract the trial mean from $actual and divide by SD.
-    $normalized = ($rawvalue - $mean[$trait][$trial]) / $SD[$trait][$trial];
-    return $normalized;
-  }
-  if ($scaling == 'percent') {
-    $percent = 100 * $rawvalue / $basevalue[$trait][$trial];
-    return $percent;
-  }
+/**
+   Scale the measured phenotype values according to user's chosen method.
+ */
+function scaled($rawvalue, $trait, $trial)
+{
+    global $scaling, $mean, $SD, $basevalue;
+    if ($scaling == 'actual') {
+        return $rawvalue;
+    }
+    if ($scaling == 'normalized') {
+        // For each trait, subtract the trial mean from $actual and divide by SD.
+        $normalized = ($rawvalue - $mean[$trait][$trial]) / $SD[$trait][$trial];
+        return $normalized;
+    }
+    if ($scaling == 'percent') {
+        $percent = 100 * $rawvalue / $basevalue[$trait][$trial];
+        return $percent;
+    }
 }
 
 ?>
@@ -41,25 +46,28 @@ function scaled($rawvalue, $trait, $trial) {
 <h2>Selection Index</h2>
 
 <?php
+
 // Get the Currently Selected Traits.
+if (!isset($_SESSION['selected_traits'])) {
+    finish("Please <a href=".$config[base_url]."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
+}
 $i = 0;
-foreach($_SESSION[selected_traits] as $traitid) {
-  $traitids[$i] = $traitid;
-  $traitnames[$i] = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid=$traitid");
-  $i++;
+foreach ($_SESSION[selected_traits] as $traitid) {
+    $traitids[$i] = $traitid;
+    $traitnames[$i] = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid=$traitid");
+    $i++;
 }
 $traitcount = count($traitids);
 $traitlist = implode(',', $traitids);
 if ($traitcount == 0) {
-  echo "Please <a href=".$config[base_url]."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.";
-  finish();
+    finish("Please <a href=".$config[base_url]."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
 }
 // Currently Selected Trials
 $j = 0;
-foreach($_SESSION[selected_trials] as $trialid) {
-  $trialids[$j] = $trialid;
-  $trialnames[$j] = mysql_grab("select trial_code from experiments where experiment_uid = $trialid");
-  $j++;
+foreach ($_SESSION[selected_trials] as $trialid) {
+    $trialids[$j] = $trialid;
+    $trialnames[$j] = mysql_grab("select trial_code from experiments where experiment_uid = $trialid");
+    $j++;
 }
 $trialcount = count($trialids);
 $triallist = implode(',', $trialids);
@@ -67,9 +75,9 @@ $triallist = implode(',', $trialids);
 // Lines in common among all these trials, as array of (name, uid) pairs.
 $started = 0;
 foreach ($trialids as $tid) {
-  $res = mysql_query("select line_record_uid from tht_base where experiment_uid = $tid") or die (mysql_error());
+  $res = mysqli_query($mysqli, "select line_record_uid from tht_base where experiment_uid = $tid") or die (mysqli_error($mysqli));
   $entries = array();
-  while ($row = mysql_fetch_row($res)) 
+  while ($row = mysqli_fetch_row($res)) 
     $entries[] = $row[0];  
   if ($started > 0) 
     $commonlines = array_intersect($commonlines, $entries);

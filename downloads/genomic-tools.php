@@ -28,7 +28,8 @@ The trial is always included as a fixed effect.<br> Principal components can als
 <li>method (EMMAX Kang et al. 2010) - variance components are estimated by REML only once, without any markers in the model. This method is faster but can underestimate significance.
 <li>method (EMMA with REML Kang et al. 2008) - variance components are estimated by REML for each marker separately.
 <li>The dashed line in the Manhattan plot indicates a False Discovery Rate (FDR) of 0.05. When there are no significant loci the dashed line is omitted.</li>
-<li>Markers that are not mapped are assigned to chromosome 0.
+<li>Markers that are not mapped are assigned to chromosome 0 and a position that increments by 10</li>
+<li>Some maps identify the chromosome but the position is unknown so it is assigned a position of 0</li>
 </ul>
 
 <b>Genomic Prediction</b>
