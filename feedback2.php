@@ -12,14 +12,8 @@ function feedbackForm($name = '', $email = '', $feedback = '')
     global $mysqli;
     if (!$email) {
         $email = $_SESSION['username'];
-        if (!$name) {
-            $sql_email = mysqli_real_escape_string($mysqli, $email);
-            $sql = "select name from users where users_name = SHA1('$sql_email');";
-            $r = mysqli_query($mysqli, $sql);
-            if ($row = mysqli_fetch_assoc($r)) {
-                $name = $row['name'];
-            }
-        }
+        if (!$name) 
+	  $name = $_SESSION['name'];
     }
     $html_name=htmlspecialchars($name, ENT_QUOTES);
     $html_email=htmlspecialchars($email, ENT_QUOTES);
