@@ -13,7 +13,6 @@
  * 10/19/2010   J.Lee use dynamic GBrowse tracks generation
  * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks
 */
-$usegbrowse = true;
 require_once 'config.php';
 include_once $config['root_dir'].'includes/bootstrap.inc';
 connect();
@@ -41,31 +40,32 @@ class Maps
   /**
    * delimiter used for output files
    */
-  private $delimiter = "\t";
+    private $delimiter = "\t";
  
-  public function __construct($function = null)  {	
-    switch($function) {
-    case 'typeMaps':
-      $this->type_Maps(); /* Handle Maps */
-      break;
-    case 'typeMarkers':
-      $this->type_Markers();  /* Handle Markers */
-      break;
-    case 'typeMarkerAnnotation':
-      $this->type_Marker_Annotation();  /* Handle Annotations */
-      break;
-    case 'typeMarkerExcel':
-      $this->type_Marker_Excel();  /* Exporting to excel*/
-      break;
-    case 'typeAnnotationComments':
-      $this->type_Annotation_Comments(); /* displaying annotation comments*/
-      break;
-    default:
-      $this->typeMapSet(); /* intial case*/
-      break;
-    }	
-  }
-	
+    public function __construct($function = null)
+    {
+        switch($function) {
+            case 'typeMaps':
+                $this->type_Maps(); /* Handle Maps */
+                break;
+            case 'typeMarkers':
+                $this->type_Markers();  /* Handle Markers */
+                break;
+            case 'typeMarkerAnnotation':
+                $this->type_Marker_Annotation();  /* Handle Annotations */
+                break;
+            case 'typeMarkerExcel':
+                $this->type_Marker_Excel();  /* Exporting to excel*/
+                break;
+            case 'typeAnnotationComments':
+                $this->type_Annotation_Comments(); /* displaying annotation comments*/
+                break;
+            default:
+                $this->typeMapSet(); /* intial case*/
+                break;
+        }
+    }
+
   // The wrapper action for the typeMapset . Handles outputting the header
   // and footer and calls the first real action of the typeMapset .
   private function typeMapSet()

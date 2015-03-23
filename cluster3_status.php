@@ -131,7 +131,7 @@ for ($i=0; $i<count($coords); $i++) {
   <div style="position: absolute; left: 765px; top: 520px; width: 180px;">
     <b>r</b>: Reset.<br>
     <b>Doubleclick</b>: Re-center rotation.<br>
-    <a href="http://x3dom.org/docs/dev/navigation.html" target="_blank">Other commands...</a>
+    <a href="http://x3dom.org/docs-old/navigation.html" target="_blank">Other commands...</a>
     <br><br><p style="font-size: 8pt">
       <b>Browsers:</b><br>
       <b>Firefox</b> and <b>Chrome</b> work well.<br>

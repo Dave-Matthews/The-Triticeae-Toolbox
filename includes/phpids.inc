@@ -16,21 +16,26 @@
  */
 
 set_include_path(get_include_path() . PATH_SEPARATOR . $config['root_dir'] . 'lib/phpids-0.7/lib/');
+set_include_path(get_include_path() . PATH_SEPARATOR . $config['root_dir'] . 'includes/');
 require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Init.php';
 require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Log/Composite.php';
 require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Log/File.php';
 try {
     //unserialize data so it will not be detected as intrusion
     $getVar = $_GET;
+    $postVar = $_POST;
     if (isset($getVar['exps'])) {
         $getVar['exps'] = explode(",", $getVar['exps']);
     }
     if (isset($getVar['pi'])) {
         $getVar['pi'] = explode(",", $getVar['pi']);
     }
+    if (isset($postVar['linelist'])) {
+        $postVar['linelist'] = explode(",", $postVar['linelist']);
+    }
     $request = array(
     'GET' => $getVar,
-    'POST' => $_POST,
+    'POST' => $postVar,
     'COOKIE' => $_COOKIE
     );
     $init = IDS_Init::init($config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Config/Config.ini.php');

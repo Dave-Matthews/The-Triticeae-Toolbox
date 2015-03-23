@@ -3,8 +3,8 @@
 // 21feb2013 dem: Use line_properties table instead of schema-coded properties.
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'curator_data/lineuid.php';
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 connect();
 loginTest();
@@ -18,48 +18,55 @@ ob_end_flush();
 $TemplateVersion = '1Jul13';
 $cnt = 0;  // Count of errors
 
-function die_nice($message = "") {
-//Actually don't die at all yet, just show the error message.
-  global $cnt;
-  if ($cnt == 0) echo "<h3>Errors</h3>";
-  $cnt++;
-  echo "<b>$cnt:</b> $message<br>";
-  return FALSE;
+function die_nice($message = "")
+{
+    //Actually don't die at all yet, just show the error message.
+    global $cnt;
+    if ($cnt == 0) {
+        echo "<h3>Errors</h3>";
+    }
+    $cnt++;
+    echo "<b>$cnt:</b> $message<br>";
+    return false;
 }
 
 /* Show more informative messages when we get invalid data. */
-function errmsg($sql, $err) {
-  if (preg_match('/^Data truncated/', $err)) {
-    // Undefined value for an enum type
-    $pieces = preg_split("/'/", $err);
-    $column = $pieces[1];
-    $msg = "Unallowed value for field <b>$column</b>. ";
-    // Only works for table line_records.  Could pass table name as parameter.
-    $r = mysql_query("describe line_records $column");
-    $columninfo = mysql_fetch_row($r);
-    $msg .= "Allowed values are: ".$columninfo[1];
-    $msg .= "<br>Command: ".$sql."<br>";
-    die_nice($msg);
-  }
-  elseif (preg_match('/^Duplicate entry/', $err)) 
-    die_nice($err."<br>".$sql);
-  else die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql."<br>");
+function errmsg($sql, $err)
+{
+    if (preg_match('/^Data truncated/', $err)) {
+        // Undefined value for an enum type
+        $pieces = preg_split("/'/", $err);
+        $column = $pieces[1];
+        $msg = "Unallowed value for field <b>$column</b>. ";
+        // Only works for table line_records.  Could pass table name as parameter.
+        $r = mysql_query("describe line_records $column");
+        $columninfo = mysql_fetch_row($r);
+        $msg .= "Allowed values are: ".$columninfo[1];
+        $msg .= "<br>Command: ".$sql."<br>";
+        die_nice($msg);
+    } elseif (preg_match('/^Duplicate entry/', $err)) {
+        die_nice($err."<br>".$sql);
+    } else {
+        die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql."<br>");
+    }
 }
 
 new LineNames_Check($_GET['function']);
 
-class LineNames_Check {
-  // Using the class's constructor to decide which action to perform
-  public function __construct($function = null)  {	
-    switch($function)	{
-    case 'typeDatabase':
-      $this->type_Database(); /* update database */
-      break;
-    default:
-      $this->typeLineNameCheck(); /* intial case*/
-      break;
-    }	
-  }
+class LineNames_Check
+{
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
+            default:
+                $this->typeLineNameCheck(); /* intial case*/
+                break;
+        }
+    }
 
   private function typeLineNameCheck() {
     global $config;
@@ -119,7 +126,7 @@ class LineNames_Check {
       if(move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
 	/* Read Excel worksheet 0 into $linedata[]. */
 	$datafile = $target_path.$uploadfile;
-	$reader = & new Spreadsheet_Excel_Reader();
+	$reader = new Spreadsheet_Excel_Reader();
 	$reader->setOutputEncoding('CP1251');
 	$reader->read($datafile);
 	$linedata = $reader->sheets[0];
@@ -585,7 +592,7 @@ class LineNames_Check {
       $filename = $_GET['file_name'];
       $username = $_GET['user_name'];
 	
-      $reader = & new Spreadsheet_Excel_Reader();
+      $reader = new Spreadsheet_Excel_Reader();
       $reader->setOutputEncoding('CP1251');
       $reader->read($datafile);
       $linedata = $reader->sheets[0];
