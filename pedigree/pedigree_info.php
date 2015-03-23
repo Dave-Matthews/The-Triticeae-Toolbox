@@ -53,8 +53,11 @@ class Pedigree {
 
   private function type_LineInformation() {
     // If we clicked on the button for Lines Found, retrieve that cookie instead.
-    if ($_GET['lf'] == "yes") 
+    if ($_GET['lf'] == "yes") {
       $linelist = $_SESSION['linesfound'];
+      // Flag for the Download Line Data button to use:
+      $lf = "&lf=yes";
+    }
     else 
       $linelist = $_SESSION['selected_lines'];
     // Find which Properties this set of lines has any values for.
@@ -72,7 +75,7 @@ class Pedigree {
 
 <script type="text/javascript">
 function load_excel() {
-      var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel';
+      var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>';
       // Opens the url in the same window
       window.open(url, "_self");
 }
