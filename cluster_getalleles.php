@@ -29,37 +29,39 @@ foreach ($_SESSION['selected_lines'] as $lineuid) {
 }
 
 $starttime = time();
-$selected_lines = $_SESSION['selected_lines'];
 if (isset($_GET['mmaf'])) {
-  $min_maf = $_GET['mmaf'];
+    $min_maf = $_GET['mmaf'];
 } else {
-  $min_maf = 5;
+    $min_maf = 5;
 }
 if (isset($_GET['mmm'])) {
-  $max_missing = $_GET['mmm'];
+    $max_missing = $_GET['mmm'];
 } else {
-  $max_missing = 10;
+    $max_missing = 10;
 }
 if (isset($_GET['mml'])) {
-  $max_miss_line = $_GET['mml'];
+    $max_miss_line = $_GET['mml'];
 } else {
-  $max_miss_line = 10;
+    $max_miss_line = 10;
 }
 ?>
 <script type="text/javascript" src="downloads/download_gs.js"></script>
 <?php
-calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+if (isset ($_SESSION['selected_lines'])) {
+    $selected_lines = $_SESSION['selected_lines'];
+    calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+}
 
-if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
-  // No lines selected so prompt to get some.
-  echo "<a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
-  echo "(Patience required for more than a few hundred lines.)";
+if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0)) {
+    // No lines selected so prompt to get some.
+    echo "<br><a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
+    echo "(Patience required for more than a few hundred lines.)";
 } elseif (!isset ($_SESSION['filtered_lines'])) {
-  echo "Error: filtering routine did not work<br>\n";
-  die();
+    echo "Error: filtering routine did not work<br>\n";
+    die();
 } else {
-  $sel_lines = implode(",", $_SESSION['filtered_lines']);
-  $delimiter =",";
+    $sel_lines = implode(",", $_SESSION['filtered_lines']);
+    $delimiter =",";
   // Adapted from download/downloads.php:
   // 2D array of alleles for all markers x currently selected lines
 

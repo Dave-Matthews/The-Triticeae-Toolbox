@@ -1,43 +1,42 @@
 <?php
 /**
  * Download Gateway New
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/cluster_getallelesp.php
- * 
+ *
  */
 
 require 'config.php';
 //Need write access to update the cache table.
-//include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'includes/bootstrap_curator.inc');
 set_time_limit(3000);
 
 connect();
 $mysqli = connecti();
 
-include($config['root_dir'].'downloads/marker_filter.php');
+include $config['root_dir'].'downloads/marker_filter.php';
 
-  foreach ($_SESSION['selected_lines'] as $lineuid) {
+foreach ($_SESSION['selected_lines'] as $lineuid) {
     $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
     while ($row=mysql_fetch_assoc($result)) {
       $selval=$row['line_record_name'];
     }
-  }
+}
 
 $starttime = time();
-$selected_lines = $_SESSION['selected_lines'];
 $min_maf = $_GET['mmaf'];
 $max_missing = $_GET['mmm'];
 $max_miss_line = $_GET['mml'];
-calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+
+if (isset ($_SESSION['selected_lines'])) {
+    $selected_lines = $_SESSION['selected_lines'];
+    calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+}
 
 if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
   // No lines selected so prompt to get some.
@@ -65,7 +64,7 @@ else {
     $sql = "create table allele_byline_clust (
 	      line_record_uid int(11) NOT NULL,
               line_record_name varchar(50),
-	      alleles TEXT  COMMENT 'Up to 2^16 (65K) characters. Use MEDIUMTEXT for 2^24.',
+	      alleles MEDIUMTEXT  COMMENT 'TEXT up to 2^16 (65K) characters. Use MEDIUMTEXT for 2^24.',
               updated_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	      PRIMARY KEY (line_record_uid)
 	    ) COMMENT 'Cache created from table allele_byline.'";
