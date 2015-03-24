@@ -693,6 +693,7 @@ class Downloads
             $countLines = count($lines);
             $saved_session = "$countLines lines";
         } else {
+            $countLines = 0;
             echo "<font color=\"red\">Choose one or more lines before using a saved selection. </font>";
             echo "<a href=";
             echo $config['base_url'];
@@ -712,6 +713,19 @@ class Downloads
             }
         }
         if ($typeG == "true") {
+            if (isset($_SESSION['clicked_buttons'])) {
+                $markers = $_SESSION['clicked_buttons'];
+                if (count($markers) > 1000) {
+                    echo "<font color=\"red\">Downloading a larger number of arbitrary markers is a slow process. Select a genotype experiment for quicker response. </font>";
+                    echo "<a href=";
+                    echo $config['base_url'];
+                    echo "downloads/select_genotype.php>Select genotype experiment</a><br>";
+                }
+            } else {
+                if ($countLines > 100) {
+                    echo "<font color=\"red\">Warning: It is a slow process to calculate the markers measured for selected lines. Select markers or genotype experiment for quicker response.</font><br>";
+                }
+            }
             if (isset($_SESSION['selected_map'])) {
                 $selected_map = $_SESSION['selected_map'];
                 $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
@@ -2021,19 +2035,6 @@ class Downloads
 		$delimiter ="\t";
 		$output = '';
 		$doneheader = false;
-		if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-            $max_missing = $_GET['mm'];
-		if ($max_missing>100)
-			$max_missing = 100;
-		elseif ($max_missing<0)
-			$max_missing = 0;
-        $min_maf = 0.01;//IN PERCENT
-        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-            $min_maf = $_GET['mmaf'];
-		if ($min_maf>100)
-			$min_maf = 100;
-		elseif ($min_maf<0)
-			$min_maf = 0;
 	
          if (isset($_SESSION['selected_map'])) {
            $selected_map = $_SESSION['selected_map'];
@@ -2077,34 +2078,6 @@ class Downloads
 		  $marker_list_mapped[$uid] = "$chr\t$pos";
 		}
 	
-                foreach ($lines as $line_record_uid) {
-                  $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
-                  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-                  if ($row = mysql_fetch_array($res)) {
-                    $alleles = $row[0];
-                    $outarray = explode(',',$alleles);
-                    $i=0;
-                    foreach ($outarray as $allele) {
-                      if ($allele=='AA') {
-                        $marker_aacnt[$i]++;
-                      }
-                      elseif (($allele=='AB') or ($allele=='BA')) {
-                        $marker_abcnt[$i]++;
-                      }
-                      elseif ($allele=='BB') {
-                        $marker_bbcnt[$i]++;
-                      }
-                      elseif (($allele=='--') or ($allele=='')) {
-                        $marker_misscnt[$i]++;
-                      }
-                      else { echo "illegal genotype value $allele for marker $marker_list_name[$i]<br>";
-                      }
-                      $i++;
-                    }
-                  }
-                  //echo "$line_record_uid<br>\n";
-                }
-
                 $marker_list_all = $marker_list_mapped;
                 //get lines and filter to get a list of markers which meet the criteria selected by the user
                 $num_maf = $num_miss = 0;
