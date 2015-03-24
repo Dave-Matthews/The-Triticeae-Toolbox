@@ -418,7 +418,7 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
     if ($row = mysql_fetch_array($res)) {
         $name = json_decode($row[0], true);
-        $outputheader .= implode("\t", $name);
+        $outputheader .= "'" . implode("'\t'", $name) . "'";
     } else {
         die("<font color=red>Error - genotype experiment should be selected before download</font>");
     }
