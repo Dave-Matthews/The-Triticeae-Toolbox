@@ -13,6 +13,8 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
+ini_set('memory_limit', '2G');
+
 $function = $_GET['function'];
 if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
     $sql = "select marker_uid, value from marker_synonyms";
