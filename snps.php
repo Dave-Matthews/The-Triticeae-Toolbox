@@ -1,25 +1,34 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
- "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-<!-- <Content-Type: text/plain>
-<Content-Disposition: inline; filename=THT_SNPs.txt>
--->
-<title>SNPs_from_T3.txt</title>
-<style type=text/css>
-body { font-family: helvetica,arial,sans-serif; }
-</style>
-</head>
-<body bgcolor=white>
-
 <?php
-require_once('config.php');
-include_once($config['root_dir'].'includes/bootstrap.inc');
-connect();
+require 'config.php';
+require $config['root_dir'].'includes/bootstrap.inc';
+$mysqli = connecti();
+require_once $config['root_dir'].'theme/normal_header.php';
+
+if (isset($_SESSION['geno_exps'])) {
+    $geno_exps = $_SESSION['geno_exps'];
+    $count = $_SESSION['geno_exps_cnt'];
+    $exp_uid = intval($geno_exps[0]);
+    $sql = "select trial_code from experiments where experiment_uid = $exp_uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    if ($row = mysqli_fetch_assoc($res)) {
+        $trial_code = $row['trial_code'];
+        echo "<h2>Marker Alleles and Sequences for $trial_code</h2>";
+    } else {
+        $trial_code = "";
+    }
+} elseif (isset($_SESSION['clicked_buttons'])) {
+    $markers = $_SESSION['clicked_buttons'];
+    $count = count($markers);
+    $markers_str = implode(",", $markers);
+    echo "<h2>Marker Alleles and Sequences for selected markers</h2>";
+} else {
+    $geno_exps = "";
+    $markers_str = "";
+    echo "<h2>Marker Alleles and Sequences</h2>";
+}
+
 ?>
 <font size =-1>
-<h2>Marker Alleles and Sequences</h2>
 
 Genotyping results are submitted to T3, and can be 
 <a href="downloads/downloads.php">downloaded</a> from T3, in a variety
@@ -39,7 +48,7 @@ taken from the Illumina manifest files
 (<a href="docs/GS0007511-OPA.opa">example</a>), interpreted according to
 the documentation in Illumina's Technical
 Note <a href="docs/TopBot_TechNote.pdf">'"TOP/BOT" Strand and "A/B"
-Allele'</a>.  In short:
+Allele'</a>.  In short:<ul>
 <li>For [A/C] and [A/G] SNPs, Allele A is A.  
 <li>For [T/C] and [T/G] SNPs, Allele A is T and the sequence is
 designated BOT.
@@ -49,6 +58,7 @@ Strand is BOT, then Allele A = T and Allele B = A.
 <li>For [C/G] SNPs, when the Illumina Strand is
 TOP then Allele A = C and Allele B = G. When the Strand
 is BOT then Allele A = G and Allele B = C.
+</ul>
 <br>The Sequence shown below is the reverse-complement of the the manifest's
 <i>TopGenomicSeq</i> when the Illumina strand (manifest field "<i>Ilmn Strand</i>")
 was BOT, so the A-allele and B-allele nucleotides match the bracketed SNP nucleotides
@@ -71,17 +81,48 @@ missing data with "N".
 
 </font>
 
-<pre>
-<b>Marker,Type,A-allele,B-allele,Sequence</b>
 <?php
-$sql = "select marker_name, marker_type_name, A_allele, B_allele, sequence
-from markers, marker_types
-where markers.marker_type_uid = marker_types.marker_type_uid
-and A_allele is not null
-order by marker_name";
-$res = mysql_query($sql) or die(mysql_error());
-while ($row = mysql_fetch_assoc($res)) {
-  echo $row['marker_name'].",".$row['marker_type_name'].",".$row['A_allele'].",".$row['B_allele'].",".$row['sequence']."\n";
- }
-
-?>
+if (($trial_code == "") and ($markers_str == "")) {
+    echo "<br><br><font color=red>Please select a <a href=downloads/select_genotype.php>genotype experiment</a> or";
+    echo " <a href=genotyping/marker_selection.php>markers</a>.";
+    echo "</div>";
+    include_once $config['root_dir'].'theme/footer.php';
+    die();
+}
+if ($count > 1000) {
+    print "<br><br><a href=genotyping/display_markers.php>Download selected markers</a><br>\n";
+    echo "</div>";
+    include_once $config['root_dir'].'theme/footer.php';
+    die();
+}
+print "<br><br><a href=genotyping/display_markers.php?function=download>Download marker information</a><br>\n";
+echo "<br><table><tr><th>Marker<th>Type<th>A_allele<th>B_allele<th>Sequence";
+if ($geno_exps != "") {
+    $sql = "select marker_name, marker_type_name, A_allele, B_allele, sequence
+    from markers, marker_types, allele_frequencies
+    where markers.marker_type_uid = marker_types.marker_type_uid
+    and markers.marker_uid = allele_frequencies.marker_uid
+    and A_allele is not null
+    and experiment_uid = $exp_uid
+    order by marker_name";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    while ($row = mysqli_fetch_assoc($res)) {
+        echo "<tr><td>".$row['marker_name']."<td>".$row['marker_type_name']."<td>".$row['A_allele']."<td>".$row['B_allele']."<td>";
+        echo $row['sequence']."\n";
+    }
+    echo "</table>";
+} elseif ($markers_str != "") {
+    $sql = "select marker_name, marker_type_name, A_allele, B_allele, sequence
+    from markers, marker_types 
+    where markers.marker_type_uid = marker_types.marker_type_uid
+    and marker_uid IN ($markers_str)
+    order by marker_name";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    while ($row = mysqli_fetch_assoc($res)) {
+        echo "<tr><td>".$row['marker_name']."<td>".$row['marker_type_name']."<td>".$row['A_allele']."<td>".$row['B_allele']."<td>";
+        echo $row['sequence']."\n";
+    }
+    print "</table>";
+} else {
+    echo "Error: bad selection\n";
+}

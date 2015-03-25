@@ -380,10 +380,9 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $marker_list_mapped = array();
         $marker_list_chr = array();
     } else {
-        $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, allele_bymarker_exp_101
+        $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
         where mim.marker_uid = markers.marker_uid
         AND mim.map_uid = map.map_uid
-        AND markers.marker_uid = allele_bymarker_exp_101.marker_uid
         AND map.mapset_uid = $selected_map";
         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
         while ($row = mysql_fetch_array($res)) {
@@ -419,7 +418,7 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
     if ($row = mysql_fetch_array($res)) {
         $name = json_decode($row[0], true);
-        $outputheader .= implode("\t", $name);
+        $outputheader .= "'" . implode("'\t'", $name) . "'";
     } else {
         die("<font color=red>Error - genotype experiment should be selected before download</font>");
     }
@@ -434,18 +433,16 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     }
     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
     while ($row = mysql_fetch_array($res)) {
-            $marker_id = $row[0];
-            $marker_name = $row[1];
-            $chrom = $row[2];
-            $pos = $row[3];
-            $alleles = $row[4];
-            $allele = $marker_list_allele[$marker_id];
-            $marker_type = $marker_list_type[$marker_id];
-        if (empty($chrom)) {
-            if (isset($marker_list_mapped[$marker_id])) {
-                $chrom = $marker_list_chr[$marker_id];
-                $pos = $marker_list_mapped[$marker_id];
-            }
+        $marker_id = $row[0];
+        $marker_name = $row[1];
+        $chrom = $row[2];
+        $pos = $row[3];
+        $alleles = $row[4];
+        $allele = $marker_list_allele[$marker_id];
+        $marker_type = $marker_list_type[$marker_id];
+        if (isset($marker_list_mapped[$marker_id])) {
+            $chrom = $marker_list_chr[$marker_id];
+            $pos = $marker_list_mapped[$marker_id];
         }
         if (isset($marker_lookup[$marker_id])) {
             if (empty($chrom)) {

@@ -154,7 +154,7 @@ private function refresh_title()
           $sql = "select count(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
           $res = mysql_query($sql) or die(mysql_error() . $sql);
           if ($row = mysql_fetch_array($res)) {
-              $_SESSION['geno_exps_cnt'] = number_format($row[0]);
+              $_SESSION['geno_exps_cnt'] = $row[0];
           }
       }
         $username=$_SESSION['username'];
@@ -716,14 +716,17 @@ private function type2_experiments()
         $uid=$row['experiment_uid'];
         $val=$row['trial_code'];
         $name=$row['data_program_name'];
-        if ($name != $prev_name) {
-          print "<optgroup label=\"$name\"</optgroup>\n";
+        if ($prev_name == "") {
+          print "<optgroup label=\"$name\">\n";
+          $prev_name = $name;
+        } elseif ($name != $prev_name) {
+          print "</optgroup>\n<optgroup label=\"$name\">\n";
           $prev_name = $name;
         }
         print "<option value=$uid>$val</option>\n";
     }
     ?>
-    </select>
+    </optgroup></select></table>
     <?php
 }	
 

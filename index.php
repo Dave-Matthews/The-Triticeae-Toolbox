@@ -47,7 +47,7 @@ $name = get_unique_name("datasets");
   <p>
   <table cellpadding="0" cellspacing="0"><tbody>
   <tr>
-  <th>Search Experiments</th>
+  <th>Search Trials</th>
   <th>&nbsp;</th>
   </tr>
 	
@@ -79,7 +79,7 @@ $name = get_unique_name("datasets");
    }
 ?>
   </select></td>
-  <td>All experiments containing data from the program&#39;s lines</td>
+  <td>Trials containing data from the program&#39;s lines</td>
   </tr>
 
   <tr><td>
@@ -95,7 +95,7 @@ $name = get_unique_name("datasets");
   }
 ?>
 </select></td>
-<td>All experiments that measure the trait</td></tr>
+<td></td></tr>
 
   <tr><td>
   <select onchange="window.open('<?php echo $config['base_url']; ?>view_search_yr2.php?table=experiments&year='+this.options[this.selectedIndex].value,'_top')">
@@ -110,7 +110,7 @@ $name = get_unique_name("datasets");
   }
 ?>
 </select></td>
-<td>All experiments from the selected year</td></tr>
+<td></td></tr>
 
   <tr><td>
   <select onchange="window.open('<?php echo $config['base_url']; ?>search_expt.php?expt='+this.options[this.selectedIndex].value,'_top')">
@@ -126,7 +126,7 @@ $name = get_unique_name("datasets");
   }
 ?>
 </select></td>
-<td>All phenotype trials in the Experiment</td></tr>
+<td></td></tr>
 
 
 </tbody></table></div></div></div>
