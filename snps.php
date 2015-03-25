@@ -1,25 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
- "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-<!-- <Content-Type: text/plain>
-<Content-Disposition: inline; filename=THT_SNPs.txt>
--->
-<title>SNPs_from_T3.txt</title>
-<style type=text/css>
-body { font-family: helvetica,arial,sans-serif; }
-</style>
-</head>
-<body bgcolor=white>
-
 <?php
-require_once 'config.php';
+require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
+require_once $config['root_dir'].'theme/normal_header.php';
 
 if (isset($_SESSION['geno_exps'])) {
     $geno_exps = $_SESSION['geno_exps'];
+    $count = $_SESSION['geno_exps_cnt'];
     $exp_uid = intval($geno_exps[0]);
     $sql = "select trial_code from experiments where experiment_uid = $exp_uid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
@@ -31,6 +18,7 @@ if (isset($_SESSION['geno_exps'])) {
     }
 } elseif (isset($_SESSION['clicked_buttons'])) {
     $markers = $_SESSION['clicked_buttons'];
+    $count = count($markers);
     $markers_str = implode(",", $markers);
     echo "<h2>Marker Alleles and Sequences for selected markers</h2>";
 } else {
@@ -96,14 +84,18 @@ missing data with "N".
 <?php
 if (($trial_code == "") and ($markers_str == "")) {
     echo "<br><br><font color=red>Please select a <a href=downloads/select_genotype.php>genotype experiment</a> or";
-    echo " <a href=genotyping/marker_selection.php>markers</a>."; 
+    echo " <a href=genotyping/marker_selection.php>markers</a>.";
+    echo "</div>";
+    include_once $config['root_dir'].'theme/footer.php';
     die();
 }
-?>
-
-<pre>
-<b>Marker,Type,A-allele,B-allele,Sequence</b>
-<?php
+if ($count > 1000) {
+    print "<br><br><a href=genotyping/display_markers.php>Download selected markers</a><br>\n";
+    echo "</div>";
+    include_once $config['root_dir'].'theme/footer.php';
+    die();
+}
+echo "<br><table><tr><th>Marker<th>Type<th>A_allele<th>B_allele<th>Sequence";
 if ($geno_exps != "") {
     $sql = "select marker_name, marker_type_name, A_allele, B_allele, sequence
     from markers, marker_types, allele_frequencies
@@ -112,17 +104,26 @@ if ($geno_exps != "") {
     and A_allele is not null
     and experiment_uid = $exp_uid
     order by marker_name";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    while ($row = mysqli_fetch_assoc($res)) {
+        echo "<tr><td>".$row['marker_name']."<td>".$row['marker_type_name']."<td>".$row['A_allele']."<td>".$row['B_allele']."<td>";
+        echo $row['sequence']."\n";
+    }
+    echo "</table>";
+    print "<br><a href=genotyping/display_markers.php?function=download>Download marker information</a><br><br>\n";
 } elseif ($markers_str != "") {
     $sql = "select marker_name, marker_type_name, A_allele, B_allele, sequence
     from markers, marker_types 
     where markers.marker_type_uid = marker_types.marker_type_uid
     and marker_uid IN ($markers_str)
     order by marker_name";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    while ($row = mysqli_fetch_assoc($res)) {
+        echo "<tr><td>".$row['marker_name']."<td>".$row['marker_type_name']."<td>".$row['A_allele']."<td>".$row['B_allele']."<td>";
+        echo $row['sequence']."\n";
+    }
+    print "</table>";
+    print "<br><a href=genotyping/display_markers.php?function=download>Download marker information</a><br><br>\n";
 } else {
-    die("Error: bad selection\n");
-}
-$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-while ($row = mysqli_fetch_assoc($res)) {
-    echo $row['marker_name'].",".$row['marker_type_name'].",".$row['A_allele'].",".$row['B_allele'].",";
-    echo $row['sequence']."\n";
+    echo "Error: bad selection\n";
 }
