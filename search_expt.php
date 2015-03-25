@@ -29,7 +29,7 @@ if (!authenticate(array(USER_TYPE_PARTICIPANT,
 			USER_TYPE_CURATOR,
 			USER_TYPE_ADMINISTRATOR)))
   $sql .= " AND data_public_flag > 0";
-$sql .= " order by e.experiment_year,e.trial_code ASC";
+$sql .= " order by e.experiment_year desc,e.trial_code ASC";
 $result_trialcode=mysql_query($sql) or die(mysql_error());
 $num_rows = mysql_num_rows($result_trialcode);
 if ($num_rows ==0){

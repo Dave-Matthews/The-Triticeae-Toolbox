@@ -45,7 +45,7 @@ echo "</table>";
 				USER_TYPE_CURATOR,
 				USER_TYPE_ADMINISTRATOR)))
 	  $sql2 .= " and e.data_public_flag > 0";
-	$sql2 .= " order by e.experiment_year, e.trial_code asc";
+	$sql2 .= " order by e.experiment_year desc, e.trial_code asc";
 	$res2=mysql_query($sql2) or die(mysql_error());
 	
 	$num_rows = mysql_num_rows($res2);
