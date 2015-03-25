@@ -95,6 +95,7 @@ if ($count > 1000) {
     include_once $config['root_dir'].'theme/footer.php';
     die();
 }
+print "<br><br><a href=genotyping/display_markers.php?function=download>Download marker information</a><br>\n";
 echo "<br><table><tr><th>Marker<th>Type<th>A_allele<th>B_allele<th>Sequence";
 if ($geno_exps != "") {
     $sql = "select marker_name, marker_type_name, A_allele, B_allele, sequence
@@ -110,7 +111,6 @@ if ($geno_exps != "") {
         echo $row['sequence']."\n";
     }
     echo "</table>";
-    print "<br><a href=genotyping/display_markers.php?function=download>Download marker information</a><br><br>\n";
 } elseif ($markers_str != "") {
     $sql = "select marker_name, marker_type_name, A_allele, B_allele, sequence
     from markers, marker_types 
@@ -123,7 +123,6 @@ if ($geno_exps != "") {
         echo $row['sequence']."\n";
     }
     print "</table>";
-    print "<br><a href=genotyping/display_markers.php?function=download>Download marker information</a><br><br>\n";
 } else {
     echo "Error: bad selection\n";
 }
