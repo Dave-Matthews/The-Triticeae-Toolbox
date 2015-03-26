@@ -149,10 +149,11 @@ class LineNames_Check
 	    die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br><br>");
 	}
 	// Initialize the column number for the first Property.  First column is 0.
+	// 23mar2015 Now Species is treated as a Genetic Character (Property). 
 	if ($singleBP)
-	  $firstprop = 6;
+	  $firstprop = 5;
 	else 
-	  $firstprop = 7;
+	  $firstprop = 6;
 
 	/* The following code allows the curator to put the columns in any order.
 	 * Any unrecognized column header will be warned as an unknown line property. */
@@ -214,8 +215,21 @@ class LineNames_Check
 	  else if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
 	    $columnOffsets['generation'] = $columnOffset+1;
 	  // Determine the column offset of "*aestivum / durum / other".
-	  else if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
+	  else if (preg_match('/^\s*\*aestivum \/ durum \/ other\s*$/is', trim($columnName))) {
 	    $columnOffsets['species'] = $columnOffset+1;
+	    // Species is also a Genetic Character.
+	    // Get this property's allowed values.
+	    $pr = "Species";
+	    $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
+	    if (empty($propuid))
+	      die('The Genetic Character "Species" must be defined and its allowed values specified.');
+	    $sql = "select value from property_values where property_uid = $propuid";
+	    $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
+	    while ($r = mysql_fetch_row($res)) 
+	      $allowedvals[$pr][] = $r[0];
+	    $columnOffsets[$pr] = $columnOffset+1;
+	    $ourprops[] = $pr;
+	  }
 	  // Determine the column offset of "Comments".
 	  else if (preg_match('/^\s*comments\s*$/is', trim($columnName)))
 	    $columnOffsets['comments'] = $columnOffset+1;
@@ -333,6 +347,10 @@ class LineNames_Check
 	    foreach ($ourprops as $pr) {
 	      $propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
 	      if (!empty($propval[$pr])) {
+		if ($pr == 'Species') {
+		  $propval[$pr] = preg_replace("/^a$/", "aestivum", $propval[$pr]);
+		  $propval[$pr] = preg_replace("/^d$/", "durum", $propval[$pr]);
+		}
 		// Test for allowed value.
 		if (!in_array($propval[$pr], $allowedvals[$pr])) {
 		  $alllist = implode(",", $allowedvals[$pr]);
@@ -477,7 +495,6 @@ class LineNames_Check
       <th style="width: 50px;" class="marker">GRIN</th>
       <th style="width: 100px;" class="marker">Pedigree</th>
       <th style="width: 40px;" class="marker">Gener ation</th>
-      <th style="width: 80px;" class="marker">Species</th>
 		  <?php 
 		  foreach ($ourprops as $pr)
 		  echo "<th style='width: 60px;' class=marker>".$pr."</th>";
@@ -507,12 +524,17 @@ class LineNames_Check
 	     print "<td style='width: 180px;'>$pedstring";
 	     $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
 	     print "<td style='width: 40px;'>$generation";
-	     $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
-	     $species = preg_replace("/^a$/", "aestivum", $species);
-	     $species = preg_replace("/^d$/", "durum", $species);
-	     print "<td style='width: 70px;'>$species";
+	     // Shown below as one of the Properties.
+	     /* $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377"); */
+	     /* $species = preg_replace("/^a$/", "aestivum", $species); */
+	     /* $species = preg_replace("/^d$/", "durum", $species); */
+	     /* print "<td style='width: 70px;'>$species"; */
 	     foreach ($ourprops as $pr) {
 	       $propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
+	       if ($pr == 'Species') {
+		 $propval[$pr] = preg_replace("/^a$/", "aestivum", $propval[$pr]);
+		 $propval[$pr] = preg_replace("/^d$/", "durum", $propval[$pr]);
+	       }
 	       echo "<td style='width: 120px;'>".$propval[$pr]."</td>";
 	     }
 	     $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
@@ -605,10 +627,11 @@ class LineNames_Check
 	$singleBP = TRUE;
 	$bp = $linedata['cells'][4][2];
 	// Initialize the column number for the first Property.  First column is 0.
-	$firstprop = 6;
+	// Species is treated as a Genetic Character (Property).  
+	$firstprop = 5;
       }
       else 
-	$firstprop = 7;
+	$firstprop = 6;
 
       // Available line properties:
       $res = mysql_query("select name from properties") or errmsg($sql, mysql_error());
@@ -658,13 +681,15 @@ class LineNames_Check
 	if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
 	  $columnOffsets['generation'] = $columnOffset+1;
 	// Determine the column offset of "*aestivum / durum / other".
-	if (preg_match('/^\s*\*aestivum\/durum\/other\s*$/is', trim($columnName)))
-	  $columnOffsets['species'] = $columnOffset+1;
+	/* if (preg_match('/^\s*\*aestivum \/ durum \/ other\s*$/is', trim($columnName)))  */
+	/*   $columnOffsets['species'] = $columnOffset+1; */
 	// Determine the column offset of "Comments".
 	if (preg_match('/^\s*comments\s*$/is', trim($columnName)))
 	  $columnOffsets['comments'] = $columnOffset+1;
 	// Find other Properties, and determine the column offset.
 	$pr = trim($columnName);
+	if ($pr == "*aestivum / durum / other")
+	  $pr = "Species";
 	if (in_array($pr, $properties)) {
 	  // Get this property's allowed values.
 	  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
@@ -672,7 +697,8 @@ class LineNames_Check
 	  $res = mysql_query($sql) or errmsg($sql, mysql_error());
 	  while ($r = mysql_fetch_row($res)) 
 	    $allowedvals[$pr][] = $r[0];
-	  $columnOffsets[$columnName] = $columnOffset+1;
+	  /* $columnOffsets[$columnName] = $columnOffset+1; */
+	  $columnOffsets[$pr] = $columnOffset+1;
 	  $ourprops[] = $pr;
 	}
       } // end foreach($header as $columnOffset => $columnName)
@@ -712,15 +738,19 @@ class LineNames_Check
 	  }
 	  // Filial Generation
 	  $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
-	  // Species
-	  $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
-	  $species = preg_replace("/^a$/", "aestivum", $species);
-	  $species = preg_replace("/^d$/", "durum", $species);
+	  /* // Species */
+	  /* $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377"); */
+	  /* $species = preg_replace("/^a$/", "aestivum", $species); */
+	  /* $species = preg_replace("/^d$/", "durum", $species); */
 	  // Pedigree, Comments, Properties   
 	  $pedstring=addcslashes(trim($linedata['cells'][$irow][$columnOffsets['pedigree']]),"\0..\37!@\177..\377");
 	  $comments = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['comments']]),"\0..\37!@\177..\377");
 	  foreach ($ourprops as $pr) {
 	    $propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
+	    if ($pr == 'Species') {
+	      $propval[$pr] = preg_replace("/^a$/", "aestivum", $propval[$pr]);
+	      $propval[$pr] = preg_replace("/^d$/", "durum", $propval[$pr]);
+	    }
 	  }
 				
 	  // dem mar2014: Don't use this semi-fuzzy match; insist on exact (case-insensitive).
@@ -754,11 +784,11 @@ class LineNames_Check
 	      $generation = mysql_real_escape_string($generation);
 	      $sql_mid .= "'$generation', ";
 	    }
-	    if (!empty($species)) {
-	      $sql_beg .= "species,";
-	      $species = mysql_real_escape_string($species);
-	      $sql_mid .= "'$species', ";
-	    }
+	    /* if (!empty($species)) { */
+	    /*   $sql_beg .= "species,"; */
+	    /*   $species = mysql_real_escape_string($species); */
+	    /*   $sql_mid .= "'$species', "; */
+	    /* } */
 	    if (!empty($comments)) {
 	      $sql_beg .= "description,";
 	      $comments = mysql_real_escape_string($comments);
@@ -840,10 +870,10 @@ class LineNames_Check
               $generation = mysql_real_escape_string($generation);
 	      $sql_mid .= "generation = '$generation', ";
 	    }
-	    if (!empty($species)) {
-              $species = mysql_real_escape_string($species);
-	      $sql_mid .= "species = '$species', ";
-	    }
+	    /* if (!empty($species)) { */
+            /*   $species = mysql_real_escape_string($species); */
+	    /*   $sql_mid .= "species = '$species', "; */
+	    /* } */
 	    if (!empty($comments)) {
               $comments = mysql_real_escape_string($comments);
 	      $sql_mid .= "description = '$comments', ";
