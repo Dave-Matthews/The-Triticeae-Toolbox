@@ -47,7 +47,7 @@ function show_line_records($id) {
   echo "<table>";
   // Custom instead of show_general():
   $res= mysqli_query($mysqli, "
-     select line_record_name, species, breeding_program_code, pedigree_string, generation, description, updated_on
+     select line_record_name, breeding_program_code, pedigree_string, generation, description, updated_on
      from line_records where line_record_uid = $id") or die(mysqli_error($mysqli));
   $row = mysqli_fetch_assoc($res);
   $bpcode = $row['breeding_program_code'];
