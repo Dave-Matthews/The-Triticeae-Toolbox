@@ -100,7 +100,6 @@ function load_excel() {
       <th style="width: 40px;" class="marker">Breeding Program</th>
       <th style="width: 80px;" class="marker">Pedigree</th>
       <th style="width: 40px;" class="marker">Gener ation</th>
-      <th style="width: 50px;" class="marker">Species</th>
       <th style="width: 80px;" class="marker">Comment</th>
 <?php 
  foreach ($ourprops as $pr) {
@@ -118,7 +117,7 @@ function load_excel() {
 <?php
     // Get the data for each line.
     foreach ($linelist as $lineuid) {
-      $result=mysql_query("select line_record_name, species, breeding_program_code, pedigree_string, generation, description from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+      $result=mysql_query("select line_record_name, breeding_program_code, pedigree_string, generation, description from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
       $syn_result=mysql_query("select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
       $syn_names=""; $sn = "";
       while ($syn_row = mysql_fetch_assoc($syn_result)) 
@@ -152,8 +151,6 @@ function load_excel() {
         echo $row['pedigree_string'] ?>
         <td style="width: 40px; text-align: center" class="marker">
         <?php echo $row['generation'] ?>
-        <td style="width: 50px; text-align: center" class="marker">
-        <?php echo $row['species'] ?>
         <td style="width: 80px; text-align: center" class="marker">
         <?php echo $row['description'] ?>
 	  <?php
@@ -222,11 +219,10 @@ private function type_Line_Excel() {
   $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
   $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
   $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
-  $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(7);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(8);
   $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
-  $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(7);
-  $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(7);
-  $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(20);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(8);
+  $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(20);
   $objPHPExcel->getActiveSheet()->getStyle('A1:N1')->applyFromArray($style_header);
   $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Name');
   $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'GRIN');
@@ -234,12 +230,11 @@ private function type_Line_Excel() {
   $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Program');
   $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Pedigree');
   $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Generation');
-  $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Species');
-  $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Comment');
+  $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Comment');
   // Add columns for line Properties.
   // Oops, columns will go way past Z.
   /* $firstprop = ord(I);  // First property column is "I". */
-  $firstprop = 9; // First property column is 9.
+  $firstprop = 7; // First property column is 7.
   for ($i = 0; $i < count($ourprops); $i++) {
     /* $colname = chr($firstprop + $i); */
     $col = $firstprop + $i;
@@ -261,8 +256,7 @@ private function type_Line_Excel() {
 	$objPHPExcel->getActiveSheet()->SetCellValue("D$i", "$row[breeding_program_code]",$format_row);
 	$objPHPExcel->getActiveSheet()->SetCellValue("E$i", "$row[pedigree_string]",$format_row);
 	$objPHPExcel->getActiveSheet()->SetCellValue("F$i", "$row[generation]",$format_row);
-	$objPHPExcel->getActiveSheet()->SetCellValue("G$i", "$row[species]",$format_row);
-	$objPHPExcel->getActiveSheet()->SetCellValue("H$i", "$row[description]",$format_row);
+	$objPHPExcel->getActiveSheet()->SetCellValue("G$i", "$row[description]",$format_row);
       }
 
       // GRIN Accession
