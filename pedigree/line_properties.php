@@ -93,13 +93,15 @@ $sql = "select distinct experiment_year from experiments order by experiment_yea
 	      </select><br><br></td>
 	    <td> <b>Species</b> <br>
 	      <select name="species[]" multiple="multiple" size="6" style="height: 8em;">
-      <?php
-      $sql = "SELECT DISTINCT(species) FROM line_records WHERE species NOT LIKE 'NULL' AND NOT species = ''";
-      $res = mysql_query($sql) or die(mysql_error());
-      while ($resp = mysql_fetch_row($res)) {
-	$s = $resp[0];
- 	echo "<option value='$s' $species[$s]>$s</option>";
-      }
+<?php
+/* $sql = "SELECT DISTINCT(species) FROM line_records WHERE species NOT LIKE 'NULL' AND NOT species = ''"; */
+$sql = "select pv.value from properties p, property_values pv
+        where p.properties_uid = pv.property_uid and p.name = 'Species'";
+$res = mysql_query($sql) or die(mysql_error());
+while ($resp = mysql_fetch_row($res)) {
+  $s = $resp[0];
+  echo "<option value='$s' $species[$s]>$s</option>";
+}
       ?>
 	      </select><br><br>
   </table>    
@@ -251,11 +253,11 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
       $count++;
     }
     if (count($species) != 0)    {
-      if ($count == 0)    	
-    	$where .= "species IN ('".$speciesStr."')";
-      else    	
-	$where .= " AND species IN ('".$speciesStr."')";
-      $count++;
+      // Include as a Property.
+      foreach ($species as $spcs) {
+	$pvid = mysql_grab("select property_values_uid from property_values where value = '$spcs'");
+	$propvalids[] = $pvid;
+      }
     }
     if (count($propvalids) != 0)    {
       foreach ($propvalids as $pvid) {
