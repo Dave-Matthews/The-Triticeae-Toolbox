@@ -76,7 +76,7 @@ class ShowData
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $countMarkers);
             if (mysqli_stmt_fetch($stmt)) {
-              $_SESSION['geno_exps_cnt'] = number_format($countMarkers);
+              $_SESSION['geno_exps_cnt'] = $countMarkers;
               echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/genotype_selection.php\">";
             } else {
               echo "Error: no markers could be found";
