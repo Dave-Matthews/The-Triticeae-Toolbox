@@ -141,7 +141,7 @@ class ShowData
         if ($line = mysqli_fetch_row($res_lines)) {
             $gbs_exp = "yes";
             $line_list = $line[0];
-            $line_ids = explode(",", $line_list);
+            $line_ids = json_decode($line_list, true);
             $line_total = count($line_ids);
         }
     } else {
@@ -254,6 +254,9 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
       <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
       <?php
   }
+  ?>
+  <input type="button" value="Download marker data" onclick="javascript:download_markers('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
+  <?php
         echo "</div><p><br>";
 	echo "<h3>Additional files available</h3><p>";
 	echo "<table>";
