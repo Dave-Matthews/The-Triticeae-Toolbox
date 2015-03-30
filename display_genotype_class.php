@@ -140,9 +140,10 @@ class ShowData
         $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli));
         if ($line = mysqli_fetch_row($res_lines)) {
             $gbs_exp = "yes";
-            $line_list = $line[0];
-            $line_ids = json_decode($line_list, true);
+            $tmp = $line[0];
+            $line_ids = json_decode($tmp, true);
             $line_total = count($line_ids);
+            $line_list = implode(",", $line_ids);
         }
     } else {
         $line_list = implode(",", $line_ids);
