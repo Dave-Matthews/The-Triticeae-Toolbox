@@ -233,7 +233,7 @@ function HTMLLoginSuccess()
     //   page which would be confusing.
     //$url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
     global $config;
-    $url = "http:" . $config['base_url']."index.php";
+    $url = $config['base_url']."index.php";
     return <<< HTML
 <p>You have been logged in. Welcome!
 <p><input type='Button' value='Proceed' onClick='window.location.assign("$url")'>
@@ -608,7 +608,7 @@ Thank you for requesting an account on T3.
 
 To complete your registration, please confirm that you requested it 
 by visiting the following URL:
-http:{$root}fromemail.php?token=$urltoken
+https:{$root}fromemail.php?token=$urltoken
 
 Your registration will be complete when you have performed this step.
 
