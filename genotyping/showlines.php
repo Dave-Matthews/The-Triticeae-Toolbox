@@ -33,6 +33,16 @@ if (isset($_GET['marker']) && ($_GET['marker'] != "")) {
 echo "<h3>Marker $markername</h3>";
 
 if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
+    $sortby = $_GET['sortby'];
+    $sorttype = $_GET['sorttype'];
+    if (($sortby != "line_record_name") && ($sortby != "alleles") && ($sortby != "trial_code")) {
+        echo "Error: invalid selection\n";
+        return;
+    }
+    if (($sorttype != "DESC") && ($sorttype != "ASC")) {
+        echo "Error: invalid selection\n";
+        return;
+    }
     $orderby = $_GET['sortby'] . " " . $_GET['sorttype'];
     showLineForMarker($marker_uid, $orderby);
 } else {
