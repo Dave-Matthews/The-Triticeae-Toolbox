@@ -3,10 +3,8 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
-connect();
-
-include($config['root_dir'] . 'theme/admin_header.php');
+require $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'theme/admin_header.php';
 /*******************************/
 ?>
 
@@ -17,28 +15,35 @@ include($config['root_dir'] . 'theme/admin_header.php');
 
 <?php
 
-if(isset($_GET['line']) && ($_GET['line'] != "")) {
+if (isset($_GET['line']) && ($_GET['line'] != "")) {
+    //start output buffering, capture any errors here.
+    ob_start();
 
-	//start output buffering, capture any errors here.
-	ob_start();
+    //if $number is FALSE then the parameter was not a name, but a number
+    if (($number = getPedigreeId($_GET['line'])) === false) {
+        $number = $_GET['line'];
+    }
 
-	//if $number is FALSE then the parameter was not a name, but a number
-	if( ($number = getPedigreeId($_GET['line'])) === FALSE)
-		$number = $_GET['line'];
+    //end output buffering and clean out any errors.
+    ob_end_clean();
 
-	//end output buffering and clean out any errors.
-	ob_end_clean();
+    echo "<br /><h3>". getAccessionName($number) ."</h3>";
 
-	echo "<br /><h3>". getAccessionName($number) ."</h3>";
-
-	if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
-		$orderby = $_GET['sortby'] . " " . $_GET['sorttype'];
-		showMarkerForLine($number, $orderby);
-	}
-	else
-		showMarkerForLine($number);
-
-	echo "<br />";
+    if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
+        $sortby = $_GET['sortby'];
+        $sorttype = $_GET['sorttype'];
+        if (($sortby != "marker_name") && ($sortby != "alleles") && ($sortby != "trial_code")) {
+            die("Error: invalid selection\n");
+        }
+        if (($sorttype != "DESC") && ($sorttype != "ASC")) {
+            die("Error: invalid selection\n");
+        }
+        $orderby = $_GET['sortby'] . " " . $_GET['sorttype'];
+        showMarkerForLine($number, $orderby);
+    } else {
+        showMarkerForLine($number);
+    }
+    echo "<br />";
 }
 ?>
 
@@ -51,12 +56,10 @@ if(isset($_GET['line']) && ($_GET['line'] != "")) {
 
 <p><input type="submit" value="Get Data" /></p>
 </form>
-
-
-			</div>
+	</div>
 	</div>
 </div>
 </div>
 
 
-<?php include($config['root_dir'] . 'theme/footer.php'); ?>
+<?php require $config['root_dir'] . 'theme/footer.php';
