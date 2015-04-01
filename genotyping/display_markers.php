@@ -114,13 +114,13 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
     fwrite($h, "name,type,A_allele,B_allele,synonym,mapped,lines genotyped,sequence\n");
     $exp = $_SESSION['geno_exps'];
     $exp = $exp[0];
-    $sql = "select marker_uid, marker_name from allele_bymarker_exp_101 where experiment_uid = $exp";
-    $sql = "select marker_name, A_allele, B_allele, sequence, marker_type_name from markers, marker_types, allele_frequencies
+    $sql = "select markers.marker_uid, marker_name, A_allele, B_allele, sequence, marker_type_name from markers, marker_types, allele_frequencies
          where markers.marker_type_uid = marker_types.marker_type_uid
          and markers.marker_uid = allele_frequencies.marker_uid
          and allele_frequencies.experiment_uid = $exp";
     $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row=mysqli_fetch_array($result)) {
+        $mkruid=$row['marker_uid'];
         $selval=$row['marker_name'];
         $a_allele=$row['A_allele'];
         $b_allele=$row['B_allele'];
