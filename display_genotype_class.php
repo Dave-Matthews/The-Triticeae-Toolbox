@@ -76,7 +76,7 @@ class ShowData
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $countMarkers);
             if (mysqli_stmt_fetch($stmt)) {
-              $_SESSION['geno_exps_cnt'] = number_format($countMarkers);
+              $_SESSION['geno_exps_cnt'] = $countMarkers;
               echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/genotype_selection.php\">";
             } else {
               echo "Error: no markers could be found";
@@ -140,9 +140,10 @@ class ShowData
         $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli));
         if ($line = mysqli_fetch_row($res_lines)) {
             $gbs_exp = "yes";
-            $line_list = $line[0];
-            $line_ids = explode(",", $line_list);
+            $tmp = $line[0];
+            $line_ids = json_decode($tmp, true);
             $line_total = count($line_ids);
+            $line_list = implode(",", $line_ids);
         }
     } else {
         $line_list = implode(",", $line_ids);
@@ -254,6 +255,9 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
       <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
       <?php
   }
+  ?>
+  <input type="button" value="Download marker data" onclick="javascript:download_markers('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
+  <?php
         echo "</div><p><br>";
 	echo "<h3>Additional files available</h3><p>";
 	echo "<table>";
