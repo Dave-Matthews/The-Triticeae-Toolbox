@@ -1,7 +1,7 @@
 <?php
 
 # Function connect() below requires the connection information in
-# /data/tht_data/mysql_connections/T3wheat_readonly.inc
+# /data/tht_data/mysql_connections/T3wheat+_readonly.inc
 
 if (!isset($dontconnect))
 $dontconnect = false;
@@ -9,6 +9,7 @@ $dontconnect = false;
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 session_start();
+
 /**
  * Site-wide maintenance switch
  *
@@ -61,72 +62,7 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
     require('marker.inc');
 	require('search.inc');
 	require('globals.inc');
-
-
-
-/*
- * Applying Security Filters
- *
- *	SQL Injection       - using mysql_real_escape_string
- *	XSS 		    - completely stripping out all html, css, comments, AND javascript
- *      Cleanliness         - using trim()
- *
- * Whenever bootstrap is called, this segment runs on $_POST, $_GET, and $_REQUEST.
- * It does a nice job of detecting nearly all XSS and Injection attacks.
- *
- * It does NOT run inside of arrays, so avoid doing this "<input type="text" name="ref[]" />"
- *
- * Also do not get rid of the is_array if statement. That will cause very annoying bugs.
- */
-
-    set_include_path(get_include_path() . PATH_SEPARATOR . $config['root_dir'] . 'lib/phpids-0.7/lib/');
-    require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Init.php';
-    require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Log/Composite.php';
-    require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Log/File.php';
-    try {
-        $request = array(
-        'REQUEST' => $_REQUEST,
-        'GET' => $_GET,
-        'POST' => $_POST,
-        'COOKIE' => $_COOKIE
-        );
-        $init = IDS_Init::init($config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Config/Config.ini.php');
-        $ids = new IDS_Monitor($request, $init);
-        $result = $ids->run();
-        if ($result->getImpact() > 0) {
-            $compositeLog = new IDS_Log_Composite();
-            $compositeLog->addLogger(IDS_Log_file::getInstance($init));
-            $compositeLog->execute($result);
-        }
-        if ($result->getImpact() > 10) {
-            header('Location: feedback2.php');
-        }
-    } catch (Exception $e) {
-        printf('An error occured: %s', $e->getMessage());
-    }
-
-    if($dontconnect == false || !isset($dontconnect)){
-	$initial_connect = connecti();
-
-        foreach($_POST as $k=>$v) {
-		if(!is_array($v)) {
-			$v = htmlentities(trim($v));
-			$_POST[$k] = mysqli_real_escape_string($initial_connect, $v);
-		}
-        }
-        foreach($_REQUEST as $k=>$v) {
-            if(!is_array($v)) {
-			$_REQUEST[$k] = mysqli_real_escape_string($initial_connect, trim($v));
-	    }
-        }
-	foreach($_GET as $k=>$v) {
-		if(!is_array($v)) {
-			$_GET[$k] = mysqli_real_escape_string($initial_connect, trim($v));
-		}
-	}
-	mysqli_close($initial_connect);
-	}
-
+        require('phpids.inc');
 
 /*
  * Applying Word Filter
@@ -219,7 +155,7 @@ function connect() {
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat_readonly.inc');
+  include('/data/tht_data/mysql_connections/T3wheat+_readonly.inc');
   $db_config = array_merge_recursive_unique($db_config,
 					    $ini_config);
   extract($db_config);
@@ -244,7 +180,7 @@ function connecti() {
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat_readonly.inc');
+  include('/data/tht_data/mysql_connections/T3wheat+_readonly.inc');
   $db_config = array_merge_recursive_unique($db_config,
                                             $ini_config);
   extract($db_config);
