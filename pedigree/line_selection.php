@@ -8,9 +8,9 @@
 // 1/28/2011  JLee  Add ability to add multiple lines and synonym translation
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap.inc');
+include $config['root_dir'] . 'includes/bootstrap.inc';
 connect();
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 
 if($_SERVER['REQUEST_METHOD'] == "POST") {
   // Store what the user's previous selections were so we can
@@ -75,7 +75,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST") {
 	  }
 ?>
       </select><br/><br/></td>
-<td><b>Year</b><br>
+<td><b>Trial Year</b><br>
 <select name="year[]" multiple="multiple" size="6">
 <?php
 $sql = "select distinct experiment_year from experiments order by experiment_year DESC";
@@ -184,25 +184,36 @@ while ($resp = mysql_fetch_row($res)) {
 	$word = str_replace('*', '%', $word);  // Handle "*" wildcards.
 	$word = str_replace('&amp;', '&', $word);  // Allow "&" character in line names.
 	// First check line_records.line_record_name.
-	$hits = mysql_query("select line_record_name from line_records 
-                where line_record_name like '$word'") or die(mysql_error());
-	if (mysql_num_rows($hits) > 0) {
-	  $found = TRUE;
-	  while ($hit = mysql_fetch_row($hits))	    
-	    $linesFound[] = $hit[0];
-	}
+        $sql = "SELECT line_record_name from line_records where line_record_name like ?";
+                if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                    mysqli_stmt_bind_param($stmt, "s", $word);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $hits);
+                    while (mysqli_stmt_fetch($stmt)) {
+                        $linesFound[] = $hits;
+                    }
+                    mysqli_stmt_close($stmt);
+                    if (isset($linesFound)) {
+                        $found = true;
+                    }
+                }
 	// Now check line_synonyms.line_synonym_name.
-	$hits = mysql_query("select line_record_name 
-		from line_synonyms ls, line_records lr
-		where line_synonym_name like '$word'
-		and ls.line_record_uid = lr.line_record_uid") or die(mysql_error());
-	if (mysql_num_rows($hits) > 0) {
-	  $found = TRUE;
-	  while($hit = mysql_fetch_row($hits))
-	    $linesFound[] = $hit[0];
-	}
-	if ($found === FALSE)
+        $sql = "select line_record_name from line_synonyms ls, line_records lr where line_synonym_name like ? and ls.line_record_uid = lr.line_record_uid";
+                if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                    mysqli_stmt_bind_param($stmt, "s", $word);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $hits);
+                    while (mysqli_stmt_fetch($stmt)) {
+                        $linesFound[] = $hits;
+                    }
+                    mysqli_stmt_close($stmt);
+                    if (isset($linesFound)) {
+                        $found = true;
+                    }
+                }
+	if ($found === false) {
 	  $nonHits[] = $word;
+        }
       }
       // Generate the translated line names
       if (count($linesFound) > 0)
