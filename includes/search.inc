@@ -81,7 +81,7 @@ function generalTermSearch(array $tableTree, $searchQ) {
   // DEM apr2015: Set a limit, for memory and execution time's sake.
   $limit = 1000000;
   if (count($ret) > $limit)
-    die("More than $limit records were found.  Please refine your search.<p>");
+    die("More than 1 million records were found.  Please narrow your search.<p>");
   return $ret;
 }
 
@@ -188,15 +188,13 @@ function desperateTermSearch(array $tables, $searchQ) {
  *
  * DEM mar2015: First show only the number of hits in each class.
  */
-function displayTermSearchResults(array $found) {
-  $types = array();  // table names (beautified)
+function displayTermSearchResults(array $found, $keywords) {
   foreach ($found as $v) {
     // $v is "<table>@@<column>@@<uid>".
     $line = explode("@@", $v);
     $type = beautifulTableName($line[0]);
-    // Rename some $types for elegance.
-    $skip = "";
     // Intercept marker synonyms that are identical to marker name.
+    $skip = "";
     if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
       $msquery = mysql_query("select marker_name 
                     from markers, marker_synonyms 
@@ -242,7 +240,9 @@ function displayTermSearchResults(array $found) {
 <?php
   print "<table><tr><th>Data Class<th>Records";
   foreach (array_keys($hits) as $type) {
-    print "<tr><td><a href='browse.php?table=$table[$type]&namecol=$namecolumn[$type]&hits=$uidlist[$type]'>$type</a>";
+    /* print "<tr><td><a href='browse.php?table=$table[$type]&namecol=$namecolumn[$type]&hits=$uidlist[$type]'>$type</a>"; */
+    /* print "<tr><td><a href='search.php?table=$table[$type]&keywords=$keywords'>$type</a>"; */
+    print "<tr><td><a href='browse.php?table=$table[$type]&col=$namecolumn[$type]&keywords=$keywords'>$type</a>";
     print "<td>$hits[$type]";
   }
   print "</table>";
