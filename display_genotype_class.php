@@ -125,6 +125,7 @@ class ShowData
         } else {
             mysqli_stmt_close($stmt);
             echo "Error: no experiment found";
+            return;
         }
     } else {
         echo "Error: " . mysqli_error($mysqli);
