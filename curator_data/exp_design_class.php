@@ -9,7 +9,7 @@
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/downloads/exp_design.php
- * 
+ *
  */
 
 /** Using a PHP class to implement the Experiment Design feature
@@ -96,8 +96,10 @@ class Fieldbook
      *
      * @return string
      */
-    function searchLine()
+    private function searchLine()
     {
+        global $mysqli;
+        $nonHits = array();
         if (!empty($_POST)) {
             $linenames = $_POST['LineSearchInput'];
         }
@@ -107,47 +109,60 @@ class Fieldbook
             $linenames = str_replace(array('\n', ', '), '\t', $linenames);
             $lineList = explode('\t', $linenames);
             foreach ($lineList as $word) {
-        echo "$word<br>\n";
-        $found = false;
-        $word = str_replace('*', '%', $word);  // Handle "*" wildcards.
-        $word = str_replace('&amp;', '&', $word);  // Allow "&" character in line names.
-        // First check line_records.line_record_name.
-        $hits = mysql_query("select line_record_name from line_records
-                where line_record_name like '$word'") or die(mysql_error());
-        if (mysql_num_rows($hits) > 0) {
-          $found = true;
-          while ($hit = mysql_fetch_row($hits))
-            $linesFound[] = $hit[0];
-        }
-        // Now check line_synonyms.line_synonym_name.
-        $hits = mysql_query("select line_record_name
-                from line_synonyms ls, line_records lr
-                where line_synonym_name like '$word'
-                and ls.line_record_uid = lr.line_record_uid") or die(mysql_error());
-        if (mysql_num_rows($hits) > 0) {
-          $found = true;
-          while($hit = mysql_fetch_row($hits))
-            $linesFound[] = $hit[0];
-        }
-        if ($found === false)
-          $nonHits[] = $word;
-      }
-      // Generate the translated line names
-      if (count($linesFound) > 0)
-        $linenames = implode("','", $linesFound);
-    } // end if (strlen($linenames) != 0)
+                echo "$word<br>\n";
+                $found = false;
+                $word = str_replace('*', '%', $word);  // Handle "*" wildcards.
+                $word = str_replace('&amp;', '&', $word);  // Allow "&" character in line names.
+                // First check line_records.line_record_name.
+                $sql = "SELECT line_record_name from line_records where line_record_name like ?";
+                if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                    mysqli_stmt_bind_param($stmt, "s", $word);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $hits);
+                    while (mysqli_stmt_fetch($stmt)) {
+                        $linesFound[] = $hits;
+                    }
+                    mysqli_stmt_close($stmt);
+                    if (isset($linesFound)) {
+                        $found = true;
+                    }
+                }
+                // Now check line_synonyms.line_synonym_name.
+                $sql = "select line_record_name from line_synonyms ls, line_records lr where line_synonym_name like ? and ls.line_record_uid = lr.line_record_uid";
+                if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                    mysqli_stmt_bind_param($stmt, "s", $word);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $hits);
+                    while (mysqli_stmt_fetch($stmt)) {
+                        $linesFound[] = $hits;
+                    }
+                    mysqli_stmt_close($stmt);
+                    if (isset($linesFound)) {
+                        $found = true;
+                    }
+                }
+                if ($found === false) {
+                    $nonHits[] = $word;
+                }
+            }
+            // Generate the translated line names
+            if (count($linesFound) > 0) {
+                $linenames = implode("','", $linesFound);
+            }
+        } // end if (strlen($linenames) != 0)
         /* Build the search string $where. */
-    $count = 0;
-    if (strlen($linenames) > 0)         {
-      if ($count == 0)
-        $where .= "line_record_name in ('".$linenames."')";
-      else
-        $where .= " AND line_record_name in ('".$linenames."')";
-      $count++;
-      $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
-      $result=mysql_query($TheQuery) or die(mysql_error()."<br>Query was:<br>".$TheQuery);
-      $linesfound = mysql_num_rows($result);
-    }
+        $count = 0;
+        if (strlen($linenames) > 0) {
+            if ($count == 0) {
+                $where .= "line_record_name in ('".$linenames."')";
+            } else {
+                $where .= " AND line_record_name in ('".$linenames."')";
+            }
+            $count++;
+            $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
+            $result=mysqli_query($mysqli, $TheQuery) or die(mysqli_error($mysqli)."<br>Query was:<br>".$TheQuery);
+            $linesfound = mysqli_num_rows($result);
+        }
 
       /* Search Results: */
     /* echo "</div><div class='boxContent'><table width=500px><tr><td>"; */
@@ -162,7 +177,7 @@ class Fieldbook
       echo " <input type='button' name='WhichBtn' value='Add to check lines' onclick='javascript: save_line(this.options)'/>";
       print "<br><select name='selLines' id='selLines' multiple='multiple' style='height: 17em; width: 13em'>";
       $_SESSION['linesfound'] = array();
-      while($row = mysql_fetch_assoc($result)) {
+      while($row = mysqli_fetch_assoc($result)) {
         $line_record_name = $row['line_record_name'];
         $line_record_uid = $row['line_record_uid'];
         echo "<option value='$line_record_uid' selected>$line_record_name</option>";
@@ -235,6 +250,7 @@ class Fieldbook
 
     private function selectProg()
     {
+        global $mysqli;
         ?>
         <h3>Trial description</h3>
         To create an experiment design, select a design type from the drop-down list<br><br>
@@ -247,8 +263,8 @@ class Fieldbook
                   FROM experiments AS e, CAPdata_programs AS dp
                   WHERE dp.CAPdata_programs_uid = e.CAPdata_programs_uid
                   order by data_program_name asc";
-        $res = mysql_query($sql) or die(mysql_error());
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
            ?>
            <option value="<?php echo $row['id'] ?>"><?php echo $row['name'];
            echo " ("; echo $row['code']; echo ")"?></option>
@@ -263,14 +279,15 @@ class Fieldbook
 
     private function displayTrial()
     {
+        global $mysqli;
         $trial = $_GET['trial'];
         $sql = "select experiment_short_name, experiment_year, location, latitude, longitude, collaborator, planting_date, greenhouse_trial,
             seeding_rate, experiment_design, irrigation, other_remarks
             from experiments, phenotype_experiment_info
             where experiments.experiment_uid = $trial
             and experiments.experiment_uid = phenotype_experiment_info.experiment_uid";
-        $res = mysql_query($sql) or die(mysql_error());
-        if ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_assoc($res)) {
             $year = $row['experiment_year'];
             $loc = $row['location'];
             $name = $row['experiment_short_name'];
@@ -336,6 +353,7 @@ class Fieldbook
 
     private function design2()
     {
+        global $mysqli;
         $CAPdata_program = $_GET['prog'];
         ?>
         <table>
@@ -350,8 +368,8 @@ class Fieldbook
                                 AND e.experiment_type_uid = e_t.experiment_type_uid
                                 AND e_t.experiment_type_name = 'phenotype'
                                 order by name";
-        $res = mysql_query($sql) or die(mysql_error());
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
            ?>
            <option value="<?php echo $row['id'] ?>"><?php echo $row['name'];
            ?></option>
@@ -363,6 +381,7 @@ class Fieldbook
 
     private function design3()
     {
+        global $mysqli;
         ?>
         <h3>Trial description</h3>
         The trial design is generated by the "<a href="http://cran.r-project.org/web/packages/agricolae/agricolae.pdf" target="blank">
@@ -373,6 +392,7 @@ class Fieldbook
         } else {
            echo "<font color=red>Error:</font>
            Please select a <a href=\"pedigree/line_properties.php\">set of lines</a>.<br><br>\n";
+           return;
         }
         ?>
         <table>
@@ -383,8 +403,8 @@ class Fieldbook
         $sql = "SELECT CAPdata_programs_uid, data_program_name, institutions_uid, collaborator_name, data_program_code
             from CAPdata_programs
             order by data_program_name asc";
-        $res = mysql_query($sql) or die(mysql_error());
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
            ?>
            <option value="<?php echo $row['data_program_code'] ?>"><?php echo $row['data_program_name'];
            echo " ("; echo $row['data_program_code']; echo ")"?></option>
@@ -410,8 +430,8 @@ class Fieldbook
         <option value="">select location</option>
         <?php
         $sql = "SELECT distinct location as name from phenotype_experiment_info where location is not NULL order by location";
-        $res = mysql_query($sql) or die(mysql_error());
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
            ?>
            <option value="<?php echo $row['name'] ?>"><?php echo $row['name'] ?></option>
            <?php

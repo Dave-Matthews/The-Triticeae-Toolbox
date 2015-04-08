@@ -25,51 +25,51 @@ $mysqli = connecti();
 /* Quick Search */
 /* sidebar general search term has been submitted */
 if (isset($_REQUEST['keywords'])) {
-    //generic keyword search has been made
-    $allTables = array();
-    $searchTree = array();
-    $found = array();
+  //generic keyword search has been made
+  $keywords = $_REQUEST['keywords'];
+  $allTables = array();
+  $searchTree = array();
+  $found = array();
 
-    /* Populate the allTables array */
-    if (isset($_REQUEST['table'])) {
-        array_push($allTables, mysqli_real_escape_string($mysqli, $_REQUEST['table']));
-    } else {
-        $tableQ = mysqli_query($mysqli, "SHOW TABLES");
-        while($row = mysqli_fetch_row($tableQ)) {
-            array_push($allTables, $row[0]);
-        }
+  /* Populate the allTables array */
+  if (isset($_REQUEST['table'])) 
+    array_push($allTables, mysqli_real_escape_string($mysqli, $_REQUEST['table']));
+  else {
+    $tableQ = mysqli_query($mysqli, "SHOW TABLES");
+    while($row = mysqli_fetch_row($tableQ)) 
+      array_push($allTables, $row[0]);
+  }
+
+  /* get unique keys of each table */
+  foreach($allTables as $table) {
+    $ukeys = get_ukey($table);
+    $names = array();
+    /* do not search through _uids */
+    /* do not add duplicates */
+    for($i=0; $i<count($ukeys); $i++) {
+      if (strpos($ukeys[$i], "_uid")  === FALSE) {
+	if (!in_array($ukeys[$i],$names)) 
+	  array_push($names, $ukeys[$i] );
+      }
     }
-
-    /* get unique keys of each table */
-    foreach($allTables as $table) {
-        $ukeys = get_ukey($table);
-        $names = array();
-        /* do not search through _uids */
-        /* do not add duplicates */
-        for($i=0; $i<count($ukeys); $i++) {
-            if (strpos($ukeys[$i], "_uid")  === FALSE) {
-	    if (!in_array($ukeys[$i],$names)) 
-	      array_push($names, $ukeys[$i] );
-          }
-        }
-        /* add this table to the search tree if there are fields to search */
-        if(count($names) > 0) {
-            $searchTree[$table] = $names;
-        }
-    }  // end foreach($allTables)
+    /* add this table to the search tree if there are fields to search */
+    if(count($names) > 0) {
+      $searchTree[$table] = $names;
+    }
+  }  // end foreach($allTables)
   // Cool! Here are all the unique keys in the database:
   //print_h($searchTree); 
 
   // Remove the \ characters inserted before quotes by magic_quotes_gpc.
-  $_REQUEST[keywords] = stripslashes($_REQUEST[keywords]);
+  $keywords = stripslashes($keywords);
   // If the input is doublequoted, don't split at <space>s.
-  if (preg_match('/^".*"$/', $_REQUEST['keywords'])) {
-    $_REQUEST[keywords] = trim($_REQUEST[keywords], "\"");
-    $found = generalTermSearch($searchTree, $_REQUEST['keywords']);
+  if (preg_match('/^".*"$/', $keywords)) {
+    $keywords = trim($keywords, "\"");
+    $found = generalTermSearch($searchTree, $keywords);
   }
   else {
     /* Break into separate words and query for each. */
-    $words = explode(" ", $_REQUEST['keywords']);
+    $words = explode(" ", $keywords);
     for($i=0; $i<count($words); $i++) {
       if(trim($words[$i]) != "") 
 	/* $found = array_merge($found, generalTermSearch($searchTree, $words[$i])); */
@@ -83,13 +83,22 @@ if (isset($_REQUEST['keywords'])) {
       $found = array_merge($found);
     }
   }
-
-    if (count($found) < 1) {
-        echo "<p>Keyword \"$_REQUEST[keywords]\" not found.<p>";
-    }
 }
 
 /* Handle the results */
+// If no hits.
+if (count($found) < 1) {
+  echo "<p>Keyword \"$keywords\" not found.<p>";
+  print <<<_SEARCHFORM
+    <form method="post" action="search.php">
+    <div>
+    <p><strong>Quick search...</strong>
+    <input type="text" size=30 name="keywords" ><br />
+    <input type="submit" class="button" value="Search">
+    </div>
+    </form>
+_SEARCHFORM;
+}
 // If there's only one hit, jump directly to it.
 if (count($found) == 1) {
   $line = explode("@@", $found[0]);
@@ -107,19 +116,18 @@ if (count($found) == 1) {
   else 
     echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."view.php?table=".urlencode($line[0])."&uid=$line[2]\">";
 }
-elseif(count($found) > 1) 
-  displayTermSearchResults($found);
-else {
-  print <<<_SEARCHFORM
-    <form method="post" action="search.php">
-    <div>
-    <p><strong>Quick search...</strong>
-    <input type="text" size=30 name="keywords" ><br />
-    <input type="submit" class="button" value="Search">
-    </div>
-    </form>
-_SEARCHFORM;
+// There is more than one hit.
+if ($_REQUEST['table']) {
+  // We have requested a specific table (in includes/search.inc:displayTermSearchResults()).
+  $table = $_REQUEST['table'];
+  $columnlist = implode(',', $searchTree[$table]);
+  echo "<meta http-equiv=\"refresh\" content=\"0;url=browse.php?table=$table&cols=$columnlist&keywords=$keywords\">";
 }
+else   
+  // There is more than one hit and we haven't requested a particular table yet.
+  displayTermSearchResults($found, $keywords);
+
+
 
 /****************************************************************************************/
 /* Haplotype Search */

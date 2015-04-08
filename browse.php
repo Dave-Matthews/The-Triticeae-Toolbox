@@ -8,12 +8,77 @@ include($config['root_dir'].'theme/admin_header.php');
 connect();
 $mysqli = connecti();
 
-$table = $_GET['table'];
-$tablelabel = beautifulTableName($table)."s";
+$table = mysqli_real_escape_string($mysqli, $_GET['table']);
+$column = mysqli_real_escape_string($mysqli, $_GET['col']);
+$keywords = mysqli_real_escape_string($mysqli, $_GET['keywords']);
+$page = 1;
+if ($_GET['page']) 
+  $page = $_GET['page'];
 $key = get_pkey($table);
-$namecol = $_GET['namecol'];
+// Print the hit names in 5 columns, top to bottom first.
+$numcols = 5;
+$numrows = 10;
+$pagesize = $numcols * $numrows;
 
-$uidlist = $_GET['hits'];
+// Make the searchTree with the names of the columns to be searched.
+/* $names = explode(',', $column); */
+/* $searchTree[$table] = $names; */
+$searchTree[$table] = array($column);
+
+// Process the $keywords.
+// Remove the \ characters inserted before quotes by magic_quotes_gpc.
+$keywords = stripslashes($keywords);
+// If the input is doublequoted, don't split at <space>s.
+if (preg_match('/^".*"$/', $keywords)) {
+  $keywords = trim($keywords, "\"");
+  $found = generalTermSearch($searchTree, $keywords);
+}
+else {
+  /* Break into separate words and query for each. */
+  $words = explode(" ", $keywords);
+  for($i=0; $i<count($words); $i++) {
+    if(trim($words[$i]) != "") 
+      // Return only items that contain _all_ words (AND) instead of _any_ of them (OR). 
+      $partial[$i] = generalTermSearch($searchTree, $words[$i]);
+  }
+  $found = $partial[0];
+  for ($i = 1; $i < count($words); $i++) {
+    $found = array_intersect($found, $partial[$i]);
+    // Reset the (numeric) key of the array to start at [0].
+    $found = array_merge($found);
+  }
+}
+
+foreach ($found as $v) {
+  // $v is "<table>@@<column>@@<uid>".
+  $line = explode("@@", $v);
+  // Omit marker synonyms that are identical to marker name.
+  $skip = "";
+  if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
+    $msquery = mysql_query("select marker_name 
+                    from markers, marker_synonyms 
+                    where marker_synonym_uid = '$line[2]'
+                    and markers.marker_uid = marker_synonyms.marker_uid
+                    and markers.marker_name = marker_synonyms.value");
+    if (mysql_num_rows($msquery) > 0) 
+      $skip = "yes"; 
+  }
+  if (! $skip) 
+    $uids[] = $line[2];
+}
+$uidlist = implode(',', $uids);
+$namecol = $line[1];
+
+$tablelabel = beautifulTableName($table)."s"; // for display
+// Rename phenotype experiments as "Trials".
+if ($table == "experiments") {
+  $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
+  if ($expttype == 1)
+    $tablelabel = "Trials"; 
+}
+// Use a better class name than the table name:
+if ($tablelabel == 'Experiment Sets') $tablelabel = 'Experiments';
+
 // Alphabetize
 $sql = "select $key, $namecol from $table where $key in ($uidlist) order by $namecol";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -22,47 +87,55 @@ while ($record = mysqli_fetch_row($res)) {
 };
 $numrecords = count($records);
 
+// Begin output to the webpage.
 print "<div class='section'>";
 print "<h1>$tablelabel</h1>";
-// Print the hit names in 5 columns, top to bottom first.
-// row, column and cell count from 0; page counts from 1.
-$numcols = 5;
-$numrows = 10;
-$pagesize = $numcols * $numrows;
-$page = 1;
-if ($_GET['page']) {
-  $page = $_GET['page'];
-}
 print "<table>";
+// row, column and cell count from 0; page counts from 1.
 for ($rw = 0; $rw < $numrows; $rw++) {
   print "<tr>";
-  for ($cl = 0; $cl < $numcols; $cl++) {
-    $cell = (($page - 1) * $pagesize) + ($cl * $numrows + $rw);
+  for ($clm = 0; $clm < $numcols; $clm++) {
+    $cell = (($page - 1) * $pagesize) + ($clm * $numrows + $rw);
     if ($cell < $numrecords) {
       $uid = $records[$cell][0];
       $name = $records[$cell][1];
-      print "<td><a href='view.php?table=$table&uid=$uid'>$name</a>";
+      // Intercept experiments and route to display_phenotype.php or display_genotype.php.
+      if ($table == "experiments") {
+	if ($expttype == 1)
+	  print "<td><a href='display_phenotype.php?trial_code=$name'>$name</a>";
+	else
+	  print "<td><a href='display_genotype.php?trial_code=$name'>$name</a>";
+      }
+      else 
+	print "<td><a href='view.php?table=$table&uid=$uid'>$name</a>";
     }
   }
 }
 print "</table>";
 
-// Paging
+// Pager
 if ($numrecords > $pagesize) {
   $numpages = ceil($numrecords / $pagesize);
   print "Page ";
-?>
-  <select onchange="window.open('browse.php?table=<?php echo $table ?>&page='+this.options[this.selectedIndex].value+'&namecol=<?php echo $namecol ?>&hits=<?php echo $uidlist ?>', '_self')">
-<?php
-  for ($p = 1; $p <= $numpages; $p++)
-    if ($p == $page)
-      print "<option value=$p selected>$p</option>";
+  print "<input type=text size=3 value=$page onchange=\"window.open('browse.php?table=$table&page='+this.value+'&col=$_GET[col]&keywords=$_GET[keywords]', '_self')\">";
+  print " of <b>$numpages</b> <input type=button value='Go'><br>";
+  print "<select onchange=\"window.open('browse.php?table=$table&page='+this.options[this.selectedIndex].value+'&col=$_GET[col]&keywords=$_GET[keywords]', '_self')\">";
+  // Divide the number of pages into at most 20 lumps.
+  $lumps = $numpages;
+  while ($lumps > 20) 
+    $lumps = ceil($lumps / 3);
+  $lumpsize = floor($numpages / $lumps);
+  for ($i = 0; $i < $lumps; $i++) {
+    // Calculate the $records[] index of the top left item on the first page of this lump.
+    $upperleft = $i * $lumpsize * $pagesize;
+    $lumpname = $records[$upperleft][1];
+    $lumppage = $i * $lumpsize + 1;
+    if ($lumppage == $page)
+      print "<option value=$lumppage selected>$lumpname ...</option>";
     else
-      print "<option value=$p>$p</option>";
-  print "</select>";
-  print " of <b>$numpages</b>";
-  if ($numrecords == 900)
-    print "<br>Only the first 900 records are shown.";
+      print "<option value=$lumppage>$lumpname ...</option>";
+  }
+  print "</select><p>";
 }
 
 print "</div>";
