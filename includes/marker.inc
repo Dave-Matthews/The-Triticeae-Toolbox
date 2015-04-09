@@ -86,7 +86,7 @@ function showMarkerForLine($line_id, $order = "marker_name")
             $lines = json_decode($row['line_index']);
             if (in_array( $line_id, $lines)) {
                 $found = 1;
-                echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\" $trial_code</a><br><br>\n";
+                echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><br><br>\n";
             }
         }
     }
