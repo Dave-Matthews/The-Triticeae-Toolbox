@@ -47,6 +47,16 @@ try {
             $compositeLog->addLogger(IDS_Log_file::getInstance($init));
             $compositeLog->execute($result);
     }
+    if ($impact > 10) {
+        $_SESSION['impact'] += $impact;
+        if ($_SESSION['impact'] > 50) {
+            $impact_sum = $_SESSION['impact'];
+            error_log("A phpids repeated event impact = $impact_sum");
+            $url = $config['base_url'] . 'feedback2.php';
+            echo "Error: Please help us to improve the website by submitting <a href=\"$url\">feedback</a>.";
+            die();
+        }
+    }
     if ($impact > 20) {
         error_log("A phpids event impact = $impact");
         $url = $config['base_url'] . 'feedback2.php';
