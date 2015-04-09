@@ -16,7 +16,7 @@
 namespace T3;
 
 set_time_limit(0);
-ini_set('memory_limit', '2G');
+ini_set('memory_limit', '3G');
 
 // For live website file
 require_once 'config.php';
