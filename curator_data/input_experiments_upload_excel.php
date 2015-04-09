@@ -144,7 +144,7 @@ if ($_GET['delete']) {
     elseif (file_exists($trial_path.$fl))
       unlink($trial_path.$fl);
     else {
-      echo ("<p><b>Error:</b> Couldn't find file $fl.<p>");
+      echo ("<p><font color=red><b>Error:</b> Couldn't find file $fl in either $top_path or $trial_path.</font><p>");
       $failed = true;
     }
     if (!$failed) {
