@@ -201,7 +201,7 @@ $in_these_trials
 	  store_session_variables('selected_lines', $username);
 
 	$query = str_replace("SELECT lr.line_record_uid, ", "SELECT ", $query);
-	$search = mysql_query($query) or die(mysql_error());
+	$search = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
 
 	/* Get the number of significant digits for this unit. */
 	$getsigdig = "SELECT sigdigits_display FROM units, phenotypes
@@ -220,7 +220,7 @@ $in_these_trials
 	<div class='box'><h2>Results</h2><div class='boxContent'>
         <?php
 
-	if(mysql_num_rows($search) > 0) {
+        if(mysqli_num_rows($search) > 0) {
 	  echo displayTableSigdig($search, TRUE, $sigdig);
 	  echo "<form action='".$config['base_url']."dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . base64_encode($query) ."' /></form>";
 	  //echo "<br /><form action='".$config['base_url']."pedigree/pedigree_markers.php'><input type='submit' value='View Common Marker Values' /></form>";

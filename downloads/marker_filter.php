@@ -395,7 +395,7 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     }
 
     //generate an array of selected markers and add map position if available
-    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, marker_type_name from markers, marker_types, allele_bymarker_exp_101
+    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele from markers, marker_types, allele_bymarker_exp_101
     where markers.marker_uid = allele_bymarker_exp_101.marker_uid
     and markers.marker_type_uid = marker_types.marker_type_uid";
     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
@@ -405,7 +405,6 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $allele = $row[2] . "/" . $row[3];
         $marker_list_name[$marker_uid] = $marker_name;
         $marker_list_allele[$marker_uid] = $allele;
-        $marker_list_type[$marker_uid] = $row[4];
     }
 
         //get header, tassel requires all fields even if they are empty
@@ -439,7 +438,6 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $pos = $row[3];
         $alleles = $row[4];
         $allele = $marker_list_allele[$marker_id];
-        $marker_type = $marker_list_type[$marker_id];
         if (isset($marker_list_mapped[$marker_id])) {
             $chrom = $marker_list_chr[$marker_id];
             $pos = $marker_list_mapped[$marker_id];
