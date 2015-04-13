@@ -42,12 +42,12 @@ connect();
     - Rules for filling in the templates, and sequence of submission
 <br>
     <b>Tutorials</b><br>
-    &bull; <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson1_LineUpload.html" target="_blank">Lesson One.</a> Germplasm file creation and upload<br>
-    &bull; <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson2_Phenotype2012.html" target="_blank">Lesson Two.</a>
-    (<a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson2_Phenotype.pdf">.pdf</a>)
+    &bull; <a href="curator_data/tutorial/T3_Lesson1_LineUpload.html" target="_blank">Lesson One.</a> Germplasm file creation and upload<br>
+    &bull; <a href="curator_data/tutorial/T3_Lesson2_Phenotype2012.html" target="_blank">Lesson Two.</a>
+    (<a href="curator_data/tutorial/T3_Lesson2_Phenotype.pdf">.pdf</a>)
     Phenotype trial descriptions and data<br>
-&bull; <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Lesson3_GenotypeUpload.html" target="_blank">Lesson Three.</a> Genotype trial descriptions and data<br>
-&bull; <a href="http://malt.pw.usda.gov/t3/barley/curator_data/tutorial/T3_Line_Panels.pdf" target="_blank">Lesson Four.</a> How to create germplasm line panels in T3<br>
+&bull; <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html" target="_blank">Lesson Three.</a> Genotype trial descriptions and data<br>
+&bull; <a href="curator_data/tutorial/T3_line_panels.pdf" target="_blank">Lesson Four.</a> How to create germplasm line panels in T3<br>
 
 
 <h3>Data Templates</h3>

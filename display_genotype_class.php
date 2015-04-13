@@ -166,16 +166,20 @@ class ShowData
     $row = mysqli_fetch_assoc($res);
     $platform_name = $row['platform_name'];
 	
-    $max_missing = 10; //IN PERCENT
-	if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
+	if (isset($_GET['mm']) && is_numeric($_GET['mm'])) {
 	  $max_missing = $_GET['mm'];
+        } else {
+          $max_missing = 10; //IN PERCENT
+        }
 	if ($max_missing > 100)
 	  $max_missing = 100;
 	elseif ($max_missing < 0)
 	  $max_missing = 0;
-        $min_maf = 5; //IN PERCENT
-        if (isset($_GET['mmaf']) && !empty($_GET['mmaf']) && is_numeric($_GET['mmaf']))
+        if (isset($_GET['mmaf']) && is_numeric($_GET['mm'])) {
 	  $min_maf = $_GET['mmaf'];
+        } else {
+          $min_maf = 5; //IN PERCENT
+        }
 	if ($min_maf > 100)
           $min_maf = 100;
         elseif ($min_maf < 0)
@@ -190,20 +194,20 @@ class ShowData
         $num_mark = mysqli_num_rows($res);
         $num_maf = $num_miss = 0;
 
+   $count_remain = 0;
     while ($row = mysqli_fetch_array($res)) {
         $marker_uid[] = $row["marker"];
         $total_af = $row["sumaa"] + $row["sumab"] + $row["sumbb"];
         $maf = $row["maf"];
         if ($row["total"] > 0) {
             $miss = round(100*$row["summis"]/$row["total"], 1);
-            if ($maf >= $min_maf) {
+            if ($maf > $min_maf) {
                 $num_maf++;
             }
             if ($miss > $max_missing) {
                 $num_miss++;
             }
-            if (($miss > $max_missing) or ($maf < $min_maf)) {
-            } else {
+            if (($miss < $max_missing) and ($maf > $min_maf)) {
                 $count_remain++;
             }
         }
