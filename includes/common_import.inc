@@ -52,53 +52,46 @@ function error($type, $text) {
 }
 
 
-    /*
+/*
  * If no line found, function returns FALSE
  *	If a line is found, the result is the line_record_uid
  *
  * get_lineuid: checks if a line is in the database, checks both line record and synonym table,
  *       it also checks for the case with spaces removed and the case where spaces have been replaced by underscores
- * 
+ * DEM apr2015: Fixed bug in $line_us.
  */
-
-	function get_lineuid ($line) {
-               // find line name list and group it into th proper experiment
-                // If the name does not work, also check versions with spaces removed
-                // and spaces replaced by underscores
-                $line_nosp = str_replace(" ","",$line);
-                $line_us = str_replace("_","",$line);
-                $line_hyp = str_replace("-","",$line);
-                $line_sql = mysql_query("SELECT line_record_uid AS lruid
+function get_lineuid ($line) {
+  // If the name does not work, also check versions with spaces removed
+  // and spaces replaced by underscores
+  $line_nosp = str_replace(" ","",$line);
+  $line_us = str_replace(" ","_",$line);
+  $line_hyp = str_replace("-","",$line);
+  $line_sql = mysql_query("SELECT line_record_uid AS lruid
                     FROM line_records
                     WHERE line_record_name = '$line'
                         OR line_record_name = '$line_nosp'
                         OR line_record_name = '$line_us'
                         OR line_record_name = '$line_hyp'
 					");
-
-                
-                if (mysql_num_rows($line_sql)<1)  {
-                    //echo "Line ".$line." ".$line_us.$line_hyp.$line_nosp.$line_sql." \n";
-                    $line_sql = mysql_query("SELECT line_record_uid AS lruid
+  if (mysql_num_rows($line_sql)<1)  {
+    //echo "Line ".$line." ".$line_us.$line_hyp.$line_nosp.$line_sql." \n";
+    $line_sql = mysql_query("SELECT line_record_uid AS lruid
                         FROM line_synonyms
                         WHERE line_synonym_name = '$line'
                             OR line_synonym_name = '$line_nosp'
                             OR line_synonym_name = '$line_us'
                             OR line_synonym_name = '$line_hyp'");
-                    
-                    if (mysql_num_rows($line_sql)<1) {
-                        //echo "Line ".$line." is not in the line record or synonym table\n";
-                        return FALSE;
-                    }
-                }
-
-
-                while ($row = mysql_fetch_array($line_sql, MYSQL_ASSOC)) {
-                    $result[] = $row["lruid"];  
-                }
-            return $result;
-
-
+    if (mysql_num_rows($line_sql)<1) {
+      //echo "Line ".$line." is not in the line record or synonym table\n";
+      return FALSE;
+    }
+  }
+  /* Do not add duplicates */
+  $result = array();
+  while ($row = mysql_fetch_array($line_sql, MYSQL_ASSOC)) 
+    if (!in_array($row["lruid"],$result)) 
+      $result[] = $row["lruid"];  
+  return $result;
 }
 
 ?>
