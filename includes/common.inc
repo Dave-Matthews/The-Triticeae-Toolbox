@@ -1005,26 +1005,25 @@ function get_table_info ($tablename) {
  * If you want it to be plural (with an s) then set $plural to 1
  */
 function beautifulTableName($tname, $plural=0) {
-  // dem jan2012
+  // dem jan2012, Rename Phenotypes
   if ($tname == 'phenotypes') $tname = 'traits';
-
-	$list = array("a", "o", "u", "s", "");
-
-	if($plural) {
-		if($tname[strlen($tname)-1] == "y") //special y case
-			$end = substr($tname, 0, -1) . "ies";
-
-		else if( !in_array($tname[strlen($tname)-1], $list) )	//pluralize if not already
-			$end = $tname . "s";
-
-		else	//already plural
-			$end = $tname;
-	}
-	else {
-		$end = ($tname[strlen($tname)-1] == "s" && $tname[strlen($tname)-2] != "u") ? substr($tname, 0, -1) : $tname;
-	}
-	return ucwords(str_replace("_", " ", $end));
-
+  $list = array("a", "o", "u", "s", "");
+  if ($plural) { // Pluralize.
+    if($tname[strlen($tname)-1] == "y") //special y case
+      $end = substr($tname, 0, -1) . "ies";
+    else if( !in_array($tname[strlen($tname)-1], $list) )	//pluralize if not already
+      $end = $tname . "s";
+    else	//already plural
+      $end = $tname;
+  }
+  else { // Not pluralizing
+    $ies = substr($tname, -3, 3);
+    if ($ies == "ies")  // special ies case e.g. properties
+      $end = substr($tname, 0, -3) . "y";
+    else
+      $end = ($tname[strlen($tname)-1] == "s" && $tname[strlen($tname)-2] != "u") ? substr($tname, 0, -1) : $tname;
+  }
+  return ucwords(str_replace("_", " ", $end));
 }
 
 /**
