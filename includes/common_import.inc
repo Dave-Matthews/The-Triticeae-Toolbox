@@ -17,13 +17,13 @@
      * @result    array                    Returns the elements that the $string was found in
      */
     function find ($string, $array = array ())
-    {       
+    {
         foreach ($array as $key => $value) {
             unset ($array[$key]);
             if (strpos($value, $string) !== false) {
                 $array[$key] = $key;
             }
-        }       
+        }
         return $array;
     }
     
@@ -35,21 +35,21 @@
  * This function displays errors encountered in the program. It handles them and displays them in a pretty format
  * 
  */
-function error($type, $text) {
+/* function error($type, $text) { */
 
-	switch($type) {
+/* 	switch($type) { */
 
-	case 0:
-		echo "<p class=\"warning\"><strong>Warning:</strong> $text</p>\n";
-		break;
+/* 	case 0: */
+/* 		echo "<p class=\"warning\"><strong>Warning:</strong> $text</p>\n"; */
+/* 		break; */
 
-	case 1:
-		echo "<p class=\"error\"><strong>Error:</strong> $text</p>\n";
-		break;
+/* 	case 1: */
+/* 		echo "<p class=\"error\"><strong>Error:</strong> $text</p>\n"; */
+/* 		break; */
 
-	}
+/* 	} */
 
-}
+/* } */
 
 
 /*
@@ -88,9 +88,9 @@ function get_lineuid ($line) {
   }
   /* Do not add duplicates */
   $result = array();
-  while ($row = mysql_fetch_array($line_sql, MYSQL_ASSOC)) 
-    if (!in_array($row["lruid"],$result)) 
-      $result[] = $row["lruid"];  
+  while ($row = mysql_fetch_array($line_sql, MYSQL_ASSOC))
+    if (!in_array($row["lruid"],$result))
+      $result[] = $row["lruid"];
   return $result;
 }
 
