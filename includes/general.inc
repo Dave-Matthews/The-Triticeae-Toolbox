@@ -396,6 +396,24 @@ function show_experiment_set ($id) {
   }
 }
 
+// Need a special function only because the foreign key is named 'category_uid'
+// instead of 'phenotype_category_uid'.
+function show_properties($id) {
+  $sql = "select name, description from properties where properties_uid = $id";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($r = mysql_fetch_row($res)) {
+    $name = $r[0];
+    $desc = $r[1];
+  }
+  $cat = mysql_grab("select phenotype_category_name from phenotype_category, properties
+                     where phenotype_category_uid = category_uid and properties_uid = $id");
+  echo "<table>";
+  echo "<tr><td>Name<td>$name";
+  echo "<tr><td>Description<td>$desc";
+  echo "<tr><td>Category<td>$cat";
+  echo "</table>";
+}
+
 /**
  * This function is a general function that will display the contents of a particular row
  * in a particular table. It is used in correlation with view.php as the default action.
