@@ -8,7 +8,8 @@ require 'config.php';
  * Logged in page initialization
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
+/* include($config['root_dir'] . 'curator_data/lineuid.php'); */
+include($config['root_dir'] . 'includes/common_import.inc');
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
 connect();
