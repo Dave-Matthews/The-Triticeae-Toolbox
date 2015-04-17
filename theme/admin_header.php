@@ -245,7 +245,6 @@ EOD;
     <ul>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_users.php" title="No deletion yet">Edit Users</a>
       <li><a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">Table Status</a>
-      <li><a href="<?php echo $config['base_url']; ?>dbtest/backupDB.php" title="Full Database Backup">Full Database Backup</a>
       <li><a href="<?php echo $config['base_url']; ?>login/input_gateway.php" title="Data Input Gateway">Data Input Gateway</a>
       <li><a href="<?php echo $config['base_url']; ?>login/export_gateway.php" title="Data Export Gateway">Data Export Gateway</a>
       <li><a href="<?php echo $config['base_url']; ?>login/cleanup_temporary_dir.php" title="Clean up temporary files">Clean up temporary files</a>

@@ -6,10 +6,10 @@ require 'config.php';
  * 8/16/2010 J.Lee  Fix significant digits display 
  * 3/29/2012 C.Birkett changed intersect option to use SESSION variable, then DispPhenotype will show trial only if it is in selected lines
  */
-include($config['root_dir'] . 'includes/bootstrap.inc');
-connect();
+require $config['root_dir'] . 'includes/bootstrap.inc';
+$mysqli = connecti();
 
-include($config['root_dir'] . 'theme/admin_header.php');
+require $config['root_dir'] . 'theme/admin_header.php';
 /*******************************/ ?>
 
 <div id="primaryContentContainer">
@@ -17,36 +17,37 @@ include($config['root_dir'] . 'theme/admin_header.php');
         <script type="text/javascript" src="theme/new.js"></script>
 <?php
 
-function DispCombinOpt() {
-  $count = count($_SESSION['selected_lines']);
-  /*if POST varialble set then use this value, else if SESSION variable set then use this value, else default to replace*/
-  $select_rep = "";
-  $select_add = "";
-  $select_yes = "";
-  if ($_POST['selectWithin'] == "Replace") {
-    $select_rep = "checked";
-    $_SESSION['selectWithin'] = "Replace";
-  } elseif ($_POST['selectWithin'] == "Add") {
-    $select_add = "checked";
-    $_SESSION['selectWithin'] = "Add";
-  } elseif ($_POST['selectWithin'] == "Yes") {
-    $select_yes = "checked";
-    $_SESSION['selectWithin'] = "Yes";
-  } elseif ($_SESSION['selectWithin'] == "Replace") {
-    $select_rep = "checked";
-  } elseif ($_SESSION['selectWithin'] == "Add") {
-    $select_add = "checked";
-  } elseif ($_SESSION['selectWithin'] == "Yes") {
-    $select_yes = "checked";
-  } else {
-    $select_rep = "checked";
-  }
-  ?>
-  Combine with <?php echo $count; ?> <font color=blue>currently selected lines</font>:<br>
-  <input type="radio" name="selectWithin" value="Replace" <?php echo $select_rep; ?> onclick="this.form.submit();"/>Replace<br>
-  <input type="radio" name="selectWithin" value="Add" <?php echo $select_add; ?> onclick="this.form.submit();"/>Add (OR)<br>
-  <input type="radio" name="selectWithin" value="Yes" <?php echo $select_yes; ?> onclick="this.form.submit();"/>Intersect (AND)<br><br>
-  <?php
+function dispCombinOpt()
+{
+    $count = count($_SESSION['selected_lines']);
+    /*if POST varialble set then use this value, else if SESSION variable set then use this value, else default to replace*/
+    $select_rep = "";
+    $select_add = "";
+    $select_yes = "";
+    if ($_POST['selectWithin'] == "Replace") {
+        $select_rep = "checked";
+        $_SESSION['selectWithin'] = "Replace";
+    } elseif ($_POST['selectWithin'] == "Add") {
+        $select_add = "checked";
+        $_SESSION['selectWithin'] = "Add";
+    } elseif ($_POST['selectWithin'] == "Yes") {
+        $select_yes = "checked";
+        $_SESSION['selectWithin'] = "Yes";
+    } elseif ($_SESSION['selectWithin'] == "Replace") {
+        $select_rep = "checked";
+    } elseif ($_SESSION['selectWithin'] == "Add") {
+        $select_add = "checked";
+    } elseif ($_SESSION['selectWithin'] == "Yes") {
+        $select_yes = "checked";
+    } else {
+        $select_rep = "checked";
+    }
+    ?>
+    Combine with <?php echo $count; ?> <font color=blue>currently selected lines</font>:<br>
+    <input type="radio" name="selectWithin" value="Replace" <?php echo $select_rep; ?> onclick="this.form.submit();"/>Replace<br>
+    <input type="radio" name="selectWithin" value="Add" <?php echo $select_add; ?> onclick="this.form.submit();"/>Add (OR)<br>
+    <input type="radio" name="selectWithin" value="Yes" <?php echo $select_yes; ?> onclick="this.form.submit();"/>Intersect (AND)<br><br>
+    <?php
 }
 
   // Create temporary directory if necessary.
@@ -95,18 +96,18 @@ if (isset($_POST['deselLines'])) {
 	  $in_these_trials = "AND e.experiment_uid IN (" . $_REQUEST['triallist'] . ")";
 	}
         // DLH R plotting for histogram
-        $phen_name = mysql_query("select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotype
+        $phen_name = mysqli_query($mysqli, "select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotype
                                         AND units.unit_uid = phenotypes.unit_uid;");
-        $pname = mysql_fetch_row($phen_name);
-        $hist_query = mysql_query("
+        $pname = mysqli_fetch_row($phen_name);
+        $hist_query = mysqli_query($mysqli, "
 	  select value from phenotype_data as pd, experiments as e, tht_base
 	  where phenotype_uid = $phenotype 
 	  and tht_base.tht_base_uid = pd.tht_base_uid
 	  and e.experiment_uid = tht_base.experiment_uid
 	  $in_these_trials"
-				  ) or die(mysql_error());
+				  ) or die(mysqli_error($mysqli));
         $x = 'x <- c(';
-        while($row = mysql_fetch_row($hist_query)) {
+        while($row = mysqli_fetch_row($hist_query)) {
 	  $x .= "$row[0],";
         }
         $x = trim($x, ",");
@@ -127,7 +128,7 @@ if (isset($_POST['deselLines'])) {
 	 where phenotypes.phenotype_uid = $phenotype 
 	 and units.unit_uid=phenotypes.unit_uid");
 	// Show mean, std. dev., and number of entries
-	$meanquery = mysql_query("
+	$meanquery = mysqli_query($mysqli, "
 select avg(value) as avg,
        stddev_samp(value) as std,
        count(value) as num
@@ -137,8 +138,8 @@ and tht_base.experiment_uid = e.experiment_uid
 and phenotype_data.tht_base_uid = tht_base.tht_base_uid
 and phenotype_data.phenotype_uid = phenotypes.phenotype_uid
 $in_these_trials
-") or die(mysql_error());
-	$row = mysql_fetch_assoc($meanquery);
+") or die(mysqli_error($mysqli));
+	$row = mysqli_fetch_assoc($meanquery);
 	$avg = number_format($row['avg'],1);
 	$std = number_format($row['std'],1);
 	$num = $row['num'];
@@ -185,13 +186,13 @@ $in_these_trials
 					$in_these_lines
                                         $in_these_trials
 				$order";
-	$search = mysql_query($query) or die(mysql_error());
+	$search = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
 
 	if ($_REQUEST['selectWithin'] != "Add") {
 	  // selectWithin = Yes or Replace
 	  $_SESSION['selected_lines'] = array(); // Empty the session array.
 	}  
-	while($row = mysql_fetch_assoc($search)) {
+	while($row = mysqli_fetch_assoc($search)) {
 		if(!in_array($row['line_record_uid'], $_SESSION['selected_lines']))
 			array_push($_SESSION['selected_lines'], $row['line_record_uid']);
 	}
@@ -207,8 +208,8 @@ $in_these_trials
 	$getsigdig = "SELECT sigdigits_display FROM units, phenotypes
 			WHERE phenotypes.phenotype_uid = '$phenotype'
 			AND units.unit_uid = phenotypes.unit_uid";
-	$r = mysql_query($getsigdig) or die(mysql_error());
-	$sigdig = mysql_fetch_row($r);
+	$r = mysqli_query($mysqli, $getsigdig) or die(mysqli_error($mysqli));
+	$sigdig = mysqli_fetch_row($r);
 	$sigdig = (int) $sigdig[0];
 
 	/* Display Result */
@@ -222,7 +223,7 @@ $in_these_trials
 
         if(mysqli_num_rows($search) > 0) {
 	  echo displayTableSigdig($search, TRUE, $sigdig);
-	  echo "<form action='".$config['base_url']."dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . base64_encode($query) ."' /></form>";
+	  echo "<form action='".$config['base_url']."dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . urlencode($query) ."' /></form>";
 	  //echo "<br /><form action='".$config['base_url']."pedigree/pedigree_markers.php'><input type='submit' value='View Common Marker Values' /></form>";
 	}
 	else
@@ -240,7 +241,7 @@ $in_these_trials
     <form action="<?php echo $config['base_url']; ?>phenotype/compare.php" method="post">
     <?php
     if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
-      DispCombinOpt();
+      dispCombinOpt();
     }
     ?>
 
@@ -293,8 +294,8 @@ if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0
   print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
   print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
   foreach ($_SESSION['selected_lines'] as $lineuid) {
-    $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-    while ($row=mysql_fetch_assoc($result)) {
+    $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+    while ($row=mysqli_fetch_assoc($result)) {
       $selval=$row['line_record_name'];
       print "<option value=\"$lineuid\">$selval</option>\n";
     }
