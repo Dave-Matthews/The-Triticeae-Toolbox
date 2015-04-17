@@ -206,11 +206,12 @@ echo "</div><div class='boxContent'><table ><tr><td>";
                     mysqli_stmt_bind_result($stmt, $hits);
                     while (mysqli_stmt_fetch($stmt)) {
                         $linesFound[] = $hits;
+			$found = TRUE;
                     }
                     mysqli_stmt_close($stmt);
-                    if (isset($linesFound)) {
-                        $found = true;
-                    }
+                    /* if (isset($linesFound)) { */
+                    /*     $found = true; */
+                    /* } */
                 }
 	// Now check line_synonyms.line_synonym_name.
         $sql = "select line_record_name from line_synonyms ls, line_records lr where line_synonym_name like ? and ls.line_record_uid = lr.line_record_uid";
@@ -220,11 +221,12 @@ echo "</div><div class='boxContent'><table ><tr><td>";
                     mysqli_stmt_bind_result($stmt, $hits);
                     while (mysqli_stmt_fetch($stmt)) {
                         $linesFound[] = $hits;
+			$found = TRUE;
                     }
                     mysqli_stmt_close($stmt);
-                    if (isset($linesFound)) {
-                        $found = true;
-                    }
+                    /* if (isset($linesFound)) { */
+                    /*     $found = true; */
+                    /* } */
                 }
 	if ($found === false) {
 	  $nonHits[] = $word;
