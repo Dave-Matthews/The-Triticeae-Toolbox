@@ -1345,7 +1345,7 @@ function DispPropCategorySel($arr) {
     extract($arr);
     $query = mysql_query("SELECT properties_uid, name 
      FROM properties 
-     WHERE category_uid = $id 
+     WHERE phenotype_category_uid = $id 
      order by name") or die(mysql_error());
     if(mysql_num_rows($query) > 0) {
       echo "<select name='property' size=5 
