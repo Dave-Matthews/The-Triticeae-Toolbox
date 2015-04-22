@@ -86,7 +86,7 @@ for ($i = 4; $i <= $data->sheets[0]['numRows']; $i++) {
       $sql = "insert into properties values (DEFAULT, $cat_id, '$pname', '$desc')";
     else {   // update
       $drds++;
-      $sql = "update properties set name = '$pname', category_uid = $cat_id, description = '$desc' where properties_uid = $puid";
+      $sql = "update properties set name = '$pname', phenotype_category_uid = $cat_id, description = '$desc' where properties_uid = $puid";
     }
     mysql_query($sql) or die(mysql_error()."<br>Query was:<br>$sql");
     $puid = mysql_grab("select properties_uid from properties where name = '$pname'");
