@@ -19,7 +19,7 @@ while ($row = mysql_fetch_array($cats)) {
   $catid = $row['phenotype_category_uid'];
   $catname = $row['phenotype_category_name'];
   $res = mysql_query("select properties_uid, name, description from properties
-	  where category_uid = $catid order by name");
+	  where phenotype_category_uid = $catid order by name");
   if (mysql_num_rows($res) > 0) {
     print "<tr><th>$catname<th>Description<th>Values";
     while ($prow = mysql_fetch_array($res)) {
