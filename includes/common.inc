@@ -774,7 +774,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 		 */
 		// Enable the Delete option only for tables that have good foreign key constraints to prevent orphan data.
 		/* if ($table == 'CAPdata_programs') */
-		if (in_array($table, array('CAPdata_programs', 'phenotypes')))
+		if (in_array($table, array('CAPdata_programs', 'phenotypes', 'properties')))
 		  $deletebutton = "<button type='submit' name='Delete' value='$row[$pkey]' disabled>Delete</button>";
 		$line = "
 		<tr><form name=\"$table$count\" id=\"$table$count\" action=\"$return_page\" method=\"post\">
