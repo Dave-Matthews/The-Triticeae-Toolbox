@@ -89,6 +89,98 @@ function editSinglePhenotype($ID, $page) {
 
 }
 
+//////////////
+/*
+ * This function will actually display the property row.
+ *
+ * @param $where - sets the conditions of which to select the row(s). This makes it possible to select any number of rows.
+ * @param $page - editing allows for updating and has a button that goes to a certain page to update. This variable sets that page
+ *
+ * @return nothing - this function outputs to the screen.
+ */
+function editPropertyRow($where, $page, $start = "0")
+{
+    $ignore = array("properties_uid", "datatype");
+    // see includes/common.inc
+    editGeneral("properties", $where, $page, $ignore, "20", $start);
+}
+
+/*
+ * This is an example of using the above function. This should display every line (minus the gramene data) in the same format
+ * as the spreadsheet. The problem is the 0 value in the units table. It's killing us unless we put something for 0 in there.
+ */
+function editAllProperties($page, $start)
+{
+    editPropertyRow("1", $page, $start);
+}
+
+/*
+ * This will select a range of traits to edit from a given id to a given id.
+ *
+ * $minID - the lower boundary of id to get.
+ * $maxID - the upper boundary of id to get.
+ * $page - this is the page that the update button will travel to.
+ *
+ * Note: These values are exclusive, meaning if $minID = 1 and $maxID = 5 then the results returned will be IDs: 2, 3, and 4.
+ *
+ * @return nothing
+ * @see editPropertyRow()
+ */
+function editRangeProperties($minID, $maxID, $page)
+{
+    $where = "properties_uid < '$maxID' AND properties_uid > '$minID'";
+    editPropertyRow($where, $page);
+}
+
+/*
+ * This will select a list of traits to edit from a given array of IDs
+ *
+ * If we have a bunch of IDs that we want to edit and there isn't a range
+ * of them then we can use this function to display them.
+ *
+ * @param $IDRange - an array of IDs to edit. This MUST be an array.
+ * @param $page - the page that the update button will travel to
+ *
+ * @return nothing
+ * @see editPropertyRow()
+ */
+function editSelectProperties($IDRange, $page, $start)
+{
+    if (is_array($IDRange)) {
+        $where = "";
+		for($i=0; $i<count($IDRange); $i++) {
+			if($i != 0)
+				$where .= " OR ";
+
+			$where .= "properties_uid = '$IDRange[$i]'";
+		}
+
+		editPropertyRow($where, $page, $start);
+	}
+
+}
+
+/*
+ * This function will edit only a single row.
+ *
+ * WARNING: Do not use this function in a for loop if you have multiple IDs to edit
+ *	    use the editSelectProperties() function for that.
+ *
+ * @param $ID - the id of the row to edit
+ * @param $page - the page that the update button will travel to
+ *
+ * @return nothing
+ * @see editPropertyRow()
+ */
+function editSingleProperty($ID, $page) {
+
+	$where = "properties_uid = '$ID'";
+	editPropertyRow($where, $page);
+
+}
+
+/////////////
+
 /*
  * This function retrieves the name of a category stored in the database. 
  * 
