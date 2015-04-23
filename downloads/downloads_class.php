@@ -251,7 +251,7 @@ class Downloads
             $selectedcount = count($_SESSION['filtered_lines']);
             $lines = $_SESSION['filtered_lines'];
             $lines_str = implode(",", $lines);
-	} else {
+        } else {
             $lines = "";
             $lines_str = "";
 	}
@@ -295,9 +295,33 @@ class Downloads
 
         // Clean up old files, older than 1 day
         $dir = "/tmp/tht";
-        system("find $dir -mtime +1 -name 'download_????' -exec rm -r {} \;");
-        system("find $dir -mtime +1 -name 'download_????.zip' -exec rm {} \;");
-		
+        $item_ary = scandir($dir);
+        $pattern = "/download_/";
+        foreach ($item_ary as $item) {
+            $path = $dir . "/$item";
+            if (preg_match($pattern, $item)) {
+                $mtime = filemtime($path);
+                $yesterday = mktime(0, 0, 0, date("m"), date("d")-1, date("Y"));
+                if ($mtime < $yesterday) {
+                    if (is_dir($path)) {
+                        $file_ary = scandir($path);
+                        foreach ($file_ary as $file) {
+                            $path2 = $path . "/$file";
+                            if (is_file($path2)) {
+                                unlink($path2);
+                                //echo "delete file $path2<br>\n";
+                            }
+                        }
+                        rmdir($path);
+                        //echo "delete dir $path<br>\n";
+                    } else {
+                        unlink($path);
+                        //echo "delete file $path<br>\n";
+                    }
+                }
+            }
+        }
+
         $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
         $filename = "download_" . $unique_str;
         mkdir("/tmp/tht/$filename");
@@ -315,7 +339,7 @@ class Downloads
         $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
         fwrite($h, "Minimum MAF = $min_maf\n");
         fwrite($h, "Maximum Missing = $max_missing\n");
-        fclose($h); 
+        fclose($h);
         if ($version == "V3") {
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
@@ -426,8 +450,32 @@ class Downloads
 
         // Clean up old files, older than 1 day
         $dir = "/tmp/tht";
-        system("find $dir -mtime +1 -name 'download_????' -exec rm -r {} \;");
-        system("find $dir -mtime +1 -name 'download_????.zip' -exec rm {} \;");
+        $item_ary = scandir($dir);
+        $pattern = "/download_/";
+        foreach ($item_ary as $item) {
+            $path = $dir . "/$item";
+            if (preg_match($pattern, $item)) {
+                $mtime = filemtime($path);
+                $yesterday = mktime(0, 0, 0, date("m"), date("d")-1, date("Y"));
+                if ($mtime < $yesterday) {
+                    if (is_dir($path)) {
+                        $file_ary = scandir($path);
+                        foreach ($file_ary as $file) {
+                            $path2 = $path . "/$file";
+                            if (is_file($path2)) {
+                                unlink($path2);
+                                //echo "delete file $path2<br>\n";
+                            }
+                        }
+                        rmdir($path);
+                        //echo "delete dir $path<br>\n";
+                    } else {
+                        unlink($path);
+                        //echo "delete file $path<br>\n";
+                    }
+                }
+            }
+        }
 
         $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
         $filename = "download_" . $unique_str;
