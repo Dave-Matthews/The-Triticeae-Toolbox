@@ -296,7 +296,7 @@ class Downloads
         // Clean up old files, older than 1 day
         $dir = "/tmp/tht";
         $item_ary = scandir($dir);
-        $pattern = "/download_*/";
+        $pattern = "/download_/";
         foreach ($item_ary as $item) {
             $path = $dir . "/$item";
             if (preg_match($pattern, $item)) {
@@ -451,7 +451,7 @@ class Downloads
         // Clean up old files, older than 1 day
         $dir = "/tmp/tht";
         $item_ary = scandir($dir);
-        $pattern = "/download_*/";
+        $pattern = "/download_/";
         foreach ($item_ary as $item) {
             $path = $dir . "/$item";
             if (preg_match($pattern, $item)) {
