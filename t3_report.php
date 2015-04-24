@@ -478,7 +478,9 @@ if ($query == 'geno') {
     print "<tr><td>Species<td>";
   }
   $count = "";
-  $sql = "select distinct(species) from line_records";
+  $sql = "select pv.value from property_values pv, properties p 
+          where p.name = 'species' 
+          and p.properties_uid = pv.property_uid";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   while ($row = mysqli_fetch_row($res)) {
     $count = $count . "$row[0] ";
