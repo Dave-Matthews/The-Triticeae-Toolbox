@@ -76,10 +76,10 @@ class ShowData
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $countMarkers);
             if (mysqli_stmt_fetch($stmt)) {
-              $_SESSION['geno_exps_cnt'] = $countMarkers;
-              echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/genotype_selection.php\">";
+                $_SESSION['geno_exps_cnt'] = $countMarkers;
+                echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/genotype_selection.php\">";
             } else {
-              echo "Error: no markers could be found";
+                echo "Error: no markers could be found";
             }
             mysqli_stmt_close($stmt);
         } else {
@@ -246,30 +246,31 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
   <div id="status"></div>
   <div id="results">
   <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
-  <?php
-  if ($gbs_exp == "yes") {
-      ?>
-      <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter_GBS('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
-      <?php
-  } else {
-      ?>
-      <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
-      <?php
-  }
-  ?>
-  <input type="button" value="Download marker data" onclick="javascript:download_markers('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
-  <?php
-        echo "</div><p><br>";
-	echo "<h3>Additional files available</h3><p>";
-	echo "<table>";
-			
-	echo "<tr> <td>Samples (germplasm lines)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['sample_sheet_filename']."'>".$row_Gen_Info['sample_sheet_filename']."</a></td></tr>";
-	echo "<tr> <td>Manifest (markers used)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['manifest_file_name']."'>". $row_Gen_Info['manifest_file_name']." </a></td></tr>";
-			
-	echo "<tr> <td>Cluster File</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['cluster_file_name']."'>".$row_Gen_Info['cluster_file_name']."</a></td></tr>";
-			
-	echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
-	echo "</table>";
+    <?php
+    if ($gbs_exp == "yes") {
+        ?>
+        <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter_GBS('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
+        <?php
+    } else {
+        ?>
+        <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
+        <?php
+    }
+    $url = "genotyping/display_markers.php?geno_exp=" . $experiment_uid;
+    ?>
+    <button onclick="location.href='<?php echo $url ?>'">Download marker data</button><br>
+    <?php
+    echo "</div><p><br>";
+    echo "<h3>Additional files available</h3><p>";
+    echo "<table>";
+
+    echo "<tr> <td>Samples (germplasm lines)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['sample_sheet_filename']."'>".$row_Gen_Info['sample_sheet_filename']."</a></td></tr>";
+    echo "<tr> <td>Manifest (markers used)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['manifest_file_name']."'>". $row_Gen_Info['manifest_file_name']." </a></td></tr>";
+
+    echo "<tr> <td>Cluster File</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['cluster_file_name']."'>".$row_Gen_Info['cluster_file_name']."</a></td></tr>";
+
+    echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
+    echo "</table>";
   
   } /* End of function type_DataInformation*/
 
