@@ -147,6 +147,44 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
             echo "<tr><td><a href=view.php?table=markers&uid=$mkruid>$selval</a><td nowrap>$type<td>$a_allele<td>$b_allele<td nowrap>$syn<td>$mkr_mapped<td>$lines_geno<td>$seq\n";
         }
     }
+} elseif (isset($_GET['geno_exp'])) {
+    $use_file = 1;
+    $dir = "/tmp/tht/";
+    $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
+    $filename = "selected_markers_" . $unique_str . ".csv";
+    $h = fopen($dir.$filename, "w+");
+    fwrite($h, "name,type,A_allele,B_allele,synonym,mapped,lines genotyped,sequence\n");
+    $exp = $_GET['geno_exp'];
+    $exp = intval($exp);
+    $sql = "select markers.marker_uid, marker_name, A_allele, B_allele, sequence, marker_type_name from markers, marker_types, allele_frequencies
+         where markers.marker_type_uid = marker_types.marker_type_uid
+         and markers.marker_uid = allele_frequencies.marker_uid
+         and allele_frequencies.experiment_uid = $exp";
+    $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row=mysqli_fetch_array($result)) {
+        $mkruid=$row['marker_uid'];
+        $selval=$row['marker_name'];
+        $a_allele=$row['A_allele'];
+        $b_allele=$row['B_allele'];
+        $seq = $row['sequence'];
+        $type = $row['marker_type_name'];
+        if (isset($mapped[$mkruid])) {
+            $mkr_mapped = "Yes";
+        } else {
+            $mkr_mapped = "";
+        }
+        if (isset($synonym[$mkruid])) {
+            $syn = $synonym[$mkruid];
+        } else {
+            $syn = "";
+        }
+        if (isset($lines[$mkruid])) {
+            $lines_geno = $lines[$mkruid];
+        } else {
+            $lines_geno = "";
+        }
+        fwrite($h, "$selval,$type,$a_allele,$b_allele,\"$syn\",$mkr_mapped,$lines_geno,$seq\n");
+    }
 }
 if ($use_file) {
     fclose($h);
