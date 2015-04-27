@@ -414,6 +414,28 @@ function show_properties($id) {
   echo "</table>";
 }
 
+// DEM apr2015: Need a special function to avert trying to show the users name, since we now 
+// disallow access to table 'users'.
+function show_rawfiles($id) {
+  $sql = "select experiment_uid, name, description, directory, updated_on from rawfiles where rawfile_uid = $id";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($r = mysql_fetch_row($res)) {
+    $exptid = $r[0];
+    $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $exptid");
+    $name = $r[1];
+    $desc = $r[2];
+    $dir = $r[3];
+    $updt = $r[4];
+  }
+  echo "<table>";
+  echo "<tr><td><b>Filename</b><td>$name";
+  echo "<tr><td><b>Trial</b><td><a href='view.php?table=experiments&uid=$exptid'>$trialcode</a>";
+  echo "<tr><td><b>Description</b><td>$desc";
+  echo "<tr><td><b>Directory</b><td>$dir";
+  echo "<tr><td><b>Date</b><td>$updt";
+  echo "</table>";
+}
+
 /**
  * This function is a general function that will display the contents of a particular row
  * in a particular table. It is used in correlation with view.php as the default action.
