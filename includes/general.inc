@@ -429,7 +429,7 @@ function show_rawfiles($id) {
   }
   echo "<table>";
   echo "<tr><td><b>Filename</b><td>$name";
-  echo "<tr><td><b>Trial</b><td><a href='view.php?table=experiments&uid=$exptid'>$trialcode</a>";
+  echo "<tr><td><b>Trial</b><td><a href='display_phenotype.php?trial_code=$trialcode'>$trialcode</a>";
   echo "<tr><td><b>Description</b><td>$desc";
   echo "<tr><td><b>Directory</b><td>$dir";
   echo "<tr><td><b>Date</b><td>$updt";
