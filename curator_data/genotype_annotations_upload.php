@@ -81,7 +81,7 @@ if (isset($_REQUEST['update'])) {
   <form action="curator_data/genotype_annotations_check.php" method="post" enctype="multipart/form-data">
     <p><b>Genotype Annotation File:</b>
       <input id="file[]" type="file" name="file[]" size="80%" /><br>
-      <a href="curator_data/examples/Geno_Annotation_Sample.txt">Example Genotype Annotation File</a>&nbsp&nbsp&nbsp<font color=red>Updated 09/13/2013</font>
+      <a href="curator_data/examples/Geno_Annotation_Sample.txt">Example Genotype Annotation File</a>
     <p> Do you want this data to be Public? 
       <input type='radio' name='flag' value="1" checked="checked" /> Yes &nbsp;&nbsp; 
       <input type='radio' name='flag' value="0"/> No<br>
