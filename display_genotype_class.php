@@ -165,34 +165,43 @@ class ShowData
     $res = mysqli_query($mysqli, $sql) or die("Error: No platform information for genotype experiment $trial_code..<br> " .mysqli_error($mysqli));
     $row = mysqli_fetch_assoc($res);
     $platform_name = $row['platform_name'];
-	
-	if (isset($_GET['mm']) && is_numeric($_GET['mm'])) {
-	  $max_missing = $_GET['mm'];
-        } else {
-          $max_missing = 10; //IN PERCENT
-        }
-	if ($max_missing > 100)
-	  $max_missing = 100;
-	elseif ($max_missing < 0)
-	  $max_missing = 0;
-        if (isset($_GET['mmaf']) && is_numeric($_GET['mm'])) {
-	  $min_maf = $_GET['mmaf'];
-        } else {
-          $min_maf = 5; //IN PERCENT
-        }
-	if ($min_maf > 100)
-          $min_maf = 100;
-        elseif ($min_maf < 0)
-          $min_maf = 0;
+    $dataset = mysql_grab("select datasets_uid from datasets_experiments where experiment_uid = $experiment_uid");
+    $sql_BP = "select cp.data_program_name, cp.data_program_code
+               from datasets ds, CAPdata_programs cp
+	       where ds.datasets_uid = $dataset
+	       and ds.CAPdata_programs_uid = cp.CAPdata_programs_uid";
+    $res_BP = mysqli_query($mysqli, $sql_BP) or die(mysqli_error($mysqli));
+    $row_BP = mysqli_fetch_assoc($res_BP);
+    $breeding_program_name = $row_BP['data_program_name'];
+    $breeding_program_code = $row_BP['data_program_code'];
 
-        $sql_mstat = "SELECT af.marker_uid as marker, af.aa_cnt as sumaa, af.missing as summis, 
+    if (isset($_GET['mm']) && is_numeric($_GET['mm'])) {
+      $max_missing = $_GET['mm'];
+    } else {
+      $max_missing = 10; //IN PERCENT
+    }
+    if ($max_missing > 100)
+      $max_missing = 100;
+    elseif ($max_missing < 0)
+      $max_missing = 0;
+    if (isset($_GET['mmaf']) && is_numeric($_GET['mm'])) {
+      $min_maf = $_GET['mmaf'];
+    } else {
+      $min_maf = 5; //IN PERCENT
+    }
+    if ($min_maf > 100)
+      $min_maf = 100;
+    elseif ($min_maf < 0)
+      $min_maf = 0;
+
+    $sql_mstat = "SELECT af.marker_uid as marker, af.aa_cnt as sumaa, af.missing as summis, 
 		    af.bb_cnt as sumbb, af.total as total, af.ab_cnt AS sumab, maf
 		    FROM allele_frequencies AS af
 		    WHERE af.experiment_uid = $experiment_uid";
-        $res = mysqli_query($mysqli, $sql_mstat) or
-             die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
-        $num_mark = mysqli_num_rows($res);
-        $num_maf = $num_miss = 0;
+    $res = mysqli_query($mysqli, $sql_mstat) or
+      die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
+    $num_mark = mysqli_num_rows($res);
+    $num_maf = $num_miss = 0;
 
    $count_remain = 0;
     while ($row = mysqli_fetch_array($res)) {
@@ -218,6 +227,7 @@ class ShowData
     echo "<tr> <td>Experiment Short Name</td><td>".$experiment_short_name."</td></tr>";
     echo "<tr> <td>Platform</td><td>".$platform_name."</td></tr>";
     echo "<tr> <td>Data Program</td><td>".$data_program_name." (".$data_program_code.")</td></tr>";
+    echo "<tr> <td>Breeding Program</td><td>".$breeding_program_name." (".$breeding_program_code.")</td></tr>";
     echo "<tr> <td>OPA Name</td><td>".$row_Gen_Info['OPA_name']."</td></tr>";
     echo "<tr> <td>Processing Date</td><td>".$row_Gen_Info['processing_date']."</td></tr>";
     echo "<tr> <td>Software</td><td>".$row_Gen_Info['analysis_software']."</td></tr>";
