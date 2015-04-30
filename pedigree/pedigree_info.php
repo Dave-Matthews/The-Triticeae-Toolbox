@@ -197,7 +197,7 @@ private function type_Line_Excel() {
     $propresult = mysql_query("select property_uid                                                   
          from line_properties lp, property_values pv                                                   
          where lp.property_value_uid = pv.property_values_uid                                          
-         and lp.line_record_uid = $lineuid");
+         and lp.line_record_uid = $lineuid") or die(mysql_error());
     while ($pr = mysql_fetch_assoc($propresult))
       if (!in_array($pr['property_uid'], $ourprops))
 	$ourprops[] = $pr['property_uid'];  // array of uids                                         
@@ -248,8 +248,8 @@ private function type_Line_Excel() {
   # start by opening a query string
     while ($tok !== false) {
       $lineuid = (int)$tok;
-      $result=mysql_query("select line_record_name, species, breeding_program_code, pedigree_string, generation, 
-           description from line_records where line_record_uid=\"$lineuid\" ") or die("invalid line uid\n");
+      $result=mysql_query("select line_record_name, breeding_program_code, pedigree_string, generation, 
+           description from line_records where line_record_uid=\"$lineuid\" ") or die(mysql_error());
       $tok = strtok(",");
       while ($row = mysql_fetch_assoc($result)) {
 	$objPHPExcel->getActiveSheet()->SetCellValue("A$i", "$row[line_record_name]",$format_row);
