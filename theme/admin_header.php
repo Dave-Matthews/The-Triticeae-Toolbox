@@ -139,8 +139,8 @@ EOD;
   /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
   if( loginTest2() ): 
 ?>
-	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=green>My Line Panels</font></a>
-        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><font color=green>My Marker Panels</font></a>
+	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=yellow>My Line Panels</font></a>
+        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><font color=yellow>My Marker Panels</font></a>
  <?php endif ?>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
