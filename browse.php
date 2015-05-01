@@ -14,7 +14,6 @@ $keywords = mysqli_real_escape_string($mysqli, $_GET['keywords']);
 $page = 1;
 if ($_GET['page']) 
   $page = $_GET['page'];
-$key = get_pkey($table);
 // Print the hit names in 5 columns, top to bottom first.
 $numcols = 5;
 $numrows = 10;
@@ -63,11 +62,23 @@ foreach ($found as $v) {
     if (mysql_num_rows($msquery) > 0) 
       $skip = "yes"; 
   }
-  if (! $skip) 
-    $uids[] = $line[2];
+  if (! $skip) {
+    if ($table == 'phenotype_experiment_info') {
+      // Fetch the info about the parent record in table experiments.
+      $uids[] = mysql_grab("select experiment_uid from $table where phenotype_experiment_info_uid = $line[2]"); 
+      $table = 'experiments';
+    }
+    else if ($table == 'genotype_experiment_info') {
+      $uids[] = mysql_grab("select experiment_uid from $table where genotype_experiment_info_uid = $line[2]"); 
+      $table = 'experiments';
+    }
+    else
+      $uids[] = $line[2];
+  }
+  $key = get_pkey($table);
+  $uniqname = get_unique_name($table);
 }
 $uidlist = implode(',', $uids);
-$namecol = $line[1];
 
 $tablelabel = beautifulTableName($table)."s"; // for display
 // Rename phenotype experiments as "Trials".
@@ -80,8 +91,8 @@ if ($table == "experiments") {
 if ($tablelabel == 'Experiment Sets') $tablelabel = 'Experiments';
 
 // Alphabetize
-$sql = "select $key, $namecol from $table where $key in ($uidlist) order by $namecol";
-$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+$sql = "select $key, $uniqname from $table where $key in ($uidlist) order by $uniqname";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query was:<br>$sql");
 while ($record = mysqli_fetch_row($res)) {
   $records[] = array($record[0], $record[1]);
 };
