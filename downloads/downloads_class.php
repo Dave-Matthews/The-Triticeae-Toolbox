@@ -745,7 +745,7 @@ class Downloads
             echo "<font color=\"red\">Choose one or more lines before using a saved selection. </font>";
             echo "<a href=";
             echo $config['base_url'];
-            echo "pedigree/line_selection.php>Select lines</a><br>";
+            echo "pedigree/line_properties.php>Select lines</a><br>";
         }
         if ($typeP == "true") {
             if (!isset($_SESSION['phenotype'])) {

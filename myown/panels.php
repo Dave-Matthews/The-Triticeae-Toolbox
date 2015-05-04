@@ -28,17 +28,17 @@ include($config['root_dir'].'theme/admin_header.php');
     $panel = $_POST['panel'];
     $comment = $_POST['comment'];
     $sql="select linepanels_uid from linepanels where name = '$panel' and users_uid = $myid";
-    $r = mysql_query($sql) or die(mysql_error());
+    $r = mysql_query($sql) or die(mysql_error(). "<br>Query was: $sql");
     if (mysql_num_rows($r) > 0)
       echo "<p><font color=red>Panel \"$panel\" already exists.</font>";
     else {
       if (count($_SESSION['selected_lines']) == 0) {
-	echo "<p><font color=red>Please <a href='".$config['base_url']."pedigree/line_selection.php'>select some lines</a> first.</font>";
+	echo "<p><font color=red>Please <a href='".$config['base_url']."pedigree/line_properties.php'>select some lines</a> first.</font>";
       }
       else {
 	$lineids = implode(",", $_SESSION['selected_lines']);
 	$sql = "insert into linepanels (name, users_uid, comment, line_ids) values ('$panel', $myid, '$comment', '$lineids')";
-	$r = mysql_query($sql) or die(mysql_error());
+	$r = mysql_query($sql) or die(mysql_error(). "<br>Query was: $sql");
       }
     }
   }
@@ -58,7 +58,7 @@ if (isset($_POST['deselPanel'])) {
   for ($i=0; $i < count($remove); $i++) {
     $sql = "delete from linepanels
          where linepanels_uid = $remove[$i]";
-    $r = mysql_query($sql) or die(mysql_error());
+    $r = mysql_query($sql) or die(mysql_error(). "<br>Query was: $sql");
   }
 }
 // End of handling user input.
@@ -82,14 +82,16 @@ $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
 <form id='deselLinesForm' action='<?php echo $_SERVER['PHP_SELF'] ?>' method='post' <?php echo $display ?>>
 <select name='deselLines[]' multiple='multiple' style='height: 13em;width: 16em'>
 <?php
-foreach ($_SESSION['selected_lines'] as $lineuid) {
-  $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") 
-  or die("invalid line uid\n");
-  while ($row=mysql_fetch_assoc($result)) {
-    $selval=$row['line_record_name'];
-    print "<option value='$lineuid'>$selval</option>\n";
+  if ($_SESSION['selected_lines']) {
+    foreach ($_SESSION['selected_lines'] as $lineuid) {
+      $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") 
+      or die(mysql_error()."<br>invalid line uid: $lineuid<br>");
+      while ($row=mysql_fetch_assoc($result)) {
+	$selval=$row['line_record_name'];
+	print "<option value='$lineuid'>$selval</option>\n";
+      }
+    }
   }
-}
 ?>
 
 </select>
@@ -111,7 +113,7 @@ if ($username)
   store_session_variables('selected_lines', $username);
 
 // Show current list of panels, if any.
-$r = mysql_query("select * from linepanels where users_uid = $myid") or die(mysql_error());
+$r = mysql_query("select * from linepanels where users_uid = $myid") or die(mysql_error()."<br>Couldn't get users_uid.");
 if (mysql_num_rows($r) > 0) {
   print "</div><div class='section'><h1>My Panels</h1>";
   print "<table><tr><td>";
@@ -139,7 +141,7 @@ if (mysql_num_rows($r) > 0) {
   <?php
   for ($i=0; $i < count($panelnames); $i++) {
     print "<tr>";
-    print "<td><a href ='".$config['base_url']."pedigree/line_selection.php?mypanel=$panelids[$i]'>$panelnames[$i]</a></td>";
+    print "<td><a href ='".$config['base_url']."pedigree/line_properties.php?mypanel=$panelids[$i]'>$panelnames[$i]</a></td>";
     print "<td>$counts[$i]</td><td>$comments[$i]</td></tr>";
   }
   print "</td</tr></table></table>";

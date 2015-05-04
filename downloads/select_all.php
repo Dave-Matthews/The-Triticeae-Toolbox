@@ -1006,7 +1006,7 @@ class SelectPhenotypeExp
 	    	echo "Please select lines before using this feature.<br>";
 	        echo "<a href=";
 	        echo $config['base_url'];
-	        echo "pedigree/line_selection.php>Select Lines by Properties</a>";
+	        echo "pedigree/line_properties.php>Select Lines by Properties</a>";
 	    }
 	}
 	
@@ -1217,7 +1217,7 @@ class SelectPhenotypeExp
 	       echo "Choose one or more lines before using a saved selection. ";
 	       echo "<a href=";
 	       echo $config['base_url'];
-	       echo "pedigree/line_selection.php> Select lines</a><br>";
+	       echo "pedigree/line_properties.php> Select lines</a><br>";
 	     } else {
 	       ?>
                <input type="hidden" name="subset" id="subset" value="yes" /><br>

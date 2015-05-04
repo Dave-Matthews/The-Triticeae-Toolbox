@@ -200,7 +200,7 @@ class DownloadsJNLP
                     echo "Please select lines before using this feature.<br><br>";
                     echo "<a href=";
                     echo $config['base_url'];
-                    echo "pedigree/line_selection.php>Select Lines by Properties</a><br><br>";
+                    echo "pedigree/line_properties.php>Select Lines by Properties</a><br><br>";
                     echo "<a href=";
                     echo $config['base_url'];
                     echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
@@ -499,7 +499,7 @@ class DownloadsJNLP
 	    	echo "Please select lines before using this feature.<br>";
 	        echo "<a href=";
 	        echo $config['base_url'];
-	        echo "pedigree/line_selection.php>Select Lines by Properties</a>";
+	        echo "pedigree/line_properties.php>Select Lines by Properties</a>";
 	    }
 	}
 	
@@ -704,7 +704,7 @@ class DownloadsJNLP
 	       echo "Choose one or more lines before using a saved selection. ";
 	       echo "<a href=";
 	       echo $config['base_url'];
-	       echo "pedigree/line_selection.php> Select lines</a><br>";
+	       echo "pedigree/line_properties.php> Select lines</a><br>";
 	     } elseif ($use_database) {
 	       echo "<br>Filter markers and lines then $message2<br><br>";
 	       ?>
@@ -847,7 +847,7 @@ class DownloadsJNLP
 	  <?php 
 	  if (count($_SESSION['selected_lines']) > 0) {
 	    ?>
-	    <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php">currently
+	    <input type="radio" name="subset" id="subset" value="yes" <?php echo "$sub_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Include only <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php">currently
 	    selected lines</a><br>
 	    <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Use lines with selected <b>Trials</b> and <b>Traits</b><br>
 	    <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onchange="javascript: update_phenotype_linesb(this.value)">Combine two sets<br>
