@@ -124,7 +124,6 @@ EOD;
 	<li>
           <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
             Wizard (Lines, Traits, Trials)</a>
-	  <!-- <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters"> -->
 	  <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php" title="Select by name, source, or simply-inherited characters">
 	    Lines by Properties</a>
 	<li>
@@ -295,7 +294,7 @@ EOD;
 
 <?php
    echo "<p><li><b>Current selections:</b>";
-   echo "<li><a href='".$config['base_url']."pedigree/line_selection.php'>Lines:</a> ". count($_SESSION['selected_lines']);
+   echo "<li><a href='".$config['base_url']."pedigree/line_properties.php'>Lines:</a> ". count($_SESSION['selected_lines']);
    echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers:</a> ";
    if (isset($_SESSION['clicked_buttons'])) {
      echo count($_SESSION['clicked_buttons']);
