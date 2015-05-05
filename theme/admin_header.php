@@ -21,9 +21,11 @@
   <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
   <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
   <meta name="revisit-After" content="1 days" >
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <base href="<?php echo $config['base_url']; ?>" >
-  <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
+  <link rel="stylesheet" type="text/css" media="(min-width: 640px)" href="<?php echo $config['base_url']; ?>theme/new.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 640px)" href="<?php echo $config['base_url']; ?>theme/mobile.css">
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>includes/core.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/new.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
@@ -124,7 +126,6 @@ EOD;
 	<li>
           <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
             Wizard (Lines, Traits, Trials)</a>
-	  <!-- <a href="<?php echo $config['base_url']; ?>pedigree/line_selection.php" title="Select by name, source, or simply-inherited characters"> -->
 	  <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php" title="Select by name, source, or simply-inherited characters">
 	    Lines by Properties</a>
 	<li>
@@ -139,8 +140,8 @@ EOD;
   /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
   if( loginTest2() ): 
 ?>
-	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=green>My Line Panels</font></a>
-        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><font color=green>My Marker Panels</font></a>
+	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=yellow>My Line Panels</font></a>
+        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><font color=yellow>My Marker Panels</font></a>
  <?php endif ?>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
@@ -160,6 +161,7 @@ EOD;
  	<li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
 	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value vs Trials">Compare Trials</a>
@@ -244,7 +246,6 @@ EOD;
     <ul>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_users.php" title="No deletion yet">Edit Users</a>
       <li><a href="<?php echo $config['base_url']; ?>dbtest/" title="Table Status">Table Status</a>
-      <li><a href="<?php echo $config['base_url']; ?>dbtest/backupDB.php" title="Full Database Backup">Full Database Backup</a>
       <li><a href="<?php echo $config['base_url']; ?>login/input_gateway.php" title="Data Input Gateway">Data Input Gateway</a>
       <li><a href="<?php echo $config['base_url']; ?>login/export_gateway.php" title="Data Export Gateway">Data Export Gateway</a>
       <li><a href="<?php echo $config['base_url']; ?>login/cleanup_temporary_dir.php" title="Clean up temporary files">Clean up temporary files</a>
@@ -282,7 +283,7 @@ EOD;
 			
 </ul>
 </div>
-<div id="quicklinks" style="top:141px">
+<div id="quicklinks">
   <h2>Quick Links </h2>
   <ul>
   <?php if ( isset( $_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ):  ?>
@@ -295,12 +296,12 @@ EOD;
 
 <?php
    echo "<p><li><b>Current selections:</b>";
-   echo "<li><a href='".$config['base_url']."pedigree/line_selection.php'>Lines:</a> ". count($_SESSION['selected_lines']);
+   echo "<li><a href='".$config['base_url']."pedigree/line_properties.php'>Lines:</a> ". count($_SESSION['selected_lines']);
    echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers:</a> ";
    if (isset($_SESSION['clicked_buttons'])) {
      echo count($_SESSION['clicked_buttons']);
    } elseif (isset($_SESSION['geno_exps_cnt'])) {
-     echo $_SESSION['geno_exps_cnt'];
+     echo number_format($_SESSION['geno_exps_cnt']);
    } else {
      echo "All";
    }
