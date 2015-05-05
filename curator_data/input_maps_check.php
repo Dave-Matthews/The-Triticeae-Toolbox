@@ -450,15 +450,13 @@ class MapsCheck
 		}	
 		
 		/* map uid's exist only for the existing mapsets so for new ones we need to read it from the map table after we create */
-		
+	        echo "List of map entries<br>\n";	
 		$sql = "SELECT map_uid, map_name FROM map WHERE mapset_uid = $mapset_uid";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-		//$cnt = 0;
 		while ($row = mysqli_fetch_array($res)){
 			$map_uid[] = $row['map_uid'];
 			$map_name_new[] =$row['map_name'];			
-		//	echo $map_uid[$cnt]."".$map_name[$cnt]."\n";
-			//$cnt++;
+			echo $row['map_uid'] ." ".$row['map_name']."\n";
 		}
 		
 		
@@ -512,7 +510,7 @@ class MapsCheck
                 if (isset($map_uid[$map_idx])) {			 
                     $mmap_uid = $map_uid[$map_idx];
                 } else {
-                    echo "Error: $map_idx not defined $new_map $map_name_new $cnt<br>\n";
+                    echo "Error: $map_idx not defined $new_map $cnt<br>\n";
                 }
                 
 		// store in markers_in_maps
