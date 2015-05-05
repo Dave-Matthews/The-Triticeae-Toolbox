@@ -364,7 +364,7 @@ class MapsCheck
 		while ($row = mysqli_fetch_array($res)){
 			$map_uid[] = $row['map_uid'];
 			$map_name[] =$row['map_name'];			
-		//	echo $map_uid[$cnt]."".$map_name[$cnt]."\n";
+			echo $map_uid[$cnt]."".$map_name[$cnt]."\n";
 			$cnt++;
 		}
 	 }
@@ -512,7 +512,7 @@ class MapsCheck
                 if (isset($map_uid[$map_idx])) {			 
                     $mmap_uid = $map_uid[$map_idx];
                 } else {
-                    echo "Error: $map_idx not defined $new_map <br>\n";
+                    echo "Error: $map_idx not defined $new_map $map_name_new $cnt<br>\n";
                 }
                 
 		// store in markers_in_maps
