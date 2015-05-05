@@ -1,0 +1,330 @@
+/******************************************************************************
+   * new.css                                                                    *
+   *                                                                            *
+   * @author Gavin Monroe                                                       *
+   ******************************************************************************/
+body
+{
+/*     background: #f9b738;
+ */    background: #f9cb73;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 62.5%; /* 1 em = 10px */
+}
+
+div.section p
+{
+    color: #000;
+    font-weight: normal
+}
+
+/***** Links/Anchors **********************************************************/
+a
+{
+    color: #000;
+    text-decoration: none;
+    border-bottom: 1px solid #000
+}
+a:hover
+{
+    color:#4DAAB1;
+    border-bottom-color: #4DAAB1
+}
+
+#footer a
+{
+    color: #000;
+    border: none
+}
+#footer a:hover
+{
+    color: #9a292c
+}
+
+/***** Layout *****************************************************************/
+#container
+{
+    min-width: 100%;
+    top: 0;
+    position:absolute;
+    background: #fff url('images/headbg.jpg') repeat-x
+/*    background: #f9cb73 url('images/headbg.jpg') repeat-x*/
+/*    background: #f9cb73; */
+}
+
+/* dynamic image replacement */
+html>body #logo
+{
+    letter-spacing: normal;
+    text-indent: -999em;
+    overflow: hidden
+}
+#logo
+{
+    margin: 0;
+    padding: 0;
+    display: block;
+    position: absolute;
+    width: 318px;
+    height: 50px;
+    top: 40px;
+    left: 10px;
+    background: url('images/logo.png') no-repeat
+}
+#barleyimg
+{
+    position: absolute;
+    right: 0;
+    width: 225px;
+    height: 141px;
+    background: url('images/headrt.png') no-repeat
+}
+#util {
+    position: absolute;
+    right: 200px;
+    width: 100px;
+    height: 26px;
+    background: url('images/utilbg.jpg') no-repeat;
+    text-align: center;
+    line-height: 26px;
+    margin: 0 auto;
+    padding-left: 4px;
+    font-size: 1.2em
+}
+#utilright
+{
+    float: right;
+    width: 4px;
+    height: 26px;
+    background: url('images/utilright.jpg') no-repeat
+}
+#quicklinks
+{
+    position: absolute;
+    left: 10px;
+    width: 150px;
+    padding: 15px 25px;
+    background: url('images/gradient.png') repeat-x;
+    text-align: left;
+    margin-top: 800px;
+    border-top: 1px solid #9a292c;
+    z-index: 0
+}
+
+#searchbox
+{
+    width: 180px;
+    padding: 15px 10px 3px;
+    margin-left: -25px;
+    margin-top: 25px;
+    background-color: #f9cb73;
+    border-bottom: 1px solid #9a292c;
+    text-align:right
+}
+
+#footer
+{
+    margin-left: 230px;
+    margin-top: 50px;
+    padding-top: 25px;
+    background: #85cacf url('images/foothdg.png') repeat-x;
+    text-align: center;
+    clear: both;
+}
+#quicklinks h2
+{
+    color: #de5414;
+    margin: 0 0 5px;
+    padding: 0;
+    font-size: 1.6em
+}
+#quicklinks ul, #nav ul
+{
+    list-style:none;
+    margin:0;
+    padding:0
+}
+
+#quicklinks li
+{
+    margin: 0;
+    padding: 0 0 5px;
+    font-size: 1.2em
+}
+
+#util, #util a
+{
+    color: #fff;
+    text-decoration: none
+}
+
+#util a
+{
+    vertical-align: middle;
+    border-bottom: 1px solid #9a292c
+}
+
+#searchbox, #searchbox a
+{
+    color: #fff
+}
+#searchbox a
+{
+    border:none
+}
+#searchbox a:hover, #util a:hover
+{
+    border-bottom: 1px solid #fff
+}
+
+#searchbox input
+{
+    border:1px solid #9a292c;
+    background-color: #fff;
+    padding:5px;
+    color:#9a292c;
+    font-size: .9em
+}
+
+#main h1, #main h2
+{
+/*    color:#4DAAB1;*/
+    color:#de5414;
+    margin: 0;
+    padding: 0;
+    font-size: 1.5em;
+    margin-bottom: 1em
+}
+
+/* dem mar12: Set a minimum height to allow room for What's New. */
+#main {
+    min-height: 450px;
+    margin-right: 10px;
+    margin-top: 160px;
+    margin-left: 45px;
+    font-size: 1.2em
+}
+
+.section, .boxContent {width: auto; padding:12px; border-top:1px solid #9a292c;
+    background:url('images/sectionhd.png') repeat-x;}
+.section p, .boxContent p{margin:1.5em 0; line-height:1.5em}
+
+.descript {margin-top:8px}
+
+html, body, form, table, tr, th, td, pre
+{
+    margin: 0;
+    padding: 0;
+}
+
+table
+{
+    background: url('images/tblbg.png') repeat-x;
+    border-collapse: collapse;
+}
+table tr
+{
+    min-height: 30px;
+}
+table th
+{
+    border-bottom: 1px solid #9a292c;
+    border-top: 1px solid #9a292c;
+    background: url('images/tblhdg.png') repeat-x;
+    padding: 7px;
+    color: #9a292c;
+}
+table td
+{
+    border: 1px solid #E3E0FF;
+    border-left: 0;
+    border-right: 0;
+    padding: 7px;
+/*    text-align: center; */
+    text-align: left;
+}
+
+table.tableclass1 th {
+    background: #5B53A6 !important;
+    color: white !important;
+    border-left: 2px solid #5B53A6;
+}
+table.tableclass1 table {
+    background: none;
+    border-collapse: collapse;
+}
+table.tableclass1 td {
+    border: 1px white;
+    border-left: 0;
+    border-right: 0;
+    background: white;
+}
+
+#nav {position:absolute; top:99px; left:11px; height:42px;
+    background:url('images/btnlt.png') no-repeat;
+    padding-left:1px;z-index:5999}
+
+#nav ul{margin:0; padding:0}
+
+#nav li {float:left; list-style-type:none; text-align:center;
+    display:block; margin:0; padding:0; margin-left:-1px; height:42px;
+    background:url('images/btnbg.png') no-repeat left top; font-size: 1.7em}
+
+/*#nav li a {display:block;  background:url('images/btnrt.png') no-repeat right top;
+    padding:5px 15px; color:#D5D2EF; text-decoration:none; border-bottom:none} */
+#nav li a {display:block;  background:url('images/btnrt.png') no-repeat right top;
+    padding:5px 15px; color:#FFFFFF; text-decoration:none; border-bottom:none}
+
+#nav li a:hover {color:#FFF}
+
+#nav li#active,
+#nav li:hover {background-image:url('images/abtnbg.png')}
+#nav li#active a,
+#nav li:hover a{background-image:url('images/abtnrt.png'); color:#FFF}
+
+#nav li li,  #nav li#active li{text-align:left; height:auto; top:0; background:#9a292c; float:none; font-size: .7em}
+
+#nav li li a, #nav li#active li a, #nav li:hover li a, #nav li.over li a
+{
+    display: block;
+    width: 190px;
+    background: #9a292c; /* #f9cb73; */
+    color: #fff;
+    border: 1px solid #fff;
+    border-top: none;
+    padding: 5px
+}
+
+#nav li li a:hover, #nav #active li a:hover
+{
+    background: #fff;
+    color: #9a292c
+}
+
+#nav li ul{display:none; position:absolute; top:42px; z-index:6000; width:200px}
+
+#nav li:hover ul,
+#nav li.over ul {display:block; z-index:6000}
+
+select{font-size:9pt}
+textarea{font-size:9pt}
+
+div#form_error
+{
+    padding: 5px;
+    border: 1px solid red;
+    background: pink;
+    color: red;
+    margin: 10px 0
+}
+
+.inprogress {
+    background-image: url('./images/progress.gif');
+    background-position: right top;
+    background-repeat: no-repeat;
+}
+
+.inprogress2 {
+    background-image: url('./images/progress.gif');
+    background-position: left top;
+    background-repeat: no-repeat;
+}
