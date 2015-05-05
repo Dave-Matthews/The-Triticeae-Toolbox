@@ -6,6 +6,7 @@ require 'config.php';
 include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 include $config['root_dir'] . 'curator_data/lineuid.php';
 set_time_limit(3000);
+ini_set('memory_limit','2G');
 
 //require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
@@ -507,8 +508,12 @@ class MapsCheck
 		{
 		    $map_idx = implode(find($chrom[$cnt],$map_name));
 		}
-							 
-                $mmap_uid = $map_uid[$map_idx];
+				
+                if (isset($map_uid[$map_idx])) {			 
+                    $mmap_uid = $map_uid[$map_idx];
+                } else {
+                    echo "Error: $map_idx not defined $new_map <br>\n";
+                }
                 
 		// store in markers_in_maps
                 // If this mapset, marker combination exists already, then update only
@@ -544,6 +549,8 @@ class MapsCheck
 
 		  if (empty($mmap_uid)) {
 		    echo "No Map Set Prefix entered.<br>";
+                    echo "new_map = $new_map<br>\n";
+                    echo "map_idx = $map_idx<br>\n";
 		    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");	  
 		  }
                   
