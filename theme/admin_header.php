@@ -21,9 +21,11 @@
   <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
   <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
   <meta name="revisit-After" content="1 days" >
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <base href="<?php echo $config['base_url']; ?>" >
-  <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
+  <link rel="stylesheet" type="text/css" media="(min-width: 640px)" href="<?php echo $config['base_url']; ?>theme/new.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 640px)" href="<?php echo $config['base_url']; ?>theme/mobile.css">
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>includes/core.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/new.js"></script>
   <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
@@ -281,7 +283,7 @@ EOD;
 			
 </ul>
 </div>
-<div id="quicklinks" style="top:141px">
+<div id="quicklinks">
   <h2>Quick Links </h2>
   <ul>
   <?php if ( isset( $_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ):  ?>
