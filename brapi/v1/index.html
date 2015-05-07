@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Plant Breeding API demo</title>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-2.1.3.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script type="text/javascript" src="fieldBookApp.js"></script>
+<!--link rel="stylesheet" href="/resources/demos/style.css"i-->
+<script>
+$(function() {
+  $( "#tabs" ).tabs();
+});
+</script>
+</head>
+<body>
+<div id="title">
+<h2>Plant Breeding API</h2>
+</div>
+<div id="tabs">
+<ul>
+<li><a href="#tabs-1">Configure</a></li>
+<li><a href="#tabs-2">Select</a></li>
+<li><a href="#tabs-3">Analyze</a></li>
+<li><a href="#tabs-4">Download</a></li>
+</ul>
+<div id="tabs-1">
+<p>
+<table>
+<tr><td>URL of website API:<td>
+<!--input type="text" id="url" size="60" value="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1"><bri-->
+<select name= "url" id="url">
+  <option>Select database server</option>
+  <option value="//t3sandbox.org/t3/wheatplus/brapi/v1">Triticeae Toolbox Development</option>
+  <option value="//triticeaetoolbox.org/wheat/brapi/v1">Triticeae Toolbox Wheat (TCAP)</option>
+  <option value="//triticeaetoolbox.org/barley/brapi/v1">Triticeae Toolbox Barley (TCAP)</option>
+  <option value="//triticeaetoolbox.org/oat/brapi/v1">Triticeae Toolbox Oat </option>
+  <option value="//cassava-test.sgn.cornell.edu/brapi/v1">CassavaBase (BTI)</option>
+</select>
+<tr><td>Debug:<td>
+<input type="radio" name="debug" id="NoDebug" checked>No
+<input type="radio" name="debug" id="YesDebug">Yes
+</table>
+</p>
+</div>
+<div id="tabs-2">
+<p>
+<input type="button" value="Get list of studies" onclick="javascript: getListStudies();"/><br>
+<input type="button" value="Get list of traits" onclick="javascript: getListTraits();"/><br>
+<input type="button" value="Get list of maps" onclick="javascript: getListMaps();"/><br>
+</p>
+</div>
+<div id="tabs-3">
+<p>
+<input type="button" value="Submit" onclick="javascript: getCluster1();"/><br>
+</p>
+</div>
+<div id="step2"></div>
+<div id="step3"></div>
+</div>
