@@ -19,6 +19,7 @@ connect();
 <?php 
 if (!empty($_POST['dtype']) OR !empty($_FILES)) {
     // The Upload button was clicked. Handle user's submission.
+    $useremail = $_SESSION['username'];
     $row = loadUser($_SESSION['username']);
     $username = $row['name'];
     $date = date('dMY');
@@ -72,7 +73,7 @@ if (!empty($_POST['dtype']) OR !empty($_FILES)) {
       $tested = array('DOES', 'does NOT');
       $host = $_SERVER['SERVER_NAME'];
       $private = $_POST['private'];
-      $mesg = "$username has submitted a data file.
+      $mesg = "$username, $useremail, has submitted a data file.
 \nData type: $dtype[$dt]
 Location: $host
 Directory: $dir
