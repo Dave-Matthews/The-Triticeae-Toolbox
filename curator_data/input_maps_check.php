@@ -364,7 +364,7 @@ class MapsCheck
 		while ($row = mysqli_fetch_array($res)){
 			$map_uid[] = $row['map_uid'];
 			$map_name[] =$row['map_name'];			
-		//	echo $map_uid[$cnt]."".$map_name[$cnt]."\n";
+			echo $map_uid[$cnt]."".$map_name[$cnt]."\n";
 			$cnt++;
 		}
 	 }
@@ -450,15 +450,13 @@ class MapsCheck
 		}	
 		
 		/* map uid's exist only for the existing mapsets so for new ones we need to read it from the map table after we create */
-		
+	        echo "List of map entries<br>\n";	
 		$sql = "SELECT map_uid, map_name FROM map WHERE mapset_uid = $mapset_uid";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-		//$cnt = 0;
 		while ($row = mysqli_fetch_array($res)){
 			$map_uid[] = $row['map_uid'];
 			$map_name_new[] =$row['map_name'];			
-		//	echo $map_uid[$cnt]."".$map_name[$cnt]."\n";
-			//$cnt++;
+			echo $row['map_uid'] ." ".$row['map_name']."<br>\n";
 		}
 		
 		
@@ -508,8 +506,13 @@ class MapsCheck
 		{
 		    $map_idx = implode(find($chrom[$cnt],$map_name));
 		}
-							 
-                $mmap_uid = $map_uid[$map_idx];
+				
+                if (isset($map_uid[$map_idx])) {			 
+                    $mmap_uid = $map_uid[$map_idx];
+                    echo "Good: $map_idx $cnt<br>\n";
+                } else {
+                    echo "Error: $map_idx not defined $new_map $cnt<br>\n";
+                }
                 
 		// store in markers_in_maps
                 // If this mapset, marker combination exists already, then update only
@@ -545,6 +548,8 @@ class MapsCheck
 
 		  if (empty($mmap_uid)) {
 		    echo "No Map Set Prefix entered.<br>";
+                    echo "new_map = $new_map<br>\n";
+                    echo "map_idx = $map_idx<br>\n";
 		    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");	  
 		  }
                   
