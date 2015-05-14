@@ -32,6 +32,20 @@ function showLines($page, $start=0, $limit=40) {
 }
 
 /*
+  To display something useful for a barley_pedigree_catalog_ref report in view.php.
+*/
+function show_barley_pedigree_catalog_ref($id) {
+  global $mysqli;
+  // Show the associated line_record.
+  $sql = "select l.line_record_uid, line_record_name from barley_pedigree_catalog_ref b, line_records l where barley_pedigree_catalog_ref_uid = $id and b.line_record_uid = l.line_record_uid";
+  $res= mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  $row = mysqli_fetch_row($res);
+  print "<p>Please see Line Record <a href='view.php?table=line_records&uid=$row[0]'>$row[1]</a><p>";
+  // Display the basics.
+  show_general("barley_pedigree_catalog_ref", $id);
+}
+
+/*
  * This function shows a line record in an easy to read table format.
  * It also displays the parents of the particular line record in a comma separated list.
  *
