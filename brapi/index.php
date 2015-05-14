@@ -2,7 +2,7 @@
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'theme/admin_header.php');
-connect();
+//connect();
 ?>
 <style type="text/css">
   pre {font-size: 1.1em}
@@ -15,34 +15,34 @@ connect();
   <h1>Breeding API</h1>
   See the documentation at <a href="http://docs.breeding.apiary.io/">http://docs.breeding.apiary.io/</a><p>
 
-  <h2>Genotype</h2>
+  <h2>Markerprofile</h2>
 
   <h3>Count</h3>
   Allele Count for a Germplasm, by Run<br>
-  <b>GET</b> /brapi/0.1/genotype/{id}/count?analysisMethod={platform}<br>
+  <b>GET</b> /brapi/v1/markerprofile/{id}/count?analysisMethod={platform}<br>
   <b>Returns:</b> JSON containing Germplasm Id, experiment Id, analysis method, and number of allele calls<br>
-  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993/count?analysisMethod=GoldenGate</a>
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofile/993_84/count?analysisMethod=GoldenGate">http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofile/993_84/count?analysisMethod=GoldenGate</a>
 
   <h3>Alleles By Germplasm Id</h3>
-  <b>GET</b> /brapi/0.1/genotype/{id}?runId={runId}&analysisMethod={method}&pageSize={pageSize}&page={page}<br>
+  <b>GET</b> /brapi/v1/markerprofile/{id}?runId={runId}&analysisMethod={method}&pageSize={pageSize}&page={page}<br>
   <b>Returns:</b> JSON containing Germplasm Id, experiment Id, analysis method, encoding, and allele calls<br>
   &nbsp;&nbsp;&nbsp;by marker.  Missing data are omitted.  Analysis method is T3's "platform."<br>
-  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/genotype/993</a><br>
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofile/993_84">http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofile/993_84</a><br>
   <br>
 
   <h2>Germplasm</h2>
 
   <h3>Germplasm ID by Name</h3>
-  <b>GET</b> /brapi/0.1/germplasm/find?q={name}&matchMethod={matchMethod}&include={synonyms}&page={page}&pageSize={pageSize}<br>
-  <b>Example: </b><a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/germplasm/find?q=STEPTOE">http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1/germplasm/find?q=STEPTOE</a>
+  <b>GET</b> /brapi/v1/germplasm/find?q={name}&matchMethod={matchMethod}&include={synonyms}&page={page}&pageSize={pageSize}<br>
+  <b>Example: </b><a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/germplasm/find?q=STEPTOE">http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/germplasm/find?q=STEPTOE</a>
   <br><br>
 
   <h2>Field Data Collection</h2>
 
   <h3>List Study Summaries</h3>
   Experiment Design<br>
-  <b>GET</b> http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/study/list<br>
-  <b>Example:</b> <a href="http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/study/list">http://malt.pw.usda.gov/cbirkett/t3/wheatplus/brapi/0.1/study/list</a>
+  <b>GET</b> http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/study<br>
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/study">http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/study</a>
 
 <p>
 </div>
