@@ -52,8 +52,6 @@ function generalTermSearch(array $tableTree, $searchQ) {
   // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
   $searchQ = str_replace('&amp;', '&', $searchQ);  
   $tablenames = array_keys($tableTree);
-  // DEM mar2015: Omit some tables that are useless to display.
-  $tablenames = array_diff($tablenames, array('barley_pedigree_catalog_ref'));
   $tables = count($tablenames);
   $ret = array();
   for($i=0; $i<$tables; $i++) {

@@ -202,10 +202,13 @@ function get_pkey ($tablename) {
  * @return the unique name field.
  */
 function get_unique_name($table) {
-  // dem feb13: ugly special case:
   global $mysqli;
+  // dem feb13: ugly special case:
   if ($table == "experiments")
     return "trial_code";
+  // dem may15: another special case:
+  if ($table == "barley_pedigree_catalog_ref")
+    return "barley_ref_number";
   else {
     $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>".mysqli_error($mysqli));
     $row = mysqli_fetch_row($q);
