@@ -739,7 +739,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
         $aafreq = round($aacnt / $total,3);
         $bbfreq = round($bbcnt / $total,3);
         $abfreq = round($abcnt / $total,3);
-        $maf = round(100 * min((2 * $aacnt + $abcnt) /$total, ($abcnt + 2 * $bbcnt) / $total),1);
+        $maf = round(100 * min((2 * $aacnt + $abcnt) /(2 * $total), ($abcnt + 2 * $bbcnt) / (2 * $total)),1);
         if (($aacnt == $total) or ($abcnt == $total) or ($bbcnt == $total)) {
             $mono = $monomorphic[0];//is monomorphic
         } else {
