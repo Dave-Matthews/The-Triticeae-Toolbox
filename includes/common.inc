@@ -55,7 +55,7 @@ function mysql_grab($querystring)
         $out = "<b>MySQL error:</b> $mmessage.<br>";
     }
     if (!empty($err) or (!empty($mmessage))) {
-        die($out . "Query was:<br>\"$querystring\"<p>");
+        die($out . "<p>");
     }
     return $vals[0];
 }
@@ -84,8 +84,8 @@ function print_h($variable)
  */
 function validateForm($array)
 {
-	$ret = TRUE;
-	$error = array();	//this was originally part of an object with an error array we're not using it here.
+        $ret = true;
+        $error = array();	//this was originally part of an object with an error array we're not using it here.
 		
 	foreach($array as $k => $v) {
 
