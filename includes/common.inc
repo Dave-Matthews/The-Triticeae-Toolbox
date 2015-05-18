@@ -55,7 +55,7 @@ function mysql_grab($querystring)
         $out = "<b>MySQL error:</b> $mmessage.<br>";
     }
     if (!empty($err) or (!empty($mmessage))) {
-        die($out . "Query was:<br>\"$querystring\"<p>");
+        die($out . "<p>");
     }
     return $vals[0];
 }
@@ -84,8 +84,8 @@ function print_h($variable)
  */
 function validateForm($array)
 {
-	$ret = TRUE;
-	$error = array();	//this was originally part of an object with an error array we're not using it here.
+        $ret = true;
+        $error = array();	//this was originally part of an object with an error array we're not using it here.
 		
 	foreach($array as $k => $v) {
 
@@ -202,10 +202,13 @@ function get_pkey ($tablename) {
  * @return the unique name field.
  */
 function get_unique_name($table) {
-  // dem feb13: ugly special case:
   global $mysqli;
+  // dem feb13: ugly special case:
   if ($table == "experiments")
     return "trial_code";
+  // dem may15: another special case:
+  if ($table == "barley_pedigree_catalog_ref")
+    return "barley_ref_number";
   else {
     $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>".mysqli_error($mysqli));
     $row = mysqli_fetch_row($q);
@@ -774,7 +777,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 		 */
 		// Enable the Delete option only for tables that have good foreign key constraints to prevent orphan data.
 		/* if ($table == 'CAPdata_programs') */
-		if (in_array($table, array('CAPdata_programs', 'phenotypes')))
+		if (in_array($table, array('CAPdata_programs', 'phenotypes', 'properties')))
 		  $deletebutton = "<button type='submit' name='Delete' value='$row[$pkey]' disabled>Delete</button>";
 		$line = "
 		<tr><form name=\"$table$count\" id=\"$table$count\" action=\"$return_page\" method=\"post\">
@@ -1005,26 +1008,25 @@ function get_table_info ($tablename) {
  * If you want it to be plural (with an s) then set $plural to 1
  */
 function beautifulTableName($tname, $plural=0) {
-  // dem jan2012
+  // dem jan2012, Rename Phenotypes
   if ($tname == 'phenotypes') $tname = 'traits';
-
-	$list = array("a", "o", "u", "s", "");
-
-	if($plural) {
-		if($tname[strlen($tname)-1] == "y") //special y case
-			$end = substr($tname, 0, -1) . "ies";
-
-		else if( !in_array($tname[strlen($tname)-1], $list) )	//pluralize if not already
-			$end = $tname . "s";
-
-		else	//already plural
-			$end = $tname;
-	}
-	else {
-		$end = ($tname[strlen($tname)-1] == "s" && $tname[strlen($tname)-2] != "u") ? substr($tname, 0, -1) : $tname;
-	}
-	return ucwords(str_replace("_", " ", $end));
-
+  $list = array("a", "o", "u", "s", "");
+  if ($plural) { // Pluralize.
+    if($tname[strlen($tname)-1] == "y") //special y case
+      $end = substr($tname, 0, -1) . "ies";
+    else if( !in_array($tname[strlen($tname)-1], $list) )	//pluralize if not already
+      $end = $tname . "s";
+    else	//already plural
+      $end = $tname;
+  }
+  else { // Not pluralizing
+    $ies = substr($tname, -3, 3);
+    if ($ies == "ies")  // special ies case e.g. properties
+      $end = substr($tname, 0, -3) . "y";
+    else
+      $end = ($tname[strlen($tname)-1] == "s" && $tname[strlen($tname)-2] != "u") ? substr($tname, 0, -1) : $tname;
+  }
+  return ucwords(str_replace("_", " ", $end));
 }
 
 /**
