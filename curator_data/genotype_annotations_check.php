@@ -356,7 +356,7 @@ class Annotations_Check {
 	$rdata = mysql_fetch_assoc($res);
 	$bp_uid=$rdata['CAPdata_programs_uid'];
 	if (empty($bp_uid)) {
-	  error(1, "Breeding program $bp_code is not in the database.");
+	  error(1, "Breeding program '$bp_code' is not in the database.");
 	  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
         
@@ -367,7 +367,7 @@ class Annotations_Check {
 	$rdata = mysql_fetch_assoc($res);
 	$cpData_uid=$rdata['CAPdata_programs_uid'];
 	if (empty($cpData_uid)) {
-	  error(1, "CAP data program $capDataProg is not in the database.");
+	  error(1, "CAP data program '$capDataProg' is not in the database.");
 	  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
                
@@ -386,7 +386,7 @@ class Annotations_Check {
 	$rdata = mysql_fetch_assoc($res);
 	$platform_uid = $rdata['platform_uid'];
 	if (empty($platform_uid)) {
-	  error(1, "Genotype platform $platform is not in the database.");
+	  error(1, "Genotype platform '$platform' is not in the database.");
 	  exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
  
