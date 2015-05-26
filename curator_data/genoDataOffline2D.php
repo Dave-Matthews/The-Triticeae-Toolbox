@@ -293,7 +293,7 @@ while (($line = fgets($reader)) !== false) {
         exitFatal($errFile, "ERROR: Invalid entry in line number $linenumber of Line Translation file.\n Text of line: '$origline'\nContents parsed as: $parsed");
     }
     $trialCodeStr = $data[$trialCodeIdx];
-    $lineStr = $data[$lineNameIdx];
+    $lineStr = strtoupper($data[$lineNameIdx]);
                 
     //echo  $lineStr . " - ". $trialCodeStr. "<br>"; 
     // Trial Code processing
@@ -494,7 +494,7 @@ while ($inputrow= fgets($reader))  {
   $data_pt = 0;
     mysqli_autocommit($mysqli, false);
     for ($data_pt = $dataIdx; $data_pt < $num; $data_pt++) {
-      $line_name = $header[$data_pt];
+      $line_name = strtoupper($header[$data_pt]);
 
       if ($markerflag == 0) {
 	  /* get line record ID */ 
