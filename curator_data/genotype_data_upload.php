@@ -18,7 +18,7 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
 connect();
 loginTest();
@@ -51,14 +51,14 @@ class GenotypeData
 
 
     private function typeDataResults() 	{
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
+	global $config;
+	include $config['root_dir'] . 'theme/admin_header.php';
 
-		echo "<h2>Add Genotype Experiment Information </h2>"; 
-		$this->type_genoData_Name();
-		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-	}
+	echo "<h2>Add Genotype Experiment Information </h2>"; 
+	$this->type_genoData_Name();
+	$footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
 	
 	
 	private function type_genoData_Name() {
@@ -93,7 +93,7 @@ class GenotypeData
  
     <p></p>
     <p>Note:<br>
-    1. Both files (line translation and genotype data) are required.<br>
+    1. Both files (line translation and genotype data) are required. Line names should be identical between both files.<br>
     2. Due to size of the Genotype Data File, it can be compressed with a "zip" application before submitting it.<br>
     3. Genotype files with over 100K makers should be imported via the command line as described in <a href="curator_data/gbs_import_instructions.php" target="_new">GBS import instruction</a>.<br>
     4. This upload process may take several hours to complete depending on size of the data file.  Please leave your email address for us to contact you with the results.</p>

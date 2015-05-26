@@ -335,7 +335,7 @@ echo "Line translation file processing done. Number of experiments: $num\n";
 //send email so user can check on status of import
 $body = "The offline genotype data import has started.\n".
   "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
-mail($emailAddr, "Genotype import started", $body, $mailheader);
+mail($emailAddr, "Genotype  verification started", $body, $mailheader);
 
 //echo "Start genotyping record creation process...\n";
 echo "\nProcessing genotype data file...\n";
@@ -540,12 +540,12 @@ fclose($reader);
 
 // Send out final email.
 if (filesize($errorFile)  > 0) {
-    $body = "There was a problem during the offline importing process.\n".
+    $body = "There was a problem during the offline verification process.\n".
         "Please have the curator review the error file at " . $urlPath.'curator_data/'.$tPath . "\n";
     echo "Genotype Data Import processing encountered some errors, check error file ". $errorFile , " for more information\n";
     
 } else {
-    $body = "The offline genotype data import completed successfully.\n".
+    $body = "The offline genotype data verification completed successfully.\n".
 			"Genotyping data import completed at - ". date("m/d/y : H:i:s", time()). "\n\n".
             "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
     echo "Genotype Verification Processing Successfully Completed\n";
