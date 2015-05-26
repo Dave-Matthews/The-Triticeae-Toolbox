@@ -188,7 +188,7 @@ function convertDArT2Illumina($alleles)
     }
     return $results;
 }
- 
+
 $mysqli = connecti();
 
 $target_Path = substr($lineTransFile, 0, strrpos($lineTransFile, '/')+1);
@@ -807,7 +807,7 @@ mysqlq("CREATE TABLE ac_temp (
   alleles varchar(2)                                                              
 ) ");
 // rename view does not work between databases in the update sandbox script so we have to recreate view after dump
-mysqlq("Create VIEW allele_view AS
+mysqlq("Create OR Replace VIEW allele_view AS
   select m.marker_uid, marker_name, lr.line_record_uid, lr.line_record_name, experiment_uid, allele_uid, concat(allele_1, allele_2) AS alleles 
   from markers AS m, line_records AS lr, alleles AS a, tht_base AS tb, genotyping_data AS gd
   where a.genotyping_data_uid = gd.genotyping_data_uid
