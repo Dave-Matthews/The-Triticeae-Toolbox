@@ -26,6 +26,13 @@
       % sudo cpan XML::DOM
     - NCBI BLAST+, ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
       Edit viroblast/viroblast.ini to use the path to these executables.
+  - for marker import BLAST.
+    - Edit curator_data/format-fasta.php to specify species
+      e.g. viroblast/db/nucleotide/oat-markers
+      e.g. viroblast/db/nucleotide/oat-index.csv
+    - create a symbolic link to viroblast directory
+      e.g. cd oat/viroblast/db
+      e.g. ln -s ../../../gbs_filed/blat/ nucleotide
 
 <b>Setting up the MySQL databases</b>
 
