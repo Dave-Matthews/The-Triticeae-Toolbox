@@ -20,19 +20,19 @@
   - GBrowse
   - pclzip.lib.php
   - libzzip
-  - for ViroBLAST.  
+  - for ViroBLAST
     - DBD::CSV and XML::DOM. Can be installed with these commands:
       % sudo cpan DBD::CSV
       % sudo cpan XML::DOM
     - NCBI BLAST+, ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
       Edit viroblast/viroblast.ini to use the path to these executables.
-  - for marker import BLAST.
-    - Edit curator_data/format-fasta.php to specify species
-      e.g. viroblast/db/nucleotide/oat-markers
-      e.g. viroblast/db/nucleotide/oat-index.csv
-    - create a symbolic link to viroblast directory
-      e.g. cd oat/viroblast/db
-      e.g. ln -s ../../../gbs_filed/blat/ nucleotide
+    - BLAST databases of the markers:
+      - Edit curator_data/format-fasta.php to specify species
+	e.g. viroblast/db/nucleotide/oat-markers
+	e.g. viroblast/db/nucleotide/oat-index.csv
+      - Create a symbolic link to the BLAST databases in the viroblast directory
+	e.g. cd viroblast/db
+	e.g. ln -s ../../gbs_files/blast/ nucleotide
 
 <b>Setting up the MySQL databases</b>
 
