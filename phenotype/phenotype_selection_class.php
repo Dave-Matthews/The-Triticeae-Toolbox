@@ -579,74 +579,59 @@ class Downloads
      */
     private function step5_phenotype()
     {
-        global $mysqli;
-        $phen_item = $_GET['pi'];
-        $experiments = $_GET['exps'];
-        $subset = $_GET['lw'];
-        if (isset($_SESSION['selected_lines'])) {
-            $selectedlines= $_SESSION['selected_lines'];
-            $selectedlines = implode(',', $selectedlines);
-        }
+      global $mysqli;
+      $phen_item = $_GET['pi'];
+      $experiments = $_GET['exps'];
+      $subset = $_GET['lw'];
+      if (isset($_SESSION['selected_lines'])) {
+	$selectedlines= $_SESSION['selected_lines'];
+	$selectedlines = implode(',', $selectedlines);
+      }
 
-        ?>
-        <input type="button" value="Save Phenotype Selection" onclick="javascript:phenotype_save();" /><br><br>
-        <?php
+      ?>
+      <input type="button" value="Save Phenotype Selection" onclick="javascript:phenotype_save();" /><br><br>
+<?php
 
-        if (isset($_GET['pi']) && !empty($_GET['pi'])) {
-            $sel_phen = explode(',', $phen_item);
-     	    $sel_expr = explode(',', $experiments);
-            echo "<table><tr><td>Traits<td>Trials<td>Lines";    
-            if ($subset == "yes") {
-                echo "<td>contained in<br>selected lines";
-            } 
-            foreach ($sel_phen as $p_uid) {
-     		$sql = "select phenotypes_name from phenotypes where phenotype_uid = $p_uid";
-     		$res1 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+      if (isset($_GET['pi']) && !empty($_GET['pi'])) {
+	$sel_phen = explode(',', $phen_item);
+	$sel_expr = explode(',', $experiments);
+	echo "<table><tr><th>Traits<th>Trials<th>Lines";    
+	if ($subset == "yes") 
+	  echo "<td>contained in<br>selected lines";
+	foreach ($sel_phen as $p_uid) {
+	  $sql = "select phenotypes_name from phenotypes where phenotype_uid = $p_uid";
+	  $res1 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
-     		while ($row1 = mysqli_fetch_array($res1)) {
-     			$p_name = $row1[0];
-     			foreach ($sel_expr as $e_uid) {
-     			  $sql = "select trial_code from experiments where experiment_uid = $e_uid";
-     			  $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     			  while ($row2 = mysqli_fetch_array($res2)) {
-     			    $e_name = $row2[0];
-     			    $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-
-     			    FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-
-     			    WHERE
-
-     			    pd.tht_base_uid = tb.tht_base_uid
-
-     			    AND p.phenotype_uid = pd.phenotype_uid
-
-     			    AND lr.line_record_uid = tb.line_record_uid
-
-     			    AND pd.phenotype_uid = $p_uid
-
-     			    AND tb.experiment_uid = $e_uid";
-     			    $res3 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-
-     			    $l_count = 0;
-     			    while ($row3 = mysqli_fetch_array($res3)) {
-     			      $l_count++;
-     			    }
-     			    echo "<tr><td>$p_name<td>$e_name<td>$l_count";
-                            if ($subset == "yes") {
-                                $sql .= " AND lr.line_record_uid IN ($selectedlines)";
-                                $res3 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-                                $l_count = 0;
-                                while ($row3 = mysqli_fetch_array($res3)) {
-                                  $l_count++;
-                                }
-                                echo "<td>$l_count";
-                            }
-     			  }
-     		    }
-     	    }
-     	}
-     	echo "</table><br>";
-     }
+	  while ($row1 = mysqli_fetch_array($res1)) {
+	    $p_name = $row1[0];
+	    foreach ($sel_expr as $e_uid) {
+	      $sql = "select trial_code from experiments where experiment_uid = $e_uid";
+	      $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	      while ($row2 = mysqli_fetch_array($res2)) {
+		$e_name = $row2[0];
+		$sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+			FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+			WHERE pd.tht_base_uid = tb.tht_base_uid
+			AND p.phenotype_uid = pd.phenotype_uid
+			AND lr.line_record_uid = tb.line_record_uid
+			AND pd.phenotype_uid = $p_uid
+			AND tb.experiment_uid = $e_uid";
+		if ($subset == "yes") 
+		  $sql .= " AND lr.line_record_uid IN ($selectedlines)";
+		$res3 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		$l_count = 0;
+		while ($row3 = mysqli_fetch_array($res3)) {
+		  $l_count++;
+		}
+		
+		if ($l_count > 0) // List only the trials for which this trait was measured. Is this a good idea?
+		  echo "<tr><td>$p_name<td><a href='display_phenotype.php?trial_code=$e_name'>$e_name<td>$l_count";
+	      }
+	    }
+	  }
+	}
+	echo "</table><br>";
+      }
     }
 
 	/**
