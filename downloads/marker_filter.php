@@ -422,7 +422,7 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $outputheader .= "'" . implode("'\t'", $name) . "'";
     } else {
         $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode\t";
-        $outputheader .= implode('\t', $name);
+        $outputheader .= implode("\t", $name);
     }
 
     $nelem = count($line_names);
@@ -490,7 +490,7 @@ function typeVcfExpMarkersDownload($geno_exp, $chr, $min_maf, $max_missing, $h)
     } else {
         die("<font color=red>Error - genotype experiment should be selected before download</font>");
     }
-    $outputheader .= implode('\t', $name);
+    $outputheader .= implode("\t", $name);
 
     $lookup = array(
         '-1' => '1/1',
