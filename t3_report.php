@@ -192,43 +192,57 @@ if ($query == 'geno') {
     }
 } elseif ($query == 'PTrials') {
     include($config['root_dir'].'theme/normal_header.php');
+    print "Phenotype trials ordered by creation date<br><br>\n";
+    print "<table border=0>";
+    print "<tr><td>Trial Code<td>Experiment Name<td>Plot Level data<td>created on\n";
+    $sql = "select distinct(experiment_uid) from phenotype_plot_data";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $uid = $row[0];
+        $plot_level[$uid] = 1;
+    }
+    $sql = "select trial_code, experiment_short_name, date_format(experiments.created_on, '%m-%d-%y'), experiment_uid from experiments, experiment_types
+    where experiments.experiment_type_uid = experiment_types.experiment_type_uid and experiment_types.experiment_type_name = 'phenotype'";
+    if (!authenticate(array(USER_TYPE_PARTICIPANT,
+                            USER_TYPE_CURATOR,
+                            USER_TYPE_ADMINISTRATOR))) {
+                        $sql .= " and data_public_flag > 0";
+    }
+    $sql .= " order by experiments.created_on desc";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $trial_code = $row[0];
+        $short_name = $row[1];
+        $date = $row[2];
+        $uid = $row[3];
+        if (isset($plot_level[$uid])) {
+            $type = "Yes";
+        } else {
+            $type = "";
+        }
+        print "<tr><td><a href=display_phenotype.php?trial_code=$trial_code>$trial_code</a><td>$short_name<td>$type<td>$date\n";
+    }
+} elseif ($query == 'GTrials') {
+    include($config['root_dir'].'theme/normal_header.php');
     print "Trials ordered by creation date<br><br>\n";
     print "<table border=0>";
     print "<tr><td>Trial Code<td>Experiment Name<td>type<td>created on\n";
     $sql = "select trial_code, experiment_short_name, date_format(experiments.created_on, '%m-%d-%y'), experiment_type_name from experiments, experiment_types
-    where experiments.experiment_type_uid = experiment_types.experiment_type_uid and experiment_types.experiment_type_name = 'phenotype'";
+      where experiments.experiment_type_uid = experiment_types.experiment_type_uid and experiment_types.experiment_type_name = 'genotype'";
     if (!authenticate(array(USER_TYPE_PARTICIPANT,
-                                        USER_TYPE_CURATOR,
-                                        USER_TYPE_ADMINISTRATOR)))
+                            USER_TYPE_CURATOR,
+                            USER_TYPE_ADMINISTRATOR))) {
                         $sql .= " and data_public_flag > 0";
-  $sql .= " order by experiments.created_on desc";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  while ($row = mysqli_fetch_row($res)) {
-    $trial_code = $row[0];
-    $short_name = $row[1];
-    $date = $row[2];
-    $type = $row[3];
-    print "<tr><td><a href=display_phenotype.php?trial_code=$trial_code>$trial_code</a><td>$short_name<td>$type<td>$date\n";
-  }
-} elseif ($query == 'GTrials') {
-  include($config['root_dir'].'theme/normal_header.php');
-  print "Trials ordered by creation date<br><br>\n";
-  print "<table border=0>"; print "<tr><td>Trial Code<td>Experiment Name<td>type<td>created on\n";
-  $sql = "select trial_code, experiment_short_name, date_format(experiments.created_on, '%m-%d-%y'), experiment_type_name from experiments, experiment_types
-    where experiments.experiment_type_uid = experiment_types.experiment_type_uid and experiment_types.experiment_type_name = 'genotype'";
-  if (!authenticate(array(USER_TYPE_PARTICIPANT,
-                                        USER_TYPE_CURATOR,
-                                        USER_TYPE_ADMINISTRATOR)))
-                        $sql .= " and data_public_flag > 0";
-  $sql .= " order by experiments.created_on desc";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  while ($row = mysqli_fetch_row($res)) {
-    $trial_code = $row[0];
-    $short_name = $row[1];
-    $date = $row[2];
-    $type = $row[3];
-    print "<tr><td><a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><td>$short_name<td>$type<td>$date\n";
-  }
+    }
+    $sql .= " order by experiments.created_on desc";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $trial_code = $row[0];
+        $short_name = $row[1];
+        $date = $row[2];
+        $type = $row[3];
+        print "<tr><td><a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><td>$short_name<td>$type<td>$date\n";
+    }
 } elseif ($query == 'cache') {
      $sql = "select count(genotyping_data_uid) from genotyping_data";
      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -478,7 +492,9 @@ if ($query == 'geno') {
     print "<tr><td>Species<td>";
   }
   $count = "";
-  $sql = "select distinct(species) from line_records";
+  $sql = "select pv.value from property_values pv, properties p 
+          where p.name = 'species' 
+          and p.properties_uid = pv.property_uid";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   while ($row = mysqli_fetch_row($res)) {
     $count = $count . "$row[0] ";
