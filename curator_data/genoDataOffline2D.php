@@ -640,7 +640,7 @@ echo "Start allele frequency calculation processing...\n";
 // Do allele frequency calculations
 $uniqExpID = array_unique($lineExpHash);
 
-foreach ($uniqExpID AS $key=>$expID)  {
+foreach ($uniqExpID as $key=>$expID)  {
 
         if (empty($expID)) continue;
 
@@ -871,10 +871,13 @@ exec($cmd, $output);
 foreach ($output as $line) {
     echo "$line<br>\n";
 }
-$cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker-exp.php $expID";
-exec($cmd, $output);
-foreach ($output as $line) {
-    echo "$line<br>\n";
+foreach ($uniqExpID as $key=>$expID) {
+    echo "adding entry to allele_bymarker_exp for $expID\n";
+    $cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker-exp.php $expID";
+    exec($cmd, $output);
+    foreach ($output as $line) {
+        echo "$line<br>\n";
+    }
 }
 
 // Send out final email.
@@ -885,8 +888,8 @@ if (filesize($errorFile)  > 0) {
     
 } else {
     $body = "The offline genotype data import completed successfully.\n".
-			"Genotyping data import completed at - ". date("m/d/y : H:i:s", time()). "\n\n".
-            "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
+    "Genotyping data import completed at - ". date("m/d/y : H:i:s", time()). "\n\n".
+    "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
     echo "Genotype Data Import Processing Successfully Completed\n";
 }
 send_email($emailAddr, $subject, $body);
@@ -904,15 +907,15 @@ $rdata = mysqli_fetch_assoc($res);
 $input_uid = $rdata['input_file_log_uid'];
         
 if (empty($input_uid)) {
-	$sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
-		VALUES('$filename', '$userName', NOW())";
+    $sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
+    VALUES('$filename', '$userName', NOW())";
 } else {
-	$sql = "UPDATE input_file_log SET users_name = '$userName', created_on = NOW()
-		WHERE input_file_log_uid = '$input_uid'"; 
+    $sql = "UPDATE input_file_log SET users_name = '$userName', created_on = NOW()
+    WHERE input_file_log_uid = '$input_uid'";
 }
 mysqli_query($mysqli, $sql) or die("Database Error: Input file log entry creation failed - " . mysqli_error($mysqli) . "\n\n$sql");
 
-$filename = stristr($lineTransFile,basename($lineTransFile));
+$filename = stristr($lineTransFile, basename($lineTransFile));
 $sql = "SELECT input_file_log_uid from input_file_log 
         WHERE file_name = '$filename'";
 $res = mysqli_query($mysqli, $sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
@@ -932,18 +935,18 @@ exit(0);
 
 /**
  * Fatal error - send message then exit
- * 
+ *
  * @param file   $handle error file
  * @param string $msg    contains error message
- * 
+ *
  * @return NULL
  */
-function exitFatal ($handle, $msg)
+function exitFatal($handle, $msg)
 {
     global $emailAddr;
     global $mailheader;
-    global $tPath; 
-	global $urlPath; 
+    global $tPath;
+    global $urlPath;
     
     // Send to stdout
     echo $msg;
@@ -953,9 +956,7 @@ function exitFatal ($handle, $msg)
     // Send email
     $subject = 'Fatal Import Error';
     $body = "There was a fatal problem during the offline importing process.\n". $msg. "\n\n" .
-        "Additional information can be found at ".$urlPath.'curator_data/'.$tPath. "\n";      
+        "Additional information can be found at ".$urlPath.'curator_data/'.$tPath. "\n";
     send_email($emailAddr, $subject, $body);
     exit(1);
 }
-
-?>
