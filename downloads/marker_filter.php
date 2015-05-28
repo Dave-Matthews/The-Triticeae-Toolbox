@@ -464,24 +464,27 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     $count = count($unique);
 }
 
+function typeVcfMarkersDownload($lines, $min_maf, $max_missing, $h)
+{
+}
     /**
      * build genotype data files in VCF format using genotype experiment
      *
-     * @param integer $geno_exp  genotype experiment 
-     * @param real  $min_maf     minimum marker allele frequency 
-     * @param real  $max_missing max missing markers 
+     * @param integer $geno_exp  genotype experiment
+     * @param real  $min_maf     minimum marker allele frequency
+     * @param real  $max_missing max missing markers
      * @param file  $h           file handle
      *
      * @return null
      */
-function typeVcfMarkersDownload($geno_exp, $min_maf, $max_missing, $h)
+function typeVcfExpMarkersDownload($geno_exp, $chr, $min_maf, $max_missing, $h)
 {
     global $mysqli;
     $outputheader = "";
 
     //get header for VCF
     $sql = "select line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
-    $res = mysqli_query($mysqli, $sql) or die(mysql_error($mysqli));
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_array($res)) {
         $name = json_decode($row[0], true);
     } else {
@@ -489,14 +492,22 @@ function typeVcfMarkersDownload($geno_exp, $min_maf, $max_missing, $h)
     }
     $outputheader .= implode('\t', $name);
 
+    $lookup = array(
+        '-1' => '1/1',
+        '0' => '0/1',
+        '1' => '0/0',
+        'NA' => './.'
+    );
+    $count = 0;
     fwrite($h, "##fileformat=VCFv4.1\n");
     fwrite($h, "#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT\n");
     fwrite($h, "$outputheader\n");
-    $sql = "select marker_uid, marker_name, A_allele, B_allele, chrom, pos, alleles from allele_bymarker_exp_101, markers
+    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, chrom, pos, alleles from allele_bymarker_exp_101, markers
         where experiment_uid = $geno_exp
         and markers.marker_uid = allele_bymarker_exp_101.marker_uid";
-    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-    while ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
+        $count++;
         $marker_id = $row[0];
         $marker_name = $row[1];
         $ref = $row[2];
@@ -504,12 +515,15 @@ function typeVcfMarkersDownload($geno_exp, $min_maf, $max_missing, $h)
         $chrom = $row[4];
         $pos = $row[5];
         $alleles = $row[6];
-        $allele_ary = explode (",", $alleles);
+        $allele_ary = explode(",", $alleles);
         fwrite($h, "$chrom\t$pos\t$marker_name\t$ref\t$alt\t");
         foreach ($allele_ary as $allele) {
-            $allele_ary2[] = $allele;
+            $allele_ary2[] = $lookup[$allele];
         }
-        $allele_str = implode ("\t", $allele_ary2);
+        $allele_str = implode("\t", $allele_ary2);
         fwrite($h, "$allele_str\n");
+        if ($count > 100) {
+            break;
+        }
     }
 }
