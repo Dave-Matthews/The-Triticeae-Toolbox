@@ -409,20 +409,22 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $marker_list_allele[$marker_uid] = $allele;
     }
 
-        //get header, tassel requires all fields even if they are empty
-    if ($dtype == "qtlminer") {
-        $outputheader = "rs\talleles\tchrom\tpos\t";
-    } else {
-        $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode\t";
-    }
+    //get header, tassel requires all fields even if they are empty
     $sql = "select line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
     if ($row = mysql_fetch_array($res)) {
         $name = json_decode($row[0], true);
-        $outputheader .= "'" . implode("'\t'", $name) . "'";
     } else {
         die("<font color=red>Error - genotype experiment should be selected before download</font>");
     }
+    if ($dtype == "qtlminer") {
+        $outputheader = "rs\talleles\tchrom\tpos\t";
+        $outputheader .= "'" . implode("'\t'", $name) . "'";
+    } else {
+        $outputheader = "rs#\talleles\tchrom\tpos\tstrand\tassembly#\tcenter\tprotLSID\tassayLSID\tpanelLSID\tQCcode\t";
+        $outputheader .= implode('\t', $name);
+    }
+
     $nelem = count($line_names);
     fwrite($h, "$outputheader\n");
 
@@ -462,3 +464,52 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     $count = count($unique);
 }
 
+    /**
+     * build genotype data files in VCF format using genotype experiment
+     *
+     * @param integer $geno_exp  genotype experiment 
+     * @param real  $min_maf     minimum marker allele frequency 
+     * @param real  $max_missing max missing markers 
+     * @param file  $h           file handle
+     *
+     * @return null
+     */
+function typeVcfMarkersDownload($geno_exp, $min_maf, $max_missing, $h)
+{
+    global $mysqli;
+    $outputheader = "";
+
+    //get header for VCF
+    $sql = "select line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
+    $res = mysqli_query($mysqli, $sql) or die(mysql_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
+        $name = json_decode($row[0], true);
+    } else {
+        die("<font color=red>Error - genotype experiment should be selected before download</font>");
+    }
+    $outputheader .= implode('\t', $name);
+
+    fwrite($h, "##fileformat=VCFv4.1\n");
+    fwrite($h, "#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT\n");
+    fwrite($h, "$outputheader\n");
+    $sql = "select marker_uid, marker_name, A_allele, B_allele, chrom, pos, alleles from allele_bymarker_exp_101, markers
+        where experiment_uid = $geno_exp
+        and markers.marker_uid = allele_bymarker_exp_101.marker_uid";
+    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+    while ($row = mysql_fetch_array($res)) {
+        $marker_id = $row[0];
+        $marker_name = $row[1];
+        $ref = $row[2];
+        $alt = $row[3];
+        $chrom = $row[4];
+        $pos = $row[5];
+        $alleles = $row[6];
+        $allele_ary = explode (",", $alleles);
+        fwrite($h, "$chrom\t$pos\t$marker_name\t$ref\t$alt\t");
+        foreach ($allele_ary as $allele) {
+            $allele_ary2[] = $allele;
+        }
+        $allele_str = implode ("\t", $allele_ary2);
+        fwrite($h, "$allele_str\n");
+    }
+}
