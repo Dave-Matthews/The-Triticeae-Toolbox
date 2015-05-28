@@ -1,22 +1,22 @@
 <?php
 /**
  * 2D Genotype data importer
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/curator_data/genoDataOffline2D.php
- *  
- * pieces of import code by Julie's team @ iowaStateU  
+ *
+ * pieces of import code by Julie's team @ iowaStateU
 
  * 06/10/2013 cbirkett convert DArT to Illumina base calls
  * 07/18/2012 cbirkett convert AGCT to Illumina base calls
  * 04/17/2011 cbirkett Replace loop control "next" with "continue"
  * 04/17/2011 cbirkett allow E_NOTICE errors
- * 02/08/2011 cbirkett	Ignore space characters in line input file
- * 10/25/2011  JLee   Ignore "cut" portion of input file 
+ * 02/08/2011 cbirkett Ignore space characters in line input file
+ * 10/25/2011  JLee   Ignore "cut" portion of input file
  * 10/17/2011 JLee  Add username and resubmission entry to input file log table
  * 10/17/2011 JLee  Create of input file log entry
  * 4/11/2011 JLee   Add ability to handle zipped data files
@@ -31,6 +31,7 @@ require_once "$progPath" . "includes/email.inc";
 
 ini_set("auto_detect_line_endings", true);
 ini_set('mysql.connect_timeout', '0');
+ini_set('memory_limit', '2G');
 
 $num_args = $_SERVER["argc"];
 $fnames = $_SERVER["argv"];
@@ -57,10 +58,10 @@ echo "Email - ". $emailAddr."\n";
 /**
  * look for unambiguous base at location specified by offset
  * http://www.illumina.com/documents/products/technotes/technote_topbot.pdf
- * 
+ *
  * @param string $snp    marker sequence
  * @param number $offset position in squence
- * 
+ *
  * @return number (0=not found 1=found)
  */
 function findUnambig($snp, $offset)
@@ -121,10 +122,10 @@ function findUnambig($snp, $offset)
 
 /**
  * step through the offset until unambigous base found
- * 
+ *
  * @param string $seq       sequence from marker table
  * @param string $marker_ab snp as defined by the A_allele B_allele in marker table
- * 
+ *
  * @return NULL
  */
 function findIllumina($seq, $marker_ab)
@@ -139,9 +140,9 @@ function findIllumina($seq, $marker_ab)
 
 /**
  * convert ACTG to Illumina AB format
- * 
+ *
  * @param string $alleles ACTG base calls
- * 
+ *
  * @return string converted base calls
  */
 function convert2Illumina($alleles)
@@ -166,9 +167,9 @@ function convert2Illumina($alleles)
 
 /**
  * convert 0,1 to Illumina AB format
- * 
+ *
  * @param string $alleles 0,1 base calls
- * 
+ *
  * @return string converted base calls
  */
 function convertDArT2Illumina($alleles)
@@ -177,12 +178,12 @@ function convertDArT2Illumina($alleles)
     $results = "";
     if (($a_allele == "") || ($b_allele == "")) {
         echo "Error: A allele and B allele undetermined\n";
-    } elseif ($alleles == $a_allele) {  //1 = Present
-        $results = 'AA';
-    } elseif ($alleles == $b_allele) {  //0 = Absent
-        $results = 'BB';
-    } elseif ($alleles == '-') {  //missing
-        $results = '--';
+    } elseif ($alleles == $a_allele) {
+        $results = 'AA';  // 1 = Present
+    } elseif ($alleles == $b_allele) {
+        $results = 'BB';  // 0 = Absent
+    } elseif ($alleles == '-') {
+        $results = '--';  //missing
     } else {
         echo "Error: allele is not valid SNP $a_allele, $b_allele, $alleles\n";
     }
@@ -232,7 +233,7 @@ if ($gDataFile == "") {
 if ($emailAddr == "") {
     echo "No email address. \n";
     exit (1);
-}  
+}
 
 // Check for zip file
 if (strpos($gDataFile, ".zip") == true) {
@@ -254,7 +255,7 @@ if (($reader = fopen($lineTransFile, "r")) == false) {
  // Check first line for header information
 if (($inputrow = fgets($reader)) == false) {
     exitFatal($errFile, "Unable to locate header names on first line of file.");
-}     
+}
 
 echo "\nProcessing line translation file...\n";
 
