@@ -464,8 +464,10 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     $count = count($unique);
 }
 
-function typeVcfMarkersDownload($lines, $min_maf, $max_missing, $h)
+function typeVcfMarkersDownload($lines, $chr, $min_maf, $max_missing, $h)
 {
+    global $mysqli;
+    $outputheader = "";
 }
     /**
      * build genotype data files in VCF format using genotype experiment
@@ -481,6 +483,15 @@ function typeVcfExpMarkersDownload($geno_exp, $chr, $min_maf, $max_missing, $h)
 {
     global $mysqli;
     $outputheader = "";
+    $selected_map = "Chromosome Survey Sequence, 2014";
+
+    $sql = "select mapset_uid from mapset where mapset_name = \"$selected_map\"";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
+        $mapset_uid = $row[0];
+    } else {
+        echo "Error: can not find reference map\n";
+    }
 
     //get header for VCF
     $sql = "select line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
@@ -500,9 +511,25 @@ function typeVcfExpMarkersDownload($geno_exp, $chr, $min_maf, $max_missing, $h)
     );
     $count = 0;
     fwrite($h, "##fileformat=VCFv4.1\n");
-    fwrite($h, "#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT\n");
+    fwrite($h, "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t");
     fwrite($h, "$outputheader\n");
-    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, chrom, pos, alleles from allele_bymarker_exp_101, markers
+    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, mim.chromosome, CAST(1000*mim.start_position as UNSIGNED) from markers, markers_in_maps as mim, map
+        where mim.marker_uid = markers.marker_uid
+        AND mim.map_uid = map.map_uid
+        AND map.mapset_uid = $mapset_uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
+        $count++;
+        $marker_uid = $row[0];
+        $pos = $row[1];
+        $chr = $row[2];
+        $marker_list_mapped[$marker_uid] = $pos;
+        $marker_list_chr[$marker_uid] = $chr;
+    }
+    //echo "$count markers mapped\n";
+
+    $count = 0;
+    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, alleles from allele_bymarker_exp_101, markers
         where experiment_uid = $geno_exp
         and markers.marker_uid = allele_bymarker_exp_101.marker_uid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -512,9 +539,9 @@ function typeVcfExpMarkersDownload($geno_exp, $chr, $min_maf, $max_missing, $h)
         $marker_name = $row[1];
         $ref = $row[2];
         $alt = $row[3];
-        $chrom = $row[4];
-        $pos = $row[5];
-        $alleles = $row[6];
+        $chrom = $marker_list_chr[$marker_id];
+        $pos = $marker_list_mapped[$marker_id];
+        $alleles = $row[4];
         $allele_ary = explode(",", $alleles);
         fwrite($h, "$chrom\t$pos\t$marker_name\t$ref\t$alt\t");
         foreach ($allele_ary as $allele) {
@@ -522,7 +549,7 @@ function typeVcfExpMarkersDownload($geno_exp, $chr, $min_maf, $max_missing, $h)
         }
         $allele_str = implode("\t", $allele_ary2);
         fwrite($h, "$allele_str\n");
-        if ($count > 100) {
+        if ($count > 10) {
             break;
         }
     }
