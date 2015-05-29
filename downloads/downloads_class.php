@@ -335,7 +335,7 @@ class Downloads
             fwrite($h, $output);
             fclose($h);
         }
-        $filename = "selection_paramaters.txt";
+        $filename = "selection_parameters.txt";
         $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
         fwrite($h, "Minimum MAF = $min_maf\n");
         fwrite($h, "Maximum Missing = $max_missing\n");
