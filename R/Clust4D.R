@@ -17,6 +17,10 @@
 
 # The multicore package enables parallelization
 library("parallel")
+# if not R 3.0 or above, the multicore library is needed
+if (! exists('mclapply')) {
+	library(multicore)
+}
 nCores <- detectCores() / 2 # Use half the available cores
 nCores <- min(nCores, 16) # But no more than 16 cores
 options(cores=nCores)
