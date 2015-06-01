@@ -1,6 +1,6 @@
 # These are the two packages I want.  The multicore package makes crossvalidation run faster
 library(rrBLUP)
-library(parallel, warn.conflicts = FALSE)
+library(parallel)
 nCores <- detectCores()
 if (nCores > 12) {
   nCores = 12
