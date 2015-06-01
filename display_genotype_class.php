@@ -110,8 +110,14 @@ class ShowData
   {
     global $mysqli;
     $line_ids = array();
-    $sql = "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code = '".$trial_code."' ";
-    if ($stmt = mysqli_prepare($mysqli, "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code = ?")) {
+    $sql = "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code = ?";
+    if (!authenticate(array(USER_TYPE_PARTICIPANT,
+                            USER_TYPE_CURATOR,
+                            USER_TYPE_ADMINISTRATOR))) {
+                        $sql .= " and data_public_flag > 0";
+    }
+
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $trial_code);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $CAPdata_programs_uid, $experiment_type_uid, $experiment_uid, $experiment_short_name);
