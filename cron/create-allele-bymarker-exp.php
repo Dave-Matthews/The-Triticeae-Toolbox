@@ -92,8 +92,10 @@ while ($row = mysql_fetch_array($res)) {
     echo "max_lines = $max_lines\n";
 
     if ($max_markers > 0) {
-        $line_uid_list_str = implode(",", $line_uid_list);
-        $line_name_list_str = implode(",", $line_name_list);
+        //$line_uid_list_str = implode(",", $line_uid_list);
+        //$line_name_list_str = implode(",", $line_name_list);
+        $line_uid_list_str = json_encode($line_uid_list);
+        $line_name_list_str = json_encode($line_name_list);
         if (isset($index_list[$experiment_uid])) {
             $sql = "update allele_bymarker_expidx set line_index = \"$line_uid_list_str\", line_name_index = \"$line_name_list_str\" where experiment_uid = $experiment_uid";
         } else {

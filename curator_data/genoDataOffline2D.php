@@ -1,22 +1,22 @@
 <?php
 /**
  * 2D Genotype data importer
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/curator_data/genoDataOffline2D.php
- *  
- * pieces of import code by Julie's team @ iowaStateU  
+ *
+ * pieces of import code by Julie's team @ iowaStateU
 
  * 06/10/2013 cbirkett convert DArT to Illumina base calls
  * 07/18/2012 cbirkett convert AGCT to Illumina base calls
  * 04/17/2011 cbirkett Replace loop control "next" with "continue"
  * 04/17/2011 cbirkett allow E_NOTICE errors
- * 02/08/2011 cbirkett	Ignore space characters in line input file
- * 10/25/2011  JLee   Ignore "cut" portion of input file 
+ * 02/08/2011 cbirkett Ignore space characters in line input file
+ * 10/25/2011  JLee   Ignore "cut" portion of input file
  * 10/17/2011 JLee  Add username and resubmission entry to input file log table
  * 10/17/2011 JLee  Create of input file log entry
  * 4/11/2011 JLee   Add ability to handle zipped data files
@@ -31,6 +31,7 @@ require_once "$progPath" . "includes/email.inc";
 
 ini_set("auto_detect_line_endings", true);
 ini_set('mysql.connect_timeout', '0');
+ini_set('memory_limit', '2G');
 
 $num_args = $_SERVER["argc"];
 $fnames = $_SERVER["argv"];
@@ -57,10 +58,10 @@ echo "Email - ". $emailAddr."\n";
 /**
  * look for unambiguous base at location specified by offset
  * http://www.illumina.com/documents/products/technotes/technote_topbot.pdf
- * 
+ *
  * @param string $snp    marker sequence
  * @param number $offset position in squence
- * 
+ *
  * @return number (0=not found 1=found)
  */
 function findUnambig($snp, $offset)
@@ -121,10 +122,10 @@ function findUnambig($snp, $offset)
 
 /**
  * step through the offset until unambigous base found
- * 
+ *
  * @param string $seq       sequence from marker table
  * @param string $marker_ab snp as defined by the A_allele B_allele in marker table
- * 
+ *
  * @return NULL
  */
 function findIllumina($seq, $marker_ab)
@@ -139,9 +140,9 @@ function findIllumina($seq, $marker_ab)
 
 /**
  * convert ACTG to Illumina AB format
- * 
+ *
  * @param string $alleles ACTG base calls
- * 
+ *
  * @return string converted base calls
  */
 function convert2Illumina($alleles)
@@ -166,9 +167,9 @@ function convert2Illumina($alleles)
 
 /**
  * convert 0,1 to Illumina AB format
- * 
+ *
  * @param string $alleles 0,1 base calls
- * 
+ *
  * @return string converted base calls
  */
 function convertDArT2Illumina($alleles)
@@ -177,18 +178,18 @@ function convertDArT2Illumina($alleles)
     $results = "";
     if (($a_allele == "") || ($b_allele == "")) {
         echo "Error: A allele and B allele undetermined\n";
-    } elseif ($alleles == $a_allele) {  //1 = Present
-        $results = 'AA';
-    } elseif ($alleles == $b_allele) {  //0 = Absent
-        $results = 'BB';
-    } elseif ($alleles == '-') {  //missing
-        $results = '--';
+    } elseif ($alleles == $a_allele) {
+        $results = 'AA';  // 1 = Present
+    } elseif ($alleles == $b_allele) {
+        $results = 'BB';  // 0 = Absent
+    } elseif ($alleles == '-') {
+        $results = '--';  //missing
     } else {
         echo "Error: allele is not valid SNP $a_allele, $b_allele, $alleles\n";
     }
     return $results;
 }
- 
+
 $mysqli = connecti();
 
 $target_Path = substr($lineTransFile, 0, strrpos($lineTransFile, '/')+1);
@@ -232,7 +233,7 @@ if ($gDataFile == "") {
 if ($emailAddr == "") {
     echo "No email address. \n";
     exit (1);
-}  
+}
 
 // Check for zip file
 if (strpos($gDataFile, ".zip") == true) {
@@ -254,7 +255,7 @@ if (($reader = fopen($lineTransFile, "r")) == false) {
  // Check first line for header information
 if (($inputrow = fgets($reader)) == false) {
     exitFatal($errFile, "Unable to locate header names on first line of file.");
-}     
+}
 
 echo "\nProcessing line translation file...\n";
 
@@ -640,7 +641,7 @@ echo "Start allele frequency calculation processing...\n";
 // Do allele frequency calculations
 $uniqExpID = array_unique($lineExpHash);
 
-foreach ($uniqExpID AS $key=>$expID)  {
+foreach ($uniqExpID as $key=>$expID)  {
 
         if (empty($expID)) continue;
 
@@ -807,7 +808,7 @@ mysqlq("CREATE TABLE ac_temp (
   alleles varchar(2)                                                              
 ) ");
 // rename view does not work between databases in the update sandbox script so we have to recreate view after dump
-mysqlq("Create VIEW allele_view AS
+mysqlq("Create OR Replace VIEW allele_view AS
   select m.marker_uid, marker_name, lr.line_record_uid, lr.line_record_name, experiment_uid, allele_uid, concat(allele_1, allele_2) AS alleles 
   from markers AS m, line_records AS lr, alleles AS a, tht_base AS tb, genotyping_data AS gd
   where a.genotyping_data_uid = gd.genotyping_data_uid
@@ -871,10 +872,13 @@ exec($cmd, $output);
 foreach ($output as $line) {
     echo "$line<br>\n";
 }
-$cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker-exp.php $expID";
-exec($cmd, $output);
-foreach ($output as $line) {
-    echo "$line<br>\n";
+foreach ($uniqExpID as $key=>$expID) {
+    echo "adding entry to allele_bymarker_exp for $expID\n";
+    $cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker-exp.php $expID";
+    exec($cmd, $output);
+    foreach ($output as $line) {
+        echo "$line<br>\n";
+    }
 }
 
 // Send out final email.
@@ -885,8 +889,8 @@ if (filesize($errorFile)  > 0) {
     
 } else {
     $body = "The offline genotype data import completed successfully.\n".
-			"Genotyping data import completed at - ". date("m/d/y : H:i:s", time()). "\n\n".
-            "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
+    "Genotyping data import completed at - ". date("m/d/y : H:i:s", time()). "\n\n".
+    "Additional information can be found at ".$urlPath.'curator_data/'.$tPath."genoProc.out\n";
     echo "Genotype Data Import Processing Successfully Completed\n";
 }
 send_email($emailAddr, $subject, $body);
@@ -904,15 +908,15 @@ $rdata = mysqli_fetch_assoc($res);
 $input_uid = $rdata['input_file_log_uid'];
         
 if (empty($input_uid)) {
-	$sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
-		VALUES('$filename', '$userName', NOW())";
+    $sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
+    VALUES('$filename', '$userName', NOW())";
 } else {
-	$sql = "UPDATE input_file_log SET users_name = '$userName', created_on = NOW()
-		WHERE input_file_log_uid = '$input_uid'"; 
+    $sql = "UPDATE input_file_log SET users_name = '$userName', created_on = NOW()
+    WHERE input_file_log_uid = '$input_uid'";
 }
 mysqli_query($mysqli, $sql) or die("Database Error: Input file log entry creation failed - " . mysqli_error($mysqli) . "\n\n$sql");
 
-$filename = stristr($lineTransFile,basename($lineTransFile));
+$filename = stristr($lineTransFile, basename($lineTransFile));
 $sql = "SELECT input_file_log_uid from input_file_log 
         WHERE file_name = '$filename'";
 $res = mysqli_query($mysqli, $sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
@@ -932,18 +936,18 @@ exit(0);
 
 /**
  * Fatal error - send message then exit
- * 
+ *
  * @param file   $handle error file
  * @param string $msg    contains error message
- * 
+ *
  * @return NULL
  */
-function exitFatal ($handle, $msg)
+function exitFatal($handle, $msg)
 {
     global $emailAddr;
     global $mailheader;
-    global $tPath; 
-	global $urlPath; 
+    global $tPath;
+    global $urlPath;
     
     // Send to stdout
     echo $msg;
@@ -953,9 +957,7 @@ function exitFatal ($handle, $msg)
     // Send email
     $subject = 'Fatal Import Error';
     $body = "There was a fatal problem during the offline importing process.\n". $msg. "\n\n" .
-        "Additional information can be found at ".$urlPath.'curator_data/'.$tPath. "\n";      
+        "Additional information can be found at ".$urlPath.'curator_data/'.$tPath. "\n";
     send_email($emailAddr, $subject, $body);
     exit(1);
 }
-
-?>
