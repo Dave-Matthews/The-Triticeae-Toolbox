@@ -1,4 +1,7 @@
+# DEM jun2015: This AddType is needed for ".php" suffix rewriting.
+AddType application/x-httpd-php .php
 RewriteEngine On
+Header add Access-Control-Allow-Origin "*"
 RewriteRule     genotype/(.+) genotype.php [QSA,NC,L]
 RewriteRule     design/([0-9]+) design.php?uid=$1
 RewriteRule     design/list design.php?action=list
@@ -6,3 +9,4 @@ RewriteRule     traits/([0-9,]+) traits.php?uid=$1
 RewriteRule     traits/list traits.php?action=list
 RewriteRule	maps/([0-9,]+) maps.php?uid=$1
 RewriteRule	maps/list maps.php?action=list
+#RewriteRule	germplasm/find germplasm.php/find
