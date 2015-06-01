@@ -1,7 +1,7 @@
 <?php
 
 # Function connect() below requires the connection information in
-# /data/tht_data/mysql_connections/T3wheat+_readonly.inc
+# /data/wheatT3/wheatT3-authen/T3wheat_readonly.inc
 
 if (!isset($dontconnect))
 $dontconnect = false;
@@ -155,7 +155,7 @@ function connect() {
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat+_readonly.inc');
+  include('/data/wheatT3/wheatT3-authen/T3wheat_readonly.inc');
   $db_config = array_merge_recursive_unique($db_config,
 					    $ini_config);
   extract($db_config);
@@ -180,7 +180,7 @@ function connecti() {
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat+_readonly.inc');
+  include('/data/wheatT3/wheatT3-authen/T3wheat_readonly.inc');
   $db_config = array_merge_recursive_unique($db_config,
                                             $ini_config);
   extract($db_config);
