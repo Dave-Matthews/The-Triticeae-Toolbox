@@ -27,25 +27,31 @@ if ($action == "list") {
     GROUP BY mapset.mapset_uid";
     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
-        $uid = $row[1];
-        $temp["mapId"] = $row[1];
-        $temp["name"] = $row[2];
-        $temp["species"] = $row[3];
-        $temp["type"] = $row[4];
-        $temp["unit"] = $row[5];
-        $temp["publishedDate"] = $row[6];
-        $temp["markerCount"] = $row[0];
-        $sql = "select count(distinct(chromosome)) from markers_in_maps, map
+      $uid = $row[1];
+      $temp["mapId"] = (integer) $row[1];
+      $temp["name"] = $row[2];
+      $temp["species"] = $row[3];
+      $temp["type"] = $row[4];
+      $temp["unit"] = $row[5];
+      $temp["publishedDate"] = $row[6];
+      $timestamp = strtotime($temp["publishedDate"]);
+      // Handle missing values 0000-00-00.
+      if ($timestamp == 0)
+	unset($temp["publishedDate"]);
+      else
+	$temp['publishedDate'] = date("Y-m-d", $timestamp);
+      $temp["markerCount"] = (integer) $row[0];
+      $sql = "select count(distinct(chromosome)) from markers_in_maps, map
         where map.map_uid = markers_in_maps.map_uid
         and mapset_uid = $uid";
-        $res2 = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        if ($row2 = mysqli_fetch_row($res2)) {
-            $temp["chromosomeCount"] = $row2[0];
-        } else {
-            $temp["chromosomeCount"] = "Error";
-        }
-        $temp["comments"] = $row[7];
-        $results[] = $temp;
+      $res2 = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+      if ($row2 = mysqli_fetch_row($res2)) {
+	$temp["chromosomeCount"] = (integer) $row2[0];
+      } else {
+	$temp["chromosomeCount"] = "Error";
+      }
+      $temp["comments"] = $row[7];
+      $results[] = $temp;
     }
     $return = json_encode($results);
     echo "$return";
