@@ -70,11 +70,11 @@ if ($action == "list") {
         AND mapset_uid = $uid";
     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
-        $temp2["markerID"]= $row[0];
-        $temp2["markerName"] = $row[1];
-        $temp2["location"] = $row[2];
-        $temp2["chromosome"] = $row[3];
-        $entries[] = $temp2;
+      $temp2["markerID"]= (integer) $row[0];
+      $temp2["markerName"] = $row[1];
+      $temp2["location"] = $row[2];
+      $temp2["chromosome"] = $row[3];
+      $entries[] = $temp2;
     }
     $results["entries"] = $entries;
 
