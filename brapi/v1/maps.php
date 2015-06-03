@@ -35,7 +35,9 @@ if ($action == "list") {
       $temp["unit"] = $row[5];
       $temp["publishedDate"] = $row[6];
       // Handle values 0000-00-00.
-      if (!strpos($temp["publishedDate"], "0000-00-00")) {
+      if (preg_match("/0000-00-00/", $temp["publishedDate"])) 
+	unset($temp["publishedDate"]);
+      else {
 	$timestamp = strtotime($temp["publishedDate"]);
 	// Handle missing values.
 	if ($timestamp == 0)
