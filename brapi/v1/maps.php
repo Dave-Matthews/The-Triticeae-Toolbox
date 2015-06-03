@@ -34,12 +34,15 @@ if ($action == "list") {
       $temp["type"] = $row[4];
       $temp["unit"] = $row[5];
       $temp["publishedDate"] = $row[6];
-      $timestamp = strtotime($temp["publishedDate"]);
-      // Handle missing values 0000-00-00.
-      if ($timestamp == 0)
-	unset($temp["publishedDate"]);
-      else
-	$temp['publishedDate'] = date("Y-m-d", $timestamp);
+      // Handle values 0000-00-00.
+      if ($temp["publishedDate"] != "0000-00-00") {
+	$timestamp = strtotime($temp["publishedDate"]);
+	// Handle missing values.
+	if ($timestamp == 0)
+	  unset($temp["publishedDate"]);
+	else
+	  $temp['publishedDate'] = date("Y-m-d", $timestamp);
+      }
       $temp["markerCount"] = (integer) $row[0];
       $sql = "select count(distinct(chromosome)) from markers_in_maps, map
         where map.map_uid = markers_in_maps.map_uid
