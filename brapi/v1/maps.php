@@ -35,7 +35,7 @@ if ($action == "list") {
       $temp["unit"] = $row[5];
       $temp["publishedDate"] = $row[6];
       // Handle values 0000-00-00.
-      if ($temp["publishedDate"] != "0000-00-00") {
+      if (!strpos($temp["publishedDate"], "0000-00-00")) {
 	$timestamp = strtotime($temp["publishedDate"]);
 	// Handle missing values.
 	if ($timestamp == 0)
