@@ -116,10 +116,10 @@ function show_datasets($id)
             echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
             echo "\t\t<td>$v</td>\n";
             echo "\t</tr>\n";
-	}
+        }
         echo "</table>\n<br />\n";
 
-	$bp = mysqli_query($mysqli, "SELECT CAPdata_programs.CAPdata_programs_uid, institutions_name as institution, data_program_name as data_program
+        $bp = mysqli_query($mysqli, "SELECT CAPdata_programs.CAPdata_programs_uid, institutions_name as institution, data_program_name as data_program
 		  FROM datasets, CAPdata_programs, institutions
 		  WHERE datasets.datasets_uid = '$id'
 			AND CAPdata_programs.CAPdata_programs_uid = datasets.CAPdata_programs_uid
@@ -127,7 +127,7 @@ function show_datasets($id)
 		")
     	      or die("Error in show datasets");
 
-	echo viewTable($bp, "CAPdata_programs");
+        echo viewTable($bp, "CAPdata_programs");
 
 	$exp = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiment_type_name as type, trial_code as trial_code, experiment_year as year
 		FROM datasets, experiments, datasets_experiments, experiment_types
@@ -167,25 +167,25 @@ function show_users($id) {
  * lines associated with an experiment in addition to the usual experiment data shown. 
  */
 function show_experiments($id) {
+    global $mysqli;
+    echo "<div style=\"float: left;\"><br /><br />";
 
-	echo "<div style=\"float: left;\"><br /><br />";
+    //To simply things, just refer to this function.
+    show_general("experiments", $id);
 
-	//To simply things, just refer to this function.
-	show_general("experiments", $id);
+    echo "</div>";
 
-	echo "</div>";
+    //in addition to the show_general() output, we want to show associated lines
+    echo "<div style=\"margin-left: 300px;\">";
 
-	//in addition to the show_general() output, we want to show associated lines
-	echo "<div style=\"margin-left: 300px;\">";
+    $lines = mysqli_query($mysqli, "SELECT DISTINCT line_records.line_record_uid, line_record_name 
+		FROM line_records, tht_base
+		WHERE tht_base.experiment_uid = $id
+		AND tht_base.line_record_uid = line_records.line_record_uid
+		ORDER BY line_record_name
+	") or die("Error in show experiments");
 
-	$lines = mysqli_query($mysqli, "SELECT DISTINCT line_records.line_record_uid, line_record_name 
-			FROM line_records, tht_base
-			WHERE tht_base.experiment_uid = $id
-				AND tht_base.line_record_uid = line_records.line_record_uid
-			ORDER BY line_record_name
-		") or die("Error in show experiments");
-
-	echo viewTable($lines, "line_records") . "\n</div>\n";
+    echo viewTable($lines, "line_records") . "\n</div>\n";
 }
 
 /**
@@ -308,7 +308,7 @@ function show_CAPdata_programs($id) {
     global $mysqli;
     show_general("CAPdata_programs", $id);
 
-    $datasets = mysql_query($mysqli, "SELECT experiments.experiment_uid, experiments.trial_code,experiment_year
+    $datasets = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiments.trial_code,experiment_year
 				FROM  experiments, CAPdata_programs
 				WHERE CAPdata_programs.CAPdata_programs_uid = experiments.CAPdata_programs_uid
 					AND experiments.CAPdata_programs_uid = 15
