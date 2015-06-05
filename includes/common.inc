@@ -46,7 +46,7 @@ function mysql_grab($querystring)
             $err = "column";
         }
     } else {
-        $mmessage = mysqli_error($mysqli);
+    //    $mmessage = mysqli_error($mysqli);
     }
     if (!empty($err)) {
         $out = "<b>Programmer error</b>: Query result contains more than one $err. How embarrassing!<br>";
@@ -84,24 +84,22 @@ function print_h($variable)
  */
 function validateForm($array)
 {
-        $ret = true;
-        $error = array();	//this was originally part of an object with an error array we're not using it here.
-		
-	foreach($array as $k => $v) {
+    $ret = true;
+    $error = array();    //this was originally part of an object with an error array we're not using it here.
 
-		/* If it's an ignore then we ignore it */
-		if($v == "ignore")
-			continue;
-
-		/* Check for validity */
-		if( ($v == "") || 
-		    (strtolower($v) == "select") 
-		  ) {
-			array_push($error, $k);
-			$ret = FALSE;
-
-			continue;
-		}
+    foreach ($array as $k => $v) {
+        /* If it's an ignore then we ignore it */
+        if ($v == "ignore") {
+            continue;
+        }
+        /* Check for validity */
+        if (($v == "") ||
+            (strtolower($v) == "select")
+         ) {
+            array_push($error, $k);
+            $ret = false;
+            continue;
+         }
 
 		/* Special E-mail Check */
 		if(strtolower($k) == "email") {
@@ -112,9 +110,9 @@ function validateForm($array)
 				$ret = FALSE;
 			}
 		}
-	}
+    }
 
-	return $ret;
+    return $ret;
 
 }
 
@@ -180,7 +178,7 @@ function showTableOptions($table, $selected="null", $orderby="uid") {
  */
 function get_pkey ($tablename) {
   global $mysqli;
-  $result = mysqli_query($mysqli, "DESC $tablename") or die("Error in includes/common.inc:get_pkey():<br>".mysqli_error($mysqli).
+  $result = mysqli_query($mysqli, "DESC $tablename") or die("Error in includes/common.inc:get_pkey():<br>".
 "<br>Query was: 'DESC ".$tablename."'");
   $pkey="";
   while($row = mysqli_fetch_assoc($result)) {
@@ -210,7 +208,7 @@ function get_unique_name($table) {
   if ($table == "barley_pedigree_catalog_ref")
     return "barley_ref_number";
   else {
-    $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>".mysqli_error($mysqli));
+    $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>");
     $row = mysqli_fetch_row($q);
     $parts = explode("\n", $row[1]);
     for($i = 2; $i<count($parts); $i++) {
@@ -831,7 +829,7 @@ global $mysqli;
 
 	$query = mysqli_query($mysqli, "
 			$queryString
-			") or die(mysqli_error($mysqli) . "<br>Query was:<br>" . $queryString);
+			") or die("<br>Query was:<br>" . $queryString);
 
 	$max = mysqli_num_rows($query);
 
