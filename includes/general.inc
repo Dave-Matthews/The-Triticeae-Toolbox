@@ -44,10 +44,10 @@ function weakContains(&$arr, &$o)
  */
 function updateLastAccess($account, $time)
 {
-global $mysqli;
-	mysqli_query($mysqli, "UPDATE users SET lastaccess='$time' WHERE users_name = '$account'") 
-		   or die(mysqli_error($mysqli));
-	return;
+    global $mysqli;
+    mysqli_query($mysqli, "UPDATE users SET lastaccess='$time' WHERE users_name = '$account'")
+    or die(mysqli_error($mysqli));
+    return;
 }
 
 
@@ -71,7 +71,7 @@ function loadUser($user)
             $name = $_SESSION['name'];
             $usertype = $_SESSION['usertype'];
             $sql = "select '$user' as users_name, '$name' as name, $userid as users_uid, '$pass' as password, $usertype as user_types_uid";
-            $q = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $q = mysqli_query($mysqli, $sql) or die("Error in load user");
             $r = mysqli_fetch_assoc($q);
             return $r;
         } else {
@@ -98,46 +98,47 @@ function loadUser($user)
  *
  * @param $id - unique id of the dataset.
  */
-function show_datasets($id) {
-global $mysqli;
-	$q = mysqli_query($mysqli, "SELECT dataset_name, breeding_year
-			  FROM datasets
-			  WHERE datasets_uid = '$id'
-			")
-	     or die(mysqli_error($mysqli));
+function show_datasets($id)
+{
+    global $mysqli;
+    $q = mysqli_query($mysqli, "SELECT dataset_name, breeding_year
+	  FROM datasets
+	  WHERE datasets_uid = '$id'
+	")
+    or die("Error in show datasets");
 
-	if(mysqli_num_rows($q) > 0) {
-		$row = mysqli_fetch_assoc($q);
+    if (mysqli_num_rows($q) > 0) {
+        $row = mysqli_fetch_assoc($q);
 
-		echo "<table class=\"tableclass1\">\n";				
-		foreach($row as $k=>$v) {
-			echo "\t<tr>\n";
-			echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
-			echo "\t\t<td>$v</td>\n";
-			echo "\t</tr>\n";
-		}
-		echo "</table>\n<br />\n";
+        echo "<table class=\"tableclass1\">\n";
+        foreach ($row as $k => $v) {
+            echo "\t<tr>\n";
+            echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
+            echo "\t\t<td>$v</td>\n";
+            echo "\t</tr>\n";
+	}
+        echo "</table>\n<br />\n";
 
-		$bp = mysqli_query($mysqli, "SELECT CAPdata_programs.CAPdata_programs_uid, institutions_name as institution, data_program_name as data_program
-			  FROM datasets, CAPdata_programs, institutions
-			  WHERE datasets.datasets_uid = '$id'
-				AND CAPdata_programs.CAPdata_programs_uid = datasets.CAPdata_programs_uid
-				AND institutions.institutions_uid = CAPdata_programs.institutions_uid
-			")
-	    	      or die(mysqli_error($mysqli));
+	$bp = mysqli_query($mysqli, "SELECT CAPdata_programs.CAPdata_programs_uid, institutions_name as institution, data_program_name as data_program
+		  FROM datasets, CAPdata_programs, institutions
+		  WHERE datasets.datasets_uid = '$id'
+			AND CAPdata_programs.CAPdata_programs_uid = datasets.CAPdata_programs_uid
+			AND institutions.institutions_uid = CAPdata_programs.institutions_uid
+		")
+    	      or die("Error in show datasets");
 
-		echo viewTable($bp, "CAPdata_programs");
+	echo viewTable($bp, "CAPdata_programs");
 
-		$exp = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiment_type_name as type, trial_code as trial_code, experiment_year as year
-			FROM datasets, experiments, datasets_experiments, experiment_types
-			WHERE datasets.datasets_uid = '$id'
-                                AND datasets_experiments.datasets_uid = datasets.datasets_uid
-                                AND experiments.experiment_uid = datasets_experiments.experiment_uid
-				AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
-			")
-	    	      or die(mysqli_error($mysqli));
+	$exp = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiment_type_name as type, trial_code as trial_code, experiment_year as year
+		FROM datasets, experiments, datasets_experiments, experiment_types
+		WHERE datasets.datasets_uid = '$id'
+                               AND datasets_experiments.datasets_uid = datasets.datasets_uid
+                               AND experiments.experiment_uid = datasets_experiments.experiment_uid
+			AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
+		")
+    	      or die("Error in show datasets");
 
-		echo viewTable($exp, "experiments");
+	echo viewTable($exp, "experiments");
 		
 	}
 
@@ -149,8 +150,8 @@ function show_users($id) {
 	/* error(1, "Restricted"); */
   echo "<table>";
   $sql = "select name, email, institution, lastaccess from users where users_uid = $id";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($r = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die("Error in show users\n");
+  while ($r = mysqli_fetch_row($res)) {
     echo "<tr><td>Name<td>$r[0]";
     echo "<tr><td>Email<td>$r[1]";
     echo "<tr><td>Institution<td>$r[2]";
@@ -177,12 +178,12 @@ function show_experiments($id) {
 	//in addition to the show_general() output, we want to show associated lines
 	echo "<div style=\"margin-left: 300px;\">";
 
-	$lines = mysql_query("SELECT DISTINCT line_records.line_record_uid, line_record_name 
+	$lines = mysqli_query($mysqli, "SELECT DISTINCT line_records.line_record_uid, line_record_name 
 			FROM line_records, tht_base
 			WHERE tht_base.experiment_uid = $id
 				AND tht_base.line_record_uid = line_records.line_record_uid
 			ORDER BY line_record_name
-		") or die(mysql_error());
+		") or die("Error in show experiments");
 
 	echo viewTable($lines, "line_records") . "\n</div>\n";
 }
@@ -191,20 +192,21 @@ function show_experiments($id) {
  * Show markers with view.php.  Example marker 11_11346.
  */
 function show_markers($id) {
-  show_general("markers", $id);
-  echo "<p><h3>Annotations</h3>";
-  $sql = "SELECT mat.name_annotation, ma.value, ma.description, mat.linkout_string_for_annotation, mat.comments 
+    global $mysqli;
+    show_general("markers", $id);
+    echo "<p><h3>Annotations</h3>";
+    $sql = "SELECT mat.name_annotation, ma.value, ma.description, mat.linkout_string_for_annotation, mat.comments 
           FROM  markers m, marker_annotations ma, marker_annotation_types mat
           WHERE m.marker_uid = $id AND
 	    m.marker_uid = ma.marker_uid AND
 	    ma.marker_annotation_type_uid = mat.marker_annotation_type_uid 
           ORDER BY mat.name_annotation";
-  $res = mysql_query($sql) or die(mysql_error());
-  if (mysql_num_rows($res) == 0) 
+  $res = mysqli_query($mysqli, $sql) or die("Error in show markers");
+  if (mysqli_num_rows($res) == 0) 
     echo "None";
   else {
     echo "<table><thead><tr><th>Dataset<th>Entry<th>Entry Description<th>Dataset Description</tr></thead>";
-    while ($row = mysql_fetch_assoc($res)) {
+    while ($row = mysqli_fetch_assoc($res)) {
       $reg_pattern = "XXXX";
       $replace_string = $row['value'];
       $source_string = $row['linkout_string_for_annotation'];
@@ -229,8 +231,8 @@ function show_markers($id) {
 	  where m.marker_uid = $id and
 	    ms.marker_uid = m.marker_uid and
 	    mst.marker_synonym_type_uid = ms.marker_synonym_type_uid";
-  $synonyms = mysql_query($sql) or die(mysql_error());
-  if (mysql_num_rows($synonyms) > 0)
+  $synonyms = mysqli_query($mysqli, $sql) or die("Error in show markers");
+  if (mysqli_num_rows($synonyms) > 0)
     echo viewTable($synonyms, "marker_synonyms");
 
   echo "<h3>Allele Information</h3>";
@@ -241,8 +243,8 @@ function show_markers($id) {
 
   // marker_selection.php wants the name of a map the marker is on.  Probably doesn't matter which.
   $sql = "select map_name from map, markers_in_maps mm where mm.marker_uid = $id and mm.map_uid = map.map_uid";
-  $r = mysql_query($sql);
-  $row = mysql_fetch_row($r);
+  $r = mysqli_query($mysqli, $sql);
+  $row = mysqli_fetch_row($r);
   $mapname = $row[0];
   // Don't do it if the marker isn't mapped.
   if (!empty($mapname)) {
@@ -252,17 +254,17 @@ function show_markers($id) {
 	from map, markers_in_maps
 	where marker_uid = $id and markers_in_maps.map_uid = map.map_uid
 	";
-    $r = mysql_query($sql) or die(mysql_error());
-    if (mysql_num_rows($r) > 0) {
+    $r = mysqli_query($mysqli, $sql) or die("Error in show markers");
+    if (mysqli_num_rows($r) > 0) {
       echo "<table><thead><tr><th>Map<th>Chromosome<th>Start<th>End";
-      while ($row = mysql_fetch_assoc($r)) 
+      while ($row = mysqli_fetch_assoc($r)) 
 	echo "<tr><td>$row[map_name]<td>$row[chromosome]<td>$row[start_position]<td>$row[end_position]";
       echo "</table>";
     }
     // View in GBrowse
     $sql = "select marker_name from markers where marker_uid = $id";
-    $r = mysql_query($sql);
-    $row = mysql_fetch_row($r);
+    $r = mysqli_query($mysqli, $sql);
+    $row = mysqli_fetch_row($r);
     $markername = $row[0];
     echo "<form method='GET' action=http://".$_SERVER['HTTP_HOST']."/cgi-bin/gbrowse/tht>";
     echo "<input type='hidden' name='name' value='$markername'>";
@@ -282,10 +284,10 @@ function show_markers($id) {
  * Breeding program special case for view.php. This will show all the experiments associated with a CAPdata program. 
 */
 function show_breeding_programs($id) {
-	
-	show_general("CAPdata_programs", $id);
+    global $mysqli;
+    show_general("CAPdata_programs", $id);
 
-	$datasets = mysql_query("
+    $datasets = mysqli_query($mysqli, "
 				SELECT datasets.datasets_uid, datasets.dataset_name,
 					experiments.experiment_uid, experiments.trial_code
 				FROM  datasets,  datasets_experiments, experiments, CAPdata_programs
@@ -294,26 +296,26 @@ function show_breeding_programs($id) {
 					AND datasets_experiments.datasets_uid = datasets.datasets_uid
 					AND datasets_experiments.experiment_uid = experiments.experiment_uid
 				ORDER BY dataset_name,experiments.trial_code
-			") or die(mysql_error());
+			") or die("Error in show breeding programs");
 
-	echo viewTable($datasets, "datasets");
+    echo viewTable($datasets, "datasets");
 }
 
 /**
  * Breeding program special case for view.php. This will show all the experiments associated with a CAPdata program. 
 */
 function show_CAPdata_programs($id) {
-	
-	show_general("CAPdata_programs", $id);
+    global $mysqli;
+    show_general("CAPdata_programs", $id);
 
-	$datasets = mysql_query("SELECT experiments.experiment_uid, experiments.trial_code,experiment_year
+    $datasets = mysql_query($mysqli, "SELECT experiments.experiment_uid, experiments.trial_code,experiment_year
 				FROM  experiments, CAPdata_programs
 				WHERE CAPdata_programs.CAPdata_programs_uid = experiments.CAPdata_programs_uid
 					AND experiments.CAPdata_programs_uid = 15
 				ORDER BY experiment_year, trial_code
-			") or die(mysql_error());
+			") or die("Error in show CAP data programs");
 
-	echo viewTable($datasets, "datasets");
+    echo viewTable($datasets, "datasets");
 }
 
 /**
@@ -333,7 +335,7 @@ function show_phenotypes($id) {
 			  USER_TYPE_ADMINISTRATOR)))
     $sql .= " and e.data_public_flag > 0";
   $sql .= " order by e.experiment_year, e.trial_code asc";
-  $res=mysql_query($sql) or die(mysql_error());
+  $res=mysql_query($sql) or die("Error in show phenotypes");
   if (mysql_num_rows($res) > 0) {
     ?>
 <h3>Available Datasets for this Phenotype</h3>
@@ -369,7 +371,7 @@ function show_experiment_set ($id) {
     $sql .= " and e.data_public_flag > 0";
   }
   $sql .= " order by experiment_year, location asc";
-  $res=mysql_query($sql) or die(mysql_error());
+  $res=mysql_query($sql) or die("Error in show experiment set");
   if (mysql_num_rows($res) > 0) {
     ?>
 <h3>Trials in this Experiment</h3>
@@ -394,6 +396,46 @@ function show_experiment_set ($id) {
     }
     echo "</table>";
   }
+}
+
+// Need a special function only because the foreign key is named 'category_uid'
+// instead of 'phenotype_category_uid'.
+function show_properties($id) {
+  $sql = "select name, description from properties where properties_uid = $id";
+  $res = mysql_query($sql) or die("Error in show properties");
+  while ($r = mysql_fetch_row($res)) {
+    $name = $r[0];
+    $desc = $r[1];
+  }
+  $cat = mysql_grab("select phenotype_category_name from phenotype_category, properties
+                     where phenotype_category_uid = category_uid and properties_uid = $id");
+  echo "<table>";
+  echo "<tr><td>Name<td>$name";
+  echo "<tr><td>Description<td>$desc";
+  echo "<tr><td>Category<td>$cat";
+  echo "</table>";
+}
+
+// DEM apr2015: Need a special function to avert trying to show the users name, since we now 
+// disallow access to table 'users'.
+function show_rawfiles($id) {
+  $sql = "select experiment_uid, name, description, directory, updated_on from rawfiles where rawfile_uid = $id";
+  $res = mysql_query($sql) or die(mysql_error());
+  while ($r = mysql_fetch_row($res)) {
+    $exptid = $r[0];
+    $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $exptid");
+    $name = $r[1];
+    $desc = $r[2];
+    $dir = $r[3];
+    $updt = $r[4];
+  }
+  echo "<table>";
+  echo "<tr><td><b>Filename</b><td>$name";
+  echo "<tr><td><b>Trial</b><td><a href='display_phenotype.php?trial_code=$trialcode'>$trialcode</a>";
+  echo "<tr><td><b>Description</b><td>$desc";
+  echo "<tr><td><b>Directory</b><td>$dir";
+  echo "<tr><td><b>Date</b><td>$updt";
+  echo "</table>";
 }
 
 /**
@@ -496,17 +538,18 @@ function getQueryJoin($foreign_table, $main_table, $foreign_key, $main_id) {
  * @return a string containing the HTML table. This does not echo its result.
  */
 function viewTable($resource, $table) {
+  global $mysqli;
   $pkey = get_pkey($table);
   // DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
   //$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
   $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
-  if(mysql_num_rows($resource) < 1) 
+  if(mysqli_num_rows($resource) < 1) 
     return $ret  .=  "<p>No Records Found </p>";
   $first = TRUE;
   /* dem aug2013: Change style of all tables controlled by this function! Hope it's okay. */  
   /* $ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n"; */                         
   $ret .= "<table><thead><tr>";                                                               
-  while($row = mysql_fetch_assoc($resource)) {
+  while($row = mysqli_fetch_assoc($mysqli, $resource)) {
     if($first) {
       foreach($row as $k=>$v) {
 	if($k != $pkey)
