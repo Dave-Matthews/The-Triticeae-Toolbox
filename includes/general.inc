@@ -120,27 +120,27 @@ function show_datasets($id)
         echo "</table>\n<br />\n";
 
         $bp = mysqli_query($mysqli, "SELECT CAPdata_programs.CAPdata_programs_uid, institutions_name as institution, data_program_name as data_program
-		  FROM datasets, CAPdata_programs, institutions
-		  WHERE datasets.datasets_uid = '$id'
-			AND CAPdata_programs.CAPdata_programs_uid = datasets.CAPdata_programs_uid
-			AND institutions.institutions_uid = CAPdata_programs.institutions_uid
-		")
-         or die("Error in show datasets");
+	FROM datasets, CAPdata_programs, institutions
+	WHERE datasets.datasets_uid = '$id'
+	AND CAPdata_programs.CAPdata_programs_uid = datasets.CAPdata_programs_uid
+	AND institutions.institutions_uid = CAPdata_programs.institutions_uid
+	")
+        or die("Error in show datasets");
 
         echo viewTable($bp, "CAPdata_programs");
 
-	$exp = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiment_type_name as type, trial_code as trial_code, experiment_year as year
-		FROM datasets, experiments, datasets_experiments, experiment_types
-		WHERE datasets.datasets_uid = '$id'
-                               AND datasets_experiments.datasets_uid = datasets.datasets_uid
-                               AND experiments.experiment_uid = datasets_experiments.experiment_uid
-			AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
-		")
-    	      or die("Error in show datasets");
+        $exp = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiment_type_name as type, trial_code as trial_code, experiment_year as year
+        FROM datasets, experiments, datasets_experiments, experiment_types
+        WHERE datasets.datasets_uid = '$id'
+        AND datasets_experiments.datasets_uid = datasets.datasets_uid
+        AND experiments.experiment_uid = datasets_experiments.experiment_uid
+        AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
+        ")
+        or die("Error in show datasets");
 
-	echo viewTable($exp, "experiments");
+        echo viewTable($exp, "experiments");
 		
-	}
+    }
 
 }
 
@@ -452,6 +452,7 @@ function show_rawfiles($id) {
  * 		querying the database again.
  */
 function show_general($tabl, $id, $resource="") {
+  global $mysqli;
   $pkey = get_pkey($tabl);
   // Get foreign keys
   $foreign_tables = chk_tbl_references($tabl);
@@ -459,16 +460,16 @@ function show_general($tabl, $id, $resource="") {
   foreach($foreign_tables as $table) 
     $foreign_keys[$table] = get_pkey($table);
   if($resource == "") {	//if there is no resource, get a resource
-    $resource = mysql_query("
+    $resource = mysqli_query($mysqli, "
 				SELECT *
 				FROM $tabl
 				WHERE $pkey = '$id'
-			") or die(mysql_error());
+			") or die(mysqli_error($mysqli));
 
-    if(mysql_num_rows($resource) < 1)
+    if(mysqli_num_rows($resource) < 1)
       error(1, "No Record Found");
   }
-  while($row = mysql_fetch_assoc($resource)) {
+  while($row = mysqli_fetch_assoc($resource)) {
     // Display the main table
     echo "<table class=\"tableclass1\">\n";				
     foreach($row as $k=>$v) {
@@ -487,7 +488,7 @@ function show_general($tabl, $id, $resource="") {
     foreach($foreign_tables as $table) {
       $fpkey = $foreign_keys[$table];
       $qstring = getQueryJoin($table, $tabl, $fpkey, $id);
-      $q = mysql_query($qstring) or die(mysql_error());
+      $q = mysqli_query($mysqli, $qstring) or die(mysqli_error($mysqli));
       //Display the table
       echo viewTable($q, $table);
     }
