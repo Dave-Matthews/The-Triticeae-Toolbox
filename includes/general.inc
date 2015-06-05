@@ -125,7 +125,7 @@ function show_datasets($id)
 			AND CAPdata_programs.CAPdata_programs_uid = datasets.CAPdata_programs_uid
 			AND institutions.institutions_uid = CAPdata_programs.institutions_uid
 		")
-    	      or die("Error in show datasets");
+         or die("Error in show datasets");
 
         echo viewTable($bp, "CAPdata_programs");
 
@@ -538,7 +538,6 @@ function getQueryJoin($foreign_table, $main_table, $foreign_key, $main_id) {
  * @return a string containing the HTML table. This does not echo its result.
  */
 function viewTable($resource, $table) {
-  global $mysqli;
   $pkey = get_pkey($table);
   // DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
   //$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
@@ -549,7 +548,7 @@ function viewTable($resource, $table) {
   /* dem aug2013: Change style of all tables controlled by this function! Hope it's okay. */  
   /* $ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n"; */                         
   $ret .= "<table><thead><tr>";                                                               
-  while($row = mysqli_fetch_assoc($mysqli, $resource)) {
+  while($row = mysqli_fetch_assoc($resource)) {
     if($first) {
       foreach($row as $k=>$v) {
 	if($k != $pkey)
