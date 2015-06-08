@@ -322,6 +322,7 @@ function show_CAPdata_programs($id) {
  * Traits special case for view.php. This will show all the experiments associated with a trait ("phenotype").
 */
 function show_phenotypes($id) {
+  global $mysqli;
   show_general("phenotypes", $id);
 
   // Get selected experiments and verify that the user is authorized to see the experiment.
@@ -335,8 +336,8 @@ function show_phenotypes($id) {
 			  USER_TYPE_ADMINISTRATOR)))
     $sql .= " and e.data_public_flag > 0";
   $sql .= " order by e.experiment_year, e.trial_code asc";
-  $res=mysql_query($sql) or die("Error in show phenotypes");
-  if (mysql_num_rows($res) > 0) {
+  $res=mysqli_query($mysqli, $sql) or die("Error in show phenotypes");
+  if (mysqli_num_rows($res) > 0) {
     ?>
 <h3>Available Datasets for this Phenotype</h3>
 <p>
@@ -347,7 +348,7 @@ function show_phenotypes($id) {
       <th>Traits</th>
     </tr>
 <?php
-     while($row_expuid=mysql_fetch_array($res)) {
+     while($row_expuid=mysqli_fetch_array($res)) {
        $trial_code=$row_expuid['trial_code'];
        $year=$row_expuid['experiment_year'];
        $expuid=$row_expuid['experiment_uid'];
@@ -359,6 +360,7 @@ function show_phenotypes($id) {
 }
 
 function show_experiment_set ($id) {
+  global $mysqli;
   $sql="select distinct e.trial_code, e.experiment_year, pei.location
         from experiments as e, 
              phenotype_experiment_info as pei
@@ -371,8 +373,8 @@ function show_experiment_set ($id) {
     $sql .= " and e.data_public_flag > 0";
   }
   $sql .= " order by experiment_year, location asc";
-  $res=mysql_query($sql) or die("Error in show experiment set");
-  if (mysql_num_rows($res) > 0) {
+  $res=mysqli_query($mysqli, $sql) or die("Error in show experiment set");
+  if (mysqli_num_rows($res) > 0) {
     ?>
 <h3>Trials in this Experiment</h3>
 <p>
@@ -383,7 +385,7 @@ function show_experiment_set ($id) {
       <th>Trial</th>
     </tr>
 <?php
-    while ($row = mysql_fetch_array($res)) {
+    while ($row = mysqli_fetch_array($res)) {
       $trial=$row['trial_code'];
       $year=$row['experiment_year'];
       $loc=$row['location'];
@@ -401,9 +403,10 @@ function show_experiment_set ($id) {
 // Need a special function only because the foreign key is named 'category_uid'
 // instead of 'phenotype_category_uid'.
 function show_properties($id) {
+  global $mysqli;
   $sql = "select name, description from properties where properties_uid = $id";
-  $res = mysql_query($sql) or die("Error in show properties");
-  while ($r = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die("Error in show properties");
+  while ($r = mysqli_fetch_row($res)) {
     $name = $r[0];
     $desc = $r[1];
   }
@@ -419,9 +422,10 @@ function show_properties($id) {
 // DEM apr2015: Need a special function to avert trying to show the users name, since we now 
 // disallow access to table 'users'.
 function show_rawfiles($id) {
+  global $mysqli;
   $sql = "select experiment_uid, name, description, directory, updated_on from rawfiles where rawfile_uid = $id";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($r = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  while ($r = mysqli_fetch_row($res)) {
     $exptid = $r[0];
     $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $exptid");
     $name = $r[1];
