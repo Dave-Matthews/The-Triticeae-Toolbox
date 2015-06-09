@@ -101,7 +101,7 @@ while ($row = mysql_fetch_array($res)) {
         } else {
             $sql = "insert into allele_bymarker_expidx (experiment_uid, line_index, line_name_index) values ($experiment_uid, \"$line_uid_list_str\",\"$line_name_list_str\")";
         }
-        $res = mysql_query($sql) or die(mysql_error());
+        $res = mysql_query($sql) or die(mysql_error() . $sql);
         //echo "$sql\n";
         echo "experiment = $experiment_uid markers = $max_markers lines =  $max_lines\n";
         $empty = array_fill(0, $max_lines, '');
