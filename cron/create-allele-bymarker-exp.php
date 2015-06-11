@@ -97,11 +97,11 @@ while ($row = mysql_fetch_array($res)) {
         $line_uid_list_str = json_encode($line_uid_list);
         $line_name_list_str = json_encode($line_name_list);
         if (isset($index_list[$experiment_uid])) {
-            $sql = "update allele_bymarker_expidx set line_index = \"$line_uid_list_str\", line_name_index = \"$line_name_list_str\" where experiment_uid = $experiment_uid";
+            $sql = "update allele_bymarker_expidx set line_index = '$line_uid_list_str', line_name_index = '$line_name_list_str' where experiment_uid = $experiment_uid";
         } else {
-            $sql = "insert into allele_bymarker_expidx (experiment_uid, line_index, line_name_index) values ($experiment_uid, \"$line_uid_list_str\",\"$line_name_list_str\")";
+            $sql = "insert into allele_bymarker_expidx (experiment_uid, line_index, line_name_index) values ($experiment_uid, '$line_uid_list_str', '$line_name_list_str')";
         }
-        $res = mysql_query($sql) or die(mysql_error());
+        $res = mysql_query($sql) or die(mysql_error() . $sql);
         //echo "$sql\n";
         echo "experiment = $experiment_uid markers = $max_markers lines =  $max_lines\n";
         $empty = array_fill(0, $max_lines, '');

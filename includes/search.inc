@@ -27,7 +27,6 @@
  *	     )
  */
 
-
 /*
  * This function is a simple fetching function. This doesn't do any matching between tables, it simply
  * looks in a set of tables for a certain value or set of values. 
@@ -42,45 +41,46 @@
  *
  * This functionality is very simple. 1 query per table. 
  */
-function generalTermSearch(array $tableTree, $searchQ) {
-  ini_set('memory_limit', '2G');
-  //Special % escape. PHP does not have a function to do this for us.
-  //$searchQ = preg_replace('/%/', '\\%', $searchQ);
-  // Square brackets don't work in a regexp search, must be escaped.
-  $searchQ = preg_replace('/\[/', '\\\\\[', $searchQ);
-  $searchQ = preg_replace('/\]/', '\\\\\]', $searchQ);
-  // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
-  $searchQ = str_replace('&amp;', '&', $searchQ);  
-  $tablenames = array_keys($tableTree);
-  $tables = count($tablenames);
-  $ret = array();
-  for($i=0; $i<$tables; $i++) {
-    $table = $tablenames[$i];
-    if(is_array($tableTree[$table])) { 	//proper tree format
-      $pkey = get_pkey($table);	
-      for($j=0; $j<count($tableTree[$table]); $j++) {
-	$field = $tableTree[$table][$j];
-	/*echo "SELECT $pkey 
-	  FROM $table 
-	  WHERE $field LIKE '$searchQ%'
-	  <br />";*/
-	//echo "SELECT $pkey FROM $table WHERE $field REGEXP \"$searchQ\"";
-	$find = mysql_query("SELECT $pkey 
-		       FROM $table 
-		       WHERE $field REGEXP '$searchQ'
-		      ") or die("Error in includes/search.inc:generalTermSearch()<br>".mysql_error());
-	while($row = mysql_fetch_assoc($find)) {
-	  $str = $table . "@@" . $field . "@@" . $row[$pkey];
-	  array_push($ret, $str);
-	}
-      }
-    } 
-  }
-  // DEM apr2015: Set a limit, for memory and execution time's sake.
-  $limit = 1000000;
-  if (count($ret) > $limit)
-    die("More than 1 million records were found.  Please narrow your search.<p>");
-  return $ret;
+function generalTermSearch(array $tableTree, $searchQ)
+{
+    global $mysqli;
+    ini_set('memory_limit', '2G');
+    //Special % escape. PHP does not have a function to do this for us.
+    //$searchQ = preg_replace('/%/', '\\%', $searchQ);
+    // Square brackets don't work in a regexp search, must be escaped.
+    $searchQ = preg_replace('/\[/', '\\\\\[', $searchQ);
+    $searchQ = preg_replace('/\]/', '\\\\\]', $searchQ);
+    // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
+    $searchQ = str_replace('&amp;', '&', $searchQ);
+    $tablenames = array_keys($tableTree);
+    $tables = count($tablenames);
+    $ret = array();
+    for ($i=0; $i<$tables; $i++) {
+        $table = $tablenames[$i];
+        if (is_array($tableTree[$table])) {
+            $pkey = get_pkey($table);  //proper tree format
+            for ($j=0; $j<count($tableTree[$table]); $j++) {
+                $field = $tableTree[$table][$j];
+                $sql = "SELECT $pkey from $table where $field REGEXP $searchQ";
+                if ($stmt = mysqli_prepare($mysqli, "SELECT $pkey FROM $table WHERE $field REGEXP ?")) {
+                    mysqli_stmt_bind_param($stmt, "s", $searchQ);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $rec);
+                    while (mysqli_stmt_fetch($stmt)) {
+                        $str = $table . "@@" . $field . "@@" . $rec;
+                        array_push($ret, $str);
+                    }
+                    mysqli_stmt_close($stmt);
+                }
+            }
+        }
+    }
+    // DEM apr2015: Set a limit, for memory and execution time's sake.
+    $limit = 1000000;
+    if (count($ret) > $limit) {
+        die("More than 1 million records were found.  Please narrow your search.<p>");
+    }
+    return $ret;
 }
 
 
@@ -93,69 +93,67 @@ function generalTermSearch(array $tableTree, $searchQ) {
  * @param $searchQ - what to search for.
  *
  */
-function desperateTermSearch(array $tables, $searchQ) {
+function desperateTermSearch(array $tables, $searchQ)
+{
+    global $mysqli;
+    //Special % escape. PHP does not have a function to do this for us.
+    $searchQ = preg_replace('/%/', '\\%', $searchQ);
 
-	//Special % escape. PHP does not have a function to do this for us.
-	$searchQ = preg_replace('/%/', '\\%', $searchQ);
+    $ret = array();
 
-	$ret = array();
+    for ($i=0; $i<count($tables); $i++) {
+        $visited = array();    //refresh the visited array each time.
 
-	for($i=0; $i<count($tables); $i++) {
-
-		$visited = array();		//refresh the visited array each time.
-
-		$pkey = get_pkey($tables[$i]);
-		$info = get_table_info($tables[$i]);
+        $pkey = get_pkey($tables[$i]);
+        $info = get_table_info($tables[$i]);
 
 
-		/* Deep search through the table first, ignoring foreign keys */
-		for($j=0; $j<count($info); $j++) {
+        /* Deep search through the table first, ignoring foreign keys */
+        for ($j=0; $j<count($info); $j++) {
+            if (! preg_match('/_uid/', $info[$j]['field']) && ! preg_match('/_on/', $info[$j]['field'])) {
+                //we can search this field
+                $field = $info[$j]['field'];
 
-			if( ! preg_match('/_uid/', $info[$j]['field']) && ! preg_match('/_on/', $info[$j]['field']) ) {	//we can search this field.
+                //echo "SELECT $pkey FROM $tables[$i] WHERE $field LIKE '%$searchQ%'\n<br/>";
+                $oneTable = $tables[$i];
+                $stmt = mysqli_prepare($mysqli, "SELECT $pkey FROM $oneTable WHERE $field LIKE CONCAT(\"%\", ?, \"%\")");
+                mysqli_stmt_bind_param($stmt, "s", $searchQ);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $rec);
+                while (mysqli_stmt_fetch($stmt)) {
+                    if (!in_array($rec, $visited)) {
+                        //no duplicate rows allowed.
+                        $str = $tables[$i] . "@@" . $field . "@@" . $rec;
+                        array_push($ret, $str);
+                        array_push($visited, $rec);
+                    }
+                }
+                mysqli_stmt_close($stmt);
+            }
+        }
 
-				$field = $info[$j]['field'];
+	/* Quick search through the foreign tables. If the unique name matches then search through the original */
+	/* and get those results as well. */
 
-				//echo "SELECT $pkey FROM $tables[$i] WHERE $field LIKE '%$searchQ%'\n<br/>";
+	// Get foreign tables
+	$ftables = chk_tbl_references($tables[$i]);
 
-				$find = mysql_query("SELECT $pkey 
-						     FROM $tables[$i] 
-						     WHERE $field LIKE '%$searchQ%'
-						    ") or die(mysql_error());
-
-				while($row = mysql_fetch_assoc($find)) {
-
-					if(!in_array($row[$pkey], $visited)) {		//no duplicate rows allowed.
-
-						$str = $tables[$i] . "@@" . $field . "@@" . $row[$pkey];
-						array_push($ret, $str);
-						array_push($visited, $row[$pkey]);
-					}
-				}
-			}
-		}
-
-		/* Quick search through the foreign tables. If the unique name matches then search through the original */
-		/* and get those results as well. */
-
-		// Get foreign tables
-		$ftables = chk_tbl_references($tables[$i]);
-
-		foreach($ftables as $ftab) {
+	foreach($ftables as $ftab) {
 
 			$fpkey = get_pkey($ftab);
 			$ukeys = get_ukey($ftab);
 
 			foreach($ukeys as $ukey) {
 
-				$foreign_find = mysql_query("SELECT $pkey 
+				$foreign_find = mysqli_query($mysqli, "SELECT $pkey 
 						     FROM $tables[$i]
 						     WHERE $fpkey = ANY (
 								SELECT $fpkey 
 								FROM $ftab
 								WHERE $ukey LIKE '%$searchQ%')
-						    ") or die(mysql_error());
+						    ") or die("Error in Term Search");
 
-				while($row = mysql_fetch_assoc($foreign_find)) {
+				while($row = mysqli_fetch_assoc($foreign_find)) {
 
 					if(!in_array($row[$pkey], $visited)) {		//no duplicate rows allowed.
 
@@ -187,6 +185,7 @@ function desperateTermSearch(array $tables, $searchQ) {
  * DEM mar2015: First show only the number of hits in each class.
  */
 function displayTermSearchResults(array $found, $keywords) {
+  global $mysqli;
   foreach ($found as $v) {
     // $v is "<table>@@<column>@@<uid>".
     $line = explode("@@", $v);
@@ -194,12 +193,12 @@ function displayTermSearchResults(array $found, $keywords) {
     // Intercept marker synonyms that are identical to marker name.
     $skip = "";
     if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
-      $msquery = mysql_query("select marker_name 
+      $msquery = mysqli_query($mysqli, "select marker_name 
                     from markers, marker_synonyms 
                     where marker_synonym_uid = '$line[2]'
                     and markers.marker_uid = marker_synonyms.marker_uid
                     and markers.marker_name = marker_synonyms.value");
-      if (mysql_num_rows($msquery) > 0) 
+      if (mysqli_num_rows($msquery) > 0) 
 	$skip = "yes"; 
     }
     // Intercept experiments and route to display_phenotype.php or display_genotype.php.
