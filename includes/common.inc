@@ -500,7 +500,6 @@ global $mysqli;
  */
 function updateTable(array $values, $table, array $pkey) {
   global $mysqli;
-  $updateStr = "UPDATE $table SET ";
   $strs = array();
   $count = 0;
   // get table fields
@@ -526,6 +525,9 @@ function updateTable(array $values, $table, array $pkey) {
       else    //default 0 for numeric fields with empty values
 	$strs[$count++] = "$column = 0";	
     }
+    if ($column == "updated_on") {
+      $strs[$count++] = "$column = NOW()";
+    }
   }
   // deal with primary key
   $where = "";
@@ -538,12 +540,13 @@ function updateTable(array $values, $table, array $pkey) {
     $first++;
   }
   // put the update string together
+  $updateStr = "UPDATE $table SET ";
   $updateStr .= implode(",", $strs) . " WHERE $where LIMIT 1";
   // query	
   if(mysqli_query($mysqli, $updateStr)) 
     return TRUE;
   else {
-    error(1, mysqli_error($mysqli)."<br>The query was:<br>".$updateStr."</br>in function updateTable().<p>");
+    error(1, mysqli_error($mysqli)."<br>The query was:<br>".$updateStr."</br>in function common.inc:updateTable().<p>");
     return FALSE;
   }
 }
