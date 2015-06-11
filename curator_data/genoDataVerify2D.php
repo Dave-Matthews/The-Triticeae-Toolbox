@@ -5,8 +5,6 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  * 
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @version  GIT: 2
@@ -20,6 +18,7 @@ require "$progPath" . "curator_data/lineuid.php";
 require_once "$progPath" . "includes/email.inc";
 
 ini_set("auto_detect_line_endings", true);
+ini_set('memory_limit', '2G');
 
 $num_args = $_SERVER["argc"];
 $fnames = $_SERVER["argv"];
@@ -299,7 +298,7 @@ while (($line = fgets($reader)) !== false) {
         
         $sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
         $res = mysqli_query($mysqli,$sql)
-            or exitFatal($errFile, "Database Error: Dataset experiment uid lookup - ".mysql_error());
+            or exitFatal($errFile, "Database Error: Dataset experiment uid lookup - ".mysqli_error($mysqli));
         if ($row = mysqli_fetch_assoc($res)) {
             $de_uid=implode(",", $row);
         } else {
@@ -424,7 +423,9 @@ while ($inputrow= fgets($reader))  {
     // fwrite($errFile,$sql);
     if (mysqli_num_rows($res) < 1) {
       $markerflag = 1;
-      echo "ERROR: marker '$marker' not found.\n";
+      $msg = "ERROR: marker '$marker' not found.\n";
+      fwrite($errFile, $msg);
+      $errLines++;
       continue;
     } else {
       $rdata = mysqli_fetch_assoc($res);
@@ -583,5 +584,3 @@ function exitFatal ($handle, $msg)
     mail($emailAddr, $subject, $body, $mailheader);
     exit(1);
 }
-
-?>
