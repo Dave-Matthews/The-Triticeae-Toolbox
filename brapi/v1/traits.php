@@ -27,7 +27,7 @@ if ($action == "list") {
     WHERE phenotypes.unit_uid = units.unit_uid";
     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
-        $temp["uid"] = $row[0];
+        $temp["traitId"] = $row[0];
         $temp["name"] = $row[1];
         $temp["unit"] = $row[2];
         $temp["method"] = $row[3];
@@ -45,7 +45,7 @@ if ($action == "list") {
         AND phenotype_uid IN ($uid)";
     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
-        $temp["uid"]= $row[0];
+        $temp["traitId"]= $row[0];
         $temp["name"] = $row[1];
         $fmt = $row[2];
         $units = $row[4];

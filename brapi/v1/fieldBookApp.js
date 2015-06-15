@@ -97,7 +97,7 @@ function get_detail(exp)
       items.push("<tr>");
       jQuery.each( data, function( key, val ) {
           if (key == "design") {
-            items.push("<tr><table>");
+            items.push("</table><br><table>");
             //save column names
             jQuery.each( data.design[0], function( key2, val2 ) {
               items.push("<td>" + key2);

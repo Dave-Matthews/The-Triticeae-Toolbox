@@ -91,13 +91,13 @@ if ($action == "list") {
     while ($row = mysqli_fetch_row($res)) {
         $temp["plotId"] = $row[0];
         $temp["plot"] = $row[1];
-        $temp["block"] = $row[2];
+        $temp["blockId"] = $row[2];
         $temp["rowId"] = $row[3];
         $temp["columnId"] = $row[4];
         $temp["replication"] = $row[5];
         $temp["checkId"] = $row[6];
-        $temp["lineId"] = $row[7];
-        $temp["lineRecordName"] = $name_list[$row[7]];
+        $temp["germplasmId"] = $row[7];
+        $temp["germplasmName"] = $name_list[$row[7]];
         if (!preg_match("/\d+/", $row_id)) {
               $error = 1;
         }
