@@ -1,6 +1,5 @@
 <?php
 include('../../includes/bootstrap.inc');
-connect();
 $mysqli = connecti();
 
 $self = $_SERVER['PHP_SELF'];
@@ -22,6 +21,7 @@ if (isset($_GET['uid'])) {
 }
 header("Content-Type: application/json");
 if ($action == "list") {
+    $results = array();
     if (isset($_GET['program'])) {
         $cap_uid = $_GET['program'];
         $sql_opt = "and CAPdata_programs_uid = $cap_uid";
