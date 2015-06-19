@@ -5,18 +5,16 @@ $mysqli = connecti();
 $self = $_SERVER['PHP_SELF'];
 $script = $_SERVER["SCRIPT_NAME"]."/";
 
-if (isset($_GET['uid'])) {
-    $profileid = $_GET['uid'];
-} elseif (isset($_POST['uid'])) {
-    $profileid = $_POST['uid'];
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+} elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
 } else {
     echo "missing uid parameter";
+    continue;
 }
 
 header("Content-Type: application/json");
 
-$profile_ary = explode(",", $profileid);
-foreach ($profile_ary as $item) {
+foreach ($_GET as $item) {
   if (preg_match("/(\d+)_(\d+)/", $item, $match)) {
       $lineuid = $match[1];
       $expid = $match[2];
@@ -35,6 +33,7 @@ foreach ($profile_ary as $item) {
   }
   $resultProfile[] = $item;
 }
-$results["markerprofileID"] = $resultProfile;
+$results["metadata"] = array(status => "", pageination => "");
+$results["markerprofileIds"] = $resultProfile;
 $results["scores"] = $dataList;
 echo json_encode($results);
