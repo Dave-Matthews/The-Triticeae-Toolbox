@@ -24,8 +24,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <base href="<?php echo $config['base_url']; ?>" >
-  <link rel="stylesheet" type="text/css" media="(min-width: 640px)" href="<?php echo $config['base_url']; ?>theme/new.css">
-  <link rel="stylesheet" type="text/css" media="(max-width: 640px)" href="<?php echo $config['base_url']; ?>theme/mobile.css">
+  <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
   <script type="text/javascript" src="includes/core.js"></script>
   <script type="text/javascript" src="theme/new.js"></script>
   <script type="text/javascript" src="theme/js/prototype.js"></script>
