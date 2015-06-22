@@ -270,11 +270,12 @@ EOD;
 
     // store the selected markers into the database
     $username=$_SESSION['username'];
-    if (! isset($username) || strlen($username)<1) {
+    if (isset($username) && strlen($username)>1) {
+        store_session_variables('clicked_buttons', $username) or die("Error: did not save markers in session\n");
+        store_session_variables('mapids', $username);
+    } else {
         $username="Public";
     }
-    store_session_variables('clicked_buttons', $username) or die("Error: did not save\n");
-    store_session_variables('mapids', $username);
 }
 if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
     $count = count($_SESSION['clicked_buttons']);
