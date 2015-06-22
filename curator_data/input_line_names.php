@@ -53,8 +53,9 @@ include($config['root_dir'] . 'theme/admin_header.php');
 <div class="box">
   <div class="boxContent">
     <h2>Edit Lines</h2>
-<a href="<?php echo $config['base_url'] ?>login/edit_line.php">Line names and properties</a><p>
-<a href="<?php echo $config['base_url'] ?>login/edit_synonym.php">Identity</a>: Merging, synonyms, GRIN accessions
+<a href="<?php echo $config['base_url'] ?>login/edit_line.php">Line names and basic properties</a><p>
+<a href="<?php echo $config['base_url'] ?>login/edit_synonym.php">Identity</a>: Merging, synonyms, GRIN accessions<p>
+<a href="<?php echo $config['base_url'] ?>login/edit_genchars.php">Genetic Characters</a>
   </div>
 </div>
 		
