@@ -4,18 +4,15 @@
  *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/genotyping/marker_selection.php
- * 
+ *
  * 16mar12 dem Allow selecting markers that are not in maps.
- *             Un-require all marker names to also be in marker_synonyms.value.
+ *            Un-require all marker names to also be in marker_synonyms.value.
  * 9/2/2010   J.Lee modify to add new snippet Gbrowse tracks
- * 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse   
+ * 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse
  */
 $usegbrowse = false;
 require 'config.php';
@@ -47,16 +44,16 @@ function getSubmittedMapid()
     where map_name='" . mysql_real_escape_string($us_mapname) . "'";
     $sqlr = mysql_fetch_assoc(mysql_query($sql));
     return $sqlr['map_uid'];
-}  
+}
 
-if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
+if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
     // Handle <space>- and <tab-separated words.
     $s = preg_replace("/\\s+/", "\\r\\n", $_POST['selMarkerstring']);
     $selmkrnames = explode("\\r\\n", $s);
     // Get the marker uids.
     $selmkrs = array();
 
-    if ( isset($_POST['wildcard']) && ($_POST['wildcard'] == 'Yes')) {
+    if (isset($_POST['wildcard']) && ($_POST['wildcard'] == 'Yes')) {
         set_time_limit(300);
         $mkrnm = $selmkrnames[0];
         $sql = "select marker_uid from marker_synonyms where value REGEXP \"$mkrnm\" UNION
@@ -90,7 +87,7 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
             $clkmkrs=array();
         }
         foreach ($selmkrs as $mkruid) {
-            if (! in_array($mkruid, $clkmkrs)) { 
+            if (! in_array($mkruid, $clkmkrs)) {
                 array_push($clkmkrs, $mkruid);
             }
         }
@@ -173,7 +170,7 @@ if (isset($_POST['deselMkrs'])) {
 }
 
 // If anything is Currently Selected, show.
-if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) { 
+if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
     print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
     print "<table><tr><td>\n";
     print "<select id='mlist' name='deselMkrs[]' multiple='multiple' size=10>";
@@ -276,11 +273,15 @@ EOD;
     if (! isset($username) || strlen($username)<1) {
         $username="Public";
     }
-    store_session_variables('clicked_buttons', $username);
+    store_session_variables('clicked_buttons', $username) or die("Error: did not save\n");
     store_session_variables('mapids', $username);
 }
 if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
     $count = count($_SESSION['clicked_buttons']);
+    print "$count markers selected. ";
+    print "<a href=genotyping/display_markers.php>Show marker information</a><br>\n";
+} elseif (isset($_SESSION['geno_exps_cnt'])) {
+    $count = $_SESSION['geno_exps_cnt'];
     print "$count markers selected. ";
     print "<a href=genotyping/display_markers.php>Show marker information</a><br>\n";
 } else { // end of if Currently Selected

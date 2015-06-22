@@ -1,6 +1,5 @@
 <?php
 include('../../includes/bootstrap.inc');
-connect();
 $mysqli = connecti();
 
 $self = $_SERVER['PHP_SELF'];
@@ -32,22 +31,25 @@ if ($action == "list") {
         from fieldbook, experiments, phenotype_experiment_info
         where fieldbook.experiment_uid = experiments.experiment_uid
         and phenotype_experiment_info.experiment_uid = experiments.experiment_uid " . $sql_opt;
-    //$sql = "select distinct(experiments.experiment_uid), trial_code, planting_date, collaborator, location, experiment_design, CAPdata_programs_uid
-    //    from experiments, phenotype_experiment_info
-    //    where phenotype_experiment_info.experiment_uid = experiments.experiment_uid " . $sql_opt;
+    $sql = "select distinct(experiments.experiment_uid), trial_code, planting_date, collaborator, location, experiment_design, CAPdata_programs_uid
+        from experiments, phenotype_experiment_info
+        where phenotype_experiment_info.experiment_uid = experiments.experiment_uid " . $sql_opt;
+    $sql = "select experiment_uid, experiment_type_name, trial_code, CAPdata_programs_uid
+        from experiments, experiment_types
+        where experiments.experiment_type_uid = experiment_types.experiment_type_uid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
         $uid = $row[0];
         $trial = $row[1];
         $temp["studyId"] = $row[0];
-        $temp["studyType"] = "trial";
-        $temp["name"] = $row[1];
-        $CAP_uid = $row[6];
+        $temp["studyType"] = $row[1];
+        $temp["name"] = $row[2];
+        $CAP_uid = $row[3];
         $temp["programName"] = $program;
-        $temp["startDate"] = $row[2];
-        $temp["keyContact"] = $row[3];
-        $temp["locationName"] = $row[4];
-        $temp["designType"] = $row[5];
+        //$temp["startDate"] = $row[2];
+        //$temp["keyContact"] = $row[3];
+        //$temp["locationName"] = $row[4];
+        //$temp["designType"] = $row[5];
         $sql = "select data_program_name from CAPdata_programs where CAPdata_programs_uid = $CAP_uid";
         $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         if ($row2 = mysqli_fetch_row($res2)) {
@@ -66,9 +68,24 @@ if ($action == "list") {
                 $line_record_name = $row[1];
                 $name_list[$line_uid] = $line_record_name;
     }
-    $sql = "select trial_code, planting_date, collaborator, location, experiment_design from experiments, phenotype_experiment_info
+    $sql = "select experiment_type_name
+        from experiments, experiment_types
+        where experiments.experiment_type_uid = experiment_types.experiment_type_uid
+        and experiment_uid = $uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+    if ($row = mysqli_fetch_row($res)) {
+        $type = $row[0];
+    }
+    if ($type == "genotype") {
+        $sql = "select trial_code, marker_type_uid, platform_uid
+            from experiments, genotype_experiment_info
+            where experiments.experiment_uid = genotype_experiment_info.experiment_uid";
+    } else {
+        $sql = "select trial_code, planting_date, collaborator, location, experiment_design
+         from experiments, phenotype_experiment_info
          where phenotype_experiment_info.experiment_uid = experiments.experiment_uid
          and experiments.experiment_uid = $uid";
+    }
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
     if ($row = mysqli_fetch_row($res)) {
         $results["studyId"] = $uid;
@@ -84,6 +101,13 @@ if ($action == "list") {
         $return = json_encode($results);
         echo "$return";
         die();
+    }
+    $sql = "select distinct(line_record_uid) from tht_base where experiment_uid = $uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+    while ($row = mysqli_fetch_row($res)) {
+        $temp['germplasmId'] = $row[0];
+        $temp["germplasmName"] = $name_list[$row[0]];
+        $results["design"][] = $temp;
     }
     $sql = "select plot_uid, plot, block, row_id, column_id, replication, check_id, line_uid from fieldbook
         where experiment_uid = $uid order by row_id, plot";
