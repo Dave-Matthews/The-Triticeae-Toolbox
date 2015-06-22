@@ -48,6 +48,7 @@ traits.</p>
 
 <li><a href="<?php echo $config['base_url'] ?>curator_data/propertyAdd.php">Upload</a> a file of properties
 <li><a href="<?php echo $config['base_url'] ?>login/edit_properties.php">Edit/delete</a> existing properties
+<li><a href="<?php echo $config['base_url'] ?>login/edit_genchars.php">Edit</a> the properties of a line
 
 <?php
     $footer_div = 1;

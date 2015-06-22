@@ -44,18 +44,17 @@ if ($command) {
 
         $linearray['germplasmId'] = $lineuid;
         // Get the number of non-missing allele data points for this line, by experiment.
-        $sql = "select experiment_uid, count(experiment_uid) from allele_cache 
+        $sql = "select count(experiment_uid) from allele_cache 
 	    where line_record_uid = $lineuid 
-	    and not alleles = '--' 
-            group by experiment_uid;";
+            and experiment_uid = $expuid
+	    and not alleles = '--'";
         $res = mysql_query($sql) or die(mysql_error());
         while ($row = mysql_fetch_row($res)) {
-            $runId = $row[0];
-            $resultCount = $row[1];
+            $resultCount = $row[0];
             $analysisMethod = mysql_grab(
                 "select platform_name from platform p, genotype_experiment_info g
                 where p.platform_uid = g.platform_uid
-                and g.experiment_uid = $runId"
+                and g.experiment_uid = $expuid"
             );
           // Restrict to the requested analysis method if any.
           if (!$analmeth or $analmeth == $analysisMethod ) {
@@ -65,19 +64,46 @@ if ($command) {
           }
       }
     } elseif ($lineuid != "") {
-          $linearray['germplasmId'] = $lineuid;
-          $sql = "select experiment_uid, count(experiment_uid) from allele_cache 
+        $sql = "select experiment_uid, count(experiment_uid) from allele_cache 
             where line_record_uid = $lineuid 
             and not alleles = '--' 
             group by experiment_uid;";
         $res = mysql_query($sql) or die(mysql_error());
+        while ($row = mysql_fetch_row($res)) {
+            $result = array();
+            $expuid = $row[0];
+            $result['markerProfileId'] = $lineuid . "_" . $row[0];
+            $result['extractId'] = $row[0];
+            $result['resultCount'] = $row[1];
+            $analysisMethod = mysql_grab(
+                "select platform_name from platform p, genotype_experiment_info g
+                where p.platform_uid = g.platform_uid
+                and g.experiment_uid = $expuid"
+            );
+            $result['analysisMethod'] = $analysisMethod;
+            $linearray[] = $result;
+        }
     } elseif ($expuid != "") {
-          $linearray['extractId'] = $expuid;
-          $sql = "select experiment_uid, count(experiment_uid) from allele_cache 
-            where experiment_uid = $lineuid 
+        $sql = "select line_record_uid, count(line_record_uid) from allele_cache 
+            where experiment_uid = $expuid 
             and not alleles = '--' 
             group by line_record_uid;";
         $res = mysql_query($sql) or die(mysql_error());
+        while ($row = mysql_fetch_row($res)) {
+            $result = array();
+            $line_record_uid = $row[0];
+            $result['markerProfileId'] = $row[0] . "_" . $expuid;
+            $result['germplasmID'] = $row[0];
+            $result['extractId'] = $expuid;
+            $result['resultCount'] = $row[1];
+            $analysisMethod = mysql_grab(
+                "select platform_name from platform p, genotype_experiment_info g
+                where p.platform_uid = g.platform_uid
+                and g.experiment_uid = $expuid"
+            );
+            $result['analysisMethod'] = $analysisMethod;
+            $linearray[] = $result;
+        }
     }
   header("Content-Type: application/json");
   /* Requires PHP 5.4.0: */
@@ -118,13 +144,13 @@ if ($command) {
       $data[$row[0]] = $row[1];
       $linearray['data'] = $data;
     }
-  /*$response = array($linearray, $genotypes);*/
+    $response = array($linearray, $genotypes);
   header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json");
   /* Requires PHP 5.4.0: */
   /* echo json_encode($response, JSON_PRETTY_PRINT); */
-  /* echo json_encode($response);*/
-  echo json_encode($linearray);
+  echo json_encode($response);
+  /* echo json_encode($linearray);
   /* print_h($response); */
 }
 

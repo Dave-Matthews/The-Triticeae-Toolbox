@@ -19,15 +19,15 @@ include($config['root_dir'].'theme/admin_header.php');
 
   <h3>Count</h3>
   Allele Count for a Germplasm, by Run<br>
-  <b>GET</b> /brapi/v1/markerprofile/{id}/count?analysisMethod={platform}<br>
+  <b>GET</b> /brapi/v1/markerprofiles/{id}/count?analysisMethod={platform}<br>
   <b>Returns:</b> JSON containing Germplasm Id, experiment Id, analysis method, and number of allele calls<br>
-  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofile/993_84/count?analysisMethod=GoldenGate">http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofile/993_84/count?analysisMethod=GoldenGate</a>
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofiles/993_84/count?analysisMethod=GoldenGate">http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofiles/993_84/count?analysisMethod=GoldenGate</a>
 
   <h3>Alleles By Germplasm Id</h3>
-  <b>GET</b> /brapi/v1/markerprofile/{id}?runId={runId}&analysisMethod={method}&pageSize={pageSize}&page={page}<br>
+  <b>GET</b> /brapi/v1/markerprofiles/{id}?runId={runId}&analysisMethod={method}&pageSize={pageSize}&page={page}<br>
   <b>Returns:</b> JSON containing Germplasm Id, experiment Id, analysis method, encoding, and allele calls<br>
   &nbsp;&nbsp;&nbsp;by marker.  Missing data are omitted.  Analysis method is T3's "platform."<br>
-  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofile/993_84">http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofile/993_84</a><br>
+  <b>Example:</b> <a href="http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofiles/993_84">http://malt.pw.usda.gov/t3/wheatplus/brapi/v1/markerprofiles/993_84</a><br>
   <br>
 
   <h2>Germplasm</h2>

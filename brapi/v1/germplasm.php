@@ -11,14 +11,14 @@ require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 connect();
 
-// URI is something like germplasm/find?q={name}
+// URI is something like germplasm?name={name}
 // Extract the pseudo-path part of the REST args, ie "find".
 $self = $_SERVER['PHP_SELF'];
 $script = $_SERVER["SCRIPT_NAME"]."/";
 $rest = str_replace($script, "", $self);
 $rest = explode("/", $rest);
 $command = $rest[0];
-// Extract the URI's querystring, ie "q={name}".
+// Extract the URI's querystring, ie "name={name}".
 if ($_GET) {
   // There should be at most 1.
   $getkeys = array_keys($_GET);
@@ -34,8 +34,12 @@ if ($command) {
     echo "Unknown germplasm command <b>'$command'</b>. <p>";
     exit;
   }
-  // "Germplasm ID by Name".  URI is germplasm/find?q={name}
-  $linename = $_GET['q'];
+}
+else {
+  /* // $rest[1] is undefined, no command. */
+  /* echo "<b>germplasm/$rest[0]</b>: No action implemented yet.<p>"; */
+  // "Germplasm ID by Name".  URI is germplasm?name={name}
+  $linename = $_GET['name'];
   $lineuid = mysql_grab("select line_record_uid from line_records where line_record_name = '$linename'");
   $lineuid = intval($lineuid);
   $syns = array();
@@ -48,12 +52,7 @@ if ($command) {
   header("Content-Type: application/json");
   /* Requires PHP 5.4.0: */
   /* echo json_encode($response, JSON_PRETTY_PRINT); */
-  /* echo json_encode($response); */
   echo json_encode($r);
-}
-else {
-  // $rest[1] is undefined, no command.
-  echo "<b>germplasm/$rest[0]</b>: No action implemented yet.<p>";
 }
 
 ?>

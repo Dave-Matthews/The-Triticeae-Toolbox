@@ -1,12 +1,8 @@
 /*global jQuery,$,alert,window */
 
-//window.onload = function() {
-//  $('a').click(function() {
-//    jQuery("#step2").html("tab selected");
-//  });
-//};
-
 var lineStr = "";
+var expStr = "";
+var markerprofileStr = "";
 
 window.onload = function () {
 $("#tabs").tabs({
@@ -35,6 +31,86 @@ function updateUrl()
   var apiUrlList = document.getElementById("url2").value;
   document.getElementById("url").value = apiUrlList; 
 }
+
+function getMarkerprofiles()
+{
+  var items = [];
+  if (expStr != "") {
+    var apiUrl = document.getElementById("url").value + "/markerprofiles?extract=" + expStr;
+  } else if (lineStr != "") {
+    var apiUrl = document.getElementById("url").value + "/markerprofiles?germplasm=" + lineStr;
+  } else {
+    alert('Error: Select a genotype study or germplasm');
+    return;
+  } 
+  if (document.getElementById("YesDebug").checked === true) {
+    items.push("API call = " + apiUrl);
+  }
+  jQuery.ajax({
+    type: "GET",
+    dataType: "json",
+    url: apiUrl,
+    success: function(data, textStatus) {
+      items.push("<h3>Marker profiles</h3><table><tr>");
+      jQuery.each( data[0], function( key, val ) {
+        items.push("<td>" + key);
+      });
+      jQuery.each( data, function( key, val ) {
+        items.push("<tr>");
+        jQuery.each( val, function( key2, val2 ) {
+          items.push("<td>" + val2);
+        });
+      });
+      items.push("</table>");
+      var html = items.join("");
+      jQuery("#step2").html(html);
+    },
+    error: function() {
+        alert('Error in selecting experiment list');
+      }
+  });
+}
+
+function getAlleleMatrix()
+{
+  var items = [];
+  var apiUrl = document.getElementById("url").value + "/allelematrix?" + markerprofileStr;
+  if (document.getElementById("YesDebug").checked === true) {
+    items.push("API call = " + apiUrl);
+  }
+  jQuery.ajax({
+    type: "GET",
+    dataType: "json",
+    url: apiUrl,
+    success: function(data, textStatus) {
+      items.push("<h3>Marker profiles</h3><table><tr>");
+      jQuery.each( data, function( key, val ) {
+        items.push("<tr>");
+        if (key == "metadata") {
+          items.push("<td>metadata");
+        } else if (key == "markerprofileIds") {
+          items.push("<tr><td>markerprofileIds<tr>");
+          items.push("<td>" + val);
+        } else if (key == "scores") {
+          items.push("<tr><td>scores<tr><td>");
+          jQuery.each( val, function( key2, val2 ) {
+            items.push("<tr><td>" + key2 + " " + val2);
+            jQuery.each( val2, function( key3, val3 ) {
+              items.push("<td>" + val3);
+            });
+          });
+        }
+      });
+      items.push("</table>");
+      var html = items.join("");
+      jQuery("#step2").html(html);
+    },
+      error: function() {
+        alert('Error in selecting experiment list');
+      }
+  });
+}
+
 
 function getListStudies()
 {
@@ -68,6 +144,7 @@ function getListStudies()
         jQuery.each( data[i], function( key, val ) {
           if (key == "studyId") {
             items.push("<td><button onclick=\"get_detail(" + studyId + ")\">details</button>");
+            items.push("<button onclick=\"select_study(" + studyId + ")\">select study</button>");
           } else if (key == "id") {  /*not standard*/
             items.push("<td><button onclick=\"get_detail(" + studyId + ")\">details</button>");
           } else {
@@ -85,11 +162,25 @@ function getListStudies()
   });
   document.getElementById("step3").innerHTML = "";
 }
+
+function select_study(exp)
+{
+  expStr = exp;
+}
+
+function select_germplasm(line)
+{
+  lineStr = line;
+}
+
 function get_detail(exp)
 {
   var items = [];
+  var count = 1;
   lineStr = "";
+  markerprofileStr = "";
   var apiUrl = document.getElementById("url").value + "/study/" + exp;
+
   if (document.getElementById("YesDebug").checked === true) {
     items.push("API call = " + apiUrl);
   }
@@ -99,7 +190,6 @@ function get_detail(exp)
     url: apiUrl,
     success: function(data, textStatus) {
       items.push("<h3>Study details</h3><table>");
-      items.push("<input type=\"button\" value=\"Select these lines\"");
       items.push("<tr>");
       jQuery.each( data, function( key, val ) {
           if (key == "design") {
@@ -113,11 +203,14 @@ function get_detail(exp)
               items.push("<tr>");
               jQuery.each( data["design"][i], function ( key2, val2 ) {
                 items.push("<td>" + val2);
-                if (key2 == "lineRecordName") {
-                  if (lineStr === "") {
-                    lineStr = val2;
+                if (key2 == "germplasmId") {
+                  items.push("<button onclick=\"select_germplasm(" + val2 + ")\">select germplasm</button>");
+                  h = "markerprofileId" + count + "=" + val2 + "_" + exp;
+                  count++;
+                  if (markerprofileStr === "") {
+                    markerprofileStr = h;
                   } else {
-                    lineStr += "\r\n" + val2;
+                    markerprofileStr += "&" + h;
                   }
                 }
               });

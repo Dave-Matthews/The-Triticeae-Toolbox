@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <title>Plant Breeding API demo</title>
-<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css">
 <script src="//code.jquery.com/jquery-2.1.3.js"></script>
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-<script type="text/javascript" src="fieldBookApp.js"></script>
+<script type="text/javascript" src="fieldBookApp02.js"></script>
 <!--link rel="stylesheet" href="/resources/demos/style.css"i-->
 <script>
 $(function() {
@@ -29,15 +29,15 @@ $(function() {
 <p>
 <table>
 <tr><td>URL of website API:<td>
-<!--input type="text" id="url" size="60" value="http://malt.pw.usda.gov/t3/wheatplus/brapi/0.1"><bri-->
-<select name= "url" id="url">
-  <option>Select database server</option>
+<select name= "url" id="url2" onchange="javascript: updateUrl();">
+  <option>Select database server or enter a URL below</option>
   <option value="https://t3sandbox.org/t3/wheatplus/brapi/v1">Triticeae Toolbox Development</option>
-  <option value="//triticeaetoolbox.org/wheat/brapi/v1">Triticeae Toolbox Wheat (TCAP)</option>
-  <option value="//triticeaetoolbox.org/barley/brapi/v1">Triticeae Toolbox Barley (TCAP)</option>
-  <option value="//triticeaetoolbox.org/oat/brapi/v1">Triticeae Toolbox Oat </option>
-  <option value="//cassava-test.sgn.cornell.edu/brapi/v1">CassavaBase (BTI)</option>
+  <option value="https://triticeaetoolbox.org/wheat/brapi/v1">Triticeae Toolbox Wheat (TCAP)</option>
+  <option value="https://triticeaetoolbox.org/barley/brapi/v1">Triticeae Toolbox Barley (TCAP)</option>
+  <option value="https://triticeaetoolbox.org/oat/brapi/v1">Triticeae Toolbox Oat </option>
+  <option value="http://cassava-test.sgn.cornell.edu/brapi/v1">CassavaBase (BTI)</option>
 </select>
+<tr><td><td><input type="text" id="url" size="60" value="">
 <tr><td>Debug:<td>
 <input type="radio" name="debug" id="NoDebug" checked>No
 <input type="radio" name="debug" id="YesDebug">Yes
@@ -49,6 +49,9 @@ $(function() {
 <input type="button" value="Get list of studies" onclick="javascript: getListStudies();"/><br>
 <input type="button" value="Get list of traits" onclick="javascript: getListTraits();"/><br>
 <input type="button" value="Get list of maps" onclick="javascript: getListMaps();"/><br>
+<input type="button" value="Get markerprofiles" onclick="javascript: getMarkerprofiles();"/>
+<input type="button" value="Get allelematrix" onclick="javascript: getAlleleMatrix();"/><br>
+<br>
 </p>
 </div>
 <div id="tabs-3">
