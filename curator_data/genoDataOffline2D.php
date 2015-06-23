@@ -272,18 +272,24 @@ if (($lineNameIdx == "")||($trialCodeIdx == "")) {
 // Store individual records
 $num = 0;
 $linenumber = 0;
-while (($line = fgets($reader)) !== false) { 
+while (($line = fgets($reader)) !== false) {
     $linenumber++;
     $origline = $line;
     chop($line, "\r");
-    if ((stripos($line, '- cut -') > 0 )) break;
+    if ((stripos($line, '- cut -') > 0 )) {
+        break;
+    }
 
     if (preg_match('/ /', $line)) {
         echo "removing illegal blank character from $line";
         $line = preg_replace('/ /', '', $line);
     }
-    if (strlen($line) < 2) continue;
-    if (empty($line)) continue;
+    if (strlen($line) < 2) {
+        continue;
+    }
+    if (empty($line)) {
+        continue;
+    }
                 
     $data = str_getcsv($line, "\t");
                         
@@ -296,23 +302,23 @@ while (($line = fgets($reader)) !== false) {
     $trialCodeStr = $data[$trialCodeIdx];
     $lineStr = $data[$lineNameIdx];
                 
-    //echo  $lineStr . " - ". $trialCodeStr. "<br>"; 
+    //echo  $lineStr . " - ". $trialCodeStr. "<br>";
     // Trial Code processing
     if (($curTrialCode != $trialCodeStr) && ($trialCodeStr != '')) {
         $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialCodeStr'";
         $res = mysqli_query($mysqli, $sql)
             or exitFatal($errFile, "Database Error: Experiment uid lookup - ".mysqli_error($mysqli));
         if ($row = mysqli_fetch_assoc($res)) {
-            $exp_uid = implode(",",$row);
+            $exp_uid = implode(",", $row);
         } else {
             exitFatal($errFile, "not found - $sql");
         }
         
-        $sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";            
-        $res = mysqli_query($mysqli,$sql)
+        $sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = '$exp_uid'";
+        $res = mysqli_query($mysqli, $sql)
             or exitFatal($errFile, "Database Error: Dataset experiment uid lookup - ".mysqli_error($mysqli));
         if ($row = mysqli_fetch_assoc($res)) {
-            $de_uid=implode(",",$row);
+            $de_uid=implode(",", $row);
 	} else {
             exitFatal($errFile, "not found - $sql");
         }
@@ -786,6 +792,7 @@ send_email($emailAddr, "Genotype import step 1", $body);
 // Shortcut function for mysql_query().
 function mysqlq($command) {
   global $mysqli;
+  global $errFile;
   mysqli_query($mysqli, $command);
   $errmsg = mysqli_error($mysqli);
   if (!empty($errmsg)) {
