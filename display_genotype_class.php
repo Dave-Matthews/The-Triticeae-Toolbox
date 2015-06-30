@@ -106,36 +106,36 @@ class ShowData
         <?php
     }
 
-  private function type_DataInformation($trial_code)
-  {
-    global $mysqli;
-    $line_ids = array();
-    $sql = "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code = ?";
-    if (!authenticate(array(USER_TYPE_PARTICIPANT,
+    private function type_DataInformation($trial_code)
+    {
+        global $mysqli;
+        $line_ids = array();
+        $sql = "SELECT CAPdata_programs_uid, experiment_type_uid, experiment_uid, experiment_short_name FROM experiments where trial_code = ?";
+        if (!authenticate(array(USER_TYPE_PARTICIPANT,
                             USER_TYPE_CURATOR,
                             USER_TYPE_ADMINISTRATOR))) {
                         $sql .= " and data_public_flag > 0";
-    }
-
-    if ($stmt = mysqli_prepare($mysqli, $sql)) {
-        mysqli_stmt_bind_param($stmt, "s", $trial_code);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $CAPdata_programs_uid, $experiment_type_uid, $experiment_uid, $experiment_short_name);
-        if (mysqli_stmt_fetch($stmt)) { 
-            mysqli_stmt_close($stmt);
-            $sql_data_code = "SELECT data_program_code, data_program_name FROM CAPdata_programs where CAPdata_programs_uid = '".$CAPdata_programs_uid."' ";
-            $res_data_code = mysqli_query($mysqli, $sql_data_code) or die("Error: unable to retrieve CAP data info from data prog id.<br>".mysqli_error($mysqli));
-            $row_data_code = mysqli_fetch_assoc($res_data_code);
-            $data_program_code = $row_data_code['data_program_code'];
-            $data_program_name = $row_data_code['data_program_name'];
-        } else {
-            mysqli_stmt_close($stmt);
-            echo "Error: no experiment found";
-            return;
         }
-    } else {
-        echo "Error: " . mysqli_error($mysqli);
-    } 
+
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "s", $trial_code);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $CAPdata_programs_uid, $experiment_type_uid, $experiment_uid, $experiment_short_name);
+            if (mysqli_stmt_fetch($stmt)) {
+                mysqli_stmt_close($stmt);
+                $sql_data_code = "SELECT data_program_code, data_program_name FROM CAPdata_programs where CAPdata_programs_uid = '".$CAPdata_programs_uid."' ";
+                $res_data_code = mysqli_query($mysqli, $sql_data_code) or die("Error: unable to retrieve CAP data info from data prog id.<br>".mysqli_error($mysqli));
+                $row_data_code = mysqli_fetch_assoc($res_data_code);
+                $data_program_code = $row_data_code['data_program_code'];
+                $data_program_name = $row_data_code['data_program_name'];
+            } else {
+                mysqli_stmt_close($stmt);
+                echo "Error: no experiment found";
+                return;
+            }
+        } else {
+            echo "Error: " . mysqli_error($mysqli);
+        }
 
     $sql_lines = "select line_record_uid from tht_base where experiment_uid = $experiment_uid";
     $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli) . $sql_lines);
@@ -200,10 +200,9 @@ class ShowData
     elseif ($min_maf < 0)
       $min_maf = 0;
 
-    $sql_mstat = "SELECT af.marker_uid as marker, af.aa_cnt as sumaa, af.missing as summis, 
-		    af.bb_cnt as sumbb, af.total as total, af.ab_cnt AS sumab, maf
-		    FROM allele_frequencies AS af
-		    WHERE af.experiment_uid = $experiment_uid";
+    $sql_mstat = "SELECT marker_uid, maf, missing, total 
+		    FROM allele_frequencies
+		    WHERE experiment_uid = $experiment_uid";
     $res = mysqli_query($mysqli, $sql_mstat) or
       die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
     $num_mark = mysqli_num_rows($res);
@@ -211,11 +210,10 @@ class ShowData
 
    $count_remain = 0;
     while ($row = mysqli_fetch_array($res)) {
-        $marker_uid[] = $row["marker"];
-        $total_af = $row["sumaa"] + $row["sumab"] + $row["sumbb"];
         $maf = $row["maf"];
+        $miss = $row["missing"];
         if ($row["total"] > 0) {
-            $miss = round(100*$row["summis"]/$row["total"], 1);
+            $miss = round(100*$miss/$row["total"], 1);
             if ($maf > $min_maf) {
                 $num_maf++;
             }
