@@ -139,25 +139,25 @@ function show_datasets($id)
         or die("Error in show datasets");
 
         echo viewTable($exp, "experiments");
-		
     }
 
 }
 
 // Security mechanism
-function show_users($id) {
+function show_users($id)
+{
 // dem 6sep13: We decided to unrestrict.  Just omit the users.pass field.
-	/* error(1, "Restricted"); */
-  echo "<table>";
-  $sql = "select name, email, institution, lastaccess from users where users_uid = $id";
-  $res = mysqli_query($mysqli, $sql) or die("Error in show users\n");
-  while ($r = mysqli_fetch_row($res)) {
-    echo "<tr><td>Name<td>$r[0]";
-    echo "<tr><td>Email<td>$r[1]";
-    echo "<tr><td>Institution<td>$r[2]";
-    echo "<tr><td>Last login<td>$r[3]";
-  }
-  echo "</table>";
+/* error(1, "Restricted"); */
+    echo "<table>";
+    $sql = "select name, email, institution, lastaccess from users where users_uid = $id";
+    $res = mysqli_query($mysqli, $sql) or die("Error in show users\n");
+    while ($r = mysqli_fetch_row($res)) {
+        echo "<tr><td>Name<td>$r[0]";
+        echo "<tr><td>Email<td>$r[1]";
+        echo "<tr><td>Institution<td>$r[2]";
+        echo "<tr><td>Last login<td>$r[3]";
+    }
+    echo "</table>";
 }
 
 
@@ -166,7 +166,8 @@ function show_users($id) {
  * This is a special case function used in view.php to view the experimetns table. This will select all the 
  * lines associated with an experiment in addition to the usual experiment data shown. 
  */
-function show_experiments($id) {
+function show_experiments($id)
+{
     global $mysqli;
     echo "<div style=\"float: left;\"><br /><br />";
 
@@ -212,12 +213,15 @@ function show_markers($id) {
       $source_string = $row['linkout_string_for_annotation'];
       $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
       $url = "<a href=\"$linkString\" target=\"_blank\">";
-      $url2 = "<form method='GET' target='_blank' action='$linkString'><input type='submit' value='View in GBrowse'></form>";
+      $url2 = "<form method='GET' target='_blank' action='$linkString'><input type='submit' value='URGI GBrowse'></form>";
+      $url3 = "<form method='GET' target='_blank' action='$linkString'><input type='submit' value='Ensembl Browser'></form>";
 
       if ($linkString == "") {
            echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['description']."<td>".$row['comments']."</tr>";
       } elseif ($row['name_annotation'] == "IWGSC CSS") {
           echo"<tr><td>".$row['name_annotation']."<td>".$url2."<td>".$row['value']." ".$row['description']."<td>".$row['comments']."</a></tr>";
+      } elseif ($row['name_annotation'] == "Ensembl") {
+          echo"<tr><td>".$row['name_annotation']."<td>".$url3."<td>".$row['value']." ".$row['description']."<td>".$row['comments']."</a></tr>";
       } else {
 	  echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['description']."<td>".$row['comments']."</a></tr>";
       }
@@ -262,14 +266,14 @@ function show_markers($id) {
       echo "</table>";
     }
     // View in GBrowse
-    $sql = "select marker_name from markers where marker_uid = $id";
-    $r = mysqli_query($mysqli, $sql);
-    $row = mysqli_fetch_row($r);
-    $markername = $row[0];
-    echo "<form method='GET' action=http://".$_SERVER['HTTP_HOST']."/cgi-bin/gbrowse/tht>";
-    echo "<input type='hidden' name='name' value='$markername'>";
-    echo "<input type='submit' value='View in GBrowse'></p>";
-    echo "</form>";
+    // $sql = "select marker_name from markers where marker_uid = $id";
+    // $r = mysqli_query($mysqli, $sql);
+    // $row = mysqli_fetch_row($r);
+    // $markername = $row[0];
+    // echo "<form method='GET' action=http://".$_SERVER['HTTP_HOST']."/cgi-bin/gbrowse/tht>";
+    // echo "<input type='hidden' name='name' value='$markername'>";
+    // echo "<input type='submit' value='View in GBrowse'></p>";
+    // echo "</form>";
     // add to Selection List
     echo "<h3>Selection List</h3>";
     echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
