@@ -373,7 +373,7 @@ class LineNames_Check
 	      //$line_uid = get_lineuid($line);
 	      $lid = mysql_grab("select line_record_uid from line_records where line_record_name = '$line'");
 	      if (!$lid) // If not a primary name, check for synonym.
-		$lid = mysql_grab("select line_record_name from line_synonyms ls, line_records lr where line_synonym_name = '$line' and ls.line_record_uid = lr.line_record_uid");
+		$lid = mysql_grab("select distinct line_record_name from line_synonyms ls, line_records lr where line_synonym_name = '$line' and ls.line_record_uid = lr.line_record_uid");
 	      // Note: $line_uid is an array.
 	      $line_uid = array($lid);
 	      if (!$lid) {
@@ -386,7 +386,7 @@ class LineNames_Check
 	      } 
 	      elseif (count($line_uid) == 1) { 
 		// If it's listed as a synonym, don't make it a line name too.
-		$sql = "select line_record_name from line_synonyms ls, line_records lr
+		$sql = "select distinct line_record_name from line_synonyms ls, line_records lr
 		    where line_synonym_name = '$line' and ls.line_record_uid = lr.line_record_uid";
 		$res = mysql_query($sql) or errmsg($sql, mysql_error());
 		if (mysql_num_rows($res) > 0) {
@@ -424,7 +424,7 @@ class LineNames_Check
 		  //$linesyn_uid = get_lineuid($syn);
 		  $lsid = mysql_grab("select line_record_uid from line_records where line_record_name = '$syn'");
 		  if (!$lsid) // If not a primary name, check for synonym.
-		    $lsid = mysql_grab("select line_record_name from line_synonyms ls, line_records lr where line_synonym_name = '$syn' and ls.line_record_uid = lr.line_record_uid");
+		    $lsid = mysql_grab("select distinct line_record_name from line_synonyms ls, line_records lr where line_synonym_name = '$syn' and ls.line_record_uid = lr.line_record_uid");
 		  // $linesyn_uid is an array.
 		  $linesyn_uid = array($lsid);
 		  if (!$lsid) {
