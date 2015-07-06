@@ -629,11 +629,11 @@ Institution: $institution
 
 Please use the following link to confirm or reject participant status
 of this user:
-{$root}fromcapemail.php?token=$capurltoken
+https:{$root}fromcapemail.php?token=$capurltoken
 
 A message has been sent to the user that he must confirm his email
 address at
-{$root}fromemail.php?token=$urltoken
+https:{$root}fromemail.php?token=$urltoken
 ");
      }
 

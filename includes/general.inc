@@ -219,10 +219,10 @@ function show_markers($id)
 
             if ($linkString == "") {
                 echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['description']."<td>".$row['comments']."</tr>\n";
-            } elseif ($row['name_annotation'] == "IWGSC CSS") {
-                echo"<tr><td>".$row['name_annotation']."<td>".$url2."<td>".$row['value']." ".$row['description']."<td>".$row['comments']."</a></tr>\n";
-            } elseif ($row['name_annotation'] == "Ensembl") {
-                echo"<tr><td>".$row['name_annotation']."<td>".$url3."<td>".$row['value']." ".$row['description']."<td>".$row['comments']."</a></tr>\n";
+            //} elseif ($row['name_annotation'] == "IWGSC CSS") {
+            //    echo"<tr><td>".$row['name_annotation']."<td>".$url2."<td>".$row['value']." ".$row['description']."<td>".$row['comments']."</a></tr>\n";
+            //} elseif ($row['name_annotation'] == "Ensembl") {
+            //    echo"<tr><td>".$row['name_annotation']."<td>".$url3."<td>".$row['value']." ".$row['description']."<td>".$row['comments']."</a></tr>\n";
             } else {
                 echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['description']."<td>".$row['comments']."</a></tr>\n";
             }
