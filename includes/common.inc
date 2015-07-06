@@ -207,6 +207,9 @@ function get_unique_name($table) {
   // dem may15: another special case:
   if ($table == "barley_pedigree_catalog_ref")
     return "barley_ref_number";
+  // dem jul15: another special case:
+  if ($table == "marker_synonyms")
+    return "value";
   else {
     $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>");
     $row = mysqli_fetch_row($q);
