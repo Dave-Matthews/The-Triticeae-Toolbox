@@ -14,10 +14,8 @@
  * 9/2/2010   J.Lee modify to add new snippet Gbrowse tracks
  * 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse
  */
-$usegbrowse = false;
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-connect();
 $mysqli = connecti();
 session_start();
 require $config['root_dir'].'theme/admin_header.php';
@@ -39,10 +37,11 @@ require $config['root_dir'].'theme/admin_header.php';
  */
 function getSubmittedMapid()
 {
+    global $mysqli;
     $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
     $sql = "select map_uid from map
-    where map_name='" . mysql_real_escape_string($us_mapname) . "'";
-    $sqlr = mysql_fetch_assoc(mysql_query($sql));
+    where map_name='" . mysqli_real_escape_string($mysqli, $us_mapname) . "'";
+    $sqlr = mysqli_fetch_assoc(mysqli_query($mysqli, $sql));
     return $sqlr['map_uid'];
 }
 
@@ -120,8 +119,8 @@ if (isset($_POST['selMkrs']) || isset($_POST['selbyname'])) {
     } else {
         $selbyname = $_POST['selbyname'];
         $sql = "select m.marker_uid from markers where
-        m.marker_name='" . mysql_real_escape_string($selbyname) . "'";
-        $sqlr = mysql_fetch_assoc(mysql_query($sql));
+        m.marker_name='" . mysqli_real_escape_string($mysqli, $selbyname) . "'";
+        $sqlr = mysqli_fetch_assoc(mysqli_query($mysqli, $sql));
         $selmkrs = array($sqlr['marker_uid']);
     }
     $mapids = $_SESSION['mapids'];
@@ -188,9 +187,9 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         $mapid = current($mapids);
         next($mapids);
         $sql = "select marker_name from markers where marker_uid=$mkruid";
-        $result=mysql_query($sql)
-          or die(mysql_error());
-        while ($row=mysql_fetch_assoc($result)) {
+        $result=mysqli_query($mysqli, $sql)
+          or die(mysqli_error($mysqli));
+        while ($row=mysqli_fetch_assoc($result)) {
             $selval=$row['marker_name'];
             $selchr=$row['chromosome'];
             if (! in_array($selval, $markerlist)) {
@@ -204,63 +203,6 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
     print "</select>";
     print "</td><td>\n";
 
-    // Show GBrowse maps.
-    if ($usegbrowse) {
-        sort($chrlist);
-        echo "<script type='text/javascript'>
-        var mlist = \$j('#mlist option').map(function () { return \$j(this).text(); });
-        </script>";
-        foreach ($chrlist as $chr) {
-            echo "<div id='gbrowse_$chr'></div>\n";
-            echo <<<EOD
-<script type="text/javascript">
-    \$j('#gbrowse_$chr')
-    .bind('ajaxSend',
-	  function () {
-	    \$j(this).html("<p>Loading track for chromosome $chr...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>");
-	    \$j(this).addClass('inprogress');
-	  })
-    .bind('ajaxComplete',
-	  function () { \$j(this).removeClass('inprogress'); });
-  \$j(document).ready(function () {
-      var hilite = [], index;
-      for (index=0; index<mlist.length; ++index)
-	hilite.push(mlist[index] + '@orange');
-      loadGbrowse("#gbrowse_$chr", " #details_panel",
-		  ["name=" + encodeURIComponent('chr$chr'),
-		   "h_feat=" + encodeURIComponent(hilite.join(' ')),
-		   'label=' + encodeURIComponent('Marker OWB_2383'),
-		   'label=' + encodeURIComponent('Marker UCR04162008'),
-           'label=' + encodeURIComponent('Marker SteptoeMorex'),
-           'label=' + encodeURIComponent('Marker MorexBarke'),
-		   'grid=on', 'show_tooltips=on',
-		   '.cgifields=show_tooltips', 'drag_and_drop=on']
-		  .join('&'),
-		  function () {
-		    // \$j("#gbrowse_$chr").find("area[href^='?ref']")
-		    //   .each(function () {
-		    // 	  \$j(this).removeAttr('href');
-		    // 	});
-		    \$j("#gbrowse_$chr")
-		      .prepend("<p>Chromosome $chr</p>");
-		    // \$j("#mlist")
-		    //   .change(function () {
-		    // 	  \$j("#mlist option:selected")
-		    // 	    .map(function () {
-		    // 		var outerThis = this;
-		    // 		var filter = "#gbrowse_$chr area[href]";
-		    // 		\$j(filter)
-		    // 		  .filter(function ()
-		    // 			  {
-		    // 			    return \$j(this).attr('href').indexOf("name=" + \$j(outerThis).text() + ";") != -1; }).trigger('mouseover');
-		    // 	      });
-		    // 	});
-		  });
-    });
-</script>
-EOD;
-        }
-    }
     print "</td></tr></table>\n";
     print "<p><input type='submit' value='Remove marker' style='color: blue' /></p>";
     print "</form>";
@@ -327,8 +269,8 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
   <tr><td>
   <select name='mapname' size=10 onClick="DispMapSel(this.value)" onchange="DispMapSel(this.value)">
 <?php
-$result=mysql_query("select map_name from map") or die(mysql_error());
-while ($row=mysql_fetch_assoc($result)) {
+$result=mysqli_query($mysqli, "select map_name from map") or die(mysqli_error($mysqli));
+while ($row=mysqli_fetch_assoc($result)) {
     $selval=$row['map_name'];
     print "<option value='$selval'>$selval</option>\n";
 }
@@ -344,8 +286,8 @@ while ($row=mysql_fetch_assoc($result)) {
 
 <div class="boxContent" style="float: left; margin-botton: 1.5em;">
 <?php
-$result=mysql_query("select markerpanels_uid, name, marker_ids, comment from markerpanels");
-if (mysql_num_rows($result) > 0) {
+$result=mysqli_query($mysqli, "select markerpanels_uid, name, marker_ids, comment from markerpanels");
+if (mysqli_num_rows($result) > 0) {
     ?>
     <h3> Preselected marker sets</h3>
     <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
@@ -359,8 +301,8 @@ if (mysql_num_rows($result) > 0) {
         $row = loadUser($_SESSION['username']);
         $myid = $row['users_uid'];
         $sql = "SELECT markerpanels_uid, name FROM markerpanels where users_uid = $myid";
-        $res = mysql_query($sql) or die(mysql_error());
-        while ($row=mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row=mysqli_fetch_assoc($res)) {
             $name = $row['name'];
             $desc = $row['comment'];
             print "<option value='$name' title='$desc'>$name</option>";
@@ -368,8 +310,8 @@ if (mysql_num_rows($result) > 0) {
         print "<option disabled>Everybody's:</option>";
     }
     $sql = "select markerpanels_uid, name, marker_ids, comment from markerpanels where users_uid is NULL";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row=mysql_fetch_assoc($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row=mysqli_fetch_assoc($res)) {
         $uid = $row['markerpanels_uid'];
         $name = $row['name'];
         $desc = $row['comment'];
@@ -394,8 +336,8 @@ if (mysql_num_rows($result) > 0) {
   <tr><td>
   <select name='platform[]' size=10 multiple onchange="javascript: update_platform(this.options)">
 <?php
-$result=mysql_query("select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysql_error());
-while ($row=mysql_fetch_assoc($result)) {
+$result=mysqli_query($mysqli, "select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysqli_error($mysqli));
+while ($row=mysqli_fetch_assoc($result)) {
     $uid = $row['platform_uid'];
     $val = $row['platform_name'];
     print "<option value='$uid'>$val</option>\n";
@@ -408,10 +350,7 @@ while ($row=mysql_fetch_assoc($result)) {
 </div>
 <div class="boxContent" style="float: left; margin-buttom: 1.5em;"></div>
 <div class="boxContent" style="clear: both; float: left; width: 100%">
-  <h3> Select using GBrowse</h3>
-Hover over a marker and click "Select in THT" in the popup balloon.
-<br><a href="/cgi-bin/gbrowse/tht">GBrowse</a><br><br>
-  </div>
+</div>
 
 </div>
 </div>
