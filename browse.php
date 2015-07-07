@@ -48,35 +48,37 @@ if (preg_match('/^".*"$/', $keywords)) {
     }
 }
 
-foreach ($found as $v) {
-    // $v is "<table>@@<column>@@<uid>".
-    $line = explode("@@", $v);
-    // Omit marker synonyms that are identical to marker name.
-    $skip = "";
-    if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
-        $msquery = mysqli_query($mysqli, "select marker_name 
+if (is_array($found)) {
+    foreach ($found as $v) {
+        // $v is "<table>@@<column>@@<uid>".
+        $line = explode("@@", $v);
+        // Omit marker synonyms that are identical to marker name.
+        $skip = "";
+        if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
+            $msquery = mysqli_query($mysqli, "select marker_name 
                     from markers, marker_synonyms 
                     where marker_synonym_uid = '$line[2]'
                     and markers.marker_uid = marker_synonyms.marker_uid
                     and markers.marker_name = marker_synonyms.value");
-        if (mysqli_num_rows($msquery) > 0) {
-            $skip = "yes";
+            if (mysqli_num_rows($msquery) > 0) {
+                $skip = "yes";
+            }
         }
+        if (! $skip) {
+            if ($table == 'phenotype_experiment_info') {
+                // Fetch the info about the parent record in table experiments.
+                $uids[] = mysql_grab("select experiment_uid from $table where phenotype_experiment_info_uid = $line[2]");
+                $table = 'experiments';
+            } elseif ($table == 'genotype_experiment_info') {
+                $uids[] = mysql_grab("select experiment_uid from $table where genotype_experiment_info_uid = $line[2]");
+                $table = 'experiments';
+            } else {
+                $uids[] = $line[2];
+            }
+        }
+        $key = get_pkey($table);
+        $uniqname = get_unique_name($table);
     }
-    if (! $skip) {
-        if ($table == 'phenotype_experiment_info') {
-            // Fetch the info about the parent record in table experiments.
-            $uids[] = mysql_grab("select experiment_uid from $table where phenotype_experiment_info_uid = $line[2]");
-            $table = 'experiments';
-        } elseif ($table == 'genotype_experiment_info') {
-            $uids[] = mysql_grab("select experiment_uid from $table where genotype_experiment_info_uid = $line[2]");
-            $table = 'experiments';
-        } else {
-            $uids[] = $line[2];
-        }
-  }
-  $key = get_pkey($table);
-  $uniqname = get_unique_name($table);
 }
 if (is_array($uids)) {
     $uidlist = implode(',', $uids);
