@@ -248,7 +248,7 @@ class MarkersCheck
     }
 
     /**
-     * check database for name and sequence matches 
+     * check database for name and sequence matches
      *
      * @param array   &$storageArr contents of import file
      * @param string  $nameIdx     index of name column
@@ -1446,7 +1446,6 @@ class MarkersCheck
                         WHERE marker_annotation_uid = '$mAnnot_uid'"; 
                     $res = mysql_query($sql) or die("Database Error: marker annotation update - ". mysql_error() ."<br>".$sql);
                 }
-                echo "$sql<br>\n";
             }
         }
         echo " <b>The Data is inserted/updated successfully </b><br>";
