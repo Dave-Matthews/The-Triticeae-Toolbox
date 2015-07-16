@@ -197,17 +197,17 @@ function show_markers($id)
     global $mysqli;
     show_general("markers", $id);
     echo "<p><h3>Annotations</h3>";
-    $sql = "SELECT mat.name_annotation, ma.value, ma.description, mat.linkout_string_for_annotation, mat.comments 
+    $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation, mat.comments 
           FROM  markers m, marker_annotations ma, marker_annotation_types mat
           WHERE m.marker_uid = $id AND
 	    m.marker_uid = ma.marker_uid AND
 	    ma.marker_annotation_type_uid = mat.marker_annotation_type_uid 
           ORDER BY mat.name_annotation";
-    $res = mysqli_query($mysqli, $sql) or die("Error in show markers");
+    $res = mysqli_query($mysqli, $sql) or die("Error in show_markers()<br>".mysqli_error($mysqli));
     if (mysqli_num_rows($res) == 0) {
         echo "None";
     } else {
-        echo "<table><thead><tr><th>Dataset<th>Entry<th>Entry Description<th>Dataset Description</tr></thead>";
+        echo "<table><thead><tr><th>Dataset<th>Entry<th>Dataset Description</tr></thead>";
         while ($row = mysqli_fetch_assoc($res)) {
             $reg_pattern = "XXXX";
             $replace_string = $row['value'];
@@ -215,17 +215,17 @@ function show_markers($id)
             $linkString = ereg_replace($reg_pattern, $replace_string, $source_string);
             $url = "<a href=\"$linkString\" target=\"_blank\">";
             $url2 = "<form method='GET' target='_blank' action='$linkString'><input type='submit' value='URGI GBrowse'></form>";
-            $url2 = "<a href=\"$linkString\" target=\"_blank\">GBrowser";
+            $url2 = "<a href=\"$linkString\" target=\"_blank\">GBrowse";
             $url3 = "<a href=\"$linkString\" target=\"_blank\">Ensembl Browser";
 
             if ($linkString == "") {
-                echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['description']."<td>".$row['comments']."</tr>\n";
+                echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['comments']."</tr>\n";
             } elseif ($row['name_annotation'] == "IWGSC CSS") {
-                echo"<tr><td>".$row['name_annotation']."<td>".$url2."</a><td>".$row['value']." ".$row['description']."<td>".$row['comments']."</tr>\n";
+                echo"<tr><td>".$row['name_annotation']."<td>".$url2."</a><td>".$row['value']."<td>".$row['comments']."</tr>\n";
             } elseif ($row['name_annotation'] == "Ensembl") {
-                echo"<tr><td>".$row['name_annotation']."<td>".$url3."</a><td>".$row['value']." ".$row['description']."<td>".$row['comments']."</tr>\n";
+                echo"<tr><td>".$row['name_annotation']."<td>".$url3."</a><td>".$row['value']."<td>".$row['comments']."</tr>\n";
             } else {
-                echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['description']."<td>".$row['comments']."</a></tr>\n";
+                echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['comments']."</a></tr>\n";
             }
         }
         echo "</table>";
