@@ -1,12 +1,10 @@
 <?php
 /**
  * Marker importer
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @version  GIT: 2
@@ -14,7 +12,7 @@
  *
  * 04/08/2014  CLB    for GBS markers the A and B alleles should be alphabetically ordered
  * 11/09/2011  JLee   Fix problem with empty lines in SNP file
- * 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
+ * 10/25/2011  JLee   Ignore "cut" portion in annotation input file
  * 08/02/2011  JLee   Allow for empty synonyms and annotations
  *
  * Author: John Lee         6/15/2011
@@ -45,17 +43,15 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-new Markers_Check($_GET['function']);
+new MarkersCheck($_GET['function']);
 
 /** Using a PHP class to implement the marker import feature
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
  **/
-class Markers_Check
+class MarkersCheck
 {
     public $delimiter = "\t";
     public $storageArr = array (array());
@@ -64,27 +60,27 @@ class Markers_Check
      * @param string $function action to perform
      */
     public function __construct($function = null)
-    {	
+    {
         switch($function)
         {
-        case 'typeDatabaseAnnot':
-            $this->type_DatabaseAnnot(); /* update Marker Info */
-            break;
-        case 'typeDatabaseSNP':
-            $this->type_DatabaseSNP(); /* update Allele SNP */
-            break;
-        case 'typeCheckSynonym';
-            $this->type_MarkersSNP(); /* check marker sequence */
-            break;
-        case 'typeCheckBlast';
-            $this->type_MarkersSNP2(); /* check marker sequence */
-            break;
-        case 'typeCheckProgress';
-            $this->typeMarkersProgress(); /* check progress of typeMarkersSynonym */
-            break;
-        default:
-            $this->typeMarkersCheck(); /* intial case*/
-            break;
+            case 'typeDatabaseAnnot':
+                $this->type_DatabaseAnnot(); /* update Marker Info */
+                break;
+            case 'typeDatabaseSNP':
+                $this->type_DatabaseSNP(); /* update Allele SNP */
+                break;
+            case 'typeCheckSynonym':
+                $this->type_MarkersSNP(); /* check marker sequence */
+                break;
+            case 'typeCheckBlast':
+                $this->type_MarkersSNP2(); /* check marker sequence */
+                break;
+            case 'typeCheckProgress':
+                $this->typeMarkersProgress(); /* check progress of typeMarkersSynonym */
+                break;
+            default:
+                $this->typeMarkersCheck(); /* intial case*/
+                break;
         }
     }
 
@@ -115,16 +111,16 @@ class Markers_Check
         $infile = $_GET['linedata'];
         if ($_FILES['file']['name'][0] != "") {
             $this->_typeMarkersAnnot();
-        } elseif ( $_FILES['file']['name'][1] != "") {
+        } elseif ($_FILES['file']['name'][1] != "") {
             $this->type_LoadFile1();
-        } elseif ( $infile != "") {
+        } elseif ($infile != "") {
             $this->type_MarkersSNP();
-        } else { 
+        } else {
             error(1, "No File Uploaded");
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
         }
         echo "</div>";
-        echo "<div id=result></div>"; 
+        echo "<div id=result></div>";
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
     }
@@ -181,7 +177,7 @@ class Markers_Check
         $target_Path = substr($infile, 0, strrpos($infile, '/')+1);
         $tPath = str_replace('./', '', $target_Path);
         $change_file = $tPath . "markerProc1.out";
-        if (($fh = fopen($change_file, "w")) == false) { 
+        if (($fh = fopen($change_file, "w")) == false) {
             echo "Error creating change file $change_file<br>\n";
         }
         fwrite($fh, "name\torig/cor\tA_allele\tB_allele\tsequence\n");
@@ -252,7 +248,7 @@ class Markers_Check
     }
 
     /**
-     * check database for name and sequence matches 
+     * check database for name and sequence matches
      *
      * @param array   &$storageArr contents of import file
      * @param string  $nameIdx     index of name column
@@ -1045,7 +1041,7 @@ class Markers_Check
         <input type=radio name="check_seq" id="use_imp" value="imp" <?php echo $checked_imp ?>
             onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
             > Yes
-	    <td>If the sequence matches, add the marker as a synonym.<br>
+	    <td>If the sequence matches, add the marker as a synonym.<br>The import squence is compared to existing markers to find an exact match. This is very fast but does not find matches where one sequence is shorter than the other<br>
               Check <b>Yes</b> unless the marker names have been published or have mapping data.
         <?php
         if ($fileFormat == 0) {
@@ -1384,7 +1380,6 @@ class Markers_Check
                     $res = mysql_query($sql) or die("Database Error: marker update - ". mysql_error() ."<br>".$sql);
                     $markerUid = $m_uid;
                 }
-                echo "$sql<br>\n";
             }
             
             if ($doSynonym == 1) {
@@ -1451,7 +1446,6 @@ class Markers_Check
                         WHERE marker_annotation_uid = '$mAnnot_uid'"; 
                     $res = mysql_query($sql) or die("Database Error: marker annotation update - ". mysql_error() ."<br>".$sql);
                 }
-                echo "$sql<br>\n";
             }
         }
         echo " <b>The Data is inserted/updated successfully </b><br>";

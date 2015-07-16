@@ -197,17 +197,17 @@ function show_markers($id)
     global $mysqli;
     show_general("markers", $id);
     echo "<p><h3>Annotations</h3>";
-    $sql = "SELECT mat.name_annotation, ma.value, ma.description, mat.linkout_string_for_annotation, mat.comments 
+    $sql = "SELECT mat.name_annotation, ma.value, mat.linkout_string_for_annotation, mat.comments 
           FROM  markers m, marker_annotations ma, marker_annotation_types mat
           WHERE m.marker_uid = $id AND
 	    m.marker_uid = ma.marker_uid AND
 	    ma.marker_annotation_type_uid = mat.marker_annotation_type_uid 
           ORDER BY mat.name_annotation";
-    $res = mysqli_query($mysqli, $sql) or die("Error in show markers");
+    $res = mysqli_query($mysqli, $sql) or die("Error in show_markers()<br>".mysqli_error($mysqli));
     if (mysqli_num_rows($res) == 0) {
         echo "None";
     } else {
-        echo "<table><thead><tr><th>Dataset<th>Entry<th>Entry Description<th>Dataset Description</tr></thead>";
+        echo "<table><thead><tr><th>Dataset<th>Entry<th>Dataset Description</tr></thead>";
         while ($row = mysqli_fetch_assoc($res)) {
             $reg_pattern = "XXXX";
             $replace_string = $row['value'];
@@ -215,57 +215,60 @@ function show_markers($id)
             $linkString = ereg_replace($reg_pattern, $replace_string, $source_string);
             $url = "<a href=\"$linkString\" target=\"_blank\">";
             $url2 = "<form method='GET' target='_blank' action='$linkString'><input type='submit' value='URGI GBrowse'></form>";
-            $url3 = "<form method='GET' target='_blank' action='$linkString'><input type='submit' value='Ensembl Browser'></form>";
+            $url2 = "<a href=\"$linkString\" target=\"_blank\">GBrowse";
+            $url3 = "<a href=\"$linkString\" target=\"_blank\">Ensembl Browser";
 
             if ($linkString == "") {
-                echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['description']."<td>".$row['comments']."</tr>\n";
-            //} elseif ($row['name_annotation'] == "IWGSC CSS") {
-            //    echo"<tr><td>".$row['name_annotation']."<td>".$url2."<td>".$row['value']." ".$row['description']."<td>".$row['comments']."</a></tr>\n";
-            //} elseif ($row['name_annotation'] == "Ensembl") {
-            //    echo"<tr><td>".$row['name_annotation']."<td>".$url3."<td>".$row['value']." ".$row['description']."<td>".$row['comments']."</a></tr>\n";
+                echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['comments']."</tr>\n";
+            } elseif ($row['name_annotation'] == "IWGSC CSS") {
+                echo"<tr><td>".$row['name_annotation']."<td>".$url2."</a><td>".$row['value']."<td>".$row['comments']."</tr>\n";
+            } elseif ($row['name_annotation'] == "Ensembl") {
+                echo"<tr><td>".$row['name_annotation']."<td>".$url3."</a><td>".$row['value']."<td>".$row['comments']."</tr>\n";
             } else {
-                echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['description']."<td>".$row['comments']."</a></tr>\n";
+                echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['comments']."</a></tr>\n";
             }
         }
         echo "</table>";
     }
 
-  // Marker Synonyms
-  $sql = "select ms.marker_synonym_uid, ms.value, mst.name
+    // Marker Synonyms
+    $sql = "select ms.marker_synonym_uid, ms.value, mst.name
 	  from markers m, marker_synonyms ms, marker_synonym_types mst
 	  where m.marker_uid = $id and
 	    ms.marker_uid = m.marker_uid and
 	    mst.marker_synonym_type_uid = ms.marker_synonym_type_uid";
-  $synonyms = mysqli_query($mysqli, $sql) or die("Error in show markers");
-  if (mysqli_num_rows($synonyms) > 0)
-    echo viewTable($synonyms, "marker_synonyms");
+    $synonyms = mysqli_query($mysqli, $sql) or die("Error in show markers");
+    if (mysqli_num_rows($synonyms) > 0) {
+        echo viewTable($synonyms, "marker_synonyms");
+    }
 
-  echo "<h3>Allele Information</h3>";
-  echo "<table><tr><td>";
-  echo "<strong>Line Data: </strong>";
-  echo "<td><a href=\"".$config['base_url']."genotyping/showlines.php?marker=$id\">Show alleles for all lines</a>";
-  echo "</tr></table>";
+    echo "<h3>Allele Information</h3>";
+    echo "<table><tr><td>";
+    echo "<strong>Line Data: </strong>";
+    echo "<td><a href=\"".$config['base_url']."genotyping/showlines.php?marker=$id\">Show alleles for all lines</a>";
+    echo "</tr></table>";
 
-  // marker_selection.php wants the name of a map the marker is on.  Probably doesn't matter which.
-  $sql = "select map_name from map, markers_in_maps mm where mm.marker_uid = $id and mm.map_uid = map.map_uid";
-  $r = mysqli_query($mysqli, $sql);
-  $row = mysqli_fetch_row($r);
-  $mapname = $row[0];
-  // Don't do it if the marker isn't mapped.
-  if (!empty($mapname)) {
-    echo "<h3>Map locations</h3>";
-    // Display in table
-    $sql = "select map_name, chromosome, start_position, end_position
+    // marker_selection.php wants the name of a map the marker is on.  Probably doesn't matter which.
+    $sql = "select map_name from map, markers_in_maps mm where mm.marker_uid = $id and mm.map_uid = map.map_uid";
+    $r = mysqli_query($mysqli, $sql);
+    $row = mysqli_fetch_row($r);
+    $mapname = $row[0];
+    // Don't do it if the marker isn't mapped.
+    if (!empty($mapname)) {
+        echo "<h3>Map locations</h3>";
+        // Display in table
+        $sql = "select map_name, chromosome, start_position, end_position
 	from map, markers_in_maps
 	where marker_uid = $id and markers_in_maps.map_uid = map.map_uid
 	";
-    $r = mysqli_query($mysqli, $sql) or die("Error in show markers");
-    if (mysqli_num_rows($r) > 0) {
-      echo "<table><thead><tr><th>Map<th>Chromosome<th>Start<th>End";
-      while ($row = mysqli_fetch_assoc($r)) 
-	echo "<tr><td>$row[map_name]<td>$row[chromosome]<td>$row[start_position]<td>$row[end_position]";
-      echo "</table>";
-    }
+        $r = mysqli_query($mysqli, $sql) or die("Error in show markers");
+        if (mysqli_num_rows($r) > 0) {
+            echo "<table><thead><tr><th>Map<th>Chromosome<th>Start<th>End";
+            while ($row = mysqli_fetch_assoc($r)) {
+                echo "<tr><td>$row[map_name]<td>$row[chromosome]<td>$row[start_position]<td>$row[end_position]";
+            }
+            echo "</table>";
+        }
     // View in GBrowse
     // $sql = "select marker_name from markers where marker_uid = $id";
     // $r = mysqli_query($mysqli, $sql);
@@ -276,19 +279,20 @@ function show_markers($id)
     // echo "<input type='submit' value='View in GBrowse'></p>";
     // echo "</form>";
     // add to Selection List
-    echo "<h3>Selection List</h3>";
-    echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
-    echo "<input type='hidden' name='selMkrs[]' value='$id'>";
-    echo "<input type='hidden' name='mapname' value='$mapname'>";
-    echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
-    echo "</form>";
-  }
+        echo "<h3>Selection List</h3>";
+        echo "<form method='POST' action=".$config['base_url']."genotyping/marker_selection.php>";
+        echo "<input type='hidden' name='selMkrs[]' value='$id'>";
+        echo "<input type='hidden' name='mapname' value='$mapname'>";
+        echo "<input type='submit' value='Add this marker' style='color:blue' /></p>";
+        echo "</form>";
+    }
 }
 
 /**
- * Breeding program special case for view.php. This will show all the experiments associated with a CAPdata program. 
+ * Breeding program special case for view.php. This will show all the experiments associated with a CAPdata program.
 */
-function show_breeding_programs($id) {
+function show_breeding_programs($id)
+{
     global $mysqli;
     show_general("CAPdata_programs", $id);
 
@@ -307,7 +311,7 @@ function show_breeding_programs($id) {
 }
 
 /**
- * Breeding program special case for view.php. This will show all the experiments associated with a CAPdata program. 
+ * Breeding program special case for view.php. This will show all the experiments associated with a CAPdata program.
 */
 function show_CAPdata_programs($id) {
     global $mysqli;
