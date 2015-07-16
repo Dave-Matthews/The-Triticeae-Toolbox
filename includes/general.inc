@@ -215,15 +215,15 @@ function show_markers($id)
             $linkString = ereg_replace($reg_pattern, $replace_string, $source_string);
             $url = "<a href=\"$linkString\" target=\"_blank\">";
             $url2 = "<form method='GET' target='_blank' action='$linkString'><input type='submit' value='URGI GBrowse'></form>";
-            $url2 = "<a href=\"$linkString\" target=\"_blank\">GBrowse";
-            $url3 = "<a href=\"$linkString\" target=\"_blank\">Ensembl Browser";
+            $url2 = "<a href=\"$linkString\" target=\"_blank\">$row[value]";
+            $url3 = "<a href=\"$linkString\" target=\"_blank\">$row[value]";
 
             if ($linkString == "") {
                 echo "<tr><td>".$row['name_annotation']."<td>".$row['value']."<td>".$row['comments']."</tr>\n";
             } elseif ($row['name_annotation'] == "IWGSC CSS") {
-                echo"<tr><td>".$row['name_annotation']."<td>".$url2."</a><td>".$row['value']."<td>".$row['comments']."</tr>\n";
+                echo"<tr><td>".$row['name_annotation']."<td>".$url2."</a><td>".$row['comments']."</tr>\n";
             } elseif ($row['name_annotation'] == "Ensembl") {
-                echo"<tr><td>".$row['name_annotation']."<td>".$url3."</a><td>".$row['value']."<td>".$row['comments']."</tr>\n";
+                echo"<tr><td>".$row['name_annotation']."<td>".$url3."</a><td>".$row['comments']."</tr>\n";
             } else {
                 echo"<tr><td>".$row['name_annotation']."<td>".$url.$row['value']."<td>".$row['comments']."</a></tr>\n";
             }
