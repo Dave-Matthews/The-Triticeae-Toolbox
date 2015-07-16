@@ -24,12 +24,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <base href="<?php echo $config['base_url']; ?>" >
-  <link rel="stylesheet" type="text/css" media="(min-width: 640px)" href="<?php echo $config['base_url']; ?>theme/new.css">
-  <link rel="stylesheet" type="text/css" media="(max-width: 640px)" href="<?php echo $config['base_url']; ?>theme/mobile.css">
-  <script type="text/javascript" src="<?php echo $config['base_url']; ?>includes/core.js"></script>
-  <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/new.js"></script>
-  <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/prototype.js"></script>
-  <script type="text/javascript" src="<?php echo $config['base_url']; ?>theme/js/scriptaculous.js"></script>
+  <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
+  <script type="text/javascript" src="includes/core.js"></script>
+  <script type="text/javascript" src="theme/new.js"></script>
+  <script type="text/javascript" src="theme/js/prototype.js"></script>
+  <script type="text/javascript" src="theme/js/jquery.js"></script>
+  <script>
+      jQuery.noConflict();  //by default jQuery uses $ as shortcut for jQuery. To avoid conflict with prototype.js
+  </script>
 
 <?php
 connect();
@@ -58,10 +60,14 @@ if (isset($usegbrowse) && $usegbrowse) {
 }
     ?>
     </head>
-    <body onload="javascript:setup();<?php
-    if (isset($usegbrowse) && $usegbrowse)
-        echo " Overview.prototype.initialize(); Details.prototype.initialize()"; ?>">
-    <?php 
+    <body onload="javascript:setup();">
+    <?php
+    //not working since server upgrade
+    //if (isset($usegbrowse) && $usegbrowse) {
+    //    echo " Overview.prototype.initialize(); Details.prototype.initialize()";
+    //}
+    //?>">
+    //<?php
     require_once $config['root_dir'].'includes/analyticstracking.php';
     if (isset($usegbrowse) && $usegbrowse) {
         echo <<<EOD
@@ -106,7 +112,7 @@ EOD;
   </div>
 
 <?php
-  //The navigation tab menus 
+  //The navigation tab menus
   //Tooltips:
   $lang = array(
       "desc_sc1" => "Search by germplasm and phenotype information",
@@ -135,14 +141,14 @@ EOD;
 	    Lines by Haplotype</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
             Lines by Genotype Experiment</a>
-  <?php 
+    <?php
   /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
   /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
-  if( loginTest2() ): 
+    if (loginTest2()) :
 ?>
 	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=yellow>My Line Panels</font></a>
         <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><font color=yellow>My Marker Panels</font></a>
- <?php endif ?>
+    <?php endif ?>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
 	    Traits and Trials</a>
@@ -162,6 +168,7 @@ EOD;
 	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/table.php" title="Heads to heads">Traits and Trials Table</a>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value vs Trials">Compare Trials</a>
