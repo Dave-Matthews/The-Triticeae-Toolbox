@@ -721,7 +721,8 @@ class Downloads
                 $link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$line[2]_$contig\" target=\"_new\">GBrowse</a>";
             }
             if ($count < 5) {
-                echo "<tr><td>$line[1]<td>$line[2]<td>$line[3]<td>$line[4]<td>$link\n";
+	      $markerlink = "<a href=$config[base_url]view.php?table=markers&name=$line[1]>$line[1]</a>";
+	      echo "<tr><td>$markerlink<td>$line[2]<td>$line[3]<td>$line[4]<td>$link\n";
             }
             $count++;
         }
