@@ -706,7 +706,7 @@ class Downloads
         echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>link to URGI genome browser";
         $line= fgetcsv($h);
         while ($line= fgetcsv($h)) {
-            $sql = "select value, description from markers, marker_annotations, marker_annotation_types
+            $sql = "select value from markers, marker_annotations, marker_annotation_types
                 where markers.marker_uid = marker_annotations.marker_uid
                 and marker_annotations.marker_annotation_type_uid = marker_annotation_types.marker_annotation_type_uid
                 and marker_name = \"$line[1]\"
