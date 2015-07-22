@@ -706,7 +706,7 @@ class Downloads
         echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>link to URGI genome browser";
         $line= fgetcsv($h);
         while ($line= fgetcsv($h)) {
-            $sql = "select value, description from markers, marker_annotations, marker_annotation_types
+            $sql = "select value from markers, marker_annotations, marker_annotation_types
                 where markers.marker_uid = marker_annotations.marker_uid
                 and marker_annotations.marker_annotation_type_uid = marker_annotation_types.marker_annotation_type_uid
                 and marker_name = \"$line[1]\"
@@ -714,8 +714,7 @@ class Downloads
             $res = mysql_query($sql) or die(mysql_error());
             if ($row = mysql_fetch_array($res)) {
                 $value = $row[0];
-                $desc = $row[1]; 
-                $link = "BLAST match to IWGSC contig $value $desc <a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$value\" target=\"_new\">View Contig</a>";
+                $link = "BLAST match to IWGSC contig $value <a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$value\" target=\"_new\">View Contig</a>";
             } elseif (preg_match("/WCSS1_contig([^_]+)_[A-Z0-9]+/", $line[1], $match)) {
                 $contig = $match[1];
                 $link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$line[2]_$contig\" target=\"_new\">GBrowse</a>";
