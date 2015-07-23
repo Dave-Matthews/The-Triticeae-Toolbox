@@ -245,7 +245,7 @@ class Fieldbook
         <div class="step5"></div>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="curator_data/design07.js"></script>
+        <script type="text/javascript" src="curator_data/design08.js"></script>
         <script type="text/javascript">
         if ( window.addEventListener ) {
             window.addEventListener( "load", select_trial(), false );
