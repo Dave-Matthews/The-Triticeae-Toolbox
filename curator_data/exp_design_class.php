@@ -67,7 +67,7 @@ class Fieldbook
                 $this->saveLines();
                 break;
             default:
-                $this->_checksession();
+                $this->checksession();
                 break;
         }
     }
@@ -77,7 +77,7 @@ class Fieldbook
      *
      * @return NULL
      */
-    private function _checksession()
+    private function checksession()
     {
         global $config;
         include $config['root_dir'].'theme/admin_header.php';
@@ -164,29 +164,32 @@ class Fieldbook
             $linesfound = mysqli_num_rows($result);
         }
 
-      /* Search Results: */
-    /* echo "</div><div class='boxContent'><table width=500px><tr><td>"; */
-    echo "<form name='lines' action=".$_SERVER['PHP_SELF']." method='get'>";
-    // Show failures from the Name box that don't match any line names.
-    foreach ($nonHits as $i)
-      if ($i != '') echo "<font color=red><b>Line \"$i\" not found.</font></b><br>";
-    print "<b>Lines found: $linesfound </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        /* Search Results: */
+        /* echo "</div><div class='boxContent'><table width=500px><tr><td>"; */
+        echo "<form name='lines' action=".$_SERVER['PHP_SELF']." method='get'>";
+        // Show failures from the Name box that don't match any line names.
+        foreach ($nonHits as $i) {
+            if ($i != '') {
+                echo "<font color=red><b>Line \"$i\" not found.</font></b><br>";
+            }
+        }
+        print "<b>Lines found: $linesfound </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 
-    /* If any hits. */
-    if ($linesfound > 0) {
-      echo " <input type='button' name='WhichBtn' value='Add to check lines' onclick='javascript: save_line(this.options)'/>";
-      print "<br><select name='selLines' id='selLines' multiple='multiple' style='height: 17em; width: 13em'>";
-      $_SESSION['linesfound'] = array();
-      while($row = mysqli_fetch_assoc($result)) {
-        $line_record_name = $row['line_record_name'];
-        $line_record_uid = $row['line_record_uid'];
-        echo "<option value='$line_record_uid' selected>$line_record_name</option>";
-        $_SESSION['linesfound'][] = $line_record_uid;
-      }
-      print "</select><br>";
+        /* If any hits. */
+        if ($linesfound > 0) {
+            echo " <input type='button' name='WhichBtn' value='Add to check lines' onclick='javascript: save_line(this.options)'/>";
+            print "<br><select name='selLines' id='selLines' multiple='multiple' style='height: 17em; width: 13em'>";
+            $_SESSION['linesfound'] = array();
+            while ($row = mysqli_fetch_assoc($result)) {
+                $line_record_name = $row['line_record_name'];
+                $line_record_uid = $row['line_record_uid'];
+                echo "<option value='$line_record_uid' selected>$line_record_name</option>";
+                $_SESSION['linesfound'][] = $line_record_uid;
+            }
+            print "</select><br>";
 
-    } // end if ($linesfound > 0)
-    print "</form>";
+        } // end if ($linesfound > 0)
+        print "</form>";
 
     }
 
@@ -195,11 +198,12 @@ class Fieldbook
         ?>
         This tool allows you to view a trial, create a trial, or create an experiment design.<br> 
         The results can be uploaded in the sandbox, downloaded to a tablet device, or submitted to the curator for loading into the production website.<br><br>
-        <input type=button value="View existing trial" onclick="javascript: select_trial()"  style="display: inline-block">
-        <!--input type=button value="Upload Phenotype trial" onclick="javascript: upload_trial()" style="display: inline-block">
-        <input type=button value="Upload Field layout" onclick="javascript: upload_field()" style="display: inline-block"-->
+        <input type="radio" name="myRadio" checked="checked" onclick="javascript: select_trial();"/>Select existing trial<br>
+        <input type="radio" name="myRadio" onclick="javascript: add_trial();"/>Create new trial<br><br>
+        <!--input type=button value="View existing trial" onclick="javascript: select_trial()"  style="display: inline-block">
+        <input type=button value="Upload Phenotype trial" onclick="javascript: upload_trial()" style="display: inline-block">
+        <input type=button value="Upload Field layout" onclick="javascript: upload_field()" style="display: inline-block">
         <input type=button value="Create new trial" onclick="javascript: add_trial()" style="display: inline-block"-->
-        <br><br>
         <div id="dialog-form" title="Upload Phenotype Trial">
         <form action="curator_data/input_annotations_check_excel.php" method="post" enctype="multipart/form-data">
           <p>Do you want the data from this trial to be <b>Public</b>?
@@ -252,7 +256,6 @@ class Fieldbook
     {
         global $mysqli;
         ?>
-        <h3>Trial description</h3>
         To create an experiment design, select a design type from the drop-down list<br><br>
         <table>
         <tr><td width="120">Program:
@@ -383,7 +386,6 @@ class Fieldbook
     {
         global $mysqli;
         ?>
-        <h3>Trial description</h3>
         The trial design is generated by the "<a href="http://cran.r-project.org/web/packages/agricolae/agricolae.pdf" target="blank">
         agricolae</a>" package except for the Mod. Aug. Design type which uses a custom R script.<br>
         To create an experiment design, select a design type from the drop-down list<br><br>
@@ -503,6 +505,7 @@ class Fieldbook
 
     private function designField()
     {
+        global $mysqli;
         $type = $_GET['type'];
         if (!preg_match("/[A-Za-z]+/", $type)) {
             echo "Please select a design type\n";
@@ -514,8 +517,8 @@ class Fieldbook
             $sql = "select count(distinct lr.line_record_uid) from tht_base as tb, line_records as lr
                 where lr.line_record_uid = tb.line_record_uid
                 and tb.experiment_uid = $trial";
-            $res = mysql_query($sql) or die(mysql_error());
-            if ($row = mysql_fetch_row($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($res)) {
                 $count = $row[0];
             } elseif (isset($_SESSION['selected_lines'])) {
                 $count = count($_SESSION['selected_lines']);
@@ -593,8 +596,8 @@ class Fieldbook
                 $lines_str = implode (",", $lines);
                 $name = "";
                 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
-                $res = mysql_query($sql) or die(mysql_error() . $sql);
-                while ($row = mysql_fetch_assoc($res)) {
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+                while ($row = mysqli_fetch_assoc($res)) {
                     $tmp = $row['line_record_name'];
                     if ($name == "") {
                         $name = $tmp;
@@ -635,8 +638,8 @@ class Fieldbook
                 $lines_str = implode (",", $lines);
                 $name = "";
                 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
-                $res = mysql_query($sql) or die(mysql_error() . $sql);
-                while ($row = mysql_fetch_assoc($res)) {
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error() . $sql);
+                while ($row = mysqli_fetch_assoc($res)) {
                     $tmp = $row['line_record_name'];
                     if ($name == "") {
                         $name = $tmp;
@@ -702,6 +705,7 @@ class Fieldbook
 
     function createTrial()
     {
+        global $mysqli;
         if (isset($_GET['prg'])) {
             $program = $_GET['prg'];
         }
@@ -736,8 +740,8 @@ class Fieldbook
         $irrigation = $_GET['irrigation'];
 
         $sql = "select value from settings where name='database'";
-        $res = mysql_query($sql) or die(mysql_error());
-        if ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_assoc($res)) {
             $database = $row['value'];
             if (preg_match("/wheat/", $database)) {
                 $database = "wheat";
@@ -797,6 +801,7 @@ class Fieldbook
 
     function createField()
     {
+        global $mysqli;
         $objRWrap = new RWrap();
         global $config;
         $filename2 = "design.csv";
@@ -809,16 +814,16 @@ class Fieldbook
         $trial = $_GET['trial'];
         if (preg_match("/\d/", $trial)) {
             $sql = "select trial_code from experiments where experiment_uid = $trial";
-            $res = mysql_query($sql) or die(mysql_error());
-            if ($row = mysql_fetch_row($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($res)) {
                 $trial_code = $row[0];
             }
             $sql = "select distinct lr.line_record_uid, tb.check_line from tht_base as tb, line_records as lr
                 where lr.line_record_uid = tb.line_record_uid
                 and tb.check_line = \"no\"
                 and tb.experiment_uid = $trial";
-            $res = mysql_query($sql) or die(mysql_error());
-            while ($row = mysql_fetch_row($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_row($res)) {
                 $line_list[] = $row[0];
             }
             $count_lines = count($line_list);
@@ -831,8 +836,8 @@ class Fieldbook
                 $exp = "";
                 foreach ($line_list as $item) {
                     $sql = "select line_record_name from line_records where line_record_uid = $item";
-                    $res = mysql_query($sql) or die(mysql_error() . $sql);
-                    if ($row = mysql_fetch_assoc($res)) {
+                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+                    if ($row = mysqli_fetch_assoc($res)) {
                         $name = $row['line_record_name'];
                     } else {
                         die("Error: could not find line record $item<br>\n");
@@ -853,8 +858,8 @@ class Fieldbook
                 $exp = "";
                 foreach ($tmp as $item) {
                     $sql = "select line_record_name from line_records where line_record_uid = $item";
-                    $res = mysql_query($sql) or die(mysql_error() . $sql);
-                    if ($row = mysql_fetch_assoc($res)) { 
+                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+                    if ($row = mysqli_fetch_assoc($res)) { 
                         $name = $row['line_record_name'];
                     } else {
                         die("Error: could not find line record $item<br>\n");
@@ -873,16 +878,16 @@ class Fieldbook
         }
         if (preg_match("/\d/", $trial)) {
             $sql = "select trial_code from experiments where experiment_uid = $trial";
-            $res = mysql_query($sql) or die(mysql_error());
-            if ($row = mysql_fetch_row($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($res)) {
                 $trial_code = $row[0];
             }
             $sql = "select distinct lr.line_record_uid, tb.check_line from tht_base as tb, line_records as lr
                 where lr.line_record_uid = tb.line_record_uid
                 and tb.check_line = \"yes\"
                 and tb.experiment_uid = $trial";
-            $res = mysql_query($sql) or die(mysql_error());
-            while ($row = mysql_fetch_row($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_row($res)) {
                 $check_list[] = $row[0];
             }
             $count_check = count($check_list);
@@ -893,8 +898,8 @@ class Fieldbook
             $exp = "";
             foreach ($check_list as $item) {
                 $sql = "select line_record_name from line_records where line_record_uid = $item";
-                $res = mysql_query($sql) or die(mysql_error() . $sql);
-                if ($row = mysql_fetch_assoc($res)) {
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+                if ($row = mysqli_fetch_assoc($res)) {
                     $name = $row['line_record_name'];
                 } else {
                     die("Error: could not find line record $item<br>\n");
@@ -913,8 +918,8 @@ class Fieldbook
             $exp = "";
             foreach ($tmp as $item) {
                 $sql = "select line_record_name from line_records where line_record_uid = $item";
-                $res = mysql_query($sql) or die(mysql_error() . $sql);
-                if ($row = mysql_fetch_assoc($res)) {
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                if ($row = mysqli_fetch_assoc($res)) {
                     $name = $row['line_record_name'];
                 } else {
                     die("Error: could not find line record $item<br>\n");

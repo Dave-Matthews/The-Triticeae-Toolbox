@@ -16,6 +16,6 @@ set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes'
 require $config['root_dir'] . 'lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 require $config['root_dir'] . 'lib/phpRW.php';
 require 'exp_design_class.php';
-connect();
+$mysqli = connecti();
 
 new Fieldbook($_REQUEST['function']);
