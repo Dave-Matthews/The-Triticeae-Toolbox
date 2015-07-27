@@ -15,7 +15,8 @@
 <html>
 <head>
 <!-- "chrome=1"is required for X3DOM (WebGL) function in IE with Flash or Chrome Frame. -->
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8,chrome=1">
+<!-- July 2015 Chrome Frame is no longer supported so emulating IE8 is pointless -->
+<!-- <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8,chrome=1"> -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
 <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
