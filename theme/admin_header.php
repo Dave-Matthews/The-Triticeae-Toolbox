@@ -15,20 +15,25 @@
 <html>
 <head>
 <!-- "chrome=1"is required for X3DOM (WebGL) function in IE with Flash or Chrome Frame. -->
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8,chrome=1">
+<!-- July 2015 Chrome Frame is no longer supported so emulating IE8 is pointless -->
+<!-- <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8,chrome=1"> -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-  <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
-  <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
-  <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
-  <meta name="revisit-After" content="1 days" >
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
+<meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
+<meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
+<meta name="revisit-After" content="1 days" >
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <base href="<?php echo $config['base_url']; ?>" >
-  <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
-  <script type="text/javascript" src="includes/core.js"></script>
-  <script type="text/javascript" src="theme/new.js"></script>
-  <script type="text/javascript" src="theme/js/prototype.js"></script>
-  <script type="text/javascript" src="theme/js/scriptaculous.js"></script>
+<base href="<?php echo $config['base_url']; ?>" >
+<link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
+<script type="text/javascript" src="includes/core.js"></script>
+<script type="text/javascript" src="theme/new.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script>
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="jquery.smartmenus.js" type="text/javascript"></script>
+<script>
+jQuery.noConflict();
+</script>
 
 <?php
 connect();
@@ -52,49 +57,12 @@ if (empty($title)) {
 echo "<title>$title</title>";
 global $usegbrowse;
 
-if (isset($usegbrowse) && $usegbrowse) {
-    include_once $config['root_dir'] . 'includes/gbrowse-deps.inc';
-}
     ?>
     </head>
     <body onload="javascript:setup();">
     <?php
     //not working since server upgrade
-    //if (isset($usegbrowse) && $usegbrowse) {
-    //    echo " Overview.prototype.initialize(); Details.prototype.initialize()";
-    //}
-    //?>">
-    //<?php
     require_once $config['root_dir'].'includes/analyticstracking.php';
-    if (isset($usegbrowse) && $usegbrowse) {
-        echo <<<EOD
-        <script>
-        var balloon500 = new Balloon;
-BalloonConfig(balloon500,'GBubble');
-balloon500.images              = './gbrowse/images/balloons';
-balloon500.balloonImage        = 'balloon.png';
-balloon500.ieImage             = 'balloon_ie.png';
-balloon500.upLeftStem          = 'up_left.png';
-balloon500.downLeftStem        = 'down_left.png';
-balloon500.upRightStem         = 'up_right.png';
-balloon500.downRightStem       = 'down_right.png';
-balloon500.closeButton         = 'close.png';
-balloon500.maxWidth = 500;
-balloon500.delayTime = 50;
-var balloon = new Balloon;
-BalloonConfig(balloon,'GBubble');
-balloon.images              = './gbrowse/images/balloons';
-balloon.balloonImage        = 'balloon.png';
-balloon.ieImage             = 'balloon_ie.png';
-balloon.upLeftStem          = 'up_left.png';
-balloon.downLeftStem        = 'down_left.png';
-balloon.upRightStem         = 'up_right.png';
-balloon.downRightStem       = 'down_right.png';
-balloon.closeButton         = 'close.png';
-balloon.delayTime = 50;
-</script>
-EOD;
-    }
 ?>
 <div id="container">
   <div id="barleyimg">
