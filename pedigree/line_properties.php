@@ -70,11 +70,13 @@ if (empty($_POST)) {
 	  <tr style="vertical-align: top">
 	    <td><b>Name</b> <br>
 	      <textarea name="LineSearchInput" rows="3" cols="18" style="height: 6em;">
-                <?php $nm = explode('\r\n', $name);
-                foreach ($nm as $n) {
-                    echo $n."\n";
-                }
-                ?></textarea>
+<?php 
+$nm = explode('\r\n', $name);
+foreach ($nm as $n) {
+  if ($n) echo $n."\n";
+}
+?>
+</textarea>
 	      <br> E.g. Cayuga, tur*ey, iwa860*<br>
 	      Synonyms will be translated.<br>
 	    <td><b> Source </b> <br>

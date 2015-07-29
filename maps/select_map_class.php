@@ -107,8 +107,7 @@ class Maps
          td {border: 1px solid #eee !important;}
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
-        <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script type="text/javascript" src="maps/select_map05.js">
+        <script type="text/javascript" src="maps/select_map06.js">
         </script>
         <form name="myForm" action="maps/select_map.php">
         <?php
@@ -223,7 +222,7 @@ class Maps
                 $marker_list_loc[$uid] = $i;
                 $i++;
             }
-            $outarray = array(); 
+            $outarray = array();
             foreach ($selected_lines as $line_record_uid) {
                 $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
                 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
