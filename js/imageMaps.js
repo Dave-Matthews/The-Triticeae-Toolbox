@@ -8,34 +8,34 @@ Developers can modify the contents of this script in order to extend the functio
 var counter= 1;
 var select3d= 0;
 
-$(document).ready(function()
+jQuery(document).ready(function()
 {
 	/* Add a CSS file */
-	$("head").append('<link href="css/style.css" rel="stylesheet" type="text/css"/>');
+	/* jQuery("head").append('<link href="css/style.css" rel="stylesheet" type="text/css"/>'); */
     
 	/* onClick events for the image map */
-	$("map area").click(function(e) {
-		var title = $(this).attr("name");
+	jQuery("map area").click(function(e) {
+		var title = jQuery(this).attr("name");
 		alert(title);
 	});
 	
 	/* onMouseOver and onMouseOut events for the image map */
-	$("map area").mouseover(function(e) {  
-		var tip = $(this).attr("name");      
-		$(".tipBody").html(tip);  
+	jQuery("map area").mouseover(function(e) {  
+		var tip = jQuery(this).attr("name");      
+		jQuery(".tipBody").html(tip);  
           
 		//Set the X and Y axis of the tooltip  
-		$("#tooltip").css('top', e.pageY + 2 );  
-		$("#tooltip").css('left', e.pageX + 2);  
+		jQuery("#tooltip").css('top', e.pageY + 2 );  
+		jQuery("#tooltip").css('left', e.pageX + 2);  
           
 		//Show the tooltip with faceIn effect  
-		$("#tooltip").fadeIn('100');  
-		$("#tooltip").fadeTo('10',0.8); 
+		jQuery("#tooltip").fadeIn('100');  
+		jQuery("#tooltip").fadeTo('10',0.8); 
                 
-		setTimeout(function(){ $("#tooltip").hide(); }, 3000);
+		setTimeout(function(){ jQuery("#tooltip").hide(); }, 3000);
 		
 	}).mouseout(function() {  
-      	   $('#tooltip').hide();    
+      	   jQuery('#tooltip').hide();    
 	});
 	
 });
@@ -47,13 +47,13 @@ function alternate(temp)
 	if (temp == 0)
 	{
 		select3d=0;
-		$('#imageMap3d').hide();
-		$('#imageMap2d').show();
+		jQuery('#imageMap3d').hide();
+		jQuery('#imageMap2d').show();
 	}
 	else
 	{
 		select3d=1;
-		$('#imageMap3d').show();
-		$('#imageMap2d').hide();
+		jQuery('#imageMap3d').show();
+		jQuery('#imageMap2d').hide();
 	}
 }
