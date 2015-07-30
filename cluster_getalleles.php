@@ -66,13 +66,13 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
   // 2D array of alleles for all markers x currently selected lines
 
   // Get all markers that have allele data, in marker_uid order as they are in allele_byline.alleles.
-  $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_row($res)) {
-    $markerids[] = $row[0];
-    // First row of output file mrkData.csv is list of marker names.
-    $outputheader .= $row[1] . $delimiter;
-  }
+    $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
+    $res = mysql_query($sql) or die(mysql_error());
+    while ($row = mysql_fetch_row($res)) {
+        $markerids[] = $row[0];
+        // First row of output file mrkData.csv is list of marker names.
+        $outputheader .= $row[1] . $delimiter;
+    }
 
   // Create cache table if necessary.
   $n = mysql_num_rows(mysql_query("show tables like 'allele_byline_clust'"));
@@ -101,6 +101,7 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
   }
   if ($update) {
     echo "Updating table allele_byline_clust...<p>";
+    ini_set('memory_limit', '2G');
     mysql_query("truncate table allele_byline_clust") or die(mysql_error());
     $lookup = array('AA' => '1',
 		    'BB' => '0',
