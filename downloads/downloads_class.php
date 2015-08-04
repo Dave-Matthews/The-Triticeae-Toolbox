@@ -111,7 +111,6 @@ class Downloads
         $this->type1Checksession();
         ?>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
-        <script src="//code.jquery.com/jquery-1.11.1.js"></script>
         <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
         <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
         <?php
@@ -1190,6 +1189,7 @@ class Downloads
      */
     function type1_build_traits_download($experiments, $traits, $datasets)
     {
+        global $mysqli;
         $delimiter = "\t";
 
         $sql = "select line_record_name, line_record_uid from line_records";
@@ -1231,27 +1231,33 @@ class Downloads
             $output = implode($delimiter, $trait_list);
             $output = 'line' . $delimiter . 'trial' . $delimiter . $output . "\n"; 
 
+            $sql = "select pd.phenotype_uid, pd.value as value
+            from tht_base as tb, phenotype_data as pd
+            where tb.line_record_uid = ? AND
+            tb.experiment_uid = ? AND
+            pd.tht_base_uid = tb.tht_base_uid
+            and pd.phenotype_uid IN ($traits)";
+            $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
+            mysqli_stmt_bind_param($stmt, "ii", $line_uid, $expr_uid) or die(mysqli_error($mysqli));
             $ncols = count($empty);
             foreach ($lines as $key=>$line_uid) {
                 $line_name = $line_list[$line_uid];
+                $count = 0;
                 foreach ($expr_list as $expr_uid=>$expr_name) {
                     $outarray = $empty;
-                    $sql = "select pd.phenotype_uid, pd.value as value
-                    from tht_base as tb, phenotype_data as pd
-                    where tb.line_record_uid = $line_uid AND
-                    tb.experiment_uid = $expr_uid AND
-                    pd.tht_base_uid = tb.tht_base_uid
-                    and pd.phenotype_uid IN ($traits)";
-                    $res = mysql_query($sql) or die(mysql_error(). "<br>$sql");
-                    while ($row = mysql_fetch_array($res)) {
-                      $trait_uid = $row[0];
-                      $value = $row[1];
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $trait_uid, $value);
+                    while (mysqli_stmt_fetch($stmt)) {
+                      $count++;
                       $outarray[$trait_uid]= $value;
                     }
-                    $tmp = implode($delimiter, $outarray);
-                    $output .= $line_name.$delimiter.$expr_name.$delimiter.$tmp."\n";
+                    if ($count > 0) {
+                        $tmp = implode($delimiter, $outarray);
+                        $output .= $line_name.$delimiter.$expr_name.$delimiter.$tmp."\n";
+                    }
                 }
             }
+        mysqli_stmt_close($stmt);
         return $output;
     }
 
@@ -1265,6 +1271,7 @@ class Downloads
      */
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
     {
+        global $mysqli;
                 $delimiter = "\t";
 		$output = '';
 		$outputheader1 = '';
@@ -1272,7 +1279,7 @@ class Downloads
 		$outputheader3 = "<Trial>";
       
       //count number of traits and number of experiments
-	  $ntraits=substr_count($traits, ',')+1;
+      $ntraits=substr_count($traits, ',')+1;
       $nexp=substr_count($experiments, ',')+1;
       
       //$traits = explode(',', $traits);
@@ -1297,16 +1304,14 @@ class Downloads
                   AND p.phenotype_uid = pd.phenotype_uid
                   AND pd.phenotype_uid IN ($traits)  
                ORDER BY p.phenotype_uid,e.experiment_uid";
-      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-      $ncols = mysql_num_rows($res);
-      while($row = mysql_fetch_array($res)) {
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+      $ncols = mysqli_num_rows($res);
+      while($row = mysqli_fetch_array($res)) {
          $outputheader2 .= $delimiter . str_replace(" ","_",$row['phenotypes_name']);
          $outputheader3 .= $delimiter . $row['trial_code'];
          $keys[] = $row['phenotype_uid'].":".$row['experiment_uid'];
       }
       $nexp=$ncols;
-		//$firephp->log("trait_location information ".$outputheader2."  ".$outputheader3);
-		// $firephp->table('keys label ', $keys); 
 
 		// dem 5jan11: If $subset="yes", use $_SESSION['selected_lines'].
 		$sql_option = "";
@@ -1327,13 +1332,12 @@ class Downloads
                FROM line_records, tht_base
 	       WHERE line_records.line_record_uid=tht_base.line_record_uid
                  $sql_option";
-      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-      while($row = mysql_fetch_array($res)) {
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+      while($row = mysqli_fetch_array($res)) {
          $lines[] = $row['line_record_name'];
          $line_uid[] = $row['line_record_uid'];
       }
       $nlines = count($lines);
-      //die($sql . "<br>" . $nlines);
 
 	  if ($nexp ===1){
 			$nheaderlines = 1;
@@ -1341,49 +1345,46 @@ class Downloads
 			$nheaderlines = 2;
 		}
       $outputheader1 = "$nlines".$delimiter."$ncols".$delimiter.$nheaderlines;
-      //if (DEBUG>1) echo $outputheader1."\n".$outputheader2."\n".$outputheader3."\n";
-      // $firephp->log("number traits and lines ".$outputheader1);
 	  if ($nexp ===1){
                         $output = $outputheader2."\n";
 		} else {
                         $output = $outputheader2."\n".$outputheader3."\n";
 		}
-	  
-	  
-	  // loop through all the lines in the file
-		for ($i=0;$i<$nlines;$i++) {
-            $outline = $lines[$i].$delimiter;
-			// get selected traits for this line in the selected experiments, change for multiple check lines
-// dem 8oct10: Don't round the data.
-//			$sql = "SELECT avg(cast(pd.value AS DECIMAL(9,1))) as value,pd.phenotype_uid,tb.experiment_uid 
-			if (preg_match("/\d/",$experiments)) {
-			  $sql_option = " WHERE tb.experiment_uid IN ($experiments) AND ";
-			} else {
-			  $sql_option = " WHERE ";
-			}
-			$sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid 
-					FROM tht_base as tb, phenotype_data as pd
-					$sql_option
-						tb.line_record_uid  = $line_uid[$i]
-						AND pd.tht_base_uid = tb.tht_base_uid
-						AND pd.phenotype_uid IN ($traits) 
-					GROUP BY tb.tht_base_uid, pd.phenotype_uid";
-			
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            if ($ncols > 0) {
+	  if (preg_match("/\d/",$experiments)) {
+              $sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid 
+                  FROM tht_base as tb, phenotype_data as pd
+                  WHERE tb.experiment_uid IN ($experiments) AND
+                  tb.line_record_uid  = ?
+                  AND pd.tht_base_uid = tb.tht_base_uid
+                  AND pd.phenotype_uid IN ($traits)
+                  GROUP BY tb.tht_base_uid, pd.phenotype_uid";
+          } else {
+              $sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid 
+                  FROM tht_base as tb, phenotype_data as pd
+                  WHERE tb.line_record_uid  = ? 
+                  AND pd.tht_base_uid = tb.tht_base_uid
+                  AND pd.phenotype_uid IN ($traits) 
+                  GROUP BY tb.tht_base_uid, pd.phenotype_uid";
+          }
+          $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
+          for ($i=0;$i<$nlines;$i++) {
+              $outline = $lines[$i].$delimiter;
+              mysqli_stmt_bind_param($stmt, "i", $line_uid[$i]) or die(mysqli_error($mysqli));
+              mysqli_stmt_execute($stmt) or die(mysqli_error($mysqli));
+              mysqli_stmt_bind_result($stmt, $value, $trait_uid, $exp_uid) or die(mysqli_error($mysqli));
+              if ($ncols > 0) {
 		$outarray = array_fill(0,$ncols,-999);
 		$outarray = array_combine($keys  , $outarray);
-            }
-            while ($row = mysql_fetch_array($res)) {
-               $keyval = $row['phenotype_uid'].":".$row['experiment_uid'];
-               $outarray[$keyval]= $row['value'];
-            }
-            $outline .= implode($delimiter,$outarray)."\n";
-            $output .= $outline;
-
-      }
-
-		return $output;
+              }
+              while (mysqli_stmt_fetch($stmt)) {
+                $keyval = $trait_uid.":".$exp_uid;
+                $outarray[$keyval]= $value;
+              }
+              $outline .= implode($delimiter,$outarray)."\n";
+              $output .= $outline;
+          }
+          mysqli_stmt_close($stmt);
+	  return $output;
 	}
 
 	/**
