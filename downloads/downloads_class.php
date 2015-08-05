@@ -1242,16 +1242,14 @@ class Downloads
             $ncols = count($empty);
             foreach ($lines as $key=>$line_uid) {
                 $line_name = $line_list[$line_uid];
-                $count = 0;
                 foreach ($expr_list as $expr_uid=>$expr_name) {
                     $outarray = $empty;
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_bind_result($stmt, $trait_uid, $value);
                     while (mysqli_stmt_fetch($stmt)) {
-                      $count++;
                       $outarray[$trait_uid]= $value;
                     }
-                    if ($count > 0) {
+                    if ($outarray != $empty) {
                         $tmp = implode($delimiter, $outarray);
                         $output .= $line_name.$delimiter.$expr_name.$delimiter.$tmp."\n";
                     }
