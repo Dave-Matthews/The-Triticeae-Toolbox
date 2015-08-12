@@ -40,13 +40,10 @@ if (isset($_SESSION['geno_exps'])) {
 ?>
 			
 			
-  </ul>
-  <div id="searchbox">
+  <br><br><li>
   <form style="margin-bottom:3px" action="search.php" method="post">
-  <div style="margin: 0; padding: 0;">
   <input type="hidden" value="Search" >
   <input style="width:170px" type="text" name="keywords" value="Quick search..." onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
-  </div>
   </form>
   <br>
   </div>
