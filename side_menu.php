@@ -46,8 +46,6 @@ if (isset($_SESSION['geno_exps'])) {
   <input style="width:170px" type="text" name="keywords" value="Quick search..." onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
   </form>
   <br>
-  </div>
-<div  style="margin-left: -25px; width: 170px; padding: 10px 15px;">
 <?php require $config['root_dir'].'whatsnew.html'; ?>
 </div>
 
