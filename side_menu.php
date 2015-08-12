@@ -47,5 +47,4 @@ if (isset($_SESSION['geno_exps'])) {
   </form>
   <br>
 <?php require $config['root_dir'].'whatsnew.html'; ?>
-</div>
 
