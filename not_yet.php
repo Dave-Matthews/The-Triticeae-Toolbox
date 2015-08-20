@@ -29,8 +29,6 @@ Safari:  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/600.7.12 (KH
 IE9:     Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)
  */
 
-echo "JOE";
-
 $footer_div=1;
 include($config['root_dir'].'theme/footer.php'); 
 ?>
