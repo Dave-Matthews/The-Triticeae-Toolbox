@@ -15,23 +15,31 @@
 <html>
 <head>
 <!-- "chrome=1"is required for X3DOM (WebGL) function in IE with Flash or Chrome Frame. -->
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8,chrome=1">
+<!-- July 2015 Chrome Frame is no longer supported so emulating IE8 is pointless -->
+<!-- <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8,chrome=1"> -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-  <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
-  <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
-  <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
-  <meta name="revisit-After" content="1 days" >
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
+<meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
+<meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
+<meta name="revisit-After" content="1 days" >
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <base href="<?php echo $config['base_url']; ?>" >
-  <link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
-  <script type="text/javascript" src="includes/core.js"></script>
-  <script type="text/javascript" src="theme/new.js"></script>
-  <script type="text/javascript" src="theme/js/prototype.js"></script>
-  <script type="text/javascript" src="theme/js/jquery.js"></script>
-  <script>
-      jQuery.noConflict();  //by default jQuery uses $ as shortcut for jQuery. To avoid conflict with prototype.js
-  </script>
+<base href="<?php echo $config['base_url']; ?>" >
+<!--link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css"-->
+<script type="text/javascript" src="includes/core.js"></script>
+<script type="text/javascript" src="theme/new.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script>
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="jquery.smartmenus.js" type="text/javascript"></script>
+
+<link href='sm-core-css.css' rel='stylesheet' type='text/css' />
+<link href='theme/sm-cleant3.css' rel='stylesheet' type='text/css' />
+<script>
+jQuery.noConflict();
+jQuery( document ).ready(function( $ ) {
+    $('#main-menu').smartmenus();
+});
+</script>
 
 <?php
 connect();
@@ -55,49 +63,12 @@ if (empty($title)) {
 echo "<title>$title</title>";
 global $usegbrowse;
 
-if (isset($usegbrowse) && $usegbrowse) {
-    include_once $config['root_dir'] . 'includes/gbrowse-deps.inc';
-}
     ?>
     </head>
     <body onload="javascript:setup();">
     <?php
     //not working since server upgrade
-    //if (isset($usegbrowse) && $usegbrowse) {
-    //    echo " Overview.prototype.initialize(); Details.prototype.initialize()";
-    //}
-    //?>">
-    //<?php
     require_once $config['root_dir'].'includes/analyticstracking.php';
-    if (isset($usegbrowse) && $usegbrowse) {
-        echo <<<EOD
-        <script>
-        var balloon500 = new Balloon;
-BalloonConfig(balloon500,'GBubble');
-balloon500.images              = './gbrowse/images/balloons';
-balloon500.balloonImage        = 'balloon.png';
-balloon500.ieImage             = 'balloon_ie.png';
-balloon500.upLeftStem          = 'up_left.png';
-balloon500.downLeftStem        = 'down_left.png';
-balloon500.upRightStem         = 'up_right.png';
-balloon500.downRightStem       = 'down_right.png';
-balloon500.closeButton         = 'close.png';
-balloon500.maxWidth = 500;
-balloon500.delayTime = 50;
-var balloon = new Balloon;
-BalloonConfig(balloon,'GBubble');
-balloon.images              = './gbrowse/images/balloons';
-balloon.balloonImage        = 'balloon.png';
-balloon.ieImage             = 'balloon_ie.png';
-balloon.upLeftStem          = 'up_left.png';
-balloon.downLeftStem        = 'down_left.png';
-balloon.upRightStem         = 'up_right.png';
-balloon.downRightStem       = 'down_right.png';
-balloon.closeButton         = 'close.png';
-balloon.delayTime = 50;
-</script>
-EOD;
-    }
 ?>
 <div id="container">
   <div id="barleyimg">
@@ -124,7 +95,7 @@ EOD;
   );
 ?>
 <div id="nav">
-  <ul>
+  <ul id="main-menu" class="sm sm-clean">
     <li>
       <a href="">Home</a>
     <li><a href="" title="Lines and Phenotypes">Select</a>
@@ -146,9 +117,9 @@ EOD;
   /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
     if (loginTest2()) :
 ?>
-	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=yellow>My Line Panels</font></a>
-        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><font color=yellow>My Marker Panels</font></a>
-    <?php endif ?>
+	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><b>My Line Panels</b></a>
+        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><b>My Marker Panels</b></a>
+ <?php endif ?>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
 	    Traits and Trials</a>
@@ -162,13 +133,15 @@ EOD;
       </ul>
     <li><a href="" title="<?php echo $lang["desc_sc6"]; ?>">Analyze</a>
       <ul>
-	<li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
-        <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
- 	<li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
+        <li><a href="" title="Cluster">Cluster</a>
+        <ul>
+	  <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
+          <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
+ 	  <li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
+        </ul>
 	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>
-        <li><a href="<?php echo $config['base_url']; ?>analyze/table.php" title="Heads to heads">Traits and Trials Table</a>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value vs Trials">Compare Trials</a>
@@ -204,9 +177,9 @@ EOD;
 
     <?php
   //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
-  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-  ?> 
-   <li> <a href="" title="Add, edit or delete data">Curate</a>
+    if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) :
+    ?> 
+    <li> <a href="" title="Add, edit or delete data">Curate</a>
       <ul>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
       Lines</a></li>
@@ -330,10 +303,8 @@ EOD;
    }
 ?>
 			
-  </ul>
-  <div id="searchbox">
+  <br><br><li>
   <form style="margin-bottom:3px" action="search.php" method="post">
-  <div style="margin: 0; padding: 0;">
   <input type="hidden" value="Search" >
   <input style="width:170px" type="text" name="keywords" value="Quick search..."
    title="This search term will match on any part of a string.
@@ -343,13 +314,11 @@ These regular expressions modify the search
    . - any single character
    * - zero or more instances of preceding element
    + - one or more instances of preceding element" onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
-  </div>
   </form>
-  <br></div>
+  </ul>
+  <br>
 
-<div  style="margin-left: -25px; width: 170px; padding: 10px 15px;">
 <?php include($config['root_dir'].'whatsnew.html'); ?>
-</div>
 
   </div>
   <div id="main">

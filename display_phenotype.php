@@ -81,21 +81,21 @@ if (($data_public_flag == 0) and
     $result_pei=mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
     $row_pei=mysqli_fetch_array($result_pei);
 
-    // Get Experiment (experiment_set) too.   
-    if ($set_uid)
-	$exptset = mysql_grab("SELECT experiment_set_name from experiment_set where experiment_set_uid=$set_uid");
-
-      // Get CAPdata_program too.
-      $query="SELECT data_program_name, collaborator_name 
+    // Get Experiment (experiment_set) too.
+    if ($set_uid) {
+        $exptset = mysql_grab("SELECT experiment_set_name from experiment_set where experiment_set_uid=$set_uid");
+    }
+    // Get CAPdata_program too.
+    $query="SELECT data_program_name, collaborator_name 
 	  from CAPdata_programs, experiments
 	  where experiment_uid = $experiment_uid
 	  and experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid";
-      $result_cdp=mysqli_query($mysqli,$query) or die(mysqli_error($mysqli));
-      $row_cdp=mysqli_fetch_array($result_cdp);
-      $dataprogram = $row_cdp['data_program_name'];
+    $result_cdp=mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+    $row_cdp=mysqli_fetch_array($result_cdp);
+    $dataprogram = $row_cdp['data_program_name'];
 
-        echo "<table>";
-	if ($exptset) echo "<tr> <td>Experiment</td><td>".$exptset."</td></tr>";
+    echo "<table>";
+    if ($exptset) echo "<tr> <td>Experiment</td><td>".$exptset."</td></tr>";
 	echo "<tr> <td>Trial Year</td><td>$year</td></tr>";
 	if ($exptname) echo "<tr> <td>Description</td><td>$exptname</td></tr>";
         echo "<tr> <td>Location (Latitude/Longitude)</td><td>".$row_pei['location']." ("
@@ -478,7 +478,7 @@ while ($rawrow = mysqli_fetch_assoc($rawres)) {
 }
 if ($pheno_str != "") {
     echo "<b>Display Numeric map:</b> <a href=".$config['base_url']."display_map_exp.php?uid=$experiment_uid>$pheno_str</a><br>\n";
-    echo "<b>Display Heat map:</b> <a href=".$config['base_url']."display_heatmap.php?uid=$experiment_uid>$pheno_str</a><br>\n";
+    echo "<b>Display Heat map:</b> <a href=".$config['base_url']."display_heatmap_exp.php?uid=$experiment_uid>$pheno_str</a><br>\n";
 }
 
 $found = 0;
