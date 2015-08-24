@@ -4,11 +4,11 @@
  *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/display_phenotype.php
- * 
+ *
  */
 
 //A php script to dynamically read data related to a particular experiment from the database and to 
@@ -40,7 +40,6 @@ require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/normal_header.php';
 $delimiter = "\t";
-$mysql = connect();
 $mysqli = connecti();
 
 $trial_code=$_GET['trial_code'];
@@ -59,30 +58,31 @@ if ($stmt = mysqli_prepare($mysqli, "SELECT data_public_flag FROM experiments WH
         die("Error: trial not found\n");
     }
     mysqli_stmt_close($stmt);
-}  else {
+} else {
     die("Error: bad sql statement\n");
 }
-if ( ($data_public_flag == 0) AND (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) )
-  echo "Results of this trial are restricted to project participants.";
-else {
-      $sql="SELECT experiment_uid, experiment_set_uid, experiment_desc_name, experiment_year
-            FROM experiments WHERE trial_code='$trial_code'";
-      $result=mysqli_query($mysqli,$sql);
-      $row=mysqli_fetch_array($result);
-      $experiment_uid=$row['experiment_uid'];
-      $set_uid=$row['experiment_set_uid'];
-      $datasets_exp_uid=$experiment_uid;
-      $exptname=$row['experiment_desc_name'];
-      $year=$row['experiment_year'];
-      if (!$experiment_uid)
-	die ("Trial $trial_code not found.");
-        
-      $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'"; 
-      $result_pei=mysqli_query($mysqli,$query) or die(mysqli_error($mysqli));
-      $row_pei=mysqli_fetch_array($result_pei);
+if (($data_public_flag == 0) and
+    (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))) {
+    echo "Results of this trial are restricted to project participants.";
+} else {
+    $sql="SELECT experiment_uid, experiment_set_uid, experiment_desc_name, experiment_year
+          FROM experiments WHERE trial_code='$trial_code'";
+    $result=mysqli_query($mysqli, $sql);
+    $row=mysqli_fetch_array($result);
+    $experiment_uid=$row['experiment_uid'];
+    $set_uid=$row['experiment_set_uid'];
+    $datasets_exp_uid=$experiment_uid;
+    $exptname=$row['experiment_desc_name'];
+    $year=$row['experiment_year'];
+    if (!$experiment_uid) {
+        die ("Trial $trial_code not found.");
+    }
+    $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'";
+    $result_pei=mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+    $row_pei=mysqli_fetch_array($result_pei);
 
-      // Get Experiment (experiment_set) too.   
-      if ($set_uid)
+    // Get Experiment (experiment_set) too.   
+    if ($set_uid)
 	$exptset = mysql_grab("SELECT experiment_set_name from experiment_set where experiment_set_uid=$set_uid");
 
       // Get CAPdata_program too.
@@ -118,9 +118,9 @@ else {
 
         // get all line data for this experiment
         $sql="SELECT tht_base_uid, line_record_uid, check_line FROM tht_base WHERE experiment_uid='$experiment_uid'";
-        $result_thtbase=mysql_query($sql) or die(mysql_error());
+        $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         
-        while($row_thtbase=mysql_fetch_array($result_thtbase))
+        while($row_thtbase=mysqli_fetch_array($result_thtbase))
         {
             $thtbase_uid[] = $row_thtbase['tht_base_uid'];
             $linerecord_uid[] = $row_thtbase['line_record_uid'];
@@ -140,11 +140,11 @@ else {
                 AND units.unit_uid = p.unit_uid
                 AND pd.tht_base_uid IN ($thtbasestring)";
         //echo $sql1."<br>";
-        $result1=mysql_query($sql1) or die(mysql_error());
-        $num_phenotypes = mysql_num_rows($result1);
+        $result1=mysqli_query($mysqli, $sql1) or die(mysqli_error($mysqli));
+        $num_phenotypes = mysqli_num_rows($result1);
 
         //echo "$num_phenotypes Rows\n";
-        while($row1=mysql_fetch_array($result1))
+        while($row1=mysqli_fetch_array($result1))
         {
             $phenotype_data_name[]=$row1['name'];
             $phenotype_uid[]=$row1['uid'];
@@ -188,8 +188,8 @@ else {
             //echo $linerecorduid."  ".$thtbaseuid."<br>";
             
             $sql_lnruid="SELECT line_record_name FROM line_records WHERE line_record_uid='$linerecorduid'";
-            $result_lnruid=mysql_query($sql_lnruid) or die(mysql_error());
-            $row_lnruid=mysql_fetch_assoc($result_lnruid);
+            $result_lnruid=mysqli_query($mysqli, $sql_lnruid) or die(mysqli_error($mysqli));
+            $row_lnruid=mysqli_fetch_assoc($result_lnruid);
             $lnrname=$row_lnruid['line_record_name'];
             $single_row[0]=$lnrname;
             $single_row_long[0]=$lnrname;
@@ -240,9 +240,9 @@ and bcr.line_record_uid = '$linerecorduid'";
                     WHERE tht_base_uid='$thtbaseuid'
                     AND phenotype_uid = '$puid'";
                 //echo $sql_val."<br>";
-                $result_val=mysql_query($sql_val);
-                if (mysql_num_rows($result_val) > 0){
-                    $row_val=mysql_fetch_assoc($result_val);
+                $result_val=mysqli_query($mysqli, $sql_val);
+                if (mysqli_num_rows($result_val) > 0){
+                    $row_val=mysqli_fetch_assoc($result_val);
                     $val=$row_val['value'];
 		    $val_long=$val;
 		    if ($sigdig >= 0) {
@@ -301,8 +301,8 @@ and bcr.line_record_uid = '$linerecorduid'";
                 FROM phenotype_mean_data
                 WHERE phenotype_uid='$puid'
                 AND experiment_uid='$experiment_uid'";
-            $res_mdata=mysql_query($sql_mdata) or die(mysql_error());
-            $row_mdata=mysql_fetch_array($res_mdata);
+            $res_mdata=mysqli_query($mysqli, $sql_mdata) or die(mysqli_error($mysqli));
+            $row_mdata=mysqli_fetch_array($res_mdata);
             $mean=$row_mdata['mean_value'];
             $se=$row_mdata['standard_error'];
             $nr=$row_mdata['number_replicates'];
@@ -341,18 +341,18 @@ and bcr.line_record_uid = '$linerecorduid'";
         
         }
         
-        $fmean= implode($delimiter,$mean_arr)."\n";
-        $fse= implode($delimiter,$se_arr)."\n";
-        $fnr= implode($delimiter,$nr_arr)."\n";
-        $fprob= implode($delimiter,$prob_arr)."\n";
+        $fmean= implode($delimiter, $mean_arr)."\n";
+        $fse= implode($delimiter, $se_arr)."\n";
+        $fnr= implode($delimiter, $nr_arr)."\n";
+        $fprob= implode($delimiter, $prob_arr)."\n";
 
-        $ufmean= implode($delimiter,$unformat_mean_arr)."\n";
-        $ufse= implode($delimiter,$unformat_se_arr)."\n";
+        $ufmean= implode($delimiter, $unformat_mean_arr)."\n";
+        $ufse= implode($delimiter, $unformat_se_arr)."\n";
         
-        fwrite($fh,$ufmean);
-        fwrite($fh,$ufse);
-        fwrite($fh,$fnr);
-        fwrite($fh,$fprob);
+        fwrite($fh, $ufmean);
+        fwrite($fh, $ufse);
+        fwrite($fh, $fnr);
+        fwrite($fh, $fprob);
         
         $all_rows[]=$mean_arr;
         $all_rows[]=$se_arr;
@@ -439,16 +439,16 @@ function output_file(url) {
 	} 
 
 $sourcesql="SELECT input_data_file_name FROM experiments WHERE trial_code='$trial_code'";
-$sourceres=mysql_query($sourcesql) or die(mysql_error());
-$sourcerow=mysql_fetch_array($sourceres);
+$sourceres=mysqli_query($mysqli, $sourcesql) or die(mysqli_error($mysqli));
+$sourcerow=mysqli_fetch_array($sourceres);
 $sources=$sourcerow['input_data_file_name'];
 if ($sources)
   echo "<p><b>Means file:</b> $sources";
 
 echo "<p><b>Raw data files:</b> ";
 $rawsql="SELECT name, directory from rawfiles where experiment_uid = $experiment_uid";
-$rawres=mysql_query($rawsql) or die(mysql_error());
-while ($rawrow = mysql_fetch_assoc($rawres)) {
+$rawres=mysqli_query($mysqli, $rawsql) or die(mysqli_error($mysqli));
+while ($rawrow = mysqli_fetch_assoc($rawres)) {
   $rawfilename=$rawrow['name'];
   $rawdir = $rawrow['directory'];
   if ($rawdir)
@@ -460,16 +460,16 @@ if (empty($rawfilename))  echo "none<br>";
 
 echo "<p><b>Field Book:</b> ";
 $rawsql="SELECT experiment_uid from fieldbook where experiment_uid = $experiment_uid";
-$rawres=mysql_query($rawsql) or die(mysql_error());
-if ($rawrow = mysql_fetch_assoc($rawres)) {
+$rawres=mysqli_query($mysqli, $rawsql) or die(mysqli_error($mysqli));
+if ($rawrow = mysqli_fetch_assoc($rawres)) {
   $fieldbook="display_fieldbook.php?function=display&uid=$experiment_uid";
   echo "<a href=".$config['base_url'].$fieldbook.">$trial_code</a><br>\n";
 }
 if (empty($fieldbook)) echo "none";  
 $pheno_str = "";
 $rawsql="SELECT distinct(phenotypes_name) from phenotype_plot_data, phenotypes where phenotype_plot_data.phenotype_uid = phenotypes.phenotype_uid and experiment_uid = $experiment_uid";
-$rawres=mysql_query($rawsql) or die(mysql_error());
-while ($rawrow = mysql_fetch_assoc($rawres)) {
+$rawres=mysqli_query($mysqli, $rawsql) or die(mysqli_error($mysqli));
+while ($rawrow = mysqli_fetch_assoc($rawres)) {
     if ($pheno_str == "") {
         $pheno_str = $rawrow['phenotypes_name'];
     } else {
@@ -477,13 +477,14 @@ while ($rawrow = mysql_fetch_assoc($rawres)) {
     }
 }
 if ($pheno_str != "") {
-    echo "<b>Plot level data:</b> <a href=".$config['base_url']."display_map_exp.php?uid=$experiment_uid>$pheno_str</a><br>\n";
+    echo "<b>Display Numeric map:</b> <a href=".$config['base_url']."display_map_exp.php?uid=$experiment_uid>$pheno_str</a><br>\n";
+    echo "<b>Display Heat map:</b> <a href=".$config['base_url']."display_heatmap.php?uid=$experiment_uid>$pheno_str</a><br>\n";
 }
 
 $found = 0;
 $sql="SELECT date_format(measure_date, '%m-%d-%Y'), date_format(start_time, '%H:%i'), spect_sys_uid, raw_file_name, measurement_uid from csr_measurement where experiment_uid = $experiment_uid order by measure_date";
-$res = mysql_query($sql) or die(mysql_error());
-while ($row = mysql_fetch_array($res)) {
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($row = mysqli_fetch_array($res)) {
   if ($found == 0) {
     echo "<table><tr><td>Measured Date<td>CSR Annotation<td>CSR Data<td>Spectrometer<br>System<td>CSR Data\n";
     $found = 1;
@@ -500,8 +501,8 @@ while ($row = mysql_fetch_array($res)) {
   echo "<td><a href=\"$tmp2\">Open File</a>";
 
   $sql="SELECT system_name from csr_system where system_uid = $sys_uid";
-  $res2 = mysql_query($sql) or die(mysql_error(). $sql);
-  if ($rawrow = mysql_fetch_assoc($res2)) {
+  $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if ($rawrow = mysqli_fetch_assoc($res2)) {
     $system_name = $rawrow["system_name"];
     $trial= $config['base_url'] . "display_csr_spe.php?function=display&uid=$sys_uid";
     echo "<td><a href=$trial>$system_name</a>";
@@ -517,8 +518,5 @@ echo "</table>";
   
     //-----------------------------------------------------------------------------------
     $footer_div = 1;
-    require $config['root_dir'].'theme/footer.php'; 
+    require $config['root_dir'].'theme/footer.php';
     ?>
-
-
-        
