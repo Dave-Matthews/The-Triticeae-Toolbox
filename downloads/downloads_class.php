@@ -1242,6 +1242,7 @@ class Downloads
             $ncols = count($empty);
             foreach ($lines as $key=>$line_uid) {
                 $line_name = $line_list[$line_uid];
+                $count = 0;
                 foreach ($expr_list as $expr_uid=>$expr_name) {
                     $outarray = $empty;
                     mysqli_stmt_execute($stmt);
