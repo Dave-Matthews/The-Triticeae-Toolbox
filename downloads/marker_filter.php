@@ -274,6 +274,9 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     }
     echo "<td><b>$count2</b><i> lines</a>";
     echo ("</table>");
+    if ($count == 0) {
+        echo "<font color=red>Warning: Please select new filter paramaters</font>";
+    }
 }
 
     /**
@@ -331,6 +334,9 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
     <td><b><?php echo ("$count") ?></b><i> markers</i>
     <?php
     echo ("</table>");
+    if ($count == 0) {
+        echo "<font color=red>Warning: Please select new filter paramaters</font>";
+    }
 }
 
     /**
@@ -469,8 +475,155 @@ function typeVcfMarkersDownload($lines, $chr, $min_maf, $max_missing, $h)
     global $mysqli;
     $outputheader = "";
 }
+
+function typeVcfReferenceDownload($chr, $f1, $h1)
+{
+    global $config;
+    ini_set("auto_detect_line_endings", true);
+
+    //read in chromosome map
+    $count = 0;
+    $chr = strtolower($chr);
+    $file = $config['root_dir'] . $f1;
+    $ref_file = fopen($file, "r");
+    $pattern = "/_$chr/";
+    if ($ref_file == false) {
+        echo "Error: reference not found $f1 $file\n";
+    } else {
+        echo "Reading reference $f1<br>\n";
+        $line = fgets($ref_file);
+        fwrite($h1, $line);
+        $line = fgets($ref_file);
+        fwrite($h1, $line);
+        while ($line_ary = fgetcsv($ref_file, 0, "\t")) {
+            $contig = $line_ary[0];
+            if (preg_match("/(\d+)_([0-9a-z]+)/", $contig, $match)) {
+                $contig_new = strtoupper($match[2]) . "_" . $match[1];
+            } else {
+                echo "Error: $contig bad name<br>\n";
+            }
+            $pos = $line_ary[1];
+            $id = $contig . "_" . $pos;
+            if (preg_match($pattern, $line_ary[0])) {
+                $count++;
+                //$line = implode("\t", $line_ary);
+                foreach ($line_ary as $key => $value) {
+                    if ($key == 0) {
+                        $line = $contig_new;
+                    } elseif ($key == 1) {
+                        $line .= "\t" . $pos;
+                    } else {
+                        $line .= "\t" . $value;
+                    }
+                }
+                fwrite($h1, "$line\n");
+            }
+        }
+        echo "$count with map to $h2<br>\n";
+    }
+}
+
     /**
-     * build genotype data files in VCF format using genotype experiment
+     * this is a stripped down version that runs on Eduards VCF file
+     */
+function typeVcfExp2MarkersDownload($geno_exp, $ref_line, $chr, $min_maf, $max_missing, $h)
+{
+    global $mysqli;
+    global $config;
+    $outputheader = "";
+
+    $lookup = array(
+        '-1' => '1/1',
+        '0' => '0/1',
+        '1' => '0/0',
+        'NA' => './.'
+    );
+
+    //get header for VCF
+    //rename lines that duplicate those in reference
+    $sql = "select line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
+        $name = json_decode($row[0], true);
+    } else {
+        die("<font color=red>Error - genotype experiment should be selected before download</font>");
+    }
+    foreach ($name as $line_name) {
+        if ($outputheader != "") {
+            $outputheader .= "\t";
+        }
+        if (isset($ref_line[$line_name])) {
+            $outputheader .= "$line_name" . "_duplicate";
+            echo "renaming conflict $line_name<br>\n";
+        } else {
+            $outputheader .= "$line_name";
+        }
+    }
+
+    //get synonyms for T3 markers so they will match the referenece
+    $sql = "select marker1_uid, marker1_name, contig from marker_report_reference";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
+        $marker_uid = $row[0];
+        $contig = $row[2];
+        $contig_list[$marker_uid] = $contig;
+    }
+
+    $count = 0;
+    fwrite($h, "##fileformat=VCFv4.2\n");
+    fwrite($h, "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t");
+    fwrite($h, "$outputheader\n");
+
+    $count = 0;
+    $count_skip = 0;
+    $count_mapped = 0;
+    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, chrom, pos, alleles from allele_bymarker_exp_101, markers
+        where experiment_uid = $geno_exp
+        and markers.marker_uid = allele_bymarker_exp_101.marker_uid
+        order by marker_name";
+    $sql = "select marker1_uid, marker1_name, marker_report_ref_iwgs.chrom, marker_report_ref_iwgs.pos, A_allele, B_allele, alleles
+        from marker_report_ref_iwgs, allele_bymarker_exp_101, markers
+        where marker_report_ref_iwgs.marker1_uid = allele_bymarker_exp_101.marker_uid
+        and marker_report_ref_iwgs.marker1_uid = markers.marker_uid
+        and experiment_uid = $geno_exp
+        order by marker_report_ref_iwgs.chrom, pos";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
+        $marker_id = $row[0];
+        $marker_name = $row[1];
+        $chrom = $row[2];
+        $pos = $row[3];
+        $ref = $row[4];
+        $alt = $row[5];
+        $alleles = $row[6];
+        if ($chr == $chrom) {
+            $count++;
+            if (isset($contig_list[$marker_id])) {
+                $count_mapped++;
+                $marker_name = $contig_list[$marker_id];
+            }
+            $index1 = $chrom . "_" . $pos;
+            if (isset($unique[$index1])) {
+                echo "skip $marker_name $index1 duplicates $unique[$index1]<br>\n";
+            } else {
+                $unique[$index1] = $marker_name;
+                $allele_ary = explode(",", $alleles);
+                $allele_ary2 = array();
+                foreach ($allele_ary as $allele) {
+                    $allele_ary2[] = $lookup[$allele];
+                }
+                $allele_str = implode("\t", $allele_ary2);
+                $marker_list_out = "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n";
+                fwrite($h, $marker_list_out);
+            }
+        }
+    }
+    echo "count filtered for chromosome $count<br>\n";
+    echo "count filtered and mapped for chromosome $count_mapped<br>\n";
+}
+ 
+    /**
+     * build genotype data files in VCF format using genotype experiment (does not work for large GBS)
      *
      * @param integer $geno_exp  genotype experiment
      * @param real  $min_maf     minimum marker allele frequency
@@ -479,21 +632,14 @@ function typeVcfMarkersDownload($lines, $chr, $min_maf, $max_missing, $h)
      *
      * @return null
      */
-function typeVcfExpMarkersDownload($geno_exp, $chr, $min_maf, $max_missing, $h)
+function typeVcfExpMarkersDownload($geno_exp, $ref_line, $ref_marker, $chr, $min_maf, $max_missing, $h)
 {
     global $mysqli;
+    global $config;
     $outputheader = "";
-    $selected_map = "Chromosome Survey Sequence, 2014";
-
-    $sql = "select mapset_uid from mapset where mapset_name = \"$selected_map\"";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    if ($row = mysqli_fetch_array($res)) {
-        $mapset_uid = $row[0];
-    } else {
-        echo "Error: can not find reference map\n";
-    }
 
     //get header for VCF
+    //rename lines that duplicate those in reference
     $sql = "select line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_array($res)) {
@@ -501,7 +647,18 @@ function typeVcfExpMarkersDownload($geno_exp, $chr, $min_maf, $max_missing, $h)
     } else {
         die("<font color=red>Error - genotype experiment should be selected before download</font>");
     }
-    $outputheader .= implode("\t", $name);
+    foreach ($name as $line_name) {
+        if ($outputheader != "") {
+            $outputheader .= "\t";
+        }
+        if (isset($ref_line[$line_name])) {
+            $outputheader .= "$line_name" . "_duplicate";
+            echo "renaming conflict $line_name<br>\n";
+        } else {
+            $outputheader .= "$line_name";
+        }
+    }
+    //$outputheader .= implode("\t", $name);
 
     $lookup = array(
         '-1' => '1/1',
@@ -510,47 +667,114 @@ function typeVcfExpMarkersDownload($geno_exp, $chr, $min_maf, $max_missing, $h)
         'NA' => './.'
     );
     $count = 0;
-    fwrite($h, "##fileformat=VCFv4.1\n");
+    $count_mapped = 0;
+    fwrite($h, "##fileformat=VCFv4.2\n");
     fwrite($h, "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t");
     fwrite($h, "$outputheader\n");
+    //this works for experiments that have map file (not GBS)
     $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, mim.chromosome, CAST(1000*mim.start_position as UNSIGNED) from markers, markers_in_maps as mim, map
         where mim.marker_uid = markers.marker_uid
         AND mim.map_uid = map.map_uid
         AND map.mapset_uid = $mapset_uid";
+    //this works for experiments that have blast results (not GBS)
+    $sql = "select marker_report_reference.marker1_uid, contig, s_start from marker_report_reference, allele_frequencies
+        where marker_report_reference.marker1_uid=allele_frequencies.marker_uid
+        and experiment_uid = $geno_exp";
+    //don't need allele_frequencies
+    $sql = "select marker1_uid, marker1_name, contig, s_start, A_allele, B_allele, alleles
+        from marker_report_reference, allele_bymarker_exp_101, markers
+        where marker_report_reference.marker1_uid = allele_bymarker_exp_101.marker_uid
+        and marker_report_reference.marker1_uid = markers.marker_uid
+        and experiment_uid = $geno_exp
+        order by contig, s_start";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_array($res)) {
-        $count++;
-        $marker_uid = $row[0];
-        $pos = $row[1];
-        $chr = $row[2];
-        $marker_list_mapped[$marker_uid] = $pos;
-        $marker_list_chr[$marker_uid] = $chr;
+    if ($res == true) {
+        while ($row = mysqli_fetch_array($res)) {
+            $count_mapped++;
+            $marker_uid = $row[0];
+            $marker_name = $row[1];
+            $contig = $row[2];
+            $pos = $row[3];
+            $ref = $row[4];
+            $alt = $row[5];
+            $alleles = $row[6];
+            if (preg_match("/([A-Z0-9]+)_([A-Z0-9]+)/", $contig, $match)) {
+                $tmppos = $match[2];
+                $tmpchr = $match[1];
+            } else {
+                die("Error: $contig\n");
+            }
+            if ($chr == $tmpchr) {
+                $count++;
+                $index1 = $contig . "_" . $pos;
+                $index2 = $contig;
+                if (isset($unique[$index1])) {
+                    echo "skip $contig $pos $marker_name - duplicate position\n";
+                } elseif (($pos > $ref_marker[$index2][0]) && ($pos < $ref_marker[$index2][1])) {
+                    $unique[$index1] = 1;
+                    $allele_ary = explode(",", $alleles);
+                    $allele_ary2 = array();
+                    foreach ($allele_ary as $allele) {
+                        $allele_ary2[] = $lookup[$allele];
+                    }
+                    $allele_str = implode("\t", $allele_ary2);
+                    fwrite($h, "$contig\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n");
+                } else {
+                    echo "skip marker no reference genotype $marker_name $pos in $index2 $ref_marker[$index2][0] $ref_marker[$index2][1]<br>\n";
+                }
+            }
+        }
+        echo "count mapped in genotype experiment = $count_mapped<br>\n";
+    } else {
+        echo "Error: BLAST results not in database\n";
     }
-    //echo "$count markers mapped\n";
 
+    echo "count with chromosome = $count<br>\n";
+}
+
+function typeVcfGetMarkerRef($chr, $f1)
+{
+    global $config;
+    ini_set("auto_detect_line_endings", true);
+
+    //must have min and max position for each contig for Beagle to work
     $count = 0;
-    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, alleles from allele_bymarker_exp_101, markers
-        where experiment_uid = $geno_exp
-        and markers.marker_uid = allele_bymarker_exp_101.marker_uid";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_array($res)) {
-        $count++;
-        $marker_id = $row[0];
-        $marker_name = $row[1];
-        $ref = $row[2];
-        $alt = $row[3];
-        $chrom = $marker_list_chr[$marker_id];
-        $pos = $marker_list_mapped[$marker_id];
-        $alleles = $row[4];
-        $allele_ary = explode(",", $alleles);
-        fwrite($h, "$chrom\t$pos\t$marker_name\t$ref\t$alt\t");
-        foreach ($allele_ary as $allele) {
-            $allele_ary2[] = $lookup[$allele];
-        }
-        $allele_str = implode("\t", $allele_ary2);
-        fwrite($h, "$allele_str\n");
-        if ($count > 10) {
-            break;
+    $chr = strtolower($chr);
+    $file = $config['root_dir'] . $f1;
+    $ref_file = fopen($file, "r");
+    $pattern = "/_$chr/";
+    if ($ref_file == false) {
+        echo "Error: reference not found $f1 $file\n";
+    } else {
+        echo "Reading reference $f1<br>\n";
+        $line = fgets($ref_file);
+        $line = fgets($ref_file);
+        while ($line_ary = fgetcsv($ref_file, 0, "\t")) {
+            $contig = $line_ary[0];
+            $pos = $line_ary[1];
+            if (preg_match("/(\d+)_([0-9a-z]+)/", $contig, $match)) {
+                $contig_new = strtoupper($match[2]) . "_" . $match[1];
+            } else {
+                echo "Error: $contig bad name<br>\n";
+            }
+            if ($contig_new != $contig_pre) {
+                $ref_marker[$contig_pre][0] = $min;
+                $ref_marker[$contig_pre][1] = $max;
+                $min = 999999999;
+                $max = 0;
+                $contig_pre = $contig_new;
+            }
+            if (preg_match($pattern, $line_ary[0])) {
+                $count++;
+                if ($pos > $max) {
+                    $max = $pos;
+                }
+                if ($pos < $min) {
+                    $min = $pos;
+                }
+            }
         }
     }
+    echo "$count from $file<br>\n";
+    return $ref_marker;
 }
