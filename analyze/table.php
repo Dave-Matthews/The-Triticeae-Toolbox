@@ -87,17 +87,99 @@ else {
   if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
   file_put_contents($outfile, $outdata);
 
+  // Run TableReportParameters.R to calculate LSD.
+  $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, stringsAsFactors=FALSE)\noutFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")\n';
+  // for debugging:
+  /* echo "<pre>"; system("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla 2>&1"); */
+  exec("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla > /dev/null 2> /tmp/tht/stderr.txt$time");
+  // Show resulting file.
+  $r = fopen("/tmp/tht/TableReportOut.txt".$time,"r");
+  // Parse the contents, which look like this:
+/* grain protein   grain yield */
+/* lsmeans c(13.1983026714983, 14.208479386932, 14.02772900566, 14.241295785412) c(5032.09333333334, 4361.38666666667, 4520.99333333333, 4153.36) */
+/* leastSigDiff    0.988636404642669       984.993961827093 */
+/* tukeysHSD       1.64895568849516        1642.88042485672 */
+/* trialMeans      c(14.4973829682375, 13.7909232364558, 13.4685489324335) c(4828.55, 4780.13, 3942.195) */
+  $linenum = 0;
+  while ($line = fgets($r)) {
+    /* echo "$line<br>"; */
+    if ($linenum == 0) {
+      // The first line is the names of the traits.
+      $rtraits = explode("\t", rtrim($line));
+      $rtraitcount = count($rtraits);
+      $linenum++;
+    }
+    else {
+      // Extract the first tab-terminated string.
+      preg_match('/(^[^\t]*\t)/', $line, $sublines);
+      $firstword = rtrim($sublines[1]);
+      $linepieces = explode("\t", rtrim($line));
+      if ($firstword == 'lsmeans')
+	$lsmeansline = $line;
+      elseif ($firstword == 'leastSigDiff') {
+	$lsds = $linepieces;
+	array_shift($lsds);
+      }
+      elseif ($firstword == 'tukeysHSD') {
+	$hsds = $linepieces;
+	array_shift($hsds);
+      }
+      elseif ($firstword == 'trialMeans') {
+	$trialmeanslists = $linepieces;
+	array_shift($trialmeanslists);
+      }
+      else {
+	// It must be a continuation line of the lsmeans.
+	$lsmeansline .= $line;
+      }
+    }
+    // All lines of the file have now been read in.
+    $lsmeanslists = explode("\t", $lsmeansline);
+    array_shift($lsmeanslists);
+    for ($i=0; $i < $rtraitcount; $i++) {
+      // Result is formatted like "c(12.65, 11.915, ...)".
+      $lsmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $lsmeanslists[$i]));
+    }
+    for ($i=0; $i < $rtraitcount; $i++) {
+      $trialmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialmeanslists[$i]));
+    }
+  }
+  fclose($r);
+
+  /* // Parse results. */
+  /* $results = file("/tmp/tht/TableReportOut.txt".$time); */
+  /* $rtraits = explode("\t", rtrim($results[0])); */
+  /* $rtraitcount = count($rtraits); */
+  /* $lsds = explode("\t", rtrim($results[2])); */
+  /* array_shift($lsds); */
+  /* $hsds = explode("\t", rtrim($results[3])); */
+  /* array_shift($hsds); */
+  /* $lsmeanslists = explode("\t", rtrim($results[1])); */
+  /* array_shift($lsmeanslists); */
+  /* for ($i=0; $i < $rtraitcount; $i++) { */
+  /*   // Result is formatted like "c(12.65, 11.915, ...)". */
+  /*   $lsmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $lsmeanslists[$i])); */
+  /* } */
+  /* $trialmeanslists = explode("\t", rtrim($results[4])); */
+  /* array_shift($trialmeanslists); */
+  /* for ($i=0; $i < $rtraitcount; $i++) { */
+  /*   $trialmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialmeanslists[$i])); */
+  /* } */
+
   // Display the table on the page.
+  $traitnumber = 0;
   foreach ($traits as $trait) {
     $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-    print "<table><tr><th>Trait: <b>$trtname</b>";
+    $lsdround = round($lsds[$traitnumber], 2);
+    $hsdround = round($hsds[$traitnumber], 2);
+    print "<table><tr><th>Trait: $trtname<br>LSD = $lsdround<br>HSD = $hsdround";
     foreach ($trials as $trial) {
       $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
       print "<th><a href='display_phenotype.php?trial_code=$trialname'>$trialname</a>";
-
-      $mx = $max[$trait][$trial]; $mn = $min[$trait][$trial];
-      /* echo "max $mx; min $mn<br>"; */
+      /* $mx = $max[$trait][$trial]; $mn = $min[$trait][$trial]; */
     }
+    print "<th>lsmeans";
+    $linenumber = 0;
     foreach ($lines as $line) {
       print "<tr><td>$line";
       foreach ($trials as $trial) {
@@ -113,8 +195,20 @@ else {
 	  print "<td><font color=$color[$col]><b>$val</b></font>";
 	}
       }
+      $lsm = round($lsmeans[$traitnumber][$linenumber], 1);
+      /* $col = 10 - floor(10 * ($lsm - $mn) / ($mx - $mn)); */
+      /* print "<td><font color=$color[$col]><b>$lsm</b></font>"; */
+      print "<td>$lsm";
+      $linenumber++;
+    }
+    print "<tr><td><b>Trial means</b>";
+    $trialcount = count($trials);
+    for ($i=0; $i < $trialcount; $i++) {
+      $tm = round($trialmeans[$traitnumber][$i], 1);
+      print "<td>$tm";
     }
     print "</table><p>";
+    $traitnumber++;
   }
 
   // If there's any missing data offer to remove it.
