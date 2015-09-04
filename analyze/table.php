@@ -146,26 +146,6 @@ else {
   }
   fclose($r);
 
-  /* // Parse results. */
-  /* $results = file("/tmp/tht/TableReportOut.txt".$time); */
-  /* $rtraits = explode("\t", rtrim($results[0])); */
-  /* $rtraitcount = count($rtraits); */
-  /* $lsds = explode("\t", rtrim($results[2])); */
-  /* array_shift($lsds); */
-  /* $hsds = explode("\t", rtrim($results[3])); */
-  /* array_shift($hsds); */
-  /* $lsmeanslists = explode("\t", rtrim($results[1])); */
-  /* array_shift($lsmeanslists); */
-  /* for ($i=0; $i < $rtraitcount; $i++) { */
-  /*   // Result is formatted like "c(12.65, 11.915, ...)". */
-  /*   $lsmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $lsmeanslists[$i])); */
-  /* } */
-  /* $trialmeanslists = explode("\t", rtrim($results[4])); */
-  /* array_shift($trialmeanslists); */
-  /* for ($i=0; $i < $rtraitcount; $i++) { */
-  /*   $trialmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialmeanslists[$i])); */
-  /* } */
-
   // Display the table on the page.
   $traitnumber = 0;
   foreach ($traits as $trait) {
@@ -176,9 +156,8 @@ else {
     foreach ($trials as $trial) {
       $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
       print "<th><a href='display_phenotype.php?trial_code=$trialname'>$trialname</a>";
-      /* $mx = $max[$trait][$trial]; $mn = $min[$trait][$trial]; */
     }
-    print "<th>lsmeans";
+    print "<th>LSmeans";
     $linenumber = 0;
     foreach ($lines as $line) {
       print "<tr><td>$line";
@@ -194,6 +173,8 @@ else {
 	  $col = 10 - floor(10 * ($val - $mn) / ($mx - $mn));
 	  print "<td><font color=$color[$col]><b>$val</b></font>";
 	}
+	else
+	  print "<td>--";
       }
       $lsm = round($lsmeans[$traitnumber][$linenumber], 1);
       /* $col = 10 - floor(10 * ($lsm - $mn) / ($mx - $mn)); */
@@ -201,7 +182,7 @@ else {
       print "<td>$lsm";
       $linenumber++;
     }
-    print "<tr><td><b>Trial means</b>";
+    print "<tr><td><font color=brown><b>Trial means</b></font>";
     $trialcount = count($trials);
     for ($i=0; $i < $trialcount; $i++) {
       $tm = round($trialmeans[$traitnumber][$i], 1);
@@ -210,14 +191,15 @@ else {
     print "</table><p>";
     $traitnumber++;
   }
-
-  // If there's any missing data offer to remove it.
-  if ($missingdata) {
-    if ($_GET['balance'] == 'yes')
-      $cbox = "checked";
-    print "<input type=checkbox $cbox onclick='javascript:balancedata(this)'> Remove lines with missing data.<P>";
-  }
 }
+
+// If there's any missing data offer to remove it.
+if ($missingdata) {
+  if ($_GET['balance'] == 'yes')
+    $cbox = "checked";
+  print "<input type=checkbox $cbox onclick='javascript:balancedata(this)'> Remove lines with missing data.<P>";
+}
+
 ?>
 
 <script type = "text/javascript">
@@ -229,9 +211,21 @@ else {
     }
 </script>
 
-<div class='section' style='font-size:90%'>
-<b>Legend</b><br> 
-  LSD to be calculated among Lines in each Trial, and among Trials for each Line
+<hr>
+<div class='section' style='font-size:100%'>
+<b>Legend</b><p> 
+The least squares mean (<em>LSmean</em>) of a line is the best estimate of that
+line's mean based on a linear model.  If a dataset has missing data, the
+LSmean adjusts for the expected value of the missing data based on the
+model, so that the LSmean is less sensitive to missingness than the
+arithmetic mean.<p>
+If two lines have the same true mean value, their estimated mean values are
+only expected to differ by more than the Least Significant Difference (<em>LSD</em>)
+in 5% of experiments.<p>
+If a number of lines have the same true mean value, the maximum difference
+between any pair of lines is only expected to exceed the Honestly
+Significant Difference (<em>HSD</em>) in 5% of experiments.<p>
+
 </div>
 
 <?php
