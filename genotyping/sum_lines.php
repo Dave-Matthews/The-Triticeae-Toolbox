@@ -1,13 +1,13 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-connect();
+require $config['root_dir'].'includes/bootstrap.inc';
+$mysqli = connecti();
 
-include $config['root_dir'].'theme/admin_header.php';
+require $config['root_dir'].'theme/admin_header.php';
 
 $sql = "select line_record_uid, line_record_name from line_records";
-$result = mysql_query($sql) or die(mysql_error());
-while ($row=mysql_fetch_row($result)) {
+$result = mysqli_query($mysqli, $sql) or die(mysqli_error());
+while ($row=mysqli_fetch_row($result)) {
     $uid = $row[0];
     $name = $row[1];
     $name_list[$uid] = $name;
@@ -28,8 +28,8 @@ if (isset($_GET['uid'])) {
     and a.marker_uid = m.marker_uid
     and a.experiment_uid = e.experiment_uid
     and l.line_record_uid = $uid";
-    $result = mysql_query($sql) or die(mysql_error());
-    while ($row=mysql_fetch_row($result)) {
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
+    while ($row=mysqli_fetch_row($result)) {
         $trial = $row[0];
         $e_uid = $row[1];
         $empty[$trial] = "";
@@ -50,8 +50,8 @@ if (isset($_GET['uid'])) {
         $sql = "select marker_uid, alleles from allele_conflicts
         where line_record_uid = $uid
         and experiment_uid = $trial1";
-        $result = mysql_query($sql) or die(mysql_error());
-        while ($row=mysql_fetch_row($result)) {
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
+        while ($row=mysqli_fetch_row($result)) {
             $count1++;
             $marker_uid = $row[0];
             $alleles1 = $row[1];
@@ -60,8 +60,8 @@ if (isset($_GET['uid'])) {
         $sql = "select distinct marker_uid from allele_cache
         where line_record_uid = $uid
         and experiment_uid = $trial1";
-        $result = mysql_query($sql) or die(mysql_error());
-        while ($row=mysql_fetch_row($result)) {
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
+        while ($row=mysqli_fetch_row($result)) {
             $marker_uid = $row[0];
             $marker_all1[] = $marker_uid;
         }
@@ -76,8 +76,8 @@ if (isset($_GET['uid'])) {
             $sql = "select marker_uid, alleles from allele_conflicts
             where line_record_uid = $uid
             and experiment_uid = $trial2";
-            $result = mysql_query($sql) or die(mysql_error());
-            while ($row=mysql_fetch_row($result)) {
+            $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
+            while ($row=mysqli_fetch_row($result)) {
                 $count2++;
                 $marker_uid = $row[0];
                 $alleles1 = $row[1];
@@ -86,8 +86,8 @@ if (isset($_GET['uid'])) {
             $sql = "select distinct marker_uid from allele_cache
             where line_record_uid = $uid
             and experiment_uid = $trial2";
-            $result = mysql_query($sql) or die(mysql_error());
-            while ($row=mysql_fetch_row($result)) {
+            $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
+            while ($row=mysqli_fetch_row($result)) {
                 $marker_uid = $row[0];
                 $marker_all2[] = $marker_uid;
             }
@@ -125,7 +125,7 @@ if (isset($_GET['uid'])) {
   and a.alleles != '--'
   and l.line_record_uid = $uid
   order by m.marker_name";
-  $result = mysql_query($sql) or die(mysql_error());
+  $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
   $count = 0;
   $prev = "";
   echo "<h3>Allele Conflicts for $name_list[$uid] sorted by marker name</h3>\n";
@@ -134,7 +134,7 @@ if (isset($_GET['uid'])) {
   foreach ($empty as $trial=>$allele) {
       echo "<td>$trial";
   }
-  while ($row=mysql_fetch_row($result)) {
+  while ($row=mysqli_fetch_row($result)) {
       $line_name = $row[0];
       $marker_name = $row[1];
       $alleles = $row[2];
@@ -165,9 +165,9 @@ if (isset($_GET['uid'])) {
 
     // Update cache table if necessary. Empty?
     $sql = "select line_record_uid from allele_duplicates";
-    $result = mysql_query($sql) or die(mysql_error());
-    if (mysql_num_rows($result) == 0)
-      $update = TRUE;
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
+    if (mysqli_num_rows($result) == 0)
+      $update = true;
 
     // Out of date?
     $sql = "select if( datediff(
@@ -176,7 +176,7 @@ if (isset($_GET['uid'])) {
           ) > 0, 'need_update', 'okay')";
     $need = mysql_grab($sql);
     if ($need == 'need_update') {
-        $update = TRUE;
+        $update = true;
     }
 
     if ($update) {
@@ -203,8 +203,8 @@ if (isset($_GET['uid'])) {
     echo "When there are more than 2 experiments the values are for the experiments that have the largest percentage of conflicts.<br>\n";
     echo "<table>";
     echo "<tr><td>line name<td>conflicts<td>comparisons<td>percent<br>conflicts\n";
-    $result = mysql_query($sql) or die(mysql_error());
-    while ($row=mysql_fetch_row($result)) {
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
+    while ($row=mysqli_fetch_row($result)) {
        $uid = $row[0];
        $dupl = $row[1];
        $conf = $row[2];
@@ -213,4 +213,4 @@ if (isset($_GET['uid'])) {
     }
 }
 echo "</table></div>";
-include $config['root_dir'].'theme/footer.php';
+require $config['root_dir'].'theme/footer.php';

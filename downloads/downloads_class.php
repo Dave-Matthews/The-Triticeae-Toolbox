@@ -112,7 +112,7 @@ class Downloads
         ?>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
         <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
-        <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
+        <script type="text/javascript" src="downloads/downloadsjq03.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
     }
@@ -185,8 +185,14 @@ class Downloads
         ?>        
         </div>
         <div id="title2">
-                    <b>Phenotype and Consensus Genotype data</b><br>
         <?php
+        if (isset($_SESSION['selected_lines'])) {
+            echo "Select the filter options then select the Create file button with the desired file format.";
+        } else {
+            echo "Download selected data for use in external analysis programs (TASSEL, rrBLUP, Flapjack, synbreed)";
+        }
+        echo "<br><br>";
+                    echo "<b>Phenotype and Consensus Genotype data</b><br>";
                     echo "1. Select a set of <a href=\"" . $config['base_url'];
                     echo "downloads/select_all.php\">Lines, Traits, and Trials</a>.<br>";
                     ?>
@@ -198,15 +204,6 @@ class Downloads
                     ?>
                     2. Select a genetic map which has the best coverage for your selection.<br><br>
         <input type="button" value="Detailed instruction" onclick="javascript: define_terms()"><br><br>
-                    <?php
-        
-        if (isset($_SESSION['selected_lines'])) {
-                    ?>
-                    Select the filter options then
-                    select the Create file button with the desired file format.<br><br>
-                    <?php
-        }
-        ?>
         </div><br>
         <input type="checkbox" id="typeP" value="pheno" onclick="javascript:select_download(this.id);" <?php echo $download_pheno ?>>Phenotype
         <input type="checkbox" id="typeG" value="geno" onclick="javascript:select_download(this.id);"<?php echo $download_geno ?>>Genotype consensus
@@ -804,7 +801,7 @@ class Downloads
                 if ($saved_session == "") {
                     $saved_session = "genotype experiment = $geno_name";
                 } else {
-                    $saved_session = $saved_session . ", genotype experiment = $geno_str";
+                    $saved_session = $saved_session . ", genotype experiment = $geno_name";
                 }
                 $sql = "select count(*) from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
                 $res = mysql_query($sql) or die(mysql_error() . $sql);
@@ -1248,10 +1245,9 @@ class Downloads
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_bind_result($stmt, $trait_uid, $value);
                     while (mysqli_stmt_fetch($stmt)) {
-                      $count++;
                       $outarray[$trait_uid]= $value;
                     }
-                    if ($count > 0) {
+                    if ($outarray != $empty) {
                         $tmp = implode($delimiter, $outarray);
                         $output .= $line_name.$delimiter.$expr_name.$delimiter.$tmp."\n";
                     }
