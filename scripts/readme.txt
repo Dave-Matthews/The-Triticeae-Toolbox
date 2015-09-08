@@ -11,7 +11,7 @@ load_gbs_frequencies.php database input_file trial_code
 example
   "php load_gbs_frequencies.php T3wheat all_chr_300acc_SNPs_min50acc_rmMultiAllele_addHeader.vcf.frequencies HWWAMP_GBS_2014"
 
-2. Creating physical map from Chromosome Survey Sequence assembled by the International Wheat Genome Sequencing Consurtium (IWGSC).
+2. Creating physical map from Chromosome Survey Sequence assembled by the International Wheat Genome Sequencing Consortium (IWGSC).
 
 blast-iwgsc.php - BLAST all the markers against reference downloaded from IWGSC
 parse-blast.php - create a BLAST file of the best matches for each marker
