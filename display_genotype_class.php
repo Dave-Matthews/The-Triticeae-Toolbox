@@ -32,7 +32,7 @@ class ShowData
      */
     public function __construct($function = null)
     {
-        switch($function) {
+        switch ($function) {
             case 'typeTabDelimiter':
                 $this->type_Tab_Delimiter();  /* Displaying in tab delimited fashion */
                 break;
@@ -137,50 +137,58 @@ class ShowData
             echo "Error: " . mysqli_error($mysqli);
         }
 
-    $sql_lines = "select line_record_uid from tht_base where experiment_uid = $experiment_uid";
-    $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli) . $sql_lines);
-    while ($line = mysqli_fetch_row($res_lines))
-      $line_ids[] = $line[0];
-    $line_total = count($line_ids);
-    if ($line_total == 0) {
-        $sql_lines = "select line_index from allele_bymarker_expidx where experiment_uid = $experiment_uid";
-        $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli));
-        if ($line = mysqli_fetch_row($res_lines)) {
-            $gbs_exp = "yes";
-            $tmp = $line[0];
-            $line_ids = json_decode($tmp, true);
-            $line_total = count($line_ids);
+        $sql_lines = "select line_record_uid from tht_base where experiment_uid = $experiment_uid";
+        $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli) . $sql_lines);
+        while ($line = mysqli_fetch_row($res_lines)) {
+            $line_ids[] = $line[0];
+        }
+        $line_total = count($line_ids);
+        if ($line_total == 0) {
+            $sql_lines = "select line_index from allele_bymarker_expidx where experiment_uid = $experiment_uid";
+            $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli));
+            if ($line = mysqli_fetch_row($res_lines)) {
+                $gbs_exp = "yes";
+                $tmp = $line[0];
+                $line_ids = json_decode($tmp, true);
+                $line_total = count($line_ids);
+                $line_list = implode(",", $line_ids);
+            }
+        } else {
             $line_list = implode(",", $line_ids);
         }
-    } else {
-        $line_list = implode(",", $line_ids);
-    }
 
-    $sql_Gen_Info = "SELECT * FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
-    $res_Gen_Info = mysqli_query($mysqli, $sql_Gen_Info) or die("Error: No experiment information for genotype experiment $trial_code..<br> " .mysqli_error($mysqli));
-    $row_Gen_Info = mysqli_fetch_assoc($res_Gen_Info);
-    $manifest_file_name = $row_Gen_Info['manifest_file_name'];
-    $cluster_file_name = $row_Gen_Info['cluster_file_name'];
-    $OPA_name = $row_Gen_Info['OPA_name'];
-    $sample_sheet_filename = $row_Gen_Info['sample_sheet_filename'];
-    $raw_datafile_archive = $row_Gen_Info['raw_datafile_archive'];
-    $genotype_experiment_info_uid = $row_Gen_Info['genotype_experiment_info_uid'];
-    $comments = $row_Gen_Info['comments'];
-    $platform_uid = $row_Gen_Info['platform_uid'];
-    $sql = "SELECT platform_name from platform where platform_uid = $platform_uid";;
-    $res = mysqli_query($mysqli, $sql) or die("Error: No platform information for genotype experiment $trial_code..<br> " .mysqli_error($mysqli));
-    $row = mysqli_fetch_assoc($res);
-    $platform_name = $row['platform_name'];
-    $dataset = mysql_grab("select datasets_uid from datasets_experiments where experiment_uid = $experiment_uid");
-    $sql_BP = "select cp.data_program_name, cp.data_program_code
+        $sql_Gen_Info = "SELECT * FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
+        $res_Gen_Info = mysqli_query($mysqli, $sql_Gen_Info) or die("Error: No experiment information for genotype experiment $trial_code..<br> " .mysqli_error($mysqli));
+        $row_Gen_Info = mysqli_fetch_assoc($res_Gen_Info);
+        $manifest_file_name = $row_Gen_Info['manifest_file_name'];
+        $cluster_file_name = $row_Gen_Info['cluster_file_name'];
+        $OPA_name = $row_Gen_Info['OPA_name'];
+        $sample_sheet_filename = $row_Gen_Info['sample_sheet_filename'];
+        $raw_datafile_archive = $row_Gen_Info['raw_datafile_archive'];
+        $genotype_experiment_info_uid = $row_Gen_Info['genotype_experiment_info_uid'];
+        $comments = $row_Gen_Info['comments'];
+        $platform_uid = $row_Gen_Info['platform_uid'];
+        $sql = "SELECT platform_name from platform where platform_uid = $platform_uid";
+        $res = mysqli_query($mysqli, $sql) or die("Error: No platform information for genotype experiment $trial_code..<br> " .mysqli_error($mysqli));
+        $row = mysqli_fetch_assoc($res);
+        $platform_name = $row['platform_name'];
+        //$dataset = mysql_grab("select datasets_uid from datasets_experiments where experiment_uid = $experiment_uid");
+        $sql_DS = "select datasets_uid from datasets_experiments where experiment_uid = $experiment_uid";
+        $res_DS = mysqli_query($mysqli, $sql_DS) or die(mysqli_error($mysqli));
+        while ($row_DS = mysqli_fetch_assoc($res_DS)) {
+            $dataset = $row_DS['datasets_uid'];
+            $sql_BP = "select cp.data_program_name, cp.data_program_code
                from datasets ds, CAPdata_programs cp
 	       where ds.datasets_uid = $dataset
 	       and ds.CAPdata_programs_uid = cp.CAPdata_programs_uid";
-    $res_BP = mysqli_query($mysqli, $sql_BP) or die(mysqli_error($mysqli));
-    $row_BP = mysqli_fetch_assoc($res_BP);
-    $breeding_program_name = $row_BP['data_program_name'];
-    $breeding_program_code = $row_BP['data_program_code'];
-
+            $res_BP = mysqli_query($mysqli, $sql_BP) or die(mysqli_error($mysqli));
+            $row_BP = mysqli_fetch_assoc($res_BP);
+            if ($breeding_program_name == "") {
+                $breeding_program_name = $row_BP['data_program_name'] . " (" . $row_BP['data_program_code'] . ")";
+            } else {
+                $breeding_program_name .= ", " . $row_BP['data_program_name'] . " (" . $row_BP['data_program_code'] . ")";
+            }
+        }
     if (isset($_GET['mm']) && is_numeric($_GET['mm'])) {
       $max_missing = $_GET['mm'];
     } else {
@@ -231,7 +239,7 @@ class ShowData
     echo "<tr> <td>Experiment Short Name</td><td>".$experiment_short_name."</td></tr>";
     echo "<tr> <td>Platform</td><td>".$platform_name."</td></tr>";
     echo "<tr> <td>Data Program</td><td>".$data_program_name." (".$data_program_code.")</td></tr>";
-    echo "<tr> <td>Breeding Program</td><td>".$breeding_program_name." (".$breeding_program_code.")</td></tr>";
+    echo "<tr> <td>Breeding Program</td><td>".$breeding_program_name."</td></tr>";
     echo "<tr> <td>OPA Name</td><td>".$row_Gen_Info['OPA_name']."</td></tr>";
     echo "<tr> <td>Processing Date</td><td>".$row_Gen_Info['processing_date']."</td></tr>";
     echo "<tr> <td>Software</td><td>".$row_Gen_Info['analysis_software']."</td></tr>";
