@@ -419,8 +419,8 @@ class MapsCheck
 	if ($new_map == 'TRUE') {		
 		$map_name = array_unique($chrom);
 		echo "size map".sizeof($map_name)."\n";
-		print_r($map_name);
-		print_r($marker);
+		//print_r($map_name);
+		//print_r($marker);
 		foreach ($map_name as $cstr) {
 		//	echo "into loop".$cstr." i'm in first loop"."\n";
 			$chrom_vals = array_keys(find($cstr, $chrom));
