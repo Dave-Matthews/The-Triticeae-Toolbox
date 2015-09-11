@@ -13,7 +13,7 @@ class Downloads
     {
         global $config;
         include($config['root_dir'].'theme/normal_header.php');
-        echo "<h2>Download the annotation for selected markers or genotype experiment<h2>\n";
+        echo "<h2>Download the annotation for selected markers or genotype experiment</h2>\n";
         if (isset($_SESSION['geno_exps'])) {
             $this->downloadGenoExp();
         } elseif (isset($_SESSION['clicked_buttons'])) {
