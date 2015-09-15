@@ -418,7 +418,7 @@ class MapsCheck
 	
 	if ($new_map == 'TRUE') {		
 		$map_name = array_unique($chrom);
-	//	echo "size map".sizeof($map_name)."\n";
+		echo "size map".sizeof($map_name)."\n";
 		//print_r($map_name);
 		//print_r($marker);
 		foreach ($map_name as $cstr) {
@@ -509,7 +509,7 @@ class MapsCheck
 				
                 if (isset($map_uid[$map_idx])) {			 
                     $mmap_uid = $map_uid[$map_idx];
-                    echo "Good: $map_idx $cnt<br>\n";
+                    //echo "Good: $map_idx $cnt<br>\n";
                 } else {
                     echo "Error: $map_idx not defined $new_map $cnt<br>\n";
                 }
