@@ -40,17 +40,12 @@ if (isset($_SESSION['geno_exps'])) {
 ?>
 			
 			
-  </ul>
-  <div id="searchbox">
+  <br><br><li>
   <form style="margin-bottom:3px" action="search.php" method="post">
-  <div style="margin: 0; padding: 0;">
   <input type="hidden" value="Search" >
   <input style="width:170px" type="text" name="keywords" value="Quick search..." onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
-  </div>
   </form>
+  </ul>
   <br>
-  </div>
-<div  style="margin-left: -25px; width: 170px; padding: 10px 15px;">
-<?php require $config['root_dir'].'whatsnew.html'; ?>
-</div>
+<?php include $config['root_dir'].'whatsnew.html'; ?>
 

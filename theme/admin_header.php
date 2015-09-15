@@ -25,14 +25,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <base href="<?php echo $config['base_url']; ?>" >
-<link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css">
+<!--link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css"-->
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script>
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="jquery.smartmenus.js" type="text/javascript"></script>
+
+<link href='sm-core-css.css' rel='stylesheet' type='text/css' />
+<link href='theme/sm-cleant3.css' rel='stylesheet' type='text/css' />
 <script>
 jQuery.noConflict();
+jQuery( document ).ready(function( $ ) {
+    $('#main-menu').smartmenus();
+});
 </script>
 
 <?php
@@ -89,7 +95,7 @@ global $usegbrowse;
   );
 ?>
 <div id="nav">
-  <ul>
+  <ul id="main-menu" class="sm sm-clean">
     <li>
       <a href="">Home</a>
     <li><a href="" title="Lines and Phenotypes">Select</a>
@@ -111,8 +117,8 @@ global $usegbrowse;
   /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
     if (loginTest2()) :
 ?>
-	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=yellow>My Line Panels</font></a>
-        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><font color=yellow>My Marker Panels</font></a>
+	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><b>My Line Panels</b></a>
+        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><b>My Marker Panels</b></a>
  <?php endif ?>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
@@ -127,9 +133,12 @@ global $usegbrowse;
       </ul>
     <li><a href="" title="<?php echo $lang["desc_sc6"]; ?>">Analyze</a>
       <ul>
-	<li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
-        <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
- 	<li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
+        <li><a href="" title="Cluster">Cluster</a>
+        <ul>
+	  <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
+          <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
+ 	  <li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
+        </ul>
 	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>
@@ -168,9 +177,9 @@ global $usegbrowse;
 
     <?php
   //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
-  if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ): 
-  ?> 
-   <li> <a href="" title="Add, edit or delete data">Curate</a>
+    if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) :
+    ?> 
+    <li> <a href="" title="Add, edit or delete data">Curate</a>
       <ul>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
       Lines</a></li>
@@ -294,10 +303,8 @@ global $usegbrowse;
    }
 ?>
 			
-  </ul>
-  <div id="searchbox">
+  <br><br><li>
   <form style="margin-bottom:3px" action="search.php" method="post">
-  <div style="margin: 0; padding: 0;">
   <input type="hidden" value="Search" >
   <input style="width:170px" type="text" name="keywords" value="Quick search..."
    title="This search term will match on any part of a string.
@@ -307,13 +314,11 @@ These regular expressions modify the search
    . - any single character
    * - zero or more instances of preceding element
    + - one or more instances of preceding element" onfocus="javascript:this.value=''" onblur="javascript:if(this.value==''){this.value='Quick search...';}" >
-  </div>
   </form>
-  <br></div>
+  </ul>
+  <br>
 
-<div  style="margin-left: -25px; width: 170px; padding: 10px 15px;">
 <?php include($config['root_dir'].'whatsnew.html'); ?>
-</div>
 
   </div>
   <div id="main">

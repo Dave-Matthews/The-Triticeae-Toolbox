@@ -52,7 +52,7 @@ $name = get_unique_name("datasets");
   <th>&nbsp;</th>
   </tr>
 	
-  <tr><td>
+  <tr><td>Trials containing data from the program&#39;s lines<br>
   <select onchange="window.open('<?php echo $config['base_url']; ?>search_bp.php?table=CAPdata_programs&uid='+this.options[this.selectedIndex].value,'_top')">
   <option selected value=''>Search by Breeding Program</option>
    <?php
@@ -79,8 +79,7 @@ $name = get_unique_name("datasets");
        echo "<option value='$uid'>$progname</option>\n";
    }
 ?>
-  </select></td>
-  <td>Trials containing data from the program&#39;s lines</td>
+  </select>
   </tr>
 
   <tr><td>
