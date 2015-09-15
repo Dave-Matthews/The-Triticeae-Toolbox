@@ -1,13 +1,13 @@
 <?php
 /**
- * select markers and save in session variable
+ * Select markers and save in session variable
  *
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/genotyping/marker_selection.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/genotyping/marker_selection.php
  *
  * 16mar12 dem Allow selecting markers that are not in maps.
  *            Un-require all marker names to also be in marker_synonyms.value.
@@ -31,7 +31,7 @@ require $config['root_dir'].'theme/admin_header.php';
 <?php
 
 /**
- * get map_uid for given mapname
+ * Get map_uid for given mapname
  *
  * @return integer
  */
@@ -288,6 +288,7 @@ while ($row=mysqli_fetch_assoc($result)) {
 <?php
 $result=mysqli_query($mysqli, "select markerpanels_uid, name, marker_ids, comment from markerpanels");
 if (mysqli_num_rows($result) > 0) {
+    $found = 0;
     ?>
     <h3> Preselected marker sets</h3>
     <form action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
@@ -303,6 +304,7 @@ if (mysqli_num_rows($result) > 0) {
         $sql = "SELECT markerpanels_uid, name FROM markerpanels where users_uid = $myid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row=mysqli_fetch_assoc($res)) {
+            $found = 1;
             $name = $row['name'];
             $desc = $row['comment'];
             print "<option value='$name' title='$desc'>$name</option>";
@@ -312,16 +314,17 @@ if (mysqli_num_rows($result) > 0) {
     $sql = "select markerpanels_uid, name, marker_ids, comment from markerpanels where users_uid is NULL";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row=mysqli_fetch_assoc($res)) {
+        $found = 1;
         $uid = $row['markerpanels_uid'];
         $name = $row['name'];
         $desc = $row['comment'];
         print "<option value='$name' title='$desc'>$name</option>";
     }
-    ?>
-    </select>
-    <td id="markerSet">Choose set.
-    </td></tbody></table></form>
-    <?php
+    echo "</select>";
+    if ($found) {
+        echo "<td id=\"markerSet\">Choose set.</td>";
+    }
+    echo "</tbody></table></form>";
 }
 ?>
 </div>
