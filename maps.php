@@ -4,8 +4,8 @@
  *
  * PHP version 5.3
  *
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/maps.php
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/maps.php
  *
  * 04/04/2013   C.Birkett make column height dynamic so scroll bars are not used
  * 06/22/2012   C.Birkett sort each column so rows are aligned, move style sheet to top
@@ -16,7 +16,7 @@
 namespace T3download;
 
 require_once 'config.php';
-include_once $config['root_dir'].'includes/bootstrap.inc';
+require_once $config['root_dir'].'includes/bootstrap.inc';
 connect();
 
 $mapsetStr = "";
@@ -34,14 +34,13 @@ new Maps($_GET['function']);
 
 /**
  * Using the class's constructor to decide which action to perform
- * @author claybirkett
- *
+ * @author   Clay Birkett <clb343@cornell.edu>
  */
 class Maps
 {
-  /**
-   * delimiter used for output files
-   */
+    /**
+     * Delimiter used for output files
+     */
     private $delimiter = "\t";
  
     public function __construct($function = null)
@@ -106,7 +105,7 @@ class Maps
                     { border: 1 !important; }
         </style>
 <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
-<a href="/jbrowse/?data=wheat">View in JBrowse.</a><br><br>
+<a href="/jbrowse/?data=wheat" target="_new">View in JBrowse.</a><br><br>
 
 <script type="text/javascript">
 
