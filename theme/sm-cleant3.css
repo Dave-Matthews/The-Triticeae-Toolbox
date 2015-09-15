@@ -10,11 +10,14 @@
   padding: 13px 20px;
   /* make room for the toggle button (sub indicator) */
   padding-right: 58px;
-  color: #555555;
+  /* color: #555555; */
+  color: #9a292c;
   font-family: "Lucida Sans Unicode", "Lucida Sans", "Lucida Grande", Arial, sans-serif;
-  font-size: 18px;
+  /* font-size: 18px; */
+  font-size: 16px;
   font-weight: normal;
-  line-height: 17px;
+  /* line-height: 17px; */
+  line-height: 10px;
   text-decoration: none;
 }
 .sm-clean a.current {
@@ -85,7 +88,8 @@
   background: rgba(162, 162, 162, 0.1);
 }
 .sm-clean ul a, .sm-clean ul a:hover, .sm-clean ul a:focus, .sm-clean ul a:active {
-  font-size: 16px;
+  /* font-size: 16px; */
+  font-size: 12px;
   border-left: 8px solid transparent;
 }
 .sm-clean ul ul a,
@@ -160,8 +164,12 @@
     border-radius: 100px;
   }
   .sm-clean a, .sm-clean a:hover, .sm-clean a:focus, .sm-clean a:active, .sm-clean a.highlighted {
-    padding: 12px 12px;
-    color: #555555;
+    /* padding: 12px 12px; */
+    padding: 15px 8px;
+    /* color: #555555; */
+    color: white;
+    /* background: #9a292c; */
+    background: #de6536;
     -webkit-border-radius: 0 !important;
     -moz-border-radius: 0 !important;
     -ms-border-radius: 0 !important;
@@ -169,7 +177,7 @@
     border-radius: 0 !important;
   }
   .sm-clean a:hover, .sm-clean a:focus, .sm-clean a:active, .sm-clean a.highlighted {
-    color: #d23600;
+    color: white;
   }
   .sm-clean a.current {
     color: #d23600;
@@ -188,7 +196,8 @@
     height: 0;
     border-width: 4px;
     border-style: solid dashed dashed dashed;
-    border-color: #555555 transparent transparent transparent;
+    /* border-color: #555555 transparent transparent transparent; */
+    border-color: #ffffff transparent transparent transparent;
     background: transparent;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
@@ -236,8 +245,10 @@
   }
   .sm-clean ul a, .sm-clean ul a:hover, .sm-clean ul a:focus, .sm-clean ul a:active, .sm-clean ul a.highlighted {
     border: 0 !important;
-    padding: 10px 20px;
-    color: #555555;
+    /* padding: 10px 20px; */
+    padding: 5px 10px;
+    /* color: #555555; */
+    color: white;
   }
   .sm-clean ul a:hover, .sm-clean ul a:focus, .sm-clean ul a:active, .sm-clean ul a.highlighted {
     background: #eeeeee;
@@ -259,7 +270,8 @@
     margin-top: -5px;
     border-width: 5px;
     border-style: dashed dashed dashed solid;
-    border-color: transparent transparent transparent #555555;
+    /* border-color: transparent transparent transparent #555555; */
+    border-color: transparent transparent transparent #ffffff;
   }
   .sm-clean span.scroll-up,
   .sm-clean span.scroll-down {
@@ -431,7 +443,7 @@ html>body #logo
 }
 #util, #utilright
 {
-    width: 4ps;
+    width: 4px;
     text-align: center;
     background-position: center; 
 }
@@ -446,12 +458,12 @@ html>body #logo
 #quicklinks h2
 {
     color: #de5414;
-    text-align: center;
+    text-align: left;
 }
 #quicklinks ul, #nav ul
 {
     list-style: none;
-    padding: 5;
+    padding: 5px;
 }
 #quicklinks li
 {
@@ -460,17 +472,17 @@ html>body #logo
 }
 #whatsnew
 {
-    padding: 10;
+    padding: 0px;
 }
 #whatsnew ul
 {
     list-style: none;
-    padding: 5;
+    padding: 5px;
 }
 #primaryContent h2
 {
     color: #de5414;
-    text-align: center;
+    text-align: left;
 }
 .section
 {
@@ -635,10 +647,10 @@ html>body #logo
     margin-left: 245px;
     font-size: 1.2em
 }
-#nav {position:absolute; top:88px; left:11px; height:42px;
-    padding-left:1px;z-index:5999}
+#nav {position:absolute; top:88px; left:0px; height:42px;
+    padding-left:0px;z-index:5999}
 }
-}
+
 .section, .boxContent {width: auto; padding:12px; border-top:1px solid #9a292c;
     background:url('images/sectionhd.png') repeat-x;}
 .section p, .boxContent p{margin:1.5em 0; line-height:1.5em}

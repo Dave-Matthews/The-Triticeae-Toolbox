@@ -4,8 +4,8 @@
  *
  * PHP version 5.3
  *
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/maps.php
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/maps.php
  *
  * 04/04/2013   C.Birkett make column height dynamic so scroll bars are not used
  * 06/22/2012   C.Birkett sort each column so rows are aligned, move style sheet to top
@@ -13,13 +13,15 @@
  * 10/19/2010   J.Lee use dynamic GBrowse tracks generation
  * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks
 */
+namespace T3download;
+
 require_once 'config.php';
-include_once $config['root_dir'].'includes/bootstrap.inc';
+require_once $config['root_dir'].'includes/bootstrap.inc';
 connect();
 
 $mapsetStr = "";
 $sql = "select mapset_name from mapset";
-$sql_r = mysql_query($sql) or die (mysql_error());
+$sql_r = mysql_query($sql) or die(mysql_error());
 
 while ($row = mysql_fetch_assoc($sql_r)) {
     $val = $row["mapset_name"];
@@ -32,19 +34,18 @@ new Maps($_GET['function']);
 
 /**
  * Using the class's constructor to decide which action to perform
- * @author claybirkett
- *
+ * @author   Clay Birkett <clb343@cornell.edu>
  */
 class Maps
 {
-  /**
-   * delimiter used for output files
-   */
+    /**
+     * Delimiter used for output files
+     */
     private $delimiter = "\t";
  
     public function __construct($function = null)
     {
-        switch($function) {
+        switch ($function) {
             case 'typeMaps':
                 $this->type_Maps(); /* Handle Maps */
                 break;
@@ -66,25 +67,25 @@ class Maps
         }
     }
 
-  // The wrapper action for the typeMapset . Handles outputting the header
-  // and footer and calls the first real action of the typeMapset .
-  private function typeMapSet()
-  {
-    global $config;
-    include($config['root_dir'].'theme/normal_header.php');
+    // The wrapper action for the typeMapset . Handles outputting the header
+    // and footer and calls the first real action of the typeMapset .
+    private function typeMapSet()
+    {
+        global $config;
+        include $config['root_dir'].'theme/normal_header.php';
 
-    echo "<h2>Map Sets</h2>"; 
-    $this->type_MapSet_Display();
-    $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
-  }
-  //
-  // The first real action of the typeMapset. Handles outputting the
-  // Mapset names selection boxes as well as outputting the
-  // javascript code required by itself and the other typeMapset actions.
-  private function type_MapSet_Display()
-  {
-?>
+        echo "<h2>Map Sets</h2>";
+        $this->typeMapSetDisplay();
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
+    //
+    // The first real action of the typeMapset. Handles outputting the
+    // Mapset names selection boxes as well as outputting the
+    // javascript code required by itself and the other typeMapset actions.
+    private function typeMapSetDisplay()
+    {
+    ?>
 		<!--Style sheet for better user interface-->
 		
 		<style type="text/css">
@@ -104,7 +105,7 @@ class Maps
                     { border: 1 !important; }
         </style>
 <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
-<a href="/cgi-bin/gbrowse/tht">View in GBrowse.</a><br><br>
+<a href="/jbrowse/?data=wheat" target="_new">View in JBrowse.</a><br><br>
 
 <script type="text/javascript">
 
@@ -249,17 +250,6 @@ class Maps
 				      $j(this)
 					.removeClass('inprogress');
 				    });
-//                             loadGbrowse('#map_gbrowse',
-// 					' #details_panel',
-// 					['name=' +
-// 					 'chr' + chr.toUpperCase(),
-// 					all_mapSets, 'grid=on', 'show_tooltips=on',
-// '.cgifields=show_tooltips', 'drag_and_drop=on'].join('&'),
-// 					function () {
-// 					  tocollapse
-// 					    .each(function () {
-// 						collapse('Marker ' + this );});
-// 					});
                         }
                     }
 				);
@@ -339,18 +329,17 @@ class Maps
 					<td>
 						<select name="mapsetnames" size="10" style="height: <?php echo $height ?>em;" onchange="javascript: update_mapset(this.value)">
 				<?php
-		
-		
-		// Select Mapset Name for the drop down menu
-		$sql = "SELECT mapset_name FROM mapset ORDER BY mapset_name DESC";
 
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
-		{
-			?>
-				<option value="<?php echo $row['mapset_name'] ?>"><?php echo $row['mapset_name'] ?></option>
-			<?php
-		}
+        // Select Mapset Name for the drop down menu
+        $sql = "SELECT mapset_name FROM mapset ORDER BY mapset_name DESC";
+
+        $res = mysql_query($sql) or die(mysql_error());
+        while ($row = mysql_fetch_assoc($res))
+        {
+            ?>
+            <option value="<?php echo $row['mapset_name'] ?>"><?php echo $row['mapset_name'] ?></option>
+            <?php
+        }
 		?>
 						</select>
 					</td>
@@ -990,11 +979,4 @@ $i++;
 $workbook->send('Maps_Details.xls');
 $workbook->close();
 }
-
-
 }/* end of class */
-?>
-	
-			
-
-
