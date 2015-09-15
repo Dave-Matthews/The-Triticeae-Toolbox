@@ -88,7 +88,9 @@ else {
   file_put_contents($outfile, $outdata);
 
   // Run TableReportParameters.R to calculate LSD.
-  $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, stringsAsFactors=FALSE)\noutFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")\n';
+  // On tcap, the imbedded '\n' doesn't work.  Use chr(10) instead.
+  /* $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, stringsAsFactors=FALSE)\noutFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")\n'; */
+  $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, stringsAsFactors=FALSE)'.chr(10).'outFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")'.chr(10);
   // for debugging:
   /* echo "<pre>"; system("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla 2>&1"); */
   exec("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla > /dev/null 2> /tmp/tht/stderr.txt$time");
@@ -150,8 +152,14 @@ else {
   $traitnumber = 0;
   foreach ($traits as $trait) {
     $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-    $lsdround = round($lsds[$traitnumber], 2);
-    $hsdround = round($hsds[$traitnumber], 2);
+    if (!$lsds[$traitnumber])
+      $lsdround = "--";
+    else
+      $lsdround = round($lsds[$traitnumber], 2);
+    if (!$hsds[$traitnumber])
+      $hsdround = "--";
+    else
+      $hsdround = round($hsds[$traitnumber], 2);
     print "<table><tr><th>Trait: $trtname<br>LSD = $lsdround<br>HSD = $hsdround";
     foreach ($trials as $trial) {
       $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
@@ -185,7 +193,10 @@ else {
     print "<tr><td><font color=brown><b>Trial means</b></font>";
     $trialcount = count($trials);
     for ($i=0; $i < $trialcount; $i++) {
-      $tm = round($trialmeans[$traitnumber][$i], 1);
+      if (!$trialmeans[$traitnumber][$i])
+	$tm = "--";
+      else
+	$tm = round($trialmeans[$traitnumber][$i], 1);
       print "<td>$tm";
     }
     print "</table><p>";
