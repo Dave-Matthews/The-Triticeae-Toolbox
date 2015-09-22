@@ -410,7 +410,18 @@ class Annotations_Check {
                         sample_sheet_filename = '$sampleSht', comments = '$comment', platform_uid = $platform_uid
                         WHERE experiment_uid = '$exp_uid'";
 	  $res = mysql_query($sql) or die("Database Error: Genotype record update failed - ". mysql_error());
-	  //echo "$sql<br>\n";
+	  // Also update CAPdata_programs_uid in table 'datasets', if different.
+	  // Get the current value:
+	  $sql = "select d.datasets_uid, CAPdata_programs_uid
+		   from datasets d, datasets_experiments de
+		   where de.experiment_uid = $exp_uid
+		   and d.datasets_uid = de.datasets_uid ";
+	  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	  $row = mysql_fetch_row($res);
+	  if ($row[1] != $bp_uid) {
+	    $sql = "UPDATE datasets set CAPdata_programs_uid = $bp_uid where datasets_uid = $row[0]";
+	    mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	  }
 	} else {
                 
 	  /* If dataset does not exist, then create it, and get ID */
