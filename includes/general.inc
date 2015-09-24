@@ -316,15 +316,13 @@ function show_breeding_programs($id)
 function show_CAPdata_programs($id) {
     global $mysqli;
     show_general("CAPdata_programs", $id);
-
-    $datasets = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiments.trial_code,experiment_year
+    $expts = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiments.trial_code,experiment_year
 				FROM  experiments, CAPdata_programs
 				WHERE CAPdata_programs.CAPdata_programs_uid = experiments.CAPdata_programs_uid
-					AND experiments.CAPdata_programs_uid = 15
+					AND experiments.CAPdata_programs_uid = $id
 				ORDER BY experiment_year, trial_code
 			") or die("Error in show CAP data programs");
-
-    echo viewTable($datasets, "datasets");
+    echo viewTable($expts, "experiments");
 }
 
 /**
