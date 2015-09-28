@@ -5,9 +5,9 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
  *
  */
 // |                                                                      |
@@ -37,8 +37,7 @@ class Downloads
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'step1lines':
                 $this->step1_lines();
                 break;
@@ -726,7 +725,7 @@ class Downloads
      *
      * @return null
      */
-    function verifyLines()
+    private function verifyLines()
     {
         $typeP = $_GET['typeP'];
         $typeG = $_GET['typeG'];
@@ -779,11 +778,11 @@ class Downloads
                 if ($saved_session == "") {
                     $saved_session = "map set = $map_name";
                 } else {
-                    $saved_session = $saved_session . ", map set = $map_name";
+                    $saved_session .= ", map set = $map_name";
                 }
+                $saved_session .= " <input type=\"button\" value=\"change map set\" onclick=\"javascript: select_map()\"><br>";
             } else {
-                echo "<font color=\"red\">Choose a ";
-                ?>
+                ?><font color="red">Choose a  
                 <input type="button" value="genetic map" onclick="javascript: select_map()"> to include marker location data.</font><br>
                 <?php
             }
@@ -808,7 +807,7 @@ class Downloads
                 $row = mysql_fetch_array($res);
                 $count = $row[0];
                 if ($count > 0) {
-                    $saved_session = $saved_session . ", map information loaded with this experiment";
+                    $saved_session .= ", map information loaded with this experiment";
                 } elseif (isset($_SESSION['selected_map'])) {
                     $selected_map = $_SESSION['selected_map'];
                     $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
@@ -818,26 +817,22 @@ class Downloads
                     if ($saved_session == "") {
                         $saved_session = "map set = $map_name";
                     } else {
-                        $saved_session = $saved_session . ", map set = $map_name";
+                        $saved_session .= ", map set = $map_name";
                     }
+                    $saved_session .= " <input type=\"button\" value=\"change map set\" onclick=\"javascript: select_map()\"><br>";
                 } else {
-                    echo "<font color=\"red\">Choose a ";
-                    ?>
+                    ?><font color="red">Choose a 
                     <input type="button" value="genetic map" onclick="javascript: select_map()"> to include marker location data.</font><br>
                     <?php
                 }
             } else {
-               echo "<font color=\"red\">Select one Genotype experiment. </font>";
-               echo "<a href=";
-               echo $config['base_url'];
-               echo "downloads/select_genotype.php>Genotype experiment</a><br>";
+                echo "<font color=\"red\">Select one Genotype experiment. </font>";
+                echo "<a href=";
+                echo $config['base_url'];
+                echo "downloads/select_genotype.php>Genotype experiment</a><br>";
             }
         }
-        if (($typeGE == "true") and isset($_SESSION['geno_exps'])) {
-            $geno_str = $geno_exp[0];
-        }    
-        if ($saved_session == "") {
-        } else {
+        if ($saved_session != "") {
             echo "<br>current data selection = $saved_session<br>";
         }
     }
@@ -935,21 +930,22 @@ class Downloads
              } elseif ($typeGE == "true") {
                 calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
                 $countFilterLines = count($lines);
-                $countFilterMarkers = count($markers);
+                $countFilterMarkers = count($_SESSION['filtered_markers']);
              } else {
                 calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
                 $countFilterLines = count($_SESSION['filtered_lines']);
                 $countFilterMarkers = count($_SESSION['filtered_markers']);
              }
          }
-	 echo "<br><br>"; 
          if (!$use_database) {
              if ($countFilterLines < 1) {
-             echo "<font color=red>Error: No lines selected, increase the value for lines missing data to a larger number<br></font>\n";
+             echo "<font color=red>Error: No lines selected, increase the lines missing parameter to a larger number<br></font>\n";
              } elseif ($countFilterMarkers < 1) {
-             echo "<font color=red>Error: No markers selected, increase the value for markers missing data to a larger number<br></font>\n";
+             echo "<font color=red>Error: No markers selected, decrease the MAF or increase the markers missing parameter to a larger number<br></font>\n";
              }
          }
+         echo "<br><br>";
+
          if ($countLines == 0) {
          } elseif (($typeGE == "true") && ($geno_exps == "")) {
          } else {
