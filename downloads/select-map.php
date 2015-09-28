@@ -10,9 +10,9 @@ $sql = "select count(*) as countm, mapset_name, mapset.mapset_uid as mapuid, map
       WHERE mim.map_uid = map.map_uid
       AND map.mapset_uid = mapset.mapset_uid
       GROUP BY mapset.mapset_uid";
-      echo "This table lists the total markers in each map.\n";
-      echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
-$res = mysql_query($sql) or die (mysql_error());
+echo "This table lists the total markers in each map.\n";
+echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
+$res = mysql_query($sql) or die(mysql_error());
 echo "<table>\n";
 echo "<tr><td>select<td>markers<br>(total)<td>map name<td>comment (mouse over item for complete text)\n";
 while ($row = mysql_fetch_assoc($res)) {
