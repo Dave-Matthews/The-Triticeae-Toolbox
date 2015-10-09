@@ -88,6 +88,7 @@ private function refresh_title()
 {
    $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
    $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+   // $subset = no (Replace), comb (Add, OR), yes (Intersect, AND) 
    echo "<h2>Select Lines by Genotype Experiment</h2>";
    echo "<p>After saving, the line selection can be used for analysis or download. Select multiple options by holding down the Ctrl key while selecting.";
    if ($command == "save") {
