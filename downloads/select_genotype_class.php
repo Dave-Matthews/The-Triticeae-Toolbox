@@ -18,8 +18,7 @@ class SelectGenotypeExp
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'type1':
                 $this->type1();
                 break;
@@ -52,9 +51,9 @@ class SelectGenotypeExp
                 echo $this->step1_lines();
                 break;
 
-           case 'step2lines':
+            case 'step2lines':
                 echo $this->step2_lines();
-	        break;
+                break;
                       
             case 'step3lines':
                 echo $this->step3_lines();
@@ -71,13 +70,13 @@ class SelectGenotypeExp
             case 'type1markers':
                 echo $this->type1_markers();
                 break;
-			
-	    default:
-	        $this->type1_select();
-		break;
-			
-	    }	
-}
+
+            default:
+                $this->type1_select();
+                break;
+
+        }
+    }
 
 /**
  * 1. display a spinning activity image when a slow function is running
@@ -86,8 +85,10 @@ class SelectGenotypeExp
  */
 private function refresh_title()
 {
+   global $mysqli;
    $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
    $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+   // $subset = no (Replace), comb (Add, OR), yes (Intersect, AND) 
    echo "<h2>Select Lines by Genotype Experiment</h2>";
    echo "<p>After saving, the line selection can be used for analysis or download. Select multiple options by holding down the Ctrl key while selecting.";
    if ($command == "save") {
@@ -101,9 +102,9 @@ private function refresh_title()
           $_SESSION['selected_lines'] = $lines;
       } elseif (!empty($_GET['exps'])) {
           $experiments = $_GET['exps'];
-          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-          $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-          if ($row = mysql_fetch_array($res)) {
+          $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+          if ($row = mysqli_fetch_array($res)) {
               $lines = json_decode($row[0], true);
               //*check for duplicates
               foreach ($lines as $line_record) {
@@ -124,9 +125,9 @@ private function refresh_title()
       }
       if ($subset == "comb") {
           $experiments = $_GET['exps'];
-          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-          $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-          if ($row = mysql_fetch_array($res)) {
+          $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+          if ($row = mysqli_fetch_array($res)) {
               $lines_fnd = json_decode($row[0], true);
           } else {
               echo "error - no selection found";
@@ -139,12 +140,12 @@ private function refresh_title()
           $_SESSION['selected_lines'] = $lines;
       } elseif ($subset == "yes") {
           $experiments = $_GET['exps'];
-          $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-          $res = mysql_query($sql) or die(mysql_error() . $sql);
-          if ($row = mysql_fetch_array($res)) {
+          $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+          if ($row = mysqli_fetch_array($res)) {
               $tmp = json_decode($row[0], true);
           }
-          $lines = array_intersect($lines, $temp);
+          $lines = array_intersect($lines, $tmp);
           $_SESSION['selected_lines'] = $lines;
       }
       if (!empty($_GET['exps'])) {
@@ -152,8 +153,8 @@ private function refresh_title()
           $experiments = explode(',', $exps_str);
           $_SESSION['geno_exps'] = $experiments;
           $sql = "select count(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
-          $res = mysql_query($sql) or die(mysql_error() . $sql);
-          if ($row = mysql_fetch_array($res)) {
+          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+          if ($row = mysqli_fetch_array($res)) {
               $_SESSION['geno_exps_cnt'] = $row[0];
           }
       }
@@ -236,7 +237,7 @@ private function type1_checksession()
   <option value="DataProgram">Data Program</option>
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
-  <script type="text/javascript" src="downloads/select_genotype.js"></script>
+  <script type="text/javascript" src="downloads/select_genotype01.js"></script>
   <?php
   $this->step1_platform(); 
   //$this->type_GenoType_Display();
@@ -255,12 +256,13 @@ private function type1_checksession()
  */
 private function step1_platform()
 {
+    global $mysqli;
     ?>
     <table><tr><td>
     <select name='platform[]' style="height: 12em;" multiple onchange="javascript: update_platform(this.options)">
     <?php
-    $result=mysql_query("select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysql_error());
-    while ($row=mysql_fetch_assoc($result)) {
+    $result=mysqli_query($mysqli, "select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysqli_error($mysqli));
+    while ($row=mysqli_fetch_assoc($result)) {
         $uid = $row['platform_uid'];
         $val = $row['platform_name'];
         print "<option value='$uid'>$val</option>\n";
@@ -272,6 +274,7 @@ private function step1_platform()
  */
 private function step1_breedprog()
 {
+  global $mysqli;
   ?>
   <table>
   <tr>
@@ -285,8 +288,8 @@ private function step1_breedprog()
                                 AND e_t.experiment_type_name = 'genotype'
                                 AND program_type='data' ORDER BY name";
  
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_assoc($res))
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  while ($row = mysqli_fetch_assoc($res))
   {
   ?>
   <option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
@@ -304,6 +307,7 @@ private function step1_breedprog()
  */
  private function step1_yearprog()
  {
+    global $mysqli;
     $CAPdata_programs = $_GET['bp'];
      ?>
     <div id="step21">
@@ -322,8 +326,8 @@ private function step1_breedprog()
     AND et.experiment_type_name = 'genotype'
     AND e.CAPdata_programs_uid IN ($CAPdata_programs)
     GROUP BY e.experiment_year DESC";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res))
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res))
     {
     ?>
     <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
@@ -370,6 +374,7 @@ private function type1_lines_trial_trait()
  */
 private function step1_lines()
 {
+    global $mysqli;
         if (isset($_SESSION['selected_lines'])) {
             $selectedlines= $_SESSION['selected_lines'];
             $count = count($_SESSION['selected_lines']);
@@ -380,8 +385,8 @@ private function step1_lines()
             <?php
             foreach($selectedlines as $uid) {
               $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
-              $res = mysql_query($sql) or die(mysql_error());
-              $row = mysql_fetch_assoc($res)
+              $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+              $row = mysqli_fetch_assoc($res)
               ?>
               <option disabled="disabled" value="
               <?php $uid ?>">
@@ -407,6 +412,7 @@ private function step1_lines()
  */
 private function step2_lines()
 {
+  global $mysqli;
   if (isset($_SESSION['selected_lines'])) {
     $selectedlines= $_SESSION['selected_lines'];
     $count = count($_SESSION['selected_lines']);
@@ -436,8 +442,8 @@ private function step2_lines()
      $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
      $last_year = NULL;
     
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res))
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res))
     {
       if ($last_year == NULL) {
       ?>
@@ -465,9 +471,11 @@ private function step2_lines()
 }
 
 /**
- * starting with lines display phenotype items
+ * display lines for given experiment
  */
-private function step3_lines() {
+private function step3_lines()
+{
+  global $mysqli;
   $experiments = $_GET['exps'];
   $datasets = $_GET['dp'];
   ?>
@@ -483,11 +491,13 @@ private function step3_lines() {
   if (preg_match("/\d/",$experiments)) {
       $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
   }
-  $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-  if ($row = mysql_fetch_array($res)) {
+  $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if ($row = mysqli_fetch_array($res)) {
       $line_index = json_decode($row[0], true);
       $count1 = count($line_index);
+  } else {
+      $line_index = array();
   }
   
   if (isset($_SESSION['selected_lines'])) {
@@ -496,7 +506,8 @@ private function step3_lines() {
   }
   ?>
   <tr><td>
-          <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_lines(this.options)">
+          <select name="lines" multiple="multiple" style="height: 12em;"  disabled>
+          <!--select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_lines(this.options)"-->
             <?php
             $count = 0;
             $sql_option = "";
@@ -506,19 +517,17 @@ private function step3_lines() {
             if (preg_match("/\d/",$datasets)) {
               $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
             }
-            $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            if ($row = mysql_fetch_array($res)) {
-              $line_idx = json_decode($row[0], true);
-              $line_name_index = json_decode($row[1], true);
-              $count = count($line_index);
-            } else {
-              $line_index = array();
-            }
-            foreach ($line_index as $key=>$uid) {
+            foreach ($line_index as $uid) {
+              $sql = "select line_record_name from line_records where line_record_uid = $uid";
+              $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+              if ($row = mysqli_fetch_array($res)) {
+                $name = $row[0];
+              } else {
+                $name = "unknown";
+              }
               ?>
               <option selected value="<?php echo $uid ?>">
-              <?php echo $line_name_index[$key] ?>
+              <?php echo $name ?>
               </option>
               <?php
             }
@@ -535,8 +544,8 @@ private function step3_lines() {
           $count = count($_SESSION['selected_lines']);
           print "<td><select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;\">";
           foreach ($_SESSION['selected_lines'] as $lineuid) {
-            $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-            while ($row=mysql_fetch_assoc($result)) {
+            $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+            while ($row=mysqli_fetch_assoc($result)) {
               $selval=$row['line_record_name'];
               print "<option value=\"$lineuid\" selected>$selval</option>\n";
             }
@@ -551,8 +560,8 @@ private function step3_lines() {
  */
 private function type_GenoType_Display()
 {
+    global $mysqli;
     ?>
-	
 	<style type="text/css">
                    table.marker
                    {background: none; border-collapse: collapse}
@@ -578,8 +587,8 @@ private function type_GenoType_Display()
                                 AND e_t.experiment_type_name = 'genotype'
                                 AND program_type='data' ORDER BY name";
 
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysql_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 			?>
 				<option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
@@ -604,8 +613,8 @@ private function type_GenoType_Display()
 				WHERE e.experiment_type_uid = et.experiment_type_uid
 					AND et.experiment_type_name = 'genotype'
 				GROUP BY e.experiment_year ASC";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res)) {
 			?>
 				<option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
 			<?php
@@ -699,6 +708,7 @@ private function type1_experiments()
  */
 private function type2_experiments()
 {
+    global $mysqli;
     $platform = $_GET['platform'];
     ?>
     <p>
@@ -708,11 +718,11 @@ private function type2_experiments()
     <table><tr><td><select name='expt[]' style="height: 12em;" multiple onchange="javascript: update_experiments(this.options)">
     <?php
     $prev_name = "";
-    $result=mysql_query("select experiments.experiment_uid, trial_code, data_program_name from experiments, genotype_experiment_info, CAPdata_programs
+    $result=mysqli_query($mysqli, "select experiments.experiment_uid, trial_code, data_program_name from experiments, genotype_experiment_info, CAPdata_programs
         where experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
         and experiments.experiment_uid = genotype_experiment_info.experiment_uid
-        and genotype_experiment_info.platform_uid IN ($platform) order by data_program_name") or die(mysql_error);
-    while ($row=mysql_fetch_assoc($result)) {
+        and genotype_experiment_info.platform_uid IN ($platform) order by data_program_name") or die(mysqli_error($mysqli));
+    while ($row=mysqli_fetch_assoc($result)) {
         $uid=$row['experiment_uid'];
         $val=$row['trial_code'];
         $name=$row['data_program_name'];
@@ -733,9 +743,12 @@ private function type2_experiments()
 /**
  * display results of search
  */
-private function type1_markers() {
+private function type1_markers()
+{
+  global $mysqli;
   $experiments = $_GET['exps'];
   $datasets = $_GET['dp'];
+  $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
   if (empty($_GET['lines'])) {
     if ((($subset == "yes") || ($subset == "comb")) && (count($_SESSION['selected_lines'])>0)) {
       $lines = $_SESSION['selected_lines'];
@@ -751,36 +764,63 @@ private function type1_markers() {
               $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
       }
       $skipped = "";
-      $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-      if ($row = mysql_fetch_array($res)) {
+      $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+      if ($row = mysqli_fetch_array($res)) {
           $lines = json_decode($row[0], true);
-          $line_names = json_decode($row[1], true);
           //*check for duplicates
           foreach ($lines as $key=>$line_record) {
+              $sql = "select line_record_name from line_records where line_record_uid = $line_record";
+              $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+              if ($row = mysqli_fetch_array($res)) {
+                  $name = $row[0];
+              } else {
+                  $name = "unknown";
+              }
               if (isset($unique_list[$line_record])) {
                   if ($skipped == "") {
-                      $skipped = "$line_names[$key]";
+                      $skipped = "$name";
                   } else {
-                      $skipped .= ", $line_names[$key]";
+                      $skipped .= ", $name";
                   }
-                  //echo "$line_names[$key] duplicate<br>\n";
               } else {
-                  //echo "$key $line_names[$key]<br>\n";
                   $lines_unique[] = $line_record;
-                  $unique_list[$line_record] =  $line_names[$key];
+                  $unique_list[$line_record] =  $name;
               }
           }
       }
-      if ($skipped != "") {
-          echo "skipped duplicate line names<br>$skipped\n";
-      }
+    }
+    if ($skipped != "") {
+        echo "skipped duplicate line names<br>$skipped\n";
+    }
+    if ($subset == "comb") {
+        $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_array($res)) {
+            $lines_fnd = json_decode($row[0], true);
+        } else {
+            echo "error - no selection found";
+        }
+        foreach ($lines_fnd as $line_uid) {
+          if (!in_array($line_uid, $lines)) {
+              array_push($lines, $line_uid);
+          }
+        }
+    } elseif ($subset == "yes") {
+        $experiments = $_GET['exps'];
+        $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_array($res)) {
+            $tmp = json_decode($row[0], true);
+        }
+        $lines = array_intersect($lines, $tmp);
+        $_SESSION['selected_lines'] = $lines;
     }
   } else {
     $lines_str = $_GET['lines'];
     $lines = explode(',', $lines_str);
   }
-  $count1 = count($lines_unique);
+  $count1 = count($lines);
   $trials = explode(',', $experiments);
   $count2 = count($trials);
   echo "<table><tr><td>";

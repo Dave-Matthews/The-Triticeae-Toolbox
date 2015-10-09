@@ -424,7 +424,13 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         die("<font color=red>Error - genotype experiment should be selected before download</font>");
     }
     foreach ($uid_list as $uid) {
-        $name[] = mysql_grab("select line_record_name from line_records where line_record_uid = $uid");
+        $sql = "select line_record_name from line_records where line_record_uid = $uid";
+        $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+        if ($row = mysql_fetch_array($res)) {
+            $name[] = $row[0];
+        } else {
+            $name[] = "unknown";
+        }
     }
     $name_list = implode("'\t'", $name);
     if ($dtype == "qtlminer") {
