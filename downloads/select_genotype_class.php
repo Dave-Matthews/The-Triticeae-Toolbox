@@ -500,10 +500,6 @@ private function step3_lines()
       $line_index = array();
   }
   
-  if (isset($_SESSION['selected_lines'])) {
-      $count2 = count($_SESSION['selected_lines']);
-      echo "<td>Lines found: $count1<td><td>Current selection: $count2";
-  }
   ?>
   <tr><td>
           <select name="lines" multiple="multiple" style="height: 12em;"  disabled>
@@ -544,14 +540,19 @@ private function step3_lines()
           $count = count($_SESSION['selected_lines']);
           print "<td><select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;\">";
           foreach ($_SESSION['selected_lines'] as $lineuid) {
-            $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+            $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die(mysqli_error($mysqli));
             while ($row=mysqli_fetch_assoc($result)) {
               $selval=$row['line_record_name'];
               print "<option value=\"$lineuid\" selected>$selval</option>\n";
             }
           }
-          print "</select></table>";
+          print "</select>";
        }
+        if (isset($_SESSION['selected_lines'])) {
+      $count2 = count($_SESSION['selected_lines']);
+      echo "<tr><td>Lines found: $count1<td><td>Current selection: $count2";
+      echo "</table>";
+  }
 
 }	
 
@@ -814,7 +815,6 @@ private function type1_markers()
             $tmp = json_decode($row[0], true);
         }
         $lines = array_intersect($lines, $tmp);
-        $_SESSION['selected_lines'] = $lines;
     }
   } else {
     $lines_str = $_GET['lines'];
