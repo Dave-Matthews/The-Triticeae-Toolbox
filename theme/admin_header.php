@@ -113,13 +113,15 @@ global $usegbrowse;
         <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
             Lines by Genotype Experiment</a>
     <?php
-  /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
-  /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
+    /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
+    /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
     if (loginTest2()) :
 ?>
 	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><b>My Line Panels</b></a>
         <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><b>My Marker Panels</b></a>
- <?php endif ?>
+    <?php
+    endif
+    ?>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
 	    Traits and Trials</a>
@@ -142,6 +144,7 @@ global $usegbrowse;
 	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/table.php" title="Boxplot">Traits and Trials Table</a>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value vs Trials">Compare Trials</a>
@@ -155,8 +158,8 @@ global $usegbrowse;
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
         <?php
         if (file_exists($config['root_dir']."genotyping/marker_report_ref.php")) {
-            ?>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
+            ?><li><a href="<?php echo $config['base_url'];
+            ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
             <?php
         }
@@ -168,8 +171,15 @@ global $usegbrowse;
       <ul>
 	<li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
+        <?php
+        if (file_exists($config['root_dir']."downloads/impute.php")) {
+            ?><li><a href="<?php echo $config['base_url']; ?>downloads/impute.php" title="Download imputed">Imputed Genotype Data</a>
+            <?php
+        }
+        ?>
 	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
 	    SNP Alleles and Sequences</a> 
+        <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
