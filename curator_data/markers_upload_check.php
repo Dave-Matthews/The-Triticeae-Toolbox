@@ -1602,7 +1602,28 @@ class MarkersCheck
                 $alleleB = $storageArr[$i][$alleleBIdx];
                 $sequence = $storageArr[$i][$sequenceIdx];
                 $synonym = $storageArr[$i]["syn"];
-                
+
+                //check if sequence is too long
+                $length = strlen($squence);
+                if ($length > 254) {
+                    $pos = strpos($sequence, "[");
+                    if ($pos === false) {
+                        error(1, "Bad sequence, $sequence");
+                        exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+                    } else {
+                        $start = $pos - 100;
+                        if ($pos < 0) {
+                            $start = 0;
+                        }
+                        $end = $length - $start;
+                        $length2 = 200;
+                        if (($length2 + $start) > $length) {
+                            $length2 = $length - $pos;
+                        } 
+                        $sequence = substr($sequence, $start, $length2);
+                        echo "trimmed $marker sequence, $sequence\n";
+                    }
+                }
                 if ($missing > 50 ) {
                     error(1, "There are too many invalid marker names. <br> Please fix and re-import." );
                     exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
