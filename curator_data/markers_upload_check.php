@@ -1621,7 +1621,7 @@ class MarkersCheck
                             $length2 = $length - $pos;
                         } 
                         $sequence = substr($sequence, $start, $length2);
-                        echo "trimmed $marker sequence, $sequence\n";
+                        echo "trimmed $marker sequence<br>\n$sequence<br>\n";
                     }
                 }
                 if ($missing > 50 ) {
