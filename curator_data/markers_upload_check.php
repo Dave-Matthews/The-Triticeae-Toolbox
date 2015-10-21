@@ -1604,7 +1604,7 @@ class MarkersCheck
                 $synonym = $storageArr[$i]["syn"];
 
                 //check if sequence is too long
-                $length = strlen($squence);
+                $length = strlen($sequence);
                 if ($length > 254) {
                     $pos = strpos($sequence, "[");
                     if ($pos === false) {
