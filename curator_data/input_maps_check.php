@@ -6,7 +6,7 @@ require 'config.php';
 include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 include $config['root_dir'] . 'curator_data/lineuid.php';
 set_time_limit(3000);
-ini_set('memory_limit','2G');
+ini_set('memory_limit','4G');
 
 //require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
@@ -379,9 +379,6 @@ class MapsCheck
         while (($data = fgetcsv($handledata, 0, "\t")) !== FALSE) {
                 $num = count($data);		// number of fields
                 $row++;				// number of lines
-               /*if ($row>100) {
-                    exit();
-                }*/
                 //print_r($data);
                 $marker[] .= trim($data[$m_idx]);
                 $chrom[] .= trim($data[$c_idx]);
@@ -418,7 +415,7 @@ class MapsCheck
 	
 	if ($new_map == 'TRUE') {		
 		$map_name = array_unique($chrom);
-	//	echo "size map".sizeof($map_name)."\n";
+		echo "size map".sizeof($map_name)."\n";
 		//print_r($map_name);
 		//print_r($marker);
 		foreach ($map_name as $cstr) {
@@ -509,7 +506,7 @@ class MapsCheck
 				
                 if (isset($map_uid[$map_idx])) {			 
                     $mmap_uid = $map_uid[$map_idx];
-                    echo "Good: $map_idx $cnt<br>\n";
+                    //echo "Good: $map_idx $cnt<br>\n";
                 } else {
                     echo "Error: $map_idx not defined $new_map $cnt<br>\n";
                 }
