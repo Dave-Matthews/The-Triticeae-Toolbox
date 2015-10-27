@@ -30,6 +30,7 @@
 <script type="text/javascript" src="theme/new.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script>
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 <script src="jquery.smartmenus.js" type="text/javascript"></script>
 
 <link href='sm-core-css.css' rel='stylesheet' type='text/css' />
@@ -328,7 +329,7 @@ These regular expressions modify the search
   </ul>
   <br>
 
-<?php include($config['root_dir'].'whatsnew.html'); ?>
+<?php require $config['root_dir'].'whatsnew.html'; ?>
 
   </div>
   <div id="main">
