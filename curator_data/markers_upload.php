@@ -5,7 +5,6 @@
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
 
-connect();
 loginTest();
 
 /* ******************************* */
@@ -28,8 +27,7 @@ class Markers
     // Using the class's constructor to decide which action to perform
     public function __construct($function = null)
     {
-        switch($function) {
-
+        switch ($function) {
             default:
                 $this->typeMarkers(); /* intial case*/
                 break;
@@ -75,7 +73,8 @@ class Markers
         </table>
         <br>
         <table>
-        <tr><td><input type="submit" name="blast" value="BLAST Import File"><td>Use BLAST to check for sequence matches to existing markers. A marker will be
+        <tr><td><input type="submit" name="blast" value="BLAST Import File"><td>Use BLAST for large (greater than 10K markers) imports. The file must be in "Generic Format".
+        This tool will check for sequence matches to existing markers. A marker will be
         identified as a synonym if the match is 100% over the length of either the subject or query sequence. The SNP is replaced with the IUPAC Ambiguity code.
         The BLAST process will take about 1 minute for each 10,000 markers when the existing database contains 1 million markers. 
         <tr><td><input type="submit" value="Upload Import Files" />

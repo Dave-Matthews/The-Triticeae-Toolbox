@@ -6,7 +6,7 @@ require 'config.php';
 include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 include $config['root_dir'] . 'curator_data/lineuid.php';
 set_time_limit(3000);
-ini_set('memory_limit','2G');
+ini_set('memory_limit','4G');
 
 //require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 
@@ -379,9 +379,6 @@ class MapsCheck
         while (($data = fgetcsv($handledata, 0, "\t")) !== FALSE) {
                 $num = count($data);		// number of fields
                 $row++;				// number of lines
-               /*if ($row>100) {
-                    exit();
-                }*/
                 //print_r($data);
                 $marker[] .= trim($data[$m_idx]);
                 $chrom[] .= trim($data[$c_idx]);
