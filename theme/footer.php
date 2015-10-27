@@ -13,12 +13,11 @@
 
 if (isset($footer_div)) {
     ?></div>
-    <script src="theme/usage_popup.js"></script>
-    </div>
     <?php
 }
 if (!isset($_COOKIE["T3terms"])) {
     ?><link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="theme/usage_popup.js"></script>
     <div id="dialog-confirm" title="Please Note: Website Data Usage Policy">
     <p><span style="float:left;"></span>
     In 2009 the Toronto International Data Release Workshop agreed on a policy statement about prepublication data sharing. 
