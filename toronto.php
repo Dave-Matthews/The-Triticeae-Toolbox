@@ -28,24 +28,7 @@ Statement</a> below.
 
 <p><h3>Producers' information about specific datasets</h3>
 
-<table>
-  <tr><th>Description<th>Source<th>Datasets<th>Publication plan<th>Date<br>in T3<th>Unrestricted<br>as of
-  <tr>
-    <td>Stem solidness trial
-    <td>Luther Talbert
-    <td><a href="http://triticeaetoolbox.org/wheat/display_phenotype.php?trial_code=6x4x_2012_Bozeman">6x4x_2012_Bozeman</a>
-    <td>
-    <td>May 2013
-    <td>May 2014
-  <tr>
-    <td>9K wheat iSelect assay
-    <td>Eduard Akhunov
-    <td><a href="http://triticeaetoolbox.org/wheat/search.php?keywords=NSGCwheat9K">NSGCwheat9K</a>
-    <td>Genetic diversity and genetic maps,<br>June 30, 2012  
-    <td>Oct 2011
-    <td>Oct 2012
-</table>
-
+<?php require 'toronto_table.html' ?>
 
 <h3>Toronto Statement</h3>
 
