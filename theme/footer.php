@@ -1,19 +1,29 @@
 <?php
 /**
- * page footer 
+ * page footer
  *
  * PHP version 5.3
  *
  * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/theme/footer.php
  *
  */
+
 if (isset($footer_div)) {
-    ?>
+    ?></div>
+    <?php
+}
+if (!isset($_COOKIE["T3terms"])) {
+    ?><link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="theme/usage_popup.js"></script>
+    <div id="dialog-confirm" title="Please Note: Website Data Usage Policy">
+    <p><span style="float:left;"></span>
+    In 2009 the Toronto International Data Release Workshop agreed on a policy statement about prepublication data sharing. 
+    Accordingly, the data producers are making many of the datasets in T3 available prior to publication of a global analysis. 
+    Guidelines for appropriate sharing of these data are given in the excerpt from the <a href="../toronto.php" target="_new">Toronto Statement</a>.<br><br>
+    I agree to the Data Usage Policy as specified in Toronto Statement.</p>
     </div>
     <?php
 }

@@ -30,6 +30,7 @@
 <script type="text/javascript" src="theme/new.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script>
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 <script src="jquery.smartmenus.js" type="text/javascript"></script>
 
 <link href='sm-core-css.css' rel='stylesheet' type='text/css' />
@@ -113,13 +114,15 @@ global $usegbrowse;
         <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
             Lines by Genotype Experiment</a>
     <?php
-  /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
-  /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
+    /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
+    /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
     if (loginTest2()) :
 ?>
 	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><b>My Line Panels</b></a>
         <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><b>My Marker Panels</b></a>
- <?php endif ?>
+    <?php
+    endif
+    ?>
 	<li>
 	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
 	    Traits and Trials</a>
@@ -156,8 +159,8 @@ global $usegbrowse;
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
         <?php
         if (file_exists($config['root_dir']."genotyping/marker_report_ref.php")) {
-            ?>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
+            ?><li><a href="<?php echo $config['base_url'];
+            ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
             <?php
         }
@@ -169,6 +172,12 @@ global $usegbrowse;
       <ul>
 	<li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
+        <?php
+        if (file_exists($config['root_dir']."downloads/impute.php")) {
+            ?><li><a href="<?php echo $config['base_url']; ?>downloads/impute.php" title="Download imputed">Imputed Genotype Data</a>
+            <?php
+        }
+        ?>
 	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
 	    SNP Alleles and Sequences</a> 
         <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
@@ -210,6 +219,8 @@ global $usegbrowse;
       Contributing Data Programs</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_whatsnew.php">
       "What's New"</a>
+      <li><a href="<?php echo $config['base_url']; ?>login/edit_toronto.php">
+      Data Policy dataset descriptions</a>
       <!-- Too dangerous. -->
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
@@ -320,7 +331,7 @@ These regular expressions modify the search
   </ul>
   <br>
 
-<?php include($config['root_dir'].'whatsnew.html'); ?>
+<?php require $config['root_dir'].'whatsnew.html'; ?>
 
   </div>
   <div id="main">
