@@ -61,8 +61,7 @@ class MarkersCheck
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'typeDatabaseAnnot':
                 $this->type_DatabaseAnnot(); /* update Marker Info */
                 break;
@@ -96,8 +95,7 @@ class MarkersCheck
         if ($_FILES['file']['name'][0] != "") {
             echo "<h2>Marker Annotation</h2>";
         } else {
-            ?>
-            <h2>Enter/Update Markers: Validation</h2>
+            ?><h2>Enter/Update Markers: Validation</h2>
             <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
             <script type="text/javascript" src="curator_data/marker04.js"></script>
             <div id=update></div>
@@ -465,7 +463,7 @@ class MarkersCheck
     }
 
     /**
-     * check import file for name and sequence matches 
+     * check import file for name and sequence matches, allow sequence entry of Unavailable
      *
      * @param array   &$storageArr contents of import file
      * @param string  $nameIdx     index of name column
@@ -483,7 +481,9 @@ class MarkersCheck
         for ($i = 1; $i <= $limit; $i++) {
             $name = $storageArr[$i][$nameIdx];
             $seq = strtoupper($storageArr[$i][$sequenceIdx]);
-            if (isset($marker_seq_import[$seq])) {
+            if ($seq == "UNAVAILABLE") {
+                $marker_seq_import[$seq] = $name;
+            } elseif (isset($marker_seq_import[$seq])) {
                 if ($marker_seq_dup == "") {
                     $marker_seq_dup = $name;
                 } else {
@@ -1733,7 +1733,7 @@ class MarkersCheck
                 VALUES('$filename', '$username', NOW())";
         } else {
             $sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
-                        WHERE input_file_log_uid = '$input_uid'"; 
+                        WHERE input_file_log_uid = '$input_uid'";
         }
         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
         echo "<br><br>Running update of BLAST database<br>\n";
@@ -1744,8 +1744,5 @@ class MarkersCheck
         }
 
     } /* end of function type_databaseSNP */
-    
-} /* end of class */
-  
-?>
+}
 
