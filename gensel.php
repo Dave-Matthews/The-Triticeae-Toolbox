@@ -1,18 +1,18 @@
 <?php
 /**
  * Download Gateway New
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @author   Clay Birkett <cbirkett@gmail.com>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
- * 
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ *
+ *
+ * The purpose of this script is to provide the user with an interface
+ * for downloading certain kinds of files from THT.
  */
-// |                                                                      |
-// | The purpose of this script is to provide the user with an interface  |
-// | for downloading certain kinds of files from THT.                     |
 
 set_time_limit(0);
 ini_set('memory_limit', '2G');
@@ -34,28 +34,28 @@ require_once $config['root_dir'].'downloads/marker_filter.php';
 
 new Downloads($_GET['function']);
 
-/** Using a PHP class to implement the "Download Gateway" feature
- * 
- * @author   Clay Birkett <claybirkett@gmail.com>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+/**
+ * Using a PHP class to implement the "Download Gateway" feature
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
 class Downloads
 {
     /**
-     * delimiter used for output files
+     * Delimiter used for output files
      */
     public $delimiter = "\t";
     
-    /** 
+    /**
      * Using the class's constructor to decide which action to perform
      *
      * @param string $function action to perform
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'genomic_prediction':
                 $this->genomic_prediction();
                 break;
@@ -111,19 +111,19 @@ class Downloads
     }
 
         /**
-	 * load header and footer then check session to use existing data selection
-	 */
+         * load header and footer then check session to use existing data selection
+         */
         private function type1_select()
-	{
-		global $config;
-                require_once $config['root_dir'].'theme/normal_header.php';
-		$phenotype = "";
-                $lines = "";
-		$markers = "";
-		$saved_session = "";
-		$this->type1_checksession();
-                require_once 'downloads/select-map.php';
-		require_once $config['root_dir'].'theme/footer.php';
+        {
+            global $config;
+            require_once $config['root_dir'].'theme/normal_header.php';
+            $phenotype = "";
+            $lines = "";
+            $markers = "";
+            $saved_session = "";
+            $this->type1_checksession();
+            require_once 'downloads/select-map.php';
+            require_once $config['root_dir'].'theme/footer.php';
 	}	
 	
 	/**
@@ -140,8 +140,6 @@ class Downloads
 		</style>
             <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
             <script type="text/javascript" src="downloads/download_gs03.js"></script>
-            <script src="//code.jquery.com/jquery-1.11.2.js"></script>
-            <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
             <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
 		<div id="title">
 		<?php
@@ -706,7 +704,7 @@ class Downloads
         echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>link to URGI genome browser";
         $line= fgetcsv($h);
         while ($line= fgetcsv($h)) {
-            $sql = "select value, description from markers, marker_annotations, marker_annotation_types
+            $sql = "select value from markers, marker_annotations, marker_annotation_types
                 where markers.marker_uid = marker_annotations.marker_uid
                 and marker_annotations.marker_annotation_type_uid = marker_annotation_types.marker_annotation_type_uid
                 and marker_name = \"$line[1]\"
@@ -714,14 +712,14 @@ class Downloads
             $res = mysql_query($sql) or die(mysql_error());
             if ($row = mysql_fetch_array($res)) {
                 $value = $row[0];
-                $desc = $row[1]; 
-                $link = "BLAST match to IWGSC contig $value $desc <a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$value\" target=\"_new\">View Contig</a>";
+                $link = "BLAST match to IWGSC contig $value <a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$value\" target=\"_new\">View Contig</a>";
             } elseif (preg_match("/WCSS1_contig([^_]+)_[A-Z0-9]+/", $line[1], $match)) {
                 $contig = $match[1];
                 $link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$line[2]_$contig\" target=\"_new\">GBrowse</a>";
             }
             if ($count < 5) {
-                echo "<tr><td>$line[1]<td>$line[2]<td>$line[3]<td>$line[4]<td>$link\n";
+	      $markerlink = "<a href=$config[base_url]view.php?table=markers&name=$line[1]>$line[1]</a>";
+	      echo "<tr><td>$markerlink<td>$line[2]<td>$line[3]<td>$line[4]<td>$link\n";
             }
             $count++;
         }
