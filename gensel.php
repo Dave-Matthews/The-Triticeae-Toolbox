@@ -1,18 +1,18 @@
 <?php
 /**
  * Download Gateway New
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @author   Clay Birkett <cbirkett@gmail.com>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
- * 
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ *
+ *
+ * The purpose of this script is to provide the user with an interface
+ * for downloading certain kinds of files from THT.
  */
-// |                                                                      |
-// | The purpose of this script is to provide the user with an interface  |
-// | for downloading certain kinds of files from THT.                     |
 
 set_time_limit(0);
 ini_set('memory_limit', '2G');
@@ -34,28 +34,28 @@ require_once $config['root_dir'].'downloads/marker_filter.php';
 
 new Downloads($_GET['function']);
 
-/** Using a PHP class to implement the "Download Gateway" feature
- * 
- * @author   Clay Birkett <claybirkett@gmail.com>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+/**
+ * Using a PHP class to implement the "Download Gateway" feature
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
 class Downloads
 {
     /**
-     * delimiter used for output files
+     * Delimiter used for output files
      */
     public $delimiter = "\t";
     
-    /** 
+    /**
      * Using the class's constructor to decide which action to perform
      *
      * @param string $function action to perform
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'genomic_prediction':
                 $this->genomic_prediction();
                 break;
@@ -111,19 +111,19 @@ class Downloads
     }
 
         /**
-	 * load header and footer then check session to use existing data selection
-	 */
+         * load header and footer then check session to use existing data selection
+         */
         private function type1_select()
-	{
-		global $config;
-                require_once $config['root_dir'].'theme/normal_header.php';
-		$phenotype = "";
-                $lines = "";
-		$markers = "";
-		$saved_session = "";
-		$this->type1_checksession();
-                require_once 'downloads/select-map.php';
-		require_once $config['root_dir'].'theme/footer.php';
+        {
+            global $config;
+            require_once $config['root_dir'].'theme/normal_header.php';
+            $phenotype = "";
+            $lines = "";
+            $markers = "";
+            $saved_session = "";
+            $this->type1_checksession();
+            require_once 'downloads/select-map.php';
+            require_once $config['root_dir'].'theme/footer.php';
 	}	
 	
 	/**
@@ -140,8 +140,6 @@ class Downloads
 		</style>
             <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
             <script type="text/javascript" src="downloads/download_gs03.js"></script>
-            <script src="//code.jquery.com/jquery-1.11.2.js"></script>
-            <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
             <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
 		<div id="title">
 		<?php
