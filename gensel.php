@@ -701,21 +701,27 @@ class Downloads
 
     private function display_gwas_hits($h) {
         echo "Top five marker scores from GWAS analysis<br>";
-        echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>link to URGI genome browser";
+        echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>external link (resource name)";
         $line= fgetcsv($h);
         while ($line= fgetcsv($h)) {
-            $sql = "select value from markers, marker_annotations, marker_annotation_types
+            $link = "";
+            $sql = "select value, name_annotation, linkout_string_for_annotation
+                from markers, marker_annotations, marker_annotation_types
                 where markers.marker_uid = marker_annotations.marker_uid
                 and marker_annotations.marker_annotation_type_uid = marker_annotation_types.marker_annotation_type_uid
-                and marker_name = \"$line[1]\"
-                and name_annotation = \"IWGSP1, July 2013\"";
+                and marker_name = \"$line[1]\"";
             $res = mysql_query($sql) or die(mysql_error());
-            if ($row = mysql_fetch_array($res)) {
-                $value = $row[0];
-                $link = "BLAST match to IWGSC contig $value <a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$value\" target=\"_new\">View Contig</a>";
-            } elseif (preg_match("/WCSS1_contig([^_]+)_[A-Z0-9]+/", $line[1], $match)) {
-                $contig = $match[1];
-                $link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$line[2]_$contig\" target=\"_new\">GBrowse</a>";
+            while ($row = mysql_fetch_assoc($res)) {
+                $reg_pattern = "XXXX";
+                $replace_string = $row['value'];
+                $name = $row['name_annotation'];
+                $source_string = $row['linkout_string_for_annotation'];
+                $linkString = ereg_replace($reg_pattern, $replace_string, $source_string);
+                if ($link == "") {
+                    $link = "<a href=\"$linkString\" target=\"_new\">$replace_string</a> ($name)";
+                } else {
+                    $link .= "<br><a href=\"$linkString\" target=\"_new\">$replace_string</a> ($name)";
+                }
             }
             if ($count < 5) {
 	      $markerlink = "<a href=$config[base_url]view.php?table=markers&name=$line[1]>$line[1]</a>";
