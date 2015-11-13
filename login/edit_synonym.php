@@ -1,15 +1,17 @@
 <?php
-// login/edit_synonym.php, dem 13feb2012
-// dem 26aug13 Add merging of lines.
-// dem  7oct14 Make sure the "new" synonym proposed doesn't already exist.
+/**
+ * login/edit_synonym.php, dem 13feb2012
+ * dem 26aug13 Add merging of lines.
+ * dem  7oct14 Make sure the "new" synonym proposed doesn't already exist.
+ **/
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
 connect();
 loginTest();
 ob_start();
-include($config['root_dir'] . 'theme/admin_header.php');
+require $config['root_dir'] . 'theme/admin_header.php';
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 ?>
@@ -24,7 +26,7 @@ ob_end_flush();
   </form>
 <?php
 // Has a Synonym update been submitted?
-if(!is_null($_GET['newsyn'])) {
+if (!is_null($_GET['newsyn'])) {
   $input = $_GET;
   foreach($input as $k=>$v)
     $input[$k] = addslashes($v);
@@ -331,11 +333,18 @@ echo "</div>";
 			    "delete from line_synonyms where line_record_uid = $oline_uid",
 			    "delete from barley_pedigree_catalog_ref where line_record_uid = $oline_uid",
 			    "delete from line_properties where line_record_uid = $oline_uid",
+                            "delete from allele_bymarker_idx where line_record_uid = $oline_uid",
 			    "delete from line_records where line_record_uid = $oline_uid");
 	  foreach ($commands as $sql) {
 	    $res = mysql_query($sql) or die("<p><b>Error: </b>".mysql_error()."<br>Command was:<br>$sql");
 	  }
 	  echo "<p>Line <b>$oldline</b> deleted. Phenotype and genotype data merged into <b>$keepline</b>.";
+          echo "<br>Recreating allele_bymarker and allele_bymarker_idx table.\n";
+          $cmd = "/usr/bin/php ../cron/create-allele-bymarker.php > /dev/null &";
+          exec($cmd, $output);
+          foreach ($output as $line) {
+              echo "$line<br>\n";
+          }
 	} // end of confirm = Yes
 	if ($_GET[confirm] == "No")
 	  echo "<p><b>Merge canceled!</b>";
