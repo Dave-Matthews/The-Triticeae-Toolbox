@@ -113,8 +113,7 @@ if ($row = mysql_fetch_array($res)) {
     $jb_path = "../jbrowse/$value";
     $jb_url = "/jbrowse/?data=$value";
     if (file_exists($jb_path)) {
-        ?><a href="$jb_url" target="_new">View in JBrowse.</a><br><br>
-        <?php
+        echo "<a href=\"$jb_url\" target=\"_new\">View in JBrowse.</a><br><br>";
     }
 }
 ?>
