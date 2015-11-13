@@ -718,9 +718,17 @@ class Downloads
                 $source_string = $row['linkout_string_for_annotation'];
                 $linkString = ereg_replace($reg_pattern, $replace_string, $source_string);
                 if ($link == "") {
-                    $link = "<a href=\"$linkString\" target=\"_new\">$replace_string</a> ($name)";
+                    if ($linkString == "") {
+                      $link = "$name";
+                    } else {
+                      $link = "<a href=\"$linkString\" target=\"_new\">$replace_string</a> ($name)";
+                    }
                 } else {
-                    $link .= "<br><a href=\"$linkString\" target=\"_new\">$replace_string</a> ($name)";
+                    if ($linkString == "") {
+                      $link .= "<br>$name";
+                    } else {
+                      $link .= "<br><a href=\"$linkString\" target=\"_new\">$replace_string</a> ($name)";
+                    }
                 }
             }
             if ($count < 5) {
