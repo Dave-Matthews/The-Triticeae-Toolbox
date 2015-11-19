@@ -13,7 +13,6 @@
  * 10/19/2010   J.Lee use dynamic GBrowse tracks generation
  * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks
 */
-namespace T3download;
 
 require_once 'config.php';
 require_once $config['root_dir'].'includes/bootstrap.inc';
@@ -170,11 +169,11 @@ if ($row = mysql_fetch_array($res)) {
 	  load_maps();
       }
       
-		/*
-			Function for passing selected map name
-		*/
+      /*
+      Function for passing selected map name
+      */
 		
-		function update_maps(Str)
+      function update_maps(Str)
 			{
 				
 				maps_str = Str;
@@ -271,8 +270,8 @@ if ($row = mysql_fetch_array($res)) {
 				Function for loading marker  annotation dropdown
 			*/
 			
-			function load_marker_annotation()
-			{
+    function load_marker_annotation()
+    {
 						
                 $('marker_annotation_loader').hide();
                 
@@ -339,14 +338,14 @@ if ($row = mysql_fetch_array($res)) {
 	<select name="mapsetnames" size="10" style="height: <?php echo $height ?>em;" onchange="javascript: update_mapset(this.value)">
 	<?php
 
-        // Select Mapset Name for the drop down menu
-        $sql = "SELECT mapset_name FROM mapset ORDER BY mapset_name DESC";
+    // Select Mapset Name for the drop down menu
+    $sql = "SELECT mapset_name FROM mapset ORDER BY mapset_name DESC";
 
-        $res = mysql_query($sql) or die(mysql_error());
-        while ($row = mysql_fetch_assoc($res)) {
-            ?><option value="<?php echo $row['mapset_name'] ?>"><?php echo $row['mapset_name'] ?></option>
-            <?php
-        }
+    $res = mysql_query($sql) or die(mysql_error());
+    while ($row = mysql_fetch_assoc($res)) {
+        ?><option value="<?php echo $row['mapset_name'] ?>"><?php echo $row['mapset_name'] ?></option>
+        <?php
+    }
     ?>
     </select>
     </td>
@@ -357,40 +356,35 @@ if ($row = mysql_fetch_array($res)) {
     $sql = "SELECT map_type FROM mapset ORDER BY mapset_name DESC";
     $res = mysql_query($sql) or die(mysql_error());
     while ($row = mysql_fetch_assoc($res)) {
-	    ?><option value="<?php echo $row['map_type'] ?>"><?php echo $row['map_type'] ?></option>
-	    <?php
-	}
-	?>
-	</select>
-	</td>
-	<td>
-						<select disabled name="MapUnit" size="10" style="height: <?php echo $height ?>em;width: 6em" >
-		<?php
-
-		
-		
-		$sql = "SELECT map_unit FROM mapset ORDER BY mapset_name DESC";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
-			?>
-				<option value="<?php echo $row['map_unit'] ?>"><?php echo $row['map_unit'] ?></option>
-			<?php
-		}
-		?>
+        ?><option value="<?php echo $row['map_type'] ?>"><?php echo $row['map_type'] ?></option>
+        <?php
+    }
+    ?>
+    </select>
+    </td>
+    <td>
+    <select disabled name="MapUnit" size="10" style="height: <?php echo $height ?>em;width: 6em" >
+    <?php
+    $sql = "SELECT map_unit FROM mapset ORDER BY mapset_name DESC";
+    $res = mysql_query($sql) or die(mysql_error());
+    while ($row = mysql_fetch_assoc($res)) {
+        ?><option value="<?php echo $row['map_unit'] ?>"><?php echo $row['map_unit'] ?></option>
+        <?php
+    }
+    ?>
 						</select>
 					</td>
 					
 
 						
-			<td>
-						<select name="comments" size="10" style="height: <?php echo $height ?>em;width: 28em" onchange="javascript: display_comments(this.value)">
-		<?php
+	<td>
+	<select name="comments" size="10" style="height: <?php echo $height ?>em;width: 28em" onchange="javascript: display_comments(this.value)">
+	<?php
 
-		
-		$sql = "SELECT comments FROM mapset ORDER BY mapset_name DESC";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
-			?>
+    $sql = "SELECT comments FROM mapset ORDER BY mapset_name DESC";
+    $res = mysql_query($sql) or die(mysql_error());
+    while ($row = mysql_fetch_assoc($res)) {
+        ?>
 				<option value="<?php echo $row['comments'] ?>"><?php echo $row['comments'] ?></option>
 			<?php
 		}
