@@ -105,101 +105,102 @@ class Downloads
                 echo $this->filter_lines();
                 break;
             default:
-                $this->type1_select();
+                $this->type1Select();
                 break;
         }
     }
 
-        /**
-         * load header and footer then check session to use existing data selection
-         */
-        private function type1_select()
-        {
-            global $config;
-            require_once $config['root_dir'].'theme/normal_header.php';
-            $phenotype = "";
-            $lines = "";
-            $markers = "";
-            $saved_session = "";
-            $this->type1_checksession();
-            require_once 'downloads/select-map.php';
-            require_once $config['root_dir'].'theme/footer.php';
-	}	
-	
-	/**
-	 * Checks the session variable, if there is lines data saved then go directly to the lines menu
-	 */
-	private function type1_checksession()
+    /**
+     * load header and footer then check session to use existing data selection
+     */
+    private function type1Select()
     {
-            ?>
-            <style type="text/css">
+        global $config;
+        require_once $config['root_dir'].'theme/normal_header.php';
+        $phenotype = "";
+        $lines = "";
+        $markers = "";
+        $saved_session = "";
+        $this->type1Checksession();
+        require_once 'downloads/select-map.php';
+        require_once $config['root_dir'].'theme/footer.php';
+    }
+
+    /**
+     * Checks the session variable, if there is lines data saved then go directly to the lines menu
+     */
+    private function type1Checksession()
+    {
+        global $mysqli;
+        ?>
+        <style type="text/css">
 			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
 			table {background: none; border-collapse: collapse}
 			td {border: 1px solid #eee !important;}
 			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-            <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
-            <script type="text/javascript" src="downloads/download_gs03.js"></script>
-            <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
-		<div id="title">
-		<?php
-            $phenotype = "";
-            $lines = "";
-            $markers = "";
-            $saved_session = "";
-		    $message1 = $message2 = "";
+	</style>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+        <script type="text/javascript" src="downloads/download_gs03.js"></script>
+        <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
+        <div id="title">
+        <?php
+        $phenotype = "";
+        $lines = "";
+        $markers = "";
+        $saved_session = "";
+        $message1 = $message2 = "";
 
-            if (isset($_SESSION['phenotype'])) {
-                    $tmp = count($_SESSION['phenotype']);
-                    if ($tmp==1) {
-                        $saved_session = "$tmp phenotype ";
-                    } else {
-                        $saved_session = "$tmp phenotypes ";
-                    }
-                    $message2 = "download phenotype and genotype data";
-                    $phenotype = $_SESSION['phenotype'];
+        if (isset($_SESSION['phenotype'])) {
+            $tmp = count($_SESSION['phenotype']);
+            if ($tmp==1) {
+                $saved_session = "$tmp phenotype ";
             } else {
-				$message1 = "0 phenotypes";
-				$message2 = " download genotype data";
-			}
-            if (isset($_SESSION['selected_lines'])) {
-                    $countLines = count($_SESSION['selected_lines']);
-                    if ($saved_session == "") {
-                        $saved_session = "$countLines lines";
-                    } else {
-                        $saved_session = $saved_session . ", $countLines lines";
-                    }
-                    $lines = $_SESSION['selected_lines'];
+                $saved_session = "$tmp phenotypes ";
             }
-            if (isset($_SESSION['clicked_buttons'])) {
-                    $tmp = count($_SESSION['clicked_buttons']);
-                    $saved_session = $saved_session . ", $tmp markers";
-                    $markers = $_SESSION['clicked_buttons'];
+            $message2 = "download phenotype and genotype data";
+            $phenotype = $_SESSION['phenotype'];
+        } else {
+            $message1 = "0 phenotypes";
+            $message2 = " download genotype data";
+        }
+        if (isset($_SESSION['selected_lines'])) {
+            $countLines = count($_SESSION['selected_lines']);
+            if ($saved_session == "") {
+                $saved_session = "$countLines lines";
             } else {
-			    if ($message2 == "") {
-			      $message1 = "0 markers ";
-			      $message2 = "for all markers.";
-			    } else {
-			  	  $message1 = $message1 . ", 0 markers ";
-			  	  $message2 = $message2 . " for all markers";
-				}
-			}	
-            $this->refresh_title();
-                if (empty($_SESSION['phenotype'])) { 
-                    echo "<font color=red>Select a set of traits and phenotype trials</font><br><br>";
-                } elseif (empty($_SESSION['selected_lines'])) {
-                    echo "<br>Select validation set containing trait measurements to plot prediction vs observed. ";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "downloads/select_all.php>Wizard</a><br>";
-                    echo "Select prediction set without trait measurements to predict the traits. ";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "pedigree/line_properties.php>Lines by Properties</a>, ";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "downloads/select_genotype.php>Lines by Genotype Experiment</a><br>";
-                } elseif (empty($_SESSION['phenotype']) && empty($_SESSION['training_traits'])) {
+                $saved_session = $saved_session . ", $countLines lines";
+            }
+            $lines = $_SESSION['selected_lines'];
+        }
+        if (isset($_SESSION['clicked_buttons'])) {
+            $tmp = count($_SESSION['clicked_buttons']);
+            $saved_session = $saved_session . ", $tmp markers";
+            $markers = $_SESSION['clicked_buttons'];
+        } else {
+            if ($message2 == "") {
+                $message1 = "0 markers ";
+                $message2 = "for all markers.";
+            } else {
+                $message1 = $message1 . ", 0 markers ";
+                $message2 = $message2 . " for all markers";
+            }
+        }
+        $this->refresh_title();
+        if (empty($_SESSION['phenotype'])) {
+            echo "<font color=red>Select a set of traits and phenotype trials</font><br><br>";
+        } elseif (empty($_SESSION['selected_lines'])) {
+            echo "<br>Select validation set containing trait measurements to plot prediction vs observed. ";
+            echo "<a href=";
+            echo $config['base_url'];
+            echo "downloads/select_all.php>Wizard</a><br>";
+            echo "Select prediction set without trait measurements to predict the traits. ";
+            echo "<a href=";
+            echo $config['base_url'];
+            echo "pedigree/line_properties.php>Lines by Properties</a>, ";
+            echo "<a href=";
+            echo $config['base_url'];
+            echo "downloads/select_genotype.php>Lines by Genotype Experiment</a><br>";
+        } elseif (empty($_SESSION['phenotype']) && empty($_SESSION['training_traits'])) {
                     echo "Please select traits before using this feature.<br><br>";
                     echo "<a href=";
                     echo $config['base_url'];
@@ -212,8 +213,8 @@ class Downloads
                         $geno_exp = $_SESSION['geno_exps'];
                         $geno_str = $geno_exp[0];
                         $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
-                        $res = mysql_query($sql) or die(mysql_error() . $sql);
-                        if ($row = mysql_fetch_array($res)) {
+                        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+                        if ($row = mysqli_fetch_array($res)) {
                         } else {
                             echo "<font color=red>Select a genetic map.</font>";
                             echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
@@ -231,8 +232,8 @@ class Downloads
                      $tmp = $_SESSION['selected_trials'];
                      $e_uid = implode(",",$tmp);
         $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        while ($row = mysql_fetch_array($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+        while ($row = mysqli_fetch_array($res)) {
           echo "$row[0]<br>";
         }
         }
@@ -718,15 +719,11 @@ class Downloads
                 $source_string = $row['linkout_string_for_annotation'];
                 $linkString = ereg_replace($reg_pattern, $replace_string, $source_string);
                 if ($link == "") {
-                    if ($linkString == "") {
-                      $link = "$name";
-                    } else {
+                    if ($linkString != "") {
                       $link = "<a href=\"$linkString\" target=\"_new\">$replace_string</a> ($name)";
                     }
                 } else {
-                    if ($linkString == "") {
-                      $link .= "<br>$name";
-                    } else {
+                    if ($linkString != "") {
                       $link .= "<br><a href=\"$linkString\" target=\"_new\">$replace_string</a> ($name)";
                     }
                 }
