@@ -503,7 +503,7 @@ class Downloads
                 $res = mysql_query($sql) or die(mysql_error() . $sql);
                 $row = mysql_fetch_array($res);
                 $name = $row[0];
-                echo "$name";
+                echo "using map from genotype experiment<br>$name";
             } elseif (isset($_SESSION['selected_map'])) {
                 $sql = "select mapset_name from mapset where mapset_uid = $map";
                 $res = mysql_query($sql) or die(mysql_error());
