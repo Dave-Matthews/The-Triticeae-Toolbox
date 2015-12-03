@@ -146,6 +146,8 @@ class LineNames_Check {
 	      $COL_LINENAME = $i;
 	    if (stripos($teststr,'check')!==FALSE)
 	      $COL_CHECK = $i;
+	    if (stripos($teststr,'filial')!==FALSE)
+	      $COL_GENERATION = $i;
 	  }
 	  // Check if a required col is missing
 	  if (($COL_LINENAME*$COL_CHECK)==0) {
@@ -153,8 +155,12 @@ class LineNames_Check {
 	    echo "Missing column: Line Name and Check are required.<p>";
 	    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\"><br>");
 	  }
+	  // Accommodate variant templates with four seed stock columns.
+	  if ($COL_GENERATION != 0)
+	    $offset = $COL_LINENAME + 6;//column where phenotype data starts
+	  else
+	    $offset = $COL_LINENAME + 2;
 	  // Read in the trait names.
-	  $offset = $COL_LINENAME + 6;//column where phenotype data starts
 	  $phenonames = array();
 	  $phenoids = array();
 	  for ($i = $offset; $i <= $cols; $i++) {
@@ -470,11 +476,14 @@ File:  <i><?php echo $uploadfile ?></i><br>
    for ($i = $namecolumn; $i <= $cols; $i++) {
      $teststr = str_replace(array(' ','*'), '', strtolower($means['cells'][$headerrow][$i]));
      if (stripos($teststr,'check') !== FALSE) $COL_CHECK = $i;
-     // To be filled in ...:
-     elseif (stripos($teststr,'xxx') !== FALSE) $COL_ = $i;
+     elseif (stripos($teststr,'filial') !== FALSE) $COL_GENERATION = $i;
    }
+   // Accommodate variant templates with four seed stock columns.
+   if ($COL_GENERATION != 0)
+     $offset = $COL_LINENAME + 6;//column where phenotype data starts
+   else
+     $offset = $COL_LINENAME + 2;
    // Read in the trait names.
-   $offset = $COL_LINENAME + 6;//column where phenotype data starts
    $phenonames = array();
    $phenoids = array();
    for ($i = $offset; $i <= $cols; $i++) {
