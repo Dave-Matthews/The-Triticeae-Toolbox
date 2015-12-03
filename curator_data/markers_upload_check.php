@@ -61,8 +61,7 @@ class MarkersCheck
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'typeDatabaseAnnot':
                 $this->type_DatabaseAnnot(); /* update Marker Info */
                 break;
@@ -96,10 +95,9 @@ class MarkersCheck
         if ($_FILES['file']['name'][0] != "") {
             echo "<h2>Marker Annotation</h2>";
         } else {
-            ?>
-            <h2>Enter/Update Markers: Validation</h2>
+            ?><h2>Enter/Update Markers: Validation</h2>
             <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-            <script type="text/javascript" src="curator_data/marker04.js"></script>
+            <script type="text/javascript" src="curator_data/marker05.js"></script>
             <div id=update></div>
             <div id=checksyn>
             <?php
@@ -465,7 +463,7 @@ class MarkersCheck
     }
 
     /**
-     * check import file for name and sequence matches 
+     * check import file for name and sequence matches, allow sequence entry of Unavailable
      *
      * @param array   &$storageArr contents of import file
      * @param string  $nameIdx     index of name column
@@ -475,7 +473,7 @@ class MarkersCheck
      *
      * @return null
      */
-    function typeCheckImport(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand)
+    function typeCheckImport(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand, $excludeDuplicate)
     {
         $limit = count($storageArr);
         $marker_seq_dup = "";
@@ -483,7 +481,11 @@ class MarkersCheck
         for ($i = 1; $i <= $limit; $i++) {
             $name = $storageArr[$i][$nameIdx];
             $seq = strtoupper($storageArr[$i][$sequenceIdx]);
-            if (isset($marker_seq_import[$seq])) {
+            if ($seq == "UNAVAILABLE") {
+                $marker_seq_import[$seq] = $name;
+            } elseif ($excludeDuplicate == 0) {
+                $marker_seq_import[$seq] = $name;
+            } elseif (isset($marker_seq_import[$seq])) {
                 if ($marker_seq_dup == "") {
                     $marker_seq_dup = $name;
                 } else {
@@ -905,6 +907,7 @@ class MarkersCheck
             $overwrite = $_GET['overwrite'];
             $expand = $_GET['expand'];
             $orderAllele = $_GET['orderAllele'];
+            $excludeDuplicate = $_GET['excludeDuplicate'];
         }
         if ($fileFormat == 0) {
             $fileFormatName = "generic";
@@ -922,6 +925,13 @@ class MarkersCheck
         } else {
             $order_yes = "";
             $order_no = "checked";
+        }
+        if ($excludeDuplicate) {
+            $checked_dup1 = "";
+            $checked_dup2 = "checked";
+        } else {
+            $checked_dup1 = "checked";
+            $checked_dup2 = "";
         }
 
         /* Read the file */
@@ -1034,15 +1044,17 @@ class MarkersCheck
         ?>
         <h3>Options</h3>
         <table>
-	  <tr>
-            <td><input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
-            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
-            > No
+	  <tr><td>
+        <input type=radio name="check_seq" id="use_db" value="db" <?php echo $checked_db ?>
+            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"> No
         <input type=radio name="check_seq" id="use_imp" value="imp" <?php echo $checked_imp ?>
-            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"
-            > Yes
+            onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"> Yes
 	    <td>If the sequence matches, add the marker as a synonym.<br>The import squence is compared to existing markers to find an exact match. This is very fast but does not find matches where one sequence is shorter than the other<br>
               Check <b>Yes</b> unless the marker names have been published or have mapping data.
+        <tr><td>
+        <input type=radio name="check_dup" id="keep" value="no" <?php echo $checked_dup1 ?> onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"> No
+        <input type=radio name="check_dup" id="exclude" value="yes"<?php echo $checked_dup2 ?> onclick="javascript: CheckSynonym('<?php echo $infile?>','<?php echo $uploadfile?>','<?php echo $username?>','<?php echo $fileFormat?>')"> Yes
+        <td>Exclude markers with duplicate sequence
         <?php
         if ($fileFormat == 0) {
         ?>
@@ -1093,7 +1105,7 @@ class MarkersCheck
         if (($fileFormat == 0) && ($orderAllele)) {
             $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
         }
-        $this->typeCheckImport($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
+        $this->typeCheckImport($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand, $excludeDuplicate);
         if ($numMatch["dupSeq"] > 0) {
         } else {
             ?>
@@ -1488,6 +1500,7 @@ class MarkersCheck
         $overwrite = $_GET['overwrite'];  //overwrite = 1 means check for sequence match. If match found then add marker as synonym. If marker not loaded then create.
                                           //overwrite = 0 means do not check sequence. If marker not already loaded give error
         $orderAllele = $_GET['orderAllele'];  //orderAllele = 1 mean check for alphabetical order of alleles
+        $excludeDuplicate = $_GET['excludeDuplicate'];
         
         //echo "datafile = ".  $datafile  . "<br>";
         //echo "filename = " . $filename . "<br>";
@@ -1563,7 +1576,7 @@ class MarkersCheck
           $this->typeCheckAlleleOrder($storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx);
         }
         flush();
-        $this->typeCheckImport($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand);
+        $this->typeCheckImport($storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand, $excludeDuplicate);
         flush();
 
         //cache the marker and synonym names
@@ -1733,7 +1746,7 @@ class MarkersCheck
                 VALUES('$filename', '$username', NOW())";
         } else {
             $sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
-                        WHERE input_file_log_uid = '$input_uid'"; 
+                        WHERE input_file_log_uid = '$input_uid'";
         }
         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
         echo "<br><br>Running update of BLAST database<br>\n";
@@ -1744,8 +1757,5 @@ class MarkersCheck
         }
 
     } /* end of function type_databaseSNP */
-    
-} /* end of class */
-  
-?>
+}
 

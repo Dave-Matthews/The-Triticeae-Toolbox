@@ -1,14 +1,12 @@
 <?php
 
-// 12/14/2010 JLee  Change to use curator bootstrap
+/** 12/14/2010 JLee  Change to use curator bootstrap **/
 
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap_curator.inc';
-include $config['root_dir'] . 'curator_data/lineuid.php';
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require $config['root_dir'] . 'curator_data/lineuid.php';
 set_time_limit(3000);
-ini_set('memory_limit','4G');
-
-//require_once("../lib/Excel/reader.php"); // Microsoft Excel library
+ini_set('memory_limit', '4G');
 
 $mysqli = connecti();
 loginTest();
@@ -33,8 +31,7 @@ class MapsCheck
     // Using the class's constructor to decide which action to perform
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'typeDatabase':
                 $this->type_Database(); /* update database */
                 break;
@@ -362,7 +359,7 @@ class MapsCheck
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		$cnt = 0;
 		while ($row = mysqli_fetch_array($res)){
-			$map_uid[] = $row['map_uid'];
+                        $map_uid[$row['map_name']] = $row['map_uid'];
 			$map_name[] =$row['map_name'];			
 			echo $map_uid[$cnt]."".$map_name[$cnt]."\n";
 			$cnt++;
@@ -444,6 +441,7 @@ class MapsCheck
 				if (strpos($query,"uplicate")) {echo $message;
 				} else {die($message);}
 			}
+                        $map_chr_new[$cstr] = $mapnametmp;
 		}	
 		
 		/* map uid's exist only for the existing mapsets so for new ones we need to read it from the map table after we create */
@@ -451,15 +449,18 @@ class MapsCheck
 		$sql = "SELECT map_uid, map_name FROM map WHERE mapset_uid = $mapset_uid";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		while ($row = mysqli_fetch_array($res)){
-			$map_uid[] = $row['map_uid'];
+			$map_uid[$row['map_name']] = $row['map_uid'];
 			$map_name_new[] =$row['map_name'];			
 			echo $row['map_uid'] ." ".$row['map_name']."<br>\n";
 		}
 		
-		
-		
-			
-	}
+	} else {
+            $map_name = array_unique($chrom);
+            foreach ($map_name as $cstr) {
+                $mapnametmp = $mapset_prefix."_".$cstr;
+                $map_chr[$cstr] = $mapnametmp;
+             }
+        }
 		
 
 /* end of handling new mapset */
@@ -495,22 +496,24 @@ class MapsCheck
 		// Find map_uid for marker using the chromosome name
 															 
 		if ($new_map == 'TRUE')
-		{								 
-		    $map_idx = implode(find($chrom[$cnt],$map_name_new));
+		{
+                    $tmp = $chrom[$cnt];
+                    $name = $map_chr_new[$tmp]; 
 		}
 
 		if ($new_map == 'FALSE')
 		{
-		    $map_idx = implode(find($chrom[$cnt],$map_name));
-		}
-				
-                if (isset($map_uid[$map_idx])) {			 
-                    $mmap_uid = $map_uid[$map_idx];
-                    //echo "Good: $map_idx $cnt<br>\n";
-                } else {
-                    echo "Error: $map_idx not defined $new_map $cnt<br>\n";
+                    $tmp = $chrom[$cnt];
+                    $name = $map_chr[$tmp];
                 }
+
+                if (isset($map_uid[$name])) {
+                    $mmap_uid = $map_uid[$name];
+                } else {
+                    echo "Error $name<br>\n";
+		}
                 
+				
 		// store in markers_in_maps
                 // If this mapset, marker combination exists already, then update only
                 //see if marker_uid in the current mapset
