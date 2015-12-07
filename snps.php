@@ -46,9 +46,9 @@ submitted to T3 in Illumina's A/B format, and stored as A-allele = A and
 B-allele = B.  The actual nucleotide calls corresponding to A and B are
 taken from the Illumina manifest files
 (<a href="docs/GS0007511-OPA.opa">example</a>), interpreted according to
-the documentation in Illumina's Technical
-Note <a href="docs/TopBot_TechNote.pdf">'"TOP/BOT" Strand and "A/B"
-Allele'</a>.  In short:<ul>
+the documentation in Illumina&apos;s Technical
+Note <a href="docs/TopBot_TechNote.pdf">"TOP/BOT" Strand and "A/B"
+Allele</a>.  In short:<ul>
 <li>For [A/C] and [A/G] SNPs, Allele A is A.  
 <li>For [T/C] and [T/G] SNPs, Allele A is T and the sequence is
 designated BOT.
@@ -59,10 +59,11 @@ Strand is BOT, then Allele A = T and Allele B = A.
 TOP then Allele A = C and Allele B = G. When the Strand
 is BOT then Allele A = G and Allele B = C.
 </ul>
-<br>The Sequence shown below is the reverse-complement of the the manifest's
+The Sequence shown in T3 is the reverse-complement of the the manifest&apos;s
 <i>TopGenomicSeq</i> when the Illumina strand (manifest field "<i>Ilmn Strand</i>")
-was BOT, so the A-allele and B-allele nucleotides match the bracketed SNP nucleotides
-in the Sequence.
+was BOT, so the the bracketed SNP nucleotides                                   
+in the Sequence are the same as the A-allele and B-allele nucleotides; 
+however they aren&apos;t necessarily given in the same order.
 
 <h4>GBS SNPs</h4>
 <p>For SNPs assayed by shotgun sequencing downstream from a restriction
