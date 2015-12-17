@@ -901,7 +901,9 @@ private function typeAnnotationCheck()
 		            mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		        }
                     } else {
-                        die("Error: No experiment found for $experiment->trialcode\n");
+                        $sql = "insert into datasets_experiments (experiment_uid, datasets_uid) values ($exp_id, $capdata_uid)";
+                        echo "add dataset for $experiment->trialcode<br>\n";
+                        $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                     }
 
 		    //update phenotype experiment information
