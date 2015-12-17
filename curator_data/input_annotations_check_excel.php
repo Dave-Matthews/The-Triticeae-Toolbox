@@ -41,32 +41,31 @@ class Annotations_Check
     {
         switch ($function) {
             case 'typeDatabase':
-		$this->type_Database(); /* update database */
-		break;
+                $this->type_Database(); /* update database */
+                break;
 
-	case 'typeLineData':
-		$this->type_Line_Data(); /* Handle Line Data */
-		break;
+            case 'typeLineData':
+                $this->type_Line_Data(); /* Handle Line Data */
+                break;
 
-	default:
-		$this->typeAnnotationCheck(); /* intial case*/
-		break;
-	}
-}
+            default:
+                $this->typeAnnotationCheck(); /* intial case*/
+                break;
+        }
+    }
 
-private function typeAnnotationCheck()
-	{
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
+    private function typeAnnotationCheck()
+    {
+	global $config;
+        include($config['root_dir'] . 'theme/admin_header.php');
 
-		echo "<h2> Add/Update Experiment Annotations: Validation</h2>"; 
-		
-			
-		$this->type_Annotation();
+        echo "<h2> Add/Update Experiment Annotations: Validation</h2>"; 
 
-		$footer_div = 1;
+        $this->type_Annotation();
+
+        $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
-	}
+    }
 	
 	
 	private function type_Annotation()
@@ -900,10 +899,6 @@ private function typeAnnotationCheck()
 		            $sql = "update datasets set CAPdata_programs_uid = $capdata_uid where datasets_uid = $row[0]";
 		            mysql_query($sql) or die(mysql_error() . "<br>$sql");
 		        }
-                    } else {
-                        $sql = "insert into datasets_experiments (experiment_uid, datasets_uid) values ($exp_id, $capdata_uid)";
-                        echo "add dataset for $experiment->trialcode<br>\n";
-                        $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
                     }
 
 		    //update phenotype experiment information
