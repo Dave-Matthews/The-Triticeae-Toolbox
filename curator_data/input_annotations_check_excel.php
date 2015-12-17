@@ -1,7 +1,9 @@
 <?php
-// 18may2012  DEM Added Trial Year. Renamed some fields.
-// 09/01/2011 CBirkett	changed to new template and schema
-// 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
+/**
+ * 18may2012  DEM Added Trial Year. Renamed some fields.
+ * 09/01/2011 CBirkett changed to new template and schema
+ * 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values
+ */
 
 require 'config.php';
 //define("DEBUG",2);
@@ -9,8 +11,8 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include $config['root_dir'] . 'includes/bootstrap_curator.inc';
-include $config['root_dir'] . 'curator_data/lineuid.php';
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require $config['root_dir'] . 'curator_data/lineuid.php';
 
 require_once "../lib/Excel/excel_reader2.php"; // Microsoft Excel library
 
@@ -34,27 +36,23 @@ class Annotations_Check
     
     private $delimiter = "\t";
     
-	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-			case 'typeDatabase':
-				$this->type_Database(); /* update database */
-				break;
-				
-			case 'typeLineData':
-				$this->type_Line_Data(); /* Handle Line Data */
-				break;
-			
-			default:
-				$this->typeAnnotationCheck(); /* intial case*/
-				break;
-			
-		}	
-	}
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch ($function) {
+            case 'typeDatabase':
+		$this->type_Database(); /* update database */
+		break;
 
+	case 'typeLineData':
+		$this->type_Line_Data(); /* Handle Line Data */
+		break;
+
+	default:
+		$this->typeAnnotationCheck(); /* intial case*/
+		break;
+	}
+}
 
 private function typeAnnotationCheck()
 	{
@@ -375,7 +373,7 @@ private function typeAnnotationCheck()
 
 	  $collab = $experiments[$index]->collaborator;
 	  if (!$collab) {
-	    echo "Column <b>$colname</b>: Collaborator name (who performed the experiment) is required.<br>";
+	    echo "<b>Error</b>, column <b>".strtoupper($colname)."</b>: Collaborator name (who performed the experiment) is required. Value is \"".$experiments[$index]->collaborator."\".<br>";
 	    $error_flag = ($error_flag) | (8);
 }
 
@@ -466,7 +464,7 @@ private function typeAnnotationCheck()
 	$experiments[$index]->greenhouse = mysql_real_escape_string($greenhouse_row[$i]);
 	$gh = $experiments[$index]->greenhouse;
 	if ($gh != "yes" AND $gh != "no") {
-	  echo "<b>Error</b>: 'Greenhouse trial?' must be yes or no.<br>";
+	  echo "<b>Error</b>, column <b>".chr($i+64)."</b>: 'Greenhouse trial?' must be yes or no, not \"$gh\".<br>";
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
 	
@@ -480,7 +478,7 @@ private function typeAnnotationCheck()
 	$experiments[$index]->irrigation = mysql_real_escape_string($irrigation_row[$i]);
 	$ir = $experiments[$index]->irrigation;
 	if ($ir != "yes" AND $ir != "no") {
-	  echo "<b>Error</b>, column <font color=red><b>".chr($i+64)."</b></font>: 'Irrigation' must be yes or no.<br>";
+	  echo "<b>Error</b>, column <font color=red><b>".chr($i+64)."</b></font>: 'Irrigation' must be yes or no, not \"$ir\".<br>";
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
 
@@ -872,8 +870,7 @@ private function typeAnnotationCheck()
 		// if no then insert into table
 		$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$experiment->trialcode}'";
 		$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		if (mysql_num_rows($res)!==0) { //yes, experiment found, so update
-		    $row = mysql_fetch_assoc($res);
+		if ($row = mysql_fetch_assoc($res)) { //yes, experiment found, so update
 		    $exp_id = $row['experiment_uid'];
 		
 		    //update experiment information
@@ -890,6 +887,22 @@ private function typeAnnotationCheck()
 			WHERE experiment_uid = $exp_id";
 		    echo "Table <b>experiments</b> updated.<br>\n";
 		    mysql_query($sql) or die(mysql_error() . "<br>$sql");
+
+		    // Also update CAPdata_programs_uid in table 'datasets', if different.
+		    // Get the current value:
+		    $sql = "select d.datasets_uid, CAPdata_programs_uid
+		    	    from datasets d, datasets_experiments de
+		    	    where de.experiment_uid = $exp_id
+		            and d.datasets_uid = de.datasets_uid ";
+		    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		    if ($row = mysql_fetch_row($res)) {
+		        if ($row[1] != $capdata_uid) {
+		            $sql = "update datasets set CAPdata_programs_uid = $capdata_uid where datasets_uid = $row[0]";
+		            mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		        }
+                    } else {
+                        die("Error: No experiment found for $experiment->trialcode\n");
+                    }
 
 		    //update phenotype experiment information
 		    /* Filter invisible non-empty string in beginweatherdate. */
@@ -992,7 +1005,7 @@ private function typeAnnotationCheck()
 	      echo "<p><a href=".$config['base_url']."view.php?table=experiment_set&uid=$experiment_set_uid>View</a><p>";
 	    else {
 	    ?>
-	    <p><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_excel.php"> Return </a>
+	    <p><a href="<?php echo $config['base_url']; ?>curator_data/input_annotations_upload_router.php"> Return </a>
 	    <?php
 		}
 	       // Timestamp, e.g. _28Jan12_23:01
