@@ -1,7 +1,9 @@
 <?php
-// 18may2012  DEM Added Trial Year. Renamed some fields.
-// 09/01/2011 CBirkett	changed to new template and schema
-// 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
+/**
+ * 18may2012  DEM Added Trial Year. Renamed some fields.
+ * 09/01/2011 CBirkett changed to new template and schema
+ * 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values
+ */
 
 require 'config.php';
 //define("DEBUG",2);
@@ -9,8 +11,8 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include $config['root_dir'] . 'includes/bootstrap_curator.inc';
-include $config['root_dir'] . 'curator_data/lineuid.php';
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require $config['root_dir'] . 'curator_data/lineuid.php';
 
 require_once "../lib/Excel/excel_reader2.php"; // Microsoft Excel library
 
@@ -34,41 +36,36 @@ class Annotations_Check
     
     private $delimiter = "\t";
     
-	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-			case 'typeDatabase':
-				$this->type_Database(); /* update database */
-				break;
-				
-			case 'typeLineData':
-				$this->type_Line_Data(); /* Handle Line Data */
-				break;
-			
-			default:
-				$this->typeAnnotationCheck(); /* intial case*/
-				break;
-			
-		}	
-	}
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch ($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
 
+            case 'typeLineData':
+                $this->type_Line_Data(); /* Handle Line Data */
+                break;
 
-private function typeAnnotationCheck()
-	{
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
+            default:
+                $this->typeAnnotationCheck(); /* intial case*/
+                break;
+        }
+    }
 
-		echo "<h2> Add/Update Experiment Annotations: Validation</h2>"; 
-		
-			
-		$this->type_Annotation();
+    private function typeAnnotationCheck()
+    {
+	global $config;
+        include($config['root_dir'] . 'theme/admin_header.php');
 
-		$footer_div = 1;
+        echo "<h2> Add/Update Experiment Annotations: Validation</h2>"; 
+
+        $this->type_Annotation();
+
+        $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
-	}
+    }
 	
 	
 	private function type_Annotation()
@@ -872,8 +869,7 @@ private function typeAnnotationCheck()
 		// if no then insert into table
 		$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$experiment->trialcode}'";
 		$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		if (mysql_num_rows($res)!==0) { //yes, experiment found, so update
-		    $row = mysql_fetch_assoc($res);
+		if ($row = mysql_fetch_assoc($res)) { //yes, experiment found, so update
 		    $exp_id = $row['experiment_uid'];
 		
 		    //update experiment information
@@ -898,11 +894,12 @@ private function typeAnnotationCheck()
 		    	    where de.experiment_uid = $exp_id
 		            and d.datasets_uid = de.datasets_uid ";
 		    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		    $row = mysql_fetch_row($res);
-		    if ($row[1] != $capdata_uid) {
-		      $sql = "update datasets set CAPdata_programs_uid = $capdata_uid where datasets_uid = $row[0]";
-		      mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		    }
+		    if ($row = mysql_fetch_row($res)) {
+		        if ($row[1] != $capdata_uid) {
+		            $sql = "update datasets set CAPdata_programs_uid = $capdata_uid where datasets_uid = $row[0]";
+		            mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		        }
+                    }
 
 		    //update phenotype experiment information
 		    /* Filter invisible non-empty string in beginweatherdate. */

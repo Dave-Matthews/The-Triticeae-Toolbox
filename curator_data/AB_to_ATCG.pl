@@ -45,6 +45,7 @@ while (<IN>) {
 	    # Now complement it, including ambiguity codes.
 	    # From http://blossomassociates.net/molbio/revcomp.sh
 	    $snp_sequence =~ tr/ACGTUMRYKVHDB\[\]/TGCAAKYRMBDHV\]\[/;
+            $snp_sequence =~ tr/acgtumrykvhdb\[\]/tgcaakyrmbdhv\]\[/;
 	}
 	print("$marker,$a_allele,$b_allele,$snp_sequence\n");
     }
