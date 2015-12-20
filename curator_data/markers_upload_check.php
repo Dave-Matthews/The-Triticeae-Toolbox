@@ -5,10 +5,9 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
  *
  * 04/08/2014  CLB    for GBS markers the A and B alleles should be alphabetically ordered
  * 11/09/2011  JLee   Fix problem with empty lines in SNP file
@@ -45,8 +44,8 @@ ob_end_flush();
 
 new MarkersCheck($_GET['function']);
 
-/** Using a PHP class to implement the marker import feature
- *
+/**
+ * Using a PHP class to implement the marker import feature
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
@@ -55,8 +54,8 @@ class MarkersCheck
 {
     public $delimiter = "\t";
     public $storageArr = array (array());
-    /** Using the class's constructor to decide which action to perform
-     *
+    /**
+     * Using the class's constructor to decide which action to perform
      * @param string $function action to perform
      */
     public function __construct($function = null)
@@ -137,7 +136,7 @@ class MarkersCheck
         }
         if (($reader = fopen($infile, "r")) == false) {
             error(1, "Unable to access file.");
-            exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+            exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
         }
         $count_total = 0;
         while (!feof($reader)) {
@@ -224,7 +223,7 @@ class MarkersCheck
     {
         $seq = strrev($seq);
         // change the sequence to upper case
-        $seq = strtoupper ($seq);
+        $seq = strtoupper($seq);
         // the system used to get the complementary sequence is simple but fas
         $seq=str_replace("A", "t", $seq);
         $seq=str_replace("T", "a", $seq);
@@ -577,7 +576,7 @@ class MarkersCheck
             	$annotfile = $target_path.$uploadfile;
                 //echo "Annotate file - " . $annotfile . "<br>";
                 /* Read the annotation file */
-                if (($reader = fopen($annotfile, "r")) == FALSE) {
+                if (($reader = fopen($annotfile, "r")) == false) {
                     error(1, "Unable to access file.");
                     exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
                 }
@@ -1539,7 +1538,7 @@ class MarkersCheck
 
         // Store individual records
         $i = 1;
-        while(($line = fgets($reader)) !== FALSE) { 
+        while(($line = fgets($reader)) !== false) { 
             if ( trim($line) == '') {
                 continue;
             }
@@ -1645,49 +1644,49 @@ class MarkersCheck
                 //Check to see if marker already exists
                 $marker_uid = null;
                 if (isset($markerNameLookup[$marker])) {
-                    $marker_uid=$markerNameLookup[$marker];
+                    $marker_uid = $markerNameLookup[$marker];
                     // Check synomyn
                 } elseif (isset($markerSynLookup[$marker])) {
-                    $mmarker_uid = $markerSynLookup[$marker];
+                    $marker_uid = $markerSynLookup[$marker];
                 }
                
                 //Check if duplicate name or seq within import file
-                if (($synonym == "skip duplicate name") || ($synonym == "skip duplicate seq")) { 
+                if (($synonym == "skip duplicate name") || ($synonym == "skip duplicate seq")) {
                     echo "$synonym $marker<br>\n";
                     continue;
                 //Check to see if synonym name already exists
                 } elseif (empty($marker_uid) && $overwrite && ($synonym != "")) {
-                        if (isset($sTypeHash["GBS sequence tag"])) {
-                            $synonymTypeID = $sTypeHash["GBS sequence tag"];
-                        } else {
-                            $sql = "insert into marker_synonym_types (name, comments) values (\"GBS sequence tag\", \"N/A\")";
-                            $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
-                            echo "$sql<br>\n";
-                            $synonymTypeID = mysql_insert_id();
-                        }
-                        $sql = "select marker_uid from markers where marker_name = \"$synonym\"";
+                    if (isset($sTypeHash["GBS sequence tag"])) {
+                        $synonymTypeID = $sTypeHash["GBS sequence tag"];
+                    } else {
+                        $sql = "insert into marker_synonym_types (name, comments) values (\"GBS sequence tag\", \"N/A\")";
                         $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
-                        if ($row = mysql_fetch_assoc($res)) {
-                            $marker_uid = $row['marker_uid'];
-                        } else {
-                            die("Error: could not find synonym entry for $synonym<br>$sql\n");
-                        }
-                        $sql = "SELECT marker_synonym_uid
+                        echo "$sql<br>\n";
+                        $synonymTypeID = mysql_insert_id();
+                    }
+                    $sql = "select marker_uid from markers where marker_name = \"$synonym\"";
+                    $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
+                    if ($row = mysql_fetch_assoc($res)) {
+                        $marker_uid = $row['marker_uid'];
+                    } else {
+                        die("Error: could not find synonym entry for $synonym<br>$sql\n");
+                    }
+                    $sql = "SELECT marker_synonym_uid
                         FROM marker_synonyms
                         WHERE value = '$marker'";
-                        $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
-                        $rdata = mysql_fetch_assoc($res);
-                        $mSynonym_uid=$rdata['marker_synonym_uid'];
+                    $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
+                    $rdata = mysql_fetch_assoc($res);
+                    $mSynonym_uid=$rdata['marker_synonym_uid'];
  
-                        if (empty($mSynonym_uid)) {
-                            $sql = "INSERT INTO marker_synonyms (marker_uid, marker_synonym_type_uid, value, updated_on)
-                            VALUES ($marker_uid, $synonymTypeID, '$marker', NOW())";
-                            $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
-                            $count_added_syn++;
-                        } else {
-                            echo "skipping marker $marker marker_uid $marker_uid synonym $marker, already in database<br>\n";
-                        }
-                } elseif (empty ($marker_uid) && ($typeIdx != "")) {
+                    if (empty($mSynonym_uid)) {
+                        $sql = "INSERT INTO marker_synonyms (marker_uid, marker_synonym_type_uid, value, updated_on)
+                        VALUES ($marker_uid, $synonymTypeID, '$marker', NOW())";
+                        $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
+                        $count_added_syn++;
+                    } else {
+                        echo "skipping marker $marker marker_uid $marker_uid synonym $marker, already in database<br>\n";
+                    }
+                } elseif (empty($marker_uid) && ($typeIdx != "")) {
                     $sql = "SELECT marker_type_uid, marker_type_name
                     FROM marker_types";
                     $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
@@ -1716,8 +1715,8 @@ class MarkersCheck
                 }
                   
                 // marker name don't exist in DB
-                if (empty ($marker_uid)) {
-                    error(1, "Marker name - ". $marker . " does not exist in DB. <br> Skipping this entry ..." );
+                if (empty($marker_uid)) {
+                    error(1, "Marker name - ". $marker . " does not exist in DB. <br> Skipping this entry ...");
                     $missing++;
                     continue;
                 }
@@ -1732,16 +1731,15 @@ class MarkersCheck
             echo " <b>The Data is inserted/updated successfully </b><br>";
             echo "<br/><br/>";
         }
-?>
+        ?>
         <a href="./curator_data/markers_upload.php"> Go Back To Main Page </a>
-<?php
+        <?php
         $sql = "SELECT input_file_log_uid from input_file_log 
             WHERE file_name = '$filename'";
         $res = mysql_query($sql) or die("Database Error: input_file lookup  - ". mysql_error() ."<br>".$sql);
         $rdata = mysql_fetch_assoc($res);
         $input_uid = $rdata['input_file_log_uid'];
-        
-         if (empty($input_uid)) {
+        if (empty($input_uid)) {
             $sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
                 VALUES('$filename', '$username', NOW())";
         } else {
