@@ -346,6 +346,7 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
 function findCommonLines($lines)
 {
     global $mysqli;
+    $selectedlines = implode(",", $lines);
     if (isset($_SESSION['selected_trials'])) {
         $e_uid = $_SESSION['selected_trials'];
     } else {
