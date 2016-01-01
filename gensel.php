@@ -341,7 +341,7 @@ class Downloads
         }
         if (isset($_SESSION['geno_exps'])) {
             calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
-            findCommonLines($lines)
+            findCommonLines($lines);
         } elseif ($training_lines == "") {
             calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
         } else {
