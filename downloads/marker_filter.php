@@ -367,9 +367,9 @@ function findCommonLines($lines)
         AND pd.phenotype_uid = $p_uid
         AND tb.experiment_uid = $e_uid
         AND lr.line_record_uid IN ($selectedlines)";
-    $res3 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $l_count = 0;
-    while ($row3 = mysqli_fetch_array($res3)) {
+    while ($row = mysqli_fetch_array($res)) {
         $uid = $row[0];
         $lines_filtered[] = $uid;
     }
