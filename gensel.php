@@ -102,7 +102,7 @@ class Downloads
                 echo $this->status_pred();
                 break;
             case 'filter_lines':
-                echo $this->filter_lines();
+                echo $this->filterLines();
                 break;
             default:
                 $this->type1Select();
@@ -316,46 +316,47 @@ class Downloads
     /**
      * filters markers and lines based on settings
      */
-    function filter_lines() {
-      if (isset($_GET['maf'])) {
-           $min_maf = $_GET['maf'];
-      } else {
-           $min_maf = 5;
-      }
-      if (isset($_GET['mmm'])) {
-           $max_missing = $_GET['mmm'];
-      } else {
-           $max_missing = 10;
-      }
-      if (isset($_GET['mml'])) {
-           $max_miss_line = $_GET['mml'];
-      } else {
-           $max_miss_line = 10;
-      }
-      $lines = $_SESSION['selected_lines'];
-      if (isset($_SESSION['training_lines'])) {
-          $training_lines = $_SESSION['training_lines'];
-      } else {
-          $training_lines = "";
-      }
-      if (isset($_SESSION['geno_exps'])) {
-          calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
-          $_SESSION['filtered_lines'] = $_SESSION['selected_lines'];
-      } elseif ($training_lines == "") {
-          calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
-      } else {
-          calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
-      }
-      ?>
-      <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-      <?php
+    private function filterLines()
+    {
+        if (isset($_GET['maf'])) {
+            $min_maf = $_GET['maf'];
+        } else {
+            $min_maf = 5;
+        }
+        if (isset($_GET['mmm'])) {
+            $max_missing = $_GET['mmm'];
+        } else {
+            $max_missing = 10;
+        }
+        if (isset($_GET['mml'])) {
+            $max_miss_line = $_GET['mml'];
+        } else {
+            $max_miss_line = 10;
+        }
+        $lines = $_SESSION['selected_lines'];
+        if (isset($_SESSION['training_lines'])) {
+            $training_lines = $_SESSION['training_lines'];
+        } else {
+            $training_lines = "";
+        }
+        if (isset($_SESSION['geno_exps'])) {
+            calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
+            findCommonLines($lines)
+        } elseif ($training_lines == "") {
+            calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+        } else {
+            calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
+        }
+        ?>
+        <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+        <?php
     }
 
     /**
      * 1. display a spinning activity image when a slow function is running
      * 2. show button to clear sessin data
      * 3. show button to save current selection
-     */    
+     */
     private function refresh_title() {
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       echo "<h2>Genomic Association and Prediction</h2>";
