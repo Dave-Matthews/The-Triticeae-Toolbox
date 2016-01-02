@@ -346,14 +346,16 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
 function findCommonLines($lines)
 {
     global $mysqli;
+    $count_selected = count($lines);
     $selectedlines = implode(",", $lines);
     if (isset($_SESSION['selected_trials'])) {
-        $e_uid = $_SESSION['selected_trials'];
+        $exp_array = $_SESSION['selected_trials'];
+        $e_uid = $exp_array[0];
     } else {
         die("Error: must select phenotype trial\n");
     }
     if (isset($_SESSION['phenotype'])) {
-        $phenotype_ary = $_SESSION['phenotype'];
+        $phenotype_ary = $_SESSION['selected_traits'];
         $p_uid = $phenotype_ary[0];
     } else {
         die("Error: must select trait\n");
@@ -370,9 +372,17 @@ function findCommonLines($lines)
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $l_count = 0;
     while ($row = mysqli_fetch_array($res)) {
+        $l_count++;
         $uid = $row[0];
         $lines_filtered[] = $uid;
     }
+    $lines_removed = $count_selected - $l_count;
+    if ($lines_removed == 1) {
+        echo "$lines_removed line removed because it is not in genotype experiment, ";
+    } elseif ($lines_removed > 0) {
+        echo "$lines_removed lines removed because they are not in genotype experiment, ";
+    }
+    echo "using $l_count lines\n";
 
     $_SESSION['filtered_lines'] = $lines_filtered;
 }
