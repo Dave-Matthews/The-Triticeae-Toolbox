@@ -1,6 +1,5 @@
 <?php
-include('../../includes/bootstrap.inc');
-connect();
+require '../../includes/bootstrap.inc';
 $mysqli = connecti();
 
 $self = $_SERVER['PHP_SELF'];
@@ -20,21 +19,40 @@ if (isset($_GET['uid'])) {
     $uid = $_REQUEST['uid'];
     //echo "uid = $uid<br>\n";
 }
+if (isset($_GET['pageSize'])) {
+    $pageSize = $_GET['pageSize'];
+} else {
+    $pageSize = 1000;
+}
+if (isset($_GET['page'])) {
+    $currentPage = $_GET['page'];
+} else {
+    $currentPage = 1;
+}
+
 header("Content-Type: application/json");
 if ($action == "list") {
-    $sql = "select phenotype_uid, phenotypes_name, unit_name, description
+    $count = 0;
+    $metadata['metadata']['status'] = null;
+    $sql = "select phenotype_uid, phenotypes_name, TO_number, unit_name, description
     from phenotypes, units
     WHERE phenotypes.unit_uid = units.unit_uid";
-    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
-        $temp["traitId"] = $row[0];
-        $temp["name"] = $row[1];
-        $temp["unit"] = $row[2];
-        $temp["method"] = $row[3];
-        $results[] = $temp;
+        $count++;
+        $temp["traitDbId"] = $row[0];
+        $temp["traitId"] = $row[1];
+        $temp["name"] = $row[2];
+        $temp["description"] = $row[4];
+        $temp["observationVariables"] = array($row[3]);
+        $linearray['result'][] = $temp;
     }
-    $return = json_encode($results);
-    echo "$return";
+    $metadata['metadata']['pagination']['pageSize'] = $pageSize;
+    $metadata['metadata']['pagination']['currentPage'] = $currentPage;
+    $metadata['metadata']['pagination']['totalCount'] = $count;
+    $metadata['metadata']['pagination']['totalPages'] = ceil($count / $pageSize);
+    $response = array_merge($metadata, $linearray);
+    echo json_encode($response);
 } elseif ($uid != "") {
     $pos = 1;
     $pheno_list =  explode(",", $uid);
@@ -43,7 +61,7 @@ if ($action == "list") {
         from phenotypes, units
         WHERE phenotypes.unit_uid = units.unit_uid
         AND phenotype_uid IN ($uid)";
-    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
         $temp["traitId"]= $row[0];
         $temp["name"] = $row[1];
@@ -74,4 +92,3 @@ if ($action == "list") {
 } else {
     echo "Error: missing experiment id<br>\n";
 }
-?>
