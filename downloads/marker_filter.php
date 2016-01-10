@@ -4,9 +4,9 @@
  *
  * PHP version 5.3
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/marker_filter.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/downloads/marker_filter.php
  */
 
 /**
@@ -34,8 +34,8 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
         $experiment_uid = $_SESSION['geno_exps'];
         $experiment_uid = $experiment_uid[0];
         $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $experiment_uid";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        while ($row = mysql_fetch_row($res)) {
+        $res = mysqli_query(mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+        while ($row = mysqli_fetch_row($res)) {
             $marker_uid = $row[0];
             $maf = $row[1];
             $miss = $row[2];
@@ -157,7 +157,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                     $marker_abcnt[$i]++;
                 } elseif ($allele=='BB') {
                     $marker_bbcnt[$i]++;
-                //need to check for both conditions otherwise the output will include markers with missing data
+                    //need to check for both conditions otherwise the output will include markers with missing data
                 } elseif (($allele=='--') || ($allele=='')) {
                     $marker_misscnt[$i]++;
                 } else {
@@ -295,7 +295,7 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
         $experiment_uid = $_SESSION['geno_exps'];
         $experiment_uid = $experiment_uid[0];
     } else {
-        echo "Error: should select genotype experiment befor download\n";
+        die("Error: Select genotype experiment befor download\n");
     }
 
     $num_maf = 0;
@@ -309,7 +309,11 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
         $maf = $row[1];
         $miss = $row[2];
         $total = $row[3];
-        $miss_per = 100 * ($miss / $total);
+        if ($total > 0) {
+            $miss_per = 100 * ($miss / $total);
+        } else {
+            $miss_per = 100;
+        }
         if ($maf < $min_maf) {
             $num_maf++;
         }
@@ -323,6 +327,10 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
         }
         $num_mark++;
     }
+    if ($num_mark == 0) {
+        echo "Error: No allele frequency calculation found for experiment UID $experiment_uid\n";
+        return;
+    }
     $_SESSION['filtered_markers'] = $markers_filtered;
     $count = count($markers_filtered);
     ?>
@@ -333,7 +341,7 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
     <br><b><?php echo ($num_removed) ?></b><i> markers removed</i>
     <td><b><?php echo ("$count") ?></b><i> markers</i>
     <?php
-    echo ("</table>");
+    echo ("</table>\n");
     if ($count == 0) {
         echo "<font color=red>Warning: Please select new filter paramaters</font>";
     }
@@ -389,6 +397,7 @@ function findCommonLines($lines)
      */
 function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h)
 {
+    global $mysqli;
     $output = '';
     $outputheader = '';
     $delimiter ="\t";
@@ -397,8 +406,8 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     if (isset($_SESSION['selected_map'])) {
         $selected_map = $_SESSION['selected_map'];
         $sql = "select map_type from mapset where mapset_uid = $selected_map";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        if ($row = mysql_fetch_row($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+        if ($row = mysqli_fetch_row($res)) {
             $map_type = $row[0];
         } else {
             $map_type = "";
@@ -409,15 +418,15 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
 
     //calculate number of lines for selected experiment
     $sql = "select max(total) from allele_frequencies where experiment_uid = $geno_exp";
-    $res = mysql_query($sql) or die(mysql_error() . $sql);
-    if ($row = mysql_fetch_row($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    if ($row = mysqli_fetch_row($res)) {
         $measured_lines = $row[0];
         $max_missing_count = round($max_missing * ($measured_lines / 100));
     }
 
     $sql = "SELECT marker_uid, maf, missing,total from allele_frequencies where experiment_uid = $geno_exp";
-    $res = mysql_query($sql) or die(mysql_error() . $sql);
-    while ($row = mysql_fetch_row($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    while ($row = mysqli_fetch_row($res)) {
         $marker_uid = $row[0];
         $maf = $row[1];
         $miss = $row[2];
@@ -435,18 +444,18 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $marker_list_chr = array();
     } else {
         if ($map_type == "Physical") {
-          $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
-          where mim.marker_uid = markers.marker_uid
-          AND mim.map_uid = map.map_uid
-          AND map.mapset_uid = $selected_map";
+            $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
+            where mim.marker_uid = markers.marker_uid
+            AND mim.map_uid = map.map_uid
+            AND map.mapset_uid = $selected_map";
         } else {
-          $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
-          where mim.marker_uid = markers.marker_uid
-          AND mim.map_uid = map.map_uid
-          AND map.mapset_uid = $selected_map";
+            $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
+            where mim.marker_uid = markers.marker_uid
+            AND mim.map_uid = map.map_uid
+            AND map.mapset_uid = $selected_map";
         }
-        $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-        while ($row = mysql_fetch_array($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+        while ($row = mysqli_fetch_array($res)) {
                $marker_uid = $row[0];
                $pos = $row[1];
                $chr = $row[2];
@@ -460,8 +469,8 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     where markers.marker_uid = allele_bymarker_exp_101.marker_uid
     and markers.marker_type_uid = marker_types.marker_type_uid
     and experiment_uid = $geno_exp";
-    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-    while ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+    while ($row = mysqli_fetch_array($res)) {
         $marker_uid = $row[0];
         $marker_name = $row[1];
         $allele = $row[2] . "/" . $row[3];
@@ -471,16 +480,16 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
 
     //get header, tassel requires all fields even if they are empty
     $sql = "select line_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
-    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-    if ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+    if ($row = mysqli_fetch_array($res)) {
         $uid_list = json_decode($row[0], true);
     } else {
         die("<font color=red>Error - genotype experiment should be selected before download</font>");
     }
     foreach ($uid_list as $uid) {
         $sql = "select line_record_name from line_records where line_record_uid = $uid";
-        $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-        if ($row = mysql_fetch_array($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+        if ($row = mysqli_fetch_array($res)) {
             $name[] = $row[0];
         } else {
             $name[] = "unknown";
@@ -504,8 +513,8 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     } else {
         $sql = "select marker_uid, marker_name, chrom, pos, alleles from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp order by BINARY chrom, pos";
     }
-    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-    while ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+    while ($row = mysqli_fetch_array($res)) {
         $marker_id = $row[0];
         $marker_name = $row[1];
         $chrom = $row[2];
@@ -531,7 +540,6 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
             fwrite($h, "\t$alleles\n");
         }
     }
-    $count = count($unique);
 }
 
 function typeVcfMarkersDownload($lines, $chr, $min_maf, $max_missing, $h)
@@ -586,7 +594,7 @@ function typeVcfReferenceDownload($chr, $f1, $h1)
         echo "$count with map to $h2<br>\n";
     }
 }
-/** 
+/**
   * used to test accuracy of imputation
   */
 function typeVcfExpMarkersDownloadVerify($geno_exp, $ref_line, $chr, $min_maf, $max_missing, $fh1, $fh2, $index)
@@ -743,7 +751,7 @@ function typeVcfExpMarkersDownloadVerify($geno_exp, $ref_line, $chr, $min_maf, $
                 }
             }
             $allele_str = implode("\t", $allele_ary2);
-            fwrite($fh1, "$scaffold\t$pos\t$contig\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n");
+            fwrite($fh1, "$scaffold\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n");
         }
     }
     fwrite($fh2, "$count markers written to target genotype file\n");
@@ -752,10 +760,13 @@ function typeVcfExpMarkersDownloadVerify($geno_exp, $ref_line, $chr, $min_maf, $
 /**
      * build genotype data files in VCF format using genotype experiment (does not work for large GBS)
      *
-     * @param integer $geno_exp  genotype experiment
-     * @param real  $min_maf     minimum marker allele frequency
-     * @param real  $max_missing max missing markers
-     * @param file  $h           file handle
+     * @param integer $geno_exp    genotype experiment
+     * @param array   $ref_line    reference lines
+     * @param char    $chr         chromosome
+     * @param real    $min_maf     minimum marker allele frequency
+     * @param real    $max_missing max missing markers
+     * @param file    $fh1         file handle
+     * @param file    $fh2         file handel
      *
      * @return null
      */
