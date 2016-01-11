@@ -45,7 +45,7 @@ if ($action == "list") {
         $temp["name"] = $row[2];
         $temp["description"] = $row[4];
         $temp["observationVariables"] = array($row[3]);
-        $linearray['result'][] = $temp;
+        $linearray['result']['data'][] = $temp;
     }
     $metadata['metadata']['pagination']['pageSize'] = $pageSize;
     $metadata['metadata']['pagination']['currentPage'] = $currentPage;
