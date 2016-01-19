@@ -28,7 +28,7 @@
 <!--link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css"-->
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.3.0/prototype.js"></script>
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 <script src="jquery.smartmenus.js" type="text/javascript"></script>
@@ -219,6 +219,8 @@ global $usegbrowse;
       Contributing Data Programs</a></li>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_whatsnew.php">
       "What's New"</a>
+      <li><a href="<?php echo $config['base_url']; ?>login/edit_toronto.php">
+      Data Policy dataset descriptions</a>
       <!-- Too dangerous. -->
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
