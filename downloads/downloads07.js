@@ -708,9 +708,9 @@ function update_phenotype_linesb(options) {
             }
 	
 	function use_session(version) {
-	        mm = $('mm').getValue();
-                mmaf = $('mmaf').getValue();
-                mml = $('mml').getValue();
+	        var mm = $('mm').getValue();
+                var mmaf = $('mmaf').getValue();
+                var mml = $('mml').getValue();
                 var typeGE=document.getElementById('typeGE');
                 markers_loading = true;
                 Element.show('spinner');
@@ -760,8 +760,8 @@ function update_phenotype_linesb(options) {
                 );
             }
 
-			function load_markers_lines( mm, mmaf, use_line) {
-			    select1_str = "Lines";
+	function load_markers_lines( mm, mmaf, use_line) {
+	    select1_str = "Lines";
                 var typeGE=document.getElementById('typeGE');
                 markers_loading = true;
                 Element.show('spinner');
@@ -775,6 +775,9 @@ function update_phenotype_linesb(options) {
                          $('step5').show();
                         Element.hide('spinner');
                         load_title();
+                    },
+                    onFailure: function() {
+                        alert('Error filtering lines and markers');
                     }}
                 );
             }
