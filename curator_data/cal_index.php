@@ -5,8 +5,6 @@
 * PHP version 5.3
 * Prototype version 1.5.0
 *
-* @category PHP
-* @package  T3
 * @author   Clay Birkett <clb343@cornell.edu>
 * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
 * @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index.php
@@ -55,8 +53,7 @@ class Experiments
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'display':
                 $this->typeDisplay();
                 break;
@@ -102,7 +99,7 @@ class Experiments
             die("Error - no experiment found<br>\n");
         }
         $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
-        $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_assoc($res)) {
             $trial_code = $row["trial_code"];
         } else {
@@ -111,7 +108,7 @@ class Experiments
 
         //get line names
         $sql = "select line_record_uid, line_record_name from line_records";
-        $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_assoc($res)) {
             $uid = $row["line_record_uid"];
             $line_name = $row["line_record_name"];
@@ -120,7 +117,7 @@ class Experiments
 
         $count = 0;
         $sql = "select * from fieldbook order by plot";
-        $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         echo "<h2>Field Book for $trial_code</h2>\n";
         echo "<table>";
         echo "<tr><td>plot<td>line_name<td>row<td>column<td>entry<td>replication<td>block
@@ -412,6 +409,7 @@ class Experiments
                 $raw_file = $row[0];
                 $experiment_uid = $row[1];
                 $raw_path = $config['root_dir'] . "raw/phenotype/" . $raw_file;
+                $raw_path2 = $config['root_dir'] . "raw/phenotype/CSR/" . $raw_file;  //new location for files
             }
         }
         if (!empty($_GET['trial'])) {
@@ -425,7 +423,9 @@ class Experiments
             return;
         }
         if (($reader = fopen($raw_path, "r")) == false) {
-            die("error - can not read file $raw_path");
+            if (($reader = fopen($raw_path2, "r")) == false) {
+                die("error - can not read file $raw_path or $raw_path2");
+            }
         }
         $out_path = "/tmp/tht/csr_data_" . $unique_str . ".txt";
         $url_path = $root . $out_path;
