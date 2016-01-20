@@ -90,14 +90,15 @@ if (isset($_POST['trial']) && !empty($_POST['trial'])) {
   $png1 = "png(\"/tmp/tht/$unique_str/$filename6\", width=800, height=300)\n";
   $png2 = "png(\"/tmp/tht/$unique_str/$filename7\", width=800, height=300)\n";
   $png3 = "dev.set(2)\n";
-  if (file_exists($dir/$filename3)) {
+  if (file_exists("$dir/$filename3")) {
       $cmd1 = "csrData <- read.table(\"$dir/$filename3\", header=FALSE, sep=\"\\t\", skip=5, stringsAsFactors=FALSE)\n";
       $cmd2 = "pltData <- read.table(\"$dir/$filename3\", header=FALSE, sep=\"\\t\", skip=1, nrows=1)\n";
-  } elseif (file_exists($dir2/$filename3)) {
+  } elseif (file_exists("$dir2/$filename3")) {
       $cmd1 = "csrData <- read.table(\"$dir2/$filename3\", header=FALSE, sep=\"\\t\", skip=5, stringsAsFactors=FALSE)\n";
       $cmd2 = "pltData <- read.table(\"$dir2/$filename3\", header=FALSE, sep=\"\\t\", skip=1, nrows=1)\n";
   } else {
-      echo "Error: file $filename3 not found\n";
+      echo "Error: file $dir/$filename3 not found<br>\n";
+      echo "Error: file $dir2/$filename3 not found<br>\n";
   }
   $cmd2a = "if (pltData[1,1] != \"Plot\") {\n";
   $cmd2b = "  cat(\"Error - bad file format in $filename3\")\n";
