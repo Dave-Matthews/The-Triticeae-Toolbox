@@ -1,37 +1,35 @@
 <?php
 /**
  * Canopy Spectral Reflectance
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index_check.php
- * 
+ *
  */
-  require_once 'config.php';
-  require $config['root_dir'].'includes/bootstrap.inc';
-  $mysql = connect();
-  $mysqli = connecti();
-  ?>
-  <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-  <?php
-  if (isset($_POST['trial']) && !empty($_POST['trial'])) {
-      $trial = $_POST['trial'];
-      $sql = "select raw_file_name, trial_code from csr_measurement, experiments
+
+require_once 'config.php';
+require $config['root_dir'].'includes/bootstrap.inc';
+$mysql = connect();
+$mysqli = connecti();
+?>
+<img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+<?php
+if (isset($_POST['trial']) && !empty($_POST['trial'])) {
+    $trial = $_POST['trial'];
+    $sql = "select raw_file_name, trial_code from csr_measurement, experiments
        where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = $trial";
-      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-      if ($row = mysqli_fetch_array($res)) {
-          $filename3 = $row[0];
-          $trial_code = $row[1];
-      } else {
-         die("trial $trial not found<br>\n");
-      }
-  } else {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
+        $filename3 = $row[0];
+        $trial_code = $row[1];
+    } else {
+       die("trial $trial not found<br>\n");
+    }
+} else {
       die("no trial found");
   }
   if (isset($_POST['smooth']) && !empty($_POST['smooth'])) {
@@ -78,6 +76,7 @@
   $zoom = $_POST['xrange'];
   
   $dir = $config['root_dir'] . "raw/phenotype";
+  $dir2 = $config['root_dir'] . "raw/phenotype/CSR";
   $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
   mkdir("/tmp/tht/$unique_str");
   $filename1 = "gbe-input.txt";
@@ -91,8 +90,15 @@
   $png1 = "png(\"/tmp/tht/$unique_str/$filename6\", width=800, height=300)\n";
   $png2 = "png(\"/tmp/tht/$unique_str/$filename7\", width=800, height=300)\n";
   $png3 = "dev.set(2)\n";
-  $cmd1 = "csrData <- read.table(\"$dir/$filename3\", header=FALSE, sep=\"\\t\", skip=5, stringsAsFactors=FALSE)\n";
-  $cmd2 = "pltData <- read.table(\"$dir/$filename3\", header=FALSE, sep=\"\\t\", skip=1, nrows=1)\n";
+  if (file_exists($dir/$filename3)) {
+      $cmd1 = "csrData <- read.table(\"$dir/$filename3\", header=FALSE, sep=\"\\t\", skip=5, stringsAsFactors=FALSE)\n";
+      $cmd2 = "pltData <- read.table(\"$dir/$filename3\", header=FALSE, sep=\"\\t\", skip=1, nrows=1)\n";
+  } elseif (file_exists($dir2/$filename3)) {
+      $cmd1 = "csrData <- read.table(\"$dir2/$filename3\", header=FALSE, sep=\"\\t\", skip=5, stringsAsFactors=FALSE)\n";
+      $cmd2 = "pltData <- read.table(\"$dir2/$filename3\", header=FALSE, sep=\"\\t\", skip=1, nrows=1)\n";
+  } else {
+      echo "Error: file $filename3 not found\n";
+  }
   $cmd2a = "if (pltData[1,1] != \"Plot\") {\n";
   $cmd2b = "  cat(\"Error - bad file format in $filename3\")\n";
   $cmd2c = "  stop(\"Error - bad file format in $filename3\")\n";
