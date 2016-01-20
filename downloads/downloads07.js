@@ -719,12 +719,15 @@ function update_phenotype_linesb(options) {
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&mml=' + mml + '&use_line=yes&typeGE=' + typeGE.checked;
                 document.title='Loading Markers...';
                 var tmp = new Ajax.Updater($('step5'), url, {
-                    onComplete: function() {
+                    onSuccess: function() {
                          $('step5').show();
                         document.title = title;
                         markers_loading = false;
                         markers_loaded = true;
                         create_file(version);
+                    },
+                    onFailure: function() {
+                        alert('Error filtering lines and markers');
                     }}
                 );
             }
