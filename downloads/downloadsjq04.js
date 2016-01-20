@@ -115,7 +115,7 @@ function use_session(version) {
       },
       error: function() {
         Element.hide('spinner');
-        alert('Error in filtering lines and markers. Try selecting a smaller number of lines or slecting a genotype experiment');
+        alert('Error in filtering lines and markers. Try selecting a smaller number of lines or selecting a genotype experiment.');
       }
     });
 }
