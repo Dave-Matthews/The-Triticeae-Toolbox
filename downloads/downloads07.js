@@ -726,6 +726,9 @@ function update_phenotype_linesb(options) {
                         markers_loaded = true;
                         create_file(version);
                     },
+                    onException: function(rec, exception) {
+                        alert("Error filtering lines and markers: " +  exception);
+                    },
                     onFailure: function() {
                         alert('Error filtering lines and markers');
                     }}
@@ -775,6 +778,9 @@ function update_phenotype_linesb(options) {
                          $('step5').show();
                         Element.hide('spinner');
                         load_title();
+                    },
+                    onException: function(rec, exception) {
+                        alert("Error filtering lines and markers: " +  exception);
                     },
                     onFailure: function() {
                         alert('Error filtering lines and markers');
