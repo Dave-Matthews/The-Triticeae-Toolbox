@@ -203,10 +203,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     //echo "<br>num of markers with data = $num_mark<br>\n";
     $_SESSION['filtered_markers'] = $markers_filtered;
     $count = count($markers_filtered);
-    if ($count == 0) {
-          //if none of markers meet maf requirements then we can not filter lines by missing data
-          $lines_filtered = $lines;
-    } else {
+    if ($count > 0) {
         //calculate missing from each line
         foreach ($lines as $line_record_uid) {
             $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
@@ -349,7 +346,6 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
 
 /**
  * find lines that are common between phenotype and genotype experiment
- *
  */
 function findCommonLines($lines)
 {
@@ -357,8 +353,8 @@ function findCommonLines($lines)
     $count_selected = count($lines);
     $selectedlines = implode(",", $lines);
     if (isset($_SESSION['selected_trials'])) {
-        $exp_array = $_SESSION['selected_trials'];
-        $e_uid = $exp_array[0];
+        $e_uid = $_SESSION['selected_trials'];
+        $e_uid = implode(",", $e_uid);
     } else {
         die("Error: must select phenotype trial\n");
     }
@@ -375,7 +371,7 @@ function findCommonLines($lines)
         AND p.phenotype_uid = pd.phenotype_uid
         AND lr.line_record_uid = tb.line_record_uid
         AND pd.phenotype_uid = $p_uid
-        AND tb.experiment_uid = $e_uid
+        AND tb.experiment_uid IN ($e_uid)
         AND lr.line_record_uid IN ($selectedlines)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $l_count = 0;
@@ -728,6 +724,7 @@ function typeVcfExpMarkersDownloadVerify($geno_exp, $ref_line, $chr, $min_maf, $
         $alt3 = $ref_list[$contig][1];
         $ref2 = strtr($ref3, $trans);
         $alt2 = strtr($alt3, $trans);
+        fwrite($fh2, "$marker_name\t$contig\t$ref $alt $ref1 $alt1 $contig_strand $file_strand");
         $lookup = array(
             '-1' => '1/1',  //BB
             '0' => '0/1',   //AB
@@ -737,15 +734,16 @@ function typeVcfExpMarkersDownloadVerify($geno_exp, $ref_line, $chr, $min_maf, $
             );
         if (($ref == $ref3) && ($alt == $alt3)) {
         } elseif (($ref == $ref2) && ($alt == $alt2)) {
+            fwrite($fh2, " rev");
             $ref = $ref3;
             $alt = $alt3;
         } elseif (($ref == $alt3) && ($alt == $ref3)) {
         } elseif (($ref == $alt2) && ($alt == $ref2)) {
         }
-        fwrite($fh2, "$marker_name $contig $ref $alt $ref1 $alt1\n");
         if (isset($unique[$index1])) {
-            fwrite($fh2, "skip $marker_name $index1 duplicates $unique[$index1]\n");
+            fwrite($fh2, "\tduplicates $unique[$index1]\n");
         } else {
+            fwrite($fh2, "\n");
             $af = array();
             $unique[$index1] = $marker_name;
             $allele_ary = explode(",", $alleles);
