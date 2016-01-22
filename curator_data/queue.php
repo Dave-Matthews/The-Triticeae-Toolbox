@@ -95,12 +95,16 @@ $comments
 // Require that the user be signed in.
 $user = $_SESSION['username'];
 if (empty($user)) {
-  echo "Please sign in before sending data files to the curator
+  ?>
+        Please sign in before sending data files to the curator
         for loading into the production database.<br>
-        <button type=submit onClick=\"location.href='login.php'\">Sign in</button>";
+        <input type="Button" value="Sign in" onclick="window.open('<?php echo $config['base_url']?>login.php','_self')">
+  <?php
 } else if ($user == "t3user@graingenes.org") {
-  echo "Please sign out and login as yourself instead of the public 't3user'.<br>
-        <button type=submit onClick=\"location.href='logout.php'\">Sign out</button>";
+  ?>
+        Please sign out and login as yourself instead of the public 't3user'.<br>
+        <input type="Button" value="Sign out" onclick="window.open('<?php echo $config['base_url']?>logout.php','_self')">
+  <?php
 } else {
   echo "Please submit a data file for the curator to load
         into the production database. File names should not contain spaces.";
