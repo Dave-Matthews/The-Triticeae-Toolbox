@@ -8,7 +8,7 @@
  */
 
 require 'config.php';
-include $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
 
 // URI is something like genotype/{id}/[count][?analysisMethod={platform}][..]
@@ -157,7 +157,7 @@ if ($command) {
     }
     $pageList = array();
     $linearray['metadata']['pagination'] = $pageList;
-    $linearray['metadata']['status'] = array();
+    $linearray['metadata']['status'] = null;
     $linearray['result']['markerprofileDbId'] = $profileid;
     $linearray['result']['germplasmDbId'] = $lineuid;
     $linearray['result']['extractDbId'] = $expid;

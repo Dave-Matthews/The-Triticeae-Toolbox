@@ -708,9 +708,9 @@ function update_phenotype_linesb(options) {
             }
 	
 	function use_session(version) {
-	        mm = $('mm').getValue();
-                mmaf = $('mmaf').getValue();
-                mml = $('mml').getValue();
+	        var mm = $('mm').getValue();
+                var mmaf = $('mmaf').getValue();
+                var mml = $('mml').getValue();
                 var typeGE=document.getElementById('typeGE');
                 markers_loading = true;
                 Element.show('spinner');
@@ -719,12 +719,18 @@ function update_phenotype_linesb(options) {
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&mml=' + mml + '&use_line=yes&typeGE=' + typeGE.checked;
                 document.title='Loading Markers...';
                 var tmp = new Ajax.Updater($('step5'), url, {
-                    onComplete: function() {
+                    onSuccess: function() {
                          $('step5').show();
                         document.title = title;
                         markers_loading = false;
                         markers_loaded = true;
                         create_file(version);
+                    },
+                    onException: function(rec, exception) {
+                        alert("Error filtering lines and markers: " +  exception);
+                    },
+                    onFailure: function() {
+                        alert('Error filtering lines and markers');
                     }}
                 );
             }
@@ -757,8 +763,8 @@ function update_phenotype_linesb(options) {
                 );
             }
 
-			function load_markers_lines( mm, mmaf, use_line) {
-			    select1_str = "Lines";
+	function load_markers_lines( mm, mmaf, use_line) {
+	    select1_str = "Lines";
                 var typeGE=document.getElementById('typeGE');
                 markers_loading = true;
                 Element.show('spinner');
@@ -772,6 +778,12 @@ function update_phenotype_linesb(options) {
                          $('step5').show();
                         Element.hide('spinner');
                         load_title();
+                    },
+                    onException: function(rec, exception) {
+                        alert("Error filtering lines and markers: " +  exception);
+                    },
+                    onFailure: function() {
+                        alert('Error filtering lines and markers');
                     }}
                 );
             }

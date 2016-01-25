@@ -110,8 +110,7 @@ class Downloads
         $this->type1Checksession();
         ?>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
-        <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
-        <script type="text/javascript" src="downloads/downloadsjq03.js"></script>
+        <script type="text/javascript" src="downloads/downloadsjq04.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
     }
@@ -556,8 +555,8 @@ class Downloads
             ?></div>
             <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
             <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-            <script type="text/javascript" src="downloads/downloads07.js"></script>
             <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+            <script type="text/javascript" src="downloads/downloads07.js"></script>
             <script type="text/javascript">
             var mm = 50;
             var mmaf = 5;
