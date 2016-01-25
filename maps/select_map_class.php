@@ -106,7 +106,7 @@ class Maps
          td {border: 1px solid #eee !important;}
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
-        <script type="text/javascript" src="maps/select_map06.js">
+        <script type="text/javascript" src="maps/select_map07.js">
         </script>
         <form name="myForm" action="maps/select_map.php">
         <?php
@@ -189,15 +189,14 @@ class Maps
             AND map.mapset_uid = mapset.mapset_uid
             AND map.mapset_uid = $mapset_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_array($res)) {
-            $markers_map[] = $row[0];
-        }
-        $count = count($markers_map);
+        $count = mysqli_num_rows($res);
         if ($count > 100000) {
             echo "skip too large\n";
             return;
         }
-
+        while ($row = mysqli_fetch_array($res)) {
+            $markers_map[] = $row[0];
+        }
         if (isset($_SESSION['clicked_buttons'])) {
             $markers = $_SESSION['clicked_buttons'];
         } elseif (isset($_SESSION['geno_exps'])) {
