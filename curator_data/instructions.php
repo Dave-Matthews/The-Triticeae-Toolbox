@@ -3,7 +3,6 @@
  * Data submission
  *
  * PHP version 5.3
- *
  */
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
@@ -34,7 +33,7 @@ connect();
       or <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a> Sandbox database
       for test-loading your files.  When they&apos;re ready,
       click here to submit them to the T3 Curator for loading into the official database.
-      <br><input type="Button" value="Submit" onclick="window.open('<?php echo $config['base_url']?>/curator_data/queue.php','_self')">
+      <br><input type="Button" value="Submit" onclick="window.open('<?php echo $config['base_url']?>curator_data/queue.php','_self')">
   </ul>
 
   <p>

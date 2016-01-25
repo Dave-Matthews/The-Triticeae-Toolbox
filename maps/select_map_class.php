@@ -12,8 +12,6 @@
 
 namespace T3;
 
-set_time_limit(0);
-
 class Maps
 {
     /**
@@ -23,7 +21,7 @@ class Maps
      */
     public function __construct($function = null)
     {
-        switch($function) {
+        switch ($function) {
             case 'Save':
                 $this->typeMapSave();
                 break;
@@ -45,6 +43,7 @@ class Maps
     public function typeMapSet()
     {
         global $config;
+        global $mysqli;
         include $config['root_dir'].'theme/normal_header.php';
 
         echo "<h2>Map Sets</h2>";
@@ -61,8 +60,8 @@ class Maps
         $sql = "select distinct(mapset.mapset_uid) from mapset, markers_in_maps as mim, map
                WHERE mim.map_uid = map.map_uid
                AND map.mapset_uid = mapset.mapset_uid";
-        $res = mysql_query($sql) or die (mysql_error());
-        while ($row = mysql_fetch_array($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
             $uid = $row[0];
             if ($mapset_list == "") {
                 $mapset_list = $uid;
@@ -77,8 +76,7 @@ class Maps
         Calculate markers in map for selected lines</button>
         </div>
         <?php
-        if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) {
-            ?>
+        if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) { ?>
             <script type="text/javascript">
             <!--  window.onload = load_markersInMap();-->
             </script>
@@ -95,6 +93,7 @@ class Maps
      */
     public function typeMapSetDisplay()
     {
+        global $mysqli;
         if (isset($_GET['map'])) {
             $map = $_GET['map'];
             $_SESSION['selected_map'] = $map;
@@ -120,10 +119,10 @@ class Maps
           GROUP BY mapset.mapset_uid";
         echo "This table lists the total markers in each map.\n";
         echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
-        $res = mysql_query($sql) or die (mysql_error());
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         echo "<table>\n";
         echo "<tr><td>select<td>markers<br>(total)<td>markers<br>(in selected lines)<td>map set name<td>comment (mouse over item for complete text)\n";
-        while ($row = mysql_fetch_assoc($res)) {
+        while ($row = mysqli_fetch_assoc($res)) {
             $count = $row["countm"];
             $val = $row["mapset_name"];
             $uid = $row["mapuid"];
@@ -147,6 +146,7 @@ class Maps
      */
     public function typeGenoExpDisplay()
     {
+        global $mysqli;
         if (isset($_SESSION['geno_exps'])) {
             $found = 0;
             $geno_exp = $_SESSION['geno_exps'];
@@ -154,8 +154,8 @@ class Maps
             $sql = "select experiments.experiment_uid, trial_code, genotype_experiment_info.comments from experiments, genotype_experiment_info
                 where experiments.experiment_uid = genotype_experiment_info.experiment_uid
                 and experiments.experiment_uid IN ($geno_str)";
-            $res = mysql_query($sql) or die(mysql_error() . $sql);
-            while ($row = mysql_fetch_array($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+            while ($row = mysqli_fetch_array($res)) {
                 $uid = $row[0];
                 $name = $row[1];
                 $comments = $row[2];
@@ -188,9 +188,14 @@ class Maps
             WHERE mim.map_uid = map.map_uid
             AND map.mapset_uid = mapset.mapset_uid
             AND map.mapset_uid = $mapset_uid";
-        $res = mysql_query($sql) or die (mysql_error());
-        while ($row = mysql_fetch_array($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
             $markers_map[] = $row[0];
+        }
+        $count = count($marker_map);
+        if ($count > 100000) {
+            echo "skip too large\n";
+            return;
         }
 
         if (isset($_SESSION['clicked_buttons'])) {
@@ -199,8 +204,8 @@ class Maps
             $experiments_g = $_SESSION['geno_exps'];
             $geno_str = $experiments_g[0];
             $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $geno_str";
-            $res = mysql_query($sql) or die(mysql_error());
-            while ($row = mysql_fetch_row($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_row($res)) {
                 $uid = $row[0];
                 $markers[$uid] = 1;
             }
@@ -254,11 +259,12 @@ class Maps
      */
     public function typeMapSave()
     {
+        global $mysqli;
         $map = $_GET['map'];
         $_SESSION['selected_map'] = $map;
         $sql = "select mapset_name from mapset where mapset_uid = $map";
-        $res = mysql_query($sql) or die (mysql_error() . $sql);
-        if ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+        if ($row = mysqli_fetch_assoc($res)) {
             $map_name = $row["mapset_name"];
         } else {
             $map_name = "unknown";
