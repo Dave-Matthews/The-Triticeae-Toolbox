@@ -192,7 +192,7 @@ class Maps
         while ($row = mysqli_fetch_array($res)) {
             $markers_map[] = $row[0];
         }
-        $count = count($marker_map);
+        $count = count($markers_map);
         if ($count > 100000) {
             echo "skip too large\n";
             return;
