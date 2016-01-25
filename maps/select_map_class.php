@@ -95,7 +95,7 @@ class Maps
     {
         global $mysqli;
         if (isset($_GET['map'])) {
-            $map = $_GET['map'];
+            $map = intval($_GET['map']);
             $_SESSION['selected_map'] = $map;
             echo "Map selection saved.<br><br>\n";
         }
@@ -183,14 +183,14 @@ class Maps
     public function typeMapMarker()
     {
         global $mysqli;
-        $mapset_uid = $_GET['mapset'];
+        $mapset_uid = intval($_GET['mapset']);
         $sql = "select marker_uid from mapset, markers_in_maps as mim, map
             WHERE mim.map_uid = map.map_uid
             AND map.mapset_uid = mapset.mapset_uid
             AND map.mapset_uid = $mapset_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         $count = mysqli_num_rows($res);
-        if ($count > 100000) {
+        if ($count > 200000) {
             echo "skip too large\n";
             return;
         }
@@ -259,7 +259,7 @@ class Maps
     public function typeMapSave()
     {
         global $mysqli;
-        $map = $_GET['map'];
+        $map = intval($_GET['map']);
         $_SESSION['selected_map'] = $map;
         $sql = "select mapset_name from mapset where mapset_uid = $map";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
