@@ -1,22 +1,9 @@
 <?php
-// 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-//require_once("../includes/common_import.inc");
-/*
- * Logged in page initialization
- */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-//include($config['root_dir'] . 'includes/common_import.inc');
-
-//include($config['root_dir'] . 'SumanDirectory/bootstrap_dev.inc');
-
-//include($config['root_dir'] . 'curator_data/boot_test.php');
-
-include($config['root_dir'] . 'curator_data/lineuid.php');
-
-
-
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'curator_data/lineuid.php';
+ini_set("auto_detect_line_endings", true);
 
 connect();
 loginTest();
@@ -30,35 +17,30 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
+new PedigreeCheck($_GET['function']);
 
-new Pedigree_Check($_GET['function']);
-
-class Pedigree_Check
+class PedigreeCheck
 {
     
     private $delimiter = "\t";
     
-	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-			case 'typeDatabase':
-				$this->type_Database(); /* update database */
-				break;
-				
-			case 'typeLineData':
-				$this->type_Line_Data(); /* Handle Line Data */
-				break;
-			
-			default:
-				$this->typePedigreeCheck(); /* intial case*/
-				break;
-			
-		}	
-	}
+        // Using the class's constructor to decide which action to perform
+        public function __construct($function = null)
+        {
+        switch ($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
 
+            case 'typeLineData':
+                $this->type_Line_Data(); /* Handle Line Data */
+                break;
+
+            default:
+		$this->typePedigreeCheck(); /* intial case*/
+		break;
+	}	
+}
 
 private function typePedigreeCheck()
 	{
