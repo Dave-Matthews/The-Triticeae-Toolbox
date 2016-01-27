@@ -15,7 +15,7 @@
  */
 
 set_time_limit(0);
-ini_set('memory_limit', '2G');
+ini_set('memory_limit', '4G');
 
 // For live website file
 require 'config.php';
@@ -201,80 +201,80 @@ class Downloads
             echo $config['base_url'];
             echo "downloads/select_genotype.php>Lines by Genotype Experiment</a><br>";
         } elseif (empty($_SESSION['phenotype']) && empty($_SESSION['training_traits'])) {
-                    echo "Please select traits before using this feature.<br><br>";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "phenotype/phenotype_selection.php>Select Traits</a><br><br>";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
-                } elseif (empty($_SESSION['selected_map'])) {
-                    if (isset($_SESSION['geno_exps'])) {
-                        $geno_exp = $_SESSION['geno_exps'];
-                        $geno_str = $geno_exp[0];
-                        $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
-                        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-                        if ($row = mysqli_fetch_array($res)) {
-                        } else {
-                            echo "<font color=red>Select a genetic map.</font>";
-                            echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
-                        }
-                    } else {
-                        echo "<font color=red>Select a genetic map.</font>";
-                        echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
-                    }
-                } 
-                if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
-                   if (empty($_SESSION['selected_trials'])) {
-                     echo "<tr><td>Prediction<td>";
-                   } else {
-                     echo "<tr><td>Validation<td>";
-                     $tmp = $_SESSION['selected_trials'];
-                     $e_uid = implode(",",$tmp);
-        $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-        while ($row = mysqli_fetch_array($res)) {
-          echo "$row[0]<br>";
-        }
-        }
-             
-                   $count = count($_SESSION['selected_lines']);
-                   $markers = $_SESSION['filtered_markers'];
-                   $estimate = count($markers) + count($lines);
-                   echo "<td>$count";
-                   ?>
-                   <td>
-                   <form method="LINK" action="gensel.php">
-                   <input type="hidden" value="step1gensel" name="function">
-                   <input type="hidden" value="clear_p" name="cmd">
-                   <input type="submit" value="Clear Selection">
-                   </form>
-                   <?php
-                   //check if these are unique
-                   $count = 0;
-                   $count_dup = 0;
-                   $tmp1 = $_SESSION['training_lines'];
-                   $tmp2 = $_SESSION['selected_lines'];
-                   $count_t = count($tmp2);
-                   foreach ($tmp2 as $uid) {
-                     if(in_array($uid,$tmp1)) {
-                       $count_dup++;
-                     } else{
-                       $count++;
-                     }
-                   }
-                   if ($count < 5) {
-                     echo " <font color=red>(Error - $count unique lines in prediction set)";
-                   }
+            echo "Please select traits before using this feature.<br><br>";
+            echo "<a href=";
+            echo $config['base_url'];
+            echo "phenotype/phenotype_selection.php>Select Traits</a><br><br>";
+            echo "<a href=";
+            echo $config['base_url'];
+            echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
+        } elseif (empty($_SESSION['selected_map'])) {
+            if (isset($_SESSION['geno_exps'])) {
+                $geno_exp = $_SESSION['geno_exps'];
+                $geno_str = $geno_exp[0];
+                $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+                if ($row = mysqli_fetch_array($res)) {
+                } else {
+                    echo "<font color=red>Select a genetic map.</font>";
+                    echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
                 }
-                echo "</table>";
-                if ($count_dup > 0) {
-                    if (empty($_SESSION['selected_trials'])) {
-                        echo " Warning - $count_dup lines removed from prediction set because they are in training set";
-                    } else {
-                        echo " Warning - $count_dup lines removed from validation set because they are in training set";
-                    }
+            } else {
+                echo "<font color=red>Select a genetic map.</font>";
+                echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
+            }
+        }
+        if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
+            if (empty($_SESSION['selected_trials'])) {
+                echo "<tr><td>Prediction<td>";
+            } else {
+                echo "<tr><td>Validation<td>";
+                $tmp = $_SESSION['selected_trials'];
+                $e_uid = implode(",", $tmp);
+                $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+                while ($row = mysqli_fetch_array($res)) {
+                    echo "$row[0]<br>";
                 }
+            }
+   
+            $count = count($_SESSION['selected_lines']);
+            $markers = $_SESSION['filtered_markers'];
+            $estimate = count($markers) + count($lines);
+            echo "<td>$count";
+            ?>
+            <td>
+            <form method="LINK" action="gensel.php">
+            <input type="hidden" value="step1gensel" name="function">
+            <input type="hidden" value="clear_p" name="cmd">
+            <input type="submit" value="Clear Selection">
+            </form>
+            <?php
+            //check if these are unique
+            $count = 0;
+            $count_dup = 0;
+            $tmp1 = $_SESSION['training_lines'];
+            $tmp2 = $_SESSION['selected_lines'];
+            $count_t = count($tmp2);
+            foreach ($tmp2 as $uid) {
+                if (in_array($uid, $tmp1)) {
+                    $count_dup++;
+                } else {
+                    $count++;
+                }
+            }
+            if ($count < 5) {
+                 echo " <font color=red>(Error - $count unique lines in prediction set)";
+            }
+        }
+        echo "</table>";
+        if ($count_dup > 0) {
+            if (empty($_SESSION['selected_trials'])) {
+                 echo " Warning - $count_dup lines removed from prediction set because they are in training set";
+            } else {
+                 echo " Warning - $count_dup lines removed from validation set because they are in training set";
+            }
+        }
                 $min_maf = 5;
                 $max_missing = 10;
                 $max_miss_line = 10;
