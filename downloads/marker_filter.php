@@ -350,7 +350,6 @@ function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
 function findCommonLines($lines)
 {
     global $mysqli;
-    $count_selected = count($lines);
     $selectedlines = implode(",", $lines);
     if (isset($_SESSION['selected_trials'])) {
         $e_uid = $_SESSION['selected_trials'];
@@ -359,7 +358,7 @@ function findCommonLines($lines)
         die("Error: must select phenotype trial\n");
     }
     if (isset($_SESSION['phenotype'])) {
-        $phenotype_ary = $_SESSION['selected_traits'];
+        $phenotype_ary = explode(",", $_SESSION['phenotype']);
         $p_uid = $phenotype_ary[0];
     } else {
         die("Error: must select trait\n");
@@ -380,15 +379,11 @@ function findCommonLines($lines)
         $uid = $row[0];
         $lines_filtered[] = $uid;
     }
-    $lines_removed = $count_selected - $l_count;
-    if ($lines_removed == 1) {
-        echo "$lines_removed line removed because it is not in genotype experiment, ";
-    } elseif ($lines_removed > 0) {
-        echo "$lines_removed lines removed because they are not in genotype experiment, ";
-    }
-    echo "using $l_count lines\n";
 
     $_SESSION['filtered_lines'] = $lines_filtered;
+    if ($l_count == 0) {
+        echo "Error: no lines in common.<br>$sql<br>\n";
+    }
 }
 
     /**
@@ -440,7 +435,6 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         } else {
             $marker_lookup[$marker_uid] = 1;
         }
-        $num_mark++;
     }
 
     //order the markers by map location
@@ -510,7 +504,6 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $outputheader .= implode("\t", $name);
     }
 
-    $nelem = count($line_names);
     fwrite($h, "$outputheader\n");
 
     $pos_index = 0;
