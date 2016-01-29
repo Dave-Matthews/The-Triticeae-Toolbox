@@ -278,7 +278,7 @@ class Downloads
                 $min_maf = 5;
                 $max_missing = 10;
                 $max_miss_line = 10;
-                $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+                $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
                 ?>
                 </div>
                 <?php
@@ -1778,6 +1778,7 @@ class Downloads
      * @return string
      *
      * modified to work with only one trait
+     * for R script the line names have to be quoted or special characters will cause problems
      */
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset) {
       $delimiter = "\t";
@@ -1919,11 +1920,11 @@ class Downloads
             $found = 0;
             while ($row = mysql_fetch_array($res)) {
                $found = 1;
-               $outline = $lines_names[$i].$delimiter.$row['value'].$delimiter.$row['exper'].$delimiter.$row['experiment_year']."\n";
+               $outline = "'$lines_names[$i]'".$delimiter.$row['value'].$delimiter.$row['exper'].$delimiter.$row['experiment_year']."\n";
                $output .= $outline;
             }
             if ($found == 0) {
-               $outline = $lines_names[$i].$delimiter."999".$delimiter."999".$delimiter."999\n";
+               $outline = "'$lines_names[$i]'".$delimiter."999".$delimiter."999".$delimiter."999\n";
                $output .= $outline;
             }
 
