@@ -1244,7 +1244,7 @@ class Downloads
                     }
                     if ($outarray != $empty) {
                         $tmp = implode($delimiter, $outarray);
-                        $output .= $line_name.$delimiter.$expr_name.$delimiter.$tmp."\n";
+                        $output .= "'$line_name'".$delimiter.$expr_name.$delimiter.$tmp."\n";
                     }
                 }
             }
@@ -1263,11 +1263,11 @@ class Downloads
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
     {
         global $mysqli;
-                $delimiter = "\t";
-		$output = '';
-		$outputheader1 = '';
-		$outputheader2 = "<Trait>";
-		$outputheader3 = "<Trial>";
+        $delimiter = "\t";
+        $output = '';
+        $outputheader1 = '';
+	$outputheader2 = "<Trait>";
+	$outputheader3 = "<Trial>";
       
       //count number of traits and number of experiments
       $ntraits=substr_count($traits, ',')+1;
