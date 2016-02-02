@@ -1263,11 +1263,11 @@ class Downloads
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
     {
         global $mysqli;
-                $delimiter = "\t";
-		$output = '';
-		$outputheader1 = '';
-		$outputheader2 = "<Trait>";
-		$outputheader3 = "<Trial>";
+        $delimiter = "\t";
+        $output = '';
+        $outputheader1 = '';
+	$outputheader2 = "<Trait>";
+	$outputheader3 = "<Trial>";
       
       //count number of traits and number of experiments
       $ntraits=substr_count($traits, ',')+1;
@@ -1359,7 +1359,7 @@ class Downloads
           }
           $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
           for ($i=0;$i<$nlines;$i++) {
-              $outline = $lines[$i].$delimiter;
+              $outline = "'$lines[$i]'".$delimiter;
               mysqli_stmt_bind_param($stmt, "i", $line_uid[$i]) or die(mysqli_error($mysqli));
               mysqli_stmt_execute($stmt) or die(mysqli_error($mysqli));
               mysqli_stmt_bind_result($stmt, $value, $trait_uid, $exp_uid) or die(mysqli_error($mysqli));
