@@ -1244,7 +1244,7 @@ class Downloads
                     }
                     if ($outarray != $empty) {
                         $tmp = implode($delimiter, $outarray);
-                        $output .= $line_name.$delimiter.$expr_name.$delimiter.$tmp."\n";
+                        $output .= "'$line_name'".$delimiter.$expr_name.$delimiter.$tmp."\n";
                     }
                 }
             }
@@ -1359,7 +1359,7 @@ class Downloads
           }
           $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
           for ($i=0;$i<$nlines;$i++) {
-              $outline = "'$lines[$i]'".$delimiter;
+              $outline = $lines[$i].$delimiter;
               mysqli_stmt_bind_param($stmt, "i", $line_uid[$i]) or die(mysqli_error($mysqli));
               mysqli_stmt_execute($stmt) or die(mysqli_error($mysqli));
               mysqli_stmt_bind_result($stmt, $value, $trait_uid, $exp_uid) or die(mysqli_error($mysqli));
