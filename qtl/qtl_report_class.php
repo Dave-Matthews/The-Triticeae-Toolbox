@@ -192,12 +192,12 @@ class Downloads
             $opt = "order by chrom, pos";
         }
         if (isset($_GET['group'])) {
-            $tmp = $_GET['group'];
-            if ($tmp == "marker") {
+            $gb = $_GET['group'];
+            if ($gb == "marker") {
                 $opt2 = "group by marker_name";
                 $select_m = "checked";
                 $select_g = "";
-            } elseif ($tmp == "gene") {
+            } elseif ($gb == "gene") {
                 $opt2 = "group by gene";
                 $select_m = "";
                 $select_g = "checked";
@@ -207,6 +207,8 @@ class Downloads
                 $select_g = "";
             }
         } else {
+            $gb = "marker";
+            $opt = "group by marker_name";
             $select_m = "checked";
             $select_g = "";
         }
@@ -227,10 +229,17 @@ class Downloads
         $sql = "select marker_uid, marker_name, chrom, scaffold, pos, count(qvalue), AVG(qvalue), AVG(pvalue), gene
                 from qtl_report where phenotype_uid IN ($puid) $opt2 $opt";
         echo "<table><tr>";
-        echo "<td>marker";
-        echo "<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
-        echo "<td><a id=\"sort3\" onclick=\"sort('qvalue')\">q-value</a>";
-        echo "<td>trial count<td>gene<td>Genome Browser";
+        if ($gb == "marker") {
+            echo "<td>marker";
+            echo "<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
+            echo "<td><a id=\"sort3\" onclick=\"sort('qvalue')\">q-value</a>";
+            echo "<td>trial count<td>gene<td>Genome Browser";
+        } else {
+            echo "<td>gene";
+            echo "<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
+            echo "<td><a id=\"sort3\" onclick=\"sort('qvalue')\">q-value</a>";
+            echo "<td>trial count<td>gene<td>Genome Browser";
+        }
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $uid = $row[0];
@@ -249,10 +258,16 @@ class Downloads
                 $location = "$chrom $pos";
                 $link = "/jbrowse/?data=wheat&loc=$chrom:$pos";
             }
-            echo "<tr><td><a href=\"view.php?table=markers&uid=$uid\">$name</a>";
-            echo "<td>$location<td>$qvalue";
-            echo "<td><a id=\"detail\" onclick=\"detail($uid)\">$count_exp</a><td>$gene";
-            echo "<td><a target=\"_new\" href=\"$link\">JBrowse</a>\n";
+            if ($gb == "marker") {
+                echo "<tr><td><a href=\"view.php?table=markers&uid=$uid\">$name</a>";
+                echo "<td>$location<td>$qvalue";
+                echo "<td><a id=\"detail\" onclick=\"detail($uid)\">$count_exp</a><td>$gene";
+                echo "<td><a target=\"_new\" href=\"$link\">JBrowse</a>\n";
+            } else {
+                echo "<tr><td>$gene<td>$location<td>$qvalue";
+                echo "<td><a id=\"detail\" onclick=\"detail($uid)\">$count_exp</a><td>$gene";
+                echo "<td><a target=\"_new\" href=\"$link\">JBrowse</a>\n";
+            }
         }
         echo "</table>";
     }
