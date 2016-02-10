@@ -37,7 +37,7 @@ class Downloads
         $this->refreshTitle();
         ?>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="qtl/menu01.js"></script><br>
+        <script type="text/javascript" src="qtl/menu02.js"></script><br>
         <?php
         $this->step1Phenotype();
         ?>
@@ -191,6 +191,25 @@ class Downloads
         } else {
             $opt = "order by chrom, pos";
         }
+        if (isset($_GET['group'])) {
+            $tmp = $_GET['group'];
+            if ($tmp == "marker") {
+                $opt2 = "group by marker_name";
+                $select_m = "checked";
+                $select_g = "";
+            } elseif ($tmp == "gene") {
+                $opt2 = "group by gene";
+                $select_m = "";
+                $select_g = "checked";
+            } else {
+                $opt2 = "group by marker_name";
+                $select_m = "checked";
+                $select_g = "";
+            }
+        } else {
+            $select_m = "checked";
+            $select_g = "";
+        }
 
         $sql = "select description, TO_number from phenotypes where phenotype_uid = $puid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -201,9 +220,12 @@ class Downloads
             echo "<br>Trait ontology - $to\n";
             echo "<br><br>";
         }
+        echo "Group by: ";
+        echo "<input type=\"radio\" name=\"group\" id=\"group\" onclick=\"group('marker')\" $select_m>marker";
+        echo "<input type=\"radio\" name=\"group\" id=\"group\" onclick=\"group('gene')\" $select_g>gene";
 
         $sql = "select marker_uid, marker_name, chrom, scaffold, pos, count(qvalue), AVG(qvalue), AVG(pvalue), gene
-                from qtl_report where phenotype_uid IN ($puid) group by marker_name $opt";
+                from qtl_report where phenotype_uid IN ($puid) $opt2 $opt";
         echo "<table><tr>";
         echo "<td>marker";
         echo "<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
