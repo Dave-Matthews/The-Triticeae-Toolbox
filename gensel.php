@@ -777,10 +777,21 @@ class Downloads
            }
            fclose($h);
         }
+        if (file_exists("/tmp/tht/$filename3")) {
+	  // Extract the Trait name from the .R file.
+	  $h = fopen("/tmp/tht/$filename3", "r");
+	  while ($line=fgets($h)) {
+	    if (strpos($line, "phenolabel <-")) {
+	      $traitname = preg_replace('/phenolabel <- "(.*)"/', $line, '$1');
+	    }
+	  }
+	  fclose($h);
+        }
         if ($found) {
             print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
             print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
             print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+	    print "Trait: $traitname<p>";
             print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
             print "with columns for marker name, chromosome, position, marker score<br><br>";
             print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a><br><br>";
@@ -944,6 +955,7 @@ class Downloads
         }
         if (file_exists("/tmp/tht/$filename4")) {
             print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+	    print "Trait: $phenolabel<p>";
             print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
             print "with columns for marker name, chromosome, position, marker score<br><br>";
             print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a><br><br>";
