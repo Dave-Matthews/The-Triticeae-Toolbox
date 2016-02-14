@@ -28,8 +28,8 @@
 <!--link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css"-->
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script>
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.3.0/prototype.js"></script>
+<script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 <script src="jquery.smartmenus.js" type="text/javascript"></script>
 
@@ -116,8 +116,7 @@ global $usegbrowse;
     <?php
     /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
     /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
-    if (loginTest2()) :
-?>
+    if (loginTest2()) : ?>
 	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><b>My Line Panels</b></a>
         <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><b>My Marker Panels</b></a>
     <?php
@@ -162,6 +161,7 @@ global $usegbrowse;
             ?><li><a href="<?php echo $config['base_url'];
             ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
+            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="QTL Report">QTL Report</a>
             <?php
         }
         ?>
@@ -188,7 +188,7 @@ global $usegbrowse;
 
     <?php
   //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
-    if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) :
+    if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
     ?> 
     <li> <a href="" title="Add, edit or delete data">Curate</a>
       <ul>
@@ -224,17 +224,17 @@ global $usegbrowse;
       <!-- Too dangerous. -->
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
-      </ul>
-      <?php else: ?>
+      </ul> <?php
+    } else { ?>
       <li> <a href="" title="Manage">Manage</a>
         <ul>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
             Phenotype Trials</a>
-        </ul>
-      <?php endif ?>
+        </ul> <?php
+    } ?>
 
-      <?php if( authenticate( array( USER_TYPE_ADMINISTRATOR ) ) ): ?>
-  <li>
+    <?php if (authenticate(array( USER_TYPE_ADMINISTRATOR))) { ?>
+    <li>
     <a href="" title="<?php echo $lang["desc_sc5"]; ?>">Administer</a>
     <ul>
       <li><a href="<?php echo $config['base_url']; ?>login/edit_users.php" title="No deletion yet">Edit Users</a>
@@ -246,8 +246,9 @@ global $usegbrowse;
       <li><a href="http://triticeaetoolbox.org/webalizer/" title="Webalizer new" target="_blank">Usage, tcap</a>
       <li><a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">Usage Analytics</a>
     </ul>
-  </li>
-<?php endif; 
+    </li>
+    <?php
+}
 
 /* //   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
 /*   if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */

@@ -15,7 +15,7 @@
  */
 
 set_time_limit(0);
-ini_set('memory_limit', '2G');
+ini_set('memory_limit', '4G');
 
 // For live website file
 require 'config.php';
@@ -24,7 +24,6 @@ set_include_path(GET_INCLUDE_PATH() . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
 require_once $config['root_dir'].'includes/MIME/Type.php';
-require_once $config['root_dir'].'includes/File_Archive/Archive.php';
 
 // connect to database
 connect();
@@ -102,7 +101,7 @@ class Downloads
                 echo $this->status_pred();
                 break;
             case 'filter_lines':
-                echo $this->filter_lines();
+                echo $this->filterLines();
                 break;
             default:
                 $this->type1Select();
@@ -201,84 +200,84 @@ class Downloads
             echo $config['base_url'];
             echo "downloads/select_genotype.php>Lines by Genotype Experiment</a><br>";
         } elseif (empty($_SESSION['phenotype']) && empty($_SESSION['training_traits'])) {
-                    echo "Please select traits before using this feature.<br><br>";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "phenotype/phenotype_selection.php>Select Traits</a><br><br>";
-                    echo "<a href=";
-                    echo $config['base_url'];
-                    echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
-                } elseif (empty($_SESSION['selected_map'])) {
-                    if (isset($_SESSION['geno_exps'])) {
-                        $geno_exp = $_SESSION['geno_exps'];
-                        $geno_str = $geno_exp[0];
-                        $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
-                        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-                        if ($row = mysqli_fetch_array($res)) {
-                        } else {
-                            echo "<font color=red>Select a genetic map.</font>";
-                            echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
-                        }
-                    } else {
-                        echo "<font color=red>Select a genetic map.</font>";
-                        echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
-                    }
-                } 
-                if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
-                   if (empty($_SESSION['selected_trials'])) {
-                     echo "<tr><td>Prediction<td>";
-                   } else {
-                     echo "<tr><td>Validation<td>";
-                     $tmp = $_SESSION['selected_trials'];
-                     $e_uid = implode(",",$tmp);
-        $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-        while ($row = mysqli_fetch_array($res)) {
-          echo "$row[0]<br>";
-        }
-        }
-             
-                   $count = count($_SESSION['selected_lines']);
-                   $markers = $_SESSION['filtered_markers'];
-                   $estimate = count($markers) + count($lines);
-                   echo "<td>$count";
-                   ?>
-                   <td>
-                   <form method="LINK" action="gensel.php">
-                   <input type="hidden" value="step1gensel" name="function">
-                   <input type="hidden" value="clear_p" name="cmd">
-                   <input type="submit" value="Clear Selection">
-                   </form>
-                   <?php
-                   //check if these are unique
-                   $count = 0;
-                   $count_dup = 0;
-                   $tmp1 = $_SESSION['training_lines'];
-                   $tmp2 = $_SESSION['selected_lines'];
-                   $count_t = count($tmp2);
-                   foreach ($tmp2 as $uid) {
-                     if(in_array($uid,$tmp1)) {
-                       $count_dup++;
-                     } else{
-                       $count++;
-                     }
-                   }
-                   if ($count < 5) {
-                     echo " <font color=red>(Error - $count unique lines in prediction set)";
-                   }
+            echo "Please select traits before using this feature.<br><br>";
+            echo "<a href=";
+            echo $config['base_url'];
+            echo "phenotype/phenotype_selection.php>Select Traits</a><br><br>";
+            echo "<a href=";
+            echo $config['base_url'];
+            echo "downloads/select_all.php>Wizard (Lines, Traits, Trials)</a>";
+        } elseif (empty($_SESSION['selected_map'])) {
+            if (isset($_SESSION['geno_exps'])) {
+                $geno_exp = $_SESSION['geno_exps'];
+                $geno_str = $geno_exp[0];
+                $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+                if ($row = mysqli_fetch_array($res)) {
+                } else {
+                    echo "<font color=red>Select a genetic map.</font>";
+                    echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
                 }
-                echo "</table>";
-                if ($count_dup > 0) {
-                    if (empty($_SESSION['selected_trials'])) {
-                        echo " Warning - $count_dup lines removed from prediction set because they are in training set";
-                    } else {
-                        echo " Warning - $count_dup lines removed from validation set because they are in training set";
-                    }
+            } else {
+                echo "<font color=red>Select a genetic map.</font>";
+                echo "<input type=button value=\"Genetic map\" onclick=\"javascript: select_map()\"><br>";
+            }
+        }
+        if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
+            if (empty($_SESSION['selected_trials'])) {
+                echo "<tr><td>Prediction<td>";
+            } else {
+                echo "<tr><td>Validation<td>";
+                $tmp = $_SESSION['selected_trials'];
+                $e_uid = implode(",", $tmp);
+                $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+                while ($row = mysqli_fetch_array($res)) {
+                    echo "$row[0]<br>";
                 }
+            }
+   
+            $count = count($_SESSION['selected_lines']);
+            $markers = $_SESSION['filtered_markers'];
+            $estimate = count($markers) + count($lines);
+            echo "<td>$count";
+            ?>
+            <td>
+            <form method="LINK" action="gensel.php">
+            <input type="hidden" value="step1gensel" name="function">
+            <input type="hidden" value="clear_p" name="cmd">
+            <input type="submit" value="Clear Selection">
+            </form>
+            <?php
+            //check if these are unique
+            $count = 0;
+            $count_dup = 0;
+            $tmp1 = $_SESSION['training_lines'];
+            $tmp2 = $_SESSION['selected_lines'];
+            $count_t = count($tmp2);
+            foreach ($tmp2 as $uid) {
+                if (in_array($uid, $tmp1)) {
+                    $count_dup++;
+                } else {
+                    $count++;
+                }
+            }
+            if ($count < 5) {
+                 echo " <font color=red>(Error - $count unique lines in prediction set)";
+            }
+        }
+        echo "</table>";
+        if ($count_dup > 0) {
+            if (empty($_SESSION['selected_trials'])) {
+                 echo " Warning - $count_dup lines removed from prediction set because they are in training set";
+            } else {
+                 echo " Warning - $count_dup lines removed from validation set because they are in training set";
+            }
+        }
                 $min_maf = 5;
                 $max_missing = 10;
                 $max_miss_line = 10;
-                $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+                $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
                 ?>
                 </div>
                 <?php
@@ -316,46 +315,47 @@ class Downloads
     /**
      * filters markers and lines based on settings
      */
-    function filter_lines() {
-      if (isset($_GET['maf'])) {
-           $min_maf = $_GET['maf'];
-      } else {
-           $min_maf = 5;
-      }
-      if (isset($_GET['mmm'])) {
-           $max_missing = $_GET['mmm'];
-      } else {
-           $max_missing = 10;
-      }
-      if (isset($_GET['mml'])) {
-           $max_miss_line = $_GET['mml'];
-      } else {
-           $max_miss_line = 10;
-      }
-      $lines = $_SESSION['selected_lines'];
-      if (isset($_SESSION['training_lines'])) {
-          $training_lines = $_SESSION['training_lines'];
-      } else {
-          $training_lines = "";
-      }
-      if (isset($_SESSION['geno_exps'])) {
-          calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
-          $_SESSION['filtered_lines'] = $_SESSION['selected_lines'];
-      } elseif ($training_lines == "") {
-          calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
-      } else {
-          calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
-      }
-      ?>
-      <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-      <?php
+    private function filterLines()
+    {
+        if (isset($_GET['maf'])) {
+            $min_maf = $_GET['maf'];
+        } else {
+            $min_maf = 5;
+        }
+        if (isset($_GET['mmm'])) {
+            $max_missing = $_GET['mmm'];
+        } else {
+            $max_missing = 10;
+        }
+        if (isset($_GET['mml'])) {
+            $max_miss_line = $_GET['mml'];
+        } else {
+            $max_miss_line = 10;
+        }
+        $lines = $_SESSION['selected_lines'];
+        if (isset($_SESSION['training_lines'])) {
+            $training_lines = $_SESSION['training_lines'];
+        } else {
+            $training_lines = "";
+        }
+        if (isset($_SESSION['geno_exps'])) {
+            calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
+            findCommonLines($lines);
+        } elseif ($training_lines == "") {
+            calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+        } else {
+            calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
+        }
+        ?>
+        <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+        <?php
     }
 
     /**
      * 1. display a spinning activity image when a slow function is running
      * 2. show button to clear sessin data
      * 3. show button to save current selection
-     */    
+     */
     private function refresh_title() {
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       echo "<h2>Genomic Association and Prediction</h2>";
@@ -777,10 +777,21 @@ class Downloads
            }
            fclose($h);
         }
+        if (file_exists("/tmp/tht/$filename3")) {
+	  // Extract the Trait name from the .R file.
+	  $h = fopen("/tmp/tht/$filename3", "r");
+	  while ($line=fgets($h)) {
+	    if (strpos($line, "phenolabel <-")) {
+	      $traitname = preg_replace('/phenolabel <- "(.*)"/', $line, '$1');
+	    }
+	  }
+	  fclose($h);
+        }
         if ($found) {
             print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
             print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
             print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+	    print "Trait: $traitname<p>";
             print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
             print "with columns for marker name, chromosome, position, marker score<br><br>";
             print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a><br><br>";
@@ -944,6 +955,7 @@ class Downloads
         }
         if (file_exists("/tmp/tht/$filename4")) {
             print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+	    print "Trait: $phenolabel<p>";
             print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
             print "with columns for marker name, chromosome, position, marker score<br><br>";
             print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a><br><br>";
@@ -1399,160 +1411,6 @@ class Downloads
 	}
 	
 	/**
-	 * build download files for tassel V2
-	 */
-	function type1_build_tassel()
-	{
-		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
-		$traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
-		$CAPdataprogram = (isset($_GET['bp']) && !empty($_GET['bp'])) ? $_GET['bp'] : null;
-		$years = (isset($_GET['yrs']) && !empty($_GET['yrs'])) ? $_GET['yrs'] : null;
-		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-
-		$dtype = "tassel";
-		
-				// Get dataset IDs
-			$sql_exp = "SELECT DISTINCT dse.datasets_experiments_uid as id
-							FROM  datasets as ds, CAPdata_programs as cd, datasets_experiments as dse
-							WHERE cd.CAPdata_programs_uid = ds.CAPdata_programs_uid
-								AND dse.datasets_uid = ds.datasets_uid
-								AND ds.breeding_year IN ($years)
-								AND ds.CAPdata_programs_uid IN ($CAPdataprogram)";
-			$res = mysql_query($sql_exp) or die(mysql_error());
-			
-			while ($row = mysql_fetch_array($res)){
-				$datasets[] = $row["id"];
-			}
-			
-			$datasets_exp = implode(',',$datasets);		
-		
-		// Get genotype experiments
-		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-				FROM experiments e, experiment_types et, datasets_experiments as dse
-				WHERE
-					e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'genotype'
-					AND e.experiment_uid = dse.experiment_uid
-					AND dse.datasets_experiments_uid IN ($datasets_exp)";
-		$res = mysql_query($sql_exp) or die(mysql_error());
-			
-		while ($row = mysql_fetch_array($res)){
-				$exp[] = $row["exp_uid"];
-		}
-		$experiments_g = implode(',',$exp);
-		//$firephp = FirePHP::getInstance(true);
-
-		//$firephp->error("Curent location: ". getcwd());
-		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
-		$dir = '/tmp/tht/';
-		$filename = 'THTdownload_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
-		
-        // File_Archive doesn't do a good job of creating files, so we'll create it first
-		if(!file_exists($dir.$filename)){
-			$h = fopen($dir.$filename, "w+");
-			fclose($h);
-		}
-		
-        // Now let File_Archive do its thing
-		$zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
-		$zip->newFile("traits.txt");
-		// $firephp->log("into traits ".$experiments_t." N".$traits." N".$datasets_exp);
-		$zip->writeData($this->type1_build_tassel_traits_download($experiments_t, $traits, $datasets_exp, $subset));
-		// $firephp->log("after traits 1 ".$experiments_t);
-
-		$zip->newFile("snpfile.txt");
-		// $firephp->log("before first marker file".$experiments_g);
-		$zip->writeData($this->type1_build_markers_download($experiments_g, $dtype));
-		// $firephp->log("after first marker file".$experiments_g);
-		$zip->newFile("allele_conflict.txt");
-		$zip->writeData($this->type1_build_conflicts_download($experiments_g, $dtype));
-		$zip->newFile("annotated_alignment.txt");
-		$zip->writeData($this->type1_build_annotated_align($experiments_g));
-		// $firephp->log("after alignment marker file".$experiments_g);
-
-		$zip->close();
-		
-		header("Location: ".$dir.$filename);
-	}
-
-	/**
-	 * build download files for tassel V3
-	 */
-	function type1_build_tassel_v3()
-	{
-		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
-		$traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
-		$CAPdataprogram = (isset($_GET['bp']) && !empty($_GET['bp'])) ? $_GET['bp'] : null;
-		$years = (isset($_GET['yrs']) && !empty($_GET['yrs'])) ? $_GET['yrs'] : null;
-		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-		
-		$dtype = "tassel";
-		
-				// Get dataset IDs
-			$sql_exp = "SELECT DISTINCT dse.datasets_experiments_uid as id
-							FROM  datasets as ds, CAPdata_programs as cd, datasets_experiments as dse
-							WHERE cd.CAPdata_programs_uid = ds.CAPdata_programs_uid
-								AND dse.datasets_uid = ds.datasets_uid
-								AND ds.breeding_year IN ($years)
-								AND ds.CAPdata_programs_uid IN ($CAPdataprogram)";
-			$res = mysql_query($sql_exp) or die(mysql_error());
-			
-			while ($row = mysql_fetch_array($res)){
-				$datasets[] = $row["id"];
-			}
-			
-			$datasets_exp = implode(',',$datasets);		
-		
-		// Get genotype experiments
-		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-				FROM experiments e, experiment_types et, datasets_experiments as dse
-				WHERE
-					e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'genotype'
-					AND e.experiment_uid = dse.experiment_uid
-					AND dse.datasets_experiments_uid IN ($datasets_exp)";
-		$res = mysql_query($sql_exp) or die(mysql_error());
-			
-		while ($row = mysql_fetch_array($res)){
-				$exp[] = $row["exp_uid"];
-		}
-		$experiments_g = implode(',',$exp);
-		//$firephp = FirePHP::getInstance(true);
-
-		//$firephp->error("Curent location: ". getcwd());
-		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
-		$dir = '/tmp/tht/';
-		$filename = 'THTdownload_tasselV3_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
-		
-        // File_Archive doesn't do a good job of creating files, so we'll create it first
-		if(!file_exists($dir.$filename)){
-			$h = fopen($dir.$filename, "w+");
-			fclose($h);
-		}
-		
-        // Now let File_Archive do its thing
-		$zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
-		$zip->newFile("traits.txt");
-		// $firephp->log("into traits ".$experiments_t." N".$traits." N".$datasets_exp);
-		$zip->writeData($this->type1_build_tassel_traits_download($experiments_t, $traits, $datasets_exp, $subset));
-		// $firephp->log("after traits 1 ".$experiments_t);
-
-		$zip->newFile("snpfile.txt");
-		// $firephp->log("before first marker file".$experiments_g);
-		$zip->writeData($this->type1_build_markers_download($experiments_g, $dtype));
-		// $firephp->log("after first marker file".$experiments_g);
-		$zip->newFile("allele_conflict.txt");
-		$zip->writeData($this->type1_build_conflicts_download($experiments_g, $dtype));
-		$zip->newFile("geneticMap.txt");
-		$zip->writeData($this->type1_build_geneticMap($experiments_g));
-		// $firephp->log("after alignment marker file".$experiments_g);
-
-		$zip->close();
-		
-		header("Location: ".$dir.$filename);
-	}
-	
-	/**
 	 * build download files for tassel (V2,V3,V4) when given a set of experiments, traits, and phenotypes
 	 * @param string $version
 	 */
@@ -1777,6 +1635,7 @@ class Downloads
      * @return string
      *
      * modified to work with only one trait
+     * for R script the line names have to be quoted or special characters will cause problems
      */
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset) {
       $delimiter = "\t";
@@ -1918,11 +1777,11 @@ class Downloads
             $found = 0;
             while ($row = mysql_fetch_array($res)) {
                $found = 1;
-               $outline = $lines_names[$i].$delimiter.$row['value'].$delimiter.$row['exper'].$delimiter.$row['experiment_year']."\n";
+               $outline = "'$lines_names[$i]'".$delimiter.$row['value'].$delimiter.$row['exper'].$delimiter.$row['experiment_year']."\n";
                $output .= $outline;
             }
             if ($found == 0) {
-               $outline = $lines_names[$i].$delimiter."999".$delimiter."999".$delimiter."999\n";
+               $outline = "'$lines_names[$i]'".$delimiter."999".$delimiter."999".$delimiter."999\n";
                $output .= $outline;
             }
 

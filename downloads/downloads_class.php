@@ -59,9 +59,6 @@ class Downloads
             case 'step1yearprog':
                 $this->step1_yearprog();
                 break;
-            case 'type1build_tassel_v3':
-                echo $this->type1_build_tassel_v3();
-                break;
             case 'step2lines':
                 echo $this->step2_lines();
                 break;
@@ -110,8 +107,7 @@ class Downloads
         $this->type1Checksession();
         ?>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
-        <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
-        <script type="text/javascript" src="downloads/downloadsjq03.js"></script>
+        <script type="text/javascript" src="downloads/downloadsjq04.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
     }
@@ -556,8 +552,8 @@ class Downloads
             ?></div>
             <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
             <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-            <script type="text/javascript" src="downloads/downloads07.js"></script>
             <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+            <script type="text/javascript" src="downloads/downloads07.js"></script>
             <script type="text/javascript">
             var mm = 50;
             var mmaf = 5;
@@ -1018,160 +1014,6 @@ class Downloads
 	  return ($a < $b) ? -1 : 1;
 	}
 	
-	/**
-	 * build download files for tassel V2
-	 */
-	function type1_build_tassel()
-	{
-		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
-		$traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
-		$CAPdataprogram = (isset($_GET['bp']) && !empty($_GET['bp'])) ? $_GET['bp'] : null;
-		$years = (isset($_GET['yrs']) && !empty($_GET['yrs'])) ? $_GET['yrs'] : null;
-		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-
-		$dtype = "tassel";
-		
-				// Get dataset IDs
-			$sql_exp = "SELECT DISTINCT dse.datasets_experiments_uid as id
-							FROM  datasets as ds, CAPdata_programs as cd, datasets_experiments as dse
-							WHERE cd.CAPdata_programs_uid = ds.CAPdata_programs_uid
-								AND dse.datasets_uid = ds.datasets_uid
-								AND ds.breeding_year IN ($years)
-								AND ds.CAPdata_programs_uid IN ($CAPdataprogram)";
-			$res = mysql_query($sql_exp) or die(mysql_error());
-			
-			while ($row = mysql_fetch_array($res)){
-				$datasets[] = $row["id"];
-			}
-			
-			$datasets_exp = implode(',',$datasets);		
-		
-		// Get genotype experiments
-		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-				FROM experiments e, experiment_types et, datasets_experiments as dse
-				WHERE
-					e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'genotype'
-					AND e.experiment_uid = dse.experiment_uid
-					AND dse.datasets_experiments_uid IN ($datasets_exp)";
-		$res = mysql_query($sql_exp) or die(mysql_error());
-			
-		while ($row = mysql_fetch_array($res)){
-				$exp[] = $row["exp_uid"];
-		}
-		$experiments_g = implode(',',$exp);
-		//$firephp = FirePHP::getInstance(true);
-
-		//$firephp->error("Curent location: ". getcwd());
-		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
-		$dir = '/tmp/tht/';
-		$filename = 'T3download_tassel_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
-		
-        // File_Archive doesn't do a good job of creating files, so we'll create it first
-		if(!file_exists($dir.$filename)){
-			$h = fopen($dir.$filename, "w+");
-			fclose($h);
-		}
-		
-        // Now let File_Archive do its thing
-		$zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
-		$zip->newFile("traits.txt");
-		// $firephp->log("into traits ".$experiments_t." N".$traits." N".$datasets_exp);
-		$zip->writeData($this->type1_build_tassel_traits_download($experiments_t, $traits, $datasets_exp, $subset));
-		// $firephp->log("after traits 1 ".$experiments_t);
-
-		$zip->newFile("snpfile.txt");
-		// $firephp->log("before first marker file".$experiments_g);
-		$zip->writeData($this->type1_build_markers_download($experiments_g, $dtype));
-		// $firephp->log("after first marker file".$experiments_g);
-		$zip->newFile("allele_conflict.txt");
-		$zip->writeData($this->type1_build_conflicts_download($experiments_g, $dtype));
-		$zip->newFile("annotated_alignment.txt");
-		$zip->writeData($this->type1_build_annotated_align($experiments_g));
-		// $firephp->log("after alignment marker file".$experiments_g);
-
-		$zip->close();
-		
-		header("Location: ".$dir.$filename);
-	}
-
-	/**
-	 * build download files for tassel V3
-	 */
-	function type1_build_tassel_v3()
-	{
-		$experiments_t = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
-		$traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
-		$CAPdataprogram = (isset($_GET['bp']) && !empty($_GET['bp'])) ? $_GET['bp'] : null;
-		$years = (isset($_GET['yrs']) && !empty($_GET['yrs'])) ? $_GET['yrs'] : null;
-		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-		
-		$dtype = "tassel";
-		
-				// Get dataset IDs
-			$sql_exp = "SELECT DISTINCT dse.datasets_experiments_uid as id
-							FROM  datasets as ds, CAPdata_programs as cd, datasets_experiments as dse
-							WHERE cd.CAPdata_programs_uid = ds.CAPdata_programs_uid
-								AND dse.datasets_uid = ds.datasets_uid
-								AND ds.breeding_year IN ($years)
-								AND ds.CAPdata_programs_uid IN ($CAPdataprogram)";
-			$res = mysql_query($sql_exp) or die(mysql_error());
-			
-			while ($row = mysql_fetch_array($res)){
-				$datasets[] = $row["id"];
-			}
-			
-			$datasets_exp = implode(',',$datasets);		
-		
-		// Get genotype experiments
-		$sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-				FROM experiments e, experiment_types et, datasets_experiments as dse
-				WHERE
-					e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'genotype'
-					AND e.experiment_uid = dse.experiment_uid
-					AND dse.datasets_experiments_uid IN ($datasets_exp)";
-		$res = mysql_query($sql_exp) or die(mysql_error());
-			
-		while ($row = mysql_fetch_array($res)){
-				$exp[] = $row["exp_uid"];
-		}
-		$experiments_g = implode(',',$exp);
-		//$firephp = FirePHP::getInstance(true);
-
-		//$firephp->error("Curent location: ". getcwd());
-		if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
-		$dir = '/tmp/tht/';
-		$filename = 'T3download_tasselV3_'.chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).'.zip';
-		
-        // File_Archive doesn't do a good job of creating files, so we'll create it first
-		if(!file_exists($dir.$filename)){
-			$h = fopen($dir.$filename, "w+");
-			fclose($h);
-		}
-		
-        // Now let File_Archive do its thing
-		$zip = File_Archive::toArchive($dir.$filename, File_Archive::toFiles());
-		$zip->newFile("traits.txt");
-		// $firephp->log("into traits ".$experiments_t." N".$traits." N".$datasets_exp);
-		$zip->writeData($this->type1_build_tassel_traits_download($experiments_t, $traits, $datasets_exp, $subset));
-		// $firephp->log("after traits 1 ".$experiments_t);
-
-		$zip->newFile("snpfile.txt");
-		// $firephp->log("before first marker file".$experiments_g);
-		$zip->writeData($this->type1_build_markers_download($experiments_g, $dtype));
-		// $firephp->log("after first marker file".$experiments_g);
-		$zip->newFile("allele_conflict.txt");
-		$zip->writeData($this->type1_build_conflicts_download($experiments_g, $dtype));
-		$zip->newFile("geneticMap.txt");
-		$zip->writeData($this->type1_build_geneticMap($experiments_g));
-		// $firephp->log("after alignment marker file".$experiments_g);
-
-		$zip->close();
-		
-		header("Location: ".$dir.$filename);
-	}
-	
     /**
      * generate download files in R format
      * @param unknown_type $experiments
@@ -1245,7 +1087,7 @@ class Downloads
                     }
                     if ($outarray != $empty) {
                         $tmp = implode($delimiter, $outarray);
-                        $output .= $line_name.$delimiter.$expr_name.$delimiter.$tmp."\n";
+                        $output .= "'$line_name'".$delimiter.$expr_name.$delimiter.$tmp."\n";
                     }
                 }
             }
@@ -1264,11 +1106,11 @@ class Downloads
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
     {
         global $mysqli;
-                $delimiter = "\t";
-		$output = '';
-		$outputheader1 = '';
-		$outputheader2 = "<Trait>";
-		$outputheader3 = "<Trial>";
+        $delimiter = "\t";
+        $output = '';
+        $outputheader1 = '';
+	$outputheader2 = "<Trait>";
+	$outputheader3 = "<Trial>";
       
       //count number of traits and number of experiments
       $ntraits=substr_count($traits, ',')+1;

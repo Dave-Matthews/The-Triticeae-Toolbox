@@ -3,7 +3,7 @@ require 'config.php';
 require $config['root_dir'].'includes/bootstrap_curator.inc';
 require $config['root_dir'].'theme/admin_header.php';
 require_once $config['root_dir'] . 'includes/email.inc';
-connect();
+$mysqli = connecti();
 ?>
 
 <style type=text/css>
@@ -16,12 +16,16 @@ connect();
   <div class="section">
   <p>
 
-<?php 
-if (!empty($_POST['dtype']) OR !empty($_FILES)) {
+<?php
+if (!empty($_POST['dtype']) or !empty($_FILES)) {
     // The Upload button was clicked. Handle user's submission.
-    $useremail = $_SESSION['username'];
-    $row = loadUser($_SESSION['username']);
-    $username = $row['name'];
+    if (isset($_SESSION['username'])) {
+        $useremail = $_SESSION['username'];
+        $row = loadUser($_SESSION['username']);
+        $username = $row['name'];
+    } else {
+        die("<font color=red>Error: Please sign in before sending data files to the curator</font>");
+    }
     $date = date('dMY');
     $dir= $config['root_dir']."curator_data/uploads/".str_replace(' ', '_', $username)."_".$date."/";
     umask(0);
@@ -53,13 +57,13 @@ if (!empty($_POST['dtype']) OR !empty($_FILES)) {
         if ($error_found) {
             error(1, "No File Uploaded");
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-        } else if (move_uploaded_file($_FILES['file']['tmp_name'], $dir.$uploadfile)) {
+        } elseif (move_uploaded_file($_FILES['file']['tmp_name'], $dir.$uploadfile)) {
             // Successful upload.
             echo "Thank you for submitting file \"<b>$uploadfile</b>\"!<br>The curators have been notified.<p>";
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
             // Save info in table input_file_log.
             $sql = "insert into input_file_log (file_name, users_name) values ('$uploadfile', '$username')";
-            mysql_query($sql) or die(mysql_error());
+            mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             // Send email to curator.
             $dt = $_POST['dtype'];
             $dtype = array(lines => "germplasm lines",
@@ -68,12 +72,12 @@ if (!empty($_POST['dtype']) OR !empty($_FILES)) {
                 gannot => "genotype experiment annotation",
                 gresult => "genotype results",
                 "" => unspecified);
-      $comments = str_replace('\r\n', "\n", $_POST['comments']);
-      $tst = $_POST['tested'];
-      $tested = array('DOES', 'does NOT');
-      $host = $_SERVER['SERVER_NAME'];
-      $private = $_POST['private'];
-      $mesg = "$username, $useremail, has submitted a data file.
+            $comments = str_replace('\r\n', "\n", $_POST['comments']);
+            $tst = $_POST['tested'];
+            $tested = array('DOES', 'does NOT');
+            $host = $_SERVER['SERVER_NAME'];
+            $private = $_POST['private'];
+            $mesg = "$username, $useremail, has submitted a data file.
 \nData type: $dtype[$dt]
 Location: $host
 Directory: $dir
@@ -81,26 +85,30 @@ Filename: $uploadfile
 Comments: 
 $comments
 \nThis file $tested[$tst] load successfully in the Sandbox.\n";
-      if ($private == 'on')
-	$mesg .= "This user wishes this data to be PRIVATE to the project.\n";
-      //print_h($mesg);
-      send_email(setting('capmail'), 'Data submitted to T3', $mesg);
-    } else {
-      error(1, "File not stored.");
-      print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+            if ($private == 'on') {
+                $mesg .= "This user wishes this data to be PRIVATE to the project.\n";
+            }
+            send_email(setting('capmail'), 'Data submitted to T3', $mesg);
+        } else {
+            error(1, "File not stored.");
+            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+        }
     }
-  }
 } else {
 // Nothing submitted yet.
 // Require that the user be signed in.
 $user = $_SESSION['username'];
 if (empty($user)) {
-  echo "Please sign in before sending data files to the curator
+  ?>
+        Please sign in before sending data files to the curator
         for loading into the production database.<br>
-        <button type=submit onClick=\"location.href='login.php'\">Sign in</button>";
+        <input type="Button" value="Sign in" onclick="window.open('<?php echo $config['base_url']?>login.php','_self')">
+  <?php
 } else if ($user == "t3user@graingenes.org") {
-  echo "Please sign out and login as yourself instead of the public 't3user'.<br>
-        <button type=submit onClick=\"location.href='logout.php'\">Sign out</button>";
+  ?>
+        Please sign out and login as yourself instead of the public 't3user'.<br>
+        <input type="Button" value="Sign out" onclick="window.open('<?php echo $config['base_url']?>logout.php','_self')">
+  <?php
 } else {
   echo "Please submit a data file for the curator to load
         into the production database. File names should not contain spaces.";
@@ -144,7 +152,7 @@ if (empty($user)) {
 }
 echo "</div>";
 $footer_div=1;
-include $config['root_dir'].'theme/footer.php'; 
+include $config['root_dir'].'theme/footer.php';
 
 // Note: For uploading multiple files see genotype_annotations_check.php.
 ?>

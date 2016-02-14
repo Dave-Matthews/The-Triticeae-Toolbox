@@ -14,11 +14,7 @@ options(cores=nCores)
 
 # Read and parse snp file
 mrkData <- hmpData[,-(1:4)]
-mrkRelMat <- A.mat(t(mrkData), return.imputed=TRUE)
-if (class(mrkRelMat) == "list"){ # Do this if you have missing marker data
-        mrkData.imputed <- mrkRelMat$imputed # We will use the imputed markers later on
-        mrkRelMat <- mrkRelMat$A
-}
+mrkRelMat <- A.mat(t(mrkData), return.imputed=FALSE)
 write.csv(mrkRelMat, file=fileK, quote=FALSE)
 
 eig.result <- eigen(mrkRelMat)
