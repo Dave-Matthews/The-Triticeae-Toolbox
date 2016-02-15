@@ -781,8 +781,8 @@ class Downloads
 	  // Extract the Trait name from the .R file.
 	  $h = fopen("/tmp/tht/$filename3", "r");
 	  while ($line=fgets($h)) {
-	    if (strpos($line, "phenolabel <-")) {
-	      $traitname = preg_replace('/phenolabel <- "(.*)"/', $line, '$1');
+            if (strpos($line, 'phenolabel') !== FALSE) {
+              $traitname = preg_replace('/phenolabel <- "(.*)"/', '$1', $line);
 	    }
 	  }
 	  fclose($h);
@@ -791,7 +791,7 @@ class Downloads
             print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
             print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
             print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
-	    print "Trait: $traitname<p>";
+	    print "Trait: <b>$traitname</b><p>";
             print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
             print "with columns for marker name, chromosome, position, marker score<br><br>";
             print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a><br><br>";
