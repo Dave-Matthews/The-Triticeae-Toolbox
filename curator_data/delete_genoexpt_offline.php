@@ -57,6 +57,14 @@ if (!$res) {
     echo "mysqli_error($mysqli)";
 }
 
+echo "deleting from allele_bymarker_expidx\n";
+$sql = "delete from allele_bymarker_expidx where experiment_uid = $uid";
+$res = mysqli_query($mysqli, $sql);
+if (!$res) {
+    echo "mysqli_error($mysqli)";
+}
+
+
 $sql = "select tht_base_uid from tht_base where experiment_uid = $uid";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error() . "<p>Query was: $sql");
 while ($row = mysqli_fetch_array($res)) {
