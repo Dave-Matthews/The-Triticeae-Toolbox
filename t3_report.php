@@ -155,10 +155,12 @@ if ($query == 'geno') {
     if ($opt == "") {
         $msg_opt = "";
     } else {
-        $sql = "select marker_type_name from marker_types where marker_type_uid = $opt";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        $row =  mysqli_fetch_row($res);
-        $msg_opt = $row[0];
+        if ($stmt = mysqli_prepare($mysqli, "select marker_type_name from marker_types where marker_type_uid = ?")) {
+            mysqli_stmt_bind_param($stmt, "i", $uid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_fetch($stmt);
+            mysqli_stmt_bind_result($stmt, $msg_opt);
+        }
     }
     print "Top 100 $msg_opt names ordered by creation date<br><br>\n";
     print "<form action=t3_report.php method='POST'>";
