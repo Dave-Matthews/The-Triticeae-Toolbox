@@ -91,83 +91,84 @@ if (isset($_GET['uid'])) {
                 $marker_uid = $row[0];
                 $marker_all2[] = $marker_uid;
             }
-      $count = 0;
-      foreach ($marker_list1 as $marker_uid => $alleles1) {
-        if (isset($marker_list2[$marker_uid])) {
-          $alleles2 = $marker_list2[$marker_uid];
-          if ($alleles1 == $alleles2) {
-          } else {
-            $count++;
-          }
+            $count = 0;
+            foreach ($marker_list1 as $marker_uid => $alleles1) {
+                if (isset($marker_list2[$marker_uid])) {
+                    $alleles2 = $marker_list2[$marker_uid];
+                    if ($alleles1 == $alleles2) {
+                    } else {
+                        $count++;
+                    }
+                }
+            }
+            $tmp1 = array_intersect($marker_all1, $marker_all2);
+            $tmp2 = count($tmp1);
+            if ($count > 10) {
+                $perc = round(100*($count/$tmp2), 0);
+                echo "<td>$count/$tmp2 ($perc%)";
+            } elseif ($count > 0) {
+                $perc = round(100*($count/$tmp2), 1);
+                echo "<td>$count/$tmp2 ($perc%)";
+            } else {
+                echo "<td>$count/$tmp2 (0%)";
+            }
         }
-      }
-      $tmp1 = array_intersect($marker_all1, $marker_all2);
-      $tmp2 = count($tmp1);
-      if ($count > 10) {
-        $perc = round(100*($count/$tmp2), 0);
-        echo "<td>$count/$tmp2 ($perc%)";
-      } elseif ($count > 0) {
-        $perc = round(100*($count/$tmp2), 1);
-        echo "<td>$count/$tmp2 ($perc%)";
-      } else {
-        echo "<td>$count/$tmp2 (0%)";
-      }
+        echo "\n";
+    }
+    echo "</table><br>\n";
+ 
+    $sql = "select l.line_record_name, m.marker_name, a.alleles, e.trial_code
+    from allele_conflicts a, line_records l, markers m, experiments e
+    where a.line_record_uid = l.line_record_uid
+    and a.marker_uid = m.marker_uid
+    and a.experiment_uid = e.experiment_uid
+    and a.alleles != '--'
+    and l.line_record_uid = $uid
+    order by m.marker_name";
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
+    $count = 0;
+    $prev = "";
+    echo "<h3>Allele Conflicts for $name_list[$uid] sorted by marker name</h3>\n";
+    echo "<table>\n";
+    echo "<tr><td>marker name\n";
+    foreach ($empty as $trial=>$allele) {
+        echo "<td>$trial";
+    }
+    while ($row=mysqli_fetch_row($result)) {
+        $line_name = $row[0];
+        $marker_name = $row[1];
+        $alleles = $row[2];
+        $trial = $row[3];
+        if ($marker_name == $prev) {
+            $allele_ary[$trial] = $alleles;
+        } else {
+            if ($count > 0) {
+                echo "<tr><td>$prev";
+                foreach ($allele_ary as $t1=>$a) {
+                    echo "<td>$a";
+                }
+                echo "\n";
+            }
+            $prev = $marker_name;
+            $allele_ary = $empty;
+            $allele_ary[$trial] = $alleles;
+            $count++;
+        }
+    }
+    echo "<tr><td>$prev";
+    foreach ($allele_ary as $t1=>$a) {
+        echo "<td>$a";
     }
     echo "\n";
-  }
-  echo "</table><br>\n";
- 
-  $sql = "select l.line_record_name, m.marker_name, a.alleles, e.trial_code
-  from allele_conflicts a, line_records l, markers m, experiments e
-  where a.line_record_uid = l.line_record_uid
-  and a.marker_uid = m.marker_uid
-  and a.experiment_uid = e.experiment_uid
-  and a.alleles != '--'
-  and l.line_record_uid = $uid
-  order by m.marker_name";
-  $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
-  $count = 0;
-  $prev = "";
-  echo "<h3>Allele Conflicts for $name_list[$uid] sorted by marker name</h3>\n";
-  echo "<table>\n";
-  echo "<tr><td>marker name\n";
-  foreach ($empty as $trial=>$allele) {
-      echo "<td>$trial";
-  }
-  while ($row=mysqli_fetch_row($result)) {
-      $line_name = $row[0];
-      $marker_name = $row[1];
-      $alleles = $row[2];
-      $trial = $row[3];
-      if ($marker_name == $prev) {
-        $allele_ary[$trial] = $alleles;
-      } else {
-        if ($count > 0) {
-          echo "<tr><td>$prev";
-          foreach ($allele_ary as $t1=>$a) {
-              echo "<td>$a";
-          }
-          echo "\n";
-        }
-        $prev = $marker_name;
-        $allele_ary = $empty;
-        $allele_ary[$trial] = $alleles;
-        $count++;
-      }
-  }
-  echo "<tr><td>$prev";
-  foreach ($allele_ary as $t1=>$a) {
-      echo "<td>$a";
-  }
-  echo "\n";
 } else {
     echo "<h2>Allele Conflicts between experiments by Line</h2>\n";
 
     // Update cache table if necessary. Empty?
     $sql = "select line_record_uid from allele_duplicates";
     $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
-    if (mysqli_num_rows($result) == 0)
-      $update = true;
+    if (mysqli_num_rows($result) == 0) {
+        $update = true;
+    }
 
     // Out of date?
     $sql = "select if( datediff(
@@ -180,18 +181,18 @@ if (isset($_GET['uid'])) {
     }
 
     if ($update) {
-    //update table
-       echo "<br>The database table is out of date.<br>\n";
-       echo "A job has been scheduled to update the table<br>\n";
-       echo "Please check the results again 30 minutes<br>\n";
-       exec("php update-conflicts.php > /dev/null &");
+        //update table
+        echo "<br>The database table is out of date.<br>\n";
+        echo "A job has been scheduled to update the table<br>\n";
+        echo "Please check the results again 30 minutes<br>\n";
+        exec("php update-conflicts.php > /dev/null &");
     }
 
     if (isset($_SESSION['selected_lines'])) {
         $selectedlines = $_SESSION['selected_lines'];
         $count = count($selectedlines);
         echo "Only displaying lines from saved selection or $count lines.<br>\n";
-        $lines_str = implode (",", $selectedlines);
+        $lines_str = implode(",", $selectedlines);
         $sql = "select line_record_uid, duplicates, conflicts, percent_conf
         from allele_duplicates where line_record_uid IN ($lines_str)
         order by percent_conf DESC";
@@ -205,11 +206,11 @@ if (isset($_GET['uid'])) {
     echo "<tr><td>line name<td>conflicts<td>comparisons<td>percent<br>conflicts\n";
     $result = mysqli_query($mysqli, $sql) or die(mysqli_error());
     while ($row=mysqli_fetch_row($result)) {
-       $uid = $row[0];
-       $dupl = $row[1];
-       $conf = $row[2];
-       $perc = $row[3];
-       echo "<tr><td><a href=genotyping/sum_lines.php?uid=$uid>$name_list[$uid]</a><td>$conf<td>$dupl<td>$perc\n";
+        $uid = $row[0];
+        $dupl = $row[1];
+        $conf = $row[2];
+        $perc = $row[3];
+        echo "<tr><td><a href='".$config['base_url']."genotyping/sum_lines.php?uid=$uid'>$name_list[$uid]</a><td>$conf<td>$dupl<td>$perc\n";
     }
 }
 echo "</table></div>";
