@@ -3,15 +3,15 @@
 
 session_start();
 require 'config.php';
-include $config['root_dir'].'includes/bootstrap.inc';
-include $config['root_dir'].'theme/normal_header.php';
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/normal_header.php';
 $mysqli = connecti();
 
 //This is the main program for displaying a list of experiments for a given program.
 
 $uid = intval($_GET['uid']);
-$trial_code=NULL;
-$sql="SELECT data_program_name, data_program_code,program_type FROM CAPdata_programs WHERE CAPdata_programs_uid='$uid'";
+$trial_code=null;
+$sql="SELECT data_program_name, data_program_code,program_type FROM CAPdata_programs WHERE CAPdata_programs_uid=$uid";
 $result_dpname=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 $row_dpname=mysqli_fetch_array($result_dpname);
 $dpname=$row_dpname['data_program_name'];
@@ -28,7 +28,7 @@ if (($dptype =='breeding') || ($dptype =='mapping'))
 	   AND tb.experiment_uid = e.experiment_uid
 	   AND cp.CAPdata_programs_uid = $uid";
 else 
-  $sql1="SELECT experiment_uid FROM experiments WHERE CAPdata_programs_uid='$uid'";
+  $sql1="SELECT experiment_uid FROM experiments WHERE CAPdata_programs_uid=$uid";
 $res1=mysqli_query($mysqli, $sql1) or die(mysqli_error($mysqli));
 $num_rows = mysqli_num_rows($res1);
 if ($num_rows == 0) {
@@ -55,7 +55,7 @@ else {
     // Program Type is not breeding or mapping.
     $sql2="select e.experiment_uid, e.trial_code, e.experiment_year, et.experiment_type_name
 	    from experiments as e, experiment_types as et
-	    where CAPdata_programs_uid='$uid'
+	    where CAPdata_programs_uid=$uid
 	    AND et.experiment_type_uid = e.experiment_type_uid";
     if (!authenticate(array(USER_TYPE_PARTICIPANT,
 			    USER_TYPE_CURATOR,
@@ -98,4 +98,4 @@ else {
   }
 } 
 $footer_div = 1;
-include $config['root_dir'].'theme/footer.php';
+require $config['root_dir'].'theme/footer.php';
