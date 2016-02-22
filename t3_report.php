@@ -187,7 +187,7 @@ if ($query == 'geno') {
         $name = $row[1];
         $date = $row[2];
         $type = $row[3];
-        print "<tr><td><a href=view.php?table=markers&uid=$uid>$name</a><td>$type<td>$date\n";
+        print "<tr><td><a href='".$config['base_url']."view.php?table=markers&uid=$uid'>$name</a><td>$type<td>$date\n";
     }
 } elseif ($query == 'PTrials') {
     include $config['root_dir'].'theme/normal_header.php';
@@ -219,7 +219,7 @@ if ($query == 'geno') {
         } else {
             $type = "";
         }
-        print "<tr><td><a href=display_phenotype.php?trial_code=$trial_code>$trial_code</a><td>$short_name<td>$type<td>$date\n";
+        print "<tr><td><a href='".$config['base_url']."display_phenotype.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
     }
 } elseif ($query == 'GTrials') {
     include $config['root_dir'].'theme/normal_header.php';
@@ -240,7 +240,7 @@ if ($query == 'geno') {
         $short_name = $row[1];
         $date = $row[2];
         $type = $row[3];
-        print "<tr><td><a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><td>$short_name<td>$type<td>$date\n";
+        print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
     }
 } elseif ($query == 'cache') {
      $sql = "select count(genotyping_data_uid) from genotyping_data";
@@ -298,7 +298,7 @@ if ($query == 'geno') {
        } else {
            $count = "";
        }
-       print "<tr><td><a href=display_phenotype.php?trial_code=$trial_code>$trial_code</a><td>$year<td>$count\n";
+       print "<tr><td><a href='".$config['base_url']."display_phenotype.php?trial_code=$trial_code'>$trial_code</a><td>$year<td>$count\n";
    }
    print "</table>";
 } else {
@@ -415,7 +415,7 @@ if ($query == 'geno') {
     $worksheet->write(2, 0, "Phenotype Trials submitted");
     $worksheet->write(2, 1, "$count");
   } elseif ($output == "") {
-    print "<tr><td>Phenotype Trials submitted</td><td>$count<td><a href=t3_report.php?query=PTrials>List all trials</a></td></tr>\n";
+    print "<tr><td>Phenotype Trials submitted</td><td>$count<td><a href='".$config['base_url']."t3_report.php?query=PTrials'>List all trials</a></td></tr>\n";
   }
   $sql = "select count(experiment_uid) from experiments where experiment_type_uid = 2";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
