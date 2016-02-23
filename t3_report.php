@@ -643,11 +643,11 @@ if ($query == 'geno') {
     print "<tr><td>last addition<td>$allele_update\n";
     print "</table><br>\n";
   }
-
+  print "</div>";
+}
 if ($output == "excel") {
     $workbook->close();
 } else {
-    print "</div></div>";
+    print "</div>";
     include $config['root_dir'] . 'theme/footer.php';
-}
 }
