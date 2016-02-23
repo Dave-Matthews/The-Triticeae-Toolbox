@@ -223,6 +223,7 @@ if ($query == 'geno') {
         }
         print "<tr><td><a href='".$config['base_url']."display_phenotype.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
     }
+    print "</table>";
 } elseif ($query == 'GTrials') {
     include $config['root_dir'].'theme/normal_header.php';
     print "Trials ordered by creation date<br><br>\n";
@@ -244,6 +245,7 @@ if ($query == 'geno') {
         $type = $row[3];
         print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
     }
+    print "</table>";
 } elseif ($query == 'cache') {
      $sql = "select count(genotyping_data_uid) from genotyping_data";
      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
