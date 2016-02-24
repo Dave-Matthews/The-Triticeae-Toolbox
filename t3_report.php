@@ -158,8 +158,9 @@ if ($query == 'geno') {
         if ($stmt = mysqli_prepare($mysqli, "select marker_type_name from marker_types where marker_type_uid = ?")) {
             mysqli_stmt_bind_param($stmt, "i", $uid);
             mysqli_stmt_execute($stmt);
-            mysqli_stmt_fetch($stmt);
             mysqli_stmt_bind_result($stmt, $msg_opt);
+            mysqli_stmt_fetch($stmt);
+            mysqli_stmt_close($stmt);
         }
     }
     print "Top 100 $msg_opt names ordered by creation date<br><br>\n";
@@ -191,6 +192,7 @@ if ($query == 'geno') {
         $type = $row[3];
         print "<tr><td><a href='".$config['base_url']."view.php?table=markers&uid=$uid'>$name</a><td>$type<td>$date\n";
     }
+    print "</table>";
 } elseif ($query == 'PTrials') {
     include $config['root_dir'].'theme/normal_header.php';
     print "Phenotype trials ordered by creation date<br><br>\n";
