@@ -206,10 +206,8 @@ if ($query == 'geno') {
     }
     $sql = "select trial_code, experiment_short_name, date_format(experiments.created_on, '%m-%d-%y'), experiment_uid from experiments, experiment_types
     where experiments.experiment_type_uid = experiment_types.experiment_type_uid and experiment_types.experiment_type_name = 'phenotype'";
-    if (!authenticate(array(USER_TYPE_PARTICIPANT,
-                            USER_TYPE_CURATOR,
-                            USER_TYPE_ADMINISTRATOR))) {
-                        $sql .= " and data_public_flag > 0";
+    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+        $sql .= " and data_public_flag > 0";
     }
     $sql .= " order by experiments.created_on desc";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -217,7 +215,7 @@ if ($query == 'geno') {
         $trial_code = $row[0];
         $short_name = $row[1];
         $date = $row[2];
-        $uid = $row[3];
+        $uid = $row[3]; 
         if (isset($plot_level[$uid])) {
             $type = "Yes";
         } else {
@@ -335,50 +333,17 @@ if ($query == 'geno') {
   /** read in from cache */
   $cachefile = '/tmp/tht/cache_' . $db . '.txt';
   $cachetime = 24 * 60 * 60; //24 hours
-  if (file_exists($cachefile) && (time() - $cachetime < filemtime($cachefile))) {
-     $fp = fopen($cachefile,'r');
-     $allele_count = fgets($fp);
-     $allele_update = fgets($fp);
-     $LinesWithGeno = fgets($fp);
-     $MarkersWithGeno = fgets($fp);
-     $MarkersNoGeno = fgets($fp);
-     fclose($fp);
-  } else {
-     $sql = "select count(genotyping_data_uid) from genotyping_data";
-     $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-     if ($row = mysqli_fetch_row($res)) {
-       $allele_count = $row[0];
-     } else {
-       print "error $sql<br>\n";
-     }
-     $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
-     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     if ($row = mysqli_fetch_row($res)) {
-       $allele_update = $row[0];
-     }
-     $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
-     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     if ($row = mysqli_fetch_row($res)) {
-        $LinesWithGeno = $row[0];
-     }
-     $sql = "select count(markers.marker_uid) from markers where marker_uid IN (Select marker_uid from allele_frequencies)";
-     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     if ($row=mysqli_fetch_row($res)) {
-      $MarkersWithGeno = $row[0];
-     }
-     $sql = "select count(markers.marker_uid) from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
-     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     if ($row=mysqli_fetch_row($res)) {
-       $MarkersNoGeno = $row[0];
-     }
-
-     $fp = fopen($cachefile,'w');
-     fwrite($fp,"$allele_count\n");
-     fwrite($fp,"$allele_update\n");
-     fwrite($fp,"$LinesWithGeno\n");
-     fwrite($fp,"$MarkersWithGeno\n");
-     fwrite($fp,"$MarkersNoGeno\n");
-     fclose($fp);
+  $fp = fopen($cachefile, 'r');
+  $allele_count = fgets($fp);
+  $allele_update = fgets($fp);
+  $LinesWithGeno = fgets($fp);
+  $MarkersWithGeno = fgets($fp);
+  $MarkersNoGeno = fgets($fp);
+  fclose($fp);
+  if (file_exists($cachefile) && (time() - $cachetime > filemtime($cachefile))) {
+      $cmd = "wget " . $config['base_url'] . "t3_report.php?query=cache &";
+      exec($cmd);
+      echo "run $cmd\n";
   }
   $allele_count = number_format($allele_count);
   $date = date_create(date('Y-m-d'));
