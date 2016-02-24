@@ -232,8 +232,8 @@ class Tablet
         if ($stmt = mysqli_prepare($mysqli, "select trial_code from experiments where experiment_uid = ?")) {
              mysqli_stmt_bind_param($stmt, "i", $uid);
              mysqli_stmt_execute($stmt);
-             mysqli_stmt_fetch($stmt);
              mysqli_stmt_bind_result($stmt, $trial_code);
+             mysqli_stmt_fetch($stmt);
              mysqli_stmt_close($stmt);
         } else {
             die("Error: trial code not found for experiment_uid = $uid");
