@@ -160,8 +160,8 @@ class Maps
                 $name = $row[1];
                 $comments = $row[2];
                 $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $uid and pos is not null limit 10";
-                $res2 = mysql_query($sql) or die(mysql_error() . $sql);
-                if ($row = mysql_fetch_array($res2)) {
+                $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                if ($row = mysqli_fetch_array($res2)) {
                     if ($found == 0) {
                         echo "<table><tr><td>Genotype Experiment<td>comment";
                         $found++;

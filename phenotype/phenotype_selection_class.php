@@ -2,9 +2,9 @@
 
 /** Using a PHP class to implement the "Download Gateway" feature
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
 
 namespace T3;
@@ -23,8 +23,7 @@ class Downloads
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'type1':
                 $this->type1();
                 break;
@@ -102,7 +101,8 @@ class Downloads
      * 2. show button to clear sessin data
      * 3. show button to save current selection
      */
-    private function refresh_title() {
+    private function refresh_title()
+    {
       global $mysqli;
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       ?>
@@ -312,8 +312,14 @@ class Downloads
 	private function step2_phenotype()
     {  
                 global $mysqli;
-		$phen_cat = $_GET['pc'];
+		$tmp = $_GET['pc'];
+                if (preg_match("/([0-9,]+)/", $tmp, $match)) {
+                    $phen_cat = $match[1];
+                }
                 $lines_within = $_GET['lw'];
+                if (preg_match("/([a-z]+)/", $tmp, $match)) {
+                    $lines_within = $match[1];
+                }
                 if (isset($_SESSION['selected_lines'])) {
                   $selectedlines= $_SESSION['selected_lines'];
                   $selectedlines = implode(',', $selectedlines);
@@ -363,8 +369,14 @@ class Downloads
 	private function step3_phenotype()
     {  
                 global $mysqli;
-		$phen_item = $_GET['pi'];
-                $lines_within = $_GET['lw'];
+		$tmp = $_GET['pi'];
+                if (preg_match("/([0-9,]+)/", $tmp, $match)) {
+                    $phen_item = $match[1];
+                }
+                $tmp = $_GET['lw'];
+                if (preg_match("/([a-z]+)/", $tmp, $match)) {
+                    $lines_within = $match[1];
+                }
 		$trait_cmb = (isset($_GET['trait_cmb']) && !empty($_GET['trait_cmb'])) ? $_GET['trait_cmb'] : null;
                 if (isset($_SESSION['selected_lines'])) {
                   $selectedlines= $_SESSION['selected_lines'];
@@ -451,8 +463,14 @@ class Downloads
 	private function step4_phenotype()
     { 
         global $mysqli; 
-    	$phen_item = $_GET['pi'];
-		$experiments = $_GET['e'];
+    	$tmp = $_GET['pi'];
+        if (preg_match("/([0-9,]+)/", $tmp, $match)) {
+            $phen_item = $match[1];
+        }
+	$tmp = $_GET['e'];
+        if (preg_match("/([0-9,]+)/", $tmp, $match)) {
+            $experiments = $_GET['e'];
+        }
 		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
 		$selected_lines = array();
 		$_SESSION['phenotype'] = $phen_item; // Empty the session array.
@@ -580,8 +598,14 @@ class Downloads
     private function step5_phenotype()
     {
         global $mysqli;
-        $phen_item = $_GET['pi'];
-        $experiments = $_GET['exps'];
+        $tmp = $_GET['pi'];
+        if (preg_match("/([0-9,]+)/", $tmp, $match)) {
+            $phen_item = $match[1];
+        }
+        $tmp = $_GET['exps'];
+        if (preg_match("/([0-9,]+)/", $tmp, $match)) {
+            $experiments = $match[1];
+        }
         $subset = $_GET['lw'];
         if (isset($_SESSION['selected_lines'])) {
             $selectedlines= $_SESSION['selected_lines'];
