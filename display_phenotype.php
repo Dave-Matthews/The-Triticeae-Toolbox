@@ -67,15 +67,21 @@ if (($data_public_flag == 0) and
 } else {
     $sql="SELECT experiment_uid, experiment_set_uid, experiment_desc_name, experiment_year
           FROM experiments WHERE trial_code='$trial_code'";
-    $result=mysqli_query($mysqli, $sql);
-    $row=mysqli_fetch_array($result);
-    $experiment_uid=$row['experiment_uid'];
-    $set_uid=$row['experiment_set_uid'];
+    if ($stmt = mysqli_prepare($mysqli, "SELECT experiment_uid, experiment_set_uid, experiment_desc_name, experiment_year FROM experiments WHERE trial_code = ?")) {
+        mysqli_stmt_bind_param($stmt, "s", $trial_code);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $experiment_uid, $set_uid, $exptname, $year);
+        if (!mysqli_stmt_fetch($stmt)) {
+            mysqli_stmt_close($stmt);
+            die("Error: trial not found\n");
+        }
+        mysqli_stmt_close($stmt);
+    } else {
+        die("Error: bad sql statement\n");
+    }
     $datasets_exp_uid=$experiment_uid;
-    $exptname=$row['experiment_desc_name'];
-    $year=$row['experiment_year'];
     if (!$experiment_uid) {
-        die ("Trial $trial_code not found.");
+        die("Trial $trial_code not found.");
     }
     $query="SELECT * FROM phenotype_experiment_info WHERE experiment_uid='$experiment_uid'";
     $result_pei=mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
@@ -95,13 +101,17 @@ if (($data_public_flag == 0) and
     $dataprogram = $row_cdp['data_program_name'];
 
     echo "<table>";
-    if ($exptset) echo "<tr> <td>Experiment</td><td>".$exptset."</td></tr>";
-	echo "<tr> <td>Trial Year</td><td>$year</td></tr>";
-	if ($exptname) echo "<tr> <td>Description</td><td>$exptname</td></tr>";
-        echo "<tr> <td>Location (Latitude/Longitude)</td><td>".$row_pei['location']." ("
+    if ($exptset) {
+        echo "<tr> <td>Experiment</td><td>".$exptset."</td></tr>";
+    }
+    echo "<tr> <td>Trial Year</td><td>$year</td></tr>";
+    if ($exptname) {
+        echo "<tr> <td>Description</td><td>$exptname</td></tr>";
+    }
+    echo "<tr> <td>Location (Latitude/Longitude)</td><td>".$row_pei['location']." ("
               .$row_pei['latitude']." / ".$row_pei['longitude'].")</td></tr>";
-	echo "<tr> <td>Collaborator</td><td>".$row_pei['collaborator']."</td></tr>";
-        echo "<tr> <td>Planting Date</td><td>".$row_pei['planting_date']."</td></tr>";
+    echo "<tr> <td>Collaborator</td><td>".$row_pei['collaborator']."</td></tr>";
+    echo "<tr> <td>Planting Date</td><td>".$row_pei['planting_date']."</td></tr>";
         echo "<tr> <td>Harvest Date</td><td>".$row_pei['harvest_date']."</td></tr>";
         echo "<tr> <td>Begin Weather Date</td><td>".$row_pei['begin_weather_date']."</td></tr>";
         echo "<tr> <td>Greenhouse?</td><td>".$row_pei['greenhouse_trial']."</td></tr>";
@@ -155,7 +165,6 @@ if (($data_public_flag == 0) and
         
         $titles[]="Check"; //add the check column to the display table
         
-         
         $all_rows=array(); //2D array that will hold the values in table format to be displayed
         $all_rows_long=array(); // For the full unrounded values
         $single_row=array(); //1D array which will hold each row values in the table format to be displayed

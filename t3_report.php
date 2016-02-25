@@ -343,7 +343,6 @@ if ($query == 'geno') {
   if (file_exists($cachefile) && (time() - $cachetime > filemtime($cachefile))) {
       $cmd = "wget " . $config['base_url'] . "t3_report.php?query=cache &";
       exec($cmd);
-      echo "run $cmd\n";
   }
   $allele_count = number_format($allele_count);
   $date = date_create(date('Y-m-d'));
