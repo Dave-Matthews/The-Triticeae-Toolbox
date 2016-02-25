@@ -18,7 +18,6 @@ require_once $config['root_dir'].'includes/bootstrap.inc';
 require_once $config['root_dir'].'phenotype/phenotype_selection_class.php';
 
 // connect to database
-connect();
 $mysqli = connecti();
 
 new Downloads($_GET['function']);

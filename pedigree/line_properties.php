@@ -14,8 +14,8 @@ $mysqli = connecti();
 include $config['root_dir'] . 'theme/admin_header.php';
 
 // Clear propvals cookie on initial entry, or if the last action was to save $_SESSION['selected_lines'].
-if (empty($_POST) OR $_POST['WhichBtn']) {
-    unset($_SESSION['propvals']); 
+if (empty($_POST) or $_POST['WhichBtn']) {
+    unset($_SESSION['propvals']);
 } else {
   // Store what the user's previous selections were so we can
   // redisplay them as the page is redrawn.
@@ -70,10 +70,12 @@ if (empty($_POST) OR $_POST['WhichBtn']) {
 	  <tr style="vertical-align: top">
 	    <td><b>Name</b> <br>
 	      <textarea name="LineSearchInput" rows="3" cols="18" style="height: 6em;">
-<?php 
+<?php
 $nm = explode('\r\n', $name);
 foreach ($nm as $n) {
-  if ($n) echo $n."\n";
+    if ($n) {
+        echo $n."\n";
+    }
 }
 ?>
 </textarea>

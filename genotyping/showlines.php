@@ -45,8 +45,10 @@ if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
     }
     $orderby = $_GET['sortby'] . " " . $_GET['sorttype'];
     showLineForMarker($marker_uid, $orderby);
-} else {
+} elseif (isset($_GET['marker'])) {
     showLineForMarker($marker_uid);
+} else {
+    echo "Error: no marker selected\n";
 }
 ?>
 
