@@ -45,7 +45,7 @@ function filterVCF()
     global $config;
 
     $geno_exp = $_GET['geno_exp'];
-    $chrom = $_GET['chr'];
+    $chrom = $_GET['chrom'];
     $filter = floatval($_GET['filter']);
 
     $name = "$chrom" . "_genotype_imputed.vcf";
@@ -114,7 +114,7 @@ function createVcfDownload($chr, $unique_str)
     //get header
     $sql = "select line_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-    while($row = mysql_fetch_array($res)) {
+    while ($row = mysql_fetch_array($res)) {
         $uid_list = json_decode($row[0], true);
     }
     foreach ($uid_list as $uid) {
@@ -238,7 +238,13 @@ function createVcfBeagle()
         }
         $chr = $_GET['chr'];
         $f1 = "raw/genotype/WEC_filtered_SNPs.vcf";
-        typeVcfExpMarkersDownload($geno_exp, $ref_line, $chr, $min_maf, $max_missing, $h1, $h2);
+        if (isset($_SESSION['verify'])) {
+            $index = $_SESSION['verify'];
+            echo "verify marker index = $index\n";
+            typeVcfExpMarkersDownloadVerify($geno_exp, $ref_line, $chr, $min_maf, $max_missing, $h1, $h2, $index);
+        } else {
+            typeVcfExpMarkersDownload($geno_exp, $ref_line, $chr, $min_maf, $max_missing, $h1, $h2);
+        }
         fclose($h);
         fclose($h1);
         fclose($h2);
@@ -299,7 +305,8 @@ function runBeagle($impute)
     $infile1 = "$tmpdir/download_$unique_str/reference_cont.vcf";      //reference filtered by chromosome
     $infile2 = "$tmpdir/download_$unique_str/reference_cont_phased";   //refernece filtered by chromosome, phased
     $infile3 = "$tmpdir/download_$unique_str/genotype.vcf";            //file to be imputed at higher marker density
-    $infile6 = "$tmpdir/download_$unique_str/genotype_conform.vcf.gz";
+    $infile4 = "$tmpdir/download_$unique_str/genotype_phased";         //file to be imputed, phased
+    $infile6 = "$tmpdir/download_$unique_str/genotype_conform";
     $infile7 = "$tmpdir/download_$unique_str/genotype_phased.vcf.gz";
     $outfile1 = "$tmpdir/download_$unique_str/$chr" . "_genotype_imputed";
     $outfile2 = "$tmpdir/download_$unique_str/genotype_imputed_conform";
@@ -313,10 +320,20 @@ function runBeagle($impute)
     $target2 = $config['base_url'] . "raw/genotype/imputed/" . $geno_exp .  "/$chr" . "_histo.jpg";
     $infile2 = "/var/www/html/t3/wheat/raw/genotype/" . $chr . "_WEC_var_phased.vcf.gz";
 
+    $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
+    echo "<br>Creating a phased genotype.<br>$cmd\n";
+    exec($cmd);
+
+    $infile4 .= ".vcf.gz";
+    $cmd = "java -jar /usr/local/bin/conform-gt.r1174.jar gt=$infile4 ref=$infile2 chrom=$chr out=$infile6 > /dev/null 2> $logfile3";
+    echo "<br>Running conform-gt $cmd\n";
+    exec($cmd);
+
+    $infile6 .= ".vcf.gz";
     if ($impute == "false") {
-        $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile3 ref=$infile2 out=$outfile1 nthreads=20 impute=false > /dev/null 2> $logfile4";
+        $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 impute=false > /dev/null 2> $logfile4";
     } else {
-        $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile3 ref=$infile2 out=$outfile1 nthreads=20 > /dev/null 2> $logfile4";
+        $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 > /dev/null 2> $logfile4";
     }
     echo "<br>Running beagle.r1399 to impute target<br>\n";
     exec($cmd);
@@ -353,6 +370,8 @@ function runBeagle($impute)
     exec("cat $outfile3 | R --vanilla > /dev/null 2> $tmpdir/histo.log");
 
     $cmd = "cp $outfile1 $target_dir";
+    exec($cmd);
+    $cmd = "cp $infile1 $target_dir";
     exec($cmd);
     $cmd = "cp $outfile4 $target_dir";
     exec($cmd);

@@ -444,12 +444,14 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $marker_list_chr = array();
     } else {
         if ($map_type == "Physical") {
-            $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
+            $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome, mim.bin_name
+            from markers, markers_in_maps as mim, map
             where mim.marker_uid = markers.marker_uid
             AND mim.map_uid = map.map_uid
             AND map.mapset_uid = $selected_map";
         } else {
-            $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
+            $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome, mim.bin_name
+            from markers, markers_in_maps as mim, map
             where mim.marker_uid = markers.marker_uid
             AND mim.map_uid = map.map_uid
             AND map.mapset_uid = $selected_map";
@@ -459,8 +461,13 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
                $marker_uid = $row[0];
                $pos = $row[1];
                $chr = $row[2];
+               $bin = $row[3];
                $marker_list_mapped[$marker_uid] = $pos;
-               $marker_list_chr[$marker_uid] = $chr;
+               if (!empty($bin) && ($bin != $chr)) {
+                   $marker_list_chr[$marker_uid] = $bin;
+               } else {
+                   $marker_list_chr[$marker_uid] = $chr;
+               }
         }
     }
 
