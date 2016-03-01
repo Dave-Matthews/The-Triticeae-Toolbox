@@ -24,7 +24,7 @@ class Impute
                 selectTarExec();
                 break;
             case 'createVCF':
-                createVcfBeagle();
+                createVcfBeagle("true");
                 break;
             case 'runBeagle':
                 runBeagle();
@@ -190,7 +190,7 @@ class Impute
         echo "</select>";
         ?>
         <!--button onclick=createVCF()>Run Beagle</button-->
-        <tr><td>Filter imputed:<td><input type="text" id="filter" size="3" value="0.3">
+        <tr><td>Filter imputed:<td><input type="text" id="filter" size="3" value="0.01">
         <td>remove markers with Allelic R-Squared(AR2) less than this value
         </table><br>
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
