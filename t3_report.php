@@ -28,7 +28,7 @@ if (isset($_GET['output'])) {
 }
 if (isset($_REQUEST['query'])) {
     $query = $_REQUEST['query'];
-    $opt = $_REQUEST['opt'];
+    $opt = intval($_REQUEST['opt']);
 } else {
     $query = "";
     $opt = "";
@@ -156,7 +156,7 @@ if ($query == 'geno') {
         $msg_opt = "";
     } else {
         if ($stmt = mysqli_prepare($mysqli, "select marker_type_name from marker_types where marker_type_uid = ?")) {
-            mysqli_stmt_bind_param($stmt, "i", $uid);
+            mysqli_stmt_bind_param($stmt, "i", $opt);
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $msg_opt);
             mysqli_stmt_fetch($stmt);
