@@ -5,16 +5,13 @@
  * These functions are only called by javascript functions located in core.js
  *
  * Note: Not all of these functions are documented, it would be redundant. Check core.js concerning what these do.
- * 3/20/2011 JLee	Enable write privilege to DB
- * 
+ * 3/20/2011 JLee Enable write privilege to DB
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/includes/ajaxlib.php
  */
 
@@ -24,7 +21,8 @@ if (!((isset($config['base_url']))&(isset($config['root_dir'])))) {
 set_time_limit(3000);
 
 //does the function exist?
-if (!function_exists($_GET['func'])) {
+if (!isset($_GET['func'])) {
+} elseif (!function_exists($_GET['func'])) {
     echo ""; 	//if not then just echo nothing as an appropriate ajax return.
 } else {
     $function = $_GET['func'];
@@ -35,13 +33,13 @@ if (!function_exists($_GET['func'])) {
     include "bootstrap_curator.inc";
 
     //give function database access
-    $link = connect();
+    $link = connecti();
 
     //execute function
     call_user_func($function, $_GET);
 
     //close mysql connection to prevent overloading.
-    mysql_close($link);
+    mysqli_close($link);
 }
 
 
@@ -49,26 +47,27 @@ if (!function_exists($_GET['func'])) {
  * This function shows the contents of a particular mapset entry in table format
  *
  * @param array $arr ajax is a bit restricting so we simply pass it the entire array as parameters.
- * 
+ *
  * @return nothing - it echos the table.
  */
 function showMapsetContents($arr)
 {
+    global $mysqli;
     if ($arr['id'] == "") {
         echo "Wrong Function: showMapsetContents()";
     }
 
-    $res = mysql_query("SELECT * FROM mapset WHERE mapset_uid = $arr[id]")
-        or die(mysql_error());
+    $res = mysqli_query($mysqli, "SELECT * FROM mapset WHERE mapset_uid = $arr[id]")
+        or die(mysqli_error($mysqli));
 
-    if (mysql_num_rows($res) > 1) {
+    if (mysqli_num_rows($res) > 1) {
         echo "Number of Rows Exceeds 1, we have a database problem";
     }
 
 
     echo "<table class=\"tableclass1\">\n";
-    $row = mysql_fetch_assoc($res);
-    foreach ($row as $k=>$v) {
+    $row = mysqli_fetch_assoc($res);
+    foreach ($row as $k => $v) {
         echo "\t<tr>\n";
         echo "\t\t<td><strong>$k</strong></td>\n";
         echo "\t\t<td>$v</td>\n";
@@ -77,29 +76,30 @@ function showMapsetContents($arr)
 	echo "</table>\n";
 }
 
-function DispSelContents($arr) {
-	if($arr['id'] == "" || $arr['tablename']=="" || $arr['field']=="") {
-		echo "Invalid Input for DispSelContents";
-	}
-	// print "SELECT * FROM ".$arr['tablename']." WHERE ".$arr['field']." = ".$arr['id'];
-	$res = mysql_query("
-			SELECT *
-			FROM ".$arr['tablename']."
-			WHERE ".$arr['field']." = ".$arr['id']
-		) or die(mysql_error());
+function DispSelContents($arr)
+{
+    global $mysqli;
+    if ($arr['id'] == "" || $arr['tablename']=="" || $arr['field']=="") {
+	echo "Invalid Input for DispSelContents";
+    }
+    // print "SELECT * FROM ".$arr['tablename']." WHERE ".$arr['field']." = ".$arr['id'];
+    $res = mysqli_query($mysqli, "SELECT *
+		FROM ".$arr['tablename']."
+		WHERE ".$arr['field']." = ".$arr['id']
+	) or die(mysqli_error($mysqli));
 
-	if(mysql_num_rows($res) > 1) {
-		warning("key is not unique");
-	}
-	echo "<table class=\"tableclass1\">\n";
-	$row = mysql_fetch_assoc($res);
-	foreach($row as $k=>$v) {
-		echo "\t<tr>\n";
-		echo "\t\t<td><strong>$k</strong></td>\n";
-		echo "\t\t<td>$v</td>\n";
-		echo "\t</tr>\n";
-	}
-	echo "</table>\n";
+    if(mysqli_num_rows($res) > 1) {
+	warning("key is not unique");
+    }
+    echo "<table class=\"tableclass1\">\n";
+    $row = mysqli_fetch_assoc($res);
+    foreach($row as $k=>$v) {
+	echo "\t<tr>\n";
+	echo "\t\t<td><strong>$k</strong></td>\n";
+	echo "\t\t<td>$v</td>\n";
+	echo "\t</tr>\n";
+    }
+    echo "</table>\n";
 }
 
 function InsertByAjax ($arr) {
@@ -1345,7 +1345,7 @@ function DispPropCategorySel($arr) {
     extract($arr);
     $query = mysql_query("SELECT properties_uid, name 
      FROM properties 
-     WHERE category_uid = $id 
+     WHERE phenotype_category_uid = $id 
      order by name") or die(mysql_error());
     if(mysql_num_rows($query) > 0) {
       echo "<select name='property' size=5 
@@ -1356,7 +1356,7 @@ function DispPropCategorySel($arr) {
       echo "</select>";
     }
     else
-      echo "<p style='color: red;'>No properties available in this category.</p>";
+      echo "<p style='color: red;'>Nothing available in this category.</p>";
   }
 }
 
