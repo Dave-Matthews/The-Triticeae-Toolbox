@@ -17,7 +17,6 @@ require 'config.php';
  */
 require $config['root_dir'] . 'includes/bootstrap.inc';
 
-connect();
 global $mysqli;
 $mysqli = connecti();
 //loginTest();
@@ -94,7 +93,7 @@ class Experiments
         global $config;
         include $config['root_dir'] . 'theme/admin_header.php';
         if (isset($_GET['uid'])) {
-            $experiment_uid = $_GET['uid'];
+            $experiment_uid = intval($_GET['uid']);
         } else {
             die("Error - no experiment found<br>\n");
         }
@@ -189,7 +188,7 @@ class Experiments
     private function saveSession()
     {
         global $mysqli;
-        $exp[] = $_GET['trial'];
+        $exp[] = intval($_GET['trial']);
         $_SESSION['selected_trials'] = $exp;
         $count = 0;
         $exp = $_GET['trial'];
@@ -218,7 +217,7 @@ class Experiments
      *
      * @return NULL
      */
-    function selectExperiment()
+    private function selectExperiment()
     {
         global $config;
         global $mysqli;
@@ -250,7 +249,7 @@ class Experiments
      *
      * @return NULL
      */
-    function selectDateTime()
+    private function selectDateTime()
     {
         global $config;
         global $mysqli;
@@ -281,7 +280,7 @@ class Experiments
      *
      * @return lines
      */
-    function selectLines()
+    private function selectLines()
     {
         global $mysqli;
         ?>
@@ -330,7 +329,7 @@ class Experiments
      *
      * @return null
      */
-    function showExper()
+    private function showExper()
     {
         global $mysqli;
         $muid = $_GET['muid'];
@@ -364,7 +363,7 @@ class Experiments
      *
      * @return NULL
      */
-    function statusLines()
+    private function statusLines()
     {
         global $mysqli;
         $count = 0;
@@ -378,7 +377,7 @@ class Experiments
         $sql = "select distinct(line_record_uid), line_record_name from line_records, fieldbook
         where line_records.line_record_uid = fieldbook.line_uid
         and fieldbook.experiment_uid = $exp $sql_opt";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($res)) {
             $count++;
         }
@@ -391,7 +390,7 @@ class Experiments
      *
      * @return NULL
      */
-    function selectDownload()
+    private function selectDownload()
     {
         global $config;
         global $mysqli;
@@ -402,7 +401,7 @@ class Experiments
 
         $raw_path = "";
         if (!empty($_GET['muid'])) {
-            $muid = $_GET['muid'];
+            $muid = intval($_GET['muid']);
             $sql = "select raw_file_name, experiment_uid from csr_measurement where measurement_uid = $muid";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
             if ($row = mysqli_fetch_row($res)) {

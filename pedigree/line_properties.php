@@ -9,9 +9,9 @@
 // 1/28/2011  JLee  Add ability to add multiple lines and synonym translation
 
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'includes/bootstrap.inc';
 $mysqli = connecti();
-include $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'theme/admin_header.php';
 
 // Clear propvals cookie on initial entry, or if the last action was to save $_SESSION['selected_lines'].
 if (empty($_POST) or $_POST['WhichBtn']) {
@@ -285,8 +285,14 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     if (count($species) != 0)    {
       // Include as a Property.
       foreach ($species as $spcs) {
-	$pvid = mysql_grab("select property_values_uid from property_values where value = '$spcs'");
-	$propvalids[] = $pvid;
+        if ($stmt = mysqli_prepare($mysqli, "select property_values_uid from property_values where value = ?")) {
+            mysqli_stmt_bind_param($stmt, "s", $spcs);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $pvid);
+            mysqli_stmt_fetch($stmt);
+            $propvalids[] = $pvid;
+            mysqli_stmt_close($stmt);
+        }
       }
     }
     if (count($propvalids) != 0)    {
