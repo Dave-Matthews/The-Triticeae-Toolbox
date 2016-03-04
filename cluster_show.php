@@ -9,7 +9,6 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/admin_header.php';
-connect();
 ?>
 <!-- imagemap code -->
 <script src='js/interactiveMaps.js'></script>
@@ -19,10 +18,10 @@ connect();
 echo "<h1>Cluster Lines by Genotype</h1>";
 echo "<div class=section>";
 
-$nclusters = $_GET['clusters'];
+$nclusters = intval($_GET['clusters']);
 
 // Timestamp for names of temporary files.
-$time = $_GET['time'];
+$time = intval($_GET['time']);
 
 // Line names to label in the legend
 $linenames = $_GET['labels'];
