@@ -1,12 +1,17 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
-connect();
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/admin_header.php';
+//needed to hold all frequencies in memory
+ini_set('memory_limit', '2G');
+$mysqli = connecti();
 
 // Use the incoming value of $time instead of a new one.  Does it work?
-if (isset($_POST['time'])) $time = $_POST['time'];
- else $time = date("U");
+if (isset($_POST['time'])) {
+    $time = intval($_POST['time']);
+} else {
+    $time = date("U");
+}
 
 // If we entered the script having picked a cluster in cluster3d.php,
 // load them into $_SESSION['selected_lines'].
@@ -31,9 +36,9 @@ if (isset($_POST['mycluster'])) {
   $query = "select line_record_uid, line_record_name 
      from line_records where line_record_name in (".$where_in.")
      order by line_record_name";
-  $result = mysql_query($query) or die(mysql_error()."<br>Query was:<br>".$query);
+  $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
   $_SESSION['selected_lines'] = array();
-  while ($row = mysql_fetch_row($result)) {
+  while ($row = mysqli_fetch_row($result)) {
     array_push($_SESSION['selected_lines'], $row[0]);
   }
 }
@@ -74,8 +79,8 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
 else {
   print "<textarea rows = 9>";
   foreach ($_SESSION['selected_lines'] as $lineuid) {
-    $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-    while ($row=mysql_fetch_assoc($result)) {
+    $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+    while ($row=mysqli_fetch_assoc($result)) {
       $selval=$row['line_record_name'];
       print "$selval\n";
     }
@@ -110,6 +115,4 @@ else {
 
 echo "</div></div></div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); 
-
-?>
+require $config['root_dir'].'theme/footer.php'; 
