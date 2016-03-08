@@ -101,7 +101,6 @@ class ShowData
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
         ?>
-        <script src="//code.jquery.com/jquery-1.11.1.js"></script>
         <script type="text/javascript" src="display_genotype.js"></script>
         <?php
     }
@@ -189,20 +188,21 @@ class ShowData
                 $breeding_program_name .= ", " . $row_BP['data_program_name'] . " (" . $row_BP['data_program_code'] . ")";
             }
         }
-    if (isset($_GET['mm']) && is_numeric($_GET['mm'])) {
-      $max_missing = $_GET['mm'];
-    } else {
-      $max_missing = 10; //IN PERCENT
-    }
-    if ($max_missing > 100)
-      $max_missing = 100;
-    elseif ($max_missing < 0)
-      $max_missing = 0;
-    if (isset($_GET['mmaf']) && is_numeric($_GET['mm'])) {
-      $min_maf = $_GET['mmaf'];
-    } else {
-      $min_maf = 5; //IN PERCENT
-    }
+        if (isset($_GET['mm']) && is_numeric($_GET['mm'])) {
+            $max_missing = $_GET['mm'];
+        } else {
+            $max_missing = 10; //IN PERCENT
+        }
+        if ($max_missing > 100) {
+            $max_missing = 100;
+        } elseif ($max_missing < 0) {
+            $max_missing = 0;
+        }
+        if (isset($_GET['mmaf']) && is_numeric($_GET['mm'])) {
+            $min_maf = $_GET['mmaf'];
+        } else {
+            $min_maf = 5; //IN PERCENT
+        }
     if ($min_maf > 100)
       $min_maf = 100;
     elseif ($min_maf < 0)
@@ -321,11 +321,15 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
       $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
       $filename = "download_" . $unique_str;
       mkdir("/tmp/tht/$filename");
-      $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $experiment_uid";
-      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-      while ($row = mysqli_fetch_row($res)) {
-          $uid = $row[0];
-          $markers[] = $uid;
+      $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = ?";
+      if ($stmt = mysqli_prepare($mysqli, $sql)) {
+          mysqli_stmt_bind_param($stmt, "i", $experiment_uid);
+          mysqli_stmt_execute($stmt);
+          mysqli_stmt_bind_result($stmt, $uid);
+          while (mysqli_stmt_fetch($stmt)) {
+              $markers[] = $uid;
+          }
+          mysqli_stmt_close($stmt);
       }
 
       $filename = "genotype.hmp.txt";
@@ -356,7 +360,6 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
       $min_maf = 100;
     elseif ($min_maf < 0)
       $min_maf = 0;
-    //$firephp = FirePHP::getInstance(true);
     $outputheader = '';
     $output = '';
     $doneheader = false;
@@ -367,20 +370,23 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
 		    SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
 		    FROM allele_frequencies AS af, markers as m
 		    WHERE m.marker_uid = af.marker_uid
-			    AND af.experiment_uid = $experiment_uid
+			    AND af.experiment_uid = ?
 		    group by af.marker_uid"; 
-    $res = mysqli_query($mysqli, $sql_mstat) or die("Error: user criteria select query.<br>".mysqli_error($mysqli));
-    $num_mark = mysqli_num_rows($res);
-    $num_maf = $num_miss = 0;
-
-    while ($row = mysqli_fetch_array($res)){
-      $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
-      $miss = round(100*$row["summis"]/$row["total"],1);
-      if (($maf >= $min_maf) AND ($miss <= $max_missing)) {
-	$marker_names[] = $row["name"];
-	$outputheader .= $delimiter.$row["name"];
-	$marker_uid[] = $row["marker"];
-      }
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+          mysqli_stmt_bind_param($stmt, "i", $experiment_uid);
+          mysqli_stmt_execute($stmt);
+          mysqli_stmt_bind_result($stmt, $marker, $name, $sumaa, $summis, $sumbb, $total, $sumab);
+          $num_mark = mysqli_stmt_num_rows($stmt);
+          $num_maf = $num_miss = 0;
+          while (mysqli_stmt_fetch($stmt)) {
+              $maf = round(100*min((2*$sumaa+$sumab)/(2*$total),($sumab+2*$sumbb)/(2*$total)),1);
+              $miss = round(100*$summis/$total,1);
+              if (($maf >= $min_maf) AND ($miss <= $max_missing)) {
+	        $marker_names[] = $name;
+	        $outputheader .= $delimiter.$name;
+	        $marker_uid[] = $marker;
+              }
+          }
     }
 
     //get a list of GBS markers used to convert format
@@ -411,10 +417,11 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
     header('Expires: 0');
     echo $outputheader."\n";
 
-    sort($marker_uid,SORT_NUMERIC);
     $nelem = count($marker_uid);
-    $marker_uid = implode(",",$marker_uid);
-    if ($nelem == 0) {
+    if ($nelem > 0) {
+        sort($marker_uid,SORT_NUMERIC);
+        $marker_uid = implode(",",$marker_uid);
+    } else {
       error(1, "There are no markers matching the current conditions, try again with different set of criteria.");
       exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
     }
