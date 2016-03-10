@@ -93,23 +93,18 @@ function validateForm($array)
             continue;
         }
         /* Check for validity */
-        if (($v == "") ||
-            (strtolower($v) == "select")
-         ) {
+        if (($v == "") || (strtolower($v) == "select")) {
             array_push($error, $k);
             $ret = false;
             continue;
-         }
-
-		/* Special E-mail Check */
-		if(strtolower($k) == "email") {
-			if( (strpos($v, "@") === FALSE) || 
-			    (strpos($v, ".") === FALSE) 
-			) {
-				array_push($error, $k);
-				$ret = FALSE;
-			}
-		}
+        }
+        /* Special E-mail Check */
+        if (strtolower($k) == "email") {
+            if ((strpos($v, "@") === false) || (strpos($v, ".") === false)) {
+                array_push($error, $k);
+                $ret = false;
+            }
+        }
     }
 
     return $ret;
@@ -121,7 +116,7 @@ function validateForm($array)
  * This function displays a list of all the elements in the table in HTML selection box format.
  * This function takes advantage of the MySQL database naming policies in order to accomplish this.
  * It utilizes get_pkey() to get the primary key of that table.
- * 
+ *
  * @param $table - the table to select from
  * @param $selected - This parameter will tell which option is to be default selected.  
  *
@@ -207,6 +202,9 @@ function get_unique_name($table) {
   // dem may15: another special case:
   if ($table == "barley_pedigree_catalog_ref")
     return "barley_ref_number";
+  // dem jul15: another special case:
+  if ($table == "marker_synonyms")
+    return "value";
   else {
     $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>");
     $row = mysqli_fetch_row($q);
@@ -500,7 +498,6 @@ global $mysqli;
  */
 function updateTable(array $values, $table, array $pkey) {
   global $mysqli;
-  $updateStr = "UPDATE $table SET ";
   $strs = array();
   $count = 0;
   // get table fields
@@ -526,6 +523,9 @@ function updateTable(array $values, $table, array $pkey) {
       else    //default 0 for numeric fields with empty values
 	$strs[$count++] = "$column = 0";	
     }
+    if ($column == "updated_on") {
+      $strs[$count++] = "$column = NOW()";
+    }
   }
   // deal with primary key
   $where = "";
@@ -538,12 +538,13 @@ function updateTable(array $values, $table, array $pkey) {
     $first++;
   }
   // put the update string together
+  $updateStr = "UPDATE $table SET ";
   $updateStr .= implode(",", $strs) . " WHERE $where LIMIT 1";
   // query	
   if(mysqli_query($mysqli, $updateStr)) 
     return TRUE;
   else {
-    error(1, mysqli_error($mysqli)."<br>The query was:<br>".$updateStr."</br>in function updateTable().<p>");
+    error(1, mysqli_error($mysqli)."<br>The query was:<br>".$updateStr."</br>in function common.inc:updateTable().<p>");
     return FALSE;
   }
 }
@@ -1252,8 +1253,13 @@ function displayLinePheno($query, $sortable=TRUE, $sigdig, $link="") {
       if(strcmp($k,"Trial") == 0) 
 	$v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
       if(strcmp($k,"value") == 0 && $sigdig>=0) {
-        $v = floatval($v);
-	$v = number_format($v,$sigdig);
+	if ($v) {
+	  $v = floatval($v);
+	  $v = number_format($v,$sigdig);
+	}
+	// Handle empty values.
+	else
+	  $v = "--";
       }
       $ret .= "\t<td>$v</td>\n";
     }
@@ -1433,14 +1439,6 @@ function retrieve_session_variables($svkey, $user)
 function clearSessionVariables($user) {
     global $mysqli;
     if (isset($user) && strlen($user)>1) {
-      /* ($stmt = $mysqli->prepare("select users_uid from users where users_name=?")) or */
-      /* 	die("Error: $mysqli->error"); */
-      /* $stmt->bind_param("s", $user); */
-      /* ($stmt->execute()) or */
-      /* 	die("Error: $stmt->error"); */
-      /* $stmt->bind_result($user_uid); */
-      /* $stmt->fetch(); */
-      /* $stmt->close(); */
       $user_uid = $_SESSION['userid'];
       ($stmt = $mysqli->prepare("delete from session_variables where users_uid = ?")) or
 	die("Error: $mysqli->error"); 
@@ -1497,4 +1495,22 @@ function get_lineuid($line)
         }
     }
     return $result;
+}
+
+/**
+   * Takes a needle and haystack (just like in_array()) and does a wildcard search on it's values.
+   *
+   * @param    string        $string        Needle to find
+   * @param    array        $array        Haystack to look through
+   * @result    array                    Returns the elements that the $string was found in
+   */
+function find($string, $array = array ())
+{
+    foreach ($array as $key => $value) {
+        unset($array[$key]);
+        if (strpos($value, $string) !== false) {
+            $array[$key] = $key;
+        }
+    }
+    return $array;
 }
