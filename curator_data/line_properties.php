@@ -1,40 +1,44 @@
 <?php
 
-//  9apr2013 dem: Genetics characters of lines, e.g. gene or QTL alleles
-// from: ./input_line_names_check.php
+/**
+ * 9apr2013 dem: Genetics characters of lines, e.g. gene or QTL alleles
+ * from: ./input_line_names_check.php
+ */
 
 require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-/* include($config['root_dir'] . 'curator_data/lineuid.php'); */
-include($config['root_dir'] . 'includes/common_import.inc');
-require_once("../lib/Excel/reader.php"); // Microsoft Excel library
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require_once "../lib/Excel/reader.php"; // Microsoft Excel library
 
-connect();
+$mysqli = connecti();
 loginTest();
 $cnt = 0;  // Count of errors
 
-function die_nice($message = "") {
-//Actually don't die at all yet, just show the error message.
-  global $cnt;
-  if ($cnt == 0) echo "<h3>Errors</h3>";
-  $cnt++;
-  echo "<b>$cnt:</b> $message<br>";
-  return FALSE;
+function die_nice($message = "")
+{
+    //Actually don't die at all yet, just show the error message.
+    global $cnt;
+    if ($cnt == 0) {
+        echo "<h3>Errors</h3>";
+    }
+    $cnt++;
+    echo "<b>$cnt:</b> $message<br>";
+    return false;
 }
 
 /* Show more informative messages when we get invalid data. */
 function errmsg($sql, $err) {
+  global $mysqli;
   if (preg_match('/^Data truncated/', $err)) {
     // Undefined value for an enum type
     $pieces = preg_split("/'/", $err);
     $column = $pieces[1];
     $msg = "Unallowed value for field <b>$column</b>. ";
     // Only works for table line_records.  Could pass table name as parameter.
-    $r = mysql_query("describe line_records $column");
-    $columninfo = mysql_fetch_row($r);
+    $r = mysqli_query($mysqli, "describe line_records $column");
+    $columninfo = mysqli_fetch_row($r);
     $msg .= "Allowed values are: ".$columninfo[1];
     $msg .= "<br>Command: ".$sql."<br>";
     die_nice($msg);
@@ -83,6 +87,7 @@ class LineNames_Check
     // Initial check of the data, no write to the database.
     private function type_Line_Name() {
       global $cnt;
+      global $mysqli;
 ?>
       <script type="text/javascript">
 	 function update_database(filepath, filename, username) {
@@ -145,8 +150,8 @@ class LineNames_Check
 	    // These are the required columns. -1 means that the column has not been found.
 	    $columnOffsets = array('line_name' => -1);
 	    // Available line properties:
-	    $res = mysql_query("select name from properties") or die (mysql_error());
-	    while ($r = mysql_fetch_row($res))
+	    $res = mysqli_query($mysqli, "select name from properties") or die(mysqli_error($mysqli));
+	    while ($r = mysqli_fetch_row($res))
 	      $properties[] = $r[0];
 
 	    // First, read in the header line.
@@ -182,8 +187,8 @@ class LineNames_Check
 		  // Get this property's allowed values.
 		  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 		  $sql = "select value from property_values where property_uid = $propuid";
-		  $res = mysql_query($sql) or die(mysql_error());
-		  while ($r = mysql_fetch_row($res)) 
+		  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		  while ($r = mysqli_fetch_row($res)) 
 		    $allowedvals[$pr][] = $r[0];
 		  $columnOffsets[$columnName] = $columnOffset+1;
 		  $ourprops[] = $pr;
@@ -273,6 +278,7 @@ class LineNames_Check
     /* Validation completed, now load the database. */
     private function type_Database() {
       global $config;
+      global $mysqli;
       include($config['root_dir'] . 'theme/admin_header.php');
       global $cnt;
       $datafile = $_GET['linedata'];
@@ -287,8 +293,8 @@ class LineNames_Check
       $rows = $reader->sheets[0]['numRows'];
 	
       // Available line properties:
-      $res = mysql_query("select name from properties") or die (mysql_error());
-      while ($r = mysql_fetch_row($res))
+      $res = mysqli_query($mysqli, "select name from properties") or die (mysqli_error($mysqli));
+      while ($r = mysqli_fetch_row($res))
 	$properties[] = $r[0];
 
       // First, locate the header line.
@@ -320,8 +326,8 @@ class LineNames_Check
 	  // Get this property's allowed values.
 	  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 	  $sql = "select value from property_values where property_uid = $propuid";
-	  $res = mysql_query($sql) or die(mysql_error());
-	  while ($r = mysql_fetch_row($res)) 
+	  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	  while ($r = mysqli_fetch_row($res)) 
 	    $allowedvals[$pr][] = $r[0];
 	  $columnOffsets[$columnName] = $columnOffset+1;
 	  $ourprops[] = $pr;
@@ -340,7 +346,7 @@ class LineNames_Check
 	  foreach ($ourprops as $pr) {
 	    $propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
 	    if (!empty($propval[$pr])) {
-	      $propval[$pr] = mysql_real_escape_string($propval[$pr]);
+	      $propval[$pr] = mysqli_real_escape_string($propval[$pr]);
 	      $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 	      $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$propval[$pr]'");
@@ -350,12 +356,12 @@ class LineNames_Check
 			      where line_record_uid = $line_uids and property_uid = $propuid
 			      and lp.property_value_uid = pv.property_values_uid");
 	      if (!empty($linepropuid)) {
-		mysql_query("update line_properties set property_value_uid = $propvaluid
+		mysqli_query($mysqli, "update line_properties set property_value_uid = $propvaluid
                         where line_properties_uid = $linepropuid") or errmsg($sql, mysql_error());
 	      }
 	      else {
-		mysql_query("insert into line_properties (line_record_uid, property_value_uid) 
-                          values ($line_uids, $propvaluid)") or errmsg($sql, mysql_error());
+		mysqli_query($mysqli, "insert into line_properties (line_record_uid, property_value_uid) 
+                          values ($line_uids, $propvaluid)") or errmsg($sql, mysqli_error($mysqli));
 	      }
 	    }
 	  }
@@ -367,7 +373,7 @@ class LineNames_Check
       // Timestamp, e.g. _28Jan12_23:01
       $ts = date("_jMy_H:i");
       $filename = $filename . $ts;
-      $devnull = mysql_query("INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysql_error());
+      $devnull = mysqli_query($mysqli, "INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysqli_error($mysqli));
 
       $footer_div = 1;
       include($config['root_dir'].'theme/footer.php');
@@ -375,5 +381,3 @@ class LineNames_Check
     } /* end of function type_Database */
 
 } /* end of class */
-
-?>

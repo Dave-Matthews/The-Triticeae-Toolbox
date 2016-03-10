@@ -93,23 +93,18 @@ function validateForm($array)
             continue;
         }
         /* Check for validity */
-        if (($v == "") ||
-            (strtolower($v) == "select")
-         ) {
+        if (($v == "") || (strtolower($v) == "select")) {
             array_push($error, $k);
             $ret = false;
             continue;
-         }
-
-		/* Special E-mail Check */
-		if(strtolower($k) == "email") {
-			if( (strpos($v, "@") === FALSE) || 
-			    (strpos($v, ".") === FALSE) 
-			) {
-				array_push($error, $k);
-				$ret = FALSE;
-			}
-		}
+        }
+        /* Special E-mail Check */
+        if (strtolower($k) == "email") {
+            if ((strpos($v, "@") === false) || (strpos($v, ".") === false)) {
+                array_push($error, $k);
+                $ret = false;
+            }
+        }
     }
 
     return $ret;
@@ -121,7 +116,7 @@ function validateForm($array)
  * This function displays a list of all the elements in the table in HTML selection box format.
  * This function takes advantage of the MySQL database naming policies in order to accomplish this.
  * It utilizes get_pkey() to get the primary key of that table.
- * 
+ *
  * @param $table - the table to select from
  * @param $selected - This parameter will tell which option is to be default selected.  
  *
@@ -1444,14 +1439,6 @@ function retrieve_session_variables($svkey, $user)
 function clearSessionVariables($user) {
     global $mysqli;
     if (isset($user) && strlen($user)>1) {
-      /* ($stmt = $mysqli->prepare("select users_uid from users where users_name=?")) or */
-      /* 	die("Error: $mysqli->error"); */
-      /* $stmt->bind_param("s", $user); */
-      /* ($stmt->execute()) or */
-      /* 	die("Error: $stmt->error"); */
-      /* $stmt->bind_result($user_uid); */
-      /* $stmt->fetch(); */
-      /* $stmt->close(); */
       $user_uid = $_SESSION['userid'];
       ($stmt = $mysqli->prepare("delete from session_variables where users_uid = ?")) or
 	die("Error: $mysqli->error"); 
@@ -1508,4 +1495,22 @@ function get_lineuid($line)
         }
     }
     return $result;
+}
+
+/**
+   * Takes a needle and haystack (just like in_array()) and does a wildcard search on it's values.
+   *
+   * @param    string        $string        Needle to find
+   * @param    array        $array        Haystack to look through
+   * @result    array                    Returns the elements that the $string was found in
+   */
+function find($string, $array = array ())
+{
+    foreach ($array as $key => $value) {
+        unset($array[$key]);
+        if (strpos($value, $string) !== false) {
+            $array[$key] = $key;
+        }
+    }
+    return $array;
 }
