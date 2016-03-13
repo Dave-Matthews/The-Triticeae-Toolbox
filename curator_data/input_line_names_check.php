@@ -4,7 +4,6 @@
 
 require 'config.php';
 include $config['root_dir'] . 'includes/bootstrap_curator.inc';
-include $config['root_dir'] . 'curator_data/lineuid.php';
 require_once("../lib/Excel/reader.php"); // Microsoft Excel library
 connect();
 loginTest();
@@ -961,5 +960,3 @@ class LineNames_Check
       include($config['root_dir'].'theme/footer.php');
     } /* end of function type_Database */
 } /* end of class */
-
-?>
