@@ -1129,7 +1129,7 @@ function DispMarkers($arr)
 		print "<select name=\"selMkrs[]\" multiple=\"multiple\" size=10>";
 		while ($row=mysqli_fetch_assoc($result)) {
 			$mkruid=$row['marker_uid'];
-			$res2=mysqli_query($msyqli, "select marker_name from markers where marker_uid=$mkruid") or die("invalid marker uid\n");
+			$res2=mysqli_query($mysqli, "select marker_name from markers where marker_uid=$mkruid") or die("invalid marker uid\n");
 			while ($row2=mysqli_fetch_assoc($res2)) {
 				$selval=$row2['marker_name'];
 				print "<option value=\"$mkruid\">$selval</option>\n";
@@ -1142,6 +1142,7 @@ function DispMarkers($arr)
 }
 
 function DispMarkerSet ($arr) {
+    global $mysqli;
     if (! isset($arr)) {
         print "Invalid inputs";
         return;
@@ -1151,15 +1152,15 @@ function DispMarkerSet ($arr) {
     <p><input type=button value=Select style=color:blue onclick="javascript: select_set()">
     <?php
     $sql = "select marker_ids from markerpanels where name = \"$set\"";
-    $res = mysql_query($sql) or die(mysql_error());
-    if ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
         $mkruid=$row[0];
         $marker_list = explode(',', $mkruid);
         //print "<textarea disabled rows=10>";
         foreach ($marker_list as $uid) {
             $sql = "select marker_name from markers where marker_uid=$uid";
-            $res=mysql_query($sql) or die("invalid marker $sql\n");
-            if ($row = mysql_fetch_array($res)) {
+            $res=mysqli_query($mysqli, $sql) or die("invalid marker $sql\n");
+            if ($row = mysqli_fetch_array($res)) {
                 $name = $row[0];
          //       print "$name\n";
             }
@@ -1174,6 +1175,7 @@ function DispMarkerSet ($arr) {
  * This function is used in advanced_search.php. It is the backend for the phenotype selection table, cell 1.
  */
 function DispCategorySel($arr) {
+    global $mysqli;
 	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
 		echo "Please Select A Category";
 		return;
@@ -1183,12 +1185,12 @@ function DispCategorySel($arr) {
 	extract($arr);
 
 	// query please
-	$query = mysql_query("SELECT phenotype_uid, phenotypes_name FROM phenotypes WHERE phenotype_category_uid = $id AND datatype != 'string'") or die(mysql_error());
+	$query = mysqli_query($mysqli, "SELECT phenotype_uid, phenotypes_name FROM phenotypes WHERE phenotype_category_uid = $id AND datatype != 'string'") or die(mysqli_error($mysqli));
 
 	// display in selection box please
-	if(mysql_num_rows($query) > 0) {
+	if(mysqli_num_rows($query) > 0) {
 		echo "<select name='phenotype' size=10 onfocus=\"DispPhenoSel(this.value, 'Phenotype')\" onchange=\"DispPhenoSel(this.value, 'Phenotype')\">";
-		while($row = mysql_fetch_row($query)) {
+		while($row = mysqli_fetch_row($query)) {
 			echo "\n\t<option value=$row[0]>$row[1]</option>";
 		}
 		echo "</select>";
@@ -1202,6 +1204,7 @@ function DispCategorySel($arr) {
  * This function is used in advanced_search.php. It is the backend for the phenotype selection table, cell 2
  */
 function DispPhenotypeSel($arr) {
+    global $mysqli;
 	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
 		echo "Please Select A Trait";
 		return;
@@ -1214,8 +1217,8 @@ function DispPhenotypeSel($arr) {
 	// No experiments selected yet so unset the cookie.
 	unset($_SESSION['experiments']);
 
-	$pquery = mysql_query("SELECT phenotypes_name from phenotypes where phenotype_uid = $id") or die(mysql_error());
-	$pname = mysql_fetch_row($pquery);
+	$pquery = mysqli_query($mysqli, "SELECT phenotypes_name from phenotypes where phenotype_uid = $id") or die(mysqli_error($mysqli));
+	$pname = mysqli_fetch_row($pquery);
 	$pn = $pname[0];
 	// Show only public trials unless signed in as at least Participant.
 	if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
