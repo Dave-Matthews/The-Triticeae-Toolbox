@@ -5,9 +5,9 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/genoDataOffline2D.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/genoDataOffline2D.php
  *
  * pieces of import code by Julie's team @ iowaStateU
 
@@ -26,7 +26,6 @@
 $progPath = realpath(dirname(__FILE__).'/../').'/';
 
 require "$progPath" . "includes/bootstrap_curator.inc";
-require "$progPath" . "curator_data/lineuid.php";
 require_once "$progPath" . "includes/email.inc";
 
 ini_set("auto_detect_line_endings", true);
