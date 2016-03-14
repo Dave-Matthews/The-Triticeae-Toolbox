@@ -107,12 +107,11 @@ if ($geno_exps != "") {
     and experiment_uid = ? 
     order by marker_name";
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
-        mysqli_stmt_bind_param($stmt, "s", $nm);
+        mysqli_stmt_bind_param($stmt, "i", $exp_uid);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $marker_name, $marker_type_name, $a_allele, $b_allelei, $sequence);
+        mysqli_stmt_bind_result($stmt, $marker_name, $marker_type_name, $A_allele, $B_allelei, $sequence);
         while (mysqli_stmt_fetch($stmt)) {
-            echo "<tr><td>".$row['marker_name']."<td>".$row['marker_type_name']."<td>".$row['A_allele']."<td>".$row['B_allele']."<td>";
-            echo $row['sequence']."\n";
+            echo "<tr><td>$marker_name<td>$marker_type_name<td>$A_allele<td>$B_allele<td>$sequence\n";
         }
         mysqli_stmt_close($stmt);
     }
@@ -123,10 +122,13 @@ if ($geno_exps != "") {
     where markers.marker_type_uid = marker_types.marker_type_uid
     and marker_uid IN ($markers_str)
     order by marker_name";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-    while ($row = mysqli_fetch_assoc($res)) {
-        echo "<tr><td>".$row['marker_name']."<td>".$row['marker_type_name']."<td>".$row['A_allele']."<td>".$row['B_allele']."<td>";
-        echo $row['sequence']."\n";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $marker_name, $marker_type_name, $A_allele, $B_allelei, $sequence);
+        while (mysqli_stmt_fetch($stmt)) {
+            echo "<tr><td>$marker_name<td>$marker_type_name<td>$A_allele<td>$B_allele<td>$sequence\n";
+        }
+        mysqli_stmt_close($stmt);
     }
     print "</table>";
 } else {
