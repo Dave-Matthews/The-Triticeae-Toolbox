@@ -4,7 +4,6 @@
 
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
-require $config['root_dir'] . 'curator_data/lineuid.php';
 set_time_limit(3000);
 ini_set('memory_limit', '4G');
 

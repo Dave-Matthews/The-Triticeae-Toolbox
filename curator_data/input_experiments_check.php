@@ -1,18 +1,15 @@
 <?php
-//uploading it to main server
-
-// 3/28/2011 JLee	Insert NULL instead 'NULL' into DB
-// 6/25/2010 J.Lee  Make the back page url relative and not hardwired to server
-// 9/29/2010 DEM    Use only single values of experiments.raw_data_file_name.
-// 12/14/2010 JLee  Change to use curator bootstrap
+/**
+ * uploading it to main server
+ *
+ *  3/28/2011 JLee   Insert NULL instead 'NULL' into DB
+ *  6/25/2010 J.Lee  Make the back page url relative and not hardwired to server
+ *  9/29/2010 DEM    Use only single values of experiments.raw_data_file_name.
+ *  12/14/2010 JLee  Change to use curator bootstrap
+ */
 
 require 'config.php';
-//require_once("../includes/common_import.inc");
-/*
- * Logged in page initialization
- */
-include $config['root_dir'] . 'includes/bootstrap_curator.inc';
-include $config['root_dir'] . 'curator_data/lineuid.php';
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require_once "../lib/Excel/reader.php"; // Microsoft Excel library
 
 connect();
