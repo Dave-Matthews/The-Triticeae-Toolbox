@@ -1,19 +1,15 @@
 <?php
-//uploading it to main server
-
-// 02/01/2011 JLee  Fix indentations and fatal error not presenting data
-// 02/01/2011 JLee  Fix problem with line with the value of 0
-// 12/14/2010 JLee  Change to use curator bootstrap
+/**
+ * uploading it to main server
+ *
+ * 02/01/2011 JLee  Fix indentations and fatal error not presenting data
+ * 02/01/2011 JLee  Fix problem with line with the value of 0
+ * 12/14/2010 JLee  Change to use curator bootstrap
+ */
 
 require 'config.php';
-//require_once("../includes/common_import.inc");
-/*
- * Logged in page initialization
- */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-//include($config['root_dir'] . 'includes/bootstrap_dev.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
-require_once("../lib/Excel/reader.php"); // Microsoft Excel library
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require_once "../lib/Excel/reader.php"; // Microsoft Excel library
 
 connect();
 loginTest();
