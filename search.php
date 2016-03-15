@@ -24,23 +24,23 @@ $mysqli = connecti();
 /****************************************************************************************/
 /* Deep Search */
 if (isset($_REQUEST['deep'])) {
-  /* In-depth search request has been submitted from the search.php not-found page. */
-  /* So use search.inc:desperateTermSearch() instead of generalTermSearch(). */
-  $keywords = $_REQUEST['keywords'];
-  $found = array();
-  $deepTables = array('line_records', 'experiments', 'markers', 'map', 'mapset', 
+    /* In-depth search request has been submitted from the search.php not-found page. */
+    /* So use search.inc:desperateTermSearch() instead of generalTermSearch(). */
+    $keywords = $_REQUEST['keywords'];
+    $found = array();
+    $deepTables = array('line_records', 'experiments', 'markers', 'map', 'mapset', 
 		     'phenotype_experiment_info', 'genotype_experiment_info', 'experiment_set',
 		     'CAPdata_programs', 'csr_system', 'line_synonyms', 
 		     'marker_synonyms', 'phenotypes', 'properties',
 		      'units', 'csr_measurement', 'fieldbook_info');
-  // Remove the \ characters inserted before quotes by magic_quotes_gpc.
-  $keywords = stripslashes($keywords);
-  // If the input is doublequoted, don't split at <space>s.
-  if (preg_match('/^".*"$/', $keywords)) {
-    $keywords = trim($keywords, "\"");
-    $found = desperateTermSearch($deepTables, $keywords);
-  }
-  else {
+    // Remove the \ characters inserted before quotes by magic_quotes_gpc.
+    $keywords = stripslashes($keywords);
+    $kwywords = strip_tags($keywords);
+    // If the input is doublequoted, don't split at <space>s.
+    if (preg_match('/^".*"$/', $keywords)) {
+        $keywords = trim($keywords, "\"");
+        $found = desperateTermSearch($deepTables, $keywords);
+    } else {
     /* Break into separate words and query for each. */
     $words = explode(" ", $keywords);
     for($i=0; $i<count($words); $i++) {
