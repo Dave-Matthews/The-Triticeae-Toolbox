@@ -329,15 +329,15 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     }
     if (count($panel) != 0)    {
       $sql = "select line_ids from linepanels where linepanels_uid = ?";
-      foreach($panel as $p) {
-        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+      if ($stmt = mysqli_prepare($mysqli, $sql)) {
           mysqli_stmt_bind_param($stmt, "i", $p);
-          mysqli_stmt_execute($stmt);
-          mysqli_stmt_bind_result($stmt, $uid);
-          mysqli_stmt_fetch($stmt);
-          $idlist .= "$uid,";
+          foreach($panel as $p) {
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $uid);
+            mysqli_stmt_fetch($stmt);
+            $idlist .= "$uid,";
+          }
           mysqli_stmt_close($stmt);
-        }
       }
       $idlist = rtrim($idlist, ',');
       if ($count == 0)    	
