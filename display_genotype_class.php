@@ -94,7 +94,7 @@ class ShowData
         global $config;
         include $config['root_dir'].'theme/admin_header.php';
 
-        $trial_code=$_GET['trial_code'];
+        $trial_code = strip_tags($_GET['trial_code']);
         echo " <h2>Genotyping experiment ".$trial_code. "</h2>";
         $this->type_DataInformation($trial_code);
 
