@@ -225,9 +225,14 @@ class Fieldbook
         <form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
           <tr style="vertical-align: top">
             <td><b>Name</b> <br>
-              <textarea name="LineSearchInput" id="LineSearchInput" rows="3" cols="18" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
-              <br> E.g. Cayuga, tur*ey, iwa860*<br>
-              Synonyms will be translated.<br>
+                <textarea name="LineSearchInput" id="LineSearchInput" rows="3" cols="18" style="height: 6em;">
+                <?php $nm = explode('\r\n', $name);
+                foreach ($nm as $n) {
+                    echo $n."\n";
+                }
+                ?></textarea>
+                <br> E.g. Cayuga, tur*ey, iwa860*<br>
+                Synonyms will be translated.<br>
           <input type="button" value="Search" onclick="javascript: search_line()"/>
         </form>
         <div id="dialog_r"></div>
@@ -238,10 +243,9 @@ class Fieldbook
         <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
         <div class="step4"></div>
         <div class="step5"></div>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-        <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-        <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
-        <script type="text/javascript" src="curator_data/design07.js"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+        <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="curator_data/design08.js"></script>
         <script type="text/javascript">
         if ( window.addEventListener ) {
             window.addEventListener( "load", select_trial(), false );
@@ -268,10 +272,12 @@ class Fieldbook
                   order by data_program_name asc";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_assoc($res)) {
-           ?>
-           <option value="<?php echo $row['id'] ?>"><?php echo $row['name'];
-           echo " ("; echo $row['code']; echo ")"?></option>
-           <?php
+            ?>
+            <option value="<?php echo $row['id'] ?>"><?php echo $row['name'];
+            echo " (";
+            echo $row['code'];
+            echo ")"?></option>
+            <?php
         }
         ?>
         </select>
@@ -287,22 +293,14 @@ class Fieldbook
         $sql = "select experiment_short_name, experiment_year, location, latitude, longitude, collaborator, planting_date, greenhouse_trial,
             seeding_rate, experiment_design, irrigation, other_remarks
             from experiments, phenotype_experiment_info
-            where experiments.experiment_uid = $trial
+            where experiments.experiment_uid = ? 
             and experiments.experiment_uid = phenotype_experiment_info.experiment_uid";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row = mysqli_fetch_assoc($res)) {
-            $year = $row['experiment_year'];
-            $loc = $row['location'];
-            $name = $row['experiment_short_name'];
-            $lat = $row['latitude'];
-            $long = $row['longitude'];
-            $colb = $row['collaborator'];
-            $plant_date = $row['planting_data'];
-            $greenhouse = $row['greenhouse_trial'];
-            $seeding = $row['seeding_rage'];
-            $design = $row['experiment_design'];
-            $irrigation = $row['irrigation'];
-            $remarks = $row['other_remarks'];
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $trial);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $name, $year, $loc, $lat, $long, $colb, $plant_date, $greenhouse, $seeding, $design, $irrigation, $remarks);
+            mysqli_stmt_fetch($stmt);
+            mysqli_stmt_close($stmt);
         }
         $sel_alpha = "";
         $sel_bid = "";
@@ -367,16 +365,21 @@ class Fieldbook
         $sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year
                                 FROM experiments AS e, CAPdata_programs, experiment_types AS e_t
                                 WHERE e.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
-                                AND CAPdata_programs.CAPdata_programs_uid IN ($CAPdata_program)
+                                AND CAPdata_programs.CAPdata_programs_uid = ? 
                                 AND e.experiment_type_uid = e_t.experiment_type_uid
                                 AND e_t.experiment_type_name = 'phenotype'
                                 order by name";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_assoc($res)) {
-           ?>
-           <option value="<?php echo $row['id'] ?>"><?php echo $row['name'];
-           ?></option>
-           <?php
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $CAPdata_program);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $id, $name);
+            while (mysqli_stmt_fetch($stmt)) {
+              ?>
+              <option value="<?php echo $id ?>"><?php echo $name;
+              ?></option>
+              <?php
+            }
+            mysqli_stmt_close($stmt);
         }
         echo "</select>";
         echo "</table>";
@@ -386,8 +389,8 @@ class Fieldbook
     {
         global $mysqli;
         ?>
-        The trial design is generated by the "<a href="http://cran.r-project.org/web/packages/agricolae/agricolae.pdf" target="blank">
-        agricolae</a>" package except for the Mod. Aug. Design type which uses a custom R script.<br>
+        The trial design is generated by the <a href="http://cran.r-project.org/web/packages/agricolae/agricolae.pdf" target="blank">
+        agricolae</a> package except for the Mod. Aug. Design type which uses a custom R script.<br>
         To create an experiment design, select a design type from the drop-down list<br><br>
         <?php
         if (isset($_SESSION['selected_lines'])) {
