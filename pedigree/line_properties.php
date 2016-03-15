@@ -17,8 +17,8 @@ require $config['root_dir'] . 'theme/admin_header.php';
 if (empty($_POST) or $_POST['WhichBtn']) {
     unset($_SESSION['propvals']);
 } else {
-  // Store what the user's previous selections were so we can
-  // redisplay them as the page is redrawn.
+    // Store what the user's previous selections were so we can
+    // redisplay them as the page is redrawn.
     $name = $_POST['LineSearchInput'];
     if (is_array($_POST['breedingprogramcode'])) {
         foreach ($_POST['breedingprogramcode'] as $key => $value) {
@@ -136,7 +136,7 @@ while ($resp = mysqli_fetch_row($res)) {
 	      <select size=5 
 		      onfocus="DispPropSel(this.value, 'PropCategory')" 
 		      onchange="DispPropSel(this.value, 'PropCategory')">
-	<?php showTableOptions("phenotype_category"); ?>
+	        <?php showTableOptions("phenotype_category"); ?>
 	      </select>
 	    <td><p>Select a Category.</p>
 	    <td>
@@ -161,25 +161,25 @@ if (!empty($propvals)) {
 		<td><select name="panel[]" multiple="multiple" size="6" style="width: 12em; height: 88px;">
 <?php
 if (loginTest2()) {
-  $row = loadUser($_SESSION['username']);
-  $myid = $row['users_uid'];
-  $sql = "SELECT linepanels_uid, name FROM linepanels where users_uid = $myid";
-  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-  if (mysqli_num_rows($res) > 0) {
-    while ($resp = mysqli_fetch_row($res)) {
-      $lpid = $resp[0];
-      $s = $resp[1];
-      echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
+    $row = loadUser($_SESSION['username']);
+    $myid = $row['users_uid'];
+    $sql = "SELECT linepanels_uid, name FROM linepanels where users_uid = $myid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if (mysqli_num_rows($res) > 0) {
+        while ($resp = mysqli_fetch_row($res)) {
+            $lpid = $resp[0];
+            $s = $resp[1];
+            echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
+        }
+        echo "<option disabled>Everybody's:</option>";
     }
-  echo "<option disabled>Everybody's:</option>";
-  }
 }
 $sql = "SELECT linepanels_uid, name FROM linepanels where users_uid IS NULL";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($resp = mysqli_fetch_row($res)) {
-  $lpid = $resp[0];
-  $s = $resp[1];
-  echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
+    $lpid = $resp[0];
+    $s = $resp[1];
+    echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
 }
 ?>
 		</select>
@@ -193,16 +193,18 @@ while ($resp = mysqli_fetch_row($res)) {
   echo "</form><p>";
 echo "</div><div class='boxContent'><table ><tr><td>";
 
-  /* The Search */
-  if (!empty($_POST)) {
+/* The Search */
+if (!empty($_POST)) {
     $linenames = $_POST['LineSearchInput'];
     $breedingProgram = $_POST['breedingprogramcode'];
     $year = $_POST['year'];
     $species = $_POST['species'];
     // just the ids, property_values.property_values_uid
-    if (!empty($propvals))
-      foreach ($propvals as $pv)
-	$propvalids[] = $pv[0];
+    if (!empty($propvals)) {
+        foreach ($propvals as $pv) {
+            $propvalids[] = $pv[0];
+        }
+    }
     $lineArr = array();
     $nonHits = array();
 
@@ -253,9 +255,30 @@ echo "</div><div class='boxContent'><table ><tr><td>";
       if (count($linesFound) > 0)
 	$linenames = implode("','", $linesFound);
     } // end if (strlen($linenames) != 0)
-    if (count($breedingProgram) != 0) $breedingCode = implode("','", $breedingProgram);
-    if (count($species) != 0) $speciesStr = implode("','", $species);
-    if (count($year) != 0) $yearStr = implode("','", $year);
+    if (count($breedingProgram) != 0) {
+        $tmp = implode("','", $breedingProgram);
+        if (preg_match("/([A-Z,']+)/", $tmp, $match)) {
+            $breedingCode = $match[1];
+        } else {
+            $breedingCode = "";
+        }
+    }
+    if (count($species) != 0) {
+        $tmp = implode("','", $species);
+        if (preg_match("/([a-z,']+)/", $tmp, $match)) {
+            $speciesStr = $match[1];
+        } else {
+            $speciesStr = "";
+        }
+    }
+    if (count($year) != 0) {
+        $tmp = implode("','", $year);
+        if (preg_match("/([0-9,']+)/", $tmp, $match)) {
+            $yearStr = $match[1];
+        } else {
+            $yearStr = "";
+        }
+    }
 
     /* Build the search string $where. */
     $count = 0;
@@ -305,9 +328,18 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
       }
     }
     if (count($panel) != 0)    {
-      foreach($panel as $p) 
-	$idlist .= mysql_grab("select line_ids from linepanels where linepanels_uid = $p") . ",";
-      $idlist = trim($idlist, ',');
+      $sql = "select line_ids from linepanels where linepanels_uid = ?";
+      if ($stmt = mysqli_prepare($mysqli, $sql)) {
+          mysqli_stmt_bind_param($stmt, "i", $p);
+          foreach($panel as $p) {
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $uid);
+            mysqli_stmt_fetch($stmt);
+            $idlist .= "$uid,";
+          }
+          mysqli_stmt_close($stmt);
+      }
+      $idlist = rtrim($idlist, ',');
       if ($count == 0)    	
     	$where .= "line_record_uid IN ($idlist)";
       else    	
