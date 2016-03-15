@@ -17,7 +17,7 @@ echo "Also see <a href=genotyping/sum_exp.php>conflicts by experiment</a>, <a hr
 echo ", and <a href=genotyping/allele_conflicts.php>All Allele Conflicts</a>.<br><br>\n";
 
 if (isset($_GET['uid'])) {
-    $uid = intval($_GET['uid']);
+    $uid = $_GET['uid'];
     echo "<h3>Allele Conflicts for $name_list[$uid] between experiments</h2>\n";
     echo "Each entry has number of conflicts / comparisons (percent conflicts).<br>\n";
  
@@ -27,13 +27,16 @@ if (isset($_GET['uid'])) {
     where a.line_record_uid = l.line_record_uid
     and a.marker_uid = m.marker_uid
     and a.experiment_uid = e.experiment_uid
-    and l.line_record_uid = $uid";
-    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row=mysqli_fetch_row($result)) {
-        $trial = $row[0];
-        $e_uid = $row[1];
-        $empty[$trial] = "";
-        $trial_list[$e_uid] = $trial;
+    and l.line_record_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $trial, $e_uid);
+        while (mysqli_stmt_fetch($stmt)) {
+          $empty[$trial] = "";
+          $trial_list[$e_uid] = $trial;
+        }
+        mysqli_stmt_close($stmt);
     }
 
     echo "<table>";
@@ -48,22 +51,29 @@ if (isset($_GET['uid'])) {
         $marker_list1 = array();
         $marker_all1 = array();
         $sql = "select marker_uid, alleles from allele_conflicts
-        where line_record_uid = $uid
+        where line_record_uid = ? 
         and experiment_uid = $trial1";
-        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row=mysqli_fetch_row($result)) {
-            $count1++;
-            $marker_uid = $row[0];
-            $alleles1 = $row[1];
-            $marker_list1[$marker_uid] = $alleles1;
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $uid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $marker_uid, $alleles1);
+            while (mysqli_stmt_fetch($stmt)) {
+                $count1++;
+                $marker_list1[$marker_uid] = $alleles1;
+            }
+            mysqli_stmt_close($stmt);
         }
         $sql = "select distinct marker_uid from allele_cache
-        where line_record_uid = $uid
+        where line_record_uid = ? 
         and experiment_uid = $trial1";
-        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row=mysqli_fetch_row($result)) {
-            $marker_uid = $row[0];
-            $marker_all1[] = $marker_uid;
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $uid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $marke_uid);
+            while (mysqli_stmt_fetch($stmt)) {
+                $marker_all1[] = $marker_uid;
+            }
+            mysqli_stmt_close($stmt);
         }
         $j = 1;
         foreach ($trial_list as $trial2 => $val2) {
@@ -74,22 +84,29 @@ if (isset($_GET['uid'])) {
             $marker_list2 = array();
             $marker_all2 = array();
             $sql = "select marker_uid, alleles from allele_conflicts
-            where line_record_uid = $uid
+            where line_record_uid = ? 
             and experiment_uid = $trial2";
-            $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            while ($row=mysqli_fetch_row($result)) {
-                $count2++;
-                $marker_uid = $row[0];
-                $alleles1 = $row[1];
-                $marker_list2[$marker_uid] = $alleles1;
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "i", $uid);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $marker_uid, $alleles1); 
+                while (mysqli_stmt_fetch($stmt)) {
+                    $count2++;
+                    $marker_list2[$marker_uid] = $alleles1;
+                }
+                mysqli_stmt_close($stmt);
             }
             $sql = "select distinct marker_uid from allele_cache
-            where line_record_uid = $uid
+            where line_record_uid = ? 
             and experiment_uid = $trial2";
-            $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            while ($row=mysqli_fetch_row($result)) {
-                $marker_uid = $row[0];
-                $marker_all2[] = $marker_uid;
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "i", $uid);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $marker_uid);
+                while (mysqli_stmt_fetch($stmt)) {
+                    $marker_all2[] = $marker_uid;
+                }
+                mysqli_stmt_close($stmt);
             }
             $count = 0;
             foreach ($marker_list1 as $marker_uid => $alleles1) {
@@ -123,36 +140,36 @@ if (isset($_GET['uid'])) {
     and a.marker_uid = m.marker_uid
     and a.experiment_uid = e.experiment_uid
     and a.alleles != '--'
-    and l.line_record_uid = $uid
+    and l.line_record_uid = ? 
     order by m.marker_name";
-    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    $count = 0;
-    $prev = "";
-    echo "<h3>Allele Conflicts for $name_list[$uid] sorted by marker name</h3>\n";
-    echo "<table>\n";
-    echo "<tr><td>marker name\n";
-    foreach ($empty as $trial=>$allele) {
-        echo "<td>$trial";
-    }
-    while ($row=mysqli_fetch_row($result)) {
-        $line_name = $row[0];
-        $marker_name = $row[1];
-        $alleles = $row[2];
-        $trial = $row[3];
-        if ($marker_name == $prev) {
-            $allele_ary[$trial] = $alleles;
-        } else {
-            if ($count > 0) {
-                echo "<tr><td>$prev";
-                foreach ($allele_ary as $t1=>$a) {
-                    echo "<td>$a";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $line_name, $marker_name, $alleles, $trial);
+        $count = 0;
+        $prev = "";
+        echo "<h3>Allele Conflicts for $name_list[$uid] sorted by marker name</h3>\n";
+        echo "<table>\n";
+        echo "<tr><td>marker name\n";
+        foreach ($empty as $trial=>$allele) {
+            echo "<td>$trial";
+        }
+        while (mysqli_stmt_fetch($stmt)) {
+            if ($marker_name == $prev) {
+                $allele_ary[$trial] = $alleles;
+            } else {
+                if ($count > 0) {
+                    echo "<tr><td>$prev";
+                    foreach ($allele_ary as $t1=>$a) {
+                        echo "<td>$a";
+                    }
+                    echo "\n";
                 }
-                echo "\n";
+                $prev = $marker_name;
+                $allele_ary = $empty;
+                $allele_ary[$trial] = $alleles;
+                $count++;
             }
-            $prev = $marker_name;
-            $allele_ary = $empty;
-            $allele_ary[$trial] = $alleles;
-            $count++;
         }
     }
     echo "<tr><td>$prev";
