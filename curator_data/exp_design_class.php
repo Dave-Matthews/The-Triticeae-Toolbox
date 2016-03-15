@@ -28,8 +28,7 @@ class Fieldbook
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'designField':
                 $this->designField();
                 break;
@@ -315,7 +314,7 @@ class Fieldbook
             $sel_crd = "selected";
         } elseif ($design == "lattice") {
             $sel_lattice = "selected";
-        } 
+        }
         ?>
         <table>
         <tr><td width="120">Year:<td><?php echo $year; ?>
@@ -372,7 +371,7 @@ class Fieldbook
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $CAPdata_program);
             mysqli_stmt_execute($stmt);
-            mysqli_stmt_bind_result($stmt, $id, $name);
+            mysqli_stmt_bind_result($stmt, $id, $name, $year);
             while (mysqli_stmt_fetch($stmt)) {
               ?>
               <option value="<?php echo $id ?>"><?php echo $name;
@@ -519,14 +518,18 @@ class Fieldbook
         if (preg_match("/\d/", $trial)) {
             $sql = "select count(distinct lr.line_record_uid) from tht_base as tb, line_records as lr
                 where lr.line_record_uid = tb.line_record_uid
-                and tb.experiment_uid = $trial";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            if ($row = mysqli_fetch_row($res)) {
-                $count = $row[0];
-            } elseif (isset($_SESSION['selected_lines'])) {
-                $count = count($_SESSION['selected_lines']);
-            } else {
-                $msg = "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>"; 
+                and tb.experiment_uid = ?";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "i", $trial);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $count);
+                if (mysqli_stmt_fetch($stmt)) {
+                } elseif (isset($_SESSION['selected_lines'])) {
+                    $count = count($_SESSION['selected_lines']);
+                } else {
+                    $msg = "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>"; 
+                }
+                mysqli_stmt_close($stmt);
             }
         } elseif (isset($_SESSION['selected_lines'])) {
             $count = count($_SESSION['selected_lines']);
