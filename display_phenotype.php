@@ -42,7 +42,7 @@ require $config['root_dir'].'theme/normal_header.php';
 $delimiter = "\t";
 $mysqli = connecti();
 
-$trial_code=$_GET['trial_code'];
+$trial_code=strip_tags($_GET['trial_code']);
 // Display Header information about the experiment
 $display_name=ucwords($trial_code); //used to display a beautiful name as the page header
 echo "<h1>Trial ".$display_name."</h1>";

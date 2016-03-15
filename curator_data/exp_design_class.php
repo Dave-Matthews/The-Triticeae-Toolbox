@@ -293,22 +293,14 @@ class Fieldbook
         $sql = "select experiment_short_name, experiment_year, location, latitude, longitude, collaborator, planting_date, greenhouse_trial,
             seeding_rate, experiment_design, irrigation, other_remarks
             from experiments, phenotype_experiment_info
-            where experiments.experiment_uid = $trial
+            where experiments.experiment_uid = ? 
             and experiments.experiment_uid = phenotype_experiment_info.experiment_uid";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row = mysqli_fetch_assoc($res)) {
-            $year = $row['experiment_year'];
-            $loc = $row['location'];
-            $name = $row['experiment_short_name'];
-            $lat = $row['latitude'];
-            $long = $row['longitude'];
-            $colb = $row['collaborator'];
-            $plant_date = $row['planting_data'];
-            $greenhouse = $row['greenhouse_trial'];
-            $seeding = $row['seeding_rage'];
-            $design = $row['experiment_design'];
-            $irrigation = $row['irrigation'];
-            $remarks = $row['other_remarks'];
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $trial);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $name, $year, $loc, $lat, $long, $colb, $plant_date, $greenhouse, $seeding, $design, $irrigation, $remarks);
+            mysqli_stmt_fetch($stmt);
+            mysqli_stmt_close($stmt);
         }
         $sel_alpha = "";
         $sel_bid = "";
@@ -373,16 +365,21 @@ class Fieldbook
         $sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year
                                 FROM experiments AS e, CAPdata_programs, experiment_types AS e_t
                                 WHERE e.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
-                                AND CAPdata_programs.CAPdata_programs_uid IN ($CAPdata_program)
+                                AND CAPdata_programs.CAPdata_programs_uid = ? 
                                 AND e.experiment_type_uid = e_t.experiment_type_uid
                                 AND e_t.experiment_type_name = 'phenotype'
                                 order by name";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_assoc($res)) {
-           ?>
-           <option value="<?php echo $row['id'] ?>"><?php echo $row['name'];
-           ?></option>
-           <?php
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $CAPdata_program);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $id, $name);
+            while (mysqli_stmt_fetch($stmt)) {
+              ?>
+              <option value="<?php echo $id ?>"><?php echo $name;
+              ?></option>
+              <?php
+            }
+            mysqli_stmt_close($stmt);
         }
         echo "</select>";
         echo "</table>";
