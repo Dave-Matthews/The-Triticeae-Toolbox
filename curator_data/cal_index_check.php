@@ -13,7 +13,6 @@
 
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-$mysql = connect();
 $mysqli = connecti();
 ?>
 <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
@@ -21,25 +20,27 @@ $mysqli = connecti();
 if (isset($_POST['trial']) && !empty($_POST['trial'])) {
     $trial = $_POST['trial'];
     $sql = "select raw_file_name, trial_code from csr_measurement, experiments
-       where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = $trial";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    if ($row = mysqli_fetch_array($res)) {
-        $filename3 = $row[0];
-        $trial_code = $row[1];
-    } else {
-       die("trial $trial not found<br>\n");
+       where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $trial);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $filename3, $trial_code);
+        if (!mysqli_stmt_fetch($stmt)) {
+            die("trial $trial not found<br>\n");
+        }
+        mysqli_stmt_close($stmt);
     }
 } else {
       die("no trial found");
-  }
-  if (isset($_POST['smooth']) && !empty($_POST['smooth'])) {
-      $smooth = $_POST['smooth'];
-  } else {
-      $smooth = 0;
-      echo "no smoothing<br>\n";
-  }
-  $formula1 = $_POST['formula1'];
-  if (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
+}
+if (isset($_POST['smooth']) && !empty($_POST['smooth'])) {
+    $smooth = $_POST['smooth'];
+} else {
+    $smooth = 0;
+    echo "no smoothing<br>\n";
+}
+$formula1 = $_POST['formula1'];
+if (isset($_POST['formula2']) && !empty($_POST['formula2'])) {
       $index = $_POST['formula2'];
       if (preg_match("/system/", $index)) {
           die("<font color=red>Error: Illegal formula</font>");
@@ -53,9 +54,9 @@ if (isset($_POST['trial']) && !empty($_POST['trial'])) {
           die("<font color=red>Error: Illegal formula</font>");
       }
       echo "formula = $index<br>\n";
-  } else {
+} else {
       die("no formula specified<br>\n");
-  }
+}
   if (isset($_POST['W1']) && !empty($_POST['W1'])) {
       $w1 = $_POST['W1'];
   } else {
