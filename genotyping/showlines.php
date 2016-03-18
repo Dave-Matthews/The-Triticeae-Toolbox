@@ -35,9 +35,7 @@ echo "<h3>Marker $markername</h3>";
 /* check for blind sql injection */
 if (preg_match("/[^0-9,]/", $marker_uid)) {
     echo "Invalid query\n";
-    die();
-}
-if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
+} elseif (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
     $sortby = $_GET['sortby'];
     $sorttype = $_GET['sorttype'];
     if (($sortby != "line_record_name") && ($sortby != "alleles") && ($sortby != "trial_code")) {
@@ -59,15 +57,13 @@ if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
 
 <div class="boxContent">
 
-   <form action="<?php echo $config['base_url']; ?>genotyping/showlines.php" method="get">
-   <p><strong>Marker: </strong>
-   <input type="text" name="markername" value="" />&nbsp;&nbsp;&nbsp; Example: 12_11047<br>
+<form action="<?php echo $config['base_url']; ?>genotyping/showlines.php" method="get">
+<p><strong>Marker: </strong>
+<input type="text" name="markername" value="" />&nbsp;&nbsp;&nbsp; Example: 12_11047<br>
 <input type="submit" value="Get Data" />
 </form>
-
-
-			</div>
-	</div>
+</div>
+</div>
 </div>
 </div>
 

@@ -278,12 +278,16 @@ if ($query == 'geno') {
      }
 
      $fp = fopen($cachefile,'w');
-     fwrite($fp,"$allele_count\n");
-     fwrite($fp,"$allele_update\n");
-     fwrite($fp,"$LinesWithGeno\n");
-     fwrite($fp,"$MarkersWithGeno\n");
-     fwrite($fp,"$MarkersNoGeno\n");
-     fclose($fp);
+     if ($fp == false) {
+         echo "Error: could not create cache file\n";
+     } else {
+         fwrite($fp,"$allele_count\n");
+         fwrite($fp,"$allele_update\n");
+         fwrite($fp,"$LinesWithGeno\n");
+         fwrite($fp,"$MarkersWithGeno\n");
+         fwrite($fp,"$MarkersNoGeno\n");
+         fclose($fp);
+     } 
 } elseif ($query == "csr1") {
    include $config['root_dir'].'theme/normal_header.php';
    print "<h3>Trials with Canopy Spectral Reflectance (CSR) data</h3>\n";
@@ -340,8 +344,12 @@ if ($query == 'geno') {
   $MarkersWithGeno = fgets($fp);
   $MarkersNoGeno = fgets($fp);
   fclose($fp);
-  if (file_exists($cachefile) && (time() - $cachetime > filemtime($cachefile))) {
-      $cmd = "wget " . $config['base_url'] . "t3_report.php?query=cache &";
+  $cmd = "wget " . $config['base_url'] . "t3_report.php?query=cache &";
+  if (file_exists($cachefile)) {
+      if (time() - $cachetime > filemtime($cachefile)) {
+          exec($cmd);
+      }
+  } else {
       exec($cmd);
   }
   $allele_count = number_format($allele_count);

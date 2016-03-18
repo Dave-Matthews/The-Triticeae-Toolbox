@@ -14,10 +14,11 @@
 include("includes/bootstrap.inc");
 include("theme/normal_header.php");
 $mysqli = connecti();
+$table_name = strip_tags($_REQUEST['table']);
 ?>
 
 <div class="box">
-<h2>Quick Search <?php echo beautifulTableName($_REQUEST['table'], 1) ?></h2>
+<h2>Quick Search <?php echo beautifulTableName($table_name, 1) ?></h2>
 <div class="boxContent">
 
 <?php
