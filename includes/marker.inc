@@ -103,15 +103,19 @@ function showMarkerForLine($line_id, $order = "marker_name")
 function showLineForMarker($marker_uid, $order = "line_record_name")
 {
     global $mysqli;
-    $query = "SELECT marker_type_name, A_allele, B_allele from markers, marker_types where markers.marker_type_uid = marker_types.marker_type_uid and marker_uid = $marker_uid";
-    $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
-    if ($row = mysqli_fetch_assoc($resource)) {
-        $marker_type = $row['marker_type_name'];
-        $allele = $row['A_allele'] . $row['B_allele'];
-    } else {
-        $marker_type = "SNP";
+    $query = "SELECT marker_type_name, A_allele, B_allele from markers, marker_types where markers.marker_type_uid = marker_types.marker_type_uid and marker_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $query)) {
+        mysqli_stmt_bind_param($stmt, "i", $marker_uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $marker_type, $a_allele, $b_allele);
+        if (mysqli_stmt_fetch($stmt)) {
+            $allele = $a_allele . $b_allele;
+        } else {
+            $marker_type = "SNP";
+        }
+        mysqli_stmt_close($stmt);
     }
-
+    $marker_uid = intval($marker_uid);
     $query = "SELECT experiments.trial_code, line_record_name, alleles
           FROM experiments, allele_cache
           WHERE allele_cache.marker_uid = $marker_uid 
