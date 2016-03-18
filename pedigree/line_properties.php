@@ -357,8 +357,11 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
       $linesfound = 0;
     else  {
       $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
-      $result=mysqli_query($mysqli, $TheQuery) or die(mysqli_error($mysqli)."<br>Query was:<br>".$TheQuery);
-      $linesfound = mysqli_num_rows($result);
+      if ($result=mysqli_query($mysqli, $TheQuery)) {
+          $linesfound = mysqli_num_rows($result);
+      } else {
+          $linesfound = 0;
+      }
     }
 
     /* Search Results: */

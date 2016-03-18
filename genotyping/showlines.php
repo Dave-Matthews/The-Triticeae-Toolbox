@@ -18,7 +18,7 @@ require $config['root_dir'] . 'theme/admin_header.php';
 
 <?php
 if (isset($_GET['marker']) && ($_GET['marker'] != "")) {
-    $marker_uid = intval($_GET['marker']);
+    $marker_uid = $_GET['marker'];
     $sql = "select marker_name from markers where marker_uid = $marker_uid";
     $stmt = mysqli_prepare($mysqli, "SELECT marker_name from markers where marker_uid = ?");
     mysqli_stmt_bind_param($stmt, "i", $marker_uid);
@@ -32,6 +32,11 @@ if (isset($_GET['marker']) && ($_GET['marker'] != "")) {
 
 echo "<h3>Marker $markername</h3>";
 
+/* check for blind sql injection */
+if (preg_match("/[^0-9,]/", $marker_uid)) {
+    echo "Invalid query\n";
+    die();
+}
 if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
     $sortby = $_GET['sortby'];
     $sorttype = $_GET['sorttype'];
