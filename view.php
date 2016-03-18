@@ -54,14 +54,16 @@ if (preg_match($pattern, $table)) {
             echo "<h1>$prettified $nm</h1>";
             echo "<div class=boxContent>";
             $func = "show_" . $table;
+            mysqli_stmt_close($stmt);
             if (function_exists($func)) {
                 call_user_func($func, $rec);
             } else {
                 show_general($table, $rec);
             }
             echo "</div>";
+        } else {
+            mysqli_stmt_close($stmt);
         }
-        mysqli_stmt_close($stmt);
     } else {
         error(1, "No Record Found");
     }
