@@ -6,7 +6,7 @@ require "theme/normal_header.php";
 // Will take both uids and names
 // DEM sep2014: But treat them differently!
 
-$table = $_REQUEST['table'];
+$table = strip_tags($_REQUEST['table']);
 $prettified = beautifulTableName($table, 0);
 // CLB feb2015: Can not do a prepared statement for select * query so next best thing is to sanitize input
 $id = intval($_REQUEST['uid']);
@@ -50,20 +50,18 @@ if (preg_match($pattern, $table)) {
         mysqli_stmt_bind_param($stmt, "s", $nm);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $rec);
-        if (!mysqli_stmt_fetch($stmt)) {
-            mysqli_stmt_close($stmt);
-            die("Error: No Record Found\n");
+        if (mysqli_stmt_fetch($stmt)) {
+            echo "<h1>$prettified $nm</h1>";
+            echo "<div class=boxContent>";
+            $func = "show_" . $table;
+            if (function_exists($func)) {
+                call_user_func($func, $rec);
+            } else {
+                show_general($table, $rec);
+            }
+            echo "</div>";
         }
         mysqli_stmt_close($stmt);
-        echo "<h1>$prettified $nm</h1>";
-        echo "<div class=boxContent>";
-        $func = "show_" . $table;
-        if (function_exists($func)) {
-            call_user_func($func, $rec);
-        } else {
-            show_general($table, $rec);
-        }
-        echo "</div>";
     } else {
         error(1, "No Record Found");
     }
