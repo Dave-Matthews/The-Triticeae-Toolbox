@@ -1,8 +1,10 @@
 <?php
-// 12/14/2010 JLee  Change to use curator bootstrap
+/**
+ *  12/14/2010 JLee  Change to use curator bootstrap
+ **/
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 connect();
 loginTest();
 $row = loadUser($_SESSION['username']);
@@ -12,23 +14,25 @@ ob_end_flush();
 
 new Annotations($_GET['function']);
 
-class Annotations {
-  // Using the class's constructor to decide which action to perform
-  public function __construct($function = null) {	
-    switch($function) {
-    default:
-      $this->typeAnnotations(); /* intial case*/
-      break;
-    }	
-  }
+class Annotations
+{
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch ($function) {
+          default:
+            $this->typeAnnotations(); /* intial case*/
+            break;
+        }	
+   }
 
   private function typeAnnotations() {
     global $config;
-    include($config['root_dir'] . 'theme/admin_header.php');
+    include $config['root_dir'] . 'theme/admin_header.php';
     echo "<h2>Phenotype Trial Description</h2>"; 
     $this->type_Annotation_Name();
     $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
+    include $config['root_dir'].'theme/footer.php';
   }
 
   private function type_Annotation_Name() {
@@ -62,7 +66,8 @@ class Annotations {
 <div class="section">
 <h3>Edit</h3>
 <table>
-<tr><td><a href="<?php echo $config['base_url']; ?>login/edit_trials.php">Experiment descriptions</a><td>(for Genotype experiments as well as Phenotype)
+<tr><td><a href="<?php echo $config['base_url']; ?>login/edit_trials.php">Trial descriptions</a><td>(for Genotype experiments as well as Phenotype)
+<tr><td><a href="<?php echo $config['base_url']; ?>login/edit_experiments.php">Experiment descriptions</a><td>Experiment Sets
 <tr><td><a href="<?php echo $config['base_url']; ?>login/edit_pheno_expr.php">Trial details</a><td>Phenotype-trial-specific annotations
 </table><p>
 </div>
