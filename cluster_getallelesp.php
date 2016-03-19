@@ -46,7 +46,11 @@ if (isset($_GET['mml'])) {
 
 if (isset ($_SESSION['selected_lines'])) {
     $selected_lines = $_SESSION['selected_lines'];
-    calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+    if (isset($_SESSION['geno_exps'])) {
+        calculate_afe($selected_lines, $min_maf, $max_missing, $max_miss_line);
+    } else {
+        calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+    }
 }
 
 if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
