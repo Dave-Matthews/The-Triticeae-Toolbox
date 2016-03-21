@@ -321,7 +321,7 @@ if ($query == 'geno') {
    print "</table>";
 } else {
   if ($output == 'excel') {
-    include 'Spreadsheet/Excel/Writer.php';
+    require 'Spreadsheet/Excel/Writer.php';
     header('Content-Type: application/vnd.ms-excel');
     header('Content-Disposition:attachment;filename=t3_report.xls');
     $workbook = new Spreadsheet_Excel_Writer();
@@ -397,8 +397,8 @@ if ($query == 'geno') {
   if ($row = mysqli_fetch_row($res)) {
     $count = $row[0];
     if ($output == "excel") {
-        $worsheet->write(2, 0, "Phenotype Experiments");
-        $workshet->write(2, 1, "$count");
+        $worksheet->write(2, 0, "Phenotype Experiments");
+        $worksheet->write(2, 1, "$count");
     } else {
         print "<tr><td>Phenotype Experiments<td>$count<td><a href='".$config['base_url']."t3_report.php?query=PExps'>List all experiments</a>\n";
     }
@@ -636,8 +636,8 @@ if ($query == 'geno') {
   } else {
     print "<tr><td>last addition<td>$allele_update\n";
     print "</table><br>\n";
+    print "</div>";
   }
-  print "</div>";
 }
 if ($output == "excel") {
     $workbook->close();
