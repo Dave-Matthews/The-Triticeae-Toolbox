@@ -193,6 +193,16 @@ if ($query == 'geno') {
         print "<tr><td><a href='".$config['base_url']."view.php?table=markers&uid=$uid'>$name</a><td>$type<td>$date\n";
     }
     print "</table>";
+} elseif ($query == 'PExps') {
+    include $config['root_dir'].'theme/normal_header.php';
+    print "Phenotype experiments<br><br>\n";
+    print "<table border=0>";
+    $sql = "select experiment_set_name from experiment_set";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        print "<tr><td>$row[0]\n";
+    }
+    print "</table>";
 } elseif ($query == 'PTrials') {
     include $config['root_dir'].'theme/normal_header.php';
     print "Phenotype trials ordered by creation date<br><br>\n";
@@ -215,7 +225,7 @@ if ($query == 'geno') {
         $trial_code = $row[0];
         $short_name = $row[1];
         $date = $row[2];
-        $uid = $row[3]; 
+        $uid = $row[3];
         if (isset($plot_level[$uid])) {
             $type = "Yes";
         } else {
@@ -247,37 +257,37 @@ if ($query == 'geno') {
     }
     print "</table>";
 } elseif ($query == 'cache') {
-     $sql = "select count(genotyping_data_uid) from genotyping_data";
-     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     if ($row = mysqli_fetch_row($res)) {
-       $allele_count = $row[0];
-     } else {
-       print "error $sql<br>\n";
-     }
-     $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
-     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     if ($row = mysqli_fetch_row($res)) {
-       $allele_update = $row[0];
-     } else {
-       print "error $sql<br>\n";
-     }
-     $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
-     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     if ($row = mysqli_fetch_row($res)) {
+    $sql = "select count(genotyping_data_uid) from genotyping_data";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
+        $allele_count = $row[0];
+    } else {
+        print "error $sql<br>\n";
+    }
+    $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
+        $allele_update = $row[0];
+    } else {
+        print "error $sql<br>\n";
+    }
+    $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, genotyping_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = genotyping_data.tht_base_uid)";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
         $LinesWithGeno = $row[0];
-     }
-     $sql = "select count(markers.marker_uid) from markers where marker_uid IN (Select marker_uid from allele_frequencies)";
-     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     if ($row=mysqli_fetch_row($res)) {
-      $MarkersWithGeno = $row[0];
-     }
-     $sql = "select count(markers.marker_uid) from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
-     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-     if ($row=mysqli_fetch_row($res)) {
+    }
+    $sql = "select count(markers.marker_uid) from markers where marker_uid IN (Select marker_uid from allele_frequencies)";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row=mysqli_fetch_row($res)) {
+        $MarkersWithGeno = $row[0];
+    }
+    $sql = "select count(markers.marker_uid) from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row=mysqli_fetch_row($res)) {
        $MarkersNoGeno = $row[0];
-     }
+    }
 
-     $fp = fopen($cachefile,'w');
+     $fp = fopen($cachefile, 'w');
      if ($fp == false) {
          echo "Error: could not create cache file\n";
      } else {
@@ -379,21 +389,30 @@ if ($query == 'geno') {
   if ($output == "excel") {
     $worksheet->write(1, 0, "Trials", $format_header);
   } else {
-    print "<b>Trials</b>\n";
+    print "<b>Experiments and Trials</b>\n";
     print "<table>\n";
+  }
+  $sql = "select count(experiment_set_uid) from experiment_set";
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+  if ($row = mysqli_fetch_row($res)) {
+    $count = $row[0];
+    if ($output == "excel") {
+        $worsheet->write(2, 0, "Phenotype Experiments");
+        $workshet->write(2, 1, "$count");
+    } else {
+        print "<tr><td>Phenotype Experiments<td>$count<td><a href='".$config['base_url']."t3_report.php?query=PExps'>List all experiments</a>\n";
+    }
   }
   $sql = "select count(experiment_uid) from experiments where experiment_type_uid = 1"; 
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   if ($row = mysqli_fetch_row($res)) {
     $count = $row[0];
-  } else {
-    print "error $sql<br>\n";
-  }
-  if ($output == "excel") {
-    $worksheet->write(2, 0, "Phenotype Trials submitted");
-    $worksheet->write(2, 1, "$count");
-  } elseif ($output == "") {
-    print "<tr><td>Phenotype Trials submitted</td><td>$count<td><a href='".$config['base_url']."t3_report.php?query=PTrials'>List all trials</a></td></tr>\n";
+    if ($output == "excel") {
+        $worksheet->write(3, 0, "Phenotype Trials submitted");
+        $worksheet->write(3, 1, "$count");
+    } else {
+        print "<tr><td>Phenotype Trials</td><td>$count<td><a href='".$config['base_url']."t3_report.php?query=PTrials'>List all trials</a></td></tr>\n";
+    }
   }
   $sql = "select count(experiment_uid) from experiments where experiment_type_uid = 2";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
@@ -403,10 +422,10 @@ if ($query == 'geno') {
     print "error $sql<br>\n";
   }
   if ($output == "excel") {
-    $worksheet->write(3, 0, "Genotype Trials submitted");
-    $worksheet->write(3, 1, "$count");
+    $worksheet->write(4, 0, "Genotype Trials submitted");
+    $worksheet->write(4, 1, "$count");
   } elseif ($output == "") {
-    print "<tr><td>Genotype Trials submitted</td><td>$count<td><a href='".$config['base_url']."t3_report.php?query=GTrials'>List all trials</a></td></tr>\n";
+    print "<tr><td>Genotype Trials</td><td>$count<td><a href='".$config['base_url']."t3_report.php?query=GTrials'>List all trials</a></td></tr>\n";
   }
 
   $sql = "select count(distinct(capdata_programs_uid)) from experiments";
@@ -417,8 +436,8 @@ if ($query == 'geno') {
     print "error $sql<br>\n";
   }
   if ($output == "excel") {
-    $worksheet->write(4, 0, "CAP data programs");
-    $worksheet->write(4, 1, "$count");
+    $worksheet->write(5, 0, "CAP data programs");
+    $worksheet->write(5, 1, "$count");
   } elseif ($output == "") {
     print "<tr><td>CAP data programs</td><td>$count</td></tr>\n";
     print "</table><br>";
@@ -432,9 +451,9 @@ if ($query == 'geno') {
     print "error $sql<br>\n";
   }
   if ($output == "excel") {
-    $worksheet->write(5, 0, "Lines", $format_header);
-    $worksheet->write(6, 0, "Line records");
-    $worksheet->write(6, 1, $count);
+    $worksheet->write(6, 0, "Lines", $format_header);
+    $worksheet->write(7, 0, "Line records");
+    $worksheet->write(7, 1, $count);
   } elseif ($output == "") {
     print "<b>Lines</b><table><tr><td>Line records<td>$count<td><a href='".$config['base_url']."t3_report.php?query=Lines'>List or query line names by creation date</a>\n";
   }
@@ -444,14 +463,14 @@ if ($query == 'geno') {
     $count = $row[0];
   } 
   if ($output == "excel") {
-    $worksheet->write(7, 0, "Breeding programs");
-    $worksheet->write(7, 1, $count);
+    $worksheet->write(8, 0, "Breeding programs");
+    $worksheet->write(8, 1, $count);
   } elseif ($output == "") {
     print "<tr><td>Breeding programs</td><td>$count</td>\n";
   }
   if ($output == "excel") {
-    $worksheet->write(8, 0, "Lines with genotypeing data");
-    $worksheet->write(8, 1, $LinesWithGeno);
+    $worksheet->write(9, 0, "Lines with genotypeing data");
+    $worksheet->write(9, 1, $LinesWithGeno);
   } elseif ($output == "") {
     print "<tr><td>Lines with genotyping data<td>$LinesWithGeno<td><a href='".$config['base_url']."t3_report.php?query=linegeno'>List lines with genotyping data</a>\n";
   }
@@ -461,9 +480,9 @@ if ($query == 'geno') {
     $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(9, 0, "Lines with phenotype data");
-    $worksheet->write(9, 1, $count);
-    $worksheet->write(10, 0, "Species");
+    $worksheet->write(10, 0, "Lines with phenotype data");
+    $worksheet->write(10, 1, $count);
+    $worksheet->write(11, 0, "Species");
   } elseif ($output == "") {
     print "<tr><td>Lines with phenotype data<td>$count<td><a href='".$config['base_url']."t3_report.php?query=linephen'>List lines with phenotype data</a>\n";
     print "<tr><td>Species<td>";
@@ -477,25 +496,26 @@ if ($query == 'geno') {
     $count = $count . "$row[0] ";
   }
   if ($output == "excel") {
-    $worksheet->write(10, 1, $count);
+    $worksheet->write(11, 1, $count);
   } elseif ($output == "") {
     print "$count\t";
   }
 
+  $index = 12;
   $sql = "select date_format(max(created_on),'%m-%d-%Y') from line_records";
   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
   if ($row = mysqli_fetch_row($res)) {
     $count = $row[0];
   }
   if ($output == "excel") {
-    $worksheet->write(11, 0, "latest addition");
-    $worksheet->write(11, 1, $count);
+    $worksheet->write($index, 0, "latest addition");
+    $worksheet->write($index, 1, $count);
+    $index++;
   } elseif ($output == "") {
     print "<tr><td>last addition<td>$count\n";
     print "</table><br>\n";
   }
 
-  $index= 12;
   //* Phenotype data */
   $sql = "select count(phenotype_uid) from phenotypes";
   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
