@@ -48,7 +48,11 @@ if (isset($_GET['mml'])) {
 <?php
 if (isset($_SESSION['selected_lines'])) {
     $selected_lines = $_SESSION['selected_lines'];
-    calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+    if (isset($_SESSION['geno_exp'])) {
+        calculate_afe($selected_lines, $min_maf, $max_missing, $max_miss_line);
+    } else {
+        calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+    }
 }
 
 if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0)) {
@@ -97,7 +101,7 @@ if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) =
   	  ) > 0, 'need_update', 'okay')";
         $need = mysql_grab($sql);
         if ($need == 'need_update') {
-            $update = TRUE;
+            $update = true;
         }
     }
   if ($update) {
