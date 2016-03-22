@@ -21,37 +21,44 @@ if (isset($_GET['marker']) && ($_GET['marker'] != "")) {
     $marker_uid = $_GET['marker'];
     $sql = "select marker_name from markers where marker_uid = $marker_uid";
     $stmt = mysqli_prepare($mysqli, "SELECT marker_name from markers where marker_uid = ?");
-    mysqli_stmt_bind_param($stmt, "i", $marker_uid);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $markername);
-    mysqli_stmt_fetch($stmt);
+    if (mysqli_stmt_bind_param($stmt, "i", $marker_uid)) {
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $markername);
+        mysqli_stmt_fetch($stmt);
+    }
     mysqli_stmt_close($stmt);
 } elseif (isset($_GET['markername']) && ($_GET['markername'] != "")) {
     $markername = $_GET['markername'];
+    $markername = strip_tags($markername);
+    $sql = "select marker_uid from markers where marker_name = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $markername);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $marker_uid);
+        mysqli_stmt_fetch($stmt);
+    }
+    mysqli_stmt_close($stmt);
+} else {
+    $marker_uid = "";
 }
 
 echo "<h3>Marker $markername</h3>";
 
 /* check for blind sql injection */
 if (preg_match("/[^0-9,]/", $marker_uid)) {
-    echo "Invalid query\n";
 } elseif (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
     $sortby = $_GET['sortby'];
     $sorttype = $_GET['sorttype'];
     if (($sortby != "line_record_name") && ($sortby != "alleles") && ($sortby != "trial_code")) {
-        echo "Error: invalid selection\n";
         return;
     }
     if (($sorttype != "DESC") && ($sorttype != "ASC")) {
-        echo "Error: invalid selection\n";
         return;
     }
     $orderby = $_GET['sortby'] . " " . $_GET['sorttype'];
     showLineForMarker($marker_uid, $orderby);
-} elseif (isset($_GET['marker'])) {
+} elseif ($marker_uid != "") {
     showLineForMarker($marker_uid);
-} else {
-    echo "Error: no marker selected\n";
 }
 ?>
 
