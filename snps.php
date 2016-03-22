@@ -109,7 +109,7 @@ if ($geno_exps != "") {
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $exp_uid);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $marker_name, $marker_type_name, $A_allele, $B_allelei, $sequence);
+        mysqli_stmt_bind_result($stmt, $marker_name, $marker_type_name, $A_allele, $B_allele, $sequence);
         while (mysqli_stmt_fetch($stmt)) {
             echo "<tr><td>$marker_name<td>$marker_type_name<td>$A_allele<td>$B_allele<td>$sequence\n";
         }
@@ -124,7 +124,7 @@ if ($geno_exps != "") {
     order by marker_name";
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $marker_name, $marker_type_name, $A_allele, $B_allelei, $sequence);
+        mysqli_stmt_bind_result($stmt, $marker_name, $marker_type_name, $A_allele, $B_allele, $sequence);
         while (mysqli_stmt_fetch($stmt)) {
             echo "<tr><td>$marker_name<td>$marker_type_name<td>$A_allele<td>$B_allele<td>$sequence\n";
         }
