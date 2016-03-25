@@ -86,6 +86,7 @@ class SelectGenotypeExp
 private function refresh_title()
 {
    global $mysqli;
+   $lines_unique = array();
    $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
    $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
    // $subset = no (Replace), comb (Add, OR), yes (Intersect, AND) 
@@ -104,7 +105,7 @@ private function refresh_title()
           $experiments = $_GET['exps'];
           $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
           $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-          if ($row = mysqli_fetch_array($res)) {
+          while ($row = mysqli_fetch_array($res)) {
               $lines = json_decode($row[0], true);
               //*check for duplicates
               foreach ($lines as $line_record) {
@@ -115,11 +116,8 @@ private function refresh_title()
                       $unique_list[$line_record] = 1;
                   }
               }
-              $_SESSION['selected_lines'] = $lines_unique;
-              //echo "skiped duplicates $skipped\n";
-          } else {
-              echo "error - no selection found";
           }
+          $_SESSION['selected_lines'] = $lines_unique;
       } else {
           echo "error - no selection found";
       }
@@ -163,6 +161,7 @@ private function refresh_title()
           store_session_variables('selected_lines', $username);
         }
       }
+   echo "<img alt='spinner' id='spinner' src='images/ajax-loader.gif' style='display:none;' /></p>";
    if (isset($_SESSION['selected_lines'])) {
      ?>
      <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
@@ -227,7 +226,6 @@ private function type1_checksession()
     $lines = $_SESSION['selected_lines'];
   }
   $this->refresh_title(); 
-  echo "<img alt='spinner' id='spinner' src='images/ajax-loader.gif' style='display:none;' /></p>";
   ?>
   </div>
   <div id="step1" style="float: left; margin-bottom: 1.5em;">
@@ -237,7 +235,8 @@ private function type1_checksession()
   <option value="DataProgram">Data Program</option>
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
-  <script type="text/javascript" src="downloads/select_genotype01.js"></script>
+  <script type="text/javascript" src="downloads/select_genotype02.js"></script>
+  <script type="text/javascript" src="downloads/select_genotypejq02.js"></script>
   <?php
   $this->step1_platform(); 
   //$this->type_GenoType_Display();
@@ -491,14 +490,19 @@ private function step3_lines()
   if (preg_match("/\d/",$experiments)) {
       $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
   }
+  $line_index = array();
   $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-  if ($row = mysqli_fetch_array($res)) {
-      $line_index = json_decode($row[0], true);
-      $count1 = count($line_index);
-  } else {
-      $line_index = array();
+  while ($row = mysqli_fetch_array($res)) {
+      $array1 = json_decode($row[0], true);
+      foreach ($array1 as $line_record_uid) {
+          if (isset($unique_list[$line_record_uid])) {
+          } else {
+            $line_index[] = $line_record_uid;
+          }
+      }
   }
+  $count1 = count($line_index);
   
   ?>
   <tr><td>
@@ -764,35 +768,27 @@ private function type1_markers()
       if (preg_match("/\d/",$datasets)) {
               $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
       }
-      $skipped = "";
+      $skipped = 0;
+      $unique_all = array();
       $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-      if ($row = mysqli_fetch_array($res)) {
-          $lines = json_decode($row[0], true);
-          //*check for duplicates
-          foreach ($lines as $key=>$line_record) {
-              $sql = "select line_record_name from line_records where line_record_uid = $line_record";
-              $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-              if ($row = mysqli_fetch_array($res)) {
-                  $name = $row[0];
+      while ($row = mysqli_fetch_array($res)) {
+          $array1 = json_decode($row[0], true);
+          $unique_within = array();
+          foreach ($array1 as $line_record_uid) {
+              if (isset($unique_within[$line_record_uid])) {
+                  $skipped++;
+              } elseif (isset($unique_all[$line_record_uid])) {
               } else {
-                  $name = "unknown";
-              }
-              if (isset($unique_list[$line_record])) {
-                  if ($skipped == "") {
-                      $skipped = "$name";
-                  } else {
-                      $skipped .= ", $name";
-                  }
-              } else {
-                  $lines_unique[] = $line_record;
-                  $unique_list[$line_record] =  $name;
+                 $lines[] = $line_record_uid;
+                 $unique_within[$line_record_uid] = 1;
+                 $unique_all[$line_record_uid] = 1;
               }
           }
       }
     }
-    if ($skipped != "") {
-        echo "skipped duplicate line names<br>$skipped\n";
+    if ($skipped != 0) {
+        echo "skipped $skipped duplicate line(s) within experiment<br>\n";
     }
     if ($subset == "comb") {
         $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
