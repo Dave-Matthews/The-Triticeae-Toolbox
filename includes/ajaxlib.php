@@ -1049,27 +1049,22 @@ function SelcExperiment($arr)
         }
     }
     echo "Markers added from experiment(s) <b>$trial_code</b><p>";
-    $sql = "select distinct marker_uid
-        from allele_frequencies af
-        where experiment_uid IN ($expt_str)";
+    $_SESSION['geno_exps'] = $expt;
+    $sql = "select distinct(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($expt_str)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_row($res)) {
-        $clkmkrs[] = $row[0];
-    }
-    $totalSel = count($clkmkrs);
-    if ($totalSel < 100000) {
+    $row_cnt = mysqli_num_rows($res);
+    $_SESSION['geno_exps_cnt'] = $row_cnt;
+    if ($row_cnt < 100000) {
+        while ($row = mysqli_fetch_row($res)) {
+            $clkmkrs[] = $row[0];
+        }
         $_SESSION['clicked_buttons'] = $clkmkrs;
-        print "$totalSel markers selected. ";
+        print "$row_cnt markers selected. ";
     } else {
         unset($_SESSION['clicked_buttons']);
-        print "$totalSel markers in experiment<br>\n";
+        print "$row_cnt markers in experiment<br>\n";
     }
-    $_SESSION['geno_exps'] = $expt;
-    $sql = "select count(distinct(marker_uid)) from allele_bymarker_exp_101 where experiment_uid in ($expt_str)";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    if ($row = mysqli_fetch_array($res)) {
-        $_SESSION['geno_exps_cnt'] = $row[0];
-    }
+
     $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($expt_str)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_array($res)) {
