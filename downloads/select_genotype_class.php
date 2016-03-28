@@ -1,10 +1,11 @@
 <?php
 
-/** functions specific to genotype experiment
+/**
+ * functions specific to genotype experiment
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/select_genotype.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/downloads/select_genotype.php
  */
 
 namespace T3;
@@ -40,7 +41,7 @@ class SelectGenotypeExp
                 break;
 
             case 'refreshtitle':
-                echo $this->refresh_title();
+                echo $this->refreshTitle();
                 break;
 
             case 'step1breedprog':
@@ -83,29 +84,30 @@ class SelectGenotypeExp
  * 2. show button to clear sessin data
  * 3. show button to save current selection
  */
-private function refresh_title()
-{
-   global $mysqli;
-   $lines_unique = array();
-   $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
-   $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-   // $subset = no (Replace), comb (Add, OR), yes (Intersect, AND) 
-   echo "<h2>Select Lines by Genotype Experiment</h2>";
-   echo "<p>After saving, the line selection can be used for analysis or download. Select multiple options by holding down the Ctrl key while selecting.";
-   if ($command == "save") {
-      if ((($subset == "yes") || ($subset == "comb")) && count($_SESSION['selected_lines'])>0) {
-          $lines = $_SESSION['selected_lines'];
-          $lines_str = implode(",", $lines);
-          $count = count($_SESSION['selected_lines']);
-      } elseif (!empty($_GET['lines'])) {
-          $lines_str = $_GET['lines'];
-          $lines = explode(',', $lines_str);
-          $_SESSION['selected_lines'] = $lines;
-      } elseif (!empty($_GET['exps'])) {
-          $experiments = $_GET['exps'];
-          $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-          while ($row = mysqli_fetch_array($res)) {
+    private function refreshTitle()
+    {
+        global $mysqli;
+        $lines_unique = array();
+        $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
+        $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+        // $subset = no (Replace), comb (Add, OR), yes (Intersect, AND)
+        echo "<h2>Select Lines by Genotype Experiment</h2>";
+        echo "<p>After saving, the line selection can be used for analysis or download. ";
+        echo "Select multiple options by holding down the Ctrl key while selecting.";
+        if ($command == "save") {
+            if ((($subset == "yes") || ($subset == "comb")) && count($_SESSION['selected_lines'])>0) {
+                $lines = $_SESSION['selected_lines'];
+                $lines_str = implode(",", $lines);
+                $count = count($_SESSION['selected_lines']);
+            } elseif (!empty($_GET['lines'])) {
+                $lines_str = $_GET['lines'];
+                $lines = explode(',', $lines_str);
+                $_SESSION['selected_lines'] = $lines;
+            } elseif (!empty($_GET['exps'])) {
+                $experiments = $_GET['exps'];
+                $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                while ($row = mysqli_fetch_array($res)) {
               $lines = json_decode($row[0], true);
               //*check for duplicates
               foreach ($lines as $line_record) {
@@ -150,7 +152,7 @@ private function refresh_title()
           $exps_str = $_GET['exps'];
           $experiments = explode(',', $exps_str);
           $_SESSION['geno_exps'] = $experiments;
-          $sql = "select count(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
+          $sql = "select count(distinct(marker_uid)) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
           $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
           if ($row = mysqli_fetch_array($res)) {
               $_SESSION['geno_exps_cnt'] = $row[0];
@@ -225,7 +227,7 @@ private function type1_checksession()
     $countLines = count($_SESSION['selected_lines']);
     $lines = $_SESSION['selected_lines'];
   }
-  $this->refresh_title(); 
+  $this->refreshTitle(); 
   ?>
   </div>
   <div id="step1" style="float: left; margin-bottom: 1.5em;">
@@ -235,8 +237,7 @@ private function type1_checksession()
   <option value="DataProgram">Data Program</option>
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
-  <script type="text/javascript" src="downloads/select_genotype02.js"></script>
-  <script type="text/javascript" src="downloads/select_genotypejq02.js"></script>
+  <script type="text/javascript" src="downloads/select_genotype03.js"></script>
   <?php
   $this->step1_platform(); 
   //$this->type_GenoType_Display();
