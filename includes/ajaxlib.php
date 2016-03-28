@@ -1021,13 +1021,14 @@ function SelcMarkerSet ($arr) {
         $count = count($_SESSION['clicked_buttons']);
         print "$count markers selected. ";
         print "<a href=genotyping/display_markers.php>Download list of markers</a><br>\n";
-    } 
+    }
 }
 
 function SelcExperiment($arr)
 {
     global $mysqli;
-    if (! isset($arr['experiment'])) {
+    $lines_unique = array();
+    if (!isset($arr['experiment'])) {
         print "Invalid input of experiment";
         return;
     } else {
@@ -1049,12 +1050,6 @@ function SelcExperiment($arr)
     }
     echo "Markers added from experiment(s) <b>$trial_code</b><p>";
     $sql = "select distinct marker_uid
-        from tht_base t, genotyping_data gd, experiments e
-        where trial_code in ($expt_str)
-        and gd.tht_base_uid = t.tht_base_uid
-        and e.experiment_uid = t.experiment_uid";
-    // faster query but may include markers with no data
-    $sql = "select distinct marker_uid
         from allele_frequencies af
         where experiment_uid IN ($expt_str)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -1070,6 +1065,26 @@ function SelcExperiment($arr)
         print "$totalSel markers in experiment<br>\n";
     }
     $_SESSION['geno_exps'] = $expt;
+    $sql = "select count(distinct(marker_uid)) from allele_bymarker_exp_101 where experiment_uid in ($expt_str)";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
+        $_SESSION['geno_exps_cnt'] = $row[0];
+    }
+    $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($expt_str)";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
+        $lines = json_decode($row[0], true);
+        //*check for duplicates
+        foreach ($lines as $line_record) {
+            if (isset($unique_list[$line_record])) {
+                $skipped .= "$line_record ";
+            } else {
+                $lines_unique[] = $line_record;
+                $unique_list[$line_record] = 1;
+            }
+        }
+    }
+    $_SESSION['selected_lines'] = $lines_unique;
     if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
         print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
         print "<table><tr><td>\n";
@@ -1114,17 +1129,17 @@ function DispMarkers($arr)
 {
     global $mysqli;
     if (! isset($arr['mapuid']) || ! isset($arr['mapstt']) || ! isset($arr['mapend'])) {
-		print "Invalid inputs";
-		return;
-	}
-	$mapuid=$arr['mapuid'];
-	$mapstt=$arr['mapstt'];
-	$mapend=$arr['mapend'];
-	if (! is_numeric($mapstt) || ! is_numeric($mapend) || $mapstt>=$mapend) {
-		print "Invalid inputs";
-		return;
-	}
-	$result=mysqli_query($mysqli, "select marker_uid from markers_in_maps where map_uid=$mapuid and start_position between $mapstt and $mapend order by start_position");
+	print "Invalid inputs";
+	return;
+    }
+    $mapuid=$arr['mapuid'];
+    $mapstt=$arr['mapstt'];
+    $mapend=$arr['mapend'];
+    if (! is_numeric($mapstt) || ! is_numeric($mapend) || $mapstt>=$mapend) {
+	print "Invalid inputs";
+	return;
+    }
+    $result=mysqli_query($mysqli, "select marker_uid from markers_in_maps where map_uid=$mapuid and start_position between $mapstt and $mapend order by start_position");
 	if (mysqli_num_rows($result)>0) {
 		print "<select name=\"selMkrs[]\" multiple=\"multiple\" size=10>";
 		while ($row=mysqli_fetch_assoc($result)) {
