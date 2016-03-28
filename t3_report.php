@@ -347,14 +347,19 @@ if ($query == 'geno') {
   /** read in from cache */
   $cachefile = '/tmp/tht/cache_' . $db . '.txt';
   $cachetime = 24 * 60 * 60; //24 hours
-  $fp = fopen($cachefile, 'r');
-  $allele_count = fgets($fp);
-  $allele_update = fgets($fp);
-  $LinesWithGeno = fgets($fp);
-  $MarkersWithGeno = fgets($fp);
-  $MarkersNoGeno = fgets($fp);
-  fclose($fp);
-  $cmd = "wget " . $config['base_url'] . "t3_report.php?query=cache &";
+  $cmd = "wget " . $config['base_url'] . "t3_report.php?query=cache > /dev/null &";
+  if (file_exists($cachefile)) {
+      $fp = fopen($cachefile, 'r');
+      $allele_count = fgets($fp);
+      $allele_update = fgets($fp);
+      $LinesWithGeno = fgets($fp);
+      $MarkersWithGeno = fgets($fp);
+      $MarkersNoGeno = fgets($fp);
+      fclose($fp);
+  } else {
+      exec($cmd);
+      echo "Regenerating cache, check back in 20 minutes";
+  }
   if (file_exists($cachefile)) {
       if (time() - $cachetime > filemtime($cachefile)) {
           exec($cmd);

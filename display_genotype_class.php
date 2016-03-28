@@ -203,16 +203,17 @@ class ShowData
         } else {
             $min_maf = 5; //IN PERCENT
         }
-    if ($min_maf > 100)
-      $min_maf = 100;
-    elseif ($min_maf < 0)
-      $min_maf = 0;
+        if ($min_maf > 100) {
+            $min_maf = 100;
+        } elseif ($min_maf < 0) {
+            $min_maf = 0;
+        }
 
-    $sql_mstat = "SELECT marker_uid, maf, missing, total 
-		    FROM allele_frequencies
-		    WHERE experiment_uid = $experiment_uid";
-    $res = mysqli_query($mysqli, $sql_mstat) or
-      die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
+        $sql_mstat = "SELECT marker_uid, maf, missing, total 
+	   FROM allele_frequencies
+	   WHERE experiment_uid = $experiment_uid";
+        $res = mysqli_query($mysqli, $sql_mstat) or
+            die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
     $num_mark = mysqli_num_rows($res);
     $num_maf = $num_miss = 0;
 
@@ -334,7 +335,7 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
 
       $filename = "genotype.hmp.txt";
       $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-      $output = \type4BuildMarkersDownload($experiment_uid, $min_maf, $max_missing, $dtype, $h);
+      $output = type4BuildMarkersDownload($experiment_uid, $min_maf, $max_missing, $dtype, $h);
       fclose($h);
       $filename = "/tmp/tht/download_" . $unique_str . ".zip";
       exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str");
@@ -366,7 +367,7 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
     $delimiter ="\t";
     //get lines and filter to get a list of markers which meet the criteria selected by the user
          
-    $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+    $sql = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
 		    SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
 		    FROM allele_frequencies AS af, markers as m
 		    WHERE m.marker_uid = af.marker_uid
