@@ -300,7 +300,6 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
   } /* End of function type_DataInformation*/
 
   private function type_Tab_Delimiter_GBS() {
-      global $mysqli;
       $dtype = "";
       $experiment_uid = $_GET['expuid'];
       $max_missing = 99.9;//IN PERCENT
@@ -321,17 +320,6 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
       $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
       $filename = "download_" . $unique_str;
       mkdir("/tmp/tht/$filename");
-      $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = ?";
-      if ($stmt = mysqli_prepare($mysqli, $sql)) {
-          mysqli_stmt_bind_param($stmt, "i", $experiment_uid);
-          mysqli_stmt_execute($stmt);
-          mysqli_stmt_bind_result($stmt, $uid);
-          while (mysqli_stmt_fetch($stmt)) {
-              $markers[] = $uid;
-          }
-          mysqli_stmt_close($stmt);
-      }
-
       $filename = "genotype.hmp.txt";
       $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
       $output = type4BuildMarkersDownload($experiment_uid, $min_maf, $max_missing, $dtype, $h);
