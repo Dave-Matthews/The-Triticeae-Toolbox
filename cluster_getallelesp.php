@@ -47,7 +47,8 @@ if (isset($_GET['mml'])) {
 if (isset ($_SESSION['selected_lines'])) {
     $selected_lines = $_SESSION['selected_lines'];
     if (isset($_SESSION['geno_exps'])) {
-        calculate_afe($selected_lines, $min_maf, $max_missing, $max_miss_line);
+        $experiment_uid = $_SESSION['geno_exps'][0];
+        calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
     } else {
         calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
     }
