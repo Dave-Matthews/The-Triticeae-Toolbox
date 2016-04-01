@@ -1275,22 +1275,22 @@ function DispPhenotypeSel($arr) {
  * This function is used in advanced_search.php. It is the backend for the trial selection table, cell 3
  */
 function DispTrialSel($arr) {
-	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
-		echo "<br>No trials selected";
-		return;
-	}
-	// make local the array variables please.  
-	//$id = most recently clicked experiment_uid (selected or deselected). Ignore.
-	//$phenotypeid = current phenotype_uid
-	//$trialsSelected is a comma-separated list of all experiment_uid's currently selected.
-	extract($arr);
-	// Remove the trailing ",".
-	$trialsSelected = trim($trialsSelected, ",");
-	// Store it in a cookie.
-	$_SESSION['experiments'] = $trialsSelected;
+    global $mysqli;
+    if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
+	echo "<br>No trials selected";
+	return;
+    }
+    // make local the array variables please.  
+    //$id = most recently clicked experiment_uid (selected or deselected). Ignore.
+    //$phenotypeid = current phenotype_uid
+    //$trialsSelected is a comma-separated list of all experiment_uid's currently selected.
+    extract($arr);
+    // Remove the trailing ",".
+    $trialsSelected = trim($trialsSelected, ",");
+    // Store it in a cookie.
+    $_SESSION['experiments'] = $trialsSelected;
 
-	$query = mysql_query("
-select avg(value) as avg,
+    $query = mysqli_query($mysqli, "select avg(value) as avg,
        stddev_samp(value) as std,
        count(value) as num,
        min(cast(value as decimal(10,4))) as min, 
@@ -1301,40 +1301,39 @@ and tht_base.experiment_uid = experiments.experiment_uid
 and phenotype_data.tht_base_uid = tht_base.tht_base_uid
 and phenotype_data.phenotype_uid = phenotypes.phenotype_uid
 and experiments.experiment_uid IN ($trialsSelected)
-") or die(mysql_error());
+") or die(mysqli_error($mysqli));
 
-	if(mysql_num_rows($query) > 0) {
-	  $row = mysql_fetch_assoc($query);
-	  // Actually number_format should use units.sigdigits_display as done in compare.php.
-	  $avg = number_format($row['avg'],1);
-	  $std = number_format($row['std'],1);
-	  $num = $row['num'];
-	  $min = number_format($row['min'],1);
-	  $max = number_format($row['max'],1);
+    if(mysqli_num_rows($query) > 0) {
+        $row = mysqli_fetch_assoc($query);
+        // Actually number_format should use units.sigdigits_display as done in compare.php.
+        $avg = number_format($row['avg'],1);
+        $std = number_format($row['std'],1);
+        $num = $row['num'];
+        $min = number_format($row['min'],1);
+        $max = number_format($row['max'],1);
 
-	  echo "<b>Values</b><br>";
-	  echo "Mean: $avg &plusmn; $std, n = $num<br>";
-	  echo "Range: " . $min . " - " . $max;
-	  // number_format adds commas for thousands, and rounds. Better be inclusive by default.
-	  $min = floor(str_replace(",","",$min));
-	  $max = ceil(str_replace(",","",$max));
-	  echo "<p>Search between:<br> <input type='text' name='first_value' value=$min><br>and<br><input type='text' name='last_value' value=$max>";
-          echo "<input type='hidden' name='phenoSearch'>";
-	  echo "<br><input type='submit' value='Search'></form>";
+        echo "<b>Values</b><br>";
+        echo "Mean: $avg &plusmn; $std, n = $num<br>";
+        echo "Range: " . $min . " - " . $max;
+        // number_format adds commas for thousands, and rounds. Better be inclusive by default.
+       $min = floor(str_replace(",","",$min));
+       $max = ceil(str_replace(",","",$max));
+       echo "<p>Search between:<br> <input type='text' name='first_value' value=$min><br>and<br><input type='text' name='last_value' value=$max>";
+       echo "<input type='hidden' name='phenoSearch'>";
+       echo "<br><input type='submit' value='Search'></form>";
 
-	  // DLH R plotting for histogram      
-        $phen_name = mysql_query("select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotypeid
+       // DLH R plotting for histogram      
+        $phen_name = mysqli_query($mysqli, "select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotypeid
                                         AND units.unit_uid = phenotypes.unit_uid;");
-        $pname = mysql_fetch_row($phen_name);
-        $hist_query = mysql_query("
-	  select value from phenotype_data as pd, experiments as e, tht_base
+        $pname = mysqli_fetch_row($phen_name);
+        $hist_query = mysqli_query($mysqli, "select value from phenotype_data as pd, experiments as e, tht_base
 	  where phenotype_uid = $phenotypeid 
 	  and tht_base.tht_base_uid = pd.tht_base_uid
 	  and e.experiment_uid = tht_base.experiment_uid
           and e.experiment_uid in ($trialsSelected)"
-				  ) or die(mysql_error());
+				  ) or die(mysqli_error($mysqli));
         $x = 'x <- c(';
-        while($row = mysql_fetch_row($hist_query)) {
+        while($row = mysqli_fetch_row($hist_query)) {
 	  $x .= "$row[0],";
         }
         $x = trim($x, ",");
@@ -1345,11 +1344,9 @@ and experiments.experiment_uid IN ($trialsSelected)
 	$xlab = "xlab='" . html_entity_decode($pname[1]) . "'";
         $rcmd = "hist(x,$title,$xlab)";
 	exec("echo \"$x;$out;$rcmd\" | R --vanilla");
-
-	}
-	else {
-	  echo "<p style='color: red;'>There is no data available for this phenotype</p>";
-	}
+    } else {
+        echo "<p style='color: red;'>There is no data available for this phenotype</p>";
+    }
 }
 
 // Modified DispCategorySel() for Select Lines by Properties.
