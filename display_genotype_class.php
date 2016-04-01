@@ -101,7 +101,7 @@ class ShowData
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
         ?>
-        <script type="text/javascript" src="display_genotype.js"></script>
+        <script type="text/javascript" src="display_genotype01.js"></script>
         <?php
     }
 
@@ -206,32 +206,16 @@ class ShowData
         } elseif ($min_maf < 0) {
             $min_maf = 0;
         }
-
+        $max_miss_line = 10;
+        if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml']))
+           $max_miss_line = $_GET['mml'];
         $sql_mstat = "SELECT marker_uid, maf, missing, total 
-	   FROM allele_frequencies
-	   WHERE experiment_uid = $experiment_uid";
+           FROM allele_frequencies
+           WHERE experiment_uid = $experiment_uid";
         $res = mysqli_query($mysqli, $sql_mstat) or
             die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
         $num_mark = mysqli_num_rows($res);
         $num_maf = $num_miss = 0;
-
-        $count_remain = 0;
-        while ($row = mysqli_fetch_array($res)) {
-            $maf = $row["maf"];
-            $miss = $row["missing"];
-            if ($row["total"] > 0) {
-                $miss = round(100*$miss/$row["total"], 1);
-                if ($maf > $min_maf) {
-                    $num_maf++;
-                }
-                if ($miss > $max_missing) {
-                    $num_miss++;
-                }
-                if (($miss < $max_missing) and ($maf > $min_maf)) {
-                    $count_remain++;
-                }
-            }
-        }
 
     echo "<h3>Description</h3><p>";
     echo "<table>";
@@ -260,12 +244,17 @@ class ShowData
 <input type=hidden name=genoexp value=<?php echo "\"$experiment_uid\""; ?>>
 <input type="submit" value="Select experiment" style="color:blue"> (lines and markers)
 </form>
+<br>
+<?php
+    if ($gbs_exp == "yes") {
+        calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
+    } else {
+        calculate_af($lines_ids, $min_maf, $max_missing, $max_miss_line);
+    }
+?>
 
 <p>
-<b><?php echo ($num_miss) ?></b> markers are missing at least <b><?php echo ($max_missing) ?></b>% of measurements.<br>
-<b><?php echo ($num_maf) ?></b> markers have a minor allele frequency (MAF) larger than <b><?php echo ($min_maf) ?></b>%.<br>
-<b><?php echo ($count_remain) ?></b> markers remaining<br>
-Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php echo ($max_missing) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
+  Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php echo ($max_missing) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
   Minimum MAF: <input type="text" name="mmaf" id="mmaf" size="1" value="<?php echo ($min_maf) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
   <input type="button" value="Refresh" onclick="javascript:mrefresh('<?php echo $trial_code ?>');return false;" /><br>
   <div id="status"></div>
@@ -320,6 +309,11 @@ Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php
       $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
       $filename = "download_" . $unique_str;
       mkdir("/tmp/tht/$filename");
+      $filename = "selection_parameters.txt";
+      $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+      fwrite($h, "Minimum MAF = $min_maf\n");
+      fwrite($h, "Maximum Missing = $max_missing\n");
+      fclose($h);
       $filename = "genotype.hmp.txt";
       $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
       $output = type4BuildMarkersDownload($experiment_uid, $min_maf, $max_missing, $dtype, $h);
