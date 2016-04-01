@@ -870,7 +870,7 @@ class Downloads
             $selected_map = $_SESSION['selected_map'];
         }
         if (isset($_SESSION['geno_exps'])) {
-            $geno_exps = $_SESSION['geno_exps'];
+            $geno_exps = $_SESSION['geno_exps'][0];
         } else {
             $geno_exps = "";
         }
@@ -926,7 +926,7 @@ class Downloads
                 //calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
                 echo "<br>Filter lines and markers then $message2";
              } elseif ($typeGE == "true") {
-                calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
+                calculate_afe($geno_exps, $min_maf, $max_missing, $max_miss_line);
                 $countFilterLines = count($lines);
                 $countFilterMarkers = count($_SESSION['filtered_markers']);
              } else {
