@@ -244,6 +244,8 @@ class LineNames_Check
 	  else {
 	    // Find other Properties, and determine the column offset.
 	    $pr = trim($columnName);
+	    if ($pr == "*Row type")
+	      $pr = "Row type";
 	    if (in_array($pr, $properties)) {
 	      // Get this property's allowed values.
 	      $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
