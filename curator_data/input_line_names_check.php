@@ -1,4 +1,5 @@
 <?php
+// 4apr2016 dem: Handle template for any of our crops
 // aug2014 dem: Allow a different Breeding Program for each Line.
 // 21feb2013 dem: Use line_properties table instead of schema-coded properties.
 
@@ -14,7 +15,9 @@ authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
 /* The Excel file must have this string in cell B2.  Modify when a new template is needed.*/
-$TemplateVersion = '1Jul13';
+$TemplateVersions = array('Wheat' => '1Jul13', 
+			  'Barley' => '11Dec14',
+			  'Oat' => '29Jan15');
 $cnt = 0;  // Count of errors
 
 function die_nice($message = "")
@@ -77,7 +80,7 @@ class LineNames_Check
   }
 	
   private function type_Line_Name() {
-    global $TemplateVersion;
+    global $TemplateVersions;
     global $cnt;
 ?>
 
@@ -132,8 +135,13 @@ class LineNames_Check
 	$cols = $reader->sheets[0]['numCols'];
 	$rows = $reader->sheets[0]['numRows'];
 	// Read the Template Version and check it.
-	if ($linedata['cells'][2][2] != $TemplateVersion )
-	  die ("Incorrect Submission Form version.  Cell B2 must say \"$TemplateVersion\".");
+	$crop = $linedata['cells'][3][2];
+	if (!in_array($crop, array_keys($TemplateVersions))) {
+	  $croplist = implode(", ", array_keys($TemplateVersions));
+	  die ("Cell B3: Crop must be one of <b>$croplist</b>.");
+	}
+	if ($linedata['cells'][2][2] != $TemplateVersions[$crop] )
+	  die ("Incorrect Submission Form version for $crop.  Cell B2 must say \"" .$TemplateVersions[$crop]. "\".");
 
 	// Lookup all the Breeding Programs in the database.
 	$sql = mysql_query("SELECT distinct data_program_code from CAPdata_programs") or errmsg($sql, mysql_error());
@@ -145,7 +153,7 @@ class LineNames_Check
 	  $singleBP = TRUE;
 	  $bp = $linedata['cells'][4][2];
 	  if ((in_array($bp, $bpcodes) === FALSE) OR (strlen($bp) == 0) ) 
-	    die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br><br>");
+	    die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br>");
 	}
 	// Initialize the column number for the first Property.  First column is 0.
 	// 23mar2015 Now Species is treated as a Genetic Character (Property). 
@@ -213,8 +221,9 @@ class LineNames_Check
 	  // Determine the column offset of "*Filial Generation".
 	  else if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
 	    $columnOffsets['generation'] = $columnOffset+1;
-	  // Determine the column offset of "*aestivum / durum / other".
-	  else if (preg_match('/^\s*\*aestivum \/ durum \/ other\s*$/is', trim($columnName))) {
+	  // Determine the column offset of "*aestivum / durum / other" or "*Species".
+	  else if (preg_match('/^\s*\*aestivum \/ durum \/ other\s*$/is', trim($columnName))
+		   OR preg_match('/^\s*\*species\s*$/is', trim($columnName))) {
 	    $columnOffsets['species'] = $columnOffset+1;
 	    // Species is also a Genetic Character.
 	    // Get this property's allowed values.
@@ -286,7 +295,7 @@ class LineNames_Check
 	    if (!$singleBP) {
 	      $mybp = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['breeding_program']]),"\0..\37!@\177..\377");
 	      if ( (in_array($mybp, $bpcodes) == FALSE) OR (strlen($mybp) == 0) ) {
-		die_nice("Line $line: Breeding Program <b>'$mybp'</b> is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br><br>");
+		die_nice("Line $line: Breeding Program <b>'$mybp'</b> is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a>");
 	      }
 	    }
 	    // Aliases
@@ -312,10 +321,16 @@ class LineNames_Check
 		$grin = str_replace("PI", "PI ", $grin);
 	      if (preg_match("/^CItr[0-9]/", $grin)) 
 		$grin = str_replace("CItr", "CItr ", $grin);
+	      if (preg_match("/^CIho[0-9]/", $grin)) 
+		$grin = str_replace("CIho", "CIho ", $grin);
+	      if (preg_match("/^CIav[0-9]/", $grin)) 
+		$grin = str_replace("CIav", "CIav ", $grin);
 	      if (preg_match("/^GSTR[0-9]/", $grin)) 
 		$grin = str_replace("GSTR", "GSTR ", $grin);
 	      if ( !preg_match("/^PI [0-9]*$/", $grin) 
 		   AND !preg_match("/^CItr [0-9]*$/", $grin) 
+		   AND !preg_match("/^CIho [0-9]*$/", $grin) 
+		   AND !preg_match("/^CIav [0-9]*$/", $grin) 
 		   AND !preg_match("/^GSTR [0-9]*$/", $grin) )
 		die_nice("Row $irow, Line $line: Invalid GRIN Accession $grin");
 	      // Is this accession already used for a different line?
@@ -687,7 +702,7 @@ class LineNames_Check
 	  $columnOffsets['comments'] = $columnOffset+1;
 	// Find other Properties, and determine the column offset.
 	$pr = trim($columnName);
-	if ($pr == "*aestivum / durum / other")
+	if ($pr == "*aestivum / durum / other" OR $pr == "*Species")
 	  $pr = "Species";
 	if (in_array($pr, $properties)) {
 	  // Get this property's allowed values.
@@ -732,6 +747,10 @@ class LineNames_Check
 	      $grin = str_replace("PI", "PI ", $grin);
 	    if (preg_match("/^CItr[0-9]/", $grin)) 
 	      $grin = str_replace("CItr", "CItr ", $grin);
+	    if (preg_match("/^CIho[0-9]/", $grin)) 
+	      $grin = str_replace("CIho", "CIho ", $grin);
+	    if (preg_match("/^CIav[0-9]/", $grin)) 
+	      $grin = str_replace("CIav", "CIav ", $grin);
 	    if (preg_match("/^GSTR[0-9]/", $grin)) 
 	      $grin = str_replace("GSTR", "GSTR ", $grin);
 	  }
