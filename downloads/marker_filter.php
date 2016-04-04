@@ -285,16 +285,9 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
      *
      * @return $markers_filtered, $lines_filtered
     */
-function calculate_afe($lines, $min_maf, $max_missing, $max_miss_line)
+function calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line)
 {
     global $mysqli;
-    if (isset($_SESSION['geno_exps'])) {
-        $experiment_uid = $_SESSION['geno_exps'];
-        $experiment_uid = $experiment_uid[0];
-    } else {
-        die("Error: Select genotype experiment befor download\n");
-    }
-
     $num_maf = 0;
     $num_miss = 0;
     $num_mark = 0;
@@ -417,21 +410,19 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $selected_map = "";
     }
 
-    //calculate number of lines for selected experiment
-    $sql = "select max(total) from allele_frequencies where experiment_uid = $geno_exp";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-    if ($row = mysqli_fetch_row($res)) {
-        $measured_lines = $row[0];
-        $max_missing_count = round($max_missing * ($measured_lines / 100));
-    }
-
-    $sql = "SELECT marker_uid, maf, missing,total from allele_frequencies where experiment_uid = $geno_exp";
+    $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $geno_exp";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
     while ($row = mysqli_fetch_row($res)) {
         $marker_uid = $row[0];
         $maf = $row[1];
         $miss = $row[2];
-        if (($miss > $max_missing_count) or ($maf < $min_maf)) {
+        $total = $row[3];
+        if ($total > 0) {
+            $miss_per = 100 * ($miss / $total);
+        } else {
+            $miss_per = 100;
+        }
+        if (($miss_per > $max_missing) or ($maf < $min_maf)) {
         } else {
             $marker_lookup[$marker_uid] = 1;
         }
@@ -444,12 +435,14 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $marker_list_chr = array();
     } else {
         if ($map_type == "Physical") {
-            $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
+            $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome, mim.bin_name
+            from markers, markers_in_maps as mim, map
             where mim.marker_uid = markers.marker_uid
             AND mim.map_uid = map.map_uid
             AND map.mapset_uid = $selected_map";
         } else {
-            $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
+            $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome, mim.bin_name
+            from markers, markers_in_maps as mim, map
             where mim.marker_uid = markers.marker_uid
             AND mim.map_uid = map.map_uid
             AND map.mapset_uid = $selected_map";
@@ -459,8 +452,13 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
                $marker_uid = $row[0];
                $pos = $row[1];
                $chr = $row[2];
+               $bin = $row[3];
                $marker_list_mapped[$marker_uid] = $pos;
-               $marker_list_chr[$marker_uid] = $chr;
+               if (!empty($bin) && ($bin != $chr)) {
+                   $marker_list_chr[$marker_uid] = $bin;
+               } else {
+                   $marker_list_chr[$marker_uid] = $chr;
+               }
         }
     }
 

@@ -5,16 +5,13 @@
  * These functions are only called by javascript functions located in core.js
  *
  * Note: Not all of these functions are documented, it would be redundant. Check core.js concerning what these do.
- * 3/20/2011 JLee	Enable write privilege to DB
- * 
+ * 3/20/2011 JLee Enable write privilege to DB
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/includes/ajaxlib.php
  */
 
@@ -24,7 +21,8 @@ if (!((isset($config['base_url']))&(isset($config['root_dir'])))) {
 set_time_limit(3000);
 
 //does the function exist?
-if (!function_exists($_GET['func'])) {
+if (!isset($_GET['func'])) {
+} elseif (!function_exists($_GET['func'])) {
     echo ""; 	//if not then just echo nothing as an appropriate ajax return.
 } else {
     $function = $_GET['func'];
@@ -35,13 +33,13 @@ if (!function_exists($_GET['func'])) {
     include "bootstrap_curator.inc";
 
     //give function database access
-    $link = connect();
+    $link = connecti();
 
     //execute function
     call_user_func($function, $_GET);
 
     //close mysql connection to prevent overloading.
-    mysql_close($link);
+    mysqli_close($link);
 }
 
 
@@ -49,26 +47,27 @@ if (!function_exists($_GET['func'])) {
  * This function shows the contents of a particular mapset entry in table format
  *
  * @param array $arr ajax is a bit restricting so we simply pass it the entire array as parameters.
- * 
+ *
  * @return nothing - it echos the table.
  */
 function showMapsetContents($arr)
 {
+    global $mysqli;
     if ($arr['id'] == "") {
         echo "Wrong Function: showMapsetContents()";
     }
 
-    $res = mysql_query("SELECT * FROM mapset WHERE mapset_uid = $arr[id]")
-        or die(mysql_error());
+    $res = mysqli_query($mysqli, "SELECT * FROM mapset WHERE mapset_uid = $arr[id]")
+        or die(mysqli_error($mysqli));
 
-    if (mysql_num_rows($res) > 1) {
+    if (mysqli_num_rows($res) > 1) {
         echo "Number of Rows Exceeds 1, we have a database problem";
     }
 
 
     echo "<table class=\"tableclass1\">\n";
-    $row = mysql_fetch_assoc($res);
-    foreach ($row as $k=>$v) {
+    $row = mysqli_fetch_assoc($res);
+    foreach ($row as $k => $v) {
         echo "\t<tr>\n";
         echo "\t\t<td><strong>$k</strong></td>\n";
         echo "\t\t<td>$v</td>\n";
@@ -77,29 +76,30 @@ function showMapsetContents($arr)
 	echo "</table>\n";
 }
 
-function DispSelContents($arr) {
-	if($arr['id'] == "" || $arr['tablename']=="" || $arr['field']=="") {
-		echo "Invalid Input for DispSelContents";
-	}
-	// print "SELECT * FROM ".$arr['tablename']." WHERE ".$arr['field']." = ".$arr['id'];
-	$res = mysql_query("
-			SELECT *
-			FROM ".$arr['tablename']."
-			WHERE ".$arr['field']." = ".$arr['id']
-		) or die(mysql_error());
+function DispSelContents($arr)
+{
+    global $mysqli;
+    if ($arr['id'] == "" || $arr['tablename']=="" || $arr['field']=="") {
+	echo "Invalid Input for DispSelContents";
+    }
+    // print "SELECT * FROM ".$arr['tablename']." WHERE ".$arr['field']." = ".$arr['id'];
+    $res = mysqli_query($mysqli, "SELECT *
+		FROM ".$arr['tablename']."
+		WHERE ".$arr['field']." = ".$arr['id']
+	) or die(mysqli_error($mysqli));
 
-	if(mysql_num_rows($res) > 1) {
-		warning("key is not unique");
-	}
-	echo "<table class=\"tableclass1\">\n";
-	$row = mysql_fetch_assoc($res);
-	foreach($row as $k=>$v) {
-		echo "\t<tr>\n";
-		echo "\t\t<td><strong>$k</strong></td>\n";
-		echo "\t\t<td>$v</td>\n";
-		echo "\t</tr>\n";
-	}
-	echo "</table>\n";
+    if(mysqli_num_rows($res) > 1) {
+	warning("key is not unique");
+    }
+    echo "<table class=\"tableclass1\">\n";
+    $row = mysqli_fetch_assoc($res);
+    foreach($row as $k=>$v) {
+	echo "\t<tr>\n";
+	echo "\t\t<td><strong>$k</strong></td>\n";
+	echo "\t\t<td>$v</td>\n";
+	echo "\t</tr>\n";
+    }
+    echo "</table>\n";
 }
 
 function InsertByAjax ($arr) {
@@ -919,33 +919,34 @@ function ajaxSubmitForm ($arr) {
  * Display the map range based on the map name
  */
 function DispMapSel ($arr) {
-	if (! isset($arr['mapname']) || strlen($arr['mapname'])<1) {
-		print "Invalid input of map name";
-		return;
+    global $mysqli;
+    if (! isset($arr['mapname']) || strlen($arr['mapname'])<1) {
+	print "Invalid input of map name";
+	return;
+    }
+    $mapname=$arr['mapname'];
+    $result=mysqli_query($mysqli, "select map_uid from map where map_name=\"$mapname\"") or die("Invalid map name");
+    if (mysqli_num_rows($result)>0) {
+        $row=mysqli_fetch_assoc($result);
+	$mapuid=$row['map_uid'];
+	// print "select min(start_position), max(start_position) from markers_in_maps where map_uid=$mapuid";
+	$res2=mysqli_query($mysqli, "select min(start_position), max(start_position) from markers_in_maps where map_uid=$mapuid");
+	if (mysqli_num_rows($res2)>0) {
+		$row=mysqli_fetch_assoc($res2);
+		$mstt=round(array_shift($row));
+		$mend=round(array_shift($row));
+		print "Map start: $mstt<br>";
+		print "Map end: $mend<br>";
+		print "Range:<br>";
+		print "From <input type='text' style='width:30px' id='mapstt' value=\"$mstt\"> ";
+		print "to <input type='text' style='width:30px' id='mapend' value=\"$mend\"><br>";
+		print "<input type='button' style=\"color: black\" value=\"Show markers\" onClick=\"DispMarkers('$mapuid')\"><br>";
 	}
-	$mapname=$arr['mapname'];
-	$result=mysql_query("select map_uid from map where map_name=\"$mapname\"") or die("Invalid map name");
-	if (mysql_num_rows($result)>0) {
-		$row=mysql_fetch_assoc($result);
-		$mapuid=$row['map_uid'];
-		// print "select min(start_position), max(start_position) from markers_in_maps where map_uid=$mapuid";
-		$res2=mysql_query("select min(start_position), max(start_position) from markers_in_maps where map_uid=$mapuid");
-		if (mysql_num_rows($res2)>0) {
-			$row=mysql_fetch_assoc($res2);
-			$mstt=round(array_shift($row));
-			$mend=round(array_shift($row));
-			print "Map start: $mstt<br>";
-			print "Map end: $mend<br>";
-			print "Range:<br>";
-			print "From <input type='text' style='width:30px' id='mapstt' value=\"$mstt\"> ";
-			print "to <input type='text' style='width:30px' id='mapend' value=\"$mend\"><br>";
-			print "<input type='button' style=\"color: black\" value=\"Show markers\" onClick=\"DispMarkers('$mapuid')\"><br>";
-		}
-	}
-
+    }
 }
 
 function DispExperiment ($arr) {
+    global $mysqli;
     if (! isset($arr['platform'])) {
         print "Invalid input of platform";
         return;
@@ -955,10 +956,10 @@ function DispExperiment ($arr) {
     ?>
     <table><tr><td><select name='expt[]' size=10 multiple onchange="javascript: update_exper(this.options)">
     <?php
-    $result=mysql_query("select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
+    $result=mysqli_query($mysqli, "select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
         where experiments.experiment_uid = genotype_experiment_info.experiment_uid
-        and genotype_experiment_info.platform_uid IN ($platform)") or die(mysql_error);
-    while ($row=mysql_fetch_assoc($result)) {
+        and genotype_experiment_info.platform_uid IN ($platform)") or die(mysqli_error($mysqli));
+    while ($row=mysqli_fetch_assoc($result)) {
         $uid=$row['experiment_uid'];
         $val=$row['trial_code'];
         print "<option value=$uid>$val</option>\n";
@@ -972,6 +973,7 @@ function DispExperiment ($arr) {
 }
 
 function SelcMarkerSet ($arr) {
+    global $mysqli;
     if (! isset($arr['set'])) {
         print "Invalid input of marker panel";
         return;
@@ -980,15 +982,15 @@ function SelcMarkerSet ($arr) {
     }
     echo "<h3>Currently selected markers</h3>";
     $sql = "select marker_ids from markerpanels where name = \"$panel_str\"";
-    $res = mysql_query($sql) or die(mysql_error());
-    if ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
         $mkruid=$row[0];
         $marker_list = explode(',', $mkruid);
         foreach ($marker_list as $uid) {
             $clkmkrs[] = $uid;
             $sql = "select marker_name from markers where marker_uid=$uid";
-            $res=mysql_query($sql) or die("invalid marker $sql\n");
-            if ($row = mysql_fetch_array($res)) {
+            $res=mysqli_query($mysqli, $sql) or die("invalid marker $sql\n");
+            if ($row = mysqli_fetch_array($res)) {
                 $name = $row[0];
             }
         }
@@ -1002,8 +1004,8 @@ function SelcMarkerSet ($arr) {
         foreach ($_SESSION['clicked_buttons'] as $mkruid) {
             $count_markers++;
             $sql = "select marker_name from markers where marker_uid=$mkruid";
-            $result=mysql_query($sql) or die(mysql_error());
-            while ($row=mysql_fetch_assoc($result)) {
+            $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row=mysqli_fetch_assoc($result)) {
               $selval=$row['marker_name'];
               if(! in_array($selval,$markerlist)) {
                  array_push($markerlist, $selval);
@@ -1019,12 +1021,14 @@ function SelcMarkerSet ($arr) {
         $count = count($_SESSION['clicked_buttons']);
         print "$count markers selected. ";
         print "<a href=genotyping/display_markers.php>Download list of markers</a><br>\n";
-    } 
+    }
 }
 
 function SelcExperiment($arr)
 {
-    if (! isset($arr['experiment'])) {
+    global $mysqli;
+    $lines_unique = array();
+    if (!isset($arr['experiment'])) {
         print "Invalid input of experiment";
         return;
     } else {
@@ -1036,8 +1040,8 @@ function SelcExperiment($arr)
     $trial_code = "";
     $sql = "select trial_code from experiments
         where experiment_uid IN ($expt_str)";
-    $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
-    while ($row = mysql_fetch_row($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
         if ($trial_code == "") {
             $trial_code = $row[0];
         } else {
@@ -1045,28 +1049,37 @@ function SelcExperiment($arr)
         }
     }
     echo "Markers added from experiment(s) <b>$trial_code</b><p>";
-    $sql = "select distinct marker_uid
-        from tht_base t, genotyping_data gd, experiments e
-        where trial_code in ($expt_str)
-        and gd.tht_base_uid = t.tht_base_uid
-        and e.experiment_uid = t.experiment_uid";
-    // faster query but may include markers with no data
-    $sql = "select distinct marker_uid
-        from allele_frequencies af
-        where experiment_uid IN ($expt_str)";
-    $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
-    while ($row = mysql_fetch_row($res)) {
-        $clkmkrs[] = $row[0];
-    }
-    $totalSel = count($clkmkrs);
-    if ($totalSel < 100000) {
+    $_SESSION['geno_exps'] = $expt;
+    $sql = "select distinct(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($expt_str)";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $row_cnt = mysqli_num_rows($res);
+    $_SESSION['geno_exps_cnt'] = $row_cnt;
+    if ($row_cnt < 100000) {
+        while ($row = mysqli_fetch_row($res)) {
+            $clkmkrs[] = $row[0];
+        }
         $_SESSION['clicked_buttons'] = $clkmkrs;
-        print "$totalSel markers selected. ";
+        print "$row_cnt markers selected. ";
     } else {
         unset($_SESSION['clicked_buttons']);
-        print "$totalSel markers in experiment<br>\n";
+        print "$row_cnt markers in experiment<br>\n";
     }
-    $_SESSION['geno_exps'] = $expt;
+
+    $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($expt_str)";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
+        $lines = json_decode($row[0], true);
+        //*check for duplicates
+        foreach ($lines as $line_record) {
+            if (isset($unique_list[$line_record])) {
+                $skipped .= "$line_record ";
+            } else {
+                $lines_unique[] = $line_record;
+                $unique_list[$line_record] = 1;
+            }
+        }
+    }
+    $_SESSION['selected_lines'] = $lines_unique;
     if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
         print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
         print "<table><tr><td>\n";
@@ -1085,9 +1098,9 @@ function SelcExperiment($arr)
             $mapid = current($mapids);
             next($mapids);
             $sql = "select marker_name from markers where marker_uid=$mkruid";
-            $result=mysql_query($sql)
-            or die(mysql_error());
-            while ($row=mysql_fetch_assoc($result)) {
+            $result=mysqli_query($mysqli, $sql)
+            or die(mysqli_error($mysqli));
+            while ($row=mysqli_fetch_assoc($result)) {
                 $selval=$row['marker_name'];
                 $selchr=$row['chromosome'];
                 if (! in_array($selval, $markerlist)) {
@@ -1109,24 +1122,25 @@ function SelcExperiment($arr)
  */
 function DispMarkers($arr)
 {
+    global $mysqli;
     if (! isset($arr['mapuid']) || ! isset($arr['mapstt']) || ! isset($arr['mapend'])) {
-		print "Invalid inputs";
-		return;
-	}
-	$mapuid=$arr['mapuid'];
-	$mapstt=$arr['mapstt'];
-	$mapend=$arr['mapend'];
-	if (! is_numeric($mapstt) || ! is_numeric($mapend) || $mapstt>=$mapend) {
-		print "Invalid inputs";
-		return;
-	}
-	$result=mysql_query("select marker_uid from markers_in_maps where map_uid=$mapuid and start_position between $mapstt and $mapend order by start_position");
-	if (mysql_num_rows($result)>0) {
+	print "Invalid inputs";
+	return;
+    }
+    $mapuid=$arr['mapuid'];
+    $mapstt=$arr['mapstt'];
+    $mapend=$arr['mapend'];
+    if (! is_numeric($mapstt) || ! is_numeric($mapend) || $mapstt>=$mapend) {
+	print "Invalid inputs";
+	return;
+    }
+    $result=mysqli_query($mysqli, "select marker_uid from markers_in_maps where map_uid=$mapuid and start_position between $mapstt and $mapend order by start_position");
+	if (mysqli_num_rows($result)>0) {
 		print "<select name=\"selMkrs[]\" multiple=\"multiple\" size=10>";
-		while ($row=mysql_fetch_assoc($result)) {
+		while ($row=mysqli_fetch_assoc($result)) {
 			$mkruid=$row['marker_uid'];
-			$res2=mysql_query("select marker_name from markers where marker_uid=$mkruid") or die("invalid marker uid\n");
-			while ($row2=mysql_fetch_assoc($res2)) {
+			$res2=mysqli_query($mysqli, "select marker_name from markers where marker_uid=$mkruid") or die("invalid marker uid\n");
+			while ($row2=mysqli_fetch_assoc($res2)) {
 				$selval=$row2['marker_name'];
 				print "<option value=\"$mkruid\">$selval</option>\n";
 			}
@@ -1138,6 +1152,7 @@ function DispMarkers($arr)
 }
 
 function DispMarkerSet ($arr) {
+    global $mysqli;
     if (! isset($arr)) {
         print "Invalid inputs";
         return;
@@ -1147,15 +1162,15 @@ function DispMarkerSet ($arr) {
     <p><input type=button value=Select style=color:blue onclick="javascript: select_set()">
     <?php
     $sql = "select marker_ids from markerpanels where name = \"$set\"";
-    $res = mysql_query($sql) or die(mysql_error());
-    if ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
         $mkruid=$row[0];
         $marker_list = explode(',', $mkruid);
         //print "<textarea disabled rows=10>";
         foreach ($marker_list as $uid) {
             $sql = "select marker_name from markers where marker_uid=$uid";
-            $res=mysql_query($sql) or die("invalid marker $sql\n");
-            if ($row = mysql_fetch_array($res)) {
+            $res=mysqli_query($mysqli, $sql) or die("invalid marker $sql\n");
+            if ($row = mysqli_fetch_array($res)) {
                 $name = $row[0];
          //       print "$name\n";
             }
@@ -1170,6 +1185,7 @@ function DispMarkerSet ($arr) {
  * This function is used in advanced_search.php. It is the backend for the phenotype selection table, cell 1.
  */
 function DispCategorySel($arr) {
+    global $mysqli;
 	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
 		echo "Please Select A Category";
 		return;
@@ -1179,12 +1195,12 @@ function DispCategorySel($arr) {
 	extract($arr);
 
 	// query please
-	$query = mysql_query("SELECT phenotype_uid, phenotypes_name FROM phenotypes WHERE phenotype_category_uid = $id AND datatype != 'string'") or die(mysql_error());
+	$query = mysqli_query($mysqli, "SELECT phenotype_uid, phenotypes_name FROM phenotypes WHERE phenotype_category_uid = $id AND datatype != 'string'") or die(mysqli_error($mysqli));
 
 	// display in selection box please
-	if(mysql_num_rows($query) > 0) {
+	if(mysqli_num_rows($query) > 0) {
 		echo "<select name='phenotype' size=10 onfocus=\"DispPhenoSel(this.value, 'Phenotype')\" onchange=\"DispPhenoSel(this.value, 'Phenotype')\">";
-		while($row = mysql_fetch_row($query)) {
+		while($row = mysqli_fetch_row($query)) {
 			echo "\n\t<option value=$row[0]>$row[1]</option>";
 		}
 		echo "</select>";
@@ -1198,6 +1214,7 @@ function DispCategorySel($arr) {
  * This function is used in advanced_search.php. It is the backend for the phenotype selection table, cell 2
  */
 function DispPhenotypeSel($arr) {
+    global $mysqli;
 	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
 		echo "Please Select A Trait";
 		return;
@@ -1210,8 +1227,8 @@ function DispPhenotypeSel($arr) {
 	// No experiments selected yet so unset the cookie.
 	unset($_SESSION['experiments']);
 
-	$pquery = mysql_query("SELECT phenotypes_name from phenotypes where phenotype_uid = $id") or die(mysql_error());
-	$pname = mysql_fetch_row($pquery);
+	$pquery = mysqli_query($mysqli, "SELECT phenotypes_name from phenotypes where phenotype_uid = $id") or die(mysqli_error($mysqli));
+	$pname = mysqli_fetch_row($pquery);
 	$pn = $pname[0];
 	// Show only public trials unless signed in as at least Participant.
 	if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
@@ -1258,22 +1275,22 @@ function DispPhenotypeSel($arr) {
  * This function is used in advanced_search.php. It is the backend for the trial selection table, cell 3
  */
 function DispTrialSel($arr) {
-	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
-		echo "<br>No trials selected";
-		return;
-	}
-	// make local the array variables please.  
-	//$id = most recently clicked experiment_uid (selected or deselected). Ignore.
-	//$phenotypeid = current phenotype_uid
-	//$trialsSelected is a comma-separated list of all experiment_uid's currently selected.
-	extract($arr);
-	// Remove the trailing ",".
-	$trialsSelected = trim($trialsSelected, ",");
-	// Store it in a cookie.
-	$_SESSION['experiments'] = $trialsSelected;
+    global $mysqli;
+    if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
+	echo "<br>No trials selected";
+	return;
+    }
+    // make local the array variables please.  
+    //$id = most recently clicked experiment_uid (selected or deselected). Ignore.
+    //$phenotypeid = current phenotype_uid
+    //$trialsSelected is a comma-separated list of all experiment_uid's currently selected.
+    extract($arr);
+    // Remove the trailing ",".
+    $trialsSelected = trim($trialsSelected, ",");
+    // Store it in a cookie.
+    $_SESSION['experiments'] = $trialsSelected;
 
-	$query = mysql_query("
-select avg(value) as avg,
+    $query = mysqli_query($mysqli, "select avg(value) as avg,
        stddev_samp(value) as std,
        count(value) as num,
        min(cast(value as decimal(10,4))) as min, 
@@ -1284,40 +1301,39 @@ and tht_base.experiment_uid = experiments.experiment_uid
 and phenotype_data.tht_base_uid = tht_base.tht_base_uid
 and phenotype_data.phenotype_uid = phenotypes.phenotype_uid
 and experiments.experiment_uid IN ($trialsSelected)
-") or die(mysql_error());
+") or die(mysqli_error($mysqli));
 
-	if(mysql_num_rows($query) > 0) {
-	  $row = mysql_fetch_assoc($query);
-	  // Actually number_format should use units.sigdigits_display as done in compare.php.
-	  $avg = number_format($row['avg'],1);
-	  $std = number_format($row['std'],1);
-	  $num = $row['num'];
-	  $min = number_format($row['min'],1);
-	  $max = number_format($row['max'],1);
+    if(mysqli_num_rows($query) > 0) {
+        $row = mysqli_fetch_assoc($query);
+        // Actually number_format should use units.sigdigits_display as done in compare.php.
+        $avg = number_format($row['avg'],1);
+        $std = number_format($row['std'],1);
+        $num = $row['num'];
+        $min = number_format($row['min'],1);
+        $max = number_format($row['max'],1);
 
-	  echo "<b>Values</b><br>";
-	  echo "Mean: $avg &plusmn; $std, n = $num<br>";
-	  echo "Range: " . $min . " - " . $max;
-	  // number_format adds commas for thousands, and rounds. Better be inclusive by default.
-	  $min = floor(str_replace(",","",$min));
-	  $max = ceil(str_replace(",","",$max));
-	  echo "<p>Search between:<br> <input type='text' name='first_value' value=$min><br>and<br><input type='text' name='last_value' value=$max>";
-          echo "<input type='hidden' name='phenoSearch'>";
-	  echo "<br><input type='submit' value='Search'></form>";
+        echo "<b>Values</b><br>";
+        echo "Mean: $avg &plusmn; $std, n = $num<br>";
+        echo "Range: " . $min . " - " . $max;
+        // number_format adds commas for thousands, and rounds. Better be inclusive by default.
+       $min = floor(str_replace(",","",$min));
+       $max = ceil(str_replace(",","",$max));
+       echo "<p>Search between:<br> <input type='text' name='first_value' value=$min><br>and<br><input type='text' name='last_value' value=$max>";
+       echo "<input type='hidden' name='phenoSearch'>";
+       echo "<br><input type='submit' value='Search'></form>";
 
-	  // DLH R plotting for histogram      
-        $phen_name = mysql_query("select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotypeid
+       // DLH R plotting for histogram      
+        $phen_name = mysqli_query($mysqli, "select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotypeid
                                         AND units.unit_uid = phenotypes.unit_uid;");
-        $pname = mysql_fetch_row($phen_name);
-        $hist_query = mysql_query("
-	  select value from phenotype_data as pd, experiments as e, tht_base
+        $pname = mysqli_fetch_row($phen_name);
+        $hist_query = mysqli_query($mysqli, "select value from phenotype_data as pd, experiments as e, tht_base
 	  where phenotype_uid = $phenotypeid 
 	  and tht_base.tht_base_uid = pd.tht_base_uid
 	  and e.experiment_uid = tht_base.experiment_uid
           and e.experiment_uid in ($trialsSelected)"
-				  ) or die(mysql_error());
+				  ) or die(mysqli_error($mysqli));
         $x = 'x <- c(';
-        while($row = mysql_fetch_row($hist_query)) {
+        while($row = mysqli_fetch_row($hist_query)) {
 	  $x .= "$row[0],";
         }
         $x = trim($x, ",");
@@ -1328,11 +1344,9 @@ and experiments.experiment_uid IN ($trialsSelected)
 	$xlab = "xlab='" . html_entity_decode($pname[1]) . "'";
         $rcmd = "hist(x,$title,$xlab)";
 	exec("echo \"$x;$out;$rcmd\" | R --vanilla");
-
-	}
-	else {
-	  echo "<p style='color: red;'>There is no data available for this phenotype</p>";
-	}
+    } else {
+        echo "<p style='color: red;'>There is no data available for this phenotype</p>";
+    }
 }
 
 // Modified DispCategorySel() for Select Lines by Properties.

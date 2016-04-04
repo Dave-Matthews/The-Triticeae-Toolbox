@@ -3,21 +3,20 @@
 // 01/25/2011 JLee  Check 'number of entries' and 'number of replition' input values 
 // 12/14/2010 JLee  Change to use curator bootstrap
 
-define("DEBUG",0);
+define("DEBUG", 0);
 require 'config.php';
 //require_once("../includes/common_import.inc");
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 //include($config['root_dir'] . 'includes/common_import.inc');
 
 //include($config['root_dir'] . 'SumanDirectory/bootstrap_dev.inc');
 
 //include($config['root_dir'] . 'SumanDirectory/annotations_link.php');
-include($config['root_dir'] . 'curator_data/lineuid.php');
 
-require_once("../lib/Excel/excel_reader2.php"); // Microsoft Excel library
+require_once "../lib/Excel/excel_reader2.php"; // Microsoft Excel library
 ini_set(auto_detect_line_endings,1);
 
 connect();

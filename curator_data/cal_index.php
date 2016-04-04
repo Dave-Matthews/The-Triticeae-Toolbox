@@ -8,7 +8,6 @@
 * @author   Clay Birkett <clb343@cornell.edu>
 * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
 * @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index.php
-*
 */
 
 require 'config.php';
@@ -17,30 +16,19 @@ require 'config.php';
  */
 require $config['root_dir'] . 'includes/bootstrap.inc';
 
-connect();
 global $mysqli;
 $mysqli = connecti();
-//loginTest();
 
 /* ******************************* */
 $row = loadUser($_SESSION['username']);
-
-////////////////////////////////////////////////////////////////////////////////
-//ob_start();
-//authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_PARTICIPANT));
-//ob_end_flush();
-
 
 $Experiment = new Experiments($_GET['function']);
 
 /** CSR phenotype experiment
  *
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/cal_index.php
- *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/cal_index.php
  */
 
 class Experiments
@@ -98,10 +86,12 @@ class Experiments
         } else {
             die("Error - no experiment found<br>\n");
         }
-        $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row = mysqli_fetch_assoc($res)) {
-            $trial_code = $row["trial_code"];
+        if ($stmp = mysqli_prepare($mysqli, "select trial_code from experiments where experiment_uid = ?")) {
+            mysqli_stmt_bind_param($stmt, "i", $experiment_uid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $trial_code);
+            mysqli_stmt_fetch($stmt);
+            mysqli_stmt_close($stmt);
         } else {
             die("Error - invalid uid $uid<br>\n");
         }
@@ -189,7 +179,6 @@ class Experiments
     private function saveSession()
     {
         global $mysqli;
-        $exp[] = $_GET['trial'];
         $_SESSION['selected_trials'] = $exp;
         $count = 0;
         $exp = $_GET['trial'];
@@ -200,13 +189,18 @@ class Experiments
         } else {
             $sql_opt = "";
         }
-        $sql = "select distinct(line_record_uid), line_record_name from line_records, fieldbook
+        $sql = "select distinct(line_record_uid) from line_records, fieldbook
         where line_records.line_record_uid = fieldbook.line_uid
-        and fieldbook.experiment_uid = $exp $sql_opt";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_row($res)) {
-            $lines[] = $row[0];
-            $count++;
+        and fieldbook.experiment_uid = ? $sql_opt";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $exp);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $line_uid);
+            while (mysqli_stmt_fetch($stmt)) {
+                $lines[] = $line_uid;
+                $count++;
+            }
+            mysqli_stmt_close($stmt);
         }
         $_SESSION['selected_lines'] = $lines;
         echo "current data selection = $count lines<br>\n";
@@ -218,7 +212,7 @@ class Experiments
      *
      * @return NULL
      */
-    function selectExperiment()
+    private function selectExperiment()
     {
         global $config;
         global $mysqli;
@@ -250,7 +244,7 @@ class Experiments
      *
      * @return NULL
      */
-    function selectDateTime()
+    private function selectDateTime()
     {
         global $config;
         global $mysqli;
@@ -263,17 +257,20 @@ class Experiments
         $exp = $_GET['trial'];
         $sql = "select measurement_uid, date_format(measure_date,'%m-%d-%y'), time_format(start_time, '%H:%i')
         from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid and
-        experiments.experiment_uid = $exp order by measure_date, start_time";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        echo "<option>select a date and time</option>\n";
-        while ($row = mysqli_fetch_row($res)) {
-            $mid = $row[0];
-            $date = $row[1];
-            $time = $row[2];
-            $trial_list[$uid] = $tc;
-            echo "<option value=\"$mid\">$date $time</option>\n";
+        experiments.experiment_uid = ? order by measure_date, start_time";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $exp);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $mid, $date, $time);
+            echo "<option>select a date and time</option>\n";
+            while (mysqli_stmt_fetch($stmt)) {
+                echo "<option value=\"$mid\">$date $time</option>\n";
+            }
+            mysqli_stmt_close($stmt);
+            echo "</select></table>";
+        } else {
+            echo "Error: no entries found\n";
         }
-        echo "</select></table>";
     }
 
     /**
@@ -281,7 +278,7 @@ class Experiments
      *
      * @return lines
      */
-    function selectLines()
+    private function selectLines()
     {
         global $mysqli;
         ?>
@@ -298,12 +295,15 @@ class Experiments
         }
         $sql = "select distinct(line_record_uid), line_record_name from line_records, fieldbook
         where line_records.line_record_uid = fieldbook.line_uid
-        and fieldbook.experiment_uid = $exp $sql_opt";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_row($res)) {
-                $uid = $row[0];
-                $line_name = $row[1];
+        and fieldbook.experiment_uid = ? $sql_opt";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $exp);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $uid, $line_name);
+            while (mysqli_stmt_fetch($stmt)) {
                 echo "<option value=\"$uid\" disabled=\"disabled\">$line_name</option>\n";
+            }
+            mysqli_stmt_close($stmt);
         }
         if (!empty($_GET['subset'])) {
             $subset = $_GET['subset'];
@@ -330,7 +330,7 @@ class Experiments
      *
      * @return null
      */
-    function showExper()
+    private function showExper()
     {
         global $mysqli;
         $muid = $_GET['muid'];
@@ -342,17 +342,18 @@ class Experiments
         $sql = "select weather, system_name, direction from csr_measurement, csr_system, csr_measurement_rd
           where csr_measurement.spect_sys_uid = csr_system.system_uid
           and csr_measurement.radiation_dir_uid = csr_measurement_rd.radiation_dir_uid
-          and measurement_uid = $muid";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        if ($row = mysqli_fetch_row($res)) {
-            $weather = $row[0];
-            $name = $row[1];
-            $dir = $row[2];
-            echo "<select multiple>\n";
-            echo "<option disabled=\"disabled\">weather = $weather</option>\n";
-            echo "<option disabled=\"disabled\">system = $name</option>\n";
-            echo "<option disabled=\"disabled\">direction = $dir</option>\n";
-            echo "</select>";
+          and measurement_uid = ?";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $muid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $weather, $name, $dir);
+            while (mysqli_stmt_fetch($stmt)) {
+                echo "<select multiple>\n";
+                echo "<option disabled=\"disabled\">weather = $weather</option>\n";
+                echo "<option disabled=\"disabled\">system = $name</option>\n";
+                echo "<option disabled=\"disabled\">direction = $dir</option>\n";
+                echo "</select>";
+            }
         }
         ?>
         </table>
@@ -364,7 +365,7 @@ class Experiments
      *
      * @return NULL
      */
-    function statusLines()
+    private function statusLines()
     {
         global $mysqli;
         $count = 0;
@@ -377,10 +378,13 @@ class Experiments
         }
         $sql = "select distinct(line_record_uid), line_record_name from line_records, fieldbook
         where line_records.line_record_uid = fieldbook.line_uid
-        and fieldbook.experiment_uid = $exp $sql_opt";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_row($res)) {
-            $count++;
+        and fieldbook.experiment_uid = ? $sql_opt";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $exp);
+            mysqli_stmt_execute($stmt);
+            while (mysqli_stmt_fetch($stmt)) {
+                $count++;
+            }
         }
         echo "To save the $count selected lines for other Analysis <input type=button value=\"Save\" onclick=\"javascript: save_session();\">";
         echo "<br><br>";
@@ -391,7 +395,7 @@ class Experiments
      *
      * @return NULL
      */
-    function selectDownload()
+    private function selectDownload()
     {
         global $config;
         global $mysqli;
@@ -402,14 +406,17 @@ class Experiments
 
         $raw_path = "";
         if (!empty($_GET['muid'])) {
-            $muid = $_GET['muid'];
-            $sql = "select raw_file_name, experiment_uid from csr_measurement where measurement_uid = $muid";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-            if ($row = mysqli_fetch_row($res)) {
-                $raw_file = $row[0];
-                $experiment_uid = $row[1];
-                $raw_path = $config['root_dir'] . "raw/phenotype/" . $raw_file;
-                $raw_path2 = $config['root_dir'] . "raw/phenotype/CSR/" . $raw_file;  //new location for files
+            $muid = intval($_GET['muid']);
+            $sql = "select raw_file_name, experiment_uid from csr_measurement where measurement_uid = ?";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "i", $muid);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $raw_file, $experiment_uid);
+                if (mysqli_stmt_fetch($stmt)) {
+                    $raw_path = $config['root_dir'] . "raw/phenotype/" . $raw_file;
+                    $raw_path2 = $config['root_dir'] . "raw/phenotype/CSR/" . $raw_file;  //new location for files
+                }
+                mysqli_stmt_close($stmt);
             }
         }
         if (!empty($_GET['trial'])) {

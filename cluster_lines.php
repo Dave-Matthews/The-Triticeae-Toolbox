@@ -1,41 +1,44 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
-connect();
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/admin_header.php';
+$mysqli = connecti();
 
 // Use the incoming value of $time instead of a new one.  Does it work?
-if (isset($_GET['time'])) $time = $_GET['time'];
- else $time = date("U");
+if (isset($_GET['time'])) {
+    $time = intval($_GET['time']);
+} else {
+    $time = date("U");
+}
 
 // If we entered the script having picked a cluster in cluster_show.php,
 // load them into $_SESSION['selected_lines'].
 if (isset($_GET['mycluster'])) {
-  $mycluster = $_GET['mycluster'];
-  $where_in = "";
-  $clustertable = file("/tmp/tht/clustertable.txt".$time);
-  unlink("/tmp/tht/clustertable.txt".$time);
-  $clustertable = preg_replace("/\n/", "", $clustertable);
-  // Remove first line, "x".
-  array_shift($clustertable);
-  for ($i=0;$i<count($clustertable);$i++) {
-    for ($j=0;$j<count($mycluster);$j++) {
-      $line = explode("\t", $clustertable[$i]);
-      if ($line[1] == $mycluster[$j]) {
-	// Build query for line_record_uids for these names.
-	$where_in .= "'".$line[0]."',";
-      }
+    $mycluster = $_GET['mycluster'];
+    $where_in = "";
+    $clustertable = file("/tmp/tht/clustertable.txt".$time);
+    unlink("/tmp/tht/clustertable.txt".$time);
+    $clustertable = preg_replace("/\n/", "", $clustertable);
+    // Remove first line, "x".
+    array_shift($clustertable);
+    for ($i=0; $i<count($clustertable); $i++) {
+        for ($j=0; $j<count($mycluster); $j++) {
+            $line = explode("\t", $clustertable[$i]);
+            if ($line[1] == $mycluster[$j]) {
+                // Build query for line_record_uids for these names.
+                $where_in .= "'".$line[0]."',";
+            }
+        }
     }
-  }
-  $where_in = trim($where_in, ",");
-  $query = "select line_record_uid, line_record_name 
-     from line_records where line_record_name in (".$where_in.")
-     order by line_record_name";
-  $result = mysql_query($query) or die(mysql_error());
-  $_SESSION['selected_lines'] = array();
-  while ($row = mysql_fetch_row($result)) {
-    array_push($_SESSION['selected_lines'], $row[0]);
-  }
+    $where_in = trim($where_in, ",");
+    $query = "select line_record_uid, line_record_name 
+       from line_records where line_record_name in (".$where_in.")
+       order by line_record_name";
+    $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+    $_SESSION['selected_lines'] = array();
+    while ($row = mysqli_fetch_row($result)) {
+        array_push($_SESSION['selected_lines'], $row[0]);
+    }
 }
 
 // If only a few lines are selected, reduce the suggested number of clusters.
@@ -110,6 +113,4 @@ Retrieval rate is ca. one minute for 500 lines (1.5 million alleles).";
 <?php
 echo "</div></div></div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); 
-
-?>
+require $config['root_dir'].'theme/footer.php';

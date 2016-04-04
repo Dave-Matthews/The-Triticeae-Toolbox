@@ -84,7 +84,7 @@ function showMarkerForLine($line_id, $order = "marker_name")
         while ($row = mysqli_fetch_assoc($resource)) {
             $trial_code = $row['trial_code'];
             $lines = json_decode($row['line_index']);
-            if (in_array( $line_id, $lines)) {
+            if (in_array($line_id, $lines)) {
                 $found = 1;
                 echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><br><br>\n";
             }
@@ -103,41 +103,48 @@ function showMarkerForLine($line_id, $order = "marker_name")
 function showLineForMarker($marker_uid, $order = "line_record_name")
 {
     global $mysqli;
-    $query = "SELECT marker_type_name, A_allele, B_allele from markers, marker_types where markers.marker_type_uid = marker_types.marker_type_uid and marker_uid = $marker_uid";
-    $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
-    if ($row = mysqli_fetch_assoc($resource)) {
-        $marker_type = $row['marker_type_name'];
-        $allele = $row['A_allele'] . $row['B_allele'];
-    } else {
-        $marker_type = "SNP";
+    $query = "SELECT marker_type_name, A_allele, B_allele from markers, marker_types where markers.marker_type_uid = marker_types.marker_type_uid and marker_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $query)) {
+        mysqli_stmt_bind_param($stmt, "i", $marker_uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $marker_type, $a_allele, $b_allele);
+        if (mysqli_stmt_fetch($stmt)) {
+            $allele = $a_allele . $b_allele;
+        } else {
+            $marker_type = "SNP";
+        }
+        mysqli_stmt_close($stmt);
     }
-
+    if (preg_match("/[^0-9,]/", $marker_uid)) {
+        echo "Error: $marker_uid\n";
+        return;
+    }
     $query = "SELECT experiments.trial_code, line_record_name, alleles
           FROM experiments, allele_cache
           WHERE allele_cache.marker_uid = $marker_uid 
           AND experiments.experiment_uid = allele_cache.experiment_uid
           ORDER BY $order";
 
-    $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
-
-    if (mysqli_num_rows($resource) < 1) {
-        echo "No genotype data found<br />";
-    } else {
-        if (($marker_type == "GBS") || ($marker_type == "DArT Marker")) {
-            $lookup = array(
-            'A' => substr($allele, 0, 1),
-            'B' => substr($allele, 1, 1),
-            '-' => '-',
-            '' => 'N'
-            );
-            echo displayTableConvert($resource, true, $lookup);
+    if ($resource = mysqli_query($mysqli, $query)) {
+        if (mysqli_num_rows($resource) < 1) {
+            echo "No genotype data found<br />";
         } else {
-            echo displayTable($resource, true);
+            if (($marker_type == "GBS") || ($marker_type == "DArT Marker")) {
+                $lookup = array(
+                'A' => substr($allele, 0, 1),
+                'B' => substr($allele, 1, 1),
+                '-' => '-',
+                '' => 'N'
+                );
+                echo displayTableConvert($resource, true, $lookup);
+            } else {
+                echo displayTable($resource, true);
+            }
+            echo "<form action='dbtest/exportQueryResult.php' method='post'>
+            <input type='submit' value='Export to CSV' />
+	    <input type='hidden' name='query_string' value='" . base64_encode($query) ."' />
+	    </form>";
         }
-        echo "<form action='dbtest/exportQueryResult.php' method='post'>
-	<input type='submit' value='Export to CSV' />
-	<input type='hidden' name='query_string' value='" . base64_encode($query) ."' />
-	</form>";
     }
 }
 
@@ -161,6 +168,5 @@ function lineHasGenotypeData($lineid)
 		AND experiment_types.experiment_type_uid = experiments.experiment_type_uid
 		AND  experiment_types.experiment_type_name = 'genotype'
 	") or die(mysqli_error($mysqli));
-
-	return (mysqli_num_rows($resource) > 0);
+        return (mysqli_num_rows($resource) > 0);
 }

@@ -1,32 +1,26 @@
 <?php
 /**
  * Download Gateway New
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/curator_data/fieldbook_export.php
- * 
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/fieldbook_export.php
  */
 require_once 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
-connect();
 $mysqli = connecti();
 
 new Tablet($_GET['function']);
 
-/** Using a PHP class to implement the "Tablet" feature
- * 
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <claybirkett@gmail.com>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/fieldbook_export.php
+/**
+ * Using a PHP class to implement the "Tablet" feature
+ *
+ * @author  Clay Birkett <claybirkett@gmail.com>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/fieldbook_export.php
  **/
 class Tablet
 {
@@ -37,29 +31,28 @@ class Tablet
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'save':
-                    $this->save();
-                    break;
+                $this->save();
+                break;
             case 'step2phenotype':
-                    $this->step2_phenotype();
-                    break;
+                $this->step2_phenotype();
+                break;
             case 'step3phenotype':
-                    $this->step3_phenotype();
-                    break;
+                $this->step3_phenotype();
+                break;
             default:
-                    $this->display();
-                    break;
+                $this->display();
+                break;
         }
     }
-	
+
     function display()
     {
-    	global $config;
-    	global $mysqli;
-		include($config['root_dir'] . 'theme/admin_header.php');
-                ?>
+        global $config;
+        global $mysqli;
+        include $config['root_dir'] . 'theme/admin_header.php';
+        ?>
 		<h2>Download field layout and trait definition for Android Field Book</h2>
                 These tools provide a interface to the Android Field Book program created by the
                 <a href="http://www.wheatgenetics.org/bioinformatics/22-android-field-book.html">Poland Lab</a>.
@@ -79,15 +72,15 @@ class Tablet
                 <table class="tableclass1">	
 		<tr><th>Field layout:
                 <?php
-		$sql = "select fieldbook_info_uid, experiment_uid, fieldbook_file_name from fieldbook_info";
-		$sql = "select distinct(fieldbook.experiment_uid), trial_code from fieldbook, experiments where fieldbook.experiment_uid = experiments.experiment_uid";
-		$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-		echo "<tr><td><select id=\"experiment\" name=\"experiment\" onchange=\"javascript: update_expr()\">";
-		echo "<option>select a fieldbook</option>\n";
-		while ($row = mysqli_fetch_row($res)) {
-			$uid = $row[0];
-			$name = $row[1];
-			echo "<option value=$uid>$name</option>\n";
+                $sql = "select fieldbook_info_uid, experiment_uid, fieldbook_file_name from fieldbook_info";
+                $sql = "select distinct(fieldbook.experiment_uid), trial_code from fieldbook, experiments where fieldbook.experiment_uid = experiments.experiment_uid";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                echo "<tr><td><select id=\"experiment\" name=\"experiment\" onchange=\"javascript: update_expr()\">";
+                echo "<option>select a fieldbook</option>\n";
+                while ($row = mysqli_fetch_row($res)) {
+                    $uid = $row[0];
+                    $name = $row[1];
+                    echo "<option value=$uid>$name</option>\n";
 		}
 		?>
 		</select>
@@ -230,27 +223,36 @@ class Tablet
         $sql = "select line_record_uid, line_record_name from line_records";
         $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_row($res)) {
-                $line_uid= $row[0];
-                $line_record_name = $row[1];
-                $name_list[$line_uid] = $line_record_name;
+            $line_uid= $row[0];
+            $line_record_name = $row[1];
+            $name_list[$line_uid] = $line_record_name;
+        }
+
+        $sql = "select trial_code from experiments where experiment_uid = ?";
+        if ($stmt = mysqli_prepare($mysqli, "select trial_code from experiments where experiment_uid = ?")) {
+             mysqli_stmt_bind_param($stmt, "i", $uid);
+             mysqli_stmt_execute($stmt);
+             mysqli_stmt_bind_result($stmt, $trial_code);
+             mysqli_stmt_fetch($stmt);
+             mysqli_stmt_close($stmt);
+        } else {
+            die("Error: trial code not found for experiment_uid = $uid");
         }
 
         $error = 0;
-    	$filename = "import_" . $uid . ".csv";
+    	$filename = "field_" . $trial_code . ".csv";
     	if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
     	$output = fopen("/tmp/tht/$filename","w");
     	fwrite($output, "plot_id,range,plot,column,name,replication,block\n");
-    	$sql = "select plot_uid, plot, block, row_id, column_id, replication, check_id, line_uid from fieldbook where experiment_uid = $uid order by row_id, plot";
-    	$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-    	while ($row = mysqli_fetch_row($res)) {
-    		$plot_id = $row[0];
-    		$plot = $row[1];
-    		$block = $row[2];
-    		$row_id = $row[3];
-    		$column_id = $row[4];
-                $replication = $row[5];
-                $check_id = $row[6];
-                $line_uid = $row[7];
+    	$sql = "select plot_uid, plot, block, row_id, column_id, replication, check_id, line_uid, trial_code from fieldbook, experiments
+             where fieldbook.experiment_uid = experiments.experiment_uid
+             and fieldbook.experiment_uid = ? order by row_id, plot";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $uid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $plot_id, $plot, $block, $row_id, $column_id, $replication, $check_id, $line_uid, $trial_code);
+            while (mysqli_stmt_fetch($stmt)) {
+    		$plot_id = $plot_id . "_" . $column_id . "_" . $row_id;
                 $line_record_name = $name_list[$line_uid];
                 if (!preg_match("/\d+/",$row_id)) {
                     $error = 1;
@@ -259,7 +261,11 @@ class Tablet
                     $error = 1;
                 }
     		fwrite($output, "$plot_id,$row_id,$plot,$column_id,$line_record_name,$replication,$block\n");
-    	}
+            }
+            mysqli_stmt_close($stmt);
+    	} else {
+            die("Error: plot data not found for experiment_uid = $uid");
+        }
     	fclose($output);
         if ($error == 0) {
     	echo "<form method=\"link\" action=\"/tmp/tht/$filename\">";

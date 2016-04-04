@@ -43,9 +43,10 @@ class Downloads
             and markers_in_maps.marker_uid = markers.marker_uid
             and markers_in_maps.map_uid = map.map_uid
             and map.mapset_uid = 15";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_array($res)) {
-            echo "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
+        if ($res = mysqli_query($mysqli, $sql)) {
+            while ($row = mysqli_fetch_array($res)) {
+                echo "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
+            }
         }
         echo "</table>";
     }
@@ -64,14 +65,15 @@ class Downloads
         AND e.experiment_uid = tb.experiment_uid
         AND lr.line_record_uid in ($selectedlines)
         AND et.experiment_type_name = 'genotype'";
-        $res = mysqli_query($mysqli, $sql_exp) or die(mysqli_error($mysqli) . "<br>" . $sql_exp);
-        if (mysqli_num_rows($res)>0) {
-            while ($row = mysqli_fetch_array($res)) {
-                $exp[] = $row["exp_uid"];
+        if ($res = mysqli_query($mysqli, $sql_exp)) {
+            if (mysqli_num_rows($res)>0) {
+                while ($row = mysqli_fetch_array($res)) {
+                    $exp[] = $row["exp_uid"];
+                }
+                $exp = implode(',', $exp);
             }
-            $exp = implode(',', $exp);
+            echo "using markers from these experiments $exp<br>\n";
         }
-        echo "using markers from these experiments $exp<br>\n";
 
         echo "<table>";
         echo "<tr><td>Marker<td>Chromosome<td>Position\n";
@@ -82,9 +84,10 @@ class Downloads
             and markers_in_maps.marker_uid = allele_frequencies.marker_uid
             and markers_in_maps.map_uid = map.map_uid
             and map.mapset_uid = 15";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_array($res)) {
-            echo "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
+        if ($res = mysqli_query($mysqli, $sql)) {
+            while ($row = mysqli_fetch_array($res)) {
+                echo "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
+            }
         }
         echo "</table>";
     }
@@ -98,14 +101,16 @@ class Downloads
         $sql = "select trial_code, platform_uid from experiments, genotype_experiment_info
                 where experiments.experiment_uid = genotype_experiment_info.experiment_uid
                 and experiments.experiment_uid = $geno_str";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        $row = mysqli_fetch_assoc($res);
-        $geno_name = $row['trial_code'];
+        if ($res = mysqli_query($mysqli, $sql)) {
+            $row = mysqli_fetch_assoc($res);
+            $geno_name = $row['trial_code'];
+        }
         $sql = "select count(*) from allele_bymarker_exp_101 where experiment_uid = $geno_str";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        $row = mysqli_fetch_array($res);
-        $count = $row[0];
-        echo "$count markers found in experiment $geno_name<br>\n";
+        if ($res = mysqli_query($mysqli, $sql)) {
+            $row = mysqli_fetch_array($res);
+            $count = $row[0];
+            echo "$count markers found in experiment $geno_name<br>\n";
+        }
        
         echo "<table>";
         echo "<tr><td>Marker<td>Chromosome<td>Position\n";
@@ -114,9 +119,10 @@ class Downloads
             and markers_in_maps.marker_uid = allele_bymarker_exp_101.marker_uid
             and markers_in_maps.map_uid = map.map_uid
             and map.mapset_uid = 15"; 
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_array($res)) {
-            echo "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
+        if ($res = mysqli_query($mysqli, $sql)) {
+            while ($row = mysqli_fetch_array($res)) {
+                echo "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
+            }
         }
         echo "</table>";
     }

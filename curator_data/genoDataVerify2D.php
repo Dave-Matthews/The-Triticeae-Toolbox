@@ -1,20 +1,17 @@
 <?php
 /**
  * 2D Genotype data importer
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/curator_data/genoDataVerify.php
- *  
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/genoDataVerify.php
  */
 $progPath = realpath(dirname(__FILE__).'/../').'/';
 
 require "$progPath" . "includes/bootstrap_curator.inc";
-require "$progPath" . "curator_data/lineuid.php";
 require_once "$progPath" . "includes/email.inc";
 
 ini_set("auto_detect_line_endings", true);

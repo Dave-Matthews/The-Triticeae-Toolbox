@@ -119,9 +119,7 @@ class Downloads
      */
     private function type1Checksession()
     {
-        ?>
-        <div id="title">
-	<?php
+        echo "<div id=\"title\">";
         $phenotype = "";
         $lines = "";
         $markers = "";
@@ -162,18 +160,18 @@ class Downloads
             }
         }
         if (isset($_SESSION['clicked_buttons'])) {
-             $tmp = count($_SESSION['clicked_buttons']);
-             $saved_session = $saved_session . ", $tmp markers";
-             $markers = $_SESSION['clicked_buttons'];
-             $download_geno = "checked";
+            $tmp = count($_SESSION['clicked_buttons']);
+            $saved_session = $saved_session . ", $tmp markers";
+            $markers = $_SESSION['clicked_buttons'];
+            $download_geno = "checked";
         } else {
-             if ($message2 == "") {
-                 $message1 = "0 markers ";
-                 $message2 = "for all markers.";
-             } else {
-                 $message1 = $message1 . ", 0 markers ";
-                 $message2 = $message2 . " for all markers";
-             }
+            if ($message2 == "") {
+                $message1 = "0 markers ";
+                $message2 = "for all markers.";
+            } else {
+                $message1 = $message1 . ", 0 markers ";
+                $message2 = $message2 . " for all markers";
+            }
         }
          
         $this->refresh_title();
@@ -231,6 +229,7 @@ class Downloads
      */
     private function type1_session($version)
     {
+        global $mysqli;
         $datasets_exp = "";
         if (isset($_SESSION['selected_trials'])) {
             $experiments_t = $_SESSION['selected_trials'];
@@ -269,8 +268,8 @@ class Downloads
             $experiments_g = $_SESSION['geno_exps'];
             $geno_str = $experiments_g[0];
             $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $geno_str";
-            $res = mysql_query($sql) or die(mysql_error());
-            while ($row = mysql_fetch_row($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_row($res)) {
                 $uid = $row[0];
                 $markers[] = $uid;
             }
@@ -499,6 +498,7 @@ class Downloads
      */
     private function step1_yearprog()
     {
+    global $mysqli
      ?>
     <div id="step11" style="float: left; margin-bottom: 1.5em;">
     <table id="phenotypeSelTab" class="tableclass1">
@@ -512,8 +512,8 @@ class Downloads
     WHERE e.experiment_type_uid = et.experiment_type_uid
     AND et.experiment_type_name = 'phenotype'
     GROUP BY e.experiment_year ASC";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res))
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res))
     {
     ?>
     <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
@@ -574,6 +574,7 @@ class Downloads
 	 */
 	private function step1_lines()
 	{
+            global $mysqli;
             ?>
             <table id="phenotypeSelTab" class="tableclass1">
             <tr>
@@ -588,8 +589,8 @@ class Downloads
 	    <?php
 	    foreach($selectedlines as $uid) {
 	      $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      $row = mysql_fetch_assoc($res)
+	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	      $row = mysqli_fetch_assoc($res)
 	      ?>
 	      <option disabled value="<?php $uid ?>">
 	      <?php echo $row['line_record_name'] ?>
@@ -611,6 +612,7 @@ class Downloads
 	 */
 	private function step2_lines()
 	{
+            global $mysqli;
 	    ?>
 	    <table id="linessel" class="tableclass1">
 	    <tr>
@@ -625,8 +627,8 @@ class Downloads
 	      <?php
 	      foreach($selected as $uid) {
 	        $sql = "SELECT marker_name from markers where marker_uid = $uid";
-	        $res = mysql_query($sql) or die(mysql_error());
-	        $row = mysql_fetch_assoc($res)
+	        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	        $row = mysqli_fetch_assoc($res)
 	        ?>
 	        <option disabled value="
 	        <?php $uid ?>">
@@ -868,7 +870,7 @@ class Downloads
             $selected_map = $_SESSION['selected_map'];
         }
         if (isset($_SESSION['geno_exps'])) {
-            $geno_exps = $_SESSION['geno_exps'];
+            $geno_exps = $_SESSION['geno_exps'][0];
         } else {
             $geno_exps = "";
         }
@@ -924,7 +926,7 @@ class Downloads
                 //calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
                 echo "<br>Filter lines and markers then $message2";
              } elseif ($typeGE == "true") {
-                calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
+                calculate_afe($geno_exps, $min_maf, $max_missing, $max_miss_line);
                 $countFilterLines = count($lines);
                 $countFilterMarkers = count($_SESSION['filtered_markers']);
              } else {

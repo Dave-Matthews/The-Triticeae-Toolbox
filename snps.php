@@ -7,14 +7,16 @@ require_once $config['root_dir'].'theme/normal_header.php';
 if (isset($_SESSION['geno_exps'])) {
     $geno_exps = $_SESSION['geno_exps'];
     $count = $_SESSION['geno_exps_cnt'];
-    $exp_uid = intval($geno_exps[0]);
-    $sql = "select trial_code from experiments where experiment_uid = $exp_uid";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-    if ($row = mysqli_fetch_assoc($res)) {
-        $trial_code = $row['trial_code'];
-        echo "<h2>Marker Alleles and Sequences for $trial_code</h2>";
-    } else {
-        $trial_code = "";
+    $exp_uid = $geno_exps[0];
+    $sql = "select trial_code from experiments where experiment_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $exp_uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $trial_code);
+        if (mysqli_stmt_fetch($stmt)) {
+            echo "<h2>Marker Alleles and Sequences for $trial_code</h2>";
+        }
+        mysqli_stmt_close($stmt);
     }
 } elseif (isset($_SESSION['clicked_buttons'])) {
     $markers = $_SESSION['clicked_buttons'];
@@ -75,10 +77,8 @@ B-allele.  Genotyping data are provided to T3 with a single-letter score,
 the nucleotide, when homozygous; heterozygotes are indicated with "H", and
 missing data with "N".
 
-
 <h4>DArTs</h4>
 <p>For DArT markers, Allele A is 1 (present) and Allele B is 0 (absent).
-
 
 </font>
 
@@ -104,12 +104,16 @@ if ($geno_exps != "") {
     where markers.marker_type_uid = marker_types.marker_type_uid
     and markers.marker_uid = allele_frequencies.marker_uid
     and A_allele is not null
-    and experiment_uid = $exp_uid
+    and experiment_uid = ? 
     order by marker_name";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-    while ($row = mysqli_fetch_assoc($res)) {
-        echo "<tr><td>".$row['marker_name']."<td>".$row['marker_type_name']."<td>".$row['A_allele']."<td>".$row['B_allele']."<td>";
-        echo $row['sequence']."\n";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $exp_uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $marker_name, $marker_type_name, $A_allele, $B_allele, $sequence);
+        while (mysqli_stmt_fetch($stmt)) {
+            echo "<tr><td>$marker_name<td>$marker_type_name<td>$A_allele<td>$B_allele<td>$sequence\n";
+        }
+        mysqli_stmt_close($stmt);
     }
     echo "</table>";
 } elseif ($markers_str != "") {
@@ -118,10 +122,13 @@ if ($geno_exps != "") {
     where markers.marker_type_uid = marker_types.marker_type_uid
     and marker_uid IN ($markers_str)
     order by marker_name";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-    while ($row = mysqli_fetch_assoc($res)) {
-        echo "<tr><td>".$row['marker_name']."<td>".$row['marker_type_name']."<td>".$row['A_allele']."<td>".$row['B_allele']."<td>";
-        echo $row['sequence']."\n";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $marker_name, $marker_type_name, $A_allele, $B_allele, $sequence);
+        while (mysqli_stmt_fetch($stmt)) {
+            echo "<tr><td>$marker_name<td>$marker_type_name<td>$A_allele<td>$B_allele<td>$sequence\n";
+        }
+        mysqli_stmt_close($stmt);
     }
     print "</table>";
 } else {

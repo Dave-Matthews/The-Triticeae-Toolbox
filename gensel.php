@@ -339,7 +339,8 @@ class Downloads
             $training_lines = "";
         }
         if (isset($_SESSION['geno_exps'])) {
-            calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
+            $experiment_uid = $_SESSION['geno_exps'][0];
+            calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
             findCommonLines($lines);
         } elseif ($training_lines == "") {
             calculate_af($lines, $min_maf, $max_missing, $max_miss_line);

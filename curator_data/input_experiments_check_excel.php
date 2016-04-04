@@ -1,22 +1,20 @@
 <?php 
 
-// todo: 
-//  Reword input_experiments_upload_excel.php, "single" Trial
-//  Implement "--" deletes existing value.
-
 /**
  * Phenotype Experiment Results
- * @category PHP
- * @package  T3
+ *
+ * 02/25/2014 DEM   Allow loading multiple trials in the same file.
+ * 02/01/2011 JLee  Fix indentations and fatal error not presenting data
+ * 02/01/2011 JLee  Fix problem with line with the value of 0
+ * 12/14/2010 JLee  Change to use curator bootstrap
+ *
+ * todo:
+ * Reqord input_experiments_uploas_excel.php, "singel" Trial
+ * Implement "--" deletes existing value
  */
-// 02/25/2014 DEM   Allow loading multiple trials in the same file.
-// 02/01/2011 JLee  Fix indentations and fatal error not presenting data
-// 02/01/2011 JLee  Fix problem with line with the value of 0
-// 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap_curator.inc';
-include $config['root_dir'] . 'curator_data/lineuid.php';
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require_once "../lib/Excel/reader.php"; // Microsoft Excel library
 connect();
 loginTest();

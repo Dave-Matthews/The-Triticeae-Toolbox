@@ -23,8 +23,7 @@
 //*********************************************
 $progPath = realpath(dirname(__FILE__).'/../').'/';
 
-include($progPath. 'includes/bootstrap_curator.inc');
-include($progPath . 'curator_data/lineuid.php');
+require $progPath. 'includes/bootstrap_curator.inc';
 require_once $progPath . 'includes/email.inc';
 
 $num_args = $_SERVER["argc"];

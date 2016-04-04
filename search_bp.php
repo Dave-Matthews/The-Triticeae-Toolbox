@@ -3,17 +3,17 @@
 
 session_start();
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
-connect();
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/normal_header.php';
+$mysqli = connecti();
 
 //This is the main program for displaying a list of experiments for a given program.
 
-$uid = $_GET['uid'];
-$trial_code=NULL;
-$sql="SELECT data_program_name, data_program_code,program_type FROM CAPdata_programs WHERE CAPdata_programs_uid='$uid'";
-$result_dpname=mysql_query($sql) or die(mysql_error());
-$row_dpname=mysql_fetch_array($result_dpname);
+$uid = intval($_GET['uid']);
+$trial_code=null;
+$sql="SELECT data_program_name, data_program_code,program_type FROM CAPdata_programs WHERE CAPdata_programs_uid=$uid";
+$result_dpname=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+$row_dpname=mysqli_fetch_array($result_dpname);
 $dpname=$row_dpname['data_program_name'];
 $dpcode=$row_dpname['data_program_code'];
 $dpname = $dpname." (".$dpcode.")";
@@ -28,16 +28,16 @@ if (($dptype =='breeding') || ($dptype =='mapping'))
 	   AND tb.experiment_uid = e.experiment_uid
 	   AND cp.CAPdata_programs_uid = $uid";
 else 
-  $sql1="SELECT experiment_uid FROM experiments WHERE CAPdata_programs_uid='$uid'";
-$res1=mysql_query($sql1) or die(mysql_error()."<br>Query was:<br>.$sql1");
-$num_rows = mysql_num_rows($res1);
+  $sql1="SELECT experiment_uid FROM experiments WHERE CAPdata_programs_uid=$uid";
+$res1=mysqli_query($mysqli, $sql1) or die(mysqli_error($mysqli));
+$num_rows = mysqli_num_rows($res1);
 if ($num_rows == 0) {
   echo "<div class='section'>";
   echo "<p>There are no data from this Program in the database.</div>";
 } 
 else {
   if (($dptype =='breeding') || ($dptype =='mapping')) {
-    while ($row1=mysql_fetch_array($res1))
+    while ($row1=mysqli_fetch_array($res1))
       $exptuids[] = $row1['experiment_uid'];
     $exptlist = implode(',', $exptuids);
     // get selected experiments and verify that the user is authorized to see the experiment         
@@ -55,7 +55,7 @@ else {
     // Program Type is not breeding or mapping.
     $sql2="select e.experiment_uid, e.trial_code, e.experiment_year, et.experiment_type_name
 	    from experiments as e, experiment_types as et
-	    where CAPdata_programs_uid='$uid'
+	    where CAPdata_programs_uid=$uid
 	    AND et.experiment_type_uid = e.experiment_type_uid";
     if (!authenticate(array(USER_TYPE_PARTICIPANT,
 			    USER_TYPE_CURATOR,
@@ -63,8 +63,8 @@ else {
       $sql2 .= " and data_public_flag > 0";
     $sql2 .= " order by e.experiment_year desc, e.trial_code asc";
   }
-  $res2=mysql_query($sql2) or die(mysql_error()."<br>Query was:<br>.$sql2");
-  $num_rows = mysql_num_rows($res2);
+  $res2=mysqli_query($mysqli, $sql2) or die(mysqli_error($mysqli));
+  $num_rows = mysqli_num_rows($res2);
   if ($num_rows == 0) {
     echo "<div class='section'>";
     echo "<p>There are no public data from this Program in the database. Project participants must be logged in to see any private datasets.</div>";
@@ -83,7 +83,7 @@ else {
       
       </tr>
       <?php
-      while($row_expuid=mysql_fetch_array($res2)) {
+      while($row_expuid=mysqli_fetch_array($res2)) {
 	$expuid=$row_expuid['experiment_uid'];
 	$trial_code=$row_expuid['trial_code'];
 	$year=$row_expuid['experiment_year'];
@@ -98,6 +98,4 @@ else {
   }
 } 
 $footer_div = 1;
-include($config['root_dir'].'theme/footer.php'); ?>
-?>
-
+require $config['root_dir'].'theme/footer.php';

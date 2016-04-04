@@ -1,13 +1,11 @@
 <?php
-// Genotype annotation importer
-// 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
+/**
+ * Genotype annotation importer
+ * 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
+ */
 
 require 'config.php';
-/*
- * Logged in page initialization
- */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'curator_data/lineuid.php');
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 ini_set('auto_detect_line_endings', true);
 
 connect();

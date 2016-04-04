@@ -13,37 +13,52 @@
 
 require 'config.php';
 //Need write access to update the cache table.
-include($config['root_dir'].'includes/bootstrap_curator.inc');
+include $config['root_dir'].'includes/bootstrap_curator.inc';
 set_time_limit(3000);
 
-connect();
 $mysqli = connecti();
 
 include $config['root_dir'].'downloads/marker_filter.php';
 
 foreach ($_SESSION['selected_lines'] as $lineuid) {
-    $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-    while ($row=mysql_fetch_assoc($result)) {
-      $selval=$row['line_record_name'];
+    $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+    while ($row=mysqli_fetch_assoc($result)) {
+        $selval=$row['line_record_name'];
     }
 }
 
 $starttime = time();
-$min_maf = $_GET['mmaf'];
-$max_missing = $_GET['mmm'];
-$max_miss_line = $_GET['mml'];
+if (isset($_GET['mmaf'])) {
+    $min_maf = $_GET['mmaf'];
+} else {
+    $min_maf = 5;
+}
+if (isset($_GET['mmm'])) {
+    $max_missing = $_GET['mmm'];
+} else {
+    $max_missing = 10;
+}
+if (isset($_GET['mml'])) {
+    $max_miss_line = $_GET['mml'];
+} else {
+    $max_miss_line = 10;
+}
 
 if (isset ($_SESSION['selected_lines'])) {
     $selected_lines = $_SESSION['selected_lines'];
-    calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+    if (isset($_SESSION['geno_exps'])) {
+        $experiment_uid = $_SESSION['geno_exps'][0];
+        calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
+    } else {
+        calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
+    }
 }
 
 if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
   // No lines selected so prompt to get some.
   echo "<a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
   echo "(Patience required for more than a few hundred lines.)";
-}
-else {
+} else {
   $sel_lines = implode(",", $_SESSION['filtered_lines']);
   $delimiter =",";
   // Adapted from download/downloads.php:
@@ -51,15 +66,15 @@ else {
 
   // Get all markers that have allele data, in marker_uid order as they are in allele_byline.alleles.
   $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-  $res = mysql_query($sql) or die(mysql_error());
-  while ($row = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  while ($row = mysqli_fetch_row($res)) {
     $markerids[] = $row[0];
     // First row of output file mrkData.csv is list of marker names.
     $outputheader .= $row[1] . $delimiter;
   }
 
   // Create cache table if necessary.
-  $n = mysql_num_rows(mysql_query("show tables like 'allele_byline_clust'"));
+  $n = mysqli_num_rows(mysqli_query($mysqli, "show tables like 'allele_byline_clust'"));
   if ($n == 0) {
     $sql = "create table allele_byline_clust (
 	      line_record_uid int(11) NOT NULL,
@@ -68,12 +83,12 @@ else {
               updated_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	      PRIMARY KEY (line_record_uid)
 	    ) COMMENT 'Cache created from table allele_byline.'";
-    $res = mysql_query($sql) or die (mysql_error());
+    $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
     $update = TRUE;
   }
   else {
     // Update cache table if necessary. Empty?
-    if(mysql_num_rows(mysql_query("select line_record_uid from allele_byline_clust")) == 0)
+    if(mysqli_num_rows(mysqli_query($mysqli, "select line_record_uid from allele_byline_clust")) == 0)
       $update = TRUE;
     // Out of date?
     $sql = "select if( datediff(
@@ -84,15 +99,16 @@ else {
     if ($need == 'need_update') $update = TRUE;
   }
   if ($update) {
+    ini_set('memory_limit', '4G');
     echo "Updating table allele_byline_clust...<p>";
-    mysql_query("truncate table allele_byline_clust") or die(mysql_error());
+    mysqli_query($mysqli, "truncate table allele_byline_clust") or die(mysqli_error($mysqli));
     $lookup = array('AA' => '1',
 		    'BB' => '0',
 		    'AB' => '0.5');
     // Compute global allele frequencies.
     $sql = "select marker_uid, aa_cnt, ab_cnt, total from allele_frequencies";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_array($res)){
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)){
       $aa_sum[$row[0]] += $row[1];
       $ab_sum[$row[0]] += $row[2];
       $total_sum[$row[0]] += $row[3];
@@ -104,8 +120,8 @@ else {
     } 
     // Read in the allele_byline table.
     $sql = "select * from allele_byline";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
       $lineid = $row['line_record_uid'];
       $line = $row['line_record_name'];
       $alleles = explode(',', $row['alleles']);
@@ -121,14 +137,14 @@ else {
       // Store in cache table.
       $sql = "insert into allele_byline_clust values (
          $lineid, '$line', '$alleles', NOW() )";
-      mysql_query($sql) or die(mysql_error()."<br>Query:<br>$sql");
+      mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     }
   } // end of if($update)
 
   $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-                $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                 $i=0;
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                    $marker_list[$i] = $row[0];
                    $marker_list_name[$i] = $row[1];
                    $i++;
@@ -153,7 +169,7 @@ else {
   }
   $outputheader .= "\n";
   // Make the filename unique to deal with concurrency.
-  $time = $_GET['time'];
+  $time = intval($_GET['time']);
   if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
   $outfile = "/tmp/tht/mrkData.csv".$time;
   file_put_contents($outfile, $outputheader);
@@ -162,8 +178,8 @@ else {
   foreach ($_SESSION['filtered_lines'] as $lineuid) {
     $sql = "select line_record_name, alleles from allele_byline_clust
           where line_record_uid = $lineuid";
-    $res = mysql_query($sql) or die(mysql_error());
-    if ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
       $outarray2 = array();
       $line_name = $row[0];
       $alleles = $row[1];
@@ -203,8 +219,8 @@ else {
     AND lr.line_record_uid = tb.line_record_uid
     AND pd.phenotype_uid IN ($trait)
     AND lr.line_record_uid IN ($sel_lines)";
-    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-    while ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
       $exper = $row[0];
       $tmp[] = $exper;
     }
@@ -235,8 +251,8 @@ else {
   $new_name = "";
   $delimiter = ",";
   $pheno_array = $empty;
-  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-  while ($row = mysql_fetch_array($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  while ($row = mysqli_fetch_array($res)) {
       $line_name = $row[0];
       $exper = $row[2];
       if ($new_name == "") {

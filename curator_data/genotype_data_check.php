@@ -24,9 +24,7 @@ require 'config.php';
  * Logged in page initialization
  */
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
-require $config['root_dir'] . 'curator_data/lineuid.php';
 //require_once $config['root_dir'] . 'includes/email.inc';
-
 
 connect();
 loginTest();
