@@ -23,10 +23,10 @@ set_time_limit(3000);
 //does the function exist?
 if (!isset($_GET['func'])) {
 } elseif (!function_exists($_GET['func'])) {
-    echo ""; 	//if not then just echo nothing as an appropriate ajax return.
+    echo "";  //if not then just echo nothing as an appropriate ajax return.
 } else {
     $function = $_GET['func'];
-    unset($_GET['func']);	//removing function name
+    unset($_GET['func']);  //removing function name
 
     //global includes to load all functions in all other libraries
     //note this also runs all of the input validation on the $_GET array, so they should not be hostile.
@@ -72,32 +72,30 @@ function showMapsetContents($arr)
         echo "\t\t<td><strong>$k</strong></td>\n";
         echo "\t\t<td>$v</td>\n";
         echo "\t</tr>\n";
-	}
-	echo "</table>\n";
+    }
+    echo "</table>\n";
 }
 
 function DispSelContents($arr)
 {
     global $mysqli;
     if ($arr['id'] == "" || $arr['tablename']=="" || $arr['field']=="") {
-	echo "Invalid Input for DispSelContents";
+        echo "Invalid Input for DispSelContents";
     }
     // print "SELECT * FROM ".$arr['tablename']." WHERE ".$arr['field']." = ".$arr['id'];
-    $res = mysqli_query($mysqli, "SELECT *
-		FROM ".$arr['tablename']."
-		WHERE ".$arr['field']." = ".$arr['id']
-	) or die(mysqli_error($mysqli));
+    $sql = "SELECT * FROM " . $arr['tablename'] . " WHERE " . $arr['field'] . "=" . $arr['id'];
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
-    if(mysqli_num_rows($res) > 1) {
-	warning("key is not unique");
+    if (mysqli_num_rows($res) > 1) {
+        warning("key is not unique");
     }
     echo "<table class=\"tableclass1\">\n";
     $row = mysqli_fetch_assoc($res);
-    foreach($row as $k=>$v) {
-	echo "\t<tr>\n";
-	echo "\t\t<td><strong>$k</strong></td>\n";
-	echo "\t\t<td>$v</td>\n";
-	echo "\t</tr>\n";
+    foreach ($row as $k => $v) {
+        echo "\t<tr>\n";
+        echo "\t\t<td><strong>$k</strong></td>\n";
+        echo "\t\t<td>$v</td>\n";
+        echo "\t</tr>\n";
     }
     echo "</table>\n";
 }
@@ -1353,19 +1351,20 @@ and experiments.experiment_uid IN ($trialsSelected)
 // $arr is a one-pair array('id' => phenotype_category_uid).
 // Called by includes/core.js function DispPropSel(val, middle).
 function DispPropCategorySel($arr) {
+  global $mysqli;
   if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
     echo "Please select a category.";
   else {
     extract($arr);
-    $query = mysql_query("SELECT properties_uid, name 
+    $query = mysqli_query($mysqli, "SELECT properties_uid, name 
      FROM properties 
      WHERE phenotype_category_uid = $id 
-     order by name") or die(mysql_error());
-    if(mysql_num_rows($query) > 0) {
+     order by name") or die(mysqli_error($mysqli));
+    if(mysqli_num_rows($query) > 0) {
       echo "<select name='property' size=5 
      onfocus=\"DispPropSel(this.value, 'Property')\" 
      onchange=\"DispPropSel(this.value, 'Property')\">";
-      while($row = mysql_fetch_row($query)) 
+      while($row = mysqli_fetch_row($query)) 
 	echo "<option value=$row[0]>$row[1]</option>";
       echo "</select>";
     }
@@ -1376,17 +1375,18 @@ function DispPropCategorySel($arr) {
 
 // Modified DispTrialSel() for Select Lines by Properties.
 function DispPropertySel($arr) {
+  global $mysqli;
   if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
     echo "Please select a property.";
   else {
     extract($arr);
-    $query = mysql_query("SELECT property_values_uid, property_values.value 
+    $query = mysqli_query($mysqli, "SELECT property_values_uid, property_values.value 
      FROM property_values 
-     WHERE property_uid = $id") or die(mysql_error());
-    if(mysql_num_rows($query) > 0) {
+     WHERE property_uid = $id") or die(mysqli_error($mysqli));
+    if(mysqli_num_rows($query) > 0) {
       // Strange.  (this.value..) works in IE and Chrome in DispPropCategorySel() but not here.
       echo "<select size=3 onchange=\"DispPropSel(this.options[this.selectedIndex].value, 'PropValue')\">";
-      while($row = mysql_fetch_row($query)) 
+      while($row = mysqli_fetch_row($query)) 
 	echo "<option value='$row[0]'>$row[1]</option>";
       echo "</select>";
     }
@@ -1395,15 +1395,16 @@ function DispPropertySel($arr) {
 
 // Modified DispPhenotypeSel() for Select Lines by Properties.
 function DispPropValueSel($arr) {
+  global $mysqli;
   if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
     echo "Please select a value.";
   else {
   extract($arr);
-  $query = mysql_query("select name, value
+  $query = mysqli_query($mysqli, "select name, value
      from property_values pv, properties pr
      where property_values_uid = $id
-     and pr.properties_uid = pv.property_uid") or die (mysql_error());
-  $row = mysql_fetch_row($query);
+     and pr.properties_uid = pv.property_uid") or die (mysqli_error($mysqli));
+  $row = mysqli_fetch_row($query);
   echo "$row[0] = $row[1], ";
   // Doesn't work:
   //echo "<input type=hidden name='charlie' value='bill'>";
