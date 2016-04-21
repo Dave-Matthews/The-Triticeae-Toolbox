@@ -16,6 +16,7 @@ namespace T3;
 require_once 'config.php';
 require_once $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
+set_time_limit(120);
 require_once 'select_map_class.php';
 
 new Maps($_GET['function']);
