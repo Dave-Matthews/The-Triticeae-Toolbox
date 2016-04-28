@@ -264,8 +264,9 @@ class Downloads
         header('Content-type: application/vnd.ms-excel');
         header('Content-Disposition: attachment;filename="trial_data_plot.csv"');
         echo "Trial Code,Plot,Trait,Value\n";
-        $sql = "select plot_uid, phenotype_uid, value from phenotype_plot_data
-            where experiment_uid = ? order by phenotype_uid, plot_uid";
+        $sql = "select plot, phenotype_uid, value from phenotype_plot_data, fieldbook
+            where phenotype_plot_data.plot_uid = fieldbook.plot_uid
+            and phenotype_plot_data.experiment_uid = ? order by phenotype_uid, plot";
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $puid);
             mysqli_stmt_execute($stmt);
