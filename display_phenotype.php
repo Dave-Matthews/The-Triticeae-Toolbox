@@ -170,8 +170,6 @@ if (($data_public_flag == 0) and
         $single_row=array(); //1D array which will hold each row values in the table format to be displayed
         $single_row_long=array(); 
         
-        $myFile = "THT_Phenotypes_".chr(rand(65,80)).chr(rand(65,80)).chr(rand(64,80)).".txt";//auto generate a delimited file with the queried data
-		
         /* $dir ='./downloads/temp/';				 */
         $dir ='/tmp/tht/';	
 	if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
@@ -179,14 +177,7 @@ if (($data_public_flag == 0) and
 	// Clean up old files, older than 1 day.
 	system("find $dir -mtime +1 -name 'THT_Phenotypes_*.txt' -delete");
 
-        // create a download file
-        $downloadFile = $dir.$myFile;
-		$fh = fopen($downloadFile, "w");
-        
         $stringData = implode($delimiter,$titles);
-       // echo $stringData."<br>";
-        $stringData .= "\n";
-        fwrite($fh, $stringData);
          
         //---------------------------------------------------------------------------------------------------------------
         //Go through lines to create a data table for display
@@ -279,10 +270,7 @@ and bcr.line_record_uid = '$linerecorduid'";
             //-----------------------------------------
             //var_dump($single_row_long);
             $stringData= implode($delimiter,$single_row_long);
-            //echo $stringData."<br>";
-            $stringData.="\n";
             
-            fwrite($fh, $stringData);
             $all_rows[]=$single_row;
             $all_rows_long[]=$single_row_long;
         }
@@ -358,11 +346,6 @@ and bcr.line_record_uid = '$linerecorduid'";
         $ufmean= implode($delimiter, $unformat_mean_arr)."\n";
         $ufse= implode($delimiter, $unformat_se_arr)."\n";
         
-        fwrite($fh, $ufmean);
-        fwrite($fh, $ufse);
-        fwrite($fh, $fnr);
-        fwrite($fh, $fprob);
-        
         $all_rows[]=$mean_arr;
         $all_rows[]=$se_arr;
         $all_rows[]=$nr_arr;
@@ -374,7 +357,6 @@ and bcr.line_record_uid = '$linerecorduid'";
         
         //-----------------------------------------
         $total_rows=count($all_rows); //used to determine the number of rows to be displayed in the result page
-        fclose($fh);
 ?>
        
 <!--Style sheet for better user interface-->
@@ -388,7 +370,16 @@ and bcr.line_record_uid = '$linerecorduid'";
 <script type="text/javascript">
 
 function output_file(url) {
-	window.open(url);
+        window.open(url);
+}
+function output_file2(puid) {
+    url = "download_phenotype.php?function=downloadMean&pi=" + puid;
+    window.open(url);
+}
+
+function output_file_plot(puid) {
+    url = "download_phenotype.php?function=downloadPlot&pi=" + puid;
+    window.open(url);
 }
 </script>
 
@@ -440,12 +431,18 @@ function output_file(url) {
         
 <?php
     echo "<br>";
-	echo "<form>";
-	echo "<input type='button' value='Download Experiment Data' onclick=\"javascript:output_file('$downloadFile');\" />";
-    echo "</form><p>";
-	// header("Location: ".$dir.$myFile);
-   
-	} 
+    echo "<form>";
+    echo "<input type='button' value='Download Trial Data' onclick=\"javascript:output_file2('$experiment_uid');\" />";
+    echo "</form>";
+
+    $sql = "select experiment_uid from phenotype_plot_data where experiment_uid = $experiment_uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
+        echo "<form>";
+        echo "<input type='button' value='Download Plot Data' onclick=\"javascript:output_file_plot('$experiment_uid');\" />";
+        echo "</form>";
+    }
+} 
 
 $sourcesql="SELECT input_data_file_name FROM experiments WHERE trial_code='$trial_code'";
 $sourceres=mysqli_query($mysqli, $sourcesql) or die(mysqli_error($mysqli));
