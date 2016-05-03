@@ -60,7 +60,7 @@ if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) =
     // No lines selected so prompt to get some.
     echo "<br><a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
     echo "(Patience required for more than a few hundred lines.)";
-} elseif (!isset($_SESSION['filtered_lines'])) {
+} elseif (!isset($_SESSION['filtered_markers'])) {
     echo "Error: filtering routine did not work<br>\n";
     die();
 } elseif (isset($_SESSION['geno_exps'])) {
