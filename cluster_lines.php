@@ -76,6 +76,7 @@ if (isset($_SESSION['selected_lines'])) {
 
   <script type="text/javascript" src="cluster.js"></script>
   <?php
+
         $min_maf = 5;
         $max_missing = 10;
         $max_miss_line = 10;
@@ -90,26 +91,15 @@ if (isset($_SESSION['selected_lines'])) {
           <input type="button" value="Filter Lines and Markers" onclick="javascript:filter_lines(<?php echo $arg; ?>);"/>
         <div id='filter'></div>
         <div id='ajaxresult'></div>
-        
-  <script type="text/javascript">
-        var req= getXMLHttpRequest();
- 	var resp=document.getElementById('ajaxresult');
- 	if(!req) {
-	  alert("Browser not supporting Ajax");
-	}
-	resp.innerHTML = "<img id='spinner' src='./images/progress.gif' alt='Working...'><br>\
-Retrieving all marker alleles for <b><?php echo $linecount ?><\/b> lines.<br>\
-Retrieval rate is ca. one minute for 500 lines (1.5 million alleles).";
-  	req.onreadystatechange = function(){
-	  if(req.readyState === 4){
-	    var button = "<p><input type='submit' value='Analyze'><\/form>";
-	    resp.innerHTML= button + req.responseText;
-	  }
-  	};
-	req.open("GET", "cluster_getalleles.php?time=<?php echo $time ?>", true);
-  	req.send(null);
-	</script>
-
+        <script type="text/javascript">
+        if ( window.addEventListener ) {
+               window.addEventListener( "load", filter_lines(<?php echo $arg ?>), false );
+        } else if ( window.attachEvent ) {
+               window.attachEvent( "onload", filter_lines);
+        } else if ( window.onload ) {
+               window.onload = filter_lines(<?php echo $arg ?>);
+        }
+        </script>
 <?php
 echo "</div></div></div>";
 $footer_div=1;
