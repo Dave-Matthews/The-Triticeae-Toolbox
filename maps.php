@@ -427,11 +427,9 @@ if ($row = mysql_fetch_array($res)) {
 		<select name="mapsdetails" size="10" style="height: <?php echo $height ?>em" onchange="javascript: update_maps(this.value)">
 <?php
 	/* Query for fetching Map Names based on user selected mapset name */
-		$sql = "SELECT m.map_name FROM map m, mapset ms where mapset_name='".$mapset_query."' and m.mapset_uid = ms.mapset_uid";
-
-		
-
-			$res = mysql_query($sql) or die(mysql_error());
+		$sql = "SELECT m.map_name FROM map m, mapset ms
+                 where mapset_name='".$mapset_query."' and m.mapset_uid = ms.mapset_uid order by m.map_name";
+		$res = mysql_query($sql) or die(mysql_error());
 		while ($row = mysql_fetch_assoc($res)) {
 			?>
 			<!-- Display Map names-->		
