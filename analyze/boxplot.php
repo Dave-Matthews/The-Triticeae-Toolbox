@@ -1,8 +1,7 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
-connect();
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/admin_header.php';
 $mysqli = connecti();
 ?>
 <script src="<?php echo $config['base_url']?>analyze/boxplot.js"></script>
@@ -39,8 +38,9 @@ else {
             and pd.phenotype_uid = $trait";
       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
       $vals = array();
-      while ($row = mysqli_fetch_array($res)) 
-	$vals[] = round($row[0], 1);
+      while ($row = mysqli_fetch_array($res)) {
+          $vals[] = round($row[0], 1);
+      }
       $vlst = implode(",", $vals);
       $vallist[$trait][$trial] = (string) $vlst;
       ?>
@@ -50,7 +50,7 @@ else {
       createBoxPlot(data, 200, cell);
       </script>
 <?php
-	  }
+  }
     print "</table>";
   }
 }
@@ -68,5 +68,4 @@ If the minimum or maximum value is less than 1.5 x IQR, the whisker is shown at 
 
 <?php
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); 
-?>
+require $config['root_dir'].'theme/footer.php'; 

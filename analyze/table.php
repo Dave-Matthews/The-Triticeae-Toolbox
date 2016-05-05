@@ -3,10 +3,9 @@
 // Display Lines vs. Trials for a Trait in tabular format.
 
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
-include('heatmap_colors.inc');
-connect();
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/admin_header.php';
+require 'heatmap_colors.inc';
 $mysqli = connecti();
 ?>
 <style type=text/css>
@@ -19,9 +18,9 @@ table td { padding: 2px; text-align: center; background-color:white}
 <?php 
 $traits = $_SESSION['selected_traits'];
 $trials = $_SESSION['selected_trials'];
-if (!$traits OR !$trials) 
+if (!$traits OR !$trials) {
   echo "Please select at least one <a href='$config[base_url]phenotype/phenotype_selection.php'>Trait and Trial</a>.<p>";
-else {
+} else {
   // Retrieve the data into array $vals.
   foreach ($traits as $trait) {
     foreach ($trials as $trial) {
@@ -45,8 +44,13 @@ else {
 	$vals[$trait][$trial][$linename] = $val;
       }
     }
-    $lines = array_unique($lines);
-    sort($lines);
+    if (empty($lines)) {
+      $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
+      echo "Warning: no lines found for trait = $trtname\n";
+    } else {
+      $lines = array_unique($lines);
+      sort($lines);
+    }
   }
 
   // Optionally remove Lines that have any missing values for a Trait/Trial.
@@ -95,7 +99,8 @@ else {
   /* echo "<pre>"; system("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla 2>&1"); */
   exec("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla > /dev/null 2> /tmp/tht/stderr.txt$time");
   // Show resulting file.
-  $r = fopen("/tmp/tht/TableReportOut.txt".$time,"r");
+  if (file_exists("/tmp/tht/TableReportOut.txt".$time)) {
+      $r = fopen("/tmp/tht/TableReportOut.txt".$time,"r");
   // Parse the contents, which look like this:
 /* grain protein   grain yield */
 /* lsmeans c(13.1983026714983, 14.208479386932, 14.02772900566, 14.241295785412) c(5032.09333333334, 4361.38666666667, 4520.99333333333, 4153.36) */
@@ -147,6 +152,9 @@ else {
     }
   }
   fclose($r);
+  } else {
+      echo "<br>Error: no output from R script /tmp/tht/TableReportOut.txt.$time\n";
+  }
 
   // Display the table on the page.
   $traitnumber = 0;
@@ -241,5 +249,4 @@ Significant Difference (<em>HSD</em>) in 5% of experiments.<p>
 
 <?php
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); 
-?>
+require $config['root_dir'].'theme/footer.php'; 

@@ -214,7 +214,6 @@ class Maps
                     $markers_filtered[] = $marker_uid;
                 }
             }
-            
         } elseif (isset($_SESSION['selected_lines'])) {
             $selected_lines = $_SESSION['selected_lines'];
             $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
@@ -242,7 +241,6 @@ class Maps
                     $markers_filtered[] = $marker_uid;
                 }
             }
-
         } else {
             die("Error - must select lines or markers<br>\n");
         }
