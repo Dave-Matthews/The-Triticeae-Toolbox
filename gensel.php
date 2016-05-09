@@ -2240,6 +2240,7 @@ class Downloads
 	 */
 	function type3_build_markers_download($lines,$markers,$dtype)
 	{
+         global $mysqli;
 	 $output = '';
 	 $outputheader = '';
 	 $delimiter ="\t";
@@ -2282,27 +2283,27 @@ class Downloads
          }
 
          $sql = "select line_record_uid, line_record_name from allele_bymarker_idx order by line_record_uid";
-         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
          $i=0;
-         while ($row = mysql_fetch_array($res)) {
+         while ($row = mysqli_fetch_array($res)) {
             $line_list[$i] = $row[0];
             $line_list_name[$i] = $row[1];
             $i++;
          }
  
 	 //order the markers by map location
-	 $sql = "select markers.marker_uid,  mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
+	 $sql = "select markers.marker_uid, markers.marker_name, mim.chromosome, mim.start_position from markers, markers_in_maps as mim, map, mapset
 	 where markers.marker_uid IN ($markers_str)
 	 AND mim.marker_uid = markers.marker_uid
 	 AND mim.map_uid = map.map_uid
 	 AND map.mapset_uid = mapset.mapset_uid
 	 AND mapset.mapset_uid = $selected_map 
          order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
-	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	 while ($row = mysql_fetch_array($res)) {
+	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	 while ($row = mysqli_fetch_array($res)) {
            $marker_uid = $row[0];
-           $chr = $row[1];
-           $pos = $row[2];
+           $chr = $row[2];
+           $pos = $row[3];
 	   $marker_list_mapped[$marker_uid] = $pos;
            $marker_list_chr[$marker_uid] = $chr;
 	 }
@@ -2313,8 +2314,8 @@ class Downloads
          where marker_uid IN ($markers_str)
          AND markers.marker_type_uid = marker_types.marker_type_uid
          order by BINARY marker_name";
-         $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-         while ($row = mysql_fetch_array($res)) {
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+         while ($row = mysqli_fetch_array($res)) {
            $marker_uid = $row[0];
            $marker_name = $row[1];
            if (isset($marker_list_all[$marker_uid])) {
@@ -2334,9 +2335,9 @@ class Downloads
 
 	 //get location in allele_byline for each marker
 	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 	 $i=0;
-	 while ($row = mysql_fetch_array($res)) {
+	 while ($row = mysqli_fetch_array($res)) {
 	   $marker_idx_list[$row[0]] = $i;
 	   $i++;
 	 }
@@ -2345,8 +2346,8 @@ class Downloads
 	 $empty = array();
 	 $outputheader = "rs\talleles\tchrom\tpos";
 	 $sql = "select line_record_name from line_records where line_record_uid IN ($lines_str)";
-	 $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	 while ($row = mysql_fetch_array($res)) {
+	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	 while ($row = mysqli_fetch_array($res)) {
 	  $name = $row[0];
 	  $outputheader .= "\t$name";
 	  $empty[$name] = "NN";
@@ -2374,8 +2375,8 @@ class Downloads
 	         AND mim.map_uid = map.map_uid
 	         AND map.mapset_uid = mapset.mapset_uid
 	         AND mapset.mapset_uid = $selected_map";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-	     if ($row = mysql_fetch_array($res)) {
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	     if ($row = mysqli_fetch_array($res)) {
                 $chrom = $row[2];
                 if (preg_match('/[0-9]+/',$chrom, $match)) {
                   $pos = 100 * $row[3];
@@ -2391,8 +2392,8 @@ class Downloads
 	     }
              $outarray2 = array();
              $sql = "select marker_name, alleles from allele_bymarker where marker_uid = $marker_id";
-             $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-             if ($row = mysql_fetch_array($res)) {
+             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+             if ($row = mysqli_fetch_array($res)) {
                $alleles = $row[1];
                $outarray = explode(',',$alleles);
                foreach ($outarray as $key=>$allele) {
