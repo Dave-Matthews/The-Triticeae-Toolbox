@@ -51,7 +51,6 @@ class Maps
         $this->typeMapSetDisplay();
         echo "</div>";
         echo "<div id=\"step2\">";
-        //echo "<img id=\"spinner\" src=\"images/ajax-loader.gif\" style=\"display:none;\" />";
         echo "</div>";
         if (isset($_SESSION['geno_exps'])) {
             $this->typeGenoExpDisplay();
@@ -121,7 +120,7 @@ class Maps
         echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         echo "<table>\n";
-        echo "<tr><td>select<td>markers<br>(total)<td>markers<br>(in selected lines)<td>map set name<td>comment (mouse over item for complete text)\n";
+        echo "<tr><td>select<td>markers<br>(total)<td>markers<br>(in selected lines)<td>map set name<td>comment (select item for complete text)\n";
         while ($row = mysqli_fetch_assoc($res)) {
             $count = $row["countm"];
             $val = $row["mapset_name"];
@@ -134,7 +133,7 @@ class Maps
                 $checked = "";
             }
             echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: save_map(this.value)\"><td>$count";
-            echo "<td><div id=$uid><img id=\"spinner$uid\" src=\"images/ajax-loader.gif\" style=\"display:none;\"></div><td>$val<td><article title=\"$comment\">$comm</article>\n";
+            echo "<td><div id=$uid><img id=\"spinner$uid\" src=\"images/ajax-loader.gif\" style=\"display:none;\"></div><td>$val<td>$comm</article>\n";
         }
         echo "</table>";
         echo "</form><br>";
@@ -214,7 +213,6 @@ class Maps
                     $markers_filtered[] = $marker_uid;
                 }
             }
-            
         } elseif (isset($_SESSION['selected_lines'])) {
             $selected_lines = $_SESSION['selected_lines'];
             $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
@@ -242,7 +240,6 @@ class Maps
                     $markers_filtered[] = $marker_uid;
                 }
             }
-
         } else {
             die("Error - must select lines or markers<br>\n");
         }
@@ -261,13 +258,17 @@ class Maps
         global $mysqli;
         $map = intval($_GET['map']);
         $_SESSION['selected_map'] = $map;
-        $sql = "select mapset_name from mapset where mapset_uid = $map";
+        $sql = "select mapset_name, comments from mapset where mapset_uid = $map";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
         if ($row = mysqli_fetch_assoc($res)) {
             $map_name = $row["mapset_name"];
+            $comment = $row["comments"];
         } else {
             $map_name = "unknown";
         }
-        echo "<br>Current selection = $map_name<br>\n";
+        echo "<table>";
+        echo "<tr><td>Selection<td>$map_name\n";
+        echo "<tr><td>Comment<td>$comment\n";
+        echo "</table>";
     }
 }
