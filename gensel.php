@@ -9,7 +9,6 @@
  * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
  *
- *
  * The purpose of this script is to provide the user with an interface
  * for downloading certain kinds of files from THT.
  */
@@ -358,14 +357,15 @@ class Downloads
      * 3. show button to save current selection
      */
     private function refresh_title() {
+      global $mysqli;
       $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
       echo "<h2>Genomic Association and Prediction</h2>";
       if (!empty($_SESSION['training_traits'])) {
         $tmp = $_SESSION['training_traits'];
         $tmp = $tmp[0];
         $sql = "select phenotypes_name from phenotypes where phenotype_uid = '$tmp'";
-        $res = mysql_query($sql) or die(mysql_error());
-        $row = mysql_fetch_array($res);
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $row = mysqli_fetch_array($res);
         echo "<h3>Trait: $row[0]</h3>";
       }
       if ($command == "save_t") {
@@ -429,15 +429,15 @@ class Downloads
         $p_uid = $_SESSION['training_traits'];
         $p_uid = $p_uid[0];
         $sql = "select phenotypes_name from phenotypes where phenotype_uid = $p_uid";
-        $res = mysql_query($sql) or die(mysql_error());
-        $row = mysql_fetch_array($res); 
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $row = mysqli_fetch_array($res); 
         echo "<tr><td>Training<td>";
         if (!empty($_SESSION['training_trials'])) {
           $tmp = $_SESSION['training_trials'];
           $e_uid = implode(",",$tmp);
           $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
-          $res = mysql_query($sql) or die(mysql_error() . $sql);
-          while ($row = mysql_fetch_array($res)) {
+          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+          while ($row = mysqli_fetch_array($res)) {
             echo "$row[0]<br>";
           }
         }
@@ -456,8 +456,8 @@ class Downloads
                 AND lr.line_record_uid = tb.line_record_uid
                 AND pd.phenotype_uid = $p_uid
                 AND tb.experiment_uid IN  ($e_uid)";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        $row = mysql_fetch_array($res);
+        $res = mysqli_query($mysqki, $sql) or die(mysqli_error($mysqli));
+        $row = mysqli_fetch_array($res);
         echo "$row[0]";
         ?>
         <td>
@@ -480,16 +480,16 @@ class Downloads
         $map = $_SESSION['selected_map'];
         //$traits= implode(",",$tmp); use when I get this working for multiple traits
         $sql = "select phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
-        $res = mysql_query($sql) or die(mysql_error());
-        while ($row = mysql_fetch_array($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
           echo "$row[0]<br>";
         }
         echo "<td>";
         $tmp = $_SESSION['selected_trials'];
         $e_uid = implode(",",$tmp);
         $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        while ($row = mysql_fetch_array($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
           echo "$row[0]<br>";
         }
         echo "<td>";
@@ -1570,6 +1570,7 @@ class Downloads
 	 */
 	function type1_build_traits_download($experiments, $traits, $datasets)
 	{
+            global $mysqli;
 		
 		$output = 'Experiment' . $this->delimiter . 'Inbred';
 		$traits = explode(',', $traits);
@@ -1594,11 +1595,11 @@ class Downloads
 					AND tht_base.check_line = 'no'
 					AND tht_base.datasets_experiments_uid in ($datasets)";
 		
-		$res = mysql_query($select.$from.$where) or die(mysql_error());
+		$res = mysqli_query($mysqli, $select.$from.$where) or die(mysqli_error($mysqli));
 
 		$namevaluekeys = null;
 		$valuekeys = array();
-		while($row = mysql_fetch_assoc($res)) {
+		while($row = mysqli_fetch_assoc($res)) {
 			if ($namevaluekeys == null)
 			{
 				$namevaluekeys = array_keys($row);
@@ -1800,7 +1801,7 @@ class Downloads
 	 */
 	function type2_build_tassel_traits_download($experiments, $traits, $lines, $subset)
 	{
-	  //$firephp = FirePHP::getInstance(true);
+          global $mysqli;
 	  $delimiter = "\t";
 	  $output = '';
 	  $outputheader1 = '';
@@ -1829,9 +1830,9 @@ class Downloads
 	 AND p.phenotype_uid = pd.phenotype_uid
 	 AND pd.phenotype_uid IN ($traits)
 	 ORDER BY p.phenotype_uid,e.experiment_uid";
-	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	 $ncols = mysql_num_rows($res);
-	 while($row = mysql_fetch_array($res)) {
+	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	 $ncols = mysqli_num_rows($res);
+	 while($row = mysqli_fetch_array($res)) {
 	   $outputheader2 .= str_replace(" ","_",$row['phenotypes_name']).$delimiter;
 	   $outputheader3 .= $row['trial_code'].$delimiter;
 	   $keys[] = $row['phenotype_uid'].$row['experiment_uid'];
@@ -1841,8 +1842,8 @@ class Downloads
 	 $sql = "SELECT DISTINCT line_records.line_record_name, line_records.line_record_uid
 	 FROM line_records
 	 where line_record_uid IN ($selectedlines)";
-	 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	 while($row = mysql_fetch_array($res)) {
+	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	 while($row = mysqli_fetch_array($res)) {
 	   $lines_names[] = $row['line_record_name'];
 	   $line_uid[] = $row['line_record_uid'];
 	}
@@ -1891,14 +1892,14 @@ class Downloads
 	 AND pd.phenotype_uid IN ($traits)
 	 GROUP BY tb.tht_base_uid, pd.phenotype_uid";
 	 //echo "$i $nlines $sql <br>";
-	 $res = mysql_query($sql) or die(mysql_error() . "<br>$i $sql");
+	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 	 // // $firephp->log("sql ".$i." ".$sql);
 	 $outarray = array_fill(0,$ncols,-999);
 	 //// $firephp->table('outarray label values', $outarray);
 	 //$outarray = array_fill_keys( $keys  , -999);
 	 $outarray = array_combine($keys  , $outarray);
 	 //// $firephp->table('outarray label ', $outarray);
-	 while ($row = mysql_fetch_array($res)) {
+	 while ($row = mysqli_fetch_array($res)) {
 	 $keyval = $row['phenotype_uid'].$row['experiment_uid'];
 	 // $firephp->log("keyvals ".$keyval." ".$row['value']);
 	 $outarray[$keyval]= $row['value'];
