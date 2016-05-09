@@ -481,30 +481,30 @@ class SelectPhenotypeExp
      * starting with phenotype display trials
      */
 	private function step3_phenotype()
-    { 
-        global $mysqli; 
-		$phen_item = $_GET['pi'];
-		$trait_cmb = (isset($_GET['trait_cmb']) && !empty($_GET['trait_cmb'])) ? $_GET['trait_cmb'] : null;
-		if ($trait_cmb == "all") {
-		   $any_ckd = ""; $all_ckd = "checked";
-		} else {
-		   $trait_cmb = "any";
-		   $any_ckd = "checked"; $all_ckd = "";
-		}
-		?>
-		<p>3.
-		<select name="select1">
-		  <option value="BreedingProgram">Trials</option>
-		</select></p>
+    {
+        global $mysqli;
+        $phen_item = $_GET['pi'];
+        $trait_cmb = (isset($_GET['trait_cmb']) && !empty($_GET['trait_cmb'])) ? $_GET['trait_cmb'] : null;
+        if ($trait_cmb == "all") {
+	   $any_ckd = ""; $all_ckd = "checked";
+	} else {
+	   $trait_cmb = "any";
+	   $any_ckd = "checked"; $all_ckd = "";
+	}
+	?>
+	<p>3.
+	<select name="select1">
+	  <option value="BreedingProgram">Trials</option>
+	</select></p>
         <table id="phenotypeSelTab" class="tableclass1">
-		<tr>
-			<th>Trials</th>
-		</tr>
-		<tr><td>
-		<select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_trial(this.options)">
-                <?php
+	<tr>
+		<th>Trials</th>
+	</tr>
+	<tr><td>
+	<select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_trial(this.options)">
+        <?php
 
-		$sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid 
+	$sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid, e.experiment_year
 	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
 	 WHERE
 	 e.experiment_uid = tb.experiment_uid
@@ -514,41 +514,41 @@ class SelectPhenotypeExp
 	 if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
 	 $sql .= " and data_public_flag > 0";
 	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
-		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-		while ($row = mysqli_fetch_assoc($res))
-		{
-		  $exp_uid = $row['id'];
-		  $pi = $row['phenotype_uid'];
-		  $sel_list[$exp_uid] = $row['name'];
-		  $pi_list[$exp_uid][$pi] = 1;        //*array of traits for each trial
-		}
-		$phen_array = explode(",",$phen_item);
-		foreach ($sel_list as $id=>$name) {
-		  $found = 1;
-		  foreach ($phen_array as $item) {    //*check if trial contains all trait
-		    if (!isset($pi_list[$id][$item])) {
-		       $found = 0;
-		    }
-		  }
-		  if ($found || ($trait_cmb == "any")) {
-		  ?>
-		  <option value="<?php echo $id ?>">
-		  <?php echo $name ?>
-		  </option>
-		  <?php
-		  }
-		}
-		?>
-		</select>
-		</table>
-		<?php 
-		$tmp = count($phen_array);
-		if ($tmp > 1) {
-		  ?>
-		  <input type="radio" id="trait_cmb" value="all" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with all traits<br>
-		  <input type="radio" id="trait_cmb" value="any" <?php echo "$any_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with any trait<br>
-		  <?php
-		}
+	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	while ($row = mysqli_fetch_assoc($res))
+	{
+	  $exp_uid = $row['id'];
+	  $pi = $row['phenotype_uid'];
+	  $sel_list[$exp_uid] = $row['name'];
+	  $pi_list[$exp_uid][$pi] = 1;        //*array of traits for each trial
+	}
+	$phen_array = explode(",",$phen_item);
+	foreach ($sel_list as $id=>$name) {
+	  $found = 1;
+	  foreach ($phen_array as $item) {    //*check if trial contains all trait
+	    if (!isset($pi_list[$id][$item])) {
+	       $found = 0;
+	    }
+	  }
+	  if ($found || ($trait_cmb == "any")) {
+	  ?>
+	  <option value="<?php echo $id ?>">
+	  <?php echo $name ?>
+	  </option>
+	  <?php
+	  }
+	}
+	?>
+	</select>
+	</table>
+	<?php 
+	$tmp = count($phen_array);
+	if ($tmp > 1) {
+	  ?>
+	  <input type="radio" id="trait_cmb" value="all" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with all traits<br>
+	  <input type="radio" id="trait_cmb" value="any" <?php echo "$any_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with any trait<br>
+	  <?php
+	}
     }
     
     /**
