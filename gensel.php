@@ -1884,7 +1884,7 @@ class Downloads
 	 } else {
 	 $sql_option = " WHERE ";
 	 }
-	 $sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid
+	 $sql = "SELECT pd.value as value, pd.phenotype_uid, tb.experiment_uid, tb.tht_base_uid
 	 FROM tht_base as tb, phenotype_data as pd
 	 $sql_option
 	 tb.line_record_uid  = $line_uid[$i]
@@ -2614,15 +2614,12 @@ class Downloads
 			$cnt++;
 		}
 		
-		  //save data from the last line
-		  $output .= "$chrom\t$pos\t$last_marker\t";
-		  $outarray = implode("",$outarray);
-		  $output .= $outarray."\n";
-		  $num_markers++;
+	  //save data from the last line
+	  $output .= "$chrom\t$pos\t$last_marker\t";
+	  $outarray = implode("",$outarray);
+	  $output .= $outarray."\n";
+	  $num_markers++;
 		  
-
-		  return $outputheader.$output;
-
-	}
-
+	  return $outputheader.$output;
+    }
 }// end class
