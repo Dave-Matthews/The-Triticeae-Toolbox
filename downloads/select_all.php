@@ -40,21 +40,21 @@ set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
 date_default_timezone_set('America/Los_Angeles');
 
 // connect to database
-connect();
 $mysqli = connecti();
 
 new SelectPhenotypeExp($_GET['function']);
 
-/** functions specific to phenotype experiments
+/**
+ * Functions specific to phenotype experiments
  *
- * @author   Clay Birkett <claybirkett@gmail.com>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/downloads/downloads.php
+ * @author  Clay Birkett <claybirkett@gmail.com>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
  **/
 class SelectPhenotypeExp
 {
     /**
-     * delimiter used for output files
+     * Delimiter used for output files
      */
     public $delimiter = "\t";
     
@@ -65,35 +65,34 @@ class SelectPhenotypeExp
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
+        switch ($function) {
             case 'type1':
                 $this->type1();
                 break;
             case 'type1experiments':
                 $this->type1_experiments();
                 break;
-        case 'step1dataprog':
-            $this->step1_dataprog();
-            break;
-        case 'step1lines':
-            $this->step1_lines();
-            break;
-        case 'step1locations':
-            $this->step1_locations();
-            break;
-        case 'step2locations':
-            $this->step2_locations();
-            break;
-        case 'step3locations':
-            $this->step3_locations();
-            break;
-        case 'step5locations':
-            $this->step5_locations();
-            break;
-        case 'step5programs':
-            $this->step5_programs();
-            break;
+            case 'step1dataprog':
+                $this->step1_dataprog();
+                break;
+            case 'step1lines':
+                $this->step1_lines();
+                break;
+            case 'step1locations':
+                $this->step1_locations();
+                break;
+            case 'step2locations':
+                $this->step2_locations();
+                break;
+            case 'step3locations':
+                $this->step3_locations();
+                break;
+            case 'step5locations':
+                $this->step5_locations();
+                break;
+            case 'step5programs':
+                $this->step5_programs();
+                break;
         case 'step2lines':
             $this->step2_lines();
             break;
@@ -139,23 +138,23 @@ class SelectPhenotypeExp
         default:
             $this->type1_select();
             break;
-        }	
+        }
     }
 
-	/**
-	 * load header and footer then check session to use existing data selection
-	 */
-	private function type1_select()
-	{
-		global $config;
-                include($config['root_dir'].'theme/normal_header.php');
-		$phenotype = "";
-                $lines = "";
-		$markers = "";
-		$saved_session = "";
-		$this->type1_checksession();
-		include $config['root_dir'].'theme/footer.php';
-	}	
+    /**
+     * load header and footer then check session to use existing data selection
+     */
+    private function type1_select()
+    {
+        global $config;
+        include($config['root_dir'].'theme/normal_header.php');
+        $phenotype = "";
+        $lines = "";
+        $markers = "";
+        $saved_session = "";
+        $this->type1_checksession();
+        include $config['root_dir'].'theme/footer.php';
+    }	
 	
 	/**
 	 * When there is no data saved in session this handles outputting the header and footer and calls the first real action of the type1 download.
@@ -412,6 +411,7 @@ class SelectPhenotypeExp
 	 */
 	private function step1_phenotype()
 	{
+            global $mysqli;
 		?>
 		<div id="step11">
         <table id="phenotypeSelTab" class="tableclass1">
@@ -422,8 +422,8 @@ class SelectPhenotypeExp
 			<select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
                 <?php
 		$sql = "SELECT phenotype_category_uid AS id, phenotype_category_name AS name from phenotype_category";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		 ?>
 				<option value="<?php echo $row['id'] ?>">
@@ -442,14 +442,15 @@ class SelectPhenotypeExp
 	/**
 	 * starting with phenotype display phenotype items
 	 */
-	private function step2_phenotype()
-    {  
-		$phen_cat = $_GET['pc'];
-		?>
-		<p>2.
-		<select name="select1">
-		  <option value="BreedingProgram">Trait</option>
-		</select></p>
+    private function step2_phenotype()
+    { 
+        global $mysqli; 
+	$phen_cat = $_GET['pc'];
+	?>
+	<p>2.
+	<select name="select1">
+	  <option value="BreedingProgram">Trait</option>
+	</select></p>
         <table id="phenotypeSelTab" class="tableclass1">
 		<tr>
 			<th>Traits</th>
@@ -460,8 +461,8 @@ class SelectPhenotypeExp
 
 		$sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
 		 where phenotypes.phenotype_category_uid = phenotype_category.phenotype_category_uid and phenotype_category.phenotype_category_uid in ($phen_cat)";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		 ?>
 		    <option value="<?php echo $row['id'] ?>">
@@ -480,7 +481,8 @@ class SelectPhenotypeExp
      * starting with phenotype display trials
      */
 	private function step3_phenotype()
-    {  
+    { 
+        global $mysqli; 
 		$phen_item = $_GET['pi'];
 		$trait_cmb = (isset($_GET['trait_cmb']) && !empty($_GET['trait_cmb'])) ? $_GET['trait_cmb'] : null;
 		if ($trait_cmb == "all") {
@@ -512,8 +514,8 @@ class SelectPhenotypeExp
 	 if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
 	 $sql .= " and data_public_flag > 0";
 	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		  $exp_uid = $row['id'];
 		  $pi = $row['phenotype_uid'];
@@ -553,7 +555,8 @@ class SelectPhenotypeExp
      * starting with phenotype display lines
      */
 	private function step4_phenotype()
-    {  
+    { 
+        global $mysqli; 
     	$phen_item = $_GET['pi'];
 		$experiments = $_GET['e'];
 		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
@@ -591,8 +594,8 @@ class SelectPhenotypeExp
           $selected_lines = $_SESSION['selected_lines'];
           foreach ($selected_lines as $line) {
             $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-            $res = mysql_query($sql) or die(mysql_error());
-            $row = mysql_fetch_assoc($res);
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_assoc($res);
             ?>
             <option selected value="<?php echo $row['id'] ?>">
             <?php echo $row['name'] ?>
@@ -603,8 +606,8 @@ class SelectPhenotypeExp
           $selected_lines = $_SESSION['selected_lines'];
           foreach ($selected_lines as $line) {
             $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-            $res = mysql_query($sql) or die(mysql_error());
-            $row = mysql_fetch_assoc($res);
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_assoc($res);
             ?>
            <option selected value="<?php echo $row['id'] ?>">
            <?php echo $row['name'] ?>
@@ -620,8 +623,8 @@ class SelectPhenotypeExp
          AND pd.phenotype_uid IN ($phen_item)
          AND tb.experiment_uid IN ($experiments)
          ORDER BY lr.line_record_name";
-         $res = mysql_query($sql) or die(mysql_error());
-         while ($row = mysql_fetch_assoc($res))
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+         while ($row = mysqli_fetch_assoc($res))
          {
            $temp1 = $row['name'];
            $temp2 = $row['id'];
@@ -652,8 +655,8 @@ class SelectPhenotypeExp
 	 AND tb.experiment_uid IN ($experiments)
 	 ORDER BY lr.line_record_name";
 		//$_SESSION['selected_lines'] = array(); // Empty the session array.
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		 //array_push($_SESSION['selected_lines'],$row['id']);
 		 ?>
@@ -682,6 +685,7 @@ class SelectPhenotypeExp
      */
     private function step5_phenotype()
     {
+     global $mysqli;
      $phen_item = $_GET['pi'];
      $experiments = $_GET['e'];
      $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
@@ -702,8 +706,8 @@ class SelectPhenotypeExp
          AND pd.phenotype_uid IN ($phen_item)
          AND tb.experiment_uid IN ($experiments)
          ORDER BY lr.line_record_name";
-         $res = mysql_query($sql) or die(mysql_error());
-         while ($row = mysql_fetch_assoc($res))
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+         while ($row = mysqli_fetch_assoc($res))
          {
            array_push($lines,$row['id']);
          }
@@ -720,8 +724,8 @@ class SelectPhenotypeExp
          AND pd.phenotype_uid IN ($phen_item)
          AND tb.experiment_uid IN ($experiments)
          ORDER BY lr.line_record_name";
-         $res = mysql_query($sql) or die(mysql_error());
-         while ($row = mysql_fetch_assoc($res))
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+         while ($row = mysqli_fetch_assoc($res))
          {
            $line_uid = $row['id'];
            if (!in_array($line_uid, $lines)) {
@@ -740,8 +744,8 @@ class SelectPhenotypeExp
          AND pd.phenotype_uid IN ($phen_item)
          AND tb.experiment_uid IN ($experiments)
          ORDER BY lr.line_record_name";
-         $res = mysql_query($sql) or die(mysql_error());
-         while ($row = mysql_fetch_assoc($res))
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+         while ($row = mysqli_fetch_assoc($res))
          {
            $temp[] = $row['id'];
          }
@@ -850,6 +854,7 @@ class SelectPhenotypeExp
      */
 	private function step1_breedprog()
 	{
+            global $mysqli;
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
                 $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
                 ?>
@@ -876,12 +881,12 @@ class SelectPhenotypeExp
                   AND tb.experiment_uid = e.experiment_uid
                   AND tb.line_record_uid = lr.line_record_uid
                   ORDER BY data_program_name asc;";
-                $res = mysql_query($sql) or die(mysql_error());
-                if (mysql_num_rows($res) > 0) {
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                if (mysqli_num_rows($res) > 0) {
                     ?>
                     <select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
                     <?php
-                    while ($row = mysql_fetch_assoc($res))
+                    while ($row = mysqli_fetch_assoc($res))
                     {
                         ?>
                                 <option value="<?php echo $row['id'] ?>"><?php echo $row['name']." (".$row['code'].")" ?></option>
@@ -899,6 +904,7 @@ class SelectPhenotypeExp
      */
          private function step2_breedprog()
          {
+             global $mysqli;
                ?>
                <table>
                <tr>
@@ -919,8 +925,8 @@ class SelectPhenotypeExp
                                         USER_TYPE_ADMINISTRATOR)))
                         $sql .= " and data_public_flag > 0";
                 $sql .= " GROUP BY e.experiment_year DESC";
-                $res = mysql_query($sql) or die(mysql_error());
-                while ($row = mysql_fetch_assoc($res)) {
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                while ($row = mysqli_fetch_assoc($res)) {
                         ?>
                                 <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
                         <?php
@@ -938,32 +944,33 @@ class SelectPhenotypeExp
 	 */
 	private function step1_dataprog()
 	{
-		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
-                $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
+            global $mysqli;
+	    $CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
+            $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
 ?>	
-                <div id="step11">	
-		<table class="tableclass1">
-		<tr>
-			<th>Data Program</th>
-		</tr>
+            <div id="step11">	
+	    <table class="tableclass1">
+	    <tr>
+		<th>Data Program</th>
+	    </tr>
 <tr><td><select name="breeding_programs" multiple="multiple" style="height: 12em;" onchange="javascript: update_data_programs(this.options)">
 <?php
-		$sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
+	    $sql = "SELECT CAPdata_programs_uid AS id, data_program_name AS name, data_program_code AS code
                   FROM CAPdata_programs AS dp
                   WHERE program_type='data'
                   ORDER BY name";
-                $sql = "SELECT DISTINCT
+            $sql = "SELECT DISTINCT
           data_program_name as name, data_program_code as code, cp.CAPdata_programs_uid as id
           FROM CAPdata_programs cp, experiments e
           WHERE program_type = 'data'
           AND cp.CAPdata_programs_uid = e.CAPdata_programs_uid
           ORDER BY data_program_name asc;";
-      		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
+      	    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	    while ($row = mysqli_fetch_assoc($res)) {
 			?>
 			<option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
 			<?php
-		}
+	    }
 ?>
 </select>
 </table>
@@ -973,12 +980,13 @@ class SelectPhenotypeExp
 	/**
 	 * starting with lines display the selected lines
 	 */
-	private function step1_lines()
-	{
-		if (isset($_SESSION['selected_lines'])) {
-			$selectedlines= $_SESSION['selected_lines'];
-	        $count = count($_SESSION['selected_lines']);
-		?>
+        private function step1_lines()
+        {
+            global $mysqli;
+            if (isset($_SESSION['selected_lines'])) {
+		$selectedlines= $_SESSION['selected_lines'];
+	    $count = count($_SESSION['selected_lines']);
+            ?>
 	    <table id="phenotypeSelTab" class="tableclass1">
 	    <tr>
 	    <th>Lines</th>
@@ -988,8 +996,8 @@ class SelectPhenotypeExp
 	    <?php
 	    foreach($selectedlines as $uid) {
 	      $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      $row = mysql_fetch_assoc($res)
+	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	      $row = mysqli_fetch_assoc($res)
 	      ?>
 	      <option disabled="disabled" value="
 	      <?php $uid ?>">
@@ -1015,6 +1023,7 @@ class SelectPhenotypeExp
 	 */
 	private function step2_lines()
 	{
+            global $mysqli;
 	    if (!isset($_SESSION['selected_lines'])) {
             die("Error: must select lines first");
         }
@@ -1051,9 +1060,9 @@ class SelectPhenotypeExp
 	    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
 	    $sql .= " and data_public_flag > 0";
             $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
-		$res = mysql_query($sql) or die(mysql_error());
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                 $last_year = NULL;
-		while ($row = mysql_fetch_assoc($res))
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		    $exp_uid = $row['id'];
 		    $line = $row['lr'];
@@ -1104,6 +1113,7 @@ class SelectPhenotypeExp
 	 */
 	private function step3_lines()
 	{
+            global $mysqli;
 	    $experiments = $_GET['e'];
 	    if (isset($_GET['pi'])) {
 	      if (preg_match("/\d/",$phen_item)) {
@@ -1128,8 +1138,8 @@ class SelectPhenotypeExp
 	        where pd.tht_base_uid = tb.tht_base_uid
                 AND p.phenotype_uid = pd.phenotype_uid
 	        AND tb.experiment_uid in ($experiments)";
-		$res = mysql_query($sql) or die(mysql_error() . $sql);
-		while ($row = mysql_fetch_assoc($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res))
 		{
 		 ?>
 		    <option value="<?php echo $row['id'] ?>">
@@ -1231,6 +1241,7 @@ class SelectPhenotypeExp
 	 * starting with location display all locations
 	 */
 	private function step1_locations() {
+         global $mysqli;
 	 ?>
 	 <table id="phenotypeSelTab" class="tableclass1">
 	 <tr>
@@ -1240,8 +1251,8 @@ class SelectPhenotypeExp
 	 <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript:update_locations(this.options)">
 	 <?php
 	 $sql = "SELECT distinct location as name from phenotype_experiment_info where location is not NULL order by location";
-	 $res = mysql_query($sql) or die(mysql_error());
-	 while ($row = mysql_fetch_assoc($res)) {
+	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	 while ($row = mysqli_fetch_assoc($res)) {
 	   ?>
 	   <option value="<?php echo $row['name'] ?>"><?php echo $row['name'] ?></option>
 	   <?php 
@@ -1257,6 +1268,7 @@ class SelectPhenotypeExp
 	 * starting with location display years
 	 */
 	private function step2_locations() {
+         global $mysqli;
 	 $locations = $_GET['loc'];
 	 $locations = stripslashes($locations);
 	 ?>
@@ -1277,8 +1289,8 @@ class SelectPhenotypeExp
 	 AND et.experiment_type_name = 'phenotype'
 	 AND p_e.location IN ($locations)
 	 GROUP BY e.experiment_year DESC";
-	 $res = mysql_query($sql) or die(mysql_error());
-	 while ($row = mysql_fetch_assoc($res)) {
+	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	 while ($row = mysqli_fetch_assoc($res)) {
 	   ?>
 	   <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
 	   <?php
@@ -1294,6 +1306,7 @@ class SelectPhenotypeExp
 	 * starting with location display experiments
 	 */
 	private function step3_locations() {
+         global $mysqli;
 	 $locations = $_GET['loc']; //"'" . implode("','", $_GET['loc']) . "'";
 	 $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
 	 $locations = stripslashes($locations);
@@ -1319,9 +1332,9 @@ class SelectPhenotypeExp
 	 if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
 	 $sql .= " and data_public_flag > 0";
 	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
-	 $res = mysql_query($sql) or die(mysql_error());
+	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
          $last_year = NULL;
-	 while ($row = mysql_fetch_assoc($res)) {
+	 while ($row = mysqli_fetch_assoc($res)) {
            if ($last_year == NULL) {
            ?>
              <optgroup label="<?php echo $row['year'] ?>">
@@ -1350,6 +1363,7 @@ class SelectPhenotypeExp
 	 * starting with locations display marker information
 	 */
 	private function step5_locations() {
+         global $mysqli;
 	 // parse url
 	 $experiments = $_GET['exps'];
 	 $phen_item = $_GET['pi'];
@@ -1388,8 +1402,8 @@ class SelectPhenotypeExp
 	 	$selected_lines = $_SESSION['selected_lines'];
 	 	foreach ($selected_lines as $line) {
 	 		$sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-	 		$res = mysql_query($sql) or die(mysql_error());
-	 		$row = mysql_fetch_assoc($res);
+	 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	 		$row = mysqli_fetch_assoc($res);
 	 		?>
 	 		<option selected value="<?php echo $row['id'] ?>">
 	        <?php echo $row['name'] ?>
@@ -1402,8 +1416,8 @@ class SelectPhenotypeExp
 	   $selected_lines = $_SESSION['selected_lines'];
 	   foreach ($selected_lines as $line) {
 	     $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-	     $res = mysql_query($sql) or die(mysql_error());
-	     $row = mysql_fetch_assoc($res);
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	     $row = mysqli_fetch_assoc($res);
 	     $temp = $row['id'];
 	     $lines_list[$temp] = 1;
 	     ?>
@@ -1421,8 +1435,8 @@ class SelectPhenotypeExp
 	   AND pd.phenotype_uid IN ($phen_item)
 	   AND tb.experiment_uid IN ($experiments)
 	   ORDER BY lr.line_record_name";
-	   $res = mysql_query($sql) or die(mysql_error());
-	   while ($row = mysql_fetch_assoc($res))
+	   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	   while ($row = mysqli_fetch_assoc($res))
 	   {
 	      $temp1 = $row['name'];
 	      $temp2 = $row['id'];
@@ -1454,8 +1468,8 @@ class SelectPhenotypeExp
 	   ORDER BY lr.line_record_name";
 	   //$_SESSION['selected_lines'] = array(); // Empty the session array.
 	   //$lines = array();
-	   $res = mysql_query($sql) or die(mysql_error());
-	   while ($row = mysql_fetch_assoc($res))
+	   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	   while ($row = mysqli_fetch_assoc($res))
 	   {
 	   //array_push($_SESSION['selected_lines'],$row['id']);
 	   //array_push($lines,$row['id']);
@@ -1605,6 +1619,7 @@ class SelectPhenotypeExp
 	 */
 	private function enter_lines()
 	{
+            global $mysqli;
 		if($_SERVER['REQUEST_METHOD'] == "GET")
   // Store what the user's previous selections were so we can
   // redisplay them as the page is redrawn.
@@ -1640,10 +1655,10 @@ class SelectPhenotypeExp
         $items = implode("','", $lineList);
         $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
 
-        $res = mysql_query($mStatment) or die(mysql_error());
+        $res = mysqli_query($mysqli, $mStatment) or die(mysqli_error($mysqli));
 
-        if (mysql_num_rows($res) != 0) {
-        while($myRow = mysql_fetch_assoc($res)) {
+        if (mysqli_num_rows($res) != 0) {
+        while($myRow = mysqli_fetch_assoc($res)) {
           array_push ($lineArr,$myRow['line_record_name']);
         }
         // Generate the translated line names
@@ -1659,6 +1674,7 @@ class SelectPhenotypeExp
 	 */
 	private function type1_experiments()
 	{
+            global $mysqli;
 		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
 		$years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
                 $program_type = $_GET['pt'];
@@ -1709,9 +1725,9 @@ class SelectPhenotypeExp
 		        if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
 		        $sql .= " and data_public_flag > 0";
 				$sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
-		$res = mysql_query($sql) or die(mysql_error());
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		$last_year = NULL;
-		while ($row = mysql_fetch_assoc($res)) {			
+		while ($row = mysqli_fetch_assoc($res)) {			
 			if ($last_year == NULL) {
 ?>
 			<optgroup label="<?php echo $row['year'] ?>">
@@ -1943,6 +1959,7 @@ class SelectPhenotypeExp
 	 */
 	private function type2_markers()
 	{
+         global $mysqli;
 	 // parse url
 	 $experiments = $_GET['exps'];
 	 $phen_item = $_GET['pi'];
@@ -1964,8 +1981,8 @@ class SelectPhenotypeExp
 	   	 AND tb.experiment_uid IN ($experiments)
 	   	 ORDER BY lr.line_record_name";
 	   	 $lines = array();
-	   	 $res = mysql_query($sql) or die(mysql_error() . $sql);
-	   	 while ($row = mysql_fetch_assoc($res))
+	   	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	   	 while ($row = mysqli_fetch_assoc($res))
 	   	 {
 	   		array_push($lines,$row['id']);
 	     }
@@ -1985,8 +2002,8 @@ class SelectPhenotypeExp
 	   	 AND tb.experiment_uid IN ($experiments)
 	   	 ORDER BY lr.line_record_name";
 	   	 $lines = array();
-	   	 $res = mysql_query($sql) or die(mysql_error() . $sql);
-	   	 while ($row = mysql_fetch_assoc($res))
+	   	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	   	 while ($row = mysqli_fetch_assoc($res))
 	   	 {
 	   	 	array_push($lines,$row['id']);
 	   	 }
@@ -2002,8 +2019,8 @@ class SelectPhenotypeExp
 	     AND pd.phenotype_uid IN ($phen_item)
 	     AND tb.experiment_uid IN ($experiments)
 	     ORDER BY lr.line_record_name";
-	     $res = mysql_query($sql) or die(mysql_error() . $sql);
-	     while ($row = mysql_fetch_assoc($res))
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	     while ($row = mysqli_fetch_assoc($res))
 	     {
                $line_uid = $row['id'];
                if (!in_array($line_uid, $lines)) {
@@ -2022,8 +2039,8 @@ class SelectPhenotypeExp
              AND pd.phenotype_uid IN ($phen_item)
              AND tb.experiment_uid IN ($experiments)
              ORDER BY lr.line_record_name";
-             $res = mysql_query($sql) or die(mysql_error() . $sql);
-             while ($row = mysql_fetch_assoc($res))
+             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+             while ($row = mysqli_fetch_assoc($res))
              {
                $temp[] = $row['id'];
              }
@@ -2044,19 +2061,20 @@ class SelectPhenotypeExp
 	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
 	 $max_missing = $_GET['mm'];
 	 if ($max_missing>100)
-	   $max_missing = 100;
+	     $max_missing = 100;
 	 elseif ($max_missing<0)
-	  $max_missing = 0;
+             $max_missing = 0;
 	 $min_maf = 0.01;//IN PERCENT
 	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-	   $min_maf = $_GET['mmaf'];
-	 if ($min_maf>100)
-	   $min_maf = 100;
-	 elseif ($min_maf<0)
-	   $min_maf = 0;
+             $min_maf = $_GET['mmaf'];
+	 if ($min_maf>100) {
+             $min_maf = 100;
+	 } elseif ($min_maf<0) {
+             $min_maf = 0;
+         }
 	
 	/* $this->calculate_af($lines, $min_maf, $max_missing); */
-        $traits_ary = explode(",",$phen_item);
+        $traits_ary = explode(",", $phen_item);
         $count = count($traits_ary);
         echo ", $count traits<br>";
 	
@@ -2064,9 +2082,6 @@ class SelectPhenotypeExp
 	<input type="hidden" name="subset" id="subset" value="yes" /><br>
         <input type="button" value="Save current selection" onclick="javascript: load_title('save');"/>
 	<?php
-	
-	?></div><?php
-	
-	}
-	
+        ?></div><?php
+    }
 }// end class
