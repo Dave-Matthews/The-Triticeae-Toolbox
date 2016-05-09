@@ -25,6 +25,9 @@ class Maps
             case 'Save':
                 $this->typeMapSave();
                 break;
+            case 'Display':
+                $this->typeMapDisplay();
+                break;
             case 'Markers':
                 $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
                 break;
@@ -75,9 +78,9 @@ class Maps
         Calculate markers in map for selected lines</button>
         </div>
         <?php
-        if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) { ?>
+        if (isset($_SESSION['selected_map'])) { ?>
             <script type="text/javascript">
-            <!--  window.onload = load_markersInMap();-->
+            window.onload = displayMap();
             </script>
             <?php
         }
@@ -105,7 +108,7 @@ class Maps
          td {border: 1px solid #eee !important;}
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
-        <script type="text/javascript" src="maps/select_map07.js">
+        <script type="text/javascript" src="maps/select_map08.js">
         </script>
         <form name="myForm" action="maps/select_map.php">
         <?php
@@ -258,6 +261,29 @@ class Maps
         global $mysqli;
         $map = intval($_GET['map']);
         $_SESSION['selected_map'] = $map;
+        $sql = "select mapset_name, comments from mapset where mapset_uid = $map";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+        if ($row = mysqli_fetch_assoc($res)) {
+            $map_name = $row["mapset_name"];
+            $comment = $row["comments"];
+        } else {
+            $map_name = "unknown";
+        }
+        echo "<table>";
+        echo "<tr><td>Selection<td>$map_name\n";
+        echo "<tr><td>Comment<td>$comment\n";
+        echo "</table>";
+    }
+
+    /**
+     * display map in session variable
+     *
+     * @return null
+     */
+    public function typeMapDisplay()
+    {
+        global $mysqli;
+        $map = $_SESSION['selected_map'];
         $sql = "select mapset_name, comments from mapset where mapset_uid = $map";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
         if ($row = mysqli_fetch_assoc($res)) {
