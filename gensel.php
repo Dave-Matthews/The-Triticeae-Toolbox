@@ -285,7 +285,7 @@ class Downloads
                   $min_maf = 5;
                   $max_missing = 10;
                   $max_miss_line = 10;
-                  $unique_str = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
+                  $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
                   ?>
                   <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -339,7 +339,8 @@ class Downloads
             $training_lines = "";
         }
         if (isset($_SESSION['geno_exps'])) {
-            calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
+            $experiment_uid = $_SESSION['geno_exps'][0];
+            calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
             findCommonLines($lines);
         } elseif ($training_lines == "") {
             calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
@@ -777,10 +778,21 @@ class Downloads
            }
            fclose($h);
         }
+        if (file_exists("/tmp/tht/$filename3")) {
+	  // Extract the Trait name from the .R file.
+	  $h = fopen("/tmp/tht/$filename3", "r");
+	  while ($line=fgets($h)) {
+            if (strpos($line, 'phenolabel') !== FALSE) {
+              $traitname = preg_replace('/phenolabel <- "(.*)"/', '$1', $line);
+	    }
+	  }
+	  fclose($h);
+        }
         if ($found) {
             print "<img src=\"/tmp/tht/$filename7\" width=\"800\"/><br>";
             print "<img src=\"/tmp/tht/$filename10\" width=\"800\"/><br>";
             print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+	    print "Trait: <b>$traitname</b><p>";
             print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
             print "with columns for marker name, chromosome, position, marker score<br><br>";
             print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a><br><br>";
@@ -944,6 +956,7 @@ class Downloads
         }
         if (file_exists("/tmp/tht/$filename4")) {
             print "<img src=\"/tmp/tht/$filename4\" width=\"800\" /><br>";
+	    print "Trait: $phenolabel<p>";
             print "<a href=/tmp/tht/$filename1 target=\"_blank\" type=\"text/csv\">Export GWAS results to CSV file</a> ";
             print "with columns for marker name, chromosome, position, marker score<br><br>";
             print "<a href=/tmp/tht/$filenameK target=\"_blank\" type=\"text/csv\">Export Kinship matrix</a><br><br>";
@@ -1626,6 +1639,7 @@ class Downloads
      * for R script the line names have to be quoted or special characters will cause problems
      */
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset) {
+      global $mysqli;
       $delimiter = "\t";
       $output = '';
       $outputheader1 = '';
@@ -1670,8 +1684,8 @@ class Downloads
                AND pd.tht_base_uid = tb.tht_base_uid
                AND pd.phenotype_uid = $traits
                  $sql_option";
-      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-      while($row = mysql_fetch_array($res)) {
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+      while($row = mysqli_fetch_array($res)) {
          $lines_names[] = $row['line_record_name'];
          $line_uid[] = $row['line_record_uid'];
       }
@@ -1707,10 +1721,9 @@ class Downloads
                     lr.line_record_uid=tb.line_record_uid
                     and tb.experiment_uid = exp.experiment_uid
                     and lr.line_record_uid = $uid";
-            //echo "$sql<br>\n";
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             if (preg_match("/\d/",$selectedtrials)) {	//for case where there are phenotype measurements
-            while ($row = mysql_fetch_array($res)) {
+            while ($row = mysqli_fetch_array($res)) {
               $line_name = $row[0];
               $exper = $row[1];
               $year = $row[2];
@@ -1720,8 +1733,8 @@ class Downloads
                      tb.line_record_uid  = $uid
                      AND pd.tht_base_uid = tb.tht_base_uid
                      AND pd.phenotype_uid = $traits";
-              $res2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-              if ($row2 = mysql_fetch_array($res2)) {
+              $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+              if ($row2 = mysqli_fetch_array($res2)) {
                 $value = $row2['value'];
               } else {
                 $value = "-999";
@@ -1731,7 +1744,7 @@ class Downloads
               $output .= $outline;
             }
             } else {	//for case where there are no phenotype measurements
-            if ($row = mysql_fetch_array($res)) {
+            if ($row = mysqli_fetch_array($res)) {
               $line_name = $row[0];
               $year = $row[2];
               $exper = 0;    //use 0 to indicate the prediction set
@@ -1752,7 +1765,7 @@ class Downloads
 			} else {
 			  $sql_option = " WHERE ";
 			}
-			$sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid as exper, experiment_year
+			$sql = "SELECT pd.value as value, pd.phenotype_uid, tb.experiment_uid as exper, experiment_year, tb.tht_base_uid
 					FROM tht_base as tb, phenotype_data as pd, experiments as exp
 					$sql_option
 						tb.line_record_uid  = $line_uid[$i]
@@ -1760,10 +1773,9 @@ class Downloads
                                                 AND tb.experiment_uid = exp.experiment_uid
 						AND pd.phenotype_uid = $traits 
 					GROUP BY tb.tht_base_uid, pd.phenotype_uid";
-		//echo "$sql<br>\n";	
-            $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $found = 0;
-            while ($row = mysql_fetch_array($res)) {
+            while ($row = mysqli_fetch_array($res)) {
                $found = 1;
                $outline = "'$lines_names[$i]'".$delimiter.$row['value'].$delimiter.$row['exper'].$delimiter.$row['experiment_year']."\n";
                $output .= $outline;
