@@ -25,6 +25,9 @@ class Maps
             case 'Save':
                 $this->typeMapSave();
                 break;
+            case 'Display':
+                $this->typeMapDisplay();
+                break;
             case 'Markers':
                 $this->typeMapMarker(); /* this is called by javascript using ajax because it can be slow */
                 break;
@@ -51,7 +54,6 @@ class Maps
         $this->typeMapSetDisplay();
         echo "</div>";
         echo "<div id=\"step2\">";
-        //echo "<img id=\"spinner\" src=\"images/ajax-loader.gif\" style=\"display:none;\" />";
         echo "</div>";
         if (isset($_SESSION['geno_exps'])) {
             $this->typeGenoExpDisplay();
@@ -76,9 +78,9 @@ class Maps
         Calculate markers in map for selected lines</button>
         </div>
         <?php
-        if (isset($_SESSION['selected_lines']) or isset($_SESSION['clicked_buttons'])) { ?>
+        if (isset($_SESSION['selected_map'])) { ?>
             <script type="text/javascript">
-            <!--  window.onload = load_markersInMap();-->
+            window.onload = displayMap();
             </script>
             <?php
         }
@@ -106,7 +108,7 @@ class Maps
          td {border: 1px solid #eee !important;}
          h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
-        <script type="text/javascript" src="maps/select_map07.js">
+        <script type="text/javascript" src="maps/select_map08.js">
         </script>
         <form name="myForm" action="maps/select_map.php">
         <?php
@@ -121,7 +123,7 @@ class Maps
         echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         echo "<table>\n";
-        echo "<tr><td>select<td>markers<br>(total)<td>markers<br>(in selected lines)<td>map set name<td>comment (mouse over item for complete text)\n";
+        echo "<tr><td>select<td>markers<br>(total)<td>markers<br>(in selected lines)<td>map set name<td>comment (select item for complete text)\n";
         while ($row = mysqli_fetch_assoc($res)) {
             $count = $row["countm"];
             $val = $row["mapset_name"];
@@ -134,7 +136,7 @@ class Maps
                 $checked = "";
             }
             echo "<tr><td><input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: save_map(this.value)\"><td>$count";
-            echo "<td><div id=$uid><img id=\"spinner$uid\" src=\"images/ajax-loader.gif\" style=\"display:none;\"></div><td>$val<td><article title=\"$comment\">$comm</article>\n";
+            echo "<td><div id=$uid><img id=\"spinner$uid\" src=\"images/ajax-loader.gif\" style=\"display:none;\"></div><td>$val<td>$comm</article>\n";
         }
         echo "</table>";
         echo "</form><br>";
@@ -259,13 +261,40 @@ class Maps
         global $mysqli;
         $map = intval($_GET['map']);
         $_SESSION['selected_map'] = $map;
-        $sql = "select mapset_name from mapset where mapset_uid = $map";
+        $sql = "select mapset_name, comments from mapset where mapset_uid = $map";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
         if ($row = mysqli_fetch_assoc($res)) {
             $map_name = $row["mapset_name"];
+            $comment = $row["comments"];
         } else {
             $map_name = "unknown";
         }
-        echo "<br>Current selection = $map_name<br>\n";
+        echo "<table>";
+        echo "<tr><td>Selection<td>$map_name\n";
+        echo "<tr><td>Comment<td>$comment\n";
+        echo "</table>";
+    }
+
+    /**
+     * display map in session variable
+     *
+     * @return null
+     */
+    public function typeMapDisplay()
+    {
+        global $mysqli;
+        $map = $_SESSION['selected_map'];
+        $sql = "select mapset_name, comments from mapset where mapset_uid = $map";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+        if ($row = mysqli_fetch_assoc($res)) {
+            $map_name = $row["mapset_name"];
+            $comment = $row["comments"];
+        } else {
+            $map_name = "unknown";
+        }
+        echo "<table>";
+        echo "<tr><td>Selection<td>$map_name\n";
+        echo "<tr><td>Comment<td>$comment\n";
+        echo "</table>";
     }
 }
