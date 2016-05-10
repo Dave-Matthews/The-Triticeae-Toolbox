@@ -170,13 +170,16 @@ class Downloads
         echo "<tr><th>Currently selected traits</th><td><th>Currently selected trials</th>";
         print "<tr><td><select name=\"deselLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_phenotype_items(this.options)\">";
           $phenotype_ary = $_SESSION['selected_traits'];
+          $sql = "select phenotypes_name from phenotypes where phenotype_uid=?";
+          $stmt = mysqli_prepare($mysqli, $sql);
+          mysqli_stmt_bind_param($stmt, "i", $uid);  
           foreach ($phenotype_ary as $uid) {
-            $result=mysqli_query($mysqli, "select phenotypes_name from phenotypes where phenotype_uid=$uid") or die("invalid line uid\n");
-            while ($row=mysqli_fetch_assoc($result)) {
-              $selval=$row['phenotypes_name'];
+              mysqli_stmt_execute($stmt);
+              mysqli_stmt_bind_result($stmt, $selval);
+              mysqli_stmt_fetch($stmt);
               print "<option value=\"$uid\" >$selval</option>\n";
-            }
           }
+          mysqli_stmt_close($stmt);
         print "</select>";
         echo "<td><td><select name=\"deseLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_trial_items(this.options)\">";
         if (isset($_SESSION['selected_trials'])) {
@@ -399,7 +402,7 @@ class Downloads
                 <?php
 
 		if ($lines_within == "yes") {
-                  $sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid 
+                  $sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid, e.experiment_year
          FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
          WHERE e.experiment_uid = tb.experiment_uid
          AND lr.line_record_uid = tb.line_record_uid
@@ -408,7 +411,7 @@ class Downloads
          AND lr.line_record_uid IN ($selectedlines)
          AND pd.phenotype_uid IN ($phen_item)";
          } else {           
-         $sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid 
+         $sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid, e.experiment_year
 	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
 	 WHERE
 	 e.experiment_uid = tb.experiment_uid
