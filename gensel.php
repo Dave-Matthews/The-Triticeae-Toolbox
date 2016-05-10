@@ -132,11 +132,11 @@ class Downloads
         global $mysqli;
         ?>
         <style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-	</style>
+        th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+        table {background: none; border-collapse: collapse}
+        td {border: 1px solid #eee !important;}
+        h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+        </style>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
         <script type="text/javascript" src="downloads/download_gs03.js"></script>
         <script type="text/javascript" src="downloads/downloadsjq02.js"></script>
@@ -499,24 +499,24 @@ class Downloads
             $geno_exp = $_SESSION['geno_exps'];
             $geno_str = $geno_exp[0];
             $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
-            $res = mysql_query($sql) or die(mysql_error() . $sql);
-            if ($row = mysql_fetch_array($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_array($res)) {
                 $sql = "select trial_code from experiments where experiment_uid = $geno_str";
-                $res = mysql_query($sql) or die(mysql_error() . $sql);
-                $row = mysql_fetch_array($res);
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $row = mysqli_fetch_array($res);
                 $name = $row[0];
                 echo "using map from genotype experiment<br>$name";
             } elseif (isset($_SESSION['selected_map'])) {
                 $sql = "select mapset_name from mapset where mapset_uid = $map";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_assoc($res);
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $row = mysqli_fetch_assoc($res);
                 $map_name = $row['mapset_name'];
                 echo "$map_name";
             }
         } elseif (isset($_SESSION['selected_map'])) {
             $sql = "select mapset_name from mapset where mapset_uid = $map";
-            $res = mysql_query($sql) or die(mysql_error());
-            $row = mysql_fetch_assoc($res);
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_assoc($res);
             $map_name = $row['mapset_name'];
             echo "$map_name";
         }
@@ -627,8 +627,8 @@ class Downloads
             $sql = "select phenotypes_name, unit_name from phenotypes, units
                where phenotypes.unit_uid = units.unit_uid
                and phenotype_uid = $phenotype";
-            $res = mysql_query($sql) or die(mysql_error());
-            $row = mysql_fetch_array($res);
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_array($res);
             $phenolabel = $row[0];
             $phenounit = $row[1]; 
         
@@ -638,8 +638,8 @@ class Downloads
           $trials = $_SESSION['selected_trials'];
           foreach ($trials as $uid) {
             $sql = "select trial_code from experiments where experiment_uid = $uid";
-            $res = mysql_query($sql) or die(mysql_error());
-            if ($row = mysql_fetch_array($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_array($res)) {
                 $trial = $row[0];
             }
             if ($triallabel == "") {
@@ -654,8 +654,8 @@ class Downloads
           $trials = $_SESSION['training_trials'];
           foreach ($trials as $uid) {
             $sql = "select trial_code from experiments where experiment_uid = $uid";
-            $res = mysql_query($sql) or die(mysql_error());
-            if ($row = mysql_fetch_array($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_array($res)) {
               $trial = $row[0];
             }
             if ($triallabel == "") {
@@ -702,6 +702,7 @@ class Downloads
     }
 
     private function display_gwas_hits($h) {
+        global $mysqli;
         echo "Top five marker scores from GWAS analysis<br>";
         echo "<table><tr><td>marker<td>chrom<td>pos<td>value<td>external link (resource name)";
         $line= fgetcsv($h);
@@ -712,8 +713,8 @@ class Downloads
                 where markers.marker_uid = marker_annotations.marker_uid
                 and marker_annotations.marker_annotation_type_uid = marker_annotation_types.marker_annotation_type_uid
                 and marker_name = \"$line[1]\"";
-            $res = mysql_query($sql) or die(mysql_error());
-            while ($row = mysql_fetch_assoc($res)) {
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_assoc($res)) {
                 $reg_pattern = "XXXX";
                 $replace_string = $row['value'];
                 $name = $row['name_annotation'];
@@ -887,6 +888,7 @@ class Downloads
      * display results from GWAS
      */
     private function run_gwa() {
+        global $mysqli;
         $unique_str = $_GET['unq'];
         $model_opt = $_GET['fixed2'];
         $p3d = $_GET['p3d'];
@@ -900,8 +902,8 @@ class Downloads
         $sql = "select phenotypes_name, unit_name from phenotypes, units
                where phenotypes.unit_uid = units.unit_uid
                and phenotype_uid = $phenotype";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
-        $row = mysql_fetch_array($res);
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $row = mysqli_fetch_array($res);
         $phenolabel = $row[0];
         //$unique_fld = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
         //mkdir("/tmp/tht/$unique_fld");  it would be better to put all files in directory
@@ -982,6 +984,7 @@ class Downloads
      */
     private function run_gwa2() {
         global $config;
+        global $mysqli;
         $unique_str = $_GET['unq'];
         $model_opt = $_GET['fixed2'];
         $p3d = $_GET['p3d'];
@@ -995,8 +998,8 @@ class Downloads
         $sql = "select phenotypes_name, unit_name from phenotypes, units
                where phenotypes.unit_uid = units.unit_uid
                and phenotype_uid = $phenotype";
-        $res = mysql_query($sql) or die(mysql_error());
-        $row = mysql_fetch_array($res);
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $row = mysqli_fetch_array($res);
         $phenolabel = $row[0];
         //$unique_fld = chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80)).chr(rand(65,80));
         //mkdir("/tmp/tht/$unique_fld");  it would be better to put all files in directory
@@ -1177,8 +1180,8 @@ class Downloads
               $trial = $_SESSION['training_trials'];
               foreach ($trial as $uid) {
                 $sql = "select trial_code from experiments where experiment_uid = $uid";
-                      $res = mysql_query($sql) or die(mysql_error());
-                      if ($row = mysql_fetch_array($res)) {
+                      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                      if ($row = mysqli_fetch_array($res)) {
                         $trial = $row[0];
                       }
                       if ($triallabel == "") {
@@ -1191,8 +1194,8 @@ class Downloads
               $trial = $_SESSION['selected_trials'];
               foreach ($trial as $uid) {
                 $sql = "select trial_code from experiments where experiment_uid = $uid";
-                      $res = mysql_query($sql) or die(mysql_error());
-                      if ($row = mysql_fetch_array($res)) {
+                      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                      if ($row = mysqli_fetch_array($res)) {
                         $trial = $row[0];
                       }
                       if ($triallabel == "") {
@@ -1637,6 +1640,7 @@ class Downloads
      * @return string
      *
      * modified to work with only one trait
+     * if trait measured more than once then add AVG() and GROUP by
      * for R script the line names have to be quoted or special characters will cause problems
      */
     function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset) {
@@ -1772,8 +1776,8 @@ class Downloads
 						tb.line_record_uid  = $line_uid[$i]
 						AND pd.tht_base_uid = tb.tht_base_uid
                                                 AND tb.experiment_uid = exp.experiment_uid
-						AND pd.phenotype_uid = $traits 
-					GROUP BY tb.tht_base_uid, pd.phenotype_uid";
+						AND pd.phenotype_uid = $traits";
+	//				GROUP BY tb.tht_base_uid, pd.phenotype_uid";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $found = 0;
             while ($row = mysqli_fetch_array($res)) {
