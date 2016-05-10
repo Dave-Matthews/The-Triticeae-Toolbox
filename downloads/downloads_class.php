@@ -214,7 +214,7 @@ class Downloads
      *
      * @return null
      */
-    function refresh_title()
+    private function refresh_title()
     {
         ?>
         <h2>Download Genotype and Phenotype Data</h2>
@@ -316,7 +316,11 @@ class Downloads
         $filename = "download_" . $unique_str;
         mkdir("/tmp/tht/$filename");
         $subset = "yes";
-        $dtype = "";
+        if ($version == "V6") {
+            $dtype = "FJ";
+        } else { 
+            $dtype = "";
+        }
        
         if (isset($_SESSION['selected_map'])) {
             $filename = "geneticMap.txt";
@@ -339,7 +343,7 @@ class Downloads
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
                 $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-                $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset);
+                $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype);
                 fwrite($h, $output);
                 fclose($h);
             }
@@ -376,11 +380,10 @@ class Downloads
             }
             fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
-            $dtype = "AB";
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
                 $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-                $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp, $subset);
+                $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp, $subset, $dtype);
                 fwrite($h, $output);
                 fclose($h);
             }
@@ -651,6 +654,7 @@ class Downloads
 	 */
 	private function step3_lines()
 	{
+            global $mysqli;
 	    ?>
 	    <table class="tableclass1">
 	    <tr>
@@ -665,8 +669,8 @@ class Downloads
               <?php
               foreach($selected as $uid) {
                 $sql = "SELECT phenotypes_name from phenotypes where phenotype_uid = $uid";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_assoc($res)
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $row = mysqli_fetch_assoc($res)
                 ?>
                     <option disabled value="<?php echo $row['phenotypes_name'] ?>">
                      <?php echo $row['phenotypes_name'] ?>
@@ -687,6 +691,7 @@ class Downloads
          */
         private function step4_lines()
         {
+            global $mysqli
             ?>
             <table class="tableclass1">
             <tr>
@@ -701,8 +706,8 @@ class Downloads
               <?php
               foreach($selected as $uid) {
                 $sql = "SELECT trial_code from experiments where experiment_uid = $uid";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_assoc($res)
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $row = mysqli_fetch_assoc($res)
                 ?>
                     <option disabled value="<?php echo $row['trial_code'] ?>">
                      <?php echo $row['trial_code'] ?>
@@ -870,7 +875,7 @@ class Downloads
             $selected_map = $_SESSION['selected_map'];
         }
         if (isset($_SESSION['geno_exps'])) {
-            $geno_exps = $_SESSION['geno_exps'];
+            $geno_exps = $_SESSION['geno_exps'][0];
         } else {
             $geno_exps = "";
         }
@@ -926,7 +931,7 @@ class Downloads
                 //calculate_db($lines, $min_maf, $max_missing, $max_miss_line);
                 echo "<br>Filter lines and markers then $message2";
              } elseif ($typeGE == "true") {
-                calculate_afe($lines, $min_maf, $max_missing, $max_miss_line);
+                calculate_afe($geno_exps, $min_maf, $max_missing, $max_miss_line);
                 $countFilterLines = count($lines);
                 $countFilterMarkers = count($_SESSION['filtered_markers']);
              } else {
@@ -1105,33 +1110,38 @@ class Downloads
      * @param unknown_type $subset
      * @return string
      */
-    function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
+    private function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset, $dtype)
     {
         global $mysqli;
         $delimiter = "\t";
-        $output = '';
-        $outputheader1 = '';
-	$outputheader2 = "<Trait>";
-	$outputheader3 = "<Trial>";
+        if ($dtype == "FJ") {
+            $output = "# fjFile = PHENOTYPE\n";
+            $outputheader2 = "";
+            $outputheader3 = "";
+        } else {
+            $output = '';
+            $outputheader2 = "<Trait>";
+            $outputheader3 = "<Trial>";
+        }
       
-      //count number of traits and number of experiments
-      $ntraits=substr_count($traits, ',')+1;
-      $nexp=substr_count($experiments, ',')+1;
+        //count number of traits and number of experiments
+        $ntraits=substr_count($traits, ',')+1;
+        $nexp=substr_count($experiments, ',')+1;
       
-      //$traits = explode(',', $traits);
-      //$experiments = explode(',', $experiments);
+        //$traits = explode(',', $traits);
+        //$experiments = explode(',', $experiments);
       
-      // figure out which traits are at which location
-      if ($experiments=="") {
-        $sql_option = "";
-      } else {
-        $sql_option = "AND tb.experiment_uid IN ($experiments)";
-      }
-      $selectedlines = implode(",", $_SESSION['selected_lines']);
-      if (count($_SESSION['selected_lines']) > 0) {
-         $sql_option = $sql_option . " AND tb.line_record_uid IN ($selectedlines)";
-      }
-      $sql = "SELECT DISTINCT e.trial_code, e.experiment_uid, p.phenotypes_name,p.phenotype_uid
+        // figure out which traits are at which location
+        if ($experiments=="") {
+            $sql_option = "";
+        } else {
+            $sql_option = "AND tb.experiment_uid IN ($experiments)";
+        }
+        $selectedlines = implode(",", $_SESSION['selected_lines']);
+        if (count($_SESSION['selected_lines']) > 0) {
+            $sql_option = $sql_option . " AND tb.line_record_uid IN ($selectedlines)";
+        }
+        $sql = "SELECT DISTINCT e.trial_code, e.experiment_uid, p.phenotypes_name,p.phenotype_uid
                FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
                WHERE 
                   e.experiment_uid = tb.experiment_uid
@@ -1140,14 +1150,14 @@ class Downloads
                   AND p.phenotype_uid = pd.phenotype_uid
                   AND pd.phenotype_uid IN ($traits)  
                ORDER BY p.phenotype_uid,e.experiment_uid";
-      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-      $ncols = mysqli_num_rows($res);
-      while($row = mysqli_fetch_array($res)) {
-         $outputheader2 .= $delimiter . str_replace(" ","_",$row['phenotypes_name']);
-         $outputheader3 .= $delimiter . $row['trial_code'];
-         $keys[] = $row['phenotype_uid'].":".$row['experiment_uid'];
-      }
-      $nexp=$ncols;
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $ncols = mysqli_num_rows($res);
+        while ($row = mysqli_fetch_array($res)) {
+            $outputheader2 .= $delimiter . str_replace(" ", "_", $row['phenotypes_name']);
+            $outputheader3 .= $delimiter . $row['trial_code'];
+            $keys[] = $row['phenotype_uid'].":".$row['experiment_uid'];
+        }
+        $nexp=$ncols;
 
 		// dem 5jan11: If $subset="yes", use $_SESSION['selected_lines'].
 		$sql_option = "";
@@ -1182,9 +1192,9 @@ class Downloads
 		}
       $outputheader1 = "$nlines".$delimiter."$ncols".$delimiter.$nheaderlines;
 	  if ($nexp ===1){
-                        $output = $outputheader2."\n";
+                        $output .= $outputheader2."\n";
 		} else {
-                        $output = $outputheader2."\n".$outputheader3."\n";
+                        $output .= $outputheader2."\n".$outputheader3."\n";
 		}
 	  if (preg_match("/\d/",$experiments)) {
               $sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid 
@@ -1453,7 +1463,7 @@ class Downloads
                 $num_lines = count($lines);	
                 if ($dtype =='qtlminer')  {
                     fwrite($h, "$outputheader\n");
-                } elseif ($dtype == 'AB') {
+                } elseif ($dtype == 'FJ') {
                     fwrite($h, "# fjFile = GENOTYPE\n".$delimiter.$outputheader."\n");
                 } else {
                     fwrite($h, "$num_lines.$delimiter.$nelem.:2\n".$outputheader."\n");
@@ -1467,7 +1477,7 @@ class Downloads
 		   'AB' => '0',
 		   '' => 'NA'
 		 );
-                } elseif ($dtype=='AB') {
+                } elseif (($dtype=='AB') || ($dtype=='FJ')) {
                   $lookup = array(
                   'AA' => 'AA',
                   'BB' => 'BB',
