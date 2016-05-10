@@ -610,6 +610,7 @@ class Downloads
      * call R program for displaying histograms
      */
     private function run_histo() {
+        global $mysqli;
         $unique_str = $_GET['unq'];
         $dir = '/tmp/tht/';
         $filename1 = 'THTdownload_hapmap_' . $unique_str . '.txt';
@@ -1169,6 +1170,7 @@ class Downloads
     private function type1_session($version)
 	{
             global $config;
+            global $mysqli;
 	    $datasets_exp = "";
             $unique_str = $_GET['unq'];
             $max_missing = $_GET['mmm'];
@@ -1237,15 +1239,15 @@ class Downloads
 		    $phenotype = $_SESSION['training_traits'];
                     $phenotype = $phenotype[0];
                     $sql = "select phenotypes_name from phenotypes where phenotype_uid = $phenotype";
-                    $res = mysql_query($sql) or die(mysql_error());
-                    $row = mysql_fetch_array($res);
+                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                    $row = mysqli_fetch_array($res);
                     $phenolabel = $row[0];
                 //} elseif (isset($_SESSION['selected_traits'])) {
                   } elseif (isset($_SESSION['phenotype'])) {
                     $phenotype = $_SESSION['phenotype'];
                     $sql = "select phenotypes_name from phenotypes where phenotype_uid = $phenotype";
-                    $res = mysql_query($sql) or die(mysql_error());
-                    $row = mysql_fetch_array($res);
+                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                    $row = mysqli_fetch_array($res);
                     $phenolabel = $row[0];
 		} else {
 		    $phenotype = "";
@@ -1256,8 +1258,8 @@ class Downloads
                 $experiments_g = $_SESSION['geno_exps'];
                 $geno_str = $experiments_g[0];
                 $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $geno_str";
-                $res = mysql_query($sql) or die(mysql_error());
-                while ($row = mysql_fetch_row($res)) {
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                while ($row = mysqli_fetch_row($res)) {
                     $uid = $row[0];
                     $markers[] = $uid;
                     $count++;
