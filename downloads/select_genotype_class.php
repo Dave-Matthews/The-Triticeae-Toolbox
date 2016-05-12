@@ -593,7 +593,7 @@ private function type_GenoType_Display()
                                 AND e_t.experiment_type_name = 'genotype'
                                 AND program_type='data' ORDER BY name";
 
-		$res = mysqli_query($mysqli, $sql) or die(mysql_error($mysqli));
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		while ($row = mysqli_fetch_assoc($res))
 		{
 			?>
@@ -643,8 +643,9 @@ private function type_GenoType_Display()
  */
 private function type1_experiments()
 {
-		$CAPdata_programs = $_GET['bp']; 
-		$years = $_GET['yrs']; 
+    global $mysqli;
+    $CAPdata_programs = $_GET['bp']; 
+    $years = $_GET['yrs']; 
 	
 	/* Query for getting experiment id, trial code and year */
         /* AND e.experiment_year IN ($years) */
@@ -663,8 +664,8 @@ private function type1_experiments()
 
 	
         //echo "$sql<br>";	
-	$res = mysql_query($sql) or die(mysql_error());
-	$num_mark = mysql_num_rows($res);
+	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	$num_mark = mysqli_num_rows($res);
 	//check if any experiments are visible for this user
 	if ($num_mark>0) {
 ?>
@@ -680,7 +681,7 @@ private function type1_experiments()
                 <select name="experiments" multiple="multiple" style="height: 12em;" style="height: 12em" onchange="javascript:update_experiments(this.options)">
 <?php
 	
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($mysqli, $res)) {
 			?>
 			<!-- Display Map names-->		
 				<option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
