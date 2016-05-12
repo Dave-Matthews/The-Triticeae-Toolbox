@@ -680,8 +680,7 @@ private function type1_experiments()
 		<!--select name="experiments" multiple="multiple" size="10" style="height: 12em" onchange="javascript:load_tab_delimiter(this.options)"-->
                 <select name="experiments" multiple="multiple" style="height: 12em;" style="height: 12em" onchange="javascript:update_experiments(this.options)">
 <?php
-	
-		while ($row = mysqli_fetch_array($mysqli, $res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			?>
 			<!-- Display Map names-->		
 				<option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
