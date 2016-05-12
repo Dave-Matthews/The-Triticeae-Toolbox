@@ -1,6 +1,7 @@
 <?php
 require '../../includes/bootstrap.inc';
 $mysqli = connecti();
+mysql_set_charset('utf8');
 
 $self = $_SERVER['PHP_SELF'];
 $script = $_SERVER["SCRIPT_NAME"]."/";
