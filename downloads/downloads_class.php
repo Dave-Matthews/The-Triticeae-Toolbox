@@ -119,6 +119,7 @@ class Downloads
      */
     private function type1Checksession()
     {
+        global $mysqli;
         echo "<div id=\"title\">";
         $phenotype = "";
         $lines = "";
