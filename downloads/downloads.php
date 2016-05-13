@@ -26,7 +26,6 @@ date_default_timezone_set('America/Los_Angeles');
 require_once $config['root_dir'].'includes/MIME/Type.php';
 
 // connect to database
-connect();
 $mysqli = connecti();
 
 require_once $config['root_dir'].'downloads/marker_filter.php';
