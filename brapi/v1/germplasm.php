@@ -1,15 +1,16 @@
 <?php
-// brapi/0.1/germplasm.php, DEM jul 2014
-// Deliver Line names according to http://docs.breeding.apiary.io/
-// from ./genotype.php
-
-// Cassavabase response:
-/* % curl "http://cassava-test.sgn.cornell.edu/brapi/0.1/germplasm/find?q=95NA-00063" */
-/* [{"queryName":"95NA-00063","germplasmId":29417,"uniqueName":"95NA-00063"}] */
+/**
+ * BRAPI/0.1/germplasm.php, DEM jul 2014
+ * Deliver Line names according to http://docs.breeding.apiary.io/
+ *
+ * Cassavabase response:
+ * % curl "http://cassava-test.sgn.cornell.edu/brapi/0.1/germplasm/find?q=95NA-00063"
+ * [{"queryName":"95NA-00063","germplasmId":29417,"uniqueName":"95NA-00063"}]
+ */
 
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-connect();
+require $config['root_dir'].'includes/bootstrap.inc';
+$mysqli = connecti();
 
 // URI is something like germplasm?name={name}
 // Extract the pseudo-path part of the REST args, ie "find".
@@ -18,41 +19,125 @@ $script = $_SERVER["SCRIPT_NAME"]."/";
 $rest = str_replace($script, "", $self);
 $rest = explode("/", $rest);
 $command = $rest[0];
+//echo "rest[0] = $rest[0]\n";
 // Extract the URI's querystring, ie "name={name}".
-if ($_GET) {
-  // There should be at most 1.
-  $getkeys = array_keys($_GET);
-  if (count($getkeys) > 1) {
-    $badkey = $getkeys[1];
-    echo "<b>$badkey = $_GET[$badkey]</b>: Option not implemented<p>";
-    exit;
-  }
+if (isset($_GET['matchMethod'])) {
+    $matchMethod = $_GET['matchMethod'];
+} else {
+    $matchMethod = null;
 }
-// Is there a command?
-if ($command) {
-  if ($command != "find") {
-    echo "Unknown germplasm command <b>'$command'</b>. <p>";
-    exit;
-  }
+if (isset($_GET['pageSize'])) {
+    $pageSize = $_GET['pageSize'];
+} else {
+    $pageSize = 1000;
 }
-else {
-  /* // $rest[1] is undefined, no command. */
-  /* echo "<b>germplasm/$rest[0]</b>: No action implemented yet.<p>"; */
-  // "Germplasm ID by Name".  URI is germplasm?name={name}
-  $linename = $_GET['name'];
-  $lineuid = mysql_grab("select line_record_uid from line_records where line_record_name = '$linename'");
-  $lineuid = intval($lineuid);
-  $syns = array();
-  $response["queryName"] = $linename;
-  $response["germplasmId"] = $lineuid;
-  $response["uniqueName"] = $linename;
-  /* $response["synonyms"] = $syns ; */
-  $r = array($response);
-  header("Access-Control-Allow-Origin: *");
-  header("Content-Type: application/json");
-  /* Requires PHP 5.4.0: */
-  /* echo json_encode($response, JSON_PRETTY_PRINT); */
-  echo json_encode($r);
+if (isset($_GET['page'])) {
+    $currentPage = $_GET['page'];
+} else {
+    $currentPage = 1;
 }
 
-?>
+// Is there a command?
+if ($command) {
+    $lineuid = $command;
+    $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $lineuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
+        if (mysqli_stmt_fetch($stmt)) {
+            $response["germplasmDbId"] = $lineuid;
+            $response['defaultDisplayName'] = $line_record_name;
+            $response['germplasmName'] = $line_record_name;
+            $response['accessionNumber'] = null;
+            $response['germplasmPUI'] = null;
+            $response['pedigree'] = null;
+            $response['seedSource'] = null;
+            $response['synonyms'] = null;
+        } else {
+            $response = null;
+        }
+        mysqli_stmt_close($stmt);
+    }
+    if (isset($lineuid)) {
+        $sql = "select line_synonym_name from line_synonyms where line_record_uid = ?";
+        $stmt = mysqli_prepare($mysqli, $sql);
+        mysqli_stmt_bind_param($stmt, "i", $lineuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $line_synonyms);
+        while (mysqli_stmt_fetch($stmt)) {
+            $response['synonyms'] = $line_synonyms;
+        }
+        mysqli_stmt_close($stmt);
+        $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = ?";
+        $stmt = mysqli_prepare($mysqli, $sql);
+        mysqli_stmt_bind_param($stmt, "i", $lineuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $barley_ref_number);
+        while (mysqli_stmt_fetch($stmt)) {
+            $response['germplasmNumber'] = $barley_ref_number;
+        }
+        mysqli_stmt_close($stmt);
+    }
+    $r['metadata']['pagination']['pageSize'] = 1;
+    $r['metadata']['pagination']['currentPage'] = $currentPage;
+    $r['metadata']['pagination']['totalCount'] = 1;
+    $r['metadata']['pagination']['totalPages'] = 1;
+    $r['metadata']['status'] = null;
+    $r['data'] = array($response);
+    header("Access-Control-Allow-Origin: *");
+    header("Content-Type: application/json");
+    echo json_encode($r);
+} else {
+    // "Germplasm ID by Name".  URI is germplasm?name={name}
+    $linename = $_GET['name'];
+    if ($matchMethod == "wildcard") {
+        $sql = "select line_record_uid, line_record_name, pedigree_string from line_records where line_record_name like ?";
+        $linename = "%" . $linename . "%";
+    } else {
+        $sql = "select line_record_uid, line_record_name, pedigree_string from line_records where line_record_name = ?";
+    }
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $linename);
+        mysqli_stmt_bind_param($stmt, "s", $linename);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $lineuid, $line_record_name, $pedigree);
+        while (mysqli_stmt_fetch($stmt)) {
+            $temp["germplasmDbId"] = $lineuid;
+            $temp['defaultDisplayName'] = $line_record_name;
+            $temp['germplasmName'] = $line_record_name;
+            $temp['accessionNumber'] = null;
+            $temp['germplasmPUI'] = null;
+            $temp['pedigree'] = null;
+            $temp['seedSource'] = null;
+            $temp['synonyms'] = null;
+            $response[] = $temp;
+        }
+        mysqli_stmt_close($stmt);
+
+        foreach ($response as $key => $item) {
+            $lineuid = $item['germplasmDbId'];
+            $sql = "select line_synonym_name from line_synonyms where line_record_uid = $lineuid";
+            //echo "$key $sql\n";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($res)) {
+                $response[$key]['synonyms'] = $row[0];
+            }
+
+            $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = $lineuid";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($res)) {
+                $response[$key]['germplasmNumber'] = $row[0];
+            }
+        }
+    }
+    $r['metadata']['pagination']['pageSize'] = $pageSize;
+    $r['metadata']['pagination']['currentPage'] = $currentPage;
+    $r['metadata']['pagination']['totalCount'] = $pageSize;
+    $r['metadata']['pagination']['totalPages'] = $pageSize;
+    $r['metadata']['status'] = null;
+    $r['result']['data'] = array($response);
+    header("Access-Control-Allow-Origin: *");
+    header("Content-Type: application/json");
+    echo json_encode($r);
+}

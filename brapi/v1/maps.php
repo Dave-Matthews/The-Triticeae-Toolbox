@@ -1,12 +1,13 @@
 <?php
 require '../../includes/bootstrap.inc';
 $mysqli = connecti();
-mysql_set_charset('utf8');
+mysqli_set_charset($mysqli, 'utf8');
 
 $self = $_SERVER['PHP_SELF'];
 $script = $_SERVER["SCRIPT_NAME"]."/";
 $rest = str_replace($script, "", $self);
 $rest = explode("/", $rest);
+header("Content-Type: application/json");
 //echo "self = $self script = $script rest[0] = $rest[0] rest[1] = $rest[1] rest[2] = $rest[2]\n";
 if (isset($_GET['action'])) {
     $uid = $_GET['action'];
@@ -24,7 +25,9 @@ if ($rest[1] == "positions") {
         $min = $_GET['min'];
         $max = $_GET['max'];
     } else {
-        $linearray['metadata']['status'] = "Error: bad request $rest[0] $rest[1]";
+        $results['metadata']['status'][] = array("code" => "api error", "description" => "invalid api request");
+        $return = json_encode($results);
+        die("$return");
     }
     //echo "action = $action\n";
 } elseif (is_numeric($rest[0])) {
@@ -46,7 +49,6 @@ if (isset($_GET['page'])) {
 if (isset($_GET['uid'])) {
     $uid = $_REQUEST['uid'];
 }
-header("Content-Type: application/json");
 if ($action == "list") {
     $linearray['metadata']['status'] = null;
     //first query all data
@@ -124,13 +126,19 @@ if ($action == "list") {
     $pageList = array( "pageSize" => $pageSize, "currentPage" => 1, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
-    $sql = "select mapset_name, map_type, map_unit from mapset where mapset_uid = $uid";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    if ($row = mysqli_fetch_row($res)) {
+    $sql = "select mapset_name, map_type, map_unit from mapset where mapset_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $mapset_name, $map_type, $map_unit);
+        mysqli_stmt_fetch($stmt);
         $results["mapId"] = $uid;
-        $results["name"] = $row[0];
-        $results["type"] = $row[1];
-        $results["unit"] = $row[2];
+        $results["name"] = $mapset_name;
+        $results["type"] = $map_type;
+        $results["unit"] = $map_unit;
+        mysqli_stmt_close($stmt);
+    } else {
+        $results['metadata']['status'][] = array("code" => "sql error", "description" => "error connecting to database");
     }
     $sql = "select count(markers.marker_uid), max(end_position) ,chromosome
         from markers_in_maps, markers, map
@@ -185,7 +193,7 @@ if ($action == "list") {
             while (mysqli_stmt_fetch($stmt)) {
                 $temp2["markerId"] = (integer) $marker_uid;
                 $temp2["markerName"] = $marker_name;
-                $temp2["location"] = $start_postion;
+                $temp2["location"] = $start_position;
                 $temp2["linkageGroup"] = $chromosome;
                 $linearray['result']['data'][] = $temp2;
             }
