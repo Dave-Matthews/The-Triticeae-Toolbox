@@ -97,8 +97,27 @@ if ($command) {
     } else {
         $sql = "select line_record_uid, line_record_name, pedigree_string from line_records where line_record_name = ?";
     }
+
+    //first query all data
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $linename);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
+        $num_rows = mysqli_stmt_num_rows($stmt);
+    } else {
+        echo "mysqli_error($mysqli)\n";
+    }
+    if ($currentPage == 1) {
+        $sql .= " limit $pageSize";
+    } else {
+        $offset = ($currentPage - 1) * $pageSize;
+        if ($offset < 1) {
+            $offset = 1;
+        }
+        $sql .= " limit $offset, $pageSize";
+    }
+    //echo "$sql\n";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $linename);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $lineuid, $line_record_name, $pedigree);
@@ -133,8 +152,8 @@ if ($command) {
     }
     $r['metadata']['pagination']['pageSize'] = $pageSize;
     $r['metadata']['pagination']['currentPage'] = $currentPage;
-    $r['metadata']['pagination']['totalCount'] = $pageSize;
-    $r['metadata']['pagination']['totalPages'] = $pageSize;
+    $r['metadata']['pagination']['totalCount'] = $num_rows;
+    $r['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);;
     $r['metadata']['status'] = null;
     $r['result']['data'] = array($response);
     header("Access-Control-Allow-Origin: *");
