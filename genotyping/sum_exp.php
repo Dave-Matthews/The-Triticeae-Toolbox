@@ -70,9 +70,19 @@ if (isset($_GET['uid'])) {
     while ($row=mysqli_fetch_row($result)) {
         $uid = $row[0];
         $count = $row[1];
+        if (isset($trial_name_list[$uid])) {
+            $trial_code = $trial_name_list[$uid];
+        } else {
+            $trial_code = $uid;
+        }
         $total = ($total_marker_list[$uid]*$total_line_list[$uid]);
-        $perc = round(100*$count/$total, 2);
-        $total = round(($total/1000), 0) . "K";
+        if ($total > 0) {
+            $perc = round(100*$count/$total, 2);
+            $total = round(($total/1000), 0) . "K";
+        } else {
+            $perc = 0;
+            $total = 0;
+        }
         echo "<tr><td><a href=genotyping/sum_exp.php?uid=$uid>$trial_name_list[$uid]</a><td>$total<td>$count<td>$perc\n";
     }
 }
