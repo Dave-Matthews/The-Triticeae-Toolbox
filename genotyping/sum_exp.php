@@ -83,7 +83,7 @@ if (isset($_GET['uid'])) {
             $perc = 0;
             $total = 0;
         }
-        echo "<tr><td><a href=genotyping/sum_exp.php?uid=$uid>$trial_name_list[$uid]</a><td>$total<td>$count<td>$perc\n";
+        echo "<tr><td><a href=genotyping/sum_exp.php?uid=$uid>$trial_code</a><td>$total<td>$count<td>$perc\n";
     }
 }
 echo "</table></div>";
