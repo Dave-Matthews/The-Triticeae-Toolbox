@@ -13,10 +13,10 @@
 
 session_start();
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap.inc');
+require $config['root_dir'] . 'includes/bootstrap.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
-include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
-connect();
+require '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
+$mysqli = connecti();
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method == "GET") {
@@ -63,11 +63,11 @@ class Pedigree {
     // Find which Properties this set of lines has any values for.
     $ourprops = array(); 
     foreach ($linelist as $lineuid) {
-      $propresult = mysql_query("select property_uid
+      $propresult = mysqli_query($mysqli, "select property_uid
 	 from line_properties lp, property_values pv
 	 where lp.property_value_uid = pv.property_values_uid
 	 and lp.line_record_uid = $lineuid");
-      while ($pr = mysql_fetch_assoc($propresult)) 
+      while ($pr = mysqli_fetch_assoc($propresult)) 
 	if (!in_array($pr['property_uid'], $ourprops)) 
 	  $ourprops[] = $pr['property_uid'];  // array of uids
     }
@@ -117,23 +117,23 @@ function load_excel() {
 <?php
     // Get the data for each line.
     foreach ($linelist as $lineuid) {
-      $result=mysql_query("select line_record_name, breeding_program_code, pedigree_string, generation, description from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-      $syn_result=mysql_query("select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
+      $result=mysqli_query($mysqli, "select line_record_name, breeding_program_code, pedigree_string, generation, description from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+      $syn_result=mysqli_query($mysqli, "select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
       $syn_names=""; $sn = "";
-      while ($syn_row = mysql_fetch_assoc($syn_result)) 
+      while ($syn_row = mysqli_fetch_assoc($syn_result)) 
 	$syn_names[] = $syn_row['line_synonym_name'];
       if (is_array($syn_names))
 	$sn = implode(', ', $syn_names);
 
-      $grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
-           where line_record_uid=$lineuid") or die(mysql_error());
+      $grin_result=mysqli_query($mysqli, "select barley_ref_number from barley_pedigree_catalog_ref 
+           where line_record_uid=$lineuid") or die(mysqli_error($mysqli));
       $grin_names=""; $gr = "";
-      while ($grin_row = mysql_fetch_assoc($grin_result)) 
+      while ($grin_row = mysqli_fetch_assoc($grin_result)) 
 	$grin_names[] = $grin_row['barley_ref_number'];
       if (is_array($grin_names))
 	$gr = implode(', ', $grin_names);
 
-      while ($row=mysql_fetch_assoc($result)) {
+      while ($row=mysqli_fetch_assoc($result)) {
 ?>
 	<tr>
         <td style="width: 80px; text-align: center" class="marker">
@@ -184,6 +184,7 @@ function load_excel() {
 } /* End of function type_LineInformation*/
   
 private function type_Line_Excel() {
+  global $mysqli;
   // If we clicked on the button for Lines Found, retrieve that cookie instead.
   if ($_GET['lf'] == "yes") 
     $linelist = $_SESSION['linesfound'];
@@ -194,11 +195,11 @@ private function type_Line_Excel() {
   // Get the Genetic Characters known for this set of lines.
   $ourprops = array();
   foreach ($linelist as $lineuid) {
-    $propresult = mysql_query("select property_uid                                                   
+    $propresult = mysqli_query($mysqli, "select property_uid                                                   
          from line_properties lp, property_values pv                                                   
          where lp.property_value_uid = pv.property_values_uid                                          
-         and lp.line_record_uid = $lineuid") or die(mysql_error());
-    while ($pr = mysql_fetch_assoc($propresult))
+         and lp.line_record_uid = $lineuid") or die(mysqli_error($mysqli));
+    while ($pr = mysqli_fetch_assoc($propresult))
       if (!in_array($pr['property_uid'], $ourprops))
 	$ourprops[] = $pr['property_uid'];  // array of uids                                         
   }
@@ -248,10 +249,10 @@ private function type_Line_Excel() {
   # start by opening a query string
     while ($tok !== false) {
       $lineuid = (int)$tok;
-      $result=mysql_query("select line_record_name, breeding_program_code, pedigree_string, generation, 
-           description from line_records where line_record_uid=\"$lineuid\" ") or die(mysql_error());
+      $result=mysqli_query($mysqli, "select line_record_name, breeding_program_code, pedigree_string, generation, 
+           description from line_records where line_record_uid=\"$lineuid\" ") or die(mysqli_error($mysqli));
       $tok = strtok(",");
-      while ($row = mysql_fetch_assoc($result)) {
+      while ($row = mysqli_fetch_assoc($result)) {
 	$objPHPExcel->getActiveSheet()->SetCellValue("A$i", "$row[line_record_name]",$format_row);
 	$objPHPExcel->getActiveSheet()->SetCellValue("D$i", "$row[breeding_program_code]",$format_row);
 	$objPHPExcel->getActiveSheet()->SetCellValue("E$i", "$row[pedigree_string]",$format_row);
@@ -260,20 +261,20 @@ private function type_Line_Excel() {
       }
 
       // GRIN Accession
-      $grin_result=mysql_query("select barley_ref_number from barley_pedigree_catalog_ref 
-           where line_record_uid=$lineuid") or die(mysql_error());
+      $grin_result=mysqli_query($mysqli, "select barley_ref_number from barley_pedigree_catalog_ref 
+           where line_record_uid=$lineuid") or die(mysqli_error($mysqli));
       $grin_names=""; $gr = "";
-      while ($grin_row = mysql_fetch_assoc($grin_result)) 
+      while ($grin_row = mysqli_fetch_assoc($grin_result)) 
 	$grin_names[] = $grin_row['barley_ref_number'];
       if (is_array($grin_names))
 	$gr = implode(', ', $grin_names);
       $objPHPExcel->getActiveSheet()->SetCellValue("B$i", "$gr",$format_row);
 
       // Synonyms
-      $syn_result=mysql_query("select line_synonym_name from line_synonyms 
+      $syn_result=mysqli_query($mysqli, "select line_synonym_name from line_synonyms 
             where line_record_uid=$lineuid") or die(mysql_error());
       $syn_names=""; $sn="";
-      while ($syn_row = mysql_fetch_assoc($syn_result)) 
+      while ($syn_row = mysqli_fetch_assoc($syn_result)) 
 	$syn_names[] = $syn_row['line_synonym_name'];
       if (is_array($syn_names))
 	$sn = implode(', ', $syn_names);

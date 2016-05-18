@@ -5,25 +5,22 @@
  *
  * PHP version 5
  *
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/format-fasta.php
 */
 
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap_curator.inc';
 set_time_limit(3000);
-connect();
+$sql = connecti();
 
 //needed for mac compatibility
 ini_set('auto_detect_line_endings', true);
 
 $sql = "select value from settings where name = \"database\"";
-$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-if ($row = mysql_fetch_array($res)) {
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+if ($row = mysqli_fetch_array($res)) {
     $database = $row[0];
 }
   
@@ -44,8 +41,8 @@ if ($fh2 = fopen("$file2", "w")) {
 $count = 0;
 $sql = "select marker_name, marker_type_name, sequence from markers, marker_types
      where markers.marker_type_uid = marker_types.marker_type_uid";
-$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-while ($row = mysql_fetch_array($res)) {
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+while ($row = mysqli_fetch_array($res)) {
     $name = $row[0];
     $marker_type = $row[1];
     $seq = $row[2];
