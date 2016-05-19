@@ -4,34 +4,34 @@ require 'config.php';
  * Logged in page initialization
  */
 
-include($config['root_dir'] . 'includes/bootstrap.inc');
-connect();
+include $config['root_dir'] . 'includes/bootstrap.inc';
+$mysqli = connecti();
 session_start();
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 
 ?>
 
 <div id="primaryContentContainer">
   <div id="primaryContent">
-		<h2>Display a Purdy pedigree</h2>
+  <h2>Display a Purdy pedigree</h2>
   <div class="boxContent">
 
 <?php
 $pstr=$_REQUEST['pstr'];
-if(isset($pstr) && $pstr!=='') {
-	echo "<div style=\"text-align: left;\">";
-	// The following is exactly the same with the pedigree_tree.php program.
+if (isset($pstr) && $pstr!=='') {
+    echo "<div style=\"text-align: left;\">";
+    // The following is exactly the same with the pedigree_tree.php program.
     // The difference between the programs are just where the pedigree string
     // is passed from.
-	print "Alleles of selected markers are shown on the right. &nbsp;&nbsp;<br>";
-$markers = $_SESSION['clicked_buttons'];
-	for ($i = 0; $i<count($markers); $i++) {
-	  $res = mysql_query("select marker_name from markers where marker_uid = $markers[$i]");
-	  $markername = mysql_fetch_row($res);
-	  $num = $i+1;
-	  print "<b>$num</b>: $markername[0]<br>";
-	}
-	print "<a href = ".$config['base_url']."genotyping/marker_selection.php>Select markers.</a><p>";
+    print "Alleles of selected markers are shown on the right. &nbsp;&nbsp;<br>";
+    $markers = $_SESSION['clicked_buttons'];
+    for ($i = 0; $i<count($markers); $i++) {
+        $res = mysqli_query($mysqli, "select marker_name from markers where marker_uid = $markers[$i]");
+        $markername = mysqli_fetch_row($res);
+        $num = $i+1;
+        print "<b>$num</b>: $markername[0]<br>";
+    }
+    print "<a href = ".$config['base_url']."genotyping/marker_selection.php>Select markers.</a><p>";
 	$pdarr=generate_pedigree_matrix($pstr);
 	unset($_SESSION['draw_pedigree_matrix']); // necessary, ow the figure is not refreshed
 	unset($_SESSION['draw_snps']);
@@ -60,4 +60,4 @@ $markers = $_SESSION['clicked_buttons'];
 	</div>
 </div>
 
-<?php include($config['root_dir'] . 'theme/footer.php'); ?>
+<?php include $config['root_dir'] . 'theme/footer.php'; ?>

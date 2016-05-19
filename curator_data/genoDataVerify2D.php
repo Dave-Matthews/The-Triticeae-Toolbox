@@ -174,7 +174,6 @@ function convertDArT2Illumina ($alleles)
     return $results;
 }
  
-connect(); 
 $mysqli = connecti();
 
 $target_Path = substr($lineTransFile, 0, strrpos($lineTransFile, '/')+1);

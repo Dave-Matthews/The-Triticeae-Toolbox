@@ -5,7 +5,7 @@
 
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
-connect();
+$mysqli = connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
 ob_start();
