@@ -4,11 +4,11 @@ require 'config.php';
  * Logged in page initialization
  */
 
-include($config['root_dir'] . 'includes/bootstrap.inc');
-connect();
+include $config['root_dir'] . 'includes/bootstrap.inc';
+$mysqli = connecti();
 session_start();
 
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 
 ?>
 
@@ -74,8 +74,8 @@ if(isset($_REQUEST['line']) && ($_REQUEST['line'] != "")) {
 	print "Alleles of selected markers are shown on the right. &nbsp;&nbsp;<br>";
 	$markers = $_SESSION['clicked_buttons'];
 	for ($i = 0; $i<count($markers); $i++) {
-	  $res = mysql_query("select marker_name from markers where marker_uid = $markers[$i]");
-	  $markername = mysql_fetch_row($res);
+	  $res = mysqli_query($mysqli, "select marker_name from markers where marker_uid = $markers[$i]");
+	  $markername = mysqli_fetch_row($res);
 	  $num = $i+1;
 	  print "<b>$num</b>: $markername[0]<br>";
 	}

@@ -20,9 +20,9 @@ $mysqli = connecti();
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method == "GET") {
-  new Pedigree($_GET['function']);
+    new Pedigree($_GET['function']);
 } elseif ($method == "POST") {
-  new Pedigree($_POST['function']);
+    new Pedigree($_POST['function']);
 }
 
 class Pedigree {
@@ -272,7 +272,7 @@ private function type_Line_Excel() {
 
       // Synonyms
       $syn_result=mysqli_query($mysqli, "select line_synonym_name from line_synonyms 
-            where line_record_uid=$lineuid") or die(mysql_error());
+            where line_record_uid=$lineuid") or die(mysqli_error($mysqli));
       $syn_names=""; $sn="";
       while ($syn_row = mysqli_fetch_assoc($syn_result)) 
 	$syn_names[] = $syn_row['line_synonym_name'];
