@@ -5,31 +5,32 @@
 * 9/2/2010   J.Lee modify to add new snippet Gbrowse tracks
 * 8/29/2010  J.Lee modify to not use iframe for link to Gbrowse   
 */
-$usegbrowse = True;
+$usegbrowse = true;
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-connect();
+include $config['root_dir'].'includes/bootstrap.inc';
+$mysqli = connecti();
 session_start();
-include($config['root_dir'].'theme/admin_header.php');
+include $config['root_dir'].'theme/admin_header.php';
 ?>
 
 <div id="primaryContentContainer">
-  <div id="primaryContent">
-  <h2> Select Markers</h2>
-  <br>
-  <div class="boxContent">
-  <h3>Currently selected markers</h3>
-  <?php
+<div id="primaryContent">
+<h2> Select Markers</h2>
+<br>
+<div class="boxContent">
+<h3>Currently selected markers</h3>
+<?php
 
-  function get_submitted_mapid() {
-  $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
-  $sql = "select map_uid from map
-where map_name='" . mysql_real_escape_string($us_mapname) . "'";
-  $sqlr = mysql_fetch_assoc(mysql_query($sql));
-  return $sqlr['map_uid'];
-}  
+function get_submitted_mapid()
+{
+    $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
+    $sql = "select map_uid from map
+where map_name='" . mysqli_real_escape_string($us_mapname) . "'";
+    $sqlr = mysqli_fetch_assoc(mysqli_query($mysqli, $sql));
+    return $sqlr['map_uid'];
+}
 
-if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
+if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
   // Handle <space>- and <tab-separated words.
   //$selmkrnames = preg_split("/\r\n/", $_POST['selMarkerstring']);
   $s = preg_replace("/\\s+/", "\\r\\n", $_POST['selMarkerstring']);
@@ -38,11 +39,11 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
   $selmkrs = array();
   foreach ($selmkrnames as $mkrnm) {
     $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm'";
-    $r = mysql_query($sql);
-    if (mysql_num_rows($r) == 0)
+    $r = mysqli_query($mysqli, $sql);
+    if (mysqli_num_rows($r) == 0)
       echo "<font color=red>\"$mkrnm\" not found.</font><br>";
     else {
-      $row = mysql_fetch_row($r);
+      $row = mysqli_fetch_row($r);
       // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
       if (! in_array($row[0], $selmkrs))
 	array_push($selmkrs, $row[0]);
@@ -61,8 +62,8 @@ if ( isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "" ) {
       $mapids = array();
   foreach ($selmkrs as $mkr) {
     $sql = "select distinct map_uid from markers_in_maps where marker_uid = $mkr";
-    $r = mysql_query($sql);
-    $row = mysql_fetch_row($r);
+    $r = mysqli_query($mysqli, $sql);
+    $row = mysqli_fetch_row($r);
     if (! in_array($row[0], $mapids))
       array_push($mapids, $row[0]);
   }
@@ -77,8 +78,8 @@ if (isset($_POST['selMkrs']) || isset($_POST['selbyname'])) {
       $selbyname = $_POST['selbyname'];
       $sql = "select m.marker_uid from markers as m inner join
 markers_in_maps as mm using(marker_uid) where mm.map_uid=$mapid and
-m.marker_name='" . mysql_real_escape_string($selbyname) . "'";
-      $sqlr = mysql_fetch_assoc(mysql_query($sql));
+m.marker_name='" . mysqli_real_escape_string($selbyname) . "'";
+      $sqlr = mysqli_fetch_assoc(mysqli_query($mysqli, $sql));
       $selmkrs = array($sqlr['marker_uid']);
     }
     $mapids = $_SESSION['mapids'];
@@ -127,10 +128,10 @@ if (isset($_SESSION['clicked_buttons']) && count($_SESSION['clicked_buttons']) >
     $sql = "select m.marker_name, mm.chromosome
 from markers as m inner join markers_in_maps as mm using(marker_uid)
 where marker_uid=$mkruid" . ($mapid ? " and mm.map_uid=$mapid":"");
-    $result=mysql_query($sql)
+    $result=mysqli_query($mysqli, $sql)
       //        or die("invalid marker uid\n");
-      or die(mysql_error());
-    while ($row=mysql_fetch_assoc($result)) {
+      or die(mysqli_error($mysqli));
+    while ($row=mysqli_fetch_assoc($result)) {
       $selval=$row['marker_name'];
       $selchr=$row['chromosome'];
       if(! in_array($selval,$markerlist)) {
@@ -238,8 +239,8 @@ EOD;
   <tr><td>
   <select name='mapname' size=10 onfocus="DispMapSel(this.value)" onchange="DispMapSel(this.value)">
 <?php
-$result=mysql_query("select map_name from map") or die(mysql_error);
-while ($row=mysql_fetch_assoc($result)) {
+$result=mysqli_query($mysqli, "select map_name from map") or die(mysqli_error($mysqli));
+while ($row=mysqli_fetch_assoc($result)) {
   $selval=$row['map_name'];
   print "<option value='$selval'>$selval</option>\n";
  }
