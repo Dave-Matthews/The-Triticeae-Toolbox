@@ -52,6 +52,7 @@ class Pedigree {
   }
 
   private function type_LineInformation() {
+    global $mysqli;
     // If we clicked on the button for Lines Found, retrieve that cookie instead.
     if ($_GET['lf'] == "yes") {
       $linelist = $_SESSION['linesfound'];
