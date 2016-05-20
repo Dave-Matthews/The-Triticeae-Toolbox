@@ -787,23 +787,23 @@ class LineNames_Check
 	    $sql_end = "NOW(),NOW())";
 	    if (!empty($bp)) {
 	      $sql_beg .= "breeding_program_code,";
-	      $bp = mysqli_real_escape_string($bp);
+	      $bp = mysqli_real_escape_string($mysqli, $bp);
 	      $sql_mid .= "'$bp', ";
 	    }
 	    if (!empty($mybp)) {
 	      $sql_beg .= "breeding_program_code,";
-	      $mybp = mysqli_real_escape_string($mybp);
+	      $mybp = mysqli_real_escape_string($mysqli, $mybp);
 	      $sql_mid .= "'$mybp', ";
 	    }
 	    if (!empty($pedstring)) {
 	      $sql_beg .= "pedigree_string,";
-	      $pedstring = mysqli_real_escape_string($pedstring);
+	      $pedstring = mysqli_real_escape_string($mysqli, $pedstring);
 	      $sql_mid .= "'$pedstring', ";
 	    }
 	    // For numbers, 0 is empty.
 	    if (isset($generation) AND $generation != "") {
 	      $sql_beg .= "generation,";
-	      $generation = mysqli_real_escape_string($generation);
+	      $generation = mysqli_real_escape_string($mysqli, $generation);
 	      $sql_mid .= "'$generation', ";
 	    }
 	    /* if (!empty($species)) { */
@@ -813,7 +813,7 @@ class LineNames_Check
 	    /* } */
 	    if (!empty($comments)) {
 	      $sql_beg .= "description,";
-	      $comments = mysqli_real_escape_string($comments);
+	      $comments = mysqli_real_escape_string($mysqli, $comments);
 	      $sql_mid .= "'$comments', ";
 	    }
 	    $sql = $sql_beg.$sql_mid.$sql_end;
@@ -825,7 +825,7 @@ class LineNames_Check
 	      // Insert property values in table line_properties.
 	      foreach ($ourprops as $pr) {
                 if (!empty($propval[$pr])) {
-		  $propval[$pr] = mysqli_real_escape_string($propval[$pr]);
+		  $propval[$pr] = mysqli_real_escape_string($mysqli, $propval[$pr]);
 		  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 		  $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$propval[$pr]'");
@@ -876,20 +876,20 @@ class LineNames_Check
 	    $sql_mid = "";
 	    $sql_end = "updated_on=NOW() where line_record_uid = '$line_uid'";
 	    if (!empty($bp)) {
-              $bp = mysqli_real_escape_string($bp);
+              $bp = mysqli_real_escape_string($mysqli, $bp);
 	      $sql_mid .= "breeding_program_code='$bp', ";
 	    }
 	    if (!empty($mybp)) {
-	      $mybp = mysqli_real_escape_string($mybp);
+	      $mybp = mysqli_real_escape_string($mysqli, $mybp);
 	      $sql_mid .= "breeding_program_code='$mybp', ";
 	    }
 	    if (!empty($pedstring)) {
-	      $pedstring = mysqli_real_escape_string($pedstring);
+	      $pedstring = mysqli_real_escape_string($mysqli, $pedstring);
 	      $sql_mid .= "pedigree_string = '$pedstring', ";
 	    }
 	    // For numbers, 0 is empty.
 	    if (isset($generation) AND $generation != "") {
-              $generation = mysqli_real_escape_string($generation);
+              $generation = mysqli_real_escape_string($mysqli, $generation);
 	      $sql_mid .= "generation = '$generation', ";
 	    }
 	    /* if (!empty($species)) { */
@@ -897,7 +897,7 @@ class LineNames_Check
 	    /*   $sql_mid .= "species = '$species', "; */
 	    /* } */
 	    if (!empty($comments)) {
-              $comments = mysqli_real_escape_string($comments);
+              $comments = mysqli_real_escape_string($mysqli, $comments);
 	      $sql_mid .= "description = '$comments', ";
 	    }
 	    $sql = $sql_beg.$sql_mid.$sql_end;
@@ -907,7 +907,7 @@ class LineNames_Check
 	      // Update property values in table line_properties.
 	      foreach ($ourprops as $pr) {
 		if (!empty($propval[$pr])) {
-		  $propval[$pr] = mysql_real_escape_string($propval[$pr]);
+		  $propval[$pr] = mysql_real_escape_string($mysqli, $propval[$pr]);
 		  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 		  $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$propval[$pr]'");
