@@ -654,7 +654,7 @@ class LineNames_Check
 	$firstprop = 6;
 
       // Available line properties:
-      $res = mysqli_query($mysqli, "select name from properties") or errmsg($sql, mysql_error());
+      $res = mysqli_query($mysqli, "select name from properties") or errmsg($sql, mysqli_error($mysqli));
       while ($r = mysqli_fetch_row($res))
 	$properties[] = $r[0];
 
@@ -820,7 +820,7 @@ class LineNames_Check
 	    }
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
-	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysqli_error($mysqli));
+	    $rlinsyn=mysqli_query($mysqli, $sql) or $linesuccess = errmsg($sql, mysqli_error($mysqli));
 	    $line_uid = mysqli_insert_id();
 	    // $line_uid is no longer an array===FALSE, cf. above, it's an int.
 	    if ($linesuccess) {
@@ -904,12 +904,12 @@ class LineNames_Check
 	    }
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
-	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
+	    $rlinsyn=mysqli_query($mysqli, $sql) or $linesuccess = errmsg($sql, mysqli_error($mysqli));
             if ($linesuccess) {
 	      // Update property values in table line_properties.
 	      foreach ($ourprops as $pr) {
 		if (!empty($propval[$pr])) {
-		  $propval[$pr] = mysql_real_escape_string($mysqli, $propval[$pr]);
+		  $propval[$pr] = mysqli_real_escape_string($mysqli, $propval[$pr]);
 		  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 		  $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$propval[$pr]'");
@@ -954,7 +954,7 @@ class LineNames_Check
 		  $sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
                 updated_on=NOW() WHERE barley_pedigree_catalog_uid=2 
                 AND line_record_uid = '$line_uid'";
-		  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysql_error($mysqli));
+		  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		}
 		elseif (mysqli_num_rows($res) == 0) {
 		  $sql = "insert into barley_pedigree_catalog_ref 
