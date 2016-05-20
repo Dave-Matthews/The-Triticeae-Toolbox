@@ -16,8 +16,8 @@ ob_end_flush();
 
 /* The Excel file must have this string in cell B2.  Modify when a new template is needed.*/
 $TemplateVersions = array('Wheat' => '1Jul13',
-	  'Barley' => '11Dec14',
-	  'Oat' => '29Jan15');
+  'Barley' => '11Dec14',
+  'Oat' => '29Jan15');
 $cnt = 0;  // Count of errors
 
 function die_nice($message = "")
@@ -61,7 +61,7 @@ class LineNames_Check
     // Using the class's constructor to decide which action to perform
     public function __construct($function = null)
     {
-        switch($function) {
+        switch ($function) {
             case 'typeDatabase':
                 $this->type_Database(); /* update database */
                 break;
@@ -71,19 +71,21 @@ class LineNames_Check
         }
     }
 
-  private function typeLineNameCheck() {
-    global $config;
-    include($config['root_dir'] . 'theme/admin_header.php');
-    echo "<h2>Line information: Validation</h2>"; 
-    $this->type_Line_Name();
-    $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
-  }
-	
-  private function type_Line_Name() {
-    global $TemplateVersions;
-    global $cnt;
-    global $mysqli;
+    private function typeLineNameCheck()
+    {
+        global $config;
+        include $config['root_dir'] . 'theme/admin_header.php';
+        echo "<h2>Line information: Validation</h2>";
+        $this->type_Line_Name();
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
+
+    private function type_Line_Name()
+    {
+        global $TemplateVersions;
+        global $cnt;
+        global $mysqli;
 ?>
 
 <script type="text/javascript">
@@ -103,45 +105,44 @@ class LineNames_Check
   th.marker { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
   td.marker { padding: 5px 0; border: 0 !important; }
 </style>
-		
-<?php
-  $row = loadUser($_SESSION['username']);
-  $username=$row['name'];
-	
-  if ($_FILES['file']['name'] == ""){
-    error(1, "No File Uploaded");
-    print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
-  }
-  else {
-    //$tmp_dir="uploads/tmpdir_".$username."_".rand();
-    $tmp_dir="uploads/".str_replace(' ', '_', $username)."_".date('yMd_G:i');
-    umask(0);
-    if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) 
-      mkdir($tmp_dir, 0777);
-    $target_path=$tmp_dir."/";
-    $uploadfile=$_FILES['file']['name'];
-    $uftype=$_FILES['file']['type'];
-    //	if (strpos($uploadfile, ".xls") === FALSE) {
-    if (preg_match('/\.xls$/', $uploadfile) == 0) {
-      error(1, "Only xls format is accepted. <br>");
-      print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
-    }
-    else {
-      if(move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
-	/* Read Excel worksheet 0 into $linedata[]. */
-	$datafile = $target_path.$uploadfile;
-	$reader = new Spreadsheet_Excel_Reader();
-	$reader->setOutputEncoding('CP1251');
-	$reader->read($datafile);
-	$linedata = $reader->sheets[0];
-	$cols = $reader->sheets[0]['numCols'];
-	$rows = $reader->sheets[0]['numRows'];
-	// Read the Template Version and check it.
-	$crop = $linedata['cells'][3][2];
-	if (!in_array($crop, array_keys($TemplateVersions))) {
-	  $croplist = implode(", ", array_keys($TemplateVersions));
-	  die ("Cell B3: Crop must be one of <b>$croplist</b>.");
-	}
+
+    <?php
+    $row = loadUser($_SESSION['username']);
+    $username=$row['name'];
+
+    if ($_FILES['file']['name'] == "") {
+        error(1, "No File Uploaded");
+        print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
+    } else {
+        //$tmp_dir="uploads/tmpdir_".$username."_".rand();
+        $tmp_dir="uploads/".str_replace(' ', '_', $username)."_".date('yMd_G:i');
+        umask(0);
+        if (!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
+            mkdir($tmp_dir, 0777);
+        }
+        $target_path=$tmp_dir."/";
+        $uploadfile=$_FILES['file']['name'];
+        $uftype=$_FILES['file']['type'];
+        //if (strpos($uploadfile, ".xls") === FALSE) {
+        if (preg_match('/\.xls$/', $uploadfile) == 0) {
+            error(1, "Only xls format is accepted. <br>");
+            print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
+        } else {
+            if (move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
+                /* Read Excel worksheet 0 into $linedata[]. */
+                $datafile = $target_path.$uploadfile;
+                $reader = new Spreadsheet_Excel_Reader();
+	        $reader->setOutputEncoding('CP1251');
+	        $reader->read($datafile);
+	        $linedata = $reader->sheets[0];
+	        $cols = $reader->sheets[0]['numCols'];
+	        $rows = $reader->sheets[0]['numRows'];
+	        // Read the Template Version and check it.
+	        $crop = $linedata['cells'][3][2];
+	        if (!in_array($crop, array_keys($TemplateVersions))) {
+	            $croplist = implode(", ", array_keys($TemplateVersions));
+	            die ("Cell B3: Crop must be one of <b>$croplist</b>.");
+	        }
 	if ($linedata['cells'][2][2] != $TemplateVersions[$crop] )
 	  die ("Incorrect Submission Form version for $crop.  Cell B2 must say \"" .$TemplateVersions[$crop]. "\".");
 
@@ -626,7 +627,8 @@ class LineNames_Check
     /* Validation completed, now load the database. */
     private function type_Database() {
       global $config;
-      include($config['root_dir'] . 'theme/admin_header.php');
+      global $mysqli;
+      include $config['root_dir'] . 'theme/admin_header.php';
       global $cnt;
       $datafile = $_GET['linedata'];
       $filename = $_GET['file_name'];
