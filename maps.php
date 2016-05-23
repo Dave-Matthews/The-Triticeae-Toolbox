@@ -14,15 +14,16 @@
  * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks
 */
 
+ini_set('memory_limit', '4G');
 require_once 'config.php';
 require_once $config['root_dir'].'includes/bootstrap.inc';
-connect();
+$mysqli = connecti();
 
 $mapsetStr = "";
 $sql = "select mapset_name from mapset";
-$sql_r = mysql_query($sql) or die(mysql_error());
+$sql_r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
-while ($row = mysql_fetch_assoc($sql_r)) {
+while ($row = mysqli_fetch_assoc($sql_r)) {
     $val = $row["mapset_name"];
     //echo 	$row["mapset_name"];
     $mapsetStr.= $val.",";
@@ -84,6 +85,7 @@ class Maps
     // javascript code required by itself and the other typeMapset actions.
     private function typeMapSetDisplay()
     {
+        global $mysqli;
     ?>
 		<!--Style sheet for better user interface-->
 		
@@ -106,8 +108,8 @@ class Maps
 <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
 <?php
 $sql = "select value from settings where name = \"database\"";
-$res = mysql_query($sql) or die(mysql_error());
-if ($row = mysql_fetch_array($res)) {
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+if ($row = mysqli_fetch_array($res)) {
     $value = $row[0];
     $jb_path = "../jbrowse/$value";
     $jb_url = "/jbrowse/?data=$value";
@@ -272,8 +274,7 @@ if ($row = mysql_fetch_array($res)) {
 			
     function load_marker_annotation()
     {
-						
-                $('marker_annotation_loader').hide();
+        $('marker_annotation_loader').hide();
                 
 				new Ajax.Updater(
                     $('marker_annotation_loader'),
@@ -319,8 +320,8 @@ if ($row = mysql_fetch_array($res)) {
 	
             <?php
             $sql = "SELECT count(*) from mapset";
-            $res = mysql_query($sql) or die(mysql_error());
-            $row = mysql_fetch_array($res);
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_array($res);
             $height = $row[0] + 1 + 0.3*$row[0];
             ?>
 
@@ -341,8 +342,8 @@ if ($row = mysql_fetch_array($res)) {
     // Select Mapset Name for the drop down menu
     $sql = "SELECT mapset_name FROM mapset ORDER BY mapset_name DESC";
 
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res)) {
         ?><option value="<?php echo $row['mapset_name'] ?>"><?php echo $row['mapset_name'] ?></option>
         <?php
     }
@@ -354,8 +355,8 @@ if ($row = mysql_fetch_array($res)) {
     <?php
 
     $sql = "SELECT map_type FROM mapset ORDER BY mapset_name DESC";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res)) {
         ?><option value="<?php echo $row['map_type'] ?>"><?php echo $row['map_type'] ?></option>
         <?php
     }
@@ -366,8 +367,8 @@ if ($row = mysql_fetch_array($res)) {
     <select disabled name="MapUnit" size="10" style="height: <?php echo $height ?>em;width: 6em" >
     <?php
     $sql = "SELECT map_unit FROM mapset ORDER BY mapset_name DESC";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res)) {
         ?><option value="<?php echo $row['map_unit'] ?>"><?php echo $row['map_unit'] ?></option>
         <?php
     }
@@ -382,8 +383,8 @@ if ($row = mysql_fetch_array($res)) {
 	<?php
 
     $sql = "SELECT comments FROM mapset ORDER BY mapset_name DESC";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res)) {
         ?>
 				<option value="<?php echo $row['comments'] ?>"><?php echo $row['comments'] ?></option>
 			<?php
@@ -404,16 +405,17 @@ if ($row = mysql_fetch_array($res)) {
 	<?php
 			}
 			
-	private function type_Maps()
-	{
-		$mapset_query = $_GET['mset'];
-                $sql = "SELECT count(*) from mapset";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_array($res);
-                $height = $row[0] + 1 + 0.3*$row[0];
-                if ($height < 14) {
-                  $height = 14;
-                }
+    private function type_Maps()
+    {
+        global $mysqli;
+	$mapset_query = $_GET['mset'];
+        $sql = "SELECT count(*) from mapset";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $row = mysqli_fetch_array($res);
+        $height = $row[0] + 1 + 0.3*$row[0];
+        if ($height < 14) {
+            $height = 14;
+        }
 		
 ?>
 
@@ -429,8 +431,8 @@ if ($row = mysql_fetch_array($res)) {
 	/* Query for fetching Map Names based on user selected mapset name */
 		$sql = "SELECT m.map_name FROM map m, mapset ms
                  where mapset_name='".$mapset_query."' and m.mapset_uid = ms.mapset_uid order by m.map_name";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res)) {
 			?>
 			<!-- Display Map names-->		
 				<option value="<?php echo $row['map_name'] ?>"><?php echo $row['map_name'] ?></option>
@@ -446,8 +448,9 @@ if ($row = mysql_fetch_array($res)) {
 }
 
 private function type_Markers()
-	{
-		$maps_query = $_GET['mp']; 
+{
+        global $mysqli;
+	$maps_query = $_GET['mp']; 
 		
 		/* For debugging
 			$firephp = FirePHP::getInstance(true);
@@ -478,13 +481,13 @@ private function type_Markers()
 		/* $sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position"; */
 		$sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.bin_name, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position";
 
-			$res = mysql_query($sql) or die(mysql_error());
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 			
 			?>
 		
 	
 			<?php
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 			?>
 	
 		<tr>
@@ -529,7 +532,7 @@ private function type_Marker_Annotation()
 								ma.marker_annotation_type_uid = mat.marker_annotation_type_uid";
 
 	
-			$res = mysql_query($sql) or die(mysql_error());
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 			
 	?>
 	<div>
@@ -538,7 +541,7 @@ private function type_Marker_Annotation()
 <tr><h2>Marker Annotations</h2></tr>
 	<tr> <h3> Marker Selected: <?php echo $mark_ann_query; ?> </h3> </tr>
 	<?php
-			if (mysql_num_rows($res) >= 1)
+			if (mysqli_num_rows($res) >= 1)
 			{
 ?>
 
@@ -554,10 +557,10 @@ private function type_Marker_Annotation()
 								m.marker_uid = ma.marker_uid AND
 								ma.marker_annotation_type_uid = mat.marker_annotation_type_uid AND
                                                                 mat.linkout_string_for_annotation IS NOT NULL";
-   	        $res = mysql_query($sql) or die(mysql_error());
+   	        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
 		/* Display Annotation Names that have linkouts. */
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 		  ?>	
 			<option value="<?php echo $row['name_annotation'] ?>"><?php echo $row['name_annotation'] ?></option>
 		    <?php 
@@ -577,10 +580,10 @@ private function type_Marker_Annotation()
 								m.marker_uid = ma.marker_uid AND
 								ma.marker_annotation_type_uid = mat.marker_annotation_type_uid AND
                                                                 mat.linkout_string_for_annotation IS NOT NULL";
-			$res = mysql_query($sql) or die(mysql_error());
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 					
 			/* Display Annotation Value with active link */
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 			$reg_pattern = "XXXX";
 			$replace_string = $row['value'];
 			$source_string = $row['linkout_string_for_annotation'];
@@ -612,8 +615,8 @@ private function type_Marker_Annotation()
 								m.marker_uid = ma.marker_uid AND
 								ma.marker_annotation_type_uid = mat.marker_annotation_type_uid AND
                                                                 mat.linkout_string_for_annotation IS NULL";
-			$res = mysql_query($sql) or die(mysql_error());
-		  while ($row = mysql_fetch_assoc($res)) {
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		  while ($row = mysqli_fetch_assoc($res)) {
 		    echo $row['name_annotation'].": ".$row['value']."<br>";
 		      } 
 ?>
@@ -650,9 +653,9 @@ private function type_Annotation_Comments()
 		$sql = "SELECT comments FROM   marker_annotation_types 	where name_annotation = '".$comment_query."' ";
 
 	
-			$res = mysql_query($sql) or die(mysql_error());
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 					
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 		
 		?>	
 			<!-- Display Annotation Comments-->		
@@ -673,8 +676,9 @@ private function type_Annotation_Comments()
 <?php
 }
 private function type_Marker_Excel()
-	{
-require_once 'Spreadsheet/Excel/Writer.php';
+{
+    global $mysqli;
+    require_once 'Spreadsheet/Excel/Writer.php';
 	
 		$excel_markername = $_GET['mxls1'];
 		$excel_mapname = $_GET['mxls2'];  
@@ -726,11 +730,11 @@ $fullquery="SELECT mk.marker_name, mim.start_position, mim.end_position, mim.chr
 						
 
 
-$result=mysql_query($fullquery);
+$result=mysqli_query($mysqli, $fullquery);
 
 $i=1;
 
-while($row=mysql_fetch_assoc($result)){
+while($row=mysqli_fetch_assoc($result)){
 
 
  /* Add formatting */
@@ -763,7 +767,7 @@ $innerquery = "SELECT ma.value, mat.name_annotation as Annotation_Name, mat.link
 							 mk.marker_uid = ma.marker_uid AND
 							 ma.marker_annotation_type_uid = mat.marker_annotation_type_uid ";
 
-$innerresult=mysql_query($innerquery);
+$innerresult=mysqli_query($mysqli, $innerquery);
 
 
 
@@ -774,7 +778,7 @@ $probe32Count = 1;
 $probe35Count = 1;
 
 $test1 = $j;
-while($row=mysql_fetch_assoc($innerresult)){
+while($row=mysqli_fetch_assoc($innerresult)){
 
 /* replacing value in link out string */ 
 
