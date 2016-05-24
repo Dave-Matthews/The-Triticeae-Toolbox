@@ -203,7 +203,7 @@ if ($action == "list") {
             where markers_in_maps.marker_uid = markers.marker_uid
             AND map.map_uid = markers_in_maps.map_uid
             AND mapset_uid = ? 
-            order BY chromosome";
+            order BY chromosome, start_position";
         if ($currentPage == 1) {
             $sql .= " limit $pageSize";
         } else {
@@ -234,7 +234,8 @@ if ($action == "list") {
             where markers_in_maps.marker_uid = markers.marker_uid
             AND map.map_uid = markers_in_maps.map_uid
             AND mapset_uid = ? 
-            AND chromosome = ?";
+            AND chromosome = ?
+            order by start_position";
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
                 mysqli_stmt_bind_param($stmt, 'is', $uid, $chr);
                 mysqli_stmt_execute($stmt);
