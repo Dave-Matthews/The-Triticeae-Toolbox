@@ -19,7 +19,7 @@ if (isset($_GET['markerprofileDbId'])) {
     $tmp = $_GET['markerprofileDbId'];
     $profile_list = explode(",", $tmp);
 } else {
-    $results['metadata']['status'][] = array("code" => "par error", "description" => "invalid parameter");
+    $results['metadata']['status'][] = array("code" => "par error", "message" => "invalid parameter");
 }
 foreach ($profile_list as $item) {
   if (preg_match("/(\d+)_(\d+)/", $item, $match)) {

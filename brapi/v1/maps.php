@@ -1,4 +1,10 @@
 <?php
+/**
+ * brapi/v1/maps.php
+ * Deliver genome maps according to http://docs.brapi.apiary.io
+ *
+ */
+
 require '../../includes/bootstrap.inc';
 $mysqli = connecti();
 mysqli_set_charset($mysqli, 'utf8');
@@ -13,10 +19,11 @@ if (isset($_GET['action'])) {
     $uid = $_GET['action'];
     //echo "cmd = $uid<br>\n";
 }
+$uid_ary = null;
 if ($rest[1] == "positions") {
+    $action = "MapData";
+    $uid = $rest[0];
     if (isset($_GET['linkageGroupIdList'])) {
-        $action = "MapData";
-        $uid = $rest[0];
         $uid_lst = $_GET['linkageGroupIdList'];
         $uid_ary = explode(",", $uid_lst);
     } elseif ($rest[2] == "linkageGroupId") {
@@ -24,10 +31,6 @@ if ($rest[1] == "positions") {
         $uid = $rest[0];
         $min = $_GET['min'];
         $max = $_GET['max'];
-    } else {
-        $results['metadata']['status'][] = array("code" => "api error", "description" => "invalid api request");
-        $return = json_encode($results);
-        die("$return");
     }
     //echo "action = $action\n";
 } elseif (is_numeric($rest[0])) {
@@ -120,7 +123,7 @@ if ($action == "list") {
         mysqli_stmt_close($stmt);
     } else {
         $num_rows = 0;
-        $results['metadata']['status'][] = array("code" => "sql error", "description" => "error connecting to database");
+        $results['metadata']['status'][] = array("code" => "sql error", "message" => "error connecting to database");
     }
     $tot_pag = ceil($num_rows / $pageSize);
     $pageList = array( "pageSize" => $pageSize, "currentPage" => 1, "totalCount" => $num_rows, "totalPages" => $tot_pag );
@@ -138,7 +141,7 @@ if ($action == "list") {
         $results["unit"] = $map_unit;
         mysqli_stmt_close($stmt);
     } else {
-        $results['metadata']['status'][] = array("code" => "sql error", "description" => "error connecting to database");
+        $results['metadata']['status'][] = array("code" => "sql error", "message" => "error connecting to database");
     }
     $sql = "select count(markers.marker_uid), max(end_position) ,chromosome
         from markers_in_maps, markers, map
@@ -157,47 +160,94 @@ if ($action == "list") {
 
     $return = json_encode($linearray);
     echo "$return";
-} elseif ($action = "MapData") {
+} elseif ($action == "MapData") {
     $linearray['metadata']['status'] = null;
     $num_rows = 0;
-    foreach ($uid_ary as $chr) {
+    if (empty($uid_ary)) {
         $sql = "select markers.marker_uid, markers.marker_name, start_position, chromosome, arm
+            from markers_in_maps, markers, map
+            where markers_in_maps.marker_uid = markers.marker_uid
+            AND map.map_uid = markers_in_maps.map_uid
+            AND mapset_uid = ?";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $uid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_store_result($stmt);
+            $num_rows = mysqli_stmt_num_rows($stmt);
+            mysqli_stmt_close($stmt);
+        }
+    } else {
+        foreach ($uid_ary as $chr) {
+            $sql = "select markers.marker_uid, markers.marker_name, start_position, chromosome, arm
             from markers_in_maps, markers, map
             where markers_in_maps.marker_uid = markers.marker_uid
             AND map.map_uid = markers_in_maps.map_uid
             AND mapset_uid = ?
             AND chromosome = ?";
-        if ($stmt = mysqli_prepare($mysqli, $sql)) {
-            mysqli_stmt_bind_param($stmt, "is", $uid, $chr);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_store_result($stmt);
-            $num_rows += mysqli_stmt_num_rows($stmt);
-            mysqli_stmt_close($stmt);
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "is", $uid, $chr);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_store_result($stmt);
+                $num_rows += mysqli_stmt_num_rows($stmt);
+                mysqli_stmt_close($stmt);
+            }
         }
     }
     $tot_pag = ceil($num_rows / $pageSize);
     $pageList = array( "pageSize" => $pageSize, "currentPage" => 1, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
-    foreach ($uid_ary as $chr) {
+    if (empty($uid_ary)) {
         $sql = "select markers.marker_uid, markers.marker_name, start_position, chromosome, arm
             from markers_in_maps, markers, map
             where markers_in_maps.marker_uid = markers.marker_uid
             AND map.map_uid = markers_in_maps.map_uid
             AND mapset_uid = ? 
-            AND chromosome = ?";
+            order BY chromosome";
+        if ($currentPage == 1) {
+            $sql .= " limit $pageSize";
+        } else {
+            $offset = ($currentPage - 1) * $pageSize;
+            if ($offset < 1) {
+                $offset = 1;
+            }
+            $sql .= " limit $offset, $pageSize";
+        }
+
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
-            mysqli_stmt_bind_param($stmt, 'is', $uid, $chr);
+            mysqli_stmt_bind_param($stmt, 'i', $uid);
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
             while (mysqli_stmt_fetch($stmt)) {
-                $temp2["markerId"] = (integer) $marker_uid;
-                $temp2["markerName"] = $marker_name;
-                $temp2["location"] = $start_position;
-                $temp2["linkageGroup"] = $chromosome;
-                $linearray['result']['data'][] = $temp2;
+                 $temp2["markerId"] = (integer) $marker_uid;
+                 $temp2["markerName"] = $marker_name;
+                 $temp2["location"] = $start_position;
+                 $temp2["linkageGroup"] = $chromosome;
+                 $linearray['result']['data'][] = $temp2;
             }
             mysqli_stmt_close($stmt);
+        }
+    } else {
+        foreach ($uid_ary as $chr) {
+            $sql = "select markers.marker_uid, markers.marker_name, start_position, chromosome, arm
+            from markers_in_maps, markers, map
+            where markers_in_maps.marker_uid = markers.marker_uid
+            AND map.map_uid = markers_in_maps.map_uid
+            AND mapset_uid = ? 
+            AND chromosome = ?";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, 'is', $uid, $chr);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
+                while (mysqli_stmt_fetch($stmt)) {
+                    $temp2["markerId"] = (integer) $marker_uid;
+                    $temp2["markerName"] = $marker_name;
+                    $temp2["location"] = $start_position;
+                    $temp2["linkageGroup"] = $chromosome;
+                    $linearray['result']['data'][] = $temp2;
+                }
+                mysqli_stmt_close($stmt);
+            }
         }
     }
 

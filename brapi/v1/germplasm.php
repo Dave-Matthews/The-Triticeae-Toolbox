@@ -8,16 +8,15 @@
  * [{"queryName":"95NA-00063","germplasmId":29417,"uniqueName":"95NA-00063"}]
  */
 
-require 'config.php';
-require $config['root_dir'].'includes/bootstrap.inc';
+require '../../includes/bootstrap.inc';
 $mysqli = connecti();
 
-// URI is something like germplasm?name={name}
-// Extract the pseudo-path part of the REST args, ie "find".
 $self = $_SERVER['PHP_SELF'];
 $script = $_SERVER["SCRIPT_NAME"]."/";
 $rest = str_replace($script, "", $self);
 $rest = explode("/", $rest);
+header("Content-Type: application/json");
+
 $command = $rest[0];
 //echo "rest[0] = $rest[0]\n";
 // Extract the URI's querystring, ie "name={name}".
@@ -40,6 +39,7 @@ if (isset($_GET['page'])) {
 // Is there a command?
 if ($command) {
     $lineuid = $command;
+    $r['metadata']['status'] = null;
     $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $lineuid);
@@ -56,6 +56,7 @@ if ($command) {
             $response['synonyms'] = null;
         } else {
             $response = null;
+            $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
         }
         mysqli_stmt_close($stmt);
     }
@@ -83,10 +84,8 @@ if ($command) {
     $r['metadata']['pagination']['currentPage'] = $currentPage;
     $r['metadata']['pagination']['totalCount'] = 1;
     $r['metadata']['pagination']['totalPages'] = 1;
-    $r['metadata']['status'] = null;
-    $r['data'] = array($response);
+    $r['result'] = array($response);
     header("Access-Control-Allow-Origin: *");
-    header("Content-Type: application/json");
     echo json_encode($r);
 } else {
     // "Germplasm ID by Name".  URI is germplasm?name={name}
@@ -104,8 +103,9 @@ if ($command) {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_store_result($stmt);
         $num_rows = mysqli_stmt_num_rows($stmt);
+        mysqli_stmt_close($stmt);
     } else {
-        echo "mysqli_error($mysqli)\n";
+        die(mysqli_error($mysqli));
     }
     if ($currentPage == 1) {
         $sql .= " limit $pageSize";
@@ -116,13 +116,16 @@ if ($command) {
         }
         $sql .= " limit $offset, $pageSize";
     }
-    //echo "$sql\n";
+    //echo "$linename $sql\n";
+    $response = null;
+    $r['metadata']['status'] = null;
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $linename);
         mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
         mysqli_stmt_bind_result($stmt, $lineuid, $line_record_name, $pedigree);
         while (mysqli_stmt_fetch($stmt)) {
-            $temp["germplasmDbId"] = $lineuid;
+            $temp['germplasmDbId'] = $lineuid;
             $temp['defaultDisplayName'] = $line_record_name;
             $temp['germplasmName'] = $line_record_name;
             $temp['accessionNumber'] = null;
@@ -133,7 +136,9 @@ if ($command) {
             $response[] = $temp;
         }
         mysqli_stmt_close($stmt);
-
+        if (empty($response)) {
+            $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm name not found");
+        }
         foreach ($response as $key => $item) {
             $lineuid = $item['germplasmDbId'];
             $sql = "select line_synonym_name from line_synonyms where line_record_uid = $lineuid";
@@ -153,10 +158,8 @@ if ($command) {
     $r['metadata']['pagination']['pageSize'] = $pageSize;
     $r['metadata']['pagination']['currentPage'] = $currentPage;
     $r['metadata']['pagination']['totalCount'] = $num_rows;
-    $r['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);;
-    $r['metadata']['status'] = null;
+    $r['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
     $r['result']['data'] = array($response);
     header("Access-Control-Allow-Origin: *");
-    header("Content-Type: application/json");
     echo json_encode($r);
 }

@@ -114,7 +114,7 @@ if ($command) {
             and not alleles = '--' 
             group by line_record_uid;";
         if ($res = mysqli_query($mysqli, $sql) == false) {
-            $metadata['metadata']['status'][] = array("code" => "sql error", "description" => mysqli_error($mysqli));
+            $metadata['metadata']['status'][] = array("code" => "sql error", "message" => mysqli_error($mysqli));
         } else {
             while ($row = mysqli_fetch_row($res)) {
                 $count++;
@@ -132,7 +132,7 @@ if ($command) {
                 $linearray['result'][] = $result;
             }
             if ($count == 0) {
-                $metadata['metadata']['status'][] = array("code" => "not found", "description" => "No entries in database");
+                $metadata['metadata']['status'][] = array("code" => "not found", "message" => "No entries in database");
             }
         }
         $metadata['metadata']['pagination']['pageSize'] = $pageSize;
