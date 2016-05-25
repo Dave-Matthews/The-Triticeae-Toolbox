@@ -61,7 +61,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
         $retval .= "<div id='form_error'>$msg</div>\n";
     }
     $sql = "select institutions_name, email_domain from institutions";
-    $result = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n$sql");
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $domainMap = array();
     $email_domain = split('@', $email);
     $email_domain = $email_domain[1];
@@ -275,7 +275,7 @@ function isUser($email, $pass)
     $sql = "select * from users where users_name = SHA1('$sql_email') and
 pass = SHA1('$sql_pass') and (abs(email_verified) > 0 or
 user_types_uid=$public_type_id) limit 1";
-    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+    $query = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     return mysqli_num_rows($query) > 0;
 }
 
@@ -291,7 +291,7 @@ function isOldUser($email, $pass)
     $sql = "select * from users where users_name = '$sql_email' and
 pass = MD5('$sql_pass') and (abs(email_verified) > 0 or
 user_types_uid=$public_type_id) limit 1";
-    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+    $query = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     return mysqli_num_rows($query) > 0;
 }
 
@@ -339,7 +339,7 @@ function isRegistered($email)
     global $mysqli;
     $sql_email = mysqli_real_escape_string($mysqli, $email);
     $sql = "select * from users where users_name = SHA1('$sql_email')";
-    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+    $query = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     return mysqli_num_rows($query) > 0;
 }
 
@@ -351,7 +351,7 @@ function isOldRegistered($email)
     global $mysqli;
     $sql_email = mysqli_real_escape_string($mysqli, $email);
     $sql = "select * from users where users_name = '$sql_email'";
-    $query = mysqli_query($mysqli, $sql) or die("<pre>".mysqli_error($mysqli)."\n\n\n".$sql."</pre>");
+    $query = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     return mysqli_num_rows($query) > 0;
 }
 
