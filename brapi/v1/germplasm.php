@@ -87,7 +87,7 @@ if ($command) {
     $r['result'] = $response;
     header("Access-Control-Allow-Origin: *");
     echo json_encode($r);
-} else {
+} elseif (!empty($_GET['name'])) {
     // "Germplasm ID by Name".  URI is germplasm?name={name}
     $linename = $_GET['name'];
     if ($matchMethod == "wildcard") {
@@ -153,6 +153,56 @@ if ($command) {
             if ($row = mysqli_fetch_row($res)) {
                 $response[$key]['germplasmNumber'] = $row[0];
             }
+        }
+    }
+    $r['metadata']['pagination']['pageSize'] = $pageSize;
+    $r['metadata']['pagination']['currentPage'] = $currentPage;
+    $r['metadata']['pagination']['totalCount'] = $num_rows;
+    $r['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
+    $r['result']['data'] = $response;
+    header("Access-Control-Allow-Origin: *");
+    echo json_encode($r);
+} else {
+    $sql = "select line_record_uid, line_record_name, pedigree_string from line_records";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $num_rows = mysqli_num_rows($res);
+
+    if ($currentPage == 1) {
+        $sql .= " limit $pageSize";
+    } else {
+        $offset = ($currentPage - 1) * $pageSize;
+        if ($offset < 1) {
+            $offset = 1;
+        }
+        $sql .= " limit $offset, $pageSize";
+    }
+
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
+        $temp['germplasmDbId'] = $row[0];
+        $temp['defaultDisplayName'] = $row[1];
+        $temp['germplasmName'] = $row[1];
+        $temp['accessionNumber'] = null;
+        $temp['germplasmPUI'] = null;
+        $temp['pedigree'] = null;
+        $temp['seedSource'] = null;
+        $temp['synonyms'] = null;
+        $response[] = $temp;
+    }
+  
+    foreach ($response as $key => $item) {
+        $lineuid = $item['germplasmDbId'];
+        $sql = "select line_synonym_name from line_synonyms where line_record_uid = $lineuid";
+        //echo "$key $sql\n";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_row($res)) {
+            $response[$key]['synonyms'] = $row[0];
+        }
+
+        $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = $lineuid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_row($res)) {
+            $response[$key]['germplasmNumber'] = $row[0];
         }
     }
     $r['metadata']['pagination']['pageSize'] = $pageSize;
