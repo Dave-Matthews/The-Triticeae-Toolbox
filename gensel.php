@@ -114,6 +114,7 @@ class Downloads
     private function type1Select()
     {
         global $config;
+        global $mysqli;
         require_once $config['root_dir'].'theme/normal_header.php';
         $phenotype = "";
         $lines = "";
@@ -1421,6 +1422,7 @@ class Downloads
 	 * @param string $version
 	 */
 	function type2_build_tassel($version) {
+          global $mysqli;
 	  //used for download starting with location
 	  $experiments = (isset($_GET['e']) && !empty($_GET['e'])) ? $_GET['e'] : null;
 	  $traits = (isset($_GET['t']) && !empty($_GET['t'])) ? $_GET['t'] : null;
@@ -1444,8 +1446,8 @@ class Downloads
 	      AND tb.experiment_uid IN ($experiments)
 	      ORDER BY lr.line_record_name";
 	      $lines = array();
-	      $res = mysql_query($sql) or die(mysql_error() . $sql);
-	      while ($row = mysql_fetch_assoc($res))
+	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	      while ($row = mysqli_fetch_assoc($res))
 	      {
 	        array_push($lines,$row['id']);
 	      }
@@ -1464,8 +1466,8 @@ class Downloads
 	      AND tb.experiment_uid IN ($experiments)
 	      ORDER BY lr.line_record_name";
 	      $lines = array();
-	      $res = mysql_query($sql) or die(mysql_error() . $sql);
-	      while ($row = mysql_fetch_assoc($res))
+	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	      while ($row = mysqli_fetch_assoc($res))
 	      {
 	        array_push($lines,$row['id']);
 	      }
@@ -1482,8 +1484,8 @@ class Downloads
 	      AND pd.phenotype_uid IN ($phen_item)
 	      AND tb.experiment_uid IN ($experiments)
 	      ORDER BY lr.line_record_name";
-	      $res = mysql_query($sql) or die(mysql_error() . $sql);
-	      while ($row = mysql_fetch_assoc($res))
+	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	      while ($row = mysqli_fetch_assoc($res))
 	      {
 	        array_push($lines,$row['id']);
 	      }
@@ -1509,9 +1511,9 @@ class Downloads
 	    FROM allele_cache
 	    WHERE
 	    allele_cache.line_record_uid in ($lines_str)";
-	    $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-	    if (mysql_num_rows($res)>0) {
-	      while ($row = mysql_fetch_array($res)){
+	    $res = mysqli_query($mysqli, $sql_exp) or die(mysqli_error($mysqli));
+	    if (mysqli_num_rows($res)>0) {
+	      while ($row = mysqli_fetch_array($res)){
 	        $markers[] = $row["marker_uid"];
 	      }
 	    }
@@ -1526,9 +1528,9 @@ class Downloads
 	  AND e.experiment_uid = tb.experiment_uid
 	  AND lr.line_record_uid in ($lines_str)
 	  AND et.experiment_type_name = 'genotype'";
-	  $res = mysql_query($sql_exp) or die(mysql_error() . "<br>" . $sql_exp);
-	  if (mysql_num_rows($res)>0) {
-	   while ($row = mysql_fetch_array($res)){
+	  $res = mysqli_query($mysqli, $sql_exp) or die(mysqli_error($mysqli));
+	  if (mysqli_num_rows($res)>0) {
+	   while ($row = mysqli_fetch_array($res)){
 	    $exp[] = $row["exp_uid"];
 	   }
 	   $experiments_g = implode(',',$exp);
@@ -1926,7 +1928,7 @@ class Downloads
 	 */
 	function type1_build_markers_download($experiments,$dtype)
 	{
-		// $firephp = FirePHP::getInstance(true);
+            global $mysqli;
 		$outputheader = '';
 		$output = '';
 		$doneheader = false;
@@ -1956,9 +1958,9 @@ class Downloads
 						AND af.experiment_uid in ($experiments)
 					group by af.marker_uid"; 
 
-			$res = mysql_query($sql_mstat) or die(mysql_error());
+			$res = mysqli_query($myslqi, $sql_mstat) or die(mysqli_error($mysqli));
 			$num_maf = $num_miss = 0;
-			while ($row = mysql_fetch_array($res)){
+			while ($row = mysqli_fetch_array($res)){
 			  $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 			  $miss = round(100*$row["summis"]/$row["total"],1);
 			  if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
@@ -2011,11 +2013,11 @@ class Downloads
 
 
 		$last_line = "some really silly name that noone would call a plant";
-		$res = mysql_query($sql) or die(mysql_error());
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		
 		$outarray = $empty;
 		$cnt = $num_lines = 0;
-		while ($row = mysql_fetch_array($res)){
+		while ($row = mysqli_fetch_array($res)){
 				//first time through loop
 				if ($cnt==0) {
 					$last_line = $row['line_record_name'];
@@ -2058,7 +2060,7 @@ class Downloads
 	 * @param unknown_type $dtype
 	 */
 	function type1_build_conflicts_download($experiments,$dtype) {
-	 
+	  global $mysqli; 
 	  //get lines and filter to get a list of markers which meet the criteria selected by the user
 	  $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
 	  SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
@@ -2067,9 +2069,9 @@ class Downloads
 	  AND af.experiment_uid in ($experiments)
 	  group by af.marker_uid";
 	 
-	  $res = mysql_query($sql_mstat) or die(mysql_error());
+	  $res = mysqli_query($mysqli, $sql_mstat) or die(mysqli_error($mysqli));
 	  $num_maf = $num_miss = 0;
-	  while ($row = mysql_fetch_array($res)){
+	  while ($row = mysqli_fetch_array($res)){
 	    $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
 	    $miss = round(100*$row["summis"]/$row["total"],1);
 	    if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
@@ -2086,9 +2088,9 @@ class Downloads
 	  and a.alleles != '--'
 	  and a.marker_uid IN ($marker_uid)
 	  order by l.line_record_name, m.marker_name, e.trial_code";
-	  $res = mysql_query($query) or die(mysql_error() . "<br>" . $sql_exp);
-	  if (mysql_num_rows($res)>0) {
-	   while ($row = mysql_fetch_row($res)){
+	  $res = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+	  if (mysqli_num_rows($res)>0) {
+	   while ($row = mysqli_fetch_row($res)){
 	    $output.= "$row[0]\t$row[1]\t$row[2]\t$row[3]\n";
 	   }
 	  }
@@ -2103,7 +2105,7 @@ class Downloads
 	 */
 	function type2_build_markers_download($lines,$markers,$dtype)
 	{
-		// $firephp = FirePHP::getInstance(true);
+            global $mysqli;
 		$outputheader = '';
 		$output = '';
 		$doneheader = false;
@@ -2144,9 +2146,9 @@ class Downloads
                 }
 	
 		$sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		$i=0;
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 		   $marker_list[$i] = $row[0];
 		   $marker_list_name[$i] = $row[1];
 		   $i++;
@@ -2181,8 +2183,8 @@ class Downloads
 		
 		foreach ($lines as $line_record_uid) {
 		  $sql = "select line_record_name, alleles from allele_byline where line_record_uid = $line_record_uid";
-		  $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-		  if ($row = mysql_fetch_array($res)) {
+		  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		  if ($row = mysqli_fetch_array($res)) {
 		    $outarray2 = array();
                     $outarray2[] = $row[0];
                     $alleles = $row[1];
@@ -2197,8 +2199,8 @@ class Downloads
 		    }
                   } else {
                     $sql = "select line_record_name from line_records where line_record_uid = $line_record_uid";
-                    $res = mysql_query($sql) or die(mysql_error() . "<br>" . $sql);
-                    if ($row = mysql_fetch_array($res)) {
+                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                    if ($row = mysqli_fetch_array($res)) {
                       $outarray2 = array();
                       $outarray2[] = $row[0];
                       $i=0;
