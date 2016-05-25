@@ -53,7 +53,7 @@ if ($command) {
             $response['germplasmPUI'] = null;
             $response['pedigree'] = null;
             $response['seedSource'] = null;
-            $response['synonyms'] = null;
+            $response['synonyms'] = array();
         } else {
             $response = null;
             $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
@@ -67,11 +67,7 @@ if ($command) {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $line_synonyms);
         while (mysqli_stmt_fetch($stmt)) {
-            if ($response['synonyms'] == null) {
-                $response['synonyms'] = '"' . $line_synonyms . '"';
-            } else {
-                $response['synonyms'] .= ',"' . $line_synonyms . '"';
-            }
+            $response['synonyms'][] = $line_synonyms;
         }
         mysqli_stmt_close($stmt);
         $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = ?";
@@ -136,7 +132,7 @@ if ($command) {
             $temp['germplasmPUI'] = null;
             $temp['pedigree'] = null;
             $temp['seedSource'] = null;
-            $temp['synonyms'] = null;
+            $temp['synonyms'] = array();
             $response[] = $temp;
         }
         mysqli_stmt_close($stmt);
@@ -146,14 +142,10 @@ if ($command) {
         foreach ($response as $key => $item) {
             $lineuid = $item['germplasmDbId'];
             $sql = "select line_synonym_name from line_synonyms where line_record_uid = $lineuid";
-            //echo "$key $sql\n";
+            $temp = array();
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            if ($row = mysqli_fetch_row($res)) {
-                if ($response[$key]['synonyms'] == null) {
-                    $response[$key]['synonyms'] = '"' . $row[0] . '"';
-                } else {
-                    $response[$key]['synonyms'] .= '"' . $row[0] . '"';
-                }
+            while ($row = mysqli_fetch_row($res)) {
+                $response[$key]['synonyms'][] = $row[0];
             }
 
             $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = $lineuid";
@@ -194,7 +186,7 @@ if ($command) {
         $temp['germplasmPUI'] = null;
         $temp['pedigree'] = null;
         $temp['seedSource'] = null;
-        $temp['synonyms'] = null;
+        $temp['synonyms'] = array();
         $response[] = $temp;
     }
   
@@ -203,12 +195,8 @@ if ($command) {
         $sql = "select line_synonym_name from line_synonyms where line_record_uid = $lineuid";
         //echo "$key $sql\n";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row = mysqli_fetch_row($res)) {
-            if ($response[$key]['synonyms'] == null) {
-                $response[$key]['synonyms'] = '"' . $row[0] . '"';
-            } else {
-                $response[$key]['synonyms'] .= ',"' . $row[0] . '"';
-            }
+        while ($row = mysqli_fetch_row($res)) {
+            $response[$key]['synonyms'][] = $row[0];
         }
 
         $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = $lineuid";
