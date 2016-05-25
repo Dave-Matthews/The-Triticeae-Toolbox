@@ -456,7 +456,7 @@ class Downloads
                 AND lr.line_record_uid = tb.line_record_uid
                 AND pd.phenotype_uid = $p_uid
                 AND tb.experiment_uid IN  ($e_uid)";
-        $res = mysqli_query($mysqki, $sql) or die(mysqli_error($mysqli));
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         $row = mysqli_fetch_array($res);
         echo "$row[0]";
         ?>
