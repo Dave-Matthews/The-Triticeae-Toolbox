@@ -84,7 +84,7 @@ if ($command) {
     $r['metadata']['pagination']['currentPage'] = $currentPage;
     $r['metadata']['pagination']['totalCount'] = 1;
     $r['metadata']['pagination']['totalPages'] = 1;
-    $r['result'] = array($response);
+    $r['result'] = $response;
     header("Access-Control-Allow-Origin: *");
     echo json_encode($r);
 } else {
@@ -159,7 +159,7 @@ if ($command) {
     $r['metadata']['pagination']['currentPage'] = $currentPage;
     $r['metadata']['pagination']['totalCount'] = $num_rows;
     $r['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
-    $r['result']['data'] = array($response);
+    $r['result']['data'] = $response;
     header("Access-Control-Allow-Origin: *");
     echo json_encode($r);
 }
