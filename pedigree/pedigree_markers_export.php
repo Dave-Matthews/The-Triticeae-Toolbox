@@ -29,7 +29,8 @@ if (isset($_SESSION['phenotype'])) {
         echo "warning - only using one trait<br>\n";
     }
     $r = mysqli_query($mysqli, "select phenotypes_name from phenotypes where phenotype_uid = $phenotype");
-    $phenotypename = mysqli_result($r, 0);
+    $row  = mysqli_fetch_assoc($r);
+    $phenotypename = $row['phenotypes_name'];
 }
 if (isset($_SESSION['experiments'])) {
     $experiments = $_SESSION['experiments'];
