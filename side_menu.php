@@ -7,7 +7,7 @@ require $config['root_dir'].'includes/bootstrap.inc';
 <h2>Quick Links </h2>
 <ul>
 <?php
-if (isset($_SESSION['username']) && !isset( $_REQUEST['logout'])) :
+if (isset($_SESSION['username']) && !isset($_REQUEST['logout'])) :
     ?>
     <li>
     <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
@@ -38,8 +38,6 @@ if (isset($_SESSION['geno_exps'])) {
     echo ": " . count($_SESSION['geno_exps']);
 }
 ?>
-			
-			
   <br><br><li>
   <form style="margin-bottom:3px" action="search.php" method="post">
   <input type="hidden" value="Search" >

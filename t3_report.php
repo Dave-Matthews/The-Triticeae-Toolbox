@@ -284,89 +284,89 @@ if ($query == 'geno') {
     $sql = "select count(markers.marker_uid) from markers where marker_uid NOT IN (Select marker_uid from allele_frequencies)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row=mysqli_fetch_row($res)) {
-       $MarkersNoGeno = $row[0];
+        $MarkersNoGeno = $row[0];
     }
 
-     $fp = fopen($cachefile, 'w');
-     if ($fp == false) {
-         echo "Error: could not create cache file\n";
-     } else {
-         fwrite($fp,"$allele_count\n");
-         fwrite($fp,"$allele_update\n");
-         fwrite($fp,"$LinesWithGeno\n");
-         fwrite($fp,"$MarkersWithGeno\n");
-         fwrite($fp,"$MarkersNoGeno\n");
-         fclose($fp);
-     } 
+    $fp = fopen($cachefile, 'w');
+    if ($fp == false) {
+        echo "Error: could not create cache file\n";
+    } else {
+        fwrite($fp, "$allele_count\n");
+        fwrite($fp, "$allele_update\n");
+        fwrite($fp, "$LinesWithGeno\n");
+        fwrite($fp, "$MarkersWithGeno\n");
+        fwrite($fp, "$MarkersNoGeno\n");
+        fclose($fp);
+    }
 } elseif ($query == "csr1") {
-   include $config['root_dir'].'theme/normal_header.php';
-   print "<h3>Trials with Canopy Spectral Reflectance (CSR) data</h3>\n";
-   print "<table border=0>";
-   print "<tr><td>Trial Code<td>Year<td>Files loaded\n";
-   $sql = "select distinct(csr_measurement.experiment_uid), experiments.trial_code, experiments.experiment_year from csr_measurement, experiments where csr_measurement.experiment_uid = experiments.experiment_uid order by experiments.experiment_year";
-   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-   while ($row = mysqli_fetch_row($res)) {
-       $uid = $row[0];
-       $trial_code = $row[1];
-       $year = $row[2];
-       $sql = "select count(measurement_uid) from csr_measurement where experiment_uid = $uid";
-       $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-       if ($row2 = mysqli_fetch_row($res2)) {
-           $count = $row2[0];
-       } else {
-           $count = "";
-       }
-       print "<tr><td><a href='".$config['base_url']."display_phenotype.php?trial_code=$trial_code'>$trial_code</a><td>$year<td>$count\n";
-   }
-   print "</table>";
+    include $config['root_dir'].'theme/normal_header.php';
+    print "<h3>Trials with Canopy Spectral Reflectance (CSR) data</h3>\n";
+    print "<table border=0>";
+    print "<tr><td>Trial Code<td>Year<td>Files loaded\n";
+    $sql = "select distinct(csr_measurement.experiment_uid), experiments.trial_code, experiments.experiment_year from csr_measurement, experiments where csr_measurement.experiment_uid = experiments.experiment_uid order by experiments.experiment_year";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $uid = $row[0];
+        $trial_code = $row[1];
+        $year = $row[2];
+        $sql = "select count(measurement_uid) from csr_measurement where experiment_uid = $uid";
+        $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row2 = mysqli_fetch_row($res2)) {
+            $count = $row2[0];
+        } else {
+            $count = "";
+        }
+        print "<tr><td><a href='".$config['base_url']."display_phenotype.php?trial_code=$trial_code'>$trial_code</a><td>$year<td>$count\n";
+    }
+    print "</table>";
 } else {
-  if ($output == 'excel') {
-    require 'Spreadsheet/Excel/Writer.php';
-    header('Content-Type: application/vnd.ms-excel');
-    header('Content-Disposition:attachment;filename=t3_report.xls');
-    $workbook = new Spreadsheet_Excel_Writer();
-    $workbook->send('t3_report.xls');
-    $format_header =& $workbook->addFormat();
-    $format_header->setBold();
-    $format_title =& $workbook->addFormat();
-    $format_title->setBold();
-    $format_title->setAlign('merge');
-    $worksheet =& $workbook->addWorksheet();
-  } else {
-    include($config['root_dir'].'theme/normal_header.php');
-    print "<div class=box>";
-  }
+    if ($output == 'excel') {
+        require 'Spreadsheet/Excel/Writer.php';
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition:attachment;filename=t3_report.xls');
+        $workbook = new Spreadsheet_Excel_Writer();
+        $workbook->send('t3_report.xls');
+        $format_header =& $workbook->addFormat();
+        $format_header->setBold();
+        $format_title =& $workbook->addFormat();
+        $format_title->setBold();
+        $format_title->setAlign('merge');
+        $worksheet =& $workbook->addWorksheet();
+    } else {
+        include($config['root_dir'].'theme/normal_header.php');
+        print "<div class=box>";
+    }
   
-  $sql = "select database()";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  if ($row = mysqli_fetch_row($res)) {
-   $db = $row[0];
-  } else {
-   print "error $sql<br>\n";
-  }
-  /** read in from cache */
-  $cachefile = '/tmp/tht/cache_' . $db . '.txt';
-  $cachetime = 24 * 60 * 60; //24 hours
-  $cmd = "wget " . $config['base_url'] . "t3_report.php?query=cache > /dev/null &";
-  if (file_exists($cachefile)) {
-      $fp = fopen($cachefile, 'r');
-      $allele_count = fgets($fp);
-      $allele_update = fgets($fp);
-      $LinesWithGeno = fgets($fp);
-      $MarkersWithGeno = fgets($fp);
-      $MarkersNoGeno = fgets($fp);
-      fclose($fp);
-  } else {
-      exec($cmd);
-      echo "Regenerating cache, check back in 20 minutes";
-  }
-  if (file_exists($cachefile)) {
-      if (time() - $cachetime > filemtime($cachefile)) {
-          exec($cmd);
-      }
-  } else {
-      exec($cmd);
-  }
+    $sql = "select database()";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
+        $db = $row[0];
+    } else {
+        print "error $sql<br>\n";
+    }
+    /** read in from cache */
+    $cachefile = '/tmp/tht/cache_' . $db . '.txt';
+    $cachetime = 24 * 60 * 60; //24 hours
+    $cmd = "wget --no-check-certificate " . $config['base_url'] . "t3_report.php?query=cache > /dev/null &";
+    if (file_exists($cachefile)) {
+        $fp = fopen($cachefile, 'r');
+        $allele_count = fgets($fp);
+        $allele_update = fgets($fp);
+        $LinesWithGeno = fgets($fp);
+        $MarkersWithGeno = fgets($fp);
+        $MarkersNoGeno = fgets($fp);
+        fclose($fp);
+    } else {
+        exec($cmd);
+        echo "Regenerating cache, check back in 20 minutes";
+    }
+    if (file_exists($cachefile)) {
+        if (time() - $cachetime > filemtime($cachefile)) {
+            exec($cmd);
+        }
+    } else {
+        exec($cmd);
+    }
   $allele_count = number_format($allele_count);
   $date = date_create(date('Y-m-d'));
   $date = $date->format('Y-m-d');
