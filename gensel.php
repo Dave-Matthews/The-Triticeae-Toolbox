@@ -2257,21 +2257,23 @@ class Downloads
 	 $outputheader = '';
 	 $delimiter ="\t";
 	
-	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-	  $max_missing = $_GET['mm'];
-	 if ($max_missing>100)
-	  $max_missing = 100;
-	 elseif ($max_missing<0)
-	 $max_missing = 0;
-	 // $firephp->log("in sort markers2");
+	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm'])) {
+	   $max_missing = $_GET['mm'];
+         }
+	 if ($max_missing>100) {
+	   $max_missing = 100;
+	 } elseif ($max_missing<0) {
+	   $max_missing = 0;
+         }
 	 $min_maf = 0.01;//IN PERCENT
-	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-	  $min_maf = $_GET['mmaf'];
-	 if ($min_maf>100)
-	  $min_maf = 100;
-	 elseif ($min_maf<0)
-	 $min_maf = 0;
-
+	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf'])) {
+	   $min_maf = $_GET['mmaf'];
+         }
+	 if ($min_maf>100) {
+	   $min_maf = 100;
+	 } elseif ($min_maf<0) {
+	   $min_maf = 0;
+         }
          if (isset($_SESSION['selected_map'])) {
            $selected_map = $_SESSION['selected_map'];
          } else {
@@ -2286,7 +2288,7 @@ class Downloads
 	 if (count($lines)>0) {
 	  $lines_str = implode(",", $lines);
 	 } else {
-	  $lines_str = "";
+	  die("<font color=red>Error - lines should be selected before analysis</font>");
 	 }
 	
          //generate an array of selected lines that can be used with isset statement
