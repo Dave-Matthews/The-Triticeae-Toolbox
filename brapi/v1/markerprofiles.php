@@ -264,14 +264,12 @@ if ($command) {
         $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($res2)) {
             $resultCount = $row2[0];
-            if ($resultCount > 0) {
             // Restrict to the requested analysis method if any.
-                if (!$analmeth or $analmeth == $analysisMethod) {
-                    $linearray['extractDbId'] = $exp_uid;
-                    $linearray['analysisMethod'] = $analysisMethod;
-                    $linearray['resultCount'] = $resultCount;
-                    $response['result']['data'][] = $linearray;
-                }
+            if (!$analmeth or $analmeth == $analysisMethod) {
+                $linearray['extractDbId'] = $exp_uid;
+                $linearray['analysisMethod'] = $analysisMethod;
+                $linearray['resultCount'] = $resultCount;
+                $response['result']['data'][] = $linearray;
             }
         }
     }
