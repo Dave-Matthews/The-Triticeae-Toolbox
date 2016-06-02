@@ -30,8 +30,8 @@ if (isset($_GET['pageSize'])) {
 } else {
     $pageSize = 1000;
 }
-if (isset($_GET['page'])) {
-    $currentPage = $_GET['page'];
+if (isset($_GET['currentPage'])) {
+    $currentPage = $_GET['currentPage'];
 } else {
     $currentPage = 1;
 }
@@ -76,7 +76,7 @@ if ($command) {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $barley_ref_number);
         if (mysqli_stmt_fetch($stmt)) {
-            $response['germplasmNumber'] = $barley_ref_number;
+            $response['accessionNumber'] = $barley_ref_number;
         }
         mysqli_stmt_close($stmt);
     }
@@ -151,7 +151,7 @@ if ($command) {
             $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = $lineuid";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             if ($row = mysqli_fetch_row($res)) {
-                $response[$key]['germplasmNumber'] = $row[0];
+                $response[$key]['accessionNumber'] = $row[0];
             }
         }
     }
@@ -202,7 +202,7 @@ if ($command) {
         $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = $lineuid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_row($res)) {
-            $response[$key]['germplasmNumber'] = $row[0];
+            $response[$key]['accessionNumber'] = $row[0];
         }
     }
     $r['metadata']['pagination']['pageSize'] = $pageSize;
