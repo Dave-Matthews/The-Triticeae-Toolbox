@@ -100,6 +100,7 @@ if ($command) {
             and not alleles = '--' 
             group by experiment_uid;";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $count = mysqli_num_rows($res);
         while ($row = mysqli_fetch_row($res)) {
             $result = array();
             $expuid = $row[0];
@@ -129,6 +130,7 @@ if ($command) {
             and not alleles = '--' 
             group by line_record_uid;";
         $res = mysqli_query($mysqli, $sql);
+        $count = mysqli_num_rows($res);
         if ($res == false) {
             $response['metadata']['status'][] = array("code" => "sql error", "message" => mysqli_error($mysqli));
         } else {
@@ -250,7 +252,6 @@ if ($command) {
         $linearray['markerprofileDbId'] = $profileid;
         $linearray['germplasmDbId'] = $line_uid;
         $linearray['extractDbId'] = $exp_uid;
-        //$linearray['encoding'] = "AA,BB,AB";
         $analysisMethod = mysql_grab(
             "select platform_name from platform p, genotype_experiment_info g
             where p.platform_uid = g.platform_uid
