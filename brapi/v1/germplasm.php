@@ -30,8 +30,8 @@ if (isset($_GET['pageSize'])) {
 } else {
     $pageSize = 1000;
 }
-if (isset($_GET['currentPage'])) {
-    $currentPage = $_GET['currentPage'];
+if (isset($_GET['page'])) {
+    $currentPage = $_GET['page'];
 } else {
     $currentPage = 1;
 }
