@@ -9,6 +9,7 @@
 
 require '../../includes/bootstrap.inc';
 $mysqli = connecti();
+ini_set('memory_limit', '2G');
 
 // URI is something like genotype/{id}/[count][?analysisMethod={platform}][..]
 // Extract the pseudo-path part of the REST args.
@@ -67,13 +68,14 @@ if ($command) {
         $linearray['markerprofileDbId'] = $lineuid;
         $linearray['germplasmDbId'] = $lineuid;
         // Get the number of non-missing allele data points for this line, by experiment.
-        $sql = "select count(experiment_uid) from allele_cache 
-	    where line_record_uid = $lineuid 
-            and experiment_uid = $expuid
-	    and not alleles = '--'";
+        $sql = "select alleles from allele_byline_exp
+            where line_record_uid = $line_uid
+            and experiment_uid = $exp_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($res)) {
-            $resultCount = $row[0];
+            $alleles = $row[0];
+            $allele_ary = explode(",", $alleles);
+            $resultCount = count($allele_ary);
             $analysisMethod = mysql_grab(
                 "select platform_name from platform p, genotype_experiment_info g
                 where p.platform_uid = g.platform_uid
@@ -257,13 +259,14 @@ if ($command) {
             where p.platform_uid = g.platform_uid
             and g.experiment_uid = $exp_uid"
         );
-        $sql = "select count(experiment_uid) from allele_cache 
-            where line_record_uid = $line_uid 
-            and experiment_uid = $exp_uid
-            and not alleles = '--'";
+        $sql = "select alleles from allele_byline_exp
+            where line_record_uid = $line_uid
+            and experiment_uid = $exp_uid";
         $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row2 = mysqli_fetch_row($res2)) {
-            $resultCount = $row2[0];
+        while ($row2 = mysqli_fetch_row($res2)) {
+            $alleles = $row2[0];
+            $allele_ary = explode(",", $alleles);
+            $resultCount = count($allele_ary);
             // Restrict to the requested analysis method if any.
             if (!$analmeth or $analmeth == $analysisMethod) {
                 $linearray['extractDbId'] = $exp_uid;
