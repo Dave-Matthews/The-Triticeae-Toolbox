@@ -97,15 +97,15 @@ if ($command) {
         $pageList = array();
         $response['metadata']['pagination'] = $pageList;
         $response['metadata']['status'] = null;
-        $sql = "select experiment_uid, count(experiment_uid) from allele_cache 
-            where line_record_uid = $lineuid 
-            and not alleles = '--' 
-            group by experiment_uid;";
+        $sql = "select experiment_uid, alleles from allele_byline_exp
+            where line_record_uid = $lineuid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         $count = mysqli_num_rows($res);
         while ($row = mysqli_fetch_row($res)) {
             $result = array();
             $expuid = $row[0];
+            $alleles = $row[1];
+            $resultCount = count(explode(",", $alleles));
             $linearray['markerProfileDbId'] = $lineuid . "_" . $row[0];
             $linearray['germplasmDbId'] = $lineuid;
             $linearray['extractDbId'] = $row[0];
@@ -115,7 +115,7 @@ if ($command) {
                 and g.experiment_uid = $expuid"
             );
             $linearray['analysisMethod'] = $analysisMethod;
-            $linearray['resultCount'] = $row[1];
+            $linearray['resultCount'] = $resultCount;
             $data[] = $linearray;
         }
         $response['result']['data'] = $data;
@@ -127,10 +127,8 @@ if ($command) {
         $pageList = array();
         $response['metadata']['pagination'] = $pageList;
         $response['metadata']['status'] = null;
-        $sql = "select line_record_uid, count(line_record_uid) from allele_cache 
-            where experiment_uid = $expuid 
-            and not alleles = '--' 
-            group by line_record_uid;";
+        $sql = "select line_record_uid, alleles from allele_byline_exp
+            where experiment_uid = $expuid";
         $res = mysqli_query($mysqli, $sql);
         $count = mysqli_num_rows($res);
         if ($res == false) {
@@ -139,6 +137,8 @@ if ($command) {
             while ($row = mysqli_fetch_row($res)) {
                 $count++;
                 $line_record_uid = $row[0];
+                $alleles = $row[1];
+                $resultCount = count(explode(",", $alleles));
                 $linearray['markerProfileDbId'] = $row[0] . "_" . $expuid;
                 $linearray['germplasmDbId'] = $row[0];
                 $linearray['extractDbId'] = $expuid;
@@ -148,7 +148,7 @@ if ($command) {
                     and g.experiment_uid = $expuid"
                 );
                 $linearray['analysisMethod'] = $analysisMethod;
-                $linearray['resultCount'] = $row[1];
+                $linearray['resultCount'] = $resultCount;
                 $data[] = $linearray;
             }
             if ($count == 0) {
