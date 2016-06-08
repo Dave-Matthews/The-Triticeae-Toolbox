@@ -228,7 +228,7 @@ if ($command) {
 } else {
     // if no command, then list all marker profiles
     //first query all data
-    $sql = "select line_record_uid, experiment_uid from tht_base order by line_record_uid, experiment_uid";
+    $sql = "select line_record_uid, experiment_uid from allele_byline_exp order by line_record_uid, experiment_uid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
 
