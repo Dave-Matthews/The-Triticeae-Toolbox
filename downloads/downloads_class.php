@@ -119,6 +119,7 @@ class Downloads
      */
     private function type1Checksession()
     {
+        global $mysqli;
         echo "<div id=\"title\">";
         $phenotype = "";
         $lines = "";
@@ -322,7 +323,7 @@ class Downloads
         $subset = "yes";
         if ($version == "V6") {
             $dtype = "FJ";
-        } else { 
+        } else {
             $dtype = "";
         }
        
@@ -485,7 +486,7 @@ class Downloads
         if ($version == "V8") {
             $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
         } elseif ($version == "V9") {
-            $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset); 
+            $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype); 
         }
         fwrite($h, $output);
         fclose($h);
