@@ -87,23 +87,23 @@ class Maps
     {
         global $mysqli;
     ?>
-		<!--Style sheet for better user interface-->
-		
-		<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; }
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-		<style type="text/css">
+<!--Style sheet for better user interface-->
 
-                   table.marker
-                   {background: none; border-collapse: collapse}
-                    th.marker
-		      { background: #5b53a6; color: #fff; border: 1px solid #666 !important; border-color: black; text-align: left;}
+<style type="text/css">
+th {background: #5B53A6 !important; color: white !important; }
+table {background: none; border-collapse: collapse}
+td {border: 1px solid #eee !important;}
+h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+</style>
+<style type="text/css">
+
+        table.marker
+        {background: none; border-collapse: collapse}
+        th.marker
+      { background: #5b53a6; color: #fff; border: 1px solid #666 !important; border-color: black; text-align: left;}
                     
-                    td.marker
-                    { border: 1 !important; }
+        td.marker
+        { border: 1 !important; }
         </style>
 <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
 <?php
@@ -134,12 +134,12 @@ if ($row = mysqli_fetch_array($res)) {
       
       /* Function for invoking export to excel functionality  */
       function load_excel() {
-	  excel_str1 =	markers_annotation_str;
-	  excel_str2 =  maps_str;
-	  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeMarkerExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + excel_str2;
-	  // Opens the url in the same window
-	  window.open(url, "_self");
-      }
+  excel_str1 = markers_annotation_str;
+  excel_str2 = maps_str;
+  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeMarkerExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + excel_str2;
+  // Opens the url in the same window
+  window.open(url, "_self");
+}
       
       /* Function to open annotation link in a new window */
       function link_for_value(link) {
@@ -519,23 +519,17 @@ private function type_Markers()
 
 private function type_Marker_Annotation()
 {
-		$mark_ann_query = $_GET['mkan']; 
-		
-		/* For debugging
-			$firephp = FirePHP::getInstance(true);
-			$firephp->log($mark_ann_query,"mark_ann_query");
-		*/
-		
-		$sql = "SELECT mat.name_annotation FROM  markers m, marker_annotations ma,  marker_annotation_types mat
- 								where m.marker_name = '".$mark_ann_query."' AND
-								m.marker_uid = ma.marker_uid AND
-								ma.marker_annotation_type_uid = mat.marker_annotation_type_uid";
-
+    global $mysqli;
+    $mark_ann_query = $_GET['mkan']; 
+    $sql = "SELECT mat.name_annotation FROM  markers m, marker_annotations ma,  marker_annotation_types mat
+ 						where m.marker_name = '".$mark_ann_query."' AND
+						m.marker_uid = ma.marker_uid AND
+						ma.marker_annotation_type_uid = mat.marker_annotation_type_uid";
 	
-			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-			
-	?>
-	<div>
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+
+    ?>
+    <div>
 
 <table >
 <tr><h2>Marker Annotations</h2></tr>
@@ -778,203 +772,130 @@ $probe32Count = 1;
 $probe35Count = 1;
 
 $test1 = $j;
-while($row=mysqli_fetch_assoc($innerresult)){
+while ($row=mysqli_fetch_assoc($innerresult)) {
 
-/* replacing value in link out string */ 
+    /* replacing value in link out string */ 
+    $reg_pattern = "XXXX";
+    $replace_string = $row[value];
+    $source_string = $row[Annotation_Link];
+    $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
 
-$reg_pattern = "XXXX";
-$replace_string = $row[value];
-$source_string = $row[Annotation_Link];
-$linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
+    if ($row[Annotation_Name] == "HARVEST_U32") {
 
-/* For debugging
-		$firephp->log($linkString,"linkString");
-*/
+        /* Check if link exists */
+        if ($row[Annotation_Link] != "") {
+            $worksheet->writeUrl($j, 5, "$linkString", "$row[value]",$format_link);
+        } else {
+            $worksheet->write($j, 5, "$row[value]",$format_row);
+        }
+    }
 
-if ($row[Annotation_Name] == "HARVEST_U32")
-{
+    if ($row[Annotation_Name] == "HARVEST_U35") {
 
-/* Check if link exists */
+        /* Check if link exists */
+        if ($row[Annotation_Link] != "") {
+            $worksheet->writeUrl($j, 6, "$linkString", "$row[value]",$format_link);
+        } else {
+            $worksheet->write($j, 6, "$row[value]",$format_row);
+        }
+    }
 
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 5, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 5, "$row[value]",$format_row);
-}
-}
+if ($row[Annotation_Name] == "U32_PROBE_SET") {
 
-if ($row[Annotation_Name] == "HARVEST_U35")
-{
-
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 6, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 6, "$row[value]",$format_row);
-}
-
-}
-
-if ($row[Annotation_Name] == "U32_PROBE_SET")
-{
-
-/* Check if link exists */
-if ($probe32Count != 1)
-{
-$j = $j + 1;
-}
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 7, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 7, "$row[value]",$format_row);
-}
-$probe32Count = $probe32Count + 1;
-$jcount = $j;
+    /* Check if link exists */
+    if ($probe32Count != 1) {
+        $j = $j + 1;
+    }
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 7, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 7, "$row[value]",$format_row);
+    }
+    $probe32Count = $probe32Count + 1;
+    $jcount = $j;
 }
 
-if ($row[Annotation_Name] == "U32_RICE_LOCUS")
-{
+if ($row[Annotation_Name] == "U32_RICE_LOCUS") {
+    $j = $test1;
 
-$j = $test1;
-
-
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 8, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 8, "$row[value]",$format_row);
+    /* Check if link exists */
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 8, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 8, "$row[value]",$format_row);
+    }
 }
 
+if ($row[Annotation_Name] == "U32_RICE_DESCRIPTION") {
+    $j = $test1;
+
+    /* Check if link exists */
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 9, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 9, "$row[value]",$format_row);
+    }
 }
 
-if ($row[Annotation_Name] == "U32_RICE_DESCRIPTION")
-{
+if ($row[Annotation_Name] == "U35_PROBE_SET") {
+    if ($probe35count == 1) {
+        $j = $test1;
+    }
+    /* Check if link exists */
+    if ($probe35Count != 1) {
+        $j = $j + 1;
+    }
 
-$j = $test1;
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 10, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 10, "$row[value]",$format_row);
+    }
 
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 9, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 9, "$row[value]",$format_row);
-}
-
-}
-
-if ($row[Annotation_Name] == "U35_PROBE_SET")
-{
-if ($probe35count == 1)
-{
-$j = $test1;
-}
-/* Check if link exists */
-
-if ($probe35Count != 1)
-{
-$j = $j + 1;
+    $probe35Count = $probe35Count + 1;
+    $jcount1 = $j;
 }
 
+if ($row[Annotation_Name] == "U35_RICE_LOCUS") {
+    $j = $test1;
 
-if($row[Annotation_Link] != "")
-{
-
-
-$worksheet->writeUrl($j, 10, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 10, "$row[value]",$format_row);
-}
-
-$probe35Count = $probe35Count + 1;
-$jcount1 = $j;
-
+    /* Check if link exists */
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 11, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 11, "$row[value]",$format_row);
+    }
 
 }
 
-if ($row[Annotation_Name] == "U35_RICE_LOCUS")
-{
-$j = $test1;
+if ($row[Annotation_Name] == "U35_RICE_DESCRIPTION") {
+    $j = $test1;
 
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 11, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 11, "$row[value]",$format_row);
-}
-
-}
-
-if ($row[Annotation_Name] == "U35_RICE_DESCRIPTION")
-{
-
-$j = $test1;
-
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 12, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 12, "$row[value]",$format_row);
-}
-
+    /* Check if link exists */
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 12, "$linkString", "$row[value]", $format_link);
+    } else {
+        $worksheet->write($j, 12, "$row[value]", $format_row);
+    }
 }
  
- if ( ($probe35Count == 1) AND ($probe32Count == 1) )
- {
- 
- $i = $j;
- }
-
-/* For debugging
-		$firephp->log($jcount,"jcount");
-		$firephp->log($jcount1,"jcount1");
-*/
-
- else 
- {
-if ($jcount >= $jcount1)
- { 
- $i = $jcount ;
- }
- if ($jcount1 >= $jcount)
- {
- $i = $jcount1 ;
- }
- }
-
- 
- }
- 
- /* end of inner while loop */
- 
-$i++;
-/* For debugging
-		$firephp->log($i,"i");
-*/
-
+if (($probe35Count == 1) and ($probe32Count == 1)) {
+    $i = $j;
+} else {
+    if ($jcount >= $jcount1) {
+        $i = $jcount;
+    }
+    if ($jcount1 >= $jcount) {
+        $i = $jcount1;
+    }
+}
+    }
+    /* end of inner while loop */
+    $i++;
 }
 
-/* Sending it to the excel sheet*/
-
-$workbook->send('Maps_Details.xls');
-$workbook->close();
-}
+    /* Sending it to the excel sheet*/
+    $workbook->send('Maps_Details.xls');
+    $workbook->close();
+    }
 }/* end of class */
