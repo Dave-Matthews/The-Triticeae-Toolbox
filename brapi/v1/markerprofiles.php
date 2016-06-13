@@ -68,14 +68,12 @@ if ($command) {
         $linearray['markerprofileDbId'] = $lineuid;
         $linearray['germplasmDbId'] = $lineuid;
         // Get the number of non-missing allele data points for this line, by experiment.
-        $sql = "select alleles from allele_byline_exp
+        $sql = "select count from allele_byline_exp
             where line_record_uid = $line_uid
             and experiment_uid = $exp_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($res)) {
-            $alleles = $row[0];
-            $allele_ary = explode(",", $alleles);
-            $resultCount = count($allele_ary);
+            $resultCount = $row[0];
             $analysisMethod = mysql_grab(
                 "select platform_name from platform p, genotype_experiment_info g
                 where p.platform_uid = g.platform_uid
@@ -97,15 +95,13 @@ if ($command) {
         $pageList = array();
         $response['metadata']['pagination'] = $pageList;
         $response['metadata']['status'] = null;
-        $sql = "select experiment_uid, alleles from allele_byline_exp
+        $sql = "select experiment_uid, count from allele_byline_exp
             where line_record_uid = $lineuid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         $count = mysqli_num_rows($res);
         while ($row = mysqli_fetch_row($res)) {
-            $result = array();
             $expuid = $row[0];
-            $alleles = $row[1];
-            $resultCount = count(explode(",", $alleles));
+            $resultCount = $row[1];
             $linearray['markerProfileDbId'] = $lineuid . "_" . $row[0];
             $linearray['germplasmDbId'] = $lineuid;
             $linearray['extractDbId'] = $row[0];
@@ -127,7 +123,7 @@ if ($command) {
         $pageList = array();
         $response['metadata']['pagination'] = $pageList;
         $response['metadata']['status'] = null;
-        $sql = "select line_record_uid, alleles from allele_byline_exp
+        $sql = "select line_record_uid, count from allele_byline_exp
             where experiment_uid = $expuid";
         $res = mysqli_query($mysqli, $sql);
         $count = mysqli_num_rows($res);
@@ -138,7 +134,7 @@ if ($command) {
                 $count++;
                 $line_record_uid = $row[0];
                 $alleles = $row[1];
-                $resultCount = count(explode(",", $alleles));
+                $resultCount = $row[2];
                 $linearray['markerProfileDbId'] = $row[0] . "_" . $expuid;
                 $linearray['germplasmDbId'] = $row[0];
                 $linearray['extractDbId'] = $expuid;
@@ -228,7 +224,7 @@ if ($command) {
 } else {
     // if no command, then list all marker profiles
     //first query all data
-    $sql = "select line_record_uid, experiment_uid from allele_byline_exp order by line_record_uid, experiment_uid";
+    $sql = "select line_record_uid, experiment_uid, count from allele_byline_exp order by line_record_uid, experiment_uid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
 
@@ -250,6 +246,7 @@ if ($command) {
     while ($row = mysqli_fetch_row($res)) {
         $line_uid = $row[0];
         $exp_uid = $row[1];
+        $resultCount = $row[2];
         $profileid = $line_uid . "_" . $exp_uid;
         $linearray['markerprofileDbId'] = $profileid;
         $linearray['germplasmDbId'] = $line_uid;
@@ -259,21 +256,12 @@ if ($command) {
             where p.platform_uid = g.platform_uid
             and g.experiment_uid = $exp_uid"
         );
-        $sql = "select alleles from allele_byline_exp
-            where line_record_uid = $line_uid
-            and experiment_uid = $exp_uid";
-        $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row2 = mysqli_fetch_row($res2)) {
-            $alleles = $row2[0];
-            $allele_ary = explode(",", $alleles);
-            $resultCount = count($allele_ary);
-            // Restrict to the requested analysis method if any.
-            if (!$analmeth or $analmeth == $analysisMethod) {
-                $linearray['extractDbId'] = $exp_uid;
-                $linearray['analysisMethod'] = $analysisMethod;
-                $linearray['resultCount'] = $resultCount;
-                $response['result']['data'][] = $linearray;
-            }
+        // Restrict to the requested analysis method if any.
+        if (!$analmeth or $analmeth == $analysisMethod) {
+            $linearray['extractDbId'] = $exp_uid;
+            $linearray['analysisMethod'] = $analysisMethod;
+            $linearray['resultCount'] = $resultCount;
+            $response['result']['data'][] = $linearray;
         }
     }
     header("Access-Control-Allow-Origin: *");
