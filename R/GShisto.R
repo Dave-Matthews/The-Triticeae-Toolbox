@@ -1,5 +1,5 @@
-pheno <- as.matrix(phenoData[,2])
-trial <- as.matrix(phenoData[,3])
+pheno <- as.matrix(phenoData[,3])
+trial <- as.matrix(phenoData[,2])
 
 #remove missing
 hasPheno <- !is.na(pheno)
