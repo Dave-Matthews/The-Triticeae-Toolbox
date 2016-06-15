@@ -162,7 +162,7 @@ class Histo
                 if ($triallabel == "") {
                     $triallabel = "triallabel <- list()\n";
                 }
-                $triallabel .= "triallabel[$uid] <- \"$trial\"\n";
+                $triallabel .= "triallabel[\"$trial\"] <- \"$trial\"\n";
                 $ntrials++;
             }
         }
