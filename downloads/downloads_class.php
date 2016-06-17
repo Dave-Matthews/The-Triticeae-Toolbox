@@ -83,6 +83,9 @@ class Downloads
             case 'download_session_v9':
                 echo $this->type2_session(V9);
                 break;
+            case 'download_session_vcf':
+                echo $this->type1_session(vcf);
+                break;
             case 'refreshtitle':
                 echo $this->refresh_title();
                 break;
@@ -409,6 +412,13 @@ class Downloads
             $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
             $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
+        } elseif ($version == "vcf") {
+            if (isset($_SESSION['selected_map'])) {
+                $tmpdir = "/tmp/tht/download_$unique_str";
+                createVcfDownload($unique_str);
+            } else {
+                die("Error: must select map first\n");
+            }
         }
         if ($typeG == "true") {
             $filename = "allele_conflict.txt";
@@ -968,12 +978,12 @@ class Downloads
          } else {
              ?>
              <table border=0>
-             <!--tr><td><input type="button" value="Download for Tassel V3" onclick="javascript:use_session('v3');" /-->
-             <!--td>genotype coded as {AA=1:1, BB=2:2, AB=1:2, missing=?} --> 
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
              <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>used with <b>TASSEL</b> Version 3, 4, or 5 
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
              <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
+             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcf');">
+             <td><b>VCF</b> format
              <?php 
              if ($typeGE == "true") {
              } else {
