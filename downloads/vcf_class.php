@@ -79,7 +79,8 @@ function filterVCF()
 }
 
 /** used to create VCF file from genotype experiment selection for TASSEL **/
-function createVcfDownload($chr, $unique_str)
+/** does not sort by position and does not work for large exeriments **/
+function createVcfDownload($unique_str)
 {
     global $config;
     global $mysqli;
@@ -108,7 +109,7 @@ function createVcfDownload($chr, $unique_str)
         $marker_list_chr[$marker_uid] = $mapchr;
     }
 
-    $filename1 = "genotype_$chr.hmp.txt";
+    $filename1 = "genotype.vcf";
     $fh1 = fopen("$tmpdir/download_$unique_str/$filename1", "w");
 
     //get header
@@ -129,6 +130,8 @@ function createVcfDownload($chr, $unique_str)
     $outputheader .= implode("\t", $name);
 
     fwrite($fh1, "##fileformat=VCFv4.2\n");
+    fwrite($fh1, "##reference=triticeaetoolbox.org\n");
+    fwrite($fh1, "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n");
     fwrite($fh1, "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t");
     fwrite($fh1, "$outputheader\n");
 
@@ -151,6 +154,9 @@ function createVcfDownload($chr, $unique_str)
         $ref = $row[2];
         $alt = $row[3];
         $alleles = $row[4];
+        if (($ref == "") || ($alt == "")) {
+            continue;
+        }
         if (isset($marker_list_mapped[$marker_uid])) {
             $chromosome = $marker_list_chr[$marker_uid];
             $pos = $marker_list_mapped[$marker_uid];
@@ -324,7 +330,7 @@ function runBeagle($impute)
     exec($cmd);
 
     $infile6 .= ".vcf.gz";
-    $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 > /dev/null 2> $logfile4";
+    $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 window=5000 overlap = 500 > /dev/null 2> $logfile4";
     echo "<br>Running beagle.r1399 to impute target<br>\n$cmd\n";
     exec($cmd);
     $outfile1 .= ".vcf.gz";
