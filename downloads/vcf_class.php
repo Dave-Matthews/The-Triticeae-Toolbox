@@ -80,7 +80,7 @@ function filterVCF()
 
 /** used to create VCF file from genotype experiment selection for TASSEL **/
 /** does not sort by position and does not work for large exeriments **/
-function createVcfDownload($unique_str)
+function createVcfDownload($unique_str, $min_maf, $max_missing)
 {
     global $config;
     global $mysqli;
@@ -92,25 +92,51 @@ function createVcfDownload($unique_str)
     if (isset($_SESSION['geno_exps'])) {
         $geno_exp = $_SESSION['geno_exps'];
         $geno_exp = $geno_exp[0];
+        $sql = "select trial_code from experiments where experiment_uid = $geno_exp";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $row = mysqli_fetch_array($res);
+        $trial_code = $row[0];
     } else {
         die("Error: no genotype experiment selected");
     }
-
-    $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map
+    if (isset($_SESSION['selected_map'])) {
+        $selected_map = $_SESSION['selected_map'];
+        $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome
+          from markers, markers_in_maps as mim, map
           where mim.marker_uid = markers.marker_uid
           AND mim.map_uid = map.map_uid
           AND map.mapset_uid = $selected_map";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
-    while ($row = mysqli_fetch_array($res)) {
-        $marker_uid = $row[0];
-        $mappos = $row[1];
-        $mapchr = $row[2];
-        $marker_list_mapped[$marker_uid] = $mappos;
-        $marker_list_chr[$marker_uid] = $mapchr;
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+        while ($row = mysqli_fetch_array($res)) {
+            $marker_uid = $row[0];
+            $mappos = $row[1];
+            $mapchr = $row[2];
+            $marker_list_mapped[$marker_uid] = $mappos;
+            $marker_list_chr[$marker_uid] = $mapchr;
+        }
     }
 
     $filename1 = "genotype.vcf";
     $fh1 = fopen("$tmpdir/download_$unique_str/$filename1", "w");
+
+    //get filtered markers
+    $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $geno_exp";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    while ($row = mysqli_fetch_row($res)) {
+        $marker_uid = $row[0];
+        $maf = $row[1];
+        $miss = $row[2];
+        $total = $row[3];
+        if ($total > 0) {
+            $miss_per = 100 * ($miss / $total);
+        } else {
+            $miss_per = 100;
+        }
+        if (($miss_per > $max_missing) or ($maf < $min_maf)) {
+        } else {
+            $marker_lookup[$marker_uid] = 1;
+        }
+    }
 
     //get header
     $sql = "select line_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
@@ -130,7 +156,7 @@ function createVcfDownload($unique_str)
     $outputheader .= implode("\t", $name);
 
     fwrite($fh1, "##fileformat=VCFv4.2\n");
-    fwrite($fh1, "##reference=triticeaetoolbox.org\n");
+    fwrite($fh1, "##reference=triticeaetoolbox.org $trial_code\n");
     fwrite($fh1, "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n");
     fwrite($fh1, "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t");
     fwrite($fh1, "$outputheader\n");
@@ -165,13 +191,15 @@ function createVcfDownload($unique_str)
             $pos = $posUnk;
             $posUnk = $posUnk + 10;
         }
-        $allele_ary = explode(",", $alleles);
-        $allele_ary2 = array();
-        foreach ($allele_ary as $i => $allele) {
-            $allele_ary2[] = $lookup[$allele];
+        if (isset($marker_lookup[$marker_uid])) {
+            $allele_ary = explode(",", $alleles);
+            $allele_ary2 = array();
+            foreach ($allele_ary as $i => $allele) {
+                $allele_ary2[] = $lookup[$allele];
+            }
+            $allele_str = implode("\t", $allele_ary2);
+            fwrite($fh1, "$chromosome\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n");
         }
-        $allele_str = implode("\t", $allele_ary2);
-        fwrite($fh1, "$chromosome\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n");
     }
     fclose($fh1);
 }

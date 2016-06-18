@@ -413,12 +413,15 @@ class Downloads
             $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         } elseif ($version == "vcf") {
-            if (isset($_SESSION['selected_map'])) {
-                $tmpdir = "/tmp/tht/download_$unique_str";
-                createVcfDownload($unique_str);
-            } else {
-                die("Error: must select map first\n");
+            if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
+                $filename = "traits.txt";
+                $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+                $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype);
+                fwrite($h, $output);
+                fclose($h);
             }
+            $tmpdir = "/tmp/tht/download_$unique_str";
+            createVcfDownload($unique_str, $min_maf, $max_missing);
         }
         if ($typeG == "true") {
             $filename = "allele_conflict.txt";
