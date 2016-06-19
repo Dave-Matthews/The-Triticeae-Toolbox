@@ -79,6 +79,25 @@ class Outlier
         include $config['root_dir'].'theme/footer.php';
     }
 
+    private function dispOutliers()
+    {
+        echo "Current list of outliers\n";
+        ?>
+        <div id="step21" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%; height:200px; overflow:auto;">
+        <?php
+        $outlier_list = $_SESSION['outliers'];
+        echo "<table>";
+        foreach ($outlier_list as $key1 => $val1) {
+            foreach ($val1 as $key2 => $val2) {
+                foreach ($val2 as $key3 => $val3) {
+                    echo "<tr><td>$key1<td>$key2<td>$key3<td>$val3";
+                }
+            }
+        }
+        echo "</table></div>";
+        echo "<input type='button' value='Clear' onclick='javascript:clear_session();'>";
+    }
+
     /**
      * check for required inputs
      *
@@ -106,25 +125,7 @@ class Outlier
             <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%;">
             <?php
             $outlier_list = $_SESSION['outliers'];
-            //echo "<pre>";
-            //$test = var_dump($outlier_list);
-            //echo "$test\n";
-            //echo "</pre>";
-            echo "Current list of outliers\n";
-            ?>
-            <div id="step21" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%; height:200px; overflow:auto;">
-            <?php
-            echo "<table>";
-            foreach ($outlier_list as $key1 => $val1) {
-                foreach ($val1 as $key2 => $val2) {
-                    foreach ($val2 as $key3 => $val3) {
-                        echo "<tr><td>$key1<td>$key2<td>$key3<td>$val3";
-                    }
-                }
-            }
-            echo "</table>";
-            echo "</div>";
-            echo "<input type='button' value='Clear' onclick='javascript:clear_session();'>";
+            $this->dispOutliers();
         } else {
             ?>
             <div id="step2" style="clear: both; float: left; margin-bottom: 1.5em;">
@@ -141,8 +142,11 @@ class Outlier
             ?>
             <div id="step3" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <input type="radio" name="outlier" value="yes"         onclick="javascript:displayOut();"> just outliers
-            <input type="radio" name="outlier" value="no"  checked onclick="javascript:displayAll();"> all data<br><br>
-            <input type="button" value="Analyze" onclick="javascript:use_session('v4');"><br>
+            <input type="radio" name="outlier" value="no"  checked onclick="javascript:displayAll();"> all data (outliers in red)<br><br>
+            <table>
+            <tr><td><input type="button" value="Analyze" onclick="javascript:use_session('v4');">
+            <td><input type="text" id="thresh" name="thresh" size=3 value="0.05" /> Outlier Threshold
+            </table>
             </div>
             <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
@@ -188,14 +192,8 @@ class Outlier
                 }
                 $count++;
             }
-            foreach ($outlier_list as $key1 => $val1) {
-                foreach ($val1 as $key2 => $val2) {
-                    foreach ($val2 as $key3 => $val3) {
-                        echo "<tr><td>$key1<td>$key2<td>$key3<td>$val3";
-                    }
-                }
-            }
             echo "</table>";
+            $this->dispOutliers();
             fclose($h);
             $_SESSION['outliers'] = $outlier_list;
         } else {
@@ -278,6 +276,11 @@ class Outlier
     {
         global $config;
         global $mysqli;
+        if (isset($_GET['thresh'])) {
+            $thresh = $_GET['thresh'];
+        } else {
+            $thresh = "0.05";
+        }
         $unique_str = intval($_GET['unq']);
         if (isset($_SESSION['selected_trials'])) {
             $trial = $_SESSION['selected_trials'];
@@ -334,18 +337,19 @@ class Outlier
             }
         }
 
-        if (!file_exists($dir.$filename3)) {
-            $h = fopen($dir.$filename3, "w+");
+            $h = fopen($dir.$filename3, "w");
             $cmd1 = "trialData <- read.table(\"$dir$filename2\", sep=\"\\t\", header=TRUE, stringsAsFactors=FALSE, check.names=FALSE)\n";
             $cmd2 = "fileout1 <- \"$filename7\"\n";
             $cmd3 = "fileout2 <- \"$filename8\"\n";
             $cmd4 = "fileout3 <- \"$filename9\"\n";
+            $cmd5 = "OutlierThreshold <- $thresh\n";
             fwrite($h, $cmd1);
             fwrite($h, $cmd2);
             fwrite($h, $cmd3);
             fwrite($h, $cmd4);
+            fwrite($h, $cmd5);
             fclose($h);
-        }
+        
         if (file_exists("/tmp/tht/$filename2")) {
               //exec("cat /tmp/tht/$filename3 ../R/outlierMeanAnalysis2.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
               exec("cat /tmp/tht/$filename3 ../R/outlierMeanCuration3.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
