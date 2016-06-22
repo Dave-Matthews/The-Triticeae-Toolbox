@@ -581,7 +581,7 @@ private function type_Marker_Annotation()
 			$reg_pattern = "XXXX";
 			$replace_string = $row['value'];
 			$source_string = $row['linkout_string_for_annotation'];
-			$linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
+			$linkString = preg_replace($reg_pattern,$replace_string,$source_string);
 		?>	
 			<option value="<?php echo $linkString ?>"><?php echo $row['value'] ?></option>
 			<?php
@@ -778,7 +778,7 @@ while ($row=mysqli_fetch_assoc($innerresult)) {
     $reg_pattern = "XXXX";
     $replace_string = $row[value];
     $source_string = $row[Annotation_Link];
-    $linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
+    $linkString = preg_replace($reg_pattern,$replace_string,$source_string);
 
     if ($row[Annotation_Name] == "HARVEST_U32") {
 

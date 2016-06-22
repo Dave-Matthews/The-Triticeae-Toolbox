@@ -103,6 +103,7 @@ if (isset($_GET['markerprofileDbId'])) {
 } else {
     //first query all data
     $num_rows = 0;
+    $profile_list = array();
     if ($currentPage == 1) {
         $offset = 0;
         $limit = $pageSize;
@@ -119,8 +120,12 @@ if (isset($_GET['markerprofileDbId'])) {
         $item = $lineuid . "_" . $expid;
         if (($num_rows == 0) && ($offset == 0)) {
             $profile_list[] = $item;
-        } elseif (($num_rows > $offset) && ($num_rows < $limit)) {
-            $profile_list[] = $item;
+        } elseif ($num_rows > $offset) {
+            if (empty($profile_list)) {
+                $profile_list[] = $item;
+            } elseif ($num_rows < $limit) {
+                $profile_list[] = $item;
+            }
         }
         $num_rows += $count;
     }
@@ -135,24 +140,28 @@ if (isset($_GET['markerprofileDbId'])) {
         }
 
         //now get just those selected
-        $sql = "select marker_uid, alleles from allele_cache
+        $sql = "select marker_index from allele_byline_expidx
+              where experiment_uid = $expid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_row($res)) {
+            $tmp = $row[0];
+            $marker_index = explode(",", $tmp);
+        }
+        $sql = "select alleles from allele_byline_exp
+              where line_record_uid = $lineuid
+              and experiment_uid = $expid";
+        /**$sql = "select marker_uid, alleles from allele_cache
               where line_record_uid = $lineuid
               and experiment_uid = $expid
               and not alleles = '--'
-              order by marker_uid";
-        if ($currentPage == 1) {
-            $sql .= " limit $pageSize";
-        } else {
-            $offset = ($currentPage - 1) * $pageSize;
-            if ($offset < 1) {
-                $offset = 1;
-            }
-            $sql .= " limit $offset, $pageSize";
-        }
+              order by marker_uid"; **/
         $res = mysqli_query($mysqli, $sql);
-        while ($row = mysqli_fetch_row($res)) {
-            $count++;
-            $dataList[$row[0]][] = $row[1];
+        if ($row = mysqli_fetch_row($res)) {
+            $tmp = $row[0];
+            $alleles = explode(",", $tmp);
+            foreach ($alleles as $key => $val) {
+                $dataList[$marker_index[$key]][] = $val;
+            }
         }
         $resultProfile[] = $item;
     }
