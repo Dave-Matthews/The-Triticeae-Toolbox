@@ -1229,15 +1229,15 @@ class Downloads
                   WHERE tb.experiment_uid IN ($experiments) AND
                   tb.line_record_uid  = ?
                   AND pd.tht_base_uid = tb.tht_base_uid
-                  AND pd.phenotype_uid IN ($traits)
-                  GROUP BY tb.tht_base_uid, pd.phenotype_uid";
+                  AND pd.phenotype_uid IN ($traits)";
+                  ##GROUP BY tb.tht_base_uid, pd.phenotype_uid";
           } else {
               $sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid 
                   FROM tht_base as tb, phenotype_data as pd
                   WHERE tb.line_record_uid  = ? 
                   AND pd.tht_base_uid = tb.tht_base_uid
-                  AND pd.phenotype_uid IN ($traits) 
-                  GROUP BY tb.tht_base_uid, pd.phenotype_uid";
+                  AND pd.phenotype_uid IN ($traits)";
+                  ##GROUP BY tb.tht_base_uid, pd.phenotype_uid";
           }
           $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
           for ($i=0;$i<$nlines;$i++) {
