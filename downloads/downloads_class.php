@@ -413,12 +413,15 @@ class Downloads
             $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
             fclose($h);
         } elseif ($version == "vcf") {
-            if (isset($_SESSION['selected_map'])) {
-                $tmpdir = "/tmp/tht/download_$unique_str";
-                createVcfDownload($unique_str);
-            } else {
-                die("Error: must select map first\n");
+            if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
+                $filename = "traits.txt";
+                $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+                $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype);
+                fwrite($h, $output);
+                fclose($h);
             }
+            $tmpdir = "/tmp/tht/download_$unique_str";
+            createVcfDownload($unique_str, $min_maf, $max_missing);
         }
         if ($typeG == "true") {
             $filename = "allele_conflict.txt";
@@ -1226,15 +1229,15 @@ class Downloads
                   WHERE tb.experiment_uid IN ($experiments) AND
                   tb.line_record_uid  = ?
                   AND pd.tht_base_uid = tb.tht_base_uid
-                  AND pd.phenotype_uid IN ($traits)
-                  GROUP BY tb.tht_base_uid, pd.phenotype_uid";
+                  AND pd.phenotype_uid IN ($traits)";
+                  ##GROUP BY tb.tht_base_uid, pd.phenotype_uid";
           } else {
               $sql = "SELECT pd.value as value,pd.phenotype_uid,tb.experiment_uid 
                   FROM tht_base as tb, phenotype_data as pd
                   WHERE tb.line_record_uid  = ? 
                   AND pd.tht_base_uid = tb.tht_base_uid
-                  AND pd.phenotype_uid IN ($traits) 
-                  GROUP BY tb.tht_base_uid, pd.phenotype_uid";
+                  AND pd.phenotype_uid IN ($traits)";
+                  ##GROUP BY tb.tht_base_uid, pd.phenotype_uid";
           }
           $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
           for ($i=0;$i<$nlines;$i++) {
