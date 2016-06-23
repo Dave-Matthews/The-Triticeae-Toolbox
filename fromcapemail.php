@@ -7,24 +7,24 @@ require_once $config['root_dir'] . 'includes/aes.inc';
 require_once $config['root_dir'].'theme/normal_header.php';
 
 if (!isset($_GET['token'])) {
-  die("The token must be included in the URL.");
- }
+    die("The token must be included in the URL.");
+}
 
-connect();
+$mysqli = connecti();
 $token = $_GET['token'];
 $email = AESDecryptCtr($token, setting('capencryptionkey'), 128);
 
-$sql_email = mysql_real_escape_string($email);
+$sql_email = mysqli_real_escape_string($email);
 
 $user_type_participant = USER_TYPE_PARTICIPANT;
 //$sql = "select users_uid, name, institution from users where users_name='$sql_email' and user_types_uid<>$user_type_participant";
 //$sql = "select users_uid, name, institution from users where users_name='$sql_email'";
 $sql = "select users_uid, name, institution from users where users_name= SHA1('$sql_email')";
-$r = mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
-if (!mysql_num_rows($r)) {
-  die("Couldn't find a record for user \"$email\" in the database.");
- }
-$row = mysql_fetch_assoc($r);
+$r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli));
+if (!mysqli_num_rows($r)) {
+    die("Couldn't find a record for user \"$email\" in the database.");
+}
+$row = mysqli_fetch_assoc($r);
 extract($row);
 $html_name = htmlspecialchars($name, ENT_QUOTES);
 $html_email = htmlspecialchars($email, ENT_QUOTES);
@@ -36,12 +36,12 @@ $usertype = mysql_grab("select user_types_uid from users where users_name='$sql_
 echo "<h1>CAP Participant Confirmation</h1>";
 
 if ($usertype === USER_TYPE_PARTICIPANT) {
-  echo "'$html_name' is already a CAP Participant and needs no further confirmation.<p>";
-  $confirmed = TRUE;
+    echo "'$html_name' is already a CAP Participant and needs no further confirmation.<p>";
+    $confirmed = true;
 }
 
 if (!($confirmed) && !isset($_GET['yes']) && !isset($_GET['no'])) {
-  echo <<<HTML
+    echo <<<HTML
 <p>Please confirm the following CAP participant:<br />
   <table>
     <tr><td>Name</td><td>$html_name</td></tr>
@@ -57,17 +57,15 @@ if (!($confirmed) && !isset($_GET['yes']) && !isset($_GET['no'])) {
     </form>
 </p>
 HTML;
- }
- else {
-   if (isset($_GET['yes'])) {
-     $sql = "update users set user_types_uid=$user_type_participant
+} else {
+    if (isset($_GET['yes'])) {
+        $sql = "update users set user_types_uid=$user_type_participant
 where users_uid=$users_uid";
-     mysql_query($sql) or die("<pre>" . mysql_error() . "\n\n\n$sql");
-     echo "<h3>User was marked as CAP participant</h3>";
-   }
-   else
-     echo "<h3>User was NOT marked as CAP participant</h3>";
- }
+        mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli));
+        echo "<h3>User was marked as CAP participant</h3>";
+    } else {
+        echo "<h3>User was NOT marked as CAP participant</h3>";
+    }
+}
 $footer_div = 1;
-include($config['root_dir'].'theme/footer.php');
-?>
+include $config['root_dir'].'theme/footer.php';
