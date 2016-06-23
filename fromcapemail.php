@@ -14,7 +14,7 @@ $mysqli = connecti();
 $token = $_GET['token'];
 $email = AESDecryptCtr($token, setting('capencryptionkey'), 128);
 
-$sql_email = mysqli_real_escape_string($email);
+$sql_email = mysqli_real_escape_string($mysqli, $email);
 
 $user_type_participant = USER_TYPE_PARTICIPANT;
 //$sql = "select users_uid, name, institution from users where users_name='$sql_email' and user_types_uid<>$user_type_participant";
