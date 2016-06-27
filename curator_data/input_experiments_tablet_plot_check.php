@@ -1,17 +1,14 @@
 <?php
 /**
  * Canopy Spectral Reflectance, Phenotype Results import
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_tablet_plot_check.php
- * 
+ *
  */
 
 require 'config.php';
@@ -19,7 +16,6 @@ require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 require '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
-connect();
 $mysqli = connecti();
 loginTest();
 
@@ -35,13 +31,13 @@ ob_end_flush();
 new Data_Check($_GET['function']);
 
 /** Using a PHP class to implement Phenotype Results import
- * 
+ *
  * @category PHP
  * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_tablet_plot_check.php
- * 
+ *
  */
 class Data_Check
 {
@@ -52,14 +48,13 @@ class Data_Check
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
-        case 'typeDatabase':
-            $this->type_Database(); /* update database */
-            break;
-        default:
-            $this->typeExperimentCheck(); /* intial case*/
-            break;
+        switch ($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
+            default:
+                $this->typeExperimentCheck(); /* intial case*/
+                break;
         }
     }
 
@@ -101,37 +96,37 @@ class Data_Check
      h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
     </style-->
     <?php
-  global $config;
-  $row = loadUser($_SESSION['username']);
-  $username=$row['name'];
-  $tmp_dir="uploads/tmpdir_".$username."_".rand();
-  $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
-  $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
+    global $config;
+    $row = loadUser($_SESSION['username']);
+    $username=$row['name'];
+    $tmp_dir="uploads/tmpdir_".$username."_".rand();
+    $meta_path= "raw/phenotype/".$_FILES['file']['name'][0];
+    $raw_path= "../raw/phenotype/".$_FILES['file']['name'][0];
  
-  $replace_flag = $_POST['replace'];
-  if (empty($_FILES['file']['name'][0])) {
-    if (empty($_POST['filename0'])) {
-      echo "missing data file<br>\n";
+    $replace_flag = $_POST['replace'];
+    if (empty($_FILES['file']['name'][0])) {
+        if (empty($_POST['filename0'])) {
+             echo "missing data file<br>\n";
+        } else {
+            $metafile = $_POST['filename0'];
+            $filename0 = $_POST['filename0'];
+        }
     } else {
-      $metafile = $_POST['filename0'];
-      $filename0 = $_POST['filename0'];
+        $filename0 = $_FILES['file']['name'][0];
     }
-  } else {
-    $filename0 = $_FILES['file']['name'][0];
-  } 
-  if (($_FILES['file']['name'][0] == "") && ($metafile == "")){
-     error(1, "No File Uploaded");
-     print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-  } else {
-    if (!empty($_FILES['file']['name'][0])) {
-      $uploadfile=$_FILES['file']['name'][0];
-      $uftype=$_FILES['file']['type'][0];
-      if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
-          echo "error - could not upload file $uploadfile<br>\n";
-      } else {
-          echo "Plot file: <strong>" . $_FILES['file']['name'][0] . " $FileType</strong><br>\n";
-          $metafile = $raw_path;
-      }
+    if (($_FILES['file']['name'][0] == "") && ($metafile == "")) {
+        error(1, "No File Uploaded");
+        print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+    } else {
+        if (!empty($_FILES['file']['name'][0])) {
+        $uploadfile=$_FILES['file']['name'][0];
+        $uftype=$_FILES['file']['type'][0];
+        if (move_uploaded_file($_FILES['file']['tmp_name'][0], $raw_path) !== TRUE) {
+            echo "error - could not upload file $uploadfile<br>\n";
+        } else {
+            echo "Plot file: <strong>" . $_FILES['file']['name'][0] . " $FileType</strong><br>\n";
+            $metafile = $raw_path;
+        }
     } else {
       echo "Plot file: <strong>$metafile</strong><br>\n";
       $metafile = "../raw/phenotype/".$metafile;
@@ -171,7 +166,7 @@ class Data_Check
                 $last_col = $j;
              }
            }
-           //echo "found header line $i<br>\n";
+           //echo "found header line $i<br>last column = $last_col\n";
         } else {
           $tmp = $sheetData[$i]["A"];
           if (preg_match("/[A-Za-z0-9]/",$tmp)) {
@@ -181,18 +176,36 @@ class Data_Check
               $data[$data_line]["$j"] = $tmp;
               //echo "save $data_line $j $tmp<br>\n";
             }
-            $plot_id = $sheetData[$i]["A"];
-            $sql = "select fieldbook.experiment_uid, trial_code from fieldbook, experiments where fieldbook.experiment_uid = experiments.experiment_uid and plot_uid = '$plot_id'";
-            $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-            if ($row = mysqli_fetch_array($res)) {
-              $experiment_uid = $row[0];
-              $trial_code = $row[1];
-              if (!isset($trial_code_array[$experiment_uid])) {
-                  $trial_code_array[$experiment_uid] = $trial_code;
-              }
+            $plot_uid_name = $sheetData[$i]["A"];
+            if (preg_match("/([^\s]+)_(\d+)_(\d+)/", $plot_uid_name, $match)) {
+                $trial_code = $match[1];
+                $column_id = $match[2];
+                $row_id = $match[3];
+                $sql = "select experiment_uid from experiments
+                where trial_code = \"$trial_code\"";
+                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                if ($row = mysqli_fetch_array($res)) {
+                    $experiment_uid = $row[0];
+                } else {
+                    $error_flag = 1;
+                    echo "<font color=red>Error: Trial code $trisl_code not found</font><br>\n";
+                }
+                $sql = "select plot_uid from fieldbook
+                where experiment_uid = $experiment_uid 
+                and row_id = $row_id
+                and column_id = $column_id";
+                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                if ($row = mysqli_fetch_array($res)) {
+                    $plot_uid = $row[0];
+                } else {
+                    $error_flag = 1;
+                    echo "<font color=red>Error: column $column_id, row $row_id not found</font><br>\n";
+                }
             } else {
-              echo "<font color=red>Error: Trial code \"$plot_id\" not found in the database</font><br>\n";
-              $error_flag = 1;
+                echo "<font color=red>Error: Invalid plot_uid $plot_uid</font><br>\n";
+            }  
+            if (!isset($trial_code_array[$experiment_uid])) {
+                $trial_code_array[$experiment_uid] = $trial_code;
             }
           } else {
             $found = 0;
@@ -211,7 +224,7 @@ class Data_Check
        //check for valid trait names
        $done = 0;
        $error = 0;
-       $j = "E";
+       $j = "H";
        $pheno_found = "";
        while (!$done) {
          $tmp = $header[$j];
@@ -239,6 +252,9 @@ class Data_Check
        }
        if ($pheno_found != "") {
          echo "Traits: <strong>$pheno_found</strong><br>\n";
+       } else {
+         echo "<font color=red>Error: no traits found</font><br>\n";
+         return;
        }
 
        //check for duplicate data
@@ -247,12 +263,39 @@ class Data_Check
        $count_new = 0;
        $count_upd = 0;
        for ($i=1; $i<=$lines_found; $i++) { 
-         $j = "E";
+         $j = "H";
          $done = 0;
          while (!$done) {
            if (isset($phenotype_list[$j])) {
              $uid = $phenotype_list[$j];
-             $plot_uid = $data[$i]["A"];
+             $plot_uid_name = $data[$i]["A"];
+             if (preg_match("/([^\s]+)_(\d+)_(\d+)/", $plot_uid_name, $match)) {
+                $trial_code = $match[1];
+                $column_id = $match[2];
+                $row_id = $match[3];
+                $sql = "select experiment_uid from experiments
+                where trial_code = \"$trial_code\"";
+                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                if ($row = mysqli_fetch_array($res)) {
+                    $experiment_uid = $row[0];
+                } else {
+                    $error_flag = 1;
+                    echo "<font color=red>Error: Trial code $trisl_code not found</font><br>\n";
+                }
+                $sql = "select plot_uid from fieldbook
+                where experiment_uid = $experiment_uid 
+                and row_id = $row_id
+                and column_id = $column_id";
+                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                if ($row = mysqli_fetch_array($res)) {
+                    $plot_uid = $row[0];
+                } else {
+                    $error_flag = 1;
+                    echo "<font color=red>Error: column $column_id, row $row_id not found</font><br>\n";
+                }
+             } else {
+                echo "<font color=red>Error: bad plot_id format $plot_uid_name</font><br>\n";
+             }
              $plot = $data[$i]["B"];
              if (preg_match("/\d/",$plot_uid)) {
                  $sql = "select phenotype_data_uid from phenotype_plot_data where phenotype_uid = $uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
@@ -298,14 +341,44 @@ class Data_Check
          $j = "B";
          for ($i = 1; $i <= $lines_found; $i++) {
            $done = 0;
-           $j = "E";
+           $j = "H";
            while (!$done) {
-             $phenotype_uid = $phenotype_list[$j];
+             if (isset($phenotype_list[$j])) {
+                 $phenotype_uid = $phenotype_list[$j];
+             } else {
+                 //echo "<font color=red>Error: no trait defined for column $j</font><br>\n";
+                 continue;
+             }
              if (preg_match("/[A-Za-z0-9]/",$data[$i]["$j"])) {
                $val = $data[$i]["$j"];
                $plot = $data[$i]["B"];
-               $plot_uid = $data[$i]["A"];;
-               $sql = "select phenotype_data_uid from phenotype_plot_data where phenotype_uid = $uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
+               $plot_uid_name = $data[$i]["A"];
+               if (preg_match("/([^\s]+)_(\d+)_(\d+)/", $plot_uid_name, $match)) {
+                $trial_code = $match[1];
+                $column_id = $match[2];
+                $row_id = $match[3];
+                $sql = "select experiment_uid from experiments
+                where trial_code = \"$trial_code\"";
+                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                if ($row = mysqli_fetch_array($res)) {
+                    $experiment_uid = $row[0];
+                } else {
+                    $error_flag = 1;
+                    echo "<font color=red>Error: Trial code $trisl_code not found</font><br>\n";
+                }
+                $sql = "select plot_uid from fieldbook
+                where experiment_uid = $experiment_uid 
+                and row_id = $row_id
+                and column_id = $column_id";
+                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                if ($row = mysqli_fetch_array($res)) {
+                    $plot_uid = $row[0];
+                } else {
+                    $error_flag = 1;
+                    echo "<font color=red>Error: column $column_id, row $row_id not found</font><br>\n";
+                }
+             } 
+               $sql = "select phenotype_data_uid from phenotype_plot_data where phenotype_uid = $phenotype_uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                if ($row = mysqli_fetch_array($res)) {
                  $sql = "update phenotype_plot_data set value = '$val' where phenotype_uid = $phenotype_uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
@@ -313,7 +386,7 @@ class Data_Check
                  $sql = "insert into phenotype_plot_data (phenotype_uid, experiment_uid, plot_uid, value, updated_on, created_on) values ( $phenotype_uid, $experiment_uid, $plot_uid, '$val', now(), now())";
                }
                //$res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-               echo "$sql<br>\n";
+               //echo "$sql<br>\n";
              //} else {
              //  echo "$i $j no data<br>\n";
              }
@@ -337,7 +410,7 @@ class Data_Check
          $count_new = 0;
          $count_upd = 0;
          $found_mean_data = 0;
-         for ($j = "E"; $j <= $last_col; $j++) {
+         for ($j = "H"; $j <= $last_col; $j++) {
            $uid = $phenotype_list[$j];
            $sql = "select phenotype_mean_data_uid from phenotype_mean_data where phenotype_uid = $uid";
            $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -401,7 +474,7 @@ class Data_Check
          } else {
            $sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW() WHERE input_file_log_uid = '$input_uid'";
          }
-         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
+         $lin_table = mysqli_query($mysqli, $sql) or die("Database Error: Log record insertion failed - ". mysqli_error($mysqli) ."<br>".$sql);
        }  else {
           echo "<br><font color=red>Error - data not saved</font><br>\n";
        }
