@@ -53,23 +53,23 @@ class Tablet
         global $mysqli;
         include $config['root_dir'] . 'theme/admin_header.php';
         ?>
-		<h2>Download field layout and trait definition for Android Field Book</h2>
-                These tools provide a interface to the Android Field Book program created by the
-                <a href="http://www.wheatgenetics.org/bioinformatics/22-android-field-book.html">Poland Lab</a>.
-                Before using these tools it is necessary to <a href="curator_data/input_experiments_upload_excel.php">import a field layout</a> into the database.
-                In the Field Book program the range is the first level division and refers to the row of the field. 
+        <h2>Download field layout and trait definition for Android Field Book</h2>
+        These tools provide a interface to the Android Field Book program created by the
+        <a href="http://www.wheatgenetics.org/bioinformatics/22-android-field-book.html">Poland Lab</a>.
+        Before using these tools it is necessary to <a href="curator_data/input_experiments_upload_excel.php">import a field layout</a> into the database.
+        In the Field Book program the range is the first level division and refers to the row of the field. 
                 The second level division is the plot. All other columns are considered Extra Information. The program moves through the field row by row for measurements.
                 <h4>Create Field Layout and Trait File for import into the tablet</h4>
-		1. Select a field layout for your experiment. Download and save the file.<br>
-                2. Select a category and one or more traits. Download and save the file.<br>
-                3. Connect your tablet to this computer.<br>
-                4. Move the field layout file to the field_import folder of the SD card of the tablet.<br>
-                5. Move the trait file to the trait folder of the SD card of the tablet.<br>
-                6. Import these files into the Field Book App.<br>
-                7. Record measurements using the tablet.<br><br>
+        1. Select a field layout for your experiment. Download and save the file.<br>
+        2. Select a category and one or more traits. Download and save the file.<br>
+        3. Connect your tablet to this computer.<br>
+        4. Move the field layout file to the field_import folder of the SD card of the tablet.<br>
+        5. Move the trait file to the trait folder of the SD card of the tablet.<br>
+        6. Import these files into the Field Book App.<br>
+        7. Record measurements using the tablet.<br><br>
 
-		<div style="float: left">
-                <table class="tableclass1">	
+        <div style="float: left">
+        <table class="tableclass1">
 		<tr><th>Field layout:
                 <?php
                 $sql = "select fieldbook_info_uid, experiment_uid, fieldbook_file_name from fieldbook_info";
@@ -239,6 +239,9 @@ class Tablet
             die("Error: trial code not found for experiment_uid = $uid");
         }
 
+        /** plot_id must be unique but we can not use numeric uid because this will change from one database to the other
+         *  concatenate trial_code, row, and column. Then during import convert this into numeric plot_id
+         */
         $error = 0;
     	$filename = "field_" . $trial_code . ".csv";
     	if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
@@ -252,7 +255,7 @@ class Tablet
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $plot_id, $plot, $block, $row_id, $column_id, $replication, $check_id, $line_uid, $trial_code);
             while (mysqli_stmt_fetch($stmt)) {
-    		$plot_id = $plot_id . "_" . $column_id . "_" . $row_id;
+    		$plot_id = $trial_code . "_" . $column_id . "_" . $row_id;
                 $line_record_name = $name_list[$line_uid];
                 if (!preg_match("/\d+/",$row_id)) {
                     $error = 1;
