@@ -49,7 +49,7 @@ $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 if ($row = mysqli_fetch_row($res)) {
     $db = $row[0];
 } else {
-    print "error $sql<br>\n";
+    die("Can not identify database\n");
 }
 $cachefile = '/tmp/tht/cache_' . $db . '.txt';
 $sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
@@ -298,6 +298,7 @@ if ($query == 'geno') {
         fwrite($fp, "$MarkersNoGeno\n");
         fclose($fp);
     }
+    return;
 } elseif ($query == "csr1") {
     include $config['root_dir'].'theme/normal_header.php';
     print "<h3>Trials with Canopy Spectral Reflectance (CSR) data</h3>\n";
@@ -332,6 +333,9 @@ if ($query == 'geno') {
         $format_title->setBold();
         $format_title->setAlign('merge');
         $worksheet =& $workbook->addWorksheet();
+        if (PEAR::isError($worksheet)) {
+            die($worksheet->getMessage());
+        }
     } else {
         include($config['root_dir'].'theme/normal_header.php');
         print "<div class=box>";
