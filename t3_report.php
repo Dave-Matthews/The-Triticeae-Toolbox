@@ -336,6 +336,7 @@ if ($query == 'geno') {
     } else {
         include($config['root_dir'].'theme/normal_header.php');
         print "<div class=box>";
+        $worksheet = null;
     }
   
     $sql = "select database()";
@@ -632,7 +633,7 @@ if ($query == 'geno') {
         $worksheet->write($index, 1, "$allele_count");
         $index++;
   } else {
-	echo "<tr><td>Total genotype data<td>$allele_count<td><a href='".$config['base_url']."t3_report.php?query=geno2'>List genotyping data by experiment</a>";
+        echo "<tr><td>Total genotype data<td>$allele_count<td><a href=\"" . $config['base_url'] . "t3_report.php?query=geno2\">List genotyping data by experiment</a>";
   }
 
   if ($output == "excel") {
