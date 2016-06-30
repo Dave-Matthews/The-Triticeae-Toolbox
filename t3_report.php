@@ -332,10 +332,7 @@ if ($query == 'geno') {
         $format_title =& $workbook->addFormat();
         $format_title->setBold();
         $format_title->setAlign('merge');
-        $worksheet =& $workbook->addWorksheet();
-        if (PEAR::isError($worksheet)) {
-            die($worksheet->getMessage());
-        }
+        $worksheet =& $workbook->addWorksheet() or die("can not open workbook");
     } else {
         include($config['root_dir'].'theme/normal_header.php');
         print "<div class=box>";
