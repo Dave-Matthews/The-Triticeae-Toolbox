@@ -132,17 +132,17 @@ class LineNames_Check
                 /* Read Excel worksheet 0 into $linedata[]. */
                 $datafile = $target_path.$uploadfile;
                 $reader = new Spreadsheet_Excel_Reader();
-	        $reader->setOutputEncoding('CP1251');
-	        $reader->read($datafile);
-	        $linedata = $reader->sheets[0];
-	        $cols = $reader->sheets[0]['numCols'];
-	        $rows = $reader->sheets[0]['numRows'];
-	        // Read the Template Version and check it.
-	        $crop = $linedata['cells'][3][2];
-	        if (!in_array($crop, array_keys($TemplateVersions))) {
-	            $croplist = implode(", ", array_keys($TemplateVersions));
-	            die ("Cell B3: Crop must be one of <b>$croplist</b>.");
-	        }
+                $reader->setOutputEncoding('CP1251');
+                $reader->read($datafile);
+                $linedata = $reader->sheets[0];
+                $cols = $reader->sheets[0]['numCols'];
+                $rows = $reader->sheets[0]['numRows'];
+                // Read the Template Version and check it.
+                $crop = $linedata['cells'][3][2];
+                if (!in_array($crop, array_keys($TemplateVersions))) {
+                    $croplist = implode(", ", array_keys($TemplateVersions));
+                    die("Cell B3: Crop must be one of <b>$croplist</b>.");
+                }
 	if ($linedata['cells'][2][2] != $TemplateVersions[$crop] )
 	  die ("Incorrect Submission Form version for $crop.  Cell B2 must say \"" .$TemplateVersions[$crop]. "\".");
 
@@ -821,7 +821,7 @@ class LineNames_Check
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
 	    $rlinsyn=mysqli_query($mysqli, $sql) or $linesuccess = errmsg($sql, mysqli_error($mysqli));
-	    $line_uid = mysqli_insert_id();
+	    $line_uid = mysqli_insert_id($mysqli);
 	    // $line_uid is no longer an array===FALSE, cf. above, it's an int.
 	    if ($linesuccess) {
 	      // Insert property values in table line_properties.
