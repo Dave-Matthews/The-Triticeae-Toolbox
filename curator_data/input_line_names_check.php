@@ -832,7 +832,7 @@ class LineNames_Check
 		  $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$propval[$pr]'");
 		  $sql = "insert into line_properties (line_record_uid, property_value_uid) values ($line_uid, $propvaluid)";
-		  $res = mysqli_query($sql) or errmsg($sql, mysqli_error($mysqli));
+		  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		}
 	      }
 	      // Insert synonyms.
@@ -852,7 +852,7 @@ class LineNames_Check
 		$sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
                 WHERE barley_pedigree_catalog_uid=2
                 AND line_record_uid = '$line_uid'";
-		$res = mysqli_query($sql) or errmsg($sql, mysqli_error($mysqli));
+		$res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		if (mysqli_num_rows($res) == 1) {
 		  $sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
                 updated_on=NOW() WHERE barley_pedigree_catalog_uid=2 
