@@ -167,7 +167,7 @@ class Haplotype
 		  echo "$tmp markers selected<br>\n";
 		  echo "Error - Please select no more than 5 markers<br>";
 		  echo "<p><a href=genotyping/marker_selection.php>Select markers</a></p>";
-		  break;
+		  return;
 		}
 		if (isset($_POST['dispMissing'])) {
 		  $dispMissing = 1;
