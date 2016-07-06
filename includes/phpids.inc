@@ -34,7 +34,7 @@ try {
         $postVar['linelist'] = explode(",", $postVar['linelist']);
     }
     if (isset($postVar['contents'])) {
-        $postVar['contents'] = explode(",", $postVar['contents']);
+        $postVar['contents'] = html_entity_decode($postVar['contents']);
     }
     $request = array(
     'GET' => $getVar,
