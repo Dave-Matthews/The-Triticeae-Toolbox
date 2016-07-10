@@ -404,7 +404,7 @@ foreach ($uniqExpID AS $key=>$expID)  {
     $res = mysqli_query($mysqli, "SHOW COLUMNS FROM allele_frequencies");
     while($row = mysqli_fetch_object($res)){
         if(ereg(('set|enum'), $row->Type)) {
-            eval(ereg_replace('set|enum', '$'.$row->Field.' = array', $row->Type).';');
+            eval(preg_replace('set|enum', '$'.$row->Field.' = array', $row->Type).';');
         }
     }
          

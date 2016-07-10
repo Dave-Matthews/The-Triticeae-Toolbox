@@ -529,23 +529,26 @@ class Downloads
         $estimate = ($count_markers * $count_lines) / 10000;
         if ($count > 0) {
           ?>
-          <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
-        &nbsp;&nbsp;&nbsp;&nbsp;
+          <br><table><tr><td>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" /><br>
+          Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data<br>
         <?php
             if (!isset($_SESSION['geno_exps'])) { 
             ?>
-        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data
-        &nbsp;&nbsp;&nbsp;&nbsp;
+        Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data<br>
             <?php
         } else {
             ?>
             <input type="hidden" name="mml" id="mml">
             <?php
         }
-        ?>
-          <input type="button" value="Filter Lines and Markers" onclick="javascript:filter_lines();"/>
+        if (isset($_SESSION['outliers'])) {
+          ?>
+          Remove trait outliers <input type="checkbox" id="removeOutlier" value="Y">
+          <?php
+        }
+          ?> 
+          <td><input type="button" value="Filter Lines and Markers" onclick="javascript:filter_lines();"/>
+          </table>
           </div>
           <div id="filter" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
           <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
@@ -716,7 +719,7 @@ class Downloads
                 $replace_string = $row['value'];
                 $name = $row['name_annotation'];
                 $source_string = $row['linkout_string_for_annotation'];
-                $linkString = ereg_replace($reg_pattern, $replace_string, $source_string);
+                $linkString = preg_replace($reg_pattern, $replace_string, $source_string);
                 if ($link == "") {
                     if ($linkString != "") {
                       $link = "<a href=\"$linkString\" target=\"_new\">$replace_string</a> ($name)";
@@ -1630,6 +1633,14 @@ class Downloads
             while ($row = mysqli_fetch_array($res)) {
                $found = 1;
                $outline = "'$lines_names[$i]'".$delimiter.$row['value'].$delimiter.$row['exper'].$delimiter.$row['experiment_year']."\n";
+               if ($removeOutlier == "Y") {
+                   $line = $lines_names[$i];
+                   $exp = $row['exper'];
+                   if (isset($_SESSION['outliers'][$line][$traits][$exp])) {
+                       echo "skip\n";
+                       continue;
+                   }
+               }
                $output .= $outline;
             }
             if ($found == 0) {

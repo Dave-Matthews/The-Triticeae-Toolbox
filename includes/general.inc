@@ -212,7 +212,7 @@ function show_markers($id)
             $reg_pattern = "XXXX";
             $replace_string = $row['value'];
             $source_string = $row['linkout_string_for_annotation'];
-            $linkString = ereg_replace($reg_pattern, $replace_string, $source_string);
+            $linkString = preg_replace($reg_pattern, $replace_string, $source_string);
             $url = "<a href=\"$linkString\" target=\"_blank\">";
             $url2 = "<form method='GET' target='_blank' action='$linkString'><input type='submit' value='URGI GBrowse'></form>";
             $url2 = "<a href=\"$linkString\" target=\"_blank\">$row[value]";
