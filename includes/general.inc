@@ -209,7 +209,7 @@ function show_markers($id)
     } else {
         echo "<table><thead><tr><th>Dataset<th>Entry<th>Dataset Description</tr></thead>";
         while ($row = mysqli_fetch_assoc($res)) {
-            $reg_pattern = "XXXX";
+            $reg_pattern = "/XXXX/";
             $replace_string = $row['value'];
             $source_string = $row['linkout_string_for_annotation'];
             $linkString = preg_replace($reg_pattern, $replace_string, $source_string);
