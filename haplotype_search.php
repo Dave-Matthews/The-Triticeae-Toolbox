@@ -68,7 +68,7 @@ class Haplotype
    $query_str="select E.line_record_name, E.line_record_uid, E.marker_uid, E.alleles from allele_cache as E where
    $marker_instr $in_these_lines";
    //print $query_str;
-   $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli));
+   $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli) . "<br>" . $query_str);
    $lines = array();
    $line_uids=array();
    $line_names=array();
