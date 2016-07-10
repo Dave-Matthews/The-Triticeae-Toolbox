@@ -63,7 +63,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
     $sql = "select institutions_name, email_domain from institutions";
     $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $domainMap = array();
-    $email_domain = split('@', $email);
+    $email_domain = preg_split('/@/', $email);
     $email_domain = $email_domain[1];
     while ($row = mysqli_fetch_assoc($result)) {
         $edomain = $row['email_domain'];
@@ -89,7 +89,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
   }
   function guessInstitution(email) {
     var dm=$domainMap;
-    return dm[email.split('@')[1]] || '';
+    return dm[email.preg_split('/@/')[1]] || '';
   }
 </script>
 
@@ -280,7 +280,7 @@ user_types_uid=$public_type_id) limit 1";
 }
 
 /**
- * Check if the given user/passrod pair belongs to a old account. 
+ * Check if the given user/passrod pair belongs to a old account.
  */
 function isOldUser($email, $pass)
 {
@@ -382,11 +382,11 @@ function HTMLProcessLogin()
             if ($row = mysqli_fetch_assoc($res)) {
                 $password = $row['password'];
                 $_SESSION['password'] = $row['password'];
-            } 
-	    else 
+            } else {
                 die("SQL Error hashing password\n");
-	    // Store user_types_uid in $_SESSION.
-	    $sql = "select users_uid, user_types_uid, name from users where users_name = SHA1('$email')";
+            }
+            // Store user_types_uid in $_SESSION.
+            $sql = "select users_uid, user_types_uid, name from users where users_name = SHA1('$email')";
 	    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $row = mysqli_fetch_row($res);
 	    $_SESSION['userid'] = $row[0];
@@ -651,8 +651,7 @@ https:{$root}fromemail.php?token=$urltoken
  }
 
 ?>
-	</div>
+</div>
 <?php
 $footer_div = 1;
-include('theme/footer.php');
-?>
+require 'theme/footer.php';
