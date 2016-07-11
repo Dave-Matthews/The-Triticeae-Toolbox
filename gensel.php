@@ -715,7 +715,7 @@ class Downloads
                 and marker_name = \"$line[1]\"";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             while ($row = mysqli_fetch_assoc($res)) {
-                $reg_pattern = "XXXX";
+                $reg_pattern = '/XXXX/';
                 $replace_string = $row['value'];
                 $name = $row['name_annotation'];
                 $source_string = $row['linkout_string_for_annotation'];
