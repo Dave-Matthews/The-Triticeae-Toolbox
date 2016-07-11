@@ -15,8 +15,7 @@ function load_user_types()
     global $user_types, $mysqli;
     $sql = "select `user_types_uid`, `user_types_name`
       from `user_types`";
-    $result = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
-      "\n$sql.");
+    $result = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli));
     while ($row = mysqli_fetch_assoc($result)) {
         $user_types[$row['user_types_name']] = $row['user_types_uid'];
     }
@@ -37,12 +36,14 @@ load_user_types();
 function setting($name, $default = null)
 {
     global $mysqli;
-    $name = mysqli_real_escape_string($mysqli, $name);
-    $sql = "select value from settings where name='$name';";
-    $result = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
-      "\n$sql");
-    if ($row = mysqli_fetch_assoc($result)) {
-        return $row['value'];
+    $sql = "select value from settings where name = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $name);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $result);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        return $result;
     } else {
         if ($default === null) {
             die("no value found for $name setting");
@@ -50,5 +51,4 @@ function setting($name, $default = null)
             return $default;
         }
     }
-    return $row['value'];
 }
