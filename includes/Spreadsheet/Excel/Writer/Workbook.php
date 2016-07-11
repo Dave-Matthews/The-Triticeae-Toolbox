@@ -183,7 +183,7 @@ class Spreadsheet_Excel_Writer_Workbook extends Spreadsheet_Excel_Writer_BIFFwri
         $this->Spreadsheet_Excel_Writer_BIFFwriter();
 
         $this->_filename         = $filename;
-        $this->_parser           =& new Spreadsheet_Excel_Writer_Parser($this->_byte_order, $this->_BIFF_version);
+        $this->_parser           = new Spreadsheet_Excel_Writer_Parser($this->_byte_order, $this->_BIFF_version);
         $this->_1904             = 0;
         $this->_activesheet      = 0;
         $this->_firstsheet       = 0;
