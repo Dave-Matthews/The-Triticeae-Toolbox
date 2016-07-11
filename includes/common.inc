@@ -396,7 +396,6 @@ global $mysqli;
 	$ks=array_keys($vals);
 	$iks=array_keys($vals);
 	$id=-1;
-	ini_set("memory_limit","24M");
 	set_time_limit(300);
 	// Check for duplicates between the data and the content of the database
 	$dup_flag=0;
@@ -409,11 +408,13 @@ global $mysqli;
 		for ($i=0; $i < count($testKey); $i++) {
 			$eleTest=strlen($testVal[$i])>0 ? $testVal[$i] : "N/A";
 			$testStr.=$testKey[$i]."=\"".$eleTest."\"";
-			if ($i<count($testKey)-1) $testStr.=" AND ";
+			if ($i<count($testKey)-1) {
+                            $testStr.=" AND ";
+                        }
 		}
 		// print "SELECT * FROM $tablename WHERE $testStr<br>";
-		$testResult = mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $testStr");
-		if(mysqli_num_rows($testResult) > 0) {
+		$testResult = mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $testStr") or die(mysqli_error($mysqli));
+		if (mysqli_num_rows($testResult) > 0) {
 			$row = mysqli_fetch_assoc($testResult);
 			$id=$row[$idkey];
 			$dup_flag++;
@@ -437,14 +438,19 @@ global $mysqli;
 			for ($i=0; $i<$vsize; $i++) {
 				$update_str.=$ks[$i]."=";
 				$elestr=strlen($vals[$ks[$i]])>0 ? $vals[$ks[$i]] : "NULL";
-				if ($isnum[$iks[$i]]==0 && strlen($vals[$ks[$i]])<=0) $elestr="";
+				if ($isnum[$iks[$i]]==0 && strlen($vals[$ks[$i]])<=0) {
+                                    $elestr="";
+                                }
 				$update_str.=$isnum[$iks[$i]]==1 ? $elestr : "\"".addslashes($elestr)."\"";
 				if ($i<$vsize-1) $update_str.=",";
 			}
 			$update_str.=" where $testStr";
 			mysqli_query($mysqli, $update_str) or die(mysqli_errno($mysqli) . ":" . mysqli_error($mysqli));
- 			if ($cflt_flag>0 || $update_flag>0) {return array(0.5, $id);}
-			else {return array(0, $id);}
+ 			if ($cflt_flag>0 || $update_flag>0) {
+                            return array(0.5, $id);
+			} else {
+                            return array(0, $id);
+                        }
 		}
 		else {
 			return array(0, $id);
