@@ -208,8 +208,8 @@ from barley_pedigree_catalog bc, barley_pedigree_catalog_ref bcr
 where barley_pedigree_catalog_name = 'GRIN'
 and bc.barley_pedigree_catalog_uid = bcr.barley_pedigree_catalog_uid
 and bcr.line_record_uid = '$linerecorduid'";
-	    $result_gr=mysql_query($sql_gr) or die(mysql_error());
-	    $row_gr=mysql_fetch_assoc($result_gr);
+	    $result_gr=mysqli_query($mysqli, $sql_gr) or die(mysqli_error($mysqli));
+	    $row_gr=mysqli_fetch_assoc($result_gr);
 	    $single_row[1]=$row_gr['barley_ref_number'];
 	    $single_row_long[1]=$row_gr['barley_ref_number'];
 
