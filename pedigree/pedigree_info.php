@@ -59,7 +59,7 @@ class Pedigree
     if ($_GET['lf'] == "yes") {
       $linelist = $_SESSION['linesfound'];
       // Flag for the Download Line Data button to use:
-      $lf = "&lf=yes";
+      $lf = "yes";
     }
     else 
       $linelist = $_SESSION['selected_lines'];
@@ -77,8 +77,8 @@ class Pedigree
 ?>
 
 <script type="text/javascript">
-function load_excel() {
-      var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>';
+function load_excel(lf) {
+      var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel&lf=' + lf;
       // Opens the url in the same window
       window.open(url, "_self");
 }
@@ -181,7 +181,7 @@ function load_excel() {
 ?>
 </table>
 </div>
-<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/>
+<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel('<?php echo $lf;?>');"/>
 
 <?php
 } /* End of function type_LineInformation*/
