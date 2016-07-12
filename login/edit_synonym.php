@@ -242,7 +242,7 @@ echo "</div>";
 	    $panelist = implode(", ", $panelnames[$lnid]);
             echo "<td>$panelist";
         } else {
-            echo "<td>$lnid error";
+            echo "<td>$panellist[$lnid]";
         }
       }
       // Phenotype data
