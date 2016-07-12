@@ -5,9 +5,9 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */
@@ -15,7 +15,7 @@ $row = loadUser($_SESSION['username']);
 
 /* ****************************** */
 ob_start();
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
@@ -47,9 +47,9 @@ if( ($id = array_search("Update", $_POST)) != NULL) {
   // If it's listed as a synonym, don't make it a line name too.
   $sql = "select line_record_name from line_synonyms ls, line_records lr
      where line_synonym_name = '$line' and ls.line_record_uid = lr.line_record_uid";
-  $res = mysql_query($sql) or die(mysql_error());
-  if (mysql_num_rows($res) > 0) {
-    $rn = mysql_fetch_row($res);
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if (mysqli_num_rows($res) > 0) {
+    $rn = mysqli_fetch_row($res);
     $realname = $rn[0];
     // It's okay for a synonym to be the same as the name except for UPPER/Mixed case.
     if ($realname != $line)
@@ -145,4 +145,4 @@ if(isset($_GET['start'])) {
 </div>
 </div>
 
-<?php include($config['root_dir'] . '/theme/footer.php');?>
+<?php include $config['root_dir'] . '/theme/footer.php';?>
