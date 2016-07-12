@@ -25,11 +25,13 @@ if ($method == "GET") {
     new Pedigree($_POST['function']);
 }
 
-class Pedigree {
+class Pedigree
+{
   private $delimiter = "\t";
   // Using the class's constructor to decide which action to perform
-  public function __construct($function = null) {
-    switch($function) {
+  public function __construct($function = null)
+  {
+    switch ($function) {
     case 'typeLineExcel':
       $this->type_Line_Excel();  /* Export to excel */
       break;
