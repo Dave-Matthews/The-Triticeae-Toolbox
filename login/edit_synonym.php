@@ -238,8 +238,12 @@ echo "</div>";
       }
       echo "<tr><td><strong>Panels</strong>";
       foreach ($ids as $lnid) {
-	$panelist = implode(", ", $panelnames[$lnid]);
-        echo "<td>$panelist";
+        if (is_array($panelnames[$lnid])) {
+	    $panelist = implode(", ", $panelnames[$lnid]);
+            echo "<td>$panelist";
+        } else {
+            echo "<td>$lnid error";
+        }
       }
       // Phenotype data
       echo "<tr><td><strong>Phenotype Trials</strong>";
