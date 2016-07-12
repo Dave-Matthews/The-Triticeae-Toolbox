@@ -46,7 +46,10 @@ class Pedigree
   private function typeLine() {
     global $config;
     include($config['root_dir'].'theme/normal_header.php');
-    echo " <h2> Line Information</h2>";
+    ?>
+    <h2> Line Information</h2>
+    <script type="text/javascript" src="pedigree/pedigree_info.js"></script>
+    <?php
     $this->type_LineInformation();
     echo "<h3> <a href='pedigree/line_properties.php'> New Line Search</a></h3>";
     $footer_div = 1;
@@ -59,7 +62,7 @@ class Pedigree
     if ($_GET['lf'] == "yes") {
       $linelist = $_SESSION['linesfound'];
       // Flag for the Download Line Data button to use:
-      $lf = "yes";
+      $lf = $_SERVER[PHP_SELF] . "?function=typeLineExcel&lf=yes";
     }
     else 
       $linelist = $_SESSION['selected_lines'];
@@ -75,14 +78,6 @@ class Pedigree
 	  $ourprops[] = $pr['property_uid'];  // array of uids
     }
 ?>
-
-<script type="text/javascript">
-function load_excel(lf) {
-      var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel&lf=' + lf;
-      // Opens the url in the same window
-      window.open(url, "_self");
-}
-</script>
 
 <style type="text/css">
     th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
