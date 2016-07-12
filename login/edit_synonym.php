@@ -28,8 +28,9 @@ ob_end_flush();
 // Has a Synonym update been submitted?
 if (!is_null($_GET['newsyn'])) {
   $input = $_GET;
-  foreach($input as $k=>$v)
+  foreach ($input as $k=>$v) {
     $input[$k] = addslashes($v);
+  }
   array_pop($input); // Remove line name.
   $line_uid = array_pop($input);
   $newsyn = array_pop($input);
@@ -242,7 +243,7 @@ echo "</div>";
 	    $panelist = implode(", ", $panelnames[$lnid]);
             echo "<td>$panelist";
         } else {
-            echo "<td>$panellist[$lnid]";
+            echo "<td>";
         }
       }
       // Phenotype data
@@ -257,8 +258,12 @@ echo "</div>";
 	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 	while ($tr = mysqli_fetch_row($res))
 	  $trials[$lnid][] = $tr[0];
-	$triallist = implode(", ", $trials[$lnid]);
-	echo "<td>$triallist";
+        if (is_array($trials[$lnid])) {
+	    $triallist = implode(", ", $trials[$lnid]);
+	    echo "<td>$triallist";
+        } else {
+            echo "<td>";
+        }
       }
       // Validation: Can't both be in the same trial.
       foreach ($trials[$oline_uid] as $tr)
@@ -276,8 +281,12 @@ echo "</div>";
 	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 	while ($ge = mysqli_fetch_row($res))
 	  $gexpts[$lnid][] = $ge[0];
-	$gexptlist = implode(", ", $gexpts[$lnid]);
-	echo "<td>$gexptlist";
+	if (is_array($gexpts[$lnid])) {
+            $gexptlist = implode(", ", $gexpts[$lnid]);
+	    echo "<td>$gexptlist";
+        } else {
+            echo "<td>";
+        }
       }
       // Validation: Can't both be in the same genotyping experiment.
       foreach ($gexpts[$oline_uid] as $ge)
