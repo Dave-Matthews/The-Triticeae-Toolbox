@@ -179,8 +179,8 @@ function load_excel() {
 ?>
 </table>
 </div>
-<!--br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/><br-->
-<br><a href="<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>">Download Line Data</a>
+<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/><br>
+<!--br><a href="<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>">Download Line Data</a->
 
 <?php
 } /* End of function type_LineInformation*/
