@@ -13,10 +13,9 @@
 
 session_start();
 require 'config.php';
-require $config['root_dir'] . 'includes/bootstrap.inc';
+include $config['root_dir'] . 'includes/bootstrap.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
-require '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
-$mysqli = connecti();
+include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method == "GET") {
@@ -29,9 +28,8 @@ class Pedigree
 {
   private $delimiter = "\t";
   // Using the class's constructor to decide which action to perform
-  public function __construct($function = null)
-  {
-    switch ($function) {
+  public function __construct($function = null) {
+    switch($function) {
     case 'typeLineExcel':
       $this->type_Line_Excel();  /* Export to excel */
       break;
@@ -46,10 +44,7 @@ class Pedigree
   private function typeLine() {
     global $config;
     include($config['root_dir'].'theme/normal_header.php');
-    ?>
-    <h2> Line Information</h2>
-    <script type="text/javascript" src="pedigree/pedigree_info.js"></script>
-    <?php
+    echo " <h2> Line Information</h2>";
     $this->type_LineInformation();
     echo "<h3> <a href='pedigree/line_properties.php'> New Line Search</a></h3>";
     $footer_div = 1;
@@ -62,7 +57,7 @@ class Pedigree
     if ($_GET['lf'] == "yes") {
       $linelist = $_SESSION['linesfound'];
       // Flag for the Download Line Data button to use:
-      $lf = $_SERVER[PHP_SELF] . "?function=typeLineExcel&lf=yes";
+      $lf = "&lf=yes";
     }
     else 
       $linelist = $_SESSION['selected_lines'];
@@ -72,12 +67,20 @@ class Pedigree
       $propresult = mysqli_query($mysqli, "select property_uid
 	 from line_properties lp, property_values pv
 	 where lp.property_value_uid = pv.property_values_uid
-	 and lp.line_record_uid = $lineuid") or die(mysqli_error($mysqli));
+	 and lp.line_record_uid = $lineuid");
       while ($pr = mysqli_fetch_assoc($propresult)) 
 	if (!in_array($pr['property_uid'], $ourprops)) 
 	  $ourprops[] = $pr['property_uid'];  // array of uids
     }
 ?>
+
+<script type="text/javascript">
+function load_excel() {
+      var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>';
+      // Opens the url in the same window
+      window.open(url, "_self");
+}
+</script>
 
 <style type="text/css">
     th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
@@ -176,7 +179,8 @@ class Pedigree
 ?>
 </table>
 </div>
-<br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel('<?php echo $lf;?>');"/>
+<!--br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/><br-->
+<br><a href="<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>">Download Line Data</a>
 
 <?php
 } /* End of function type_LineInformation*/
