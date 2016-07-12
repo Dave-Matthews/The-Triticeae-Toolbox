@@ -69,7 +69,7 @@ class Pedigree
       $propresult = mysqli_query($mysqli, "select property_uid
 	 from line_properties lp, property_values pv
 	 where lp.property_value_uid = pv.property_values_uid
-	 and lp.line_record_uid = $lineuid");
+	 and lp.line_record_uid = $lineuid") or die(mysqli_error($mysqli));
       while ($pr = mysqli_fetch_assoc($propresult)) 
 	if (!in_array($pr['property_uid'], $ourprops)) 
 	  $ourprops[] = $pr['property_uid'];  // array of uids
