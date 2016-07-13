@@ -1,6 +1,6 @@
 <?php
 /**
- * internal PHP-mail() implementation of the PEAR Mail:: interface.
+ * Mock implementation
  *
  * PHP version 5
  *
@@ -44,51 +44,60 @@
  */
 
 /**
- * internal PHP-mail() implementation of the PEAR Mail:: interface.
+ * Mock implementation of the PEAR Mail:: interface for testing.
+ * @access public
  * @package Mail
  * @version $Revision$
  */
-class Mail_mail extends Mail {
+class Mail_mock extends Mail {
 
     /**
-     * Any arguments to pass to the mail() function.
-     * @var string
+     * Array of messages that have been sent with the mock.
+     *
+     * @var array
      */
-    var $_params = '';
+    public $sentMessages = array();
+
+    /**
+     * Callback before sending mail.
+     *
+     * @var callback
+     */
+    protected $_preSendCallback;
+
+    /**
+     * Callback after sending mai.
+     *
+     * @var callback
+     */
+    protected $_postSendCallback;
 
     /**
      * Constructor.
      *
-     * Instantiates a new Mail_mail:: object based on the parameters
-     * passed in.
+     * Instantiates a new Mail_mock:: object based on the parameters
+     * passed in. It looks for the following parameters, both optional:
+     *     preSendCallback   Called before an email would be sent.
+     *     postSendCallback  Called after an email would have been sent.
      *
-     * @param array $params Extra arguments for the mail() function.
+     * @param array Hash containing any parameters.
      */
-    public function __construct($params = null)
+    public function __construct($params)
     {
-        // The other mail implementations accept parameters as arrays.
-        // In the interest of being consistent, explode an array into
-        // a string of parameter arguments.
-        if (is_array($params)) {
-            $this->_params = join(' ', $params);
-        } else {
-            $this->_params = $params;
+        if (isset($params['preSendCallback']) &&
+            is_callable($params['preSendCallback'])) {
+            $this->_preSendCallback = $params['preSendCallback'];
         }
 
-        /* Because the mail() function may pass headers as command
-         * line arguments, we can't guarantee the use of the standard
-         * "\r\n" separator.  Instead, we use the system's native line
-         * separator. */
-        if (defined('PHP_EOL')) {
-            $this->sep = PHP_EOL;
-        } else {
-            $this->sep = (strpos(PHP_OS, 'WIN') === false) ? "\n" : "\r\n";
+        if (isset($params['postSendCallback']) &&
+            is_callable($params['postSendCallback'])) {
+            $this->_postSendCallback = $params['postSendCallback'];
         }
     }
 
     /**
-     * Implements Mail_mail::send() function using php's built-in mail()
-     * command.
+     * Implements Mail_mock::send() function. Silently discards all
+     * mail.
      *
      * @param mixed $recipients Either a comma-seperated list of recipients
      *              (RFC822 compliant), or an array of recipients,
@@ -112,55 +121,20 @@ class Mail_mail extends Mail {
      */
     public function send($recipients, $headers, $body)
     {
-        if (!is_array($headers)) {
-            return PEAR::raiseError('$headers must be an array');
+        if ($this->_preSendCallback) {
+            call_user_func_array($this->_preSendCallback,
+                                 array(&$this, $recipients, $headers, $body));
         }
 
-        $result = $this->_sanitizeHeaders($headers);
-        if (is_a($result, 'PEAR_Error')) {
-            return $result;
+        $entry = array('recipients' => $recipients, 'headers' => $headers, 'body' => $body);
+        $this->sentMessages[] = $entry;
+
+        if ($this->_postSendCallback) {
+            call_user_func_array($this->_postSendCallback,
+                                 array(&$this, $recipients, $headers, $body));
         }
 
-        // If we're passed an array of recipients, implode it.
-        if (is_array($recipients)) {
-            $recipients = implode(', ', $recipients);
-        }
-
-        // Get the Subject out of the headers array so that we can
-        // pass it as a seperate argument to mail().
-        $subject = '';
-        if (isset($headers['Subject'])) {
-            $subject = $headers['Subject'];
-            unset($headers['Subject']);
-        }
-
-        // Also remove the To: header.  The mail() function will add its own
-        // To: header based on the contents of $recipients.
-        unset($headers['To']);
-
-        // Flatten the headers out.
-        $headerElements = $this->prepareHeaders($headers);
-        if (is_a($headerElements, 'PEAR_Error')) {
-            return $headerElements;
-        }
-        list(, $text_headers) = $headerElements;
-
-        // We only use mail()'s optional fifth parameter if the additional
-        // parameters have been provided and we're not running in safe mode.
-        if (empty($this->_params) || ini_get('safe_mode')) {
-            $result = mail($recipients, $subject, $body, $text_headers);
-        } else {
-            $result = mail($recipients, $subject, $body, $text_headers,
-                           $this->_params);
-        }
-
-        // If the mail() function returned failure, we need to create a
-        // PEAR_Error object and return it instead of the boolean result.
-        if ($result === false) {
-            $result = PEAR::raiseError('mail() returned failure');
-        }
-
-        return $result;
+        return true;
     }
 
 }
