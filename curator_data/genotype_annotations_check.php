@@ -244,6 +244,7 @@ class Annotations_Check
         
   private function type_Database() {
     global $config;
+    global $mysqli;
     include($config['root_dir'] . 'theme/admin_header.php');
     $datafile = $_POST['linedata'];
     $filename_old = $_POST['file_name'];
@@ -484,7 +485,7 @@ class Annotations_Check
 						
     $lin_table=mysqli_query($mysqli, $sql) or die("Database Error: Log record insertion failed - ". mysqli_error($mysqli));
     $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
+    include $config['root_dir'].'theme/footer.php';
   } /* end of function type_database */
 } /* end of class */
   
