@@ -79,9 +79,7 @@ function send_email($to, $subject, $message, $attachments = array())
         syslog(LOG_INFO, "to: $to\nemail:\n$message");
         closelog();
     }
-    $mobj = &Mail::factory(
-        setting('mailbackend', 'sendmail'),
-        array('host' => $smtpserver, 'port' => $smtpport));
+    $mobj =& Mail::factory('sendmail', array('host' => $smtpserver, 'port' => $smtpport));
     if (PEAR::isError($mobj)) {
         echo $mobj->getMessage() . "\n" . $mobj->getUserInfo() . "\n";
         die();
