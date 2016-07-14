@@ -312,7 +312,6 @@ class Annotations_Check
     unset ($value);
     fclose($reader);   
    
-    $linkID = connect();  
     for ($i = 1; $i <= count($storageArr) ; $i++)  {
 	$year = $storageArr[$i][$yearIdx];
 	$bp_code = $storageArr[$i][$breedingProgIdx];
