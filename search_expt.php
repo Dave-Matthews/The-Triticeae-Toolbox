@@ -1,12 +1,14 @@
 <?php 
 
-// DEM dec2014: Show all Trials from the chosen Experiment (experiments from the chosen experiment_set).
+/**
+ *  DEM dec2014: Show all Trials from the chosen Experiment (experiments from the chosen experiment_set).
+ */
 
 session_start(); 
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
-connect();
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/normal_header.php';
+$mysqli = connecti();
 
 $exptuid = $_GET['expt'];
 $exptname = mysql_grab("select experiment_set_name from experiment_set where experiment_set_uid = $exptuid");
@@ -15,8 +17,8 @@ echo "<h2>Trials from Experiment $exptname</h2><p>";
 $sql="SELECT experiments.experiment_uid from csr_measurement, experiments
       WHERE experiments.experiment_uid = csr_measurement.experiment_uid
       AND experiment_set_uid='$exptuid'";
-$result_trialcode=mysql_query($sql) or die(mysql_error());
-while($row_trialcode=mysql_fetch_array($result_trialcode)) {
+$result_trialcode=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($row_trialcode=mysqli_fetch_array($result_trialcode)) {
   $uid = $row_trialcode['experiment_uid'];
   $csr_list[$uid] = 1;
 }
@@ -30,8 +32,8 @@ if (!authenticate(array(USER_TYPE_PARTICIPANT,
 			USER_TYPE_ADMINISTRATOR)))
   $sql .= " AND data_public_flag > 0";
 $sql .= " order by e.experiment_year desc,e.trial_code ASC";
-$result_trialcode=mysql_query($sql) or die(mysql_error());
-$num_rows = mysql_num_rows($result_trialcode);
+$result_trialcode=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+$num_rows = mysqli_num_rows($result_trialcode);
 if ($num_rows ==0){
 ?>
 <div class="section">
@@ -50,7 +52,7 @@ else {
   </tr>
 <?php
 
-    while($row_trialcode=mysql_fetch_array($result_trialcode))
+    while($row_trialcode=mysqli_fetch_array($result_trialcode))
       {
         $uid=$row_trialcode['experiment_uid'];
 	$trial_code=$row_trialcode['trial_code'];
@@ -70,6 +72,6 @@ else {
 }
 echo "</table>";
 $footer_div = 1;
-include($config['root_dir'].'theme/footer.php'); ?>
+require $config['root_dir'].'theme/footer.php'; ?>
 </body>
 </html>
