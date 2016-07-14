@@ -13,7 +13,7 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap_curator.inc';
 set_time_limit(3000);
-$sql = connecti();
+$mysqli = connecti();
 
 //needed for mac compatibility
 ini_set('auto_detect_line_endings', true);
