@@ -64,12 +64,13 @@ class Annotations_Check
         $this->type_Annotation();
 
         $footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+        include $config['root_dir'].'theme/footer.php';
     }
 	
 	
 	private function type_Annotation()
 	{
+            global $mysqli;
 	?>
 	<script type="text/javascript">
 	
@@ -346,7 +347,7 @@ class Annotations_Check
 	  /* $experiments[$index]->seedingrate = $seedingrate_row[$i]; */
 	  $experiments[$index]->seedingrate = mysqli_real_escape_string($mysqli, $seedingrate_row[$i]);
 	  $experiments[$index]->experimentaldesign = mysqli_real_escape_string($mysqli, $experimentaldesign_row[$i]);
-	  $experiments[$index]->experimentset = mysqli_real_escape_string(trim($mysqli, $experimentset_row[$i]));
+	  $experiments[$index]->experimentset = mysqli_real_escape_string($mysqli, trim($experimentset_row[$i]));
 
 	  // Check key data fields in the experiment to ensure valid values
 	  // Required fields include: year, location, collaborator (who performed experiment)

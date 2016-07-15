@@ -3,12 +3,12 @@
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-connect();
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+$mysqli = connecti();
 loginTest();
 
 ob_start();
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 authenticate_redirect(array(USER_TYPE_CURATOR,USER_TYPE_ADMINISTRATOR));
 ob_end_flush();
 

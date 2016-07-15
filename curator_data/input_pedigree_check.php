@@ -58,6 +58,7 @@ private function typePedigreeCheck()
 	
 	private function type_Pedigree_Information()
 	{
+            global $mysqli;
 	?>
 	<script type="text/javascript">
 	
