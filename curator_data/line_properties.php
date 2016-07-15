@@ -357,7 +357,7 @@ class LineNames_Check
 			      and lp.property_value_uid = pv.property_values_uid");
 	      if (!empty($linepropuid)) {
 		mysqli_query($mysqli, "update line_properties set property_value_uid = $propvaluid
-                        where line_properties_uid = $linepropuid") or errmsg($sql, mysql_error());
+                        where line_properties_uid = $linepropuid") or errmsg($sql, mysqli_error($mysqli));
 	      }
 	      else {
 		mysqli_query($mysqli, "insert into line_properties (line_record_uid, property_value_uid) 
