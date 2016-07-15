@@ -143,7 +143,7 @@ if ($row = mysqli_fetch_array($res)) {
       
       /* Function to open annotation link in a new window */
       function link_for_value(link) {
-	  myWin = window.open(link, '');
+          myWin = window.open(link, '');
 	  // 		link_url = link;
 	  // 		window.open(link_url,
 	  // 'open_window',
@@ -385,8 +385,9 @@ if ($row = mysqli_fetch_array($res)) {
     $sql = "SELECT comments FROM mapset ORDER BY mapset_name DESC";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_assoc($res)) {
+        $comments = htmlentities($row['comments']);
         ?>
-				<option value="<?php echo $row['comments'] ?>"><?php echo $row['comments'] ?></option>
+				<option value="<?php echo $comments ?>"><?php echo $row['comments'] ?></option>
 			<?php
 		}
 		?>
