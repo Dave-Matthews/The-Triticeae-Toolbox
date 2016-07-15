@@ -260,7 +260,7 @@ while (!feof($reader))  {
             $errLines++;
             continue;
         } else {
-		    $rdata = mysql_fetch_assoc($res);
+		    $rdata = mysqli_fetch_assoc($res);
 		    $marker_uid=$rdata['marker_uid'];
         }
     }

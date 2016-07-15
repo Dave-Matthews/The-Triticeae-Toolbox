@@ -1,7 +1,7 @@
 <?php
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-connect();
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+$mysqli = connecti();
 loginTest();
 ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
@@ -33,8 +33,8 @@ include($config['root_dir'].'theme/admin_header.php');
   $sql = "select trial_code, experiment_uid as uid 
 	  from experiments where experiment_type_uid = 1
 	  order by trial_code";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-  while($row = mysql_fetch_assoc($r)) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+  while($row = mysqli_fetch_assoc($r)) {
     $tc = $row['trial_code'];
     $uid = $row['uid'];
     echo "<option value='$uid'>$tc</option>\n";
@@ -58,8 +58,8 @@ include($config['root_dir'].'theme/admin_header.php');
   $sql = "select experiment_set_name as esname, experiment_set_uid as uid 
           from experiment_set
           order by experiment_set_name";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-  while($row = mysql_fetch_assoc($r)) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+  while($row = mysqli_fetch_assoc($r)) {
     $name = $row['esname'];
     $uid = $row['uid'];
     echo "<option value='$uid'>$name</option>\n";
@@ -83,8 +83,8 @@ include($config['root_dir'].'theme/admin_header.php');
   $sql = "select trial_code, experiment_uid as uid 
           from experiments where experiment_type_uid = 2 
           order by trial_code";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-  while($row = mysql_fetch_assoc($r)) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+  while($row = mysqli_fetch_assoc($r)) {
     $tc = $row['trial_code'];
     $uid = $row['uid'];
     echo "<option value='$uid'>$tc</option>\n";
@@ -113,8 +113,8 @@ elseif ($_GET['trialcode'] OR $_GET['exptuid']) {
      // submitted from the textbox form
      $tc = $_GET['trialcode'];
      $sql = "select experiment_uid from experiments where trial_code = '$tc'";
-     $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-     $r2 = mysql_fetch_row($r);
+     $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+     $r2 = mysqli_fetch_row($r);
      $exptuid = $r2[0];
      if (empty($exptuid))
        exit("Trial <b>'$tc'</b> not found.<p><input type='Button' value='Back' onClick='history.go(-1)'>");
@@ -126,8 +126,8 @@ elseif ($_GET['trialcode'] OR $_GET['exptuid']) {
    // Show the curator exactly what she's doing:
    $sql = "select trial_code, experiment_desc_name, input_data_file_name 
             from experiments where experiment_uid = $exptuid";
-   $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-   $r2 = mysql_fetch_row($r);
+   $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+   $r2 = mysqli_fetch_row($r);
    $trialcode = $r2[0];
    $exptdescnm = $r2[1];
    $filenm = $r2[2];
@@ -137,16 +137,16 @@ elseif ($_GET['trialcode'] OR $_GET['exptuid']) {
    //Also show number of traits, lines, data points (phenotype_data rows).
    $sql = "select * from phenotype_data where tht_base_uid in
            (select tht_base_uid from tht_base where experiment_uid = $exptuid)";
-   $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-   $vals = mysql_num_rows($r);
+   $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+   $vals = mysqli_num_rows($r);
    $sql = "select count(line_record_uid) from tht_base where experiment_uid = $exptuid";
-   $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-   $r2 = mysql_fetch_row($r);
+   $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+   $r2 = mysqli_fetch_row($r);
    $linecount = $r2[0];
    $sql = "select distinct phenotype_uid from phenotype_data where tht_base_uid in
            (select tht_base_uid from tht_base where experiment_uid = $exptuid)";
-   $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-   $traitcount = mysql_num_rows($r);
+   $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+   $traitcount = mysqli_num_rows($r);
    echo "<p><b>$vals</b> data points (phenotype values) for 
          <b>$traitcount</b> traits from <b>$linecount</b> lines will be deleted.<br>";
    print "<p><input type='Button' value='Yikes! No' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\" style='font: bold 13px Arial'>";
@@ -172,18 +172,18 @@ elseif ($_GET['exptsetname'] OR $_GET['exptsetuid']) {
                          where experiment_set_uid = '$esuid'");
   }
   $sql = "select trial_code from experiments where experiment_set_uid = $esuid";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-  if (mysql_num_rows($r) == 0) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+  if (mysqli_num_rows($r) == 0) {
     // No trials so okay to delete.
     $sql = "delete from experiment_set where experiment_set_uid = $esuid";
-    mysql_query($sql) or die(mysql_error() . "<br>Query was: $sql");
+    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>Query was: $sql");
     echo "Experiment <b>$esname</b> has been deleted.<p>";
     echo "<input type='Button' value='Return' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\"' style='font: bold 13px Arial'>";
   }
   else {
     echo "Can't delete Experiment <b>$esname</b>. Please delete the Trials it contains first.<p>";
     echo "<b>Trials</b>:<br>";
-    while ($tr = mysql_fetch_row($r))
+    while ($tr = mysqli_fetch_row($r))
       echo "$tr[0]<br>";
     echo "<br><input type='Button' value='Return' onClick=\"location.href='".$config['base_url']."curator_data/delete_experiment.php'\" style='font: bold 13px Arial'>";    
   }
@@ -194,8 +194,8 @@ elseif ($_GET['genoexptname'] OR $_GET['genoexptuid']) {
     // submitted from the textbox form
      $tc = $_GET['genoexptname'];
      $sql = "select experiment_uid from experiments where trial_code = '$tc'";
-     $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-     $r2 = mysql_fetch_row($r);
+     $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+     $r2 = mysqli_fetch_row($r);
      $exptuid = $r2[0];
      if (empty($exptuid))
        exit("Genotyping Experiment <b>'$tc'</b> not found.<p><input type='Button' value='Back' onClick='history.go(-1)'>");
@@ -211,8 +211,8 @@ elseif ($_GET['genoexptname'] OR $_GET['genoexptuid']) {
 	  left join marker_types on genotype_experiment_info.marker_type_uid = marker_types.marker_type_uid
 	  where genotype_experiment_info.experiment_uid = experiments.experiment_uid
 	  and experiments.experiment_uid = $exptuid";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-  $r2 = mysql_fetch_row($r);
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+  $r2 = mysqli_fetch_row($r);
   $trialcode = $r2[0];
   $exptdescnm = $r2[1];
   $exptshortnm = $r2[2];
@@ -245,21 +245,24 @@ include($config['root_dir'].'theme/footer.php');
 
 function delete_trial($uid)
 {
+    global $mysqli;
     $sql = "delete from phenotype_experiment_info where experiment_uid = $uid";
-    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
     $sql = "delete from datasets_experiments where experiment_uid = $uid";
-    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
     $sql = "delete from  phenotype_mean_data where experiment_uid = $uid";
-    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
     $sql = "delete from phenotype_data where tht_base_uid in
           (select tht_base_uid from tht_base where experiment_uid = $uid)";
-    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
     $sql = "delete from tht_base where experiment_uid = $uid";
-    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
     $sql = "delete from csr_measurement where experiment_uid = $uid";
-    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
+    $sql = "delete from allele_conflicts where experiment_uid = $uid";
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
     $sql = "delete from experiments where experiment_uid = $uid";
-    $r = mysql_query($sql) or die(mysql_error() . "<p>Query was: $sql");
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
     echo "Trial deleted.";
     return;
 }
