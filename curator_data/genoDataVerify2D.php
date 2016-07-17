@@ -308,8 +308,8 @@ while (($line = fgets($reader)) !== false) {
     $lineDsHash[$lineStr] = $de_uid;
 
     $line_uid = get_lineuid($lineStr);
-    if ($line_uid == false) {
-        echo "In Line Translation file, germplasm line '$lineStr' can not be found in the database.\n";
+    if ($line_uid === false) {
+        echo "In Line Translation file, germplasm line '$lineStr' can not be found in the database. $line_uid\n";
     } else {
         $line_uid = implode(",",$line_uid);
         $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
@@ -320,7 +320,7 @@ while (($line = fgets($reader)) !== false) {
         } else {
             $thtuid = null;
         }
-        echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid.\n";
+        //echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid.\n";
     }
     if (feof($reader)) break;
 }    
@@ -370,7 +370,7 @@ for ($x = 0; $x < $num; $x++) {
     break;
   default:
     $line_uid = get_lineuid($line_name);
-    if ($line_uid == false) {
+    if ($line_uid === false) {
       $colnum = $x + 1; // Human-oriented column numbering.
       echo "column $colnum:\tLine name '$header[$x]' is not in the database.\n";
     } else {

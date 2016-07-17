@@ -272,7 +272,7 @@ while (!feof($reader))  {
 	        $line_name = $data[$lineNameIdx];
             //echo "line name = " . $line_name. "<br>";
             $line_uid = get_lineuid ($line_name);
-            if ($line_uid == FALSE) {
+            if ($line_uid === FALSE) {
                 $msg = $line_name . " cannot be found, upload stopped\n";
                 exitFatal ($errFile, $msg);
             }

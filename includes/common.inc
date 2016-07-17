@@ -1473,25 +1473,27 @@ function get_lineuid($line)
     $line_nosp = str_replace(" ", "", $line);
     $line_us = str_replace(" ", "_", $line);
     $line_hyp = str_replace("-", "", $line);
-    $line_sql = mysqli_query($mysqli, "SELECT line_record_uid AS lruid
-                    FROM line_records
-                    WHERE line_record_name = '$line'
-                        OR line_record_name = '$line_nosp'
-                        OR line_record_name = '$line_us'
-                        OR line_record_name = '$line_hyp'
-                                        ");
-    if (mysqli_num_rows($line_sql)<1) {
-        //echo "Line ".$line." ".$line_us.$line_hyp.$line_nosp.$line_sql." \n";
-        $line_sql = mysqli_query($mysqli, "SELECT line_record_uid AS lruid
-                        FROM line_synonyms
-                        WHERE line_synonym_name = '$line'
-                            OR line_synonym_name = '$line_nosp'
-                            OR line_synonym_name = '$line_us'
-                            OR line_synonym_name = '$line_hyp'");
-        if (mysqli_num_rows($line_sql)<1) {
-            //echo "Line ".$line." is not in the line record or synonym table\n";
-            return false;
+    if ($line_sql = mysqli_query($mysqli, "SELECT line_record_uid AS lruid
+        FROM line_records
+        WHERE line_record_name = '$line'
+        OR line_record_name = '$line_nosp'
+        OR line_record_name = '$line_us'
+        OR line_record_name = '$line_hyp'")) {
+        $line_cnt = mysqli_num_rows($line_sql);
+        if ($line_cnt < 1) {
+            if ($line_sql = mysqli_query($mysqli, "SELECT line_record_uid AS lruid
+            FROM line_synonyms
+            WHERE line_synonym_name = '$line'
+            OR line_synonym_name = '$line_nosp'
+            OR line_synonym_name = '$line_us'
+            OR line_synonym_name = '$line_hyp'")) {
+                $line_cnt = mysqli_num_rows($line_sql);
+            } else {
+                die("Error: sql query\n");
+            }
         }
+    } else {
+        die("Error: sql query\n");
     }
     /* Do not add duplicates */
     $result = array();
@@ -1500,7 +1502,10 @@ function get_lineuid($line)
             $result[] = $row["lruid"];
         }
     }
-    return $result;
+    if ($line_cnt > 0) {
+        return $result;
+    }
+    return false;
 }
 
 /**
