@@ -16,8 +16,14 @@ require $config['root_dir'].'includes/bootstrap_curator.inc';
 $mysqli = connecti();
 ini_set('memory_limit', '2G');
 
-$fnames = $_SERVER["argv"];
-$experiment_uid = $fnames[1];
+if (isset($_SERVER["argv"])) {
+    $fnames = $_SERVER["argv"];
+    $experiment_uid = $fnames[1];
+} elseif (isset($_GET['exp'])) {
+    $experiment_uid = $_GET['exp'];
+} else {
+    die("Error: experiment not specified\n");
+}
 
 $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
