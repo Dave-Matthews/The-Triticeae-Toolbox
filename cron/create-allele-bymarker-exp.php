@@ -25,13 +25,16 @@ if (isset($_SERVER["argv"])) {
     die("Error: experiment not specified\n");
 }
 
-$sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
-$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-if ($row = mysqli_fetch_array($res)) {
-    $trial_code = $row[0];
+$sql = "select trial_code from experiments where experiment_uid = ?";
+if ($stmt = mysqli_prepare($mysqli, $sql)) {
+    mysqli_stmt_bind_param($stmt, "i", $experiment_uid);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $trial_code);
+    mysqli_stmt_fetch($stmt);
+    mysqli_stmt_close($stmt);
     echo "using experiment $trial_code\n";
 } else {
-    die("invalid trial");
+    die("invalid experiment_uid\n");
 }
 
 /*get list of experiments loaded so we know if new or update*/
@@ -88,30 +91,30 @@ $sql = "select distinct line_record_uid, line_record_name from allele_cache
         where experiment_uid = $experiment_uid";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row = mysqli_fetch_array($res)) {
-        $line_record_uid = $row[0];
-        $line_record_name = $row[1];
-        $line_uid_list[$max_lines] = $line_record_uid;
-        $line_list_loc[$line_record_uid] = $max_lines;
-        $line_name_list[$max_lines] = $line_record_name;
-        $max_lines++;
-    }
-    echo "max_lines = $max_lines\n";
+    $line_record_uid = $row[0];
+    $line_record_name = $row[1];
+    $line_uid_list[$max_lines] = $line_record_uid;
+    $line_list_loc[$line_record_uid] = $max_lines;
+    $line_name_list[$max_lines] = $line_record_name;
+    $max_lines++;
+}
+echo "max_lines = $max_lines\n";
 
-    if ($max_markers > 0) {
-        //$line_uid_list_str = implode(",", $line_uid_list);
-        //$line_name_list_str = implode(",", $line_name_list);
-        $line_uid_list_str = json_encode($line_uid_list);
-        $line_name_list_str = json_encode($line_name_list);
-        if (isset($index_list[$experiment_uid])) {
-            $sql = "update allele_bymarker_expidx set line_index = '$line_uid_list_str', line_name_index = '$line_name_list_str' where experiment_uid = $experiment_uid";
-        } else {
-            $sql = "insert into allele_bymarker_expidx (experiment_uid, line_index, line_name_index) values ($experiment_uid, '$line_uid_list_str', '$line_name_list_str')";
-        }
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-        //echo "$sql\n";
-        echo "experiment = $experiment_uid markers = $max_markers lines =  $max_lines\n";
-        $empty = array_fill(0, $max_lines, '');
+if ($max_markers > 0) {
+    //$line_uid_list_str = implode(",", $line_uid_list);
+    //$line_name_list_str = implode(",", $line_name_list);
+    $line_uid_list_str = json_encode($line_uid_list);
+    $line_name_list_str = json_encode($line_name_list);
+    if (isset($index_list[$experiment_uid])) {
+        $sql = "update allele_bymarker_expidx set line_index = '$line_uid_list_str', line_name_index = '$line_name_list_str' where experiment_uid = $experiment_uid";
+    } else {
+        $sql = "insert into allele_bymarker_expidx (experiment_uid, line_index, line_name_index) values ($experiment_uid, '$line_uid_list_str', '$line_name_list_str')";
     }
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+    //echo "$sql\n";
+    echo "experiment = $experiment_uid markers = $max_markers lines =  $max_lines\n";
+    $empty = array_fill(0, $max_lines, '');
+}
     $lookup_101 = array(
         'AA' => '1',
         'BB' => '-1',
@@ -159,7 +162,7 @@ while ($row = mysqli_fetch_array($res)) {
                 $sql = "insert into allele_bymarker_exp_101 (experiment_uid, marker_uid, marker_name, alleles) values ($experiment_uid, $marker_uid, '$marker_name', '$string')";
                 $count_new++;
             }
-            $res = mysqli_query($sql) or die(mysqli_error($mysqli));
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $string = implode(',', $alleles_ACTG);
             if (isset($exp101_list[$index])) {
                 $sql = "update allele_bymarker_exp_ACTG set alleles = \"$string\" where experiment_uid = $experiment_uid and marker_uid = $marker_uid";
