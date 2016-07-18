@@ -1467,13 +1467,13 @@ function clearSessionVariables($user) {
  */
 function get_lineuid($line)
 {
-  // If the name does not work, also check versions with spaces removed
-  // and spaces replaced by underscores
+    // If the name does not work, also check versions with spaces removed
+    // and spaces replaced by underscores
     global $mysqli;
     $line_nosp = str_replace(" ", "", $line);
     $line_us = str_replace(" ", "_", $line);
     $line_hyp = str_replace("-", "", $line);
-    if ($line_sql = mysqli_query($mysqli, "SELECT line_record_uid AS lruid
+    if ($line_sql = mysqli_query($mysqli, "SELECT line_record_uid
         FROM line_records
         WHERE line_record_name = '$line'
         OR line_record_name = '$line_nosp'
@@ -1481,7 +1481,7 @@ function get_lineuid($line)
         OR line_record_name = '$line_hyp'")) {
         $line_cnt = mysqli_num_rows($line_sql);
         if ($line_cnt < 1) {
-            if ($line_sql = mysqli_query($mysqli, "SELECT line_record_uid AS lruid
+            if ($line_sql = mysqli_query($mysqli, "SELECT line_record_uid
             FROM line_synonyms
             WHERE line_synonym_name = '$line'
             OR line_synonym_name = '$line_nosp'
@@ -1489,23 +1489,31 @@ function get_lineuid($line)
             OR line_synonym_name = '$line_hyp'")) {
                 $line_cnt = mysqli_num_rows($line_sql);
             } else {
-                die("Error: sql query\n");
+                echo "Error: sql query\n";
+                return false;
             }
         }
     } else {
-        die("Error: sql query\n");
+        echo "Error: sql query\n";
+        return false;
     }
     /* Do not add duplicates */
     $result = array();
-    while ($row = mysqli_fetch_array($line_sql, MYSQL_ASSOC)) {
-        if (!in_array($row["lruid"], $result)) {
-            $result[] = $row["lruid"];
+    while ($row = mysqli_fetch_array($line_sql)) {
+        $lruid = $row[0];
+        if (in_array($lruid, $result)) {
+            echo "skip $lruid\n";
+        } elseif (is_numeric($lruid)) {
+            $result[] = $lruid;
+        } else {
+            echo "skip empty $lruid\n";
         }
     }
-    if ($line_cnt > 0) {
-        return $result;
+    if (empty($result)) {
+        echo "Error: no results for $line\n";
+        return false;
     }
-    return false;
+    return $result;
 }
 
 /**
