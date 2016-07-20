@@ -7,11 +7,11 @@
  * 
  */
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap.inc');
-connect();
+require $config['root_dir'] . 'includes/bootstrap.inc';
+$mysqli = connecti();
 session_start();
 
-include($config['root_dir'] . 'theme/admin_header.php');
+require $config['root_dir'] . 'theme/admin_header.php';
 
 /**
  * Generate the image map
@@ -21,6 +21,7 @@ include($config['root_dir'] . 'theme/admin_header.php');
  * @return string $mapstr
  */
 function get_imagemap (array $blks, $umapname) {
+    global $mysqli;
 	$imgmap=array();
 	foreach ($blks as $blk) {
 		if (isset($blk['link']) && $blk['link']!=='' && $blk['link']!='TODO') {
@@ -58,8 +59,9 @@ function get_imagemap (array $blks, $umapname) {
       $phenotype = $phenotype_ary[0];
       echo "warning - only using one trait<br>\n";
     }
-    $r = mysql_query("select phenotypes_name from phenotypes where phenotype_uid = $phenotype");
-    $phenotypename = mysql_result($r,0);
+    $r = mysqli_query($mysqli, "select phenotypes_name from phenotypes where phenotype_uid = $phenotype");
+    $row = mysqli_fetch_assoc($r);
+    $phenotypename = $row['phenotypes_name']; 
   }
 if(isset($_SESSION['experiments'])) {
   $experiments = $_SESSION['experiments'];
@@ -145,7 +147,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
  	    $lineuid = $slines[$i];
  	    $trtval = -9999;
  	    // Show mean over selected experiments.
- 	    $result = mysql_query("
+ 	    $result = mysqli_query($mysqli, "
  			      select avg(value)
  			      from line_records as lr, phenotype_data as pd, tht_base as tb
  			      where lr.line_record_uid = tb.line_record_uid
@@ -154,9 +156,9 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
  			      and lr.line_record_uid = $lineuid
                                $in_these_experiments
                                -- and value is not null
- 			      ") or die (mysql_error());
- 	    if (mysql_num_rows($result) > 0) {
- 	      $row = mysql_fetch_assoc($result);
+ 			      ") or die (mysqli_error($mysqli));
+ 	    if (mysqli_num_rows($result) > 0) {
+ 	      $row = mysqli_fetch_assoc($result);
  	      $trtval = $row['avg(value)'];
  	    }
 	    $sorted_lines[$lineuid] = $trtval;
@@ -173,8 +175,8 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 		// get the line_name from line_uid
 		$lineuid=$slines[$i];
 		$linename="";
-		$result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-		while ($row=mysql_fetch_assoc($result)) {
+		$result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+		while ($row=mysqli_fetch_assoc($result)) {
 			$linename=$row['line_record_name'];
 		}
 		array_push($line_names, $linename);
@@ -209,9 +211,9 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	$ny=$y;
 	for ($i=0; $i<count($smkrs); $i++) {
 		$mkrname="";
-    	$result=mysql_query("SELECT marker_name from markers where marker_uid=".$smkrs[$i]);
-    	if (mysql_num_rows($result)>=1) {
-			$row = mysql_fetch_assoc($result);
+    	$result=mysqli_query($mysqli, "SELECT marker_name from markers where marker_uid=".$smkrs[$i]);
+    	if (mysqli_num_rows($result)>=1) {
+			$row = mysqli_fetch_assoc($result);
 			$mkrname=$row['marker_name'];
     	}
     	else continue;
@@ -238,7 +240,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	    for ($j=0; $j<count($smkrs); $j++) {
 	      $mkruid=$smkrs[$j];
 	      $mkrval="";
-	      $result=mysql_query("
+	      $result=mysqli_query($mysqli, "
 		select marker_name, line_record_name, allele_1, allele_2, A_allele, B_allele, marker_type_name
 		from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E, marker_types as F
 		where A.marker_uid=B.marker_uid 
@@ -248,9 +250,9 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
                 and A.marker_type_uid=F.marker_type_uid
 		and E.line_record_uid=$lineuid and A.marker_uid=$mkruid
 		") 
-		or die (mysql_error());
-	      if (mysql_num_rows($result)>=1) {
-		$row = mysql_fetch_assoc($result);
+		or die (mysqli_error($mysqli));
+	      if (mysqli_num_rows($result)>=1) {
+		$row = mysqli_fetch_assoc($result);
 		$mkrval=$row['allele_1'].$row['allele_2'];
                 $mkrtyp=$row['marker_type_name'];
                 $allele=$row['A_allele'] . $row['B_allele'];
@@ -300,7 +302,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	      $line_trt[$lineuid]=1;
 	      $trtval = "";
 	      // Show mean over selected experiments.
-	      $result=mysql_query("
+	      $result=mysqli_query($mysqli, "
 			      select avg(value), count(value)
 			      from line_records as lr, phenotype_data as pd, tht_base as tb
 			      where lr.line_record_uid = tb.line_record_uid
@@ -309,9 +311,9 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 			      and lr.line_record_uid = $lineuid
                               $in_these_experiments
                               -- and value is not null
-			      ") or die (mysql_error());
-	      if (mysql_num_rows($result)>=1) {
-		$row = mysql_fetch_assoc($result);
+			      ") or die (mysqli_error($mysqli));
+	      if (mysqli_num_rows($result)>=1) {
+		$row = mysqli_fetch_assoc($result);
 		$trtval = $row['avg(value)'];
 		$cntval = $row['count(value)'];
 // 		/* Get the number of significant digits for this unit. */
@@ -361,8 +363,9 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	echo "<b>Markers</b><br>";
  	for ($i=0; $i<count($_SESSION['clicked_buttons']); $i++) {
 	  $markeruid = $_SESSION['clicked_buttons'][$i];
-	  $r = mysql_query("select marker_name from markers where marker_uid = $markeruid");
-	  $markername = mysql_result($r,0);
+	  $r = mysqli_query($mysqli, "select marker_name from markers where marker_uid = $markeruid");
+          $row = mysqli_fetch_assoc($r);
+	  $markername = $row['marker_name'];
 	  $num = $i + 1;
 	  echo "<b>$num</b> $markername<br>";
 	}
@@ -372,7 +375,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	    echo "<br><b>Experiments</b><br>";
 	    // Find which experiments the results were found in.
 	    $theselines = implode(",", $slines);
-	    $trials_found = mysql_query("
+	    $trials_found = mysqli_query($mysqli, "
 	    select distinct e.trial_code
 	    from line_records as lr, phenotype_data as pd, tht_base as tb, experiments as e
 	    where lr.line_record_uid = tb.line_record_uid
@@ -381,9 +384,9 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	    and pd.phenotype_uid = $phenotype
 	    and lr.line_record_uid in ($theselines)
 	    $in_these_experiments
-	    ") or die (mysql_error());
-	    for ($i=0; $i<mysql_num_rows($trials_found); $i++) {
-	      $tf = mysql_fetch_assoc($trials_found);
+	    ") or die (mysqli_error($mysqli));
+	    for ($i=0; $i<mysqli_num_rows($trials_found); $i++) {
+	      $tf = mysqli_fetch_assoc($trials_found);
 	      $tfc = $tf['trial_code'];
 	      echo "$tfc<br>";
 	      //	  echo "$tf['trial_code']<br>";  //??? Why doesn't this work?
@@ -410,4 +413,4 @@ else if(count($_SESSION['clicked_buttons']) < 1){
 </div>
 </div>
 
-<?php include($config['root_dir'] . 'theme/footer.php'); ?>
+<?php include $config['root_dir'] . 'theme/footer.php';
