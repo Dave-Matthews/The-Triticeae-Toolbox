@@ -5,7 +5,7 @@
 require 'config.php';
 include($config['root_dir'].'includes/bootstrap.inc');
 include($config['root_dir'].'theme/normal_header.php');
-connect();
+$mysqli = connecti();
 ?>
   <h2>Contributing Programs</h2>
 
@@ -16,11 +16,11 @@ $sql = "
   FROM CAPdata_programs 
   where program_type = 'breeding'
   ORDER BY data_program_name";
-$query = mysql_query($sql) or die(mysql_error());
-if (mysql_num_rows($query) > 0) {
+$query = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+if (mysqli_num_rows($query) > 0) {
   echo "<p><b>Breeding</b> programs are contributors of both lines and phenotype trials.";
   echo "<table><tr><th>Breeding Program<th>Code<th>Collaborator<th>Description<th>Institution";
-  while ($row = mysql_fetch_assoc($query)) {
+  while ($row = mysqli_fetch_assoc($query)) {
     $CAP_uid=$row['CAPdata_programs_uid'];
     $name = $row['data_program_name'];
     $CAP_code = $row['data_program_code'];
@@ -39,11 +39,11 @@ $sql = "
   FROM CAPdata_programs 
   where program_type = 'data'
   ORDER BY data_program_name";
-$query = mysql_query($sql) or die(mysql_error());
-if (mysql_num_rows($query) > 0) {
+$query = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+if (mysqli_num_rows($query) > 0) {
   echo "<br><p><b>Data</b> programs contribute results of phenotype trials or genotyping experiments.";
   echo "<table><tr><th>Data Program<th>Code<th>Collaborator<th>Description<th>Institution";
-  while ($row = mysql_fetch_assoc($query)) {
+  while ($row = mysqli_fetch_assoc($query)) {
     $CAP_uid=$row['CAPdata_programs_uid'];
     $name = $row['data_program_name'];
     $CAP_code = $row['data_program_code'];
@@ -62,11 +62,11 @@ $sql = "
   FROM CAPdata_programs 
   where program_type = 'mapping'
   ORDER BY data_program_name";
-$query = mysql_query($sql) or die(mysql_error());
-if (mysql_num_rows($query) > 0) {
+$query = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+if (mysqli_num_rows($query) > 0) {
   echo "<br><p><b>Mapping</b> programs contribute results of genotyping experiments on mapping populations.";
   echo "<table><tr><th>Mapping Program<th>Code<th>Collaborator<th>Description<th>Institution";
-  while ($row = mysql_fetch_assoc($query)) {
+  while ($row = mysqli_fetch_assoc($query)) {
     $CAP_uid=$row['CAPdata_programs_uid'];
     $name = $row['data_program_name'];
     $CAP_code = $row['data_program_code'];
