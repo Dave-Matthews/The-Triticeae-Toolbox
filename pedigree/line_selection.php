@@ -8,9 +8,9 @@
 // 1/28/2011  JLee  Add ability to add multiple lines and synonym translation
 
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'includes/bootstrap.inc';
 $mysqli = connecti();
-include $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'theme/admin_header.php';
 
 if($_SERVER['REQUEST_METHOD'] == "POST") {
     // Store what the user's previous selections were so we can
@@ -327,7 +327,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     print "<br><select name='selLines[]' multiple='multiple' style='height: 17em; width: 13em'>";
     if ($linesfound > 0) {
       $_SESSION['linesfound'] = array();
-      while($row = mysql_fetch_assoc($result)) {
+      while($row = mysqli_fetch_assoc($result)) {
 	$line_record_name = $row['line_record_name'];
 	$line_record_uid = $row['line_record_uid'];
 	echo "<option value='$line_record_uid' selected>$line_record_name</option>";
@@ -410,8 +410,8 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
   print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\">";
   print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 15em;width: 13em\">";
   foreach ($_SESSION['selected_lines'] as $lineuid) {
-    $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-    while ($row=mysql_fetch_assoc($result)) {
+    $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+    while ($row=mysqli_fetch_assoc($result)) {
       $selval=$row['line_record_name'];
       print "<option value=\"$lineuid\" selected>$selval</option>\n";
     }
