@@ -93,10 +93,11 @@ class Map_FlapJack
     }
 
     private function typeMapSet() {
-		global $config;
+	global $config;
+        global $mysqli;
         global $mapsetHash;
         
-        include($config['root_dir'].'theme/normal_header.php');
+        include $config['root_dir'].'theme/normal_header.php';
         $sql = "SELECT comments, mapset_uid FROM mapset";
 
         $res = mysqli_query($mysqli, $sql) or die("Error: Unable to create comment hash table - ". mysqli_error($mysqli));
