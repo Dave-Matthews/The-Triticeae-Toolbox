@@ -136,7 +136,14 @@ while ($resp = mysqli_fetch_row($res)) {
 	      <select size=5 
 		      onfocus="DispPropSel(this.value, 'PropCategory')" 
 		      onchange="DispPropSel(this.value, 'PropCategory')">
-	        <?php showTableOptions("phenotype_category"); ?>
+<?php 
+// DEM jul2016: Show only categories that do include Genetic Characters.
+/* showTableOptions("phenotype_category");  */
+$sql = "select * from phenotype_category where phenotype_category_uid in (select phenotype_category_uid from properties) order by phenotype_category_name";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while($row = mysqli_fetch_assoc($res)) 
+  echo "<option value=\"$row[phenotype_category_uid]\">$row[phenotype_category_name]</option>";
+?>
 	      </select>
 	    <td><p>Select a Category.</p>
 	    <td>
