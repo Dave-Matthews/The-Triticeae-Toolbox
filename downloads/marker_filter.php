@@ -202,8 +202,8 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     }
     //echo "<br>num of markers with data = $num_mark<br>\n";
     $_SESSION['filtered_markers'] = $markers_filtered;
-    $count = count($markers_filtered);
-    if ($count > 0) {
+    $num_markers = count($markers_filtered);
+    if ($num_markers > 0) {
         //calculate missing from each line
         foreach ($lines as $line_record_uid) {
             $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
@@ -220,14 +220,14 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                     }
                 }
             } else {
-                $line_misscnt[$line_record_uid] = $count;
+                $line_misscnt[$line_record_uid] = $num_markers;
             }
         }
         $lines_removed = 0;
         $lines_removed_name = "";
         $num_line = 0;
         foreach ($lines as $line_record_uid) {
-            $miss = 100*$line_misscnt[$line_record_uid]/$count;
+            $miss = 100*$line_misscnt[$line_record_uid]/$num_markers;
             if ($miss > $max_miss_line) {
                 $lines_removed++;
                 if ($lines_removed_name == "") {
@@ -238,7 +238,6 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
             } else {
                 $lines_filtered[] = $line_record_uid;
             }
-            $num_line++;
         }
     }
     $_SESSION['filtered_lines'] = $lines_filtered;
@@ -247,7 +246,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     } else {
          $comm = $lines_removed_name;
     }
-    $count2 = count($lines_filtered);
+    $num_lines = count($lines_filtered);
 
     ?>
     <table>
@@ -255,7 +254,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     <tr><td><?php echo ($num_maf) ?><i> markers have a minor allele frequency (MAF) less than </i><b><?php echo ($min_maf) ?></b><i>%
     <br><?php echo ($num_miss) ?><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
     <br><b><?php echo ($num_removed) ?></b><i> markers removed</i>
-    <td><b><?php echo ("$count") ?></b><i> markers</i>
+    <td><b><?php echo ("$num_markers") ?></b><i> markers</i>
     <tr><td><?php
     if ($lines_removed == 1) {
         echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
@@ -268,9 +267,9 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
         ?><br>(<a onclick="linesRemoved('<?php echo ($lines_removed_name) ?>')"><?php echo ($comm) ?></a>)
         <?php
     }
-    echo "<td><b>$count2</b><i> lines</a>";
+    echo "<td><b>$num_lines</b><i> lines</a>";
     echo ("</table>");
-    if ($count == 0) {
+    if (($num_markers == 0) || ($num_lines == 0)) {
         echo "<font color=red>Warning: Please select new filter paramaters</font>";
     }
 }
@@ -449,16 +448,16 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         }
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
         while ($row = mysqli_fetch_array($res)) {
-               $marker_uid = $row[0];
-               $pos = $row[1];
-               $chr = $row[2];
-               $bin = $row[3];
-               $marker_list_mapped[$marker_uid] = $pos;
-               if (!empty($bin) && ($bin != $chr)) {
-                   $marker_list_chr[$marker_uid] = $bin;
-               } else {
-                   $marker_list_chr[$marker_uid] = $chr;
-               }
+            $marker_uid = $row[0];
+            $pos = $row[1];
+            $chr = $row[2];
+            $bin = $row[3];
+            $marker_list_mapped[$marker_uid] = $pos;
+            if (!empty($bin) && ($bin != $chr)) {
+                $marker_list_chr[$marker_uid] = $bin;
+            } else {
+                $marker_list_chr[$marker_uid] = $chr;
+            }
         }
     }
 

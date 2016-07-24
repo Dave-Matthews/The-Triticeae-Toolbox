@@ -1,13 +1,14 @@
 <?php
-// 3aug2012 DEM Manage multiple raw files.
-// 12/14/2010 JLee  Change to use curator bootstrap
+/**
+ * 3aug2012 DEM Manage multiple raw files.
+ * 12/14/2010 JLee  Change to use curator bootstrap
+ */
 
 require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-connect();
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 $mysqli = connecti();
 loginTest();
 //$row = loadUser($_SESSION['username']);
@@ -149,7 +150,7 @@ if ($_GET['delete']) {
     }
     if (!$failed) {
       $sql = "delete from rawfiles where experiment_uid = $exptuid and name = '$fl'";
-      mysql_query($sql) or die (mysql_error()."<br>Query was:<br>".$sql);
+      mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli)."<br>Query was:<br>".$sql);
     }
   }
   if (!$failed) {
@@ -180,9 +181,9 @@ if ($_GET['delete']) {
       deleteraw();
     }
     $sql = "select name, description, directory from rawfiles where experiment_uid=$exptuid";
-    $res = mysql_query($sql) or die (mysql_error()."<br>Query was:<br>".$sql);
+    $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli)."<br>Query was:<br>".$sql);
     $j = 0;
-    while ($info = mysql_fetch_assoc($res)) {
+    while ($info = mysqli_fetch_assoc($res)) {
       if ($oldfile[$j] != $info['name'])
 	die ("<p><b>ERROR</b>: filename mismatch, '$oldfile[$j]' vs. '".$info['name']."'.");
       if ($todelete AND in_array($j, $todelete)) {
@@ -190,7 +191,7 @@ if ($_GET['delete']) {
       	    echo "<p><b>ERROR</b>: Couldn't delete file ".$config['root_dir']."raw/phenotype/".$trialcode."/".$info['name'];
 	else {
 	  $sql = "delete from rawfiles where experiment_uid = $exptuid and name = '".$info['name']."'";
-	  $r = mysql_query($sql) or die (mysql_error()."<br>Query was:<br>".$sql);
+	  $r = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli)."<br>Query was:<br>".$sql);
 	  echo "<p><b><font color=red>File '".$info['name']."' deleted.</font></b>";
 	}
       }
@@ -198,7 +199,7 @@ if ($_GET['delete']) {
       if ($info['description'] != $desc[$j]) {
       	$sql = "update rawfiles set description = '$desc[$j]'
                 where experiment_uid = $exptuid and name = '".$info['name']."'";
-      	$r = mysql_query($sql) or die (mysql_error()."<br>Query was:<br>".$sql);
+      	$r = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli)."<br>Query was:<br>".$sql);
       }
       $j++;
     }
@@ -219,8 +220,8 @@ if ($_GET['delete']) {
       $sql = "select trial_code, experiment_uid as uid 
 	  from experiments where experiment_type_uid = 1
 	  order by trial_code";
-    $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-    while($row = mysql_fetch_assoc($r)) {
+    $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+    while($row = mysqli_fetch_assoc($r)) {
       $tc = $row['trial_code'];
       $uid = $row['uid'];
       echo "<option value='$uid'>$tc</option>\n";
@@ -265,7 +266,7 @@ if ($_GET['delete']) {
 	if ($ac[$i] == "Add new") {
 	  $logsql = "INSERT INTO input_file_log (file_name, users_name) 
                      VALUES('raw/phenotype/$tc/$nf[$i]', '$username')";
-	  $logres = mysql_query($logsql) or die (mysql_error()."<br>Query was:<br>".$sql);
+	  $logres = mysqli_query($mysqli, $logsql) or die (mysqli_error($mysqli)."<br>Query was:<br>".$sql);
 	  $sql = "insert into rawfiles (experiment_uid, users_uid, name, directory, description)
                   values ($exptid, $userid, '$nf[$i]', '$tc', '$de[$i]')";
 	}
@@ -273,7 +274,7 @@ if ($_GET['delete']) {
 	  $sql = "update rawfiles set users_uid = $userid, description = '$de[$i]'
           where experiment_uid=$exptid and name='$nf[$i]'";
 	}
-	$res = mysql_query($sql) or die (mysql_error()."<br>Query was:<br>".$sql);
+	$res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli)."<br>Query was:<br>".$sql);
       }  // end for(all $nf)
       echo "<p><b><font color=red>Files saved.</font></b>";
 
@@ -295,8 +296,8 @@ if ($_GET['delete']) {
       }
       // Display new files for user decision.
       $sql = "select name from rawfiles where experiment_uid = $exptuid";
-      $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
-      while ($info = mysql_fetch_assoc($res)) 
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query was:<br>".$sql);
+      while ($info = mysqli_fetch_assoc($res)) 
 	$oldfile[] = $info['name'];
       echo "<p><table>
       <tr><th>Action</th><th>Uploaded raw file</th><th>Description</th></tr>";
@@ -342,15 +343,15 @@ if ($_GET['delete']) {
 
     // Show previously saved files.  Offer to delete or to edit description.
     $sql = "select name, description from rawfiles where experiment_uid = $exptuid";
-    $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
-    if (mysql_num_rows($res) == 0)
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error()."<br>Query was:<br>".$sql);
+    if (mysqli_num_rows($res) == 0)
       echo "<p>No raw files saved yet.<br></div>";
     else {
       echo "<table><tr><th>Delete</th><th>Current raw files</th><th>Description</th></tr>";
       echo "<form method='post' name='oldfiles'>";
       echo "<input type=hidden name=trialcode value=$trialcode>";
       $j = 0;
-      while ($info = mysql_fetch_assoc($res)) {
+      while ($info = mysqli_fetch_assoc($res)) {
 	$oldfile[$j] = $info['name'];
 	$de[$j] = $info['description'];
 	// Array delete[] will be a list of the $j numbers of whatever boxes are checked.

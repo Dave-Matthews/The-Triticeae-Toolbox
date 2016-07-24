@@ -4,11 +4,8 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/genotype_annotatins_upload.php
 
  * 03/01/2011  JLee  Create for genotype annotation importer
@@ -17,7 +14,7 @@
 
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
-connect();
+$mysqli = connecti();
 
 // AJAX function call.  
 $functioncall = $_GET['func'];
@@ -40,12 +37,12 @@ $platform = $_REQUEST['platform'];
 if (!empty($platform)) {
     $desc = $_REQUEST['description'];
     $sql="select platform_uid from platform where platform_name = '$platform'";
-    $r = mysql_query($sql) or die(mysql_error());
-    if (mysql_num_rows($r) > 0)
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if (mysqli_num_rows($r) > 0)
         $feedback = "<p><font color=red>Platform \"<b>$platform</b>\" already exists.</font>";
     else {
         $sql = "insert into platform (platform_name, description) values ('$platform', '$desc')";
-        $r = mysql_query($sql) or die(mysql_error());
+        $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         $feedback = "Platform \"<b>$platform</b>\" added.<p>";
     }
 }
@@ -55,7 +52,7 @@ if (isset($_REQUEST['delete'])) {
     if (!empty($remove)) {
         $plname = mysql_grab("select platform_name from platform where platform_uid = $remove");
         $sql = "delete from platform where platform_uid = $remove";
-        $r = mysql_query($sql) or die(mysql_error());
+        $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         $feedback = "Platform \"<b>$plname</b>\" deleted.<p>";
     }
 }
@@ -64,7 +61,7 @@ if (isset($_REQUEST['update'])) {
     $platformid = $_REQUEST['platformlist'];
     if (!empty($platformid)) {
         $sql = "update platform set description = '".$_REQUEST['editdesc']."' where platform_uid = $platformid";
-        $r = mysql_query($sql) or die(mysql_error());
+        $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         $feedback =  "Description updated.<p>";
     }
 }
@@ -105,13 +102,13 @@ if (isset($_REQUEST['update'])) {
 
 <?php
 // Edit platform descriptions, or delete.
-$r = mysql_query("select * from platform") or die(mysql_error());
-if (mysql_num_rows($r) > 0) {
+$r = mysqli_query($mysqli, "select * from platform") or die(mysqli_error($mysqli));
+if (mysqli_num_rows($r) > 0) {
     // If user has sent a command and we are refreshing the page, show confirmation.
     print "<form method=post>";
     print "<table><tr><th>Name<th>Description";
     print "<tr><td><select size=7 id=platformlist name=platformlist style='width: 16em' onchange='pickplatform(this)'>";
-    while ($row = mysql_fetch_assoc($r)) {
+    while ($row = mysqli_fetch_assoc($r)) {
         $platid = $row['platform_uid'];
         $platname = $row['platform_name'];
         print "<option value=$platid>$platname</option>\n";
@@ -168,4 +165,3 @@ function dispDesc($args)
         $desc = "(none)";
     echo $desc;
 }
-?>

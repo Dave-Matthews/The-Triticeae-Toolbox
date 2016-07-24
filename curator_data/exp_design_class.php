@@ -186,7 +186,6 @@ class Fieldbook
                 $_SESSION['linesfound'][] = $line_record_uid;
             }
             print "</select><br>";
-
         } // end if ($linesfound > 0)
         print "</form>";
 
@@ -373,10 +372,10 @@ class Fieldbook
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $id, $name, $year);
             while (mysqli_stmt_fetch($stmt)) {
-              ?>
-              <option value="<?php echo $id ?>"><?php echo $name;
-              ?></option>
-              <?php
+                ?>
+                <option value="<?php echo $id ?>"><?php echo $name;
+                ?></option>
+                <?php
             }
             mysqli_stmt_close($stmt);
         }
@@ -394,9 +393,9 @@ class Fieldbook
         <?php
         if (isset($_SESSION['selected_lines'])) {
         } else {
-           echo "<font color=red>Error:</font>
-           Please select a <a href=\"pedigree/line_properties.php\">set of lines</a>.<br><br>\n";
-           return;
+            echo "<font color=red>Error:</font>
+            Please select a <a href=\"pedigree/line_properties.php\">set of lines</a>.<br><br>\n";
+            return;
         }
         ?>
         <table>
@@ -409,11 +408,11 @@ class Fieldbook
             order by data_program_name asc";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_assoc($res)) {
-           ?>
-           <option value="<?php echo $row['data_program_code'] ?>"><?php echo $row['data_program_name'];
-           echo " ("; echo $row['data_program_code']; echo ")"?></option>
-           <?php
+            ?>
+            <option value="<?php echo $row['data_program_code'] ?>"><?php echo $row['data_program_name'];
+            echo " (" . $row['data_program_code'] . ")</option>";
         }
+        $thisYear = date("Y");
         ?>
         </select>
         <td>Program responsible for data collection
@@ -422,12 +421,12 @@ class Fieldbook
                 Trial Names should be unique across T3 for a crop. A trial is carried out at one location in one year.  
         <tr><td>Year:<td colspan=2>
         <select id="year" name="year" onchange="javascript: update_step1()">
-        <option value="2015">2015</option>
-        <option value="2014">2014</option>
-        <option value="2013">2013</option>
-        <option value="2012">2012</option>
-        <option value="2011">2011</option>
-        <option value="2010">2010</option> 
+        <?php
+        for ($i = 1; $i <= 6; $i++) {
+            echo "<option value=\"$thisYear\">$thisYear</option>";
+            $thisYear -= 1;
+        }
+        ?>
         </select>
         <tr><td>Location:<td colspan=2>
         <select id="location" onchange="javascript: update_step1()">
@@ -436,12 +435,12 @@ class Fieldbook
         $sql = "SELECT distinct location as name from phenotype_experiment_info where location is not NULL order by location";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_assoc($res)) {
-           ?>
-           <option value="<?php echo $row['name'] ?>"><?php echo $row['name'] ?></option>
-           <?php
-         }
-         ?>
-         </select>
+            ?>
+            <option value="<?php echo $row['name'] ?>"><?php echo $row['name'] ?></option>
+            <?php
+        }
+        ?>
+        </select>
         <tr><td>Experiment Name:<td colspan=2><input type="text" id="exp_name" onclick="javascript: update_step1()">
         <td>Optional. The experiment is one hierarchical level above the trial.<br>
                 An experiment may have several trials with similar or identical entry lists
@@ -527,7 +526,7 @@ class Fieldbook
                 } elseif (isset($_SESSION['selected_lines'])) {
                     $count = count($_SESSION['selected_lines']);
                 } else {
-                    $msg = "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>"; 
+                    $msg = "<tr><td>Treatment:<td><font color=red>Error: </font>Please select a <a href=pedigree/line_properties.php>set of lines</a>";
                 }
                 mysqli_stmt_close($stmt);
             }

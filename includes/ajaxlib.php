@@ -23,10 +23,10 @@ set_time_limit(3000);
 //does the function exist?
 if (!isset($_GET['func'])) {
 } elseif (!function_exists($_GET['func'])) {
-    echo ""; 	//if not then just echo nothing as an appropriate ajax return.
+    echo "";  //if not then just echo nothing as an appropriate ajax return.
 } else {
     $function = $_GET['func'];
-    unset($_GET['func']);	//removing function name
+    unset($_GET['func']);  //removing function name
 
     //global includes to load all functions in all other libraries
     //note this also runs all of the input validation on the $_GET array, so they should not be hostile.
@@ -72,47 +72,45 @@ function showMapsetContents($arr)
         echo "\t\t<td><strong>$k</strong></td>\n";
         echo "\t\t<td>$v</td>\n";
         echo "\t</tr>\n";
-	}
-	echo "</table>\n";
+    }
+    echo "</table>\n";
 }
 
 function DispSelContents($arr)
 {
     global $mysqli;
     if ($arr['id'] == "" || $arr['tablename']=="" || $arr['field']=="") {
-	echo "Invalid Input for DispSelContents";
+        echo "Invalid Input for DispSelContents";
     }
     // print "SELECT * FROM ".$arr['tablename']." WHERE ".$arr['field']." = ".$arr['id'];
-    $res = mysqli_query($mysqli, "SELECT *
-		FROM ".$arr['tablename']."
-		WHERE ".$arr['field']." = ".$arr['id']
-	) or die(mysqli_error($mysqli));
+    $sql = "SELECT * FROM " . $arr['tablename'] . " WHERE " . $arr['field'] . "=" . $arr['id'];
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
-    if(mysqli_num_rows($res) > 1) {
-	warning("key is not unique");
+    if (mysqli_num_rows($res) > 1) {
+        warning("key is not unique");
     }
     echo "<table class=\"tableclass1\">\n";
     $row = mysqli_fetch_assoc($res);
-    foreach($row as $k=>$v) {
-	echo "\t<tr>\n";
-	echo "\t\t<td><strong>$k</strong></td>\n";
-	echo "\t\t<td>$v</td>\n";
-	echo "\t</tr>\n";
+    foreach ($row as $k => $v) {
+        echo "\t<tr>\n";
+        echo "\t\t<td><strong>$k</strong></td>\n";
+        echo "\t\t<td>$v</td>\n";
+        echo "\t</tr>\n";
     }
     echo "</table>\n";
 }
 
-function InsertByAjax ($arr) {
-	if ($arr['tablename']=="") {
-		print "Invalid Input for InsertByAjax";
-	}
-	else {
-		// print "Table name ".$arr['tablename']."\n";
-	}
+function InsertByAjax($arr) {
+    global $mysqli;
+    if ($arr['tablename']=="") {
+	print "Invalid Input for InsertByAjax";
+    } else {
+	// print "Table name ".$arr['tablename']."\n";
+    }
 	$tablename=$arr['tablename'];
 	unset($arr['tablename']);
-	$result=mysql_query("show tables like \"$tablename\"");
-	if(mysql_num_rows($result) <= 0) {
+	$result=mysqli_query($mysqli, "show tables like \"$tablename\"");
+	if(mysqli_num_rows($result) <= 0) {
 		print "Invalid table name";
 		return;
 	}
@@ -128,10 +126,10 @@ function InsertByAjax ($arr) {
 		}
 	}
 	// take care of created_on and updated_on
-	$result=mysql_query("show columns from $tablename");
+	$result=mysqli_query($mysqli, "show columns from $tablename");
 	$tbl_fields=array();
-	if (mysql_num_rows($result)>0) {
-		while ($row = mysql_fetch_assoc($result)) {
+	if (mysqli_num_rows($result)>0) {
+		while ($row = mysqli_fetch_assoc($result)) {
 			array_push($tbl_fields, $row['Field']);
 		}
 	}
@@ -194,7 +192,8 @@ function InsertByAjax ($arr) {
  *
  * @param array $arr contains the forein table information passed from core.js->InsertTableByAjax
  */
-function InsertTableByAjax ($arr) {
+function InsertTableByAjax($arr) {
+    global $mysqli;
 	session_start();
 
 	// load the data excel file
@@ -310,9 +309,9 @@ function InsertTableByAjax ($arr) {
 						$pkey2=get_pkey($rtbl2);
 						// print "select $pkey from $tbl,$rtbl2 where $tbl.$pkey2=$rtbl2.$pkey2 and $rfld1=\"$rdata1\" and $rfld2=\"$rdata2\"\n";
 						// $qres=mysql_query("select $pkey from $tbl natural join $rtbl2 where $rfld1=\"$rdata1\" and $rfld2=\"$rdata2\"") or die(mysql_error());
-						$qres=mysql_query("select $pkey from $tbl,$rtbl2 where $tbl.$pkey2=$rtbl2.$pkey2 and $rfld1=\"$rdata1\" and $rfld2=\"$rdata2\"") or die(mysql_error());
-						if (mysql_num_rows($qres)>0) {
-							$qrow = mysql_fetch_assoc($qres);
+						$qres=mysqli_query($mysqli, "select $pkey from $tbl,$rtbl2 where $tbl.$pkey2=$rtbl2.$pkey2 and $rfld1=\"$rdata1\" and $rfld2=\"$rdata2\"") or die(mysqli_error($mysqli));
+						if (mysqli_num_rows($qres)>0) {
+							$qrow = mysqli_fetch_assoc($qres);
 							$count[$tbl][0]++;
 							$frnkey_mx['row'][$rstart+$i]=$qrow[$pkey];
 						}
@@ -783,6 +782,7 @@ function ajaxTableForm ($arr) {
  * get the selection string, with the values of unique keys as the options
  */
 function get_selopts_str($table) {
+    global $mysqli;
 	$uniquekeys=get_ukey($table);
 	$ids="";
 	for ($i=0; $i<count($uniquekeys); $i++) {
@@ -799,10 +799,10 @@ function get_selopts_str($table) {
 	else {
 		$ids=$pid;
 	}
-	$result = mysql_query("SELECT $ids FROM $table") or die("Error in SELECT $ids FROM $table"); // || mysql_error();
+	$result = mysqli_query($mysqli, "SELECT $ids FROM $table") or die("Error in SELECT $ids FROM $table"); // || mysql_error();
 	$rstr="";
 	$optcount=0;
-	while($row = mysql_fetch_assoc($result)) {
+	while($row = mysqli_fetch_assoc($result)) {
 		$sel = implode(" ", array_splice($row, 0, count($uniquekeys)));
 		$pidval=$row[$pid];
 		$rstr.="\n\t<option value=\"$pidval\">$sel</option>";
@@ -1244,22 +1244,22 @@ function DispPhenotypeSel($arr) {
 		    AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")" .
 		    "AND pd.phenotype_uid = $id $filter ORDER BY trial_code";
             $errMsg = "There are no public trials for this trait within selected lines.";
-          $query = mysql_query($sql) or die(mysql_error());
+          $query = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         } else {
-	  $query = mysql_query("select distinct e.experiment_uid, trial_code
+	  $query = mysqli_query($mysqli, "select distinct e.experiment_uid, trial_code
 		    from tht_base tb, phenotype_data pd, experiments e
 		    where pd.phenotype_uid = $id
 		    and tb.tht_base_uid = pd.tht_base_uid
 		    and tb.experiment_uid =  e.experiment_uid
-		    $filter ORDER BY trial_code") or die(mysql_error());
+		    $filter ORDER BY trial_code") or die(mysqli_error($mysqli));
           $errMsg = "There are no public trials for this trait.";
         }
 
 	// display in selection box please
-	if(mysql_num_rows($query) > 0) {
+	if(mysqli_num_rows($query) > 0) {
 		/* echo "<select name='trial[]' id='trialoptions' multiple size=10 onfocus=\"DispPhenoSel(this.value, 'Trial', $id)\" onchange=\"DispPhenoSel(this.value, 'Trial', $id)\" onmouseover=\"DispPhenoSel(this.value, 'Trial', $id)\">"; */
 		echo "<select name='trial[]' id='trialoptions' multiple size=10 onfocus=\"DispPhenoSel(this.value, 'Trial', $id)\" onchange=\"DispPhenoSel(this.value, 'Trial', $id)\" >";
-		while($row = mysql_fetch_row($query)) {
+		while($row = mysqli_fetch_row($query)) {
 			/* echo "\n\t<option value=$row[0] selected>$row[1]</option>"; */
 			echo "\n\t<option value=$row[0]>$row[1]</option>";
 		}  
@@ -1353,19 +1353,20 @@ and experiments.experiment_uid IN ($trialsSelected)
 // $arr is a one-pair array('id' => phenotype_category_uid).
 // Called by includes/core.js function DispPropSel(val, middle).
 function DispPropCategorySel($arr) {
+  global $mysqli;
   if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
     echo "Please select a category.";
   else {
     extract($arr);
-    $query = mysql_query("SELECT properties_uid, name 
+    $query = mysqli_query($mysqli, "SELECT properties_uid, name 
      FROM properties 
      WHERE phenotype_category_uid = $id 
-     order by name") or die(mysql_error());
-    if(mysql_num_rows($query) > 0) {
+     order by name") or die(mysqli_error($mysqli));
+    if(mysqli_num_rows($query) > 0) {
       echo "<select name='property' size=5 
      onfocus=\"DispPropSel(this.value, 'Property')\" 
      onchange=\"DispPropSel(this.value, 'Property')\">";
-      while($row = mysql_fetch_row($query)) 
+      while($row = mysqli_fetch_row($query)) 
 	echo "<option value=$row[0]>$row[1]</option>";
       echo "</select>";
     }
@@ -1376,17 +1377,18 @@ function DispPropCategorySel($arr) {
 
 // Modified DispTrialSel() for Select Lines by Properties.
 function DispPropertySel($arr) {
+  global $mysqli;
   if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
     echo "Please select a property.";
   else {
     extract($arr);
-    $query = mysql_query("SELECT property_values_uid, property_values.value 
+    $query = mysqli_query($mysqli, "SELECT property_values_uid, property_values.value 
      FROM property_values 
-     WHERE property_uid = $id") or die(mysql_error());
-    if(mysql_num_rows($query) > 0) {
+     WHERE property_uid = $id") or die(mysqli_error($mysqli));
+    if(mysqli_num_rows($query) > 0) {
       // Strange.  (this.value..) works in IE and Chrome in DispPropCategorySel() but not here.
       echo "<select size=3 onchange=\"DispPropSel(this.options[this.selectedIndex].value, 'PropValue')\">";
-      while($row = mysql_fetch_row($query)) 
+      while($row = mysqli_fetch_row($query)) 
 	echo "<option value='$row[0]'>$row[1]</option>";
       echo "</select>";
     }
@@ -1395,15 +1397,16 @@ function DispPropertySel($arr) {
 
 // Modified DispPhenotypeSel() for Select Lines by Properties.
 function DispPropValueSel($arr) {
+  global $mysqli;
   if(! isset($arr['id']) || !is_numeric($arr['id']) ) 
     echo "Please select a value.";
   else {
   extract($arr);
-  $query = mysql_query("select name, value
+  $query = mysqli_query($mysqli, "select name, value
      from property_values pv, properties pr
      where property_values_uid = $id
-     and pr.properties_uid = pv.property_uid") or die (mysql_error());
-  $row = mysql_fetch_row($query);
+     and pr.properties_uid = pv.property_uid") or die (mysqli_error($mysqli));
+  $row = mysqli_fetch_row($query);
   echo "$row[0] = $row[1], ";
   // Doesn't work:
   //echo "<input type=hidden name='charlie' value='bill'>";

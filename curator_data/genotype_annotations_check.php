@@ -1,14 +1,14 @@
 <?php
 /**
  * Genotype annotation importer
- * 10/25/2011  JLee   Ignore "cut" portion in annotation input file 
+ * 10/25/2011  JLee   Ignore "cut" portion in annotation input file
  */
 
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 ini_set('auto_detect_line_endings', true);
 
-connect();
+$mysqli = connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
 
@@ -18,12 +18,14 @@ ob_end_flush();
 
 new Annotations_Check($_POST['function']);
 
-class Annotations_Check {
+class Annotations_Check
+{
   private $delimiter = "\t";
   private $storageArr = array (array());
 
   // Using the class's constructor to decide which action to perform
-  public function __construct($function = null) {	
+  public function __construct($function = null)
+ {
     switch($function) 	{
     case 'typeDatabase':
       $this->type_Database(); /* update database */
@@ -242,6 +244,7 @@ class Annotations_Check {
         
   private function type_Database() {
     global $config;
+    global $mysqli;
     include($config['root_dir'] . 'theme/admin_header.php');
     $datafile = $_POST['linedata'];
     $filename_old = $_POST['file_name'];
@@ -309,7 +312,6 @@ class Annotations_Check {
     unset ($value);
     fclose($reader);   
    
-    $linkID = connect();  
     for ($i = 1; $i <= count($storageArr) ; $i++)  {
 	$year = $storageArr[$i][$yearIdx];
 	$bp_code = $storageArr[$i][$breedingProgIdx];
@@ -350,8 +352,8 @@ class Annotations_Check {
                         FROM CAPdata_programs
                         WHERE CAPdata_programs.data_program_code ='$bp_code'";
 	//echo "bp lookup sql - " . $sql . "<br>";       
-	$res = mysql_query($sql) or die("Database Error: Breeding Program lookup - ".mysql_error());
-	$rdata = mysql_fetch_assoc($res);
+	$res = mysqli_query($mysqli, $sql) or die("Database Error: Breeding Program lookup - ".mysqli_error($mysqli));
+	$rdata = mysqli_fetch_assoc($res);
 	$bp_uid=$rdata['CAPdata_programs_uid'];
 	if (empty($bp_uid)) {
 	  error(1, "Breeding program '$bp_code' is not in the database.");
@@ -361,8 +363,8 @@ class Annotations_Check {
 	$sql = "SELECT CAPdata_programs_uid
                             FROM CAPdata_programs
                             WHERE CAPdata_programs.data_program_code ='$capDataProg'";
-	$res = mysql_query($sql) or die("Database Error: CAPdata Program lookup - ". mysql_error());
-	$rdata = mysql_fetch_assoc($res);
+	$res = mysqli_query($mysqli, $sql) or die("Database Error: CAPdata Program lookup - ". mysqli_error($mysqli));
+	$rdata = mysqli_fetch_assoc($res);
 	$cpData_uid=$rdata['CAPdata_programs_uid'];
 	if (empty($cpData_uid)) {
 	  error(1, "CAP data program '$capDataProg' is not in the database.");
@@ -373,15 +375,15 @@ class Annotations_Check {
                             FROM datasets 
                             WHERE datasets.breeding_year='$year'
                             AND datasets.CAPdata_programs_uid = '$bp_uid'";
-	$res = mysql_query($sql) or die("Database Error: Dataset lookup - ". mysql_error());
-	$rdata = mysql_fetch_assoc($res);
+	$res = mysqli_query($mysqli, $sql) or die("Database Error: Dataset lookup - ". mysqli_error($mysqli));
+	$rdata = mysqli_fetch_assoc($res);
 	$datasets_uid=$rdata['datasets_uid'];
               
 	$sql = "SELECT platform_uid 
                         FROM platform
                         WHERE platform_name = '$platform'";
-	$res = mysql_query($sql) or die("Database Error: Dataset lookup - ". mysql_error());
-	$rdata = mysql_fetch_assoc($res);
+	$res = mysqli_query($mysqli, $sql) or die("Database Error: Dataset lookup - ". mysqli_error($mysqli));
+	$rdata = mysqli_fetch_assoc($res);
 	$platform_uid = $rdata['platform_uid'];
 	if (empty($platform_uid)) {
 	  error(1, "Genotype platform '$platform' is not in the database.");
@@ -395,30 +397,30 @@ class Annotations_Check {
 	$sql = "SELECT experiment_uid
                             FROM experiments 
                             WHERE trial_code = '$trialCode'";
-	$res = mysql_query($sql) or die("Database Error: Trial Code lookup failed - ". mysql_error());
-	$e_uid = mysql_fetch_assoc($res);
+	$res = mysqli_query($mysqli, $sql) or die("Database Error: Trial Code lookup failed - ". mysqli_error($mysqli));
+	$e_uid = mysqli_fetch_assoc($res);
 	if ( !empty($e_uid) ) {
 	  $exp_uid = $e_uid['experiment_uid'];
 	  echo "update experiment $trialCode<br>\n";
 	  $sql = "UPDATE experiments set experiment_short_name = '$shortName', traits = '$traits', experiment_year = $year, data_public_flag = $data_public_flag
                         WHERE trial_code = '$trialCode'";
-	  $res = mysql_query($sql) or die("Database Error: Experiment record update failed - ". mysql_error());
+	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Experiment record update failed - ". mysqli_error($mysqli));
 	  //echo "$sql<br>\n";
 	  $sql = "UPDATE genotype_experiment_info set processing_date = '$processDate', manifest_file_name = '$manifestF', cluster_file_name = '$clusterF', OPA_name = '$opaName', 
                         sample_sheet_filename = '$sampleSht', comments = '$comment', platform_uid = $platform_uid
                         WHERE experiment_uid = '$exp_uid'";
-	  $res = mysql_query($sql) or die("Database Error: Genotype record update failed - ". mysql_error());
+	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Genotype record update failed - ". mysqli_error($mysqli));
 	  // Also update CAPdata_programs_uid in table 'datasets', if different.
 	  // Get the current value:
 	  $sql = "select d.datasets_uid, CAPdata_programs_uid
 		   from datasets d, datasets_experiments de
 		   where de.experiment_uid = $exp_uid
 		   and d.datasets_uid = de.datasets_uid ";
-	  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	  $row = mysql_fetch_row($res);
+	  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	  $row = mysqli_fetch_row($res);
 	  if ($row[1] != $bp_uid) {
 	    $sql = "UPDATE datasets set CAPdata_programs_uid = $bp_uid where datasets_uid = $row[0]";
-	    mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	  }
 	} else {
                 
@@ -427,11 +429,11 @@ class Annotations_Check {
 	    $ds_name = $storageArr[$i][$breedingProgIdx].$year_last2;
 	    $sql = "INSERT INTO datasets (CAPdata_programs_uid, breeding_year, dataset_name, updated_on, created_on)
                        VALUES ($bp_uid, $year, '$ds_name', NOW(), NOW())";
-	    $res = mysql_query($sql) or die("Database Error: Dataset insertion failed - ". mysql_error());
+	    $res = mysqli_query($mysqli, $sql) or die("Database Error: Dataset insertion failed - ". mysqli_error($mysqli));
 	    //echo "Dataset sql code: ".$sql . "<br>";
 	    $sql = "SELECT MAX(datasets_uid) AS dataid FROM datasets";
-	    $res = mysql_query($sql) or die("Database Error: Unable to lookup last dataset uid - ". mysql_error());
-	    $rdata = mysql_fetch_assoc($res);
+	    $res = mysqli_query($mysqli, $sql) or die("Database Error: Unable to lookup last dataset uid - ". mysqli_error($mysqli));
+	    $rdata = mysqli_fetch_assoc($res);
 	    $datasets_uid=$rdata['dataid'];
 	    //echo " datasets_uid ".$datasets_uid."\n"; 
 	  }
@@ -442,23 +444,23 @@ class Annotations_Check {
                         VALUES ('2', $cpData_uid, '$shortName', '$trialCode', '$traits',
                         $year, $data_public_flag, NOW(), NOW())";
 	  //echo "Experiment insert " .$sql."<br>";
-	  $res = mysql_query($sql) or die("Database Error: Experiment record insertion failed - ". mysql_error());
+	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Experiment record insertion failed - ". mysqli_error($mysqli));
 	  //echo "result code experiment table:".$res; 
                 
 	  /* Get experiment ID*/
 	  $sql = "SELECT MAX(experiment_uid) AS expid FROM experiments";
-	  $res = mysql_query($sql) or die("Database Error: Can't determined last experiment uid - ". mysql_error());
-	  $rdata = mysql_fetch_assoc($res);
+	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Can't determined last experiment uid - ". mysqli_error($mysqli));
+	  $rdata = mysqli_fetch_assoc($res);
 	  $exp_uid=$rdata['expid'];
 	  //echo " exp_uid ".$exp_uid."\n";
                     
 	  $sql = "INSERT INTO datasets_experiments (experiment_uid, datasets_uid, updated_on, created_on)
                         VALUES ('$exp_uid', '$datasets_uid', NOW(), NOW())";
-	  $res = mysql_query($sql) or die("Database Error: Dataset experiment record insertion failed - ". mysql_error());
+	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Dataset experiment record insertion failed - ". mysqli_error($mysqli));
 	  //echo "result code for ds_experiment table:".$res;
 	  $sql = "SELECT datasets_experiments_uid FROM datasets_experiments WHERE experiment_uid = $exp_uid AND datasets_uid = $datasets_uid";
-	  $res = mysql_query($sql) or die("Database Error: Unable to retrieve dataset experiment info - ". mysql_error());
-	  $rdata = mysql_fetch_assoc($res);
+	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Unable to retrieve dataset experiment info - ". mysqli_error($mysqli));
+	  $rdata = mysqli_fetch_assoc($res);
 	  $de_uid=$rdata['datasets_experiments_uid'];
 	  //echo " de_uid ".$de_uid."\n"; 
                     
@@ -467,7 +469,7 @@ class Annotations_Check {
                     analysis_software, BGST_version_number, sample_sheet_filename, raw_datafile_archive, comments, updated_on, created_on)
                     VALUES ('$exp_uid', $platform_uid, '$processDate', '$manifestF', '$clusterF',
                         '$opaName', '$analysisSW', '$swVer', '$sampleSht',NULL , '$comment', NOW(), NOW())";
-	  $res = mysql_query($sql) or die("Database Error: Genotype record insertion failed - ". mysql_error());
+	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Genotype record insertion failed - ". mysqli_error($mysqli));
 	  //echo "result code for exp info table:".$res."\n"; 
 	}
       }
@@ -480,11 +482,10 @@ class Annotations_Check {
        $sql = "INSERT INTO input_file_log (file_name,users_name)
 			VALUES('$filename', '$username')";
 						
-    $lin_table=mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error());
+    $lin_table=mysqli_query($mysqli, $sql) or die("Database Error: Log record insertion failed - ". mysqli_error($mysqli));
     $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
+    include $config['root_dir'].'theme/footer.php';
   } /* end of function type_database */
 } /* end of class */
   
-?>
 

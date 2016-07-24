@@ -1,14 +1,14 @@
 <?php
 /**
  * Display Haplotype Data for Selected Lines and Markers
- * 
+ *
  * @category PHP
  * @package  T3
- * 
+ *
  */
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap.inc');
-connect();
+include $config['root_dir'] . 'includes/bootstrap.inc';
+$mysqli = connecti();
 session_start();
 
 /**
@@ -19,35 +19,36 @@ session_start();
  * @return string $mapstr
  */
 
-  if(isset($_SESSION['phenotype'])) {
+if (isset($_SESSION['phenotype'])) {
     $phenotype = $_SESSION['phenotype'];
     /* if more than one phenotype selected then only use first one or else script will fail */
     $ntraits=substr_count($_SESSION['phenotype'], ',')+1;
     if ($ntraits > 1) {
-      $phenotype_ary = explode(",",$_SESSION['phenotype']);
-      $phenotype = $phenotype_ary[0];
-      echo "warning - only using one trait<br>\n";
+        $phenotype_ary = explode(",", $_SESSION['phenotype']);
+        $phenotype = $phenotype_ary[0];
+        echo "warning - only using one trait<br>\n";
     }
-    $r = mysql_query("select phenotypes_name from phenotypes where phenotype_uid = $phenotype");
-    $phenotypename = mysql_result($r,0);
-  }
-if(isset($_SESSION['experiments'])) {
-  $experiments = $_SESSION['experiments'];
- }
-if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
-	$slines=$_SESSION['selected_lines'];
-	$smkrs_all=$_SESSION['clicked_buttons'];
-        $cnt_all=count($smkrs_all);
-        $mkrppg=20; // display 20 markers per page
-        $page=0; // default page number to 0,
-        if (isset($_GET['pagenum'])) $page=$_GET['pagenum'];
-        if ($page>floor((count($smkrs_all)-1)/$mkrppg)) $page=floor((count($smkrs_all)-1)/$mkrppg);
-        if ($page<0) $page=0;
-        $spl_len=$mkrppg;
-        if ((count($smkrs_all)-$page*$mkrppg)<$mprppg) $spl_len=count($smkrs_all)-$page*$mkrppg;
-        $smkrs=array_splice($smkrs_all, $page*$mkrppg, $spl_len);
+    $r = mysqli_query($mysqli, "select phenotypes_name from phenotypes where phenotype_uid = $phenotype");
+    $row  = mysqli_fetch_assoc($r);
+    $phenotypename = $row['phenotypes_name'];
+}
+if (isset($_SESSION['experiments'])) {
+    $experiments = $_SESSION['experiments'];
+}
+if (isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
+    $slines=$_SESSION['selected_lines'];
+    $smkrs_all=$_SESSION['clicked_buttons'];
+    $cnt_all=count($smkrs_all);
+    $mkrppg=20; // display 20 markers per page
+    $page=0; // default page number to 0,
+    if (isset($_GET['pagenum'])) $page=$_GET['pagenum'];
+    if ($page>floor((count($smkrs_all)-1)/$mkrppg)) $page=floor((count($smkrs_all)-1)/$mkrppg);
+    if ($page<0) $page=0;
+    $spl_len=$mkrppg;
+    if ((count($smkrs_all)-$page*$mkrppg)<$mprppg) $spl_len=count($smkrs_all)-$page*$mkrppg;
+    $smkrs=array_splice($smkrs_all, $page*$mkrppg, $spl_len);
 
- 	/* If a phenotype is selected, sort the lines by the value of that phenotype. */
+    /* If a phenotype is selected, sort the lines by the value of that phenotype. */
  	if (isset($phenotype)) {
  	  $sorted_lines=array(); 
  	  $in_these_experiments = "";
@@ -58,7 +59,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
  	    $lineuid = $slines[$i];
  	    $trtval = -9999;
  	    // Show mean over selected experiments.
- 	    $result = mysql_query("
+ 	    $result = mysqli_query($mysqli, "
  			      select avg(value)
  			      from line_records as lr, phenotype_data as pd, tht_base as tb
  			      where lr.line_record_uid = tb.line_record_uid
@@ -67,9 +68,9 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
  			      and lr.line_record_uid = $lineuid
                                $in_these_experiments
                                -- and value is not null
- 			      ") or die (mysql_error());
- 	    if (mysql_num_rows($result) > 0) {
- 	      $row = mysql_fetch_assoc($result);
+ 			      ") or die (mysqli_error($mysqli));
+ 	    if (mysqli_num_rows($result) > 0) {
+ 	      $row = mysqli_fetch_assoc($result);
  	      $trtval = $row['avg(value)'];
  	    }
 	    $sorted_lines[$lineuid] = $trtval;
@@ -92,8 +93,8 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 		// get the line_name from line_uid
 		$lineuid=$slines[$i];
 		$linename="";
-		$result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-		while ($row=mysql_fetch_assoc($result)) {
+		$result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+		while ($row=mysqli_fetch_assoc($result)) {
 			$linename=$row['line_record_name'];
 		}
 		array_push($line_names, $linename);
@@ -110,11 +111,11 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	$ny=$y;
 	for ($i=0; $i<count($smkrs); $i++) {
 		$mkrname="";
-    	$result=mysql_query("SELECT marker_name from markers where marker_uid=".$smkrs[$i]);
-    	if (mysql_num_rows($result)>=1) {
-			$row = mysql_fetch_assoc($result);
+    	$result=mysqli_query($mysqli, "SELECT marker_name from markers where marker_uid=".$smkrs[$i]);
+    	if (mysqli_num_rows($result)>=1) {
+			$row = mysqli_fetch_assoc($result);
 			$mkrname=$row['marker_name'];
-                        echo "\t$mkrname";
+                        echo ",$mkrname";
     	}
 
 	}
@@ -130,7 +131,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	    for ($j=0; $j<count($smkrs); $j++) {
 	      $mkruid=$smkrs[$j];
 	      $mkrval="";
-	      $result=mysql_query("
+	      $result=mysqli_query($mysqli, "
 		select marker_name, line_record_name, allele_1, allele_2 
 		from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E
 		where A.marker_uid=B.marker_uid 
@@ -139,9 +140,9 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 		and D.line_record_uid=E.line_record_uid 
 		and E.line_record_uid=$lineuid and A.marker_uid=$mkruid
 		") 
-		or die (mysql_error());
-	      if (mysql_num_rows($result)>=1) {
-		$row = mysql_fetch_assoc($result);
+		or die (mysqli_error($mysqli));
+	      if (mysqli_num_rows($result)>=1) {
+		$row = mysqli_fetch_assoc($result);
 		$mkrval=$row['allele_1'].$row['allele_2'];
 	      }
 	      else {
@@ -150,7 +151,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	      if (! isset($mkrval) || strlen($mkrval)<1) $mkrval="N";
                 //echo "$mkrval\t";
                 if (isset($marker_value[$i])) {
-                  $marker_value[$i] = $marker_value[$i] . "\t$mkrval";
+                  $marker_value[$i] = $marker_value[$i] . ",$mkrval";
                 } else {
                   $marker_value[$i] = $mkrval;
                 }
@@ -174,7 +175,7 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 	      $line_trt[$lineuid]=1;
 	      $trtval = "";
 	      // Show mean over selected experiments.
-	      $result=mysql_query("
+	      $result=mysqli_query($mysqli, "
 			      select avg(value), count(value)
 			      from line_records as lr, phenotype_data as pd, tht_base as tb
 			      where lr.line_record_uid = tb.line_record_uid
@@ -183,16 +184,16 @@ if(isset($_SESSION['selected_lines']) && isset($_SESSION['clicked_buttons'])) {
 			      and lr.line_record_uid = $lineuid
                               $in_these_experiments
                               -- and value is not null
-			      ") or die (mysql_error());
-	      if (mysql_num_rows($result)>=1) {
-		$row = mysql_fetch_assoc($result);
+			      ") or die (mysqli_error($mysqli));
+	      if (mysqli_num_rows($result)>=1) {
+		$row = mysqli_fetch_assoc($result);
 		$trtval = $row['avg(value)'];
 		$cntval = $row['count(value)'];
 		$dispval = number_format($trtval,1);
 		if ($cntval == 0) { $trtval = ""; }
 		$dny=$y+7+$cht*($i);
                 //echo "$i $dispval\n";
-                $marker_value[$i] = $marker_value[$i] . "\t$dispval"; 
+                $marker_value[$i] = $marker_value[$i] . ",$dispval"; 
               }
 	    }
 	  }

@@ -13,7 +13,6 @@
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
 require $config['root_dir'] . 'theme/admin_header.php';
-connect();
 $mysqli = connecti();
 $row = loadUser($_SESSION['username']);
 
@@ -75,16 +74,18 @@ $triallist = implode(',', $trialids);
 // Lines in common among all these trials, as array of (name, uid) pairs.
 $started = 0;
 foreach ($trialids as $tid) {
-  $res = mysqli_query($mysqli, "select line_record_uid from tht_base where experiment_uid = $tid") or die (mysqli_error($mysqli));
-  $entries = array();
-  while ($row = mysqli_fetch_row($res)) 
-    $entries[] = $row[0];  
-  if ($started > 0) 
-    $commonlines = array_intersect($commonlines, $entries);
-  else {
-    $commonlines = $entries;
-    $started = 1;
-  }
+    $sql = "select line_record_uid from tht_base where experiment_uid = $tid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $entries = array();
+    while ($row = mysqli_fetch_row($res)) {
+        $entries[] = $row[0];  
+    }
+    if ($started > 0) {
+        $commonlines = array_intersect($commonlines, $entries);
+    } else {
+        $commonlines = $entries;
+        $started = 1;
+    }
 }
 
 if (empty($_GET) or $_GET['reselect']) { 
@@ -176,9 +177,9 @@ else { // Submit button was clicked.
 	and lr.line_record_uid = tb.line_record_uid
 	and e.experiment_uid = tb.experiment_uid
         order by phenotypes_name, trial_code, abs(value) desc";
-  $res = mysql_query($sql) or finish("<p>MySQL error: ". mysql_error() . "<br>Query was:<br>". $sql);
+  $res = mysqli_query($mysqli, $sql) or finish("<p>MySQL error: ". mysqli_error($mysqli));
   // Read it into the master array $actual, indexed by (trait, trial, line).
-  while ($row = mysql_fetch_array($res)) {
+  while ($row = mysqli_fetch_array($res)) {
     $actual[$row[phenotypes_name]][$row[trial_code]][$row[line_record_name]] = $row[value];
     // Get the names of the lines.
     if (!in_array($row[5], $lines))  

@@ -16,7 +16,7 @@
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require_once "../lib/Excel/reader.php"; // Microsoft Excel library
-connect();
+$mysqli = connecti();
 loginTest();
 ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
@@ -65,6 +65,7 @@ class LineNames_Check {
 /* check experiment data before loading into database */	
   private function type_Experiment_Name() {
     global $config;
+    global $mysqli;
     global $col_lookup, $stats;
     // Create the upload directory.
     $row = loadUser($_SESSION['username']);
@@ -172,8 +173,8 @@ class LineNames_Check {
                                max_pheno_value as maxphen, min_pheno_value as minphen, datatype
 		             FROM phenotypes
 			     WHERE phenotypes_name = '$pheno_cur'";
-	      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	      if ($row = mysql_fetch_assoc($res)) {
+	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	      if ($row = mysqli_fetch_assoc($res)) {
 		$datatypes[] = $row['datatype'];
 		$phenonames[] =  $row['name'];
 		$phenoids[] = $row['id'];//$phenotype_uid;
@@ -424,9 +425,8 @@ File:  <i><?php echo $uploadfile ?></i><br>
  private function type_Database() {
 	
    global $config;
-   include($config['root_dir'] . 'theme/admin_header.php');
-	
-   //connect_dev();	/* connecting to development database */
+   global $mysqli;
+   include $config['root_dir'] . 'theme/admin_header.php';
 	
    $meansfile = $_GET['expdata'];
    $filename = $_GET['file_name'];
@@ -496,8 +496,8 @@ File:  <i><?php echo $uploadfile ?></i><br>
                    max_pheno_value as maxphen, min_pheno_value as minphen, datatype
    	       FROM phenotypes
 	       WHERE phenotypes_name = '$pheno_cur'";
-       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-       while ($row = mysql_fetch_assoc($res)) {
+       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+       while ($row = mysqli_fetch_assoc($res)) {
 	 $datatypes[] = $row['datatype'];
 	 $phenonames[] =  $row['name'];
 	 $phenoids[] = $row['id'];//$phenotype_uid;
@@ -522,14 +522,14 @@ File:  <i><?php echo $uploadfile ?></i><br>
      $pheno_uids = implode(",", $phenoids);
      $sql = "SELECT tht_base_uid FROM tht_base
                     WHERE check_line = 'yes' AND experiment_uid = '$experiment_uid'";
-     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-     if (mysql_num_rows($res) > 0) {
-       while ($row = mysql_fetch_array($res))
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+     if (mysqli_num_rows($res) > 0) {
+       while ($row = mysqli_fetch_array($res))
 	 $tht_base_uids[] = $row['tht_base_uid'];
        $tht_base_uids = implode(',',$tht_base_uids);
        $sql = "DELETE FROM phenotype_data
 	     		WHERE tht_base_uid IN ($tht_base_uids) AND phenotype_uid IN ($pheno_uids)";
-       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
        unset($tht_base_uids);
      }
      $BeginLinesInput = FALSE;   
@@ -559,15 +559,15 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	     $sql = "SELECT phenotype_mean_data_uid FROM phenotype_mean_data
                                 WHERE phenotype_uid = '$phenoids[$j]'
                                 AND experiment_uid = '$experiment_uid'";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	     if (mysql_num_rows($res) > 0) 
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	     if (mysqli_num_rows($res) > 0) 
 	       $sql = "UPDATE phenotype_mean_data SET $fieldname = $phenotype_data, updated_on=NOW()
                                     WHERE experiment_uid = '$experiment_uid' AND phenotype_uid = '$phenoids[$j]'";
 	     else 
 	       $sql = "INSERT INTO phenotype_mean_data SET $fieldname = $phenotype_data,
                                     experiment_uid = '$experiment_uid', phenotype_uid = '$phenoids[$j]',
                                     updated_on=NOW(), created_on = NOW()";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	   }
 	 } // end of if ($BeginLinesInput === FALSE), finished collecting trial statistics
 	 else {
@@ -589,9 +589,9 @@ File:  <i><?php echo $uploadfile ?></i><br>
                      FROM datasets_experiments AS de, datasets AS ds
                      WHERE de.datasets_uid = ds.datasets_uid
 		     AND experiment_uid = '$experiment_uid' limit 1";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	     if (mysql_num_rows($res) != 0) {
-	       $row = mysql_fetch_assoc($res);
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error() . "<br>$sql");
+	     if (mysqli_num_rows($res) != 0) {
+	       $row = mysqli_fetch_assoc($res);
 	       $de_uid = $row['id'];
 	     } 
 	     else {
@@ -604,25 +604,25 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	       $sql = "SELECT datasets_uid as id
                         FROM  datasets
                         WHERE dataset_name ='$ds_name'";
-	       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	       if (mysql_num_rows($res) == 0) { 
+	       $res = mysqli_query($mysqi, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	       if (mysqli_num_rows($res) == 0) { 
 		 // Doesn't exist yet. Set new dataset experiment code.
 		 $sql = "INSERT INTO datasets SET CAPdata_programs_uid='$BPcode_uid',
                            breeding_year = '$year', dataset_name = '$ds_name', updated_on=NOW(),
                            created_on = NOW()";
-		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		 $ds_uid = mysql_insert_id();
+		 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		 $ds_uid = mysqli_insert_id($mysqli);
 	       } 
-	       elseif (mysql_num_rows($res) == 1) {
-		 $row = mysql_fetch_assoc($res);
+	       elseif (mysqli_num_rows($res) == 1) {
+		 $row = mysqli_fetch_assoc($res);
 		 $ds_uid = $row['id'];
 	       }
 	       // Add dataset/experiment link.
 	       $sql = "INSERT INTO datasets_experiments SET experiment_uid='$experiment_uid',
                            datasets_uid = '$ds_uid', updated_on=NOW(),
                            created_on = NOW()";
-	       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	       $de_uid = mysql_insert_id();
+	       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	       $de_uid = mysqli_insert_id($mysqli);
 	     } // end No dataset for this experiment. 
 	   } // end if $check == 0, not a checkline
 
@@ -634,10 +634,10 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	   $sql = "SELECT tht_base_uid FROM tht_base
                    WHERE line_record_uid='$line_record_uid' AND experiment_uid='$experiment_uid'
   	  	   AND check_line ='$check_val' limit 1";
-	   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	   if (mysql_num_rows($res) == 1) {
+	   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	   if (mysqli_num_rows($res) == 1) {
 	     // tht_base entry exists. Update it.  E.g. change Check status.
-	     $row = mysql_fetch_assoc($res);
+	     $row = mysqli_fetch_assoc($res);
 	     $tht_base_uid = $row['tht_base_uid'];
 	     $sql = "UPDATE tht_base
                         SET line_record_uid = '$line_record_uid',
@@ -648,7 +648,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	       $sql .= "check_line='no', datasets_experiments_uid='$de_uid',";
 	     $sql .= "updated_on=NOW()
                         WHERE tht_base_uid = '$tht_base_uid'";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	   } 
 	   else {
 	     // No tht_base entry yet.  Add it.
@@ -660,8 +660,8 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	     else 
 	       $sql .= "datasets_experiments_uid='$de_uid',";
 	     $sql .= " updated_on=NOW(),created_on = NOW()";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	     $tht_base_uid = mysql_insert_id();
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	     $tht_base_uid = mysqli_insert_id($mysqli);
 	   }   
 
 	   /* Enter phenotype values into the database for this particular line in this
@@ -690,18 +690,18 @@ File:  <i><?php echo $uploadfile ?></i><br>
 		 $sql = "SELECT phenotype_data_uid FROM phenotype_data
 			WHERE phenotype_uid = '$phenoids[$j]'
 			AND tht_base_uid = '$tht_base_uid'";
-		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 		 // If the phenotype value is the string 'NULL', don't quote it in the SQL statement.
 		 if ($phenotype_data != "NULL") 
 		   $phenotype_data = "'".$phenotype_data."'";
-		 if ( mysql_num_rows($res) > 0) 
+		 if ( mysqli_num_rows($res) > 0) 
 		   $sql = "UPDATE phenotype_data SET value = $phenotype_data, updated_on=NOW()
 		       WHERE tht_base_uid = '$tht_base_uid' AND phenotype_uid = '$phenoids[$j]'";
 		 else
 		   $sql = "INSERT INTO phenotype_data SET phenotype_uid = '$phenoids[$j]',
                                        tht_base_uid = '$tht_base_uid', value = $phenotype_data,
                                        updated_on=NOW(), created_on = NOW()";
-		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	       } // end if $check is 0, not a Check
 	       elseif ($check == 1) {
 		 //Insert only as all checklines were deleted at the beginning. The problem
@@ -710,7 +710,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 		   $sql = "insert into phenotype_data set phenotype_uid = '$phenoids[$j]',
                              tht_base_uid = '$tht_base_uid', value = '$phenotype_data',
                              updated_on=NOW(), created_on = NOW()";
-		   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 		 }
 	       }
 	     }
@@ -743,14 +743,14 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	   $pheno_uids = implode(",", $phenoids);
 	   $sql = "SELECT tht_base_uid FROM tht_base
                    WHERE check_line = 'yes' AND experiment_uid = '$exptids[$trial_code]'";
-	   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	   if (mysql_num_rows($res) > 0) {
-	     while ($row = mysql_fetch_array($res))
+	   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	   if (mysqli_num_rows($res) > 0) {
+	     while ($row = mysqli_fetch_array($res))
 	       $tht_base_uids[] = $row['tht_base_uid'];
 	     $tht_base_uids = implode(',', $tht_base_uids);
 	     $sql = "DELETE FROM phenotype_data
                      WHERE tht_base_uid IN ($tht_base_uids) AND phenotype_uid IN ($pheno_uids)";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	     unset($tht_base_uids);
 	   }
 	 } // end if haven't seen this Trial before
@@ -779,15 +779,15 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	     $sql = "SELECT phenotype_mean_data_uid FROM phenotype_mean_data
                                 WHERE phenotype_uid = '$phenoids[$j]'
                                 AND experiment_uid = '$exptids[$trial_code]'";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	     if (mysql_num_rows($res) > 0) 
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	     if (mysqli_num_rows($res) > 0) 
 	       $sql = "UPDATE phenotype_mean_data SET $fieldname = $phenotype_data, updated_on=NOW()
                                     WHERE experiment_uid = '$exptids[$trial_code]' AND phenotype_uid = '$phenoids[$j]'";
 	     else 
 	       $sql = "INSERT INTO phenotype_mean_data SET $fieldname = $phenotype_data,
                                     experiment_uid = '$exptids[$trial_code]', phenotype_uid = '$phenoids[$j]',
                                     updated_on=NOW(), created_on = NOW()";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	   } // end for($j) over columns, stats for each trait
 	 } // end 'Line Name' begins with '*', summary stat.
 	 else {
@@ -820,15 +820,15 @@ File:  <i><?php echo $uploadfile ?></i><br>
 		   $sql = "INSERT INTO datasets SET CAPdata_programs_uid='$BPcode_uid[$trial_code]',
                            breeding_year = '$year', dataset_name = '$ds_name', updated_on=NOW(),
                            created_on = NOW()";
-		   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		   $ds_uid = mysql_insert_id();
+		   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		   $ds_uid = mysqli_insert_id($mysqli);
 		 }
 	       // Add dataset/experiment link.
 	       $sql = "INSERT INTO datasets_experiments SET experiment_uid='$exptids[$trial_code]',
                            datasets_uid = '$ds_uid', updated_on=NOW(),
                            created_on = NOW()";
-	       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	       $de_uid = mysql_insert_id();
+	       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	       $de_uid = mysqli_insert_id($mysqli);
 	       // for editing table tht_base. Experimental lines go into datasets_experiments, Check lines don't.
 	       $extrasql = "datasets_experiments_uid = $de_uid, ";
 	     } // end if (empty($de_uid)), add datasets_experiments link
@@ -846,15 +846,15 @@ File:  <i><?php echo $uploadfile ?></i><br>
 		       experiment_uid = '$exptids[$trial_code]', check_line = '$check_val', 
 		       $extrasql updated_on=NOW() 
                      WHERE tht_base_uid = '$tht_base_uid'";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	   }
 	   else {
 	     // No tht_base entry yet.  Add it.
 	     $sql = "INSERT INTO tht_base SET line_record_uid = '$line_record_uid',
                      experiment_uid = '$exptids[$trial_code]', check_line = '$check_val',
                      $extrasql updated_on=NOW(), created_on = NOW()";
-	     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	     $tht_base_uid = mysql_insert_id();
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	     $tht_base_uid = mysqli_insert_id($mysqli);
 	   }
 
 	   /* Enter phenotype values into the database for this particular line in this
@@ -881,15 +881,15 @@ File:  <i><?php echo $uploadfile ?></i><br>
 		 $sql = "SELECT phenotype_data_uid FROM phenotype_data
 			WHERE phenotype_uid = '$phenoids[$j]'
 			AND tht_base_uid = '$tht_base_uid'";
-		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		 if ( mysql_num_rows($res) > 0) 
+		 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		 if ( mysqli_num_rows($res) > 0) 
 		   $sql = "UPDATE phenotype_data SET value = $phenotype_data, updated_on=NOW()
 		           WHERE tht_base_uid = '$tht_base_uid' AND phenotype_uid = '$phenoids[$j]'";
 		 else 
 		   $sql = "INSERT INTO phenotype_data SET phenotype_uid = '$phenoids[$j]',
 			   tht_base_uid = '$tht_base_uid', value = $phenotype_data,
 			   updated_on=NOW(), created_on = NOW()";
-		 $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	       } // end if $check is 0, not a Check
 	       elseif ($check == 1) {
 		 //Insert only as all checklines were deleted at the beginning. The problem
@@ -899,7 +899,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 		   $sql = "insert into phenotype_data set phenotype_uid = '$phenoids[$j]',
                              tht_base_uid = '$tht_base_uid', value = $phenotype_data,
                              updated_on=NOW(), created_on = NOW()";
-		   $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 		 }
 	       }
 	     } // end if $phenotype_data not null
@@ -924,8 +924,8 @@ File:  <i><?php echo $uploadfile ?></i><br>
      $pheno_uid = $trait_stats[$i][phenotype_uid];
      // Store back to the database.
      $sql = "SELECT * FROM phenotype_descstat WHERE phenotype_uid = $pheno_uid";
-     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-     if (mysql_num_rows($res)>0) 
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+     if (mysqli_num_rows($res)>0) 
        $sql = "UPDATE phenotype_descstat SET mean_val = $mean_val,
 	       max_val = '$max_val', min_val = '$min_val',
 	       std_val = $std_val, sample_size = $sample_size,updated_on=NOW()
@@ -935,7 +935,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	       max_val = $max_val, min_val = $min_val,
 	       std_val = $std_val, sample_size = $sample_size,
 	       phenotype_uid = $pheno_uid, updated_on=NOW(), created_on = NOW()";
-     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
    }
     
    // Go through experiments in this file to update string of measured traits in
@@ -949,14 +949,14 @@ File:  <i><?php echo $uploadfile ?></i><br>
 	     AND p.phenotype_uid = pd.phenotype_uid
 	     AND t.experiment_uid = $exid
 	     GROUP BY p.phenotype_uid";
-     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-     while ($row = mysql_fetch_array($res))
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+     while ($row = mysqli_fetch_array($res))
        $phenotypes[] = $row['name'];
      $countfound = count($phenotypes);
      if ($countfound > 0) {
        $phenotypes = implode(', ',$phenotypes);
        $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid = $exid";
-       $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
      } 
      else {
        $badtc = mysql_grab("select trial_code from experiments where experiment_uid = $exid");
@@ -975,7 +975,7 @@ File:  <i><?php echo $uploadfile ?></i><br>
        $infile .= ", ".$meansfile;
      $sql = "UPDATE experiments SET input_data_file_name = '$infile', updated_on=NOW()
              WHERE experiment_uid = '$exid'";
-     $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
    }
 
    // Announce success. Exclude any trials which have no data.

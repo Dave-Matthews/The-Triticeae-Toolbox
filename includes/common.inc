@@ -396,7 +396,6 @@ global $mysqli;
 	$ks=array_keys($vals);
 	$iks=array_keys($vals);
 	$id=-1;
-	ini_set("memory_limit","24M");
 	set_time_limit(300);
 	// Check for duplicates between the data and the content of the database
 	$dup_flag=0;
@@ -409,11 +408,13 @@ global $mysqli;
 		for ($i=0; $i < count($testKey); $i++) {
 			$eleTest=strlen($testVal[$i])>0 ? $testVal[$i] : "N/A";
 			$testStr.=$testKey[$i]."=\"".$eleTest."\"";
-			if ($i<count($testKey)-1) $testStr.=" AND ";
+			if ($i<count($testKey)-1) {
+                            $testStr.=" AND ";
+                        }
 		}
 		// print "SELECT * FROM $tablename WHERE $testStr<br>";
-		$testResult = mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $testStr");
-		if(mysqli_num_rows($testResult) > 0) {
+		$testResult = mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $testStr") or die(mysqli_error($mysqli));
+		if (mysqli_num_rows($testResult) > 0) {
 			$row = mysqli_fetch_assoc($testResult);
 			$id=$row[$idkey];
 			$dup_flag++;
@@ -437,14 +438,19 @@ global $mysqli;
 			for ($i=0; $i<$vsize; $i++) {
 				$update_str.=$ks[$i]."=";
 				$elestr=strlen($vals[$ks[$i]])>0 ? $vals[$ks[$i]] : "NULL";
-				if ($isnum[$iks[$i]]==0 && strlen($vals[$ks[$i]])<=0) $elestr="";
+				if ($isnum[$iks[$i]]==0 && strlen($vals[$ks[$i]])<=0) {
+                                    $elestr="";
+                                }
 				$update_str.=$isnum[$iks[$i]]==1 ? $elestr : "\"".addslashes($elestr)."\"";
 				if ($i<$vsize-1) $update_str.=",";
 			}
 			$update_str.=" where $testStr";
 			mysqli_query($mysqli, $update_str) or die(mysqli_errno($mysqli) . ":" . mysqli_error($mysqli));
- 			if ($cflt_flag>0 || $update_flag>0) {return array(0.5, $id);}
-			else {return array(0, $id);}
+ 			if ($cflt_flag>0 || $update_flag>0) {
+                            return array(0.5, $id);
+			} else {
+                            return array(0, $id);
+                        }
 		}
 		else {
 			return array(0, $id);
@@ -1461,38 +1467,51 @@ function clearSessionVariables($user) {
  */
 function get_lineuid($line)
 {
-  // If the name does not work, also check versions with spaces removed
-  // and spaces replaced by underscores
+    // If the name does not work, also check versions with spaces removed
+    // and spaces replaced by underscores
     global $mysqli;
     $line_nosp = str_replace(" ", "", $line);
     $line_us = str_replace(" ", "_", $line);
     $line_hyp = str_replace("-", "", $line);
-    $line_sql = mysqli_query($mysqli, "SELECT line_record_uid AS lruid
-                    FROM line_records
-                    WHERE line_record_name = '$line'
-                        OR line_record_name = '$line_nosp'
-                        OR line_record_name = '$line_us'
-                        OR line_record_name = '$line_hyp'
-                                        ");
-    if (mysqli_num_rows($line_sql)<1) {
-        //echo "Line ".$line." ".$line_us.$line_hyp.$line_nosp.$line_sql." \n";
-        $line_sql = mysqli_query($mysqli, "SELECT line_record_uid AS lruid
-                        FROM line_synonyms
-                        WHERE line_synonym_name = '$line'
-                            OR line_synonym_name = '$line_nosp'
-                            OR line_synonym_name = '$line_us'
-                            OR line_synonym_name = '$line_hyp'");
-        if (mysqli_num_rows($line_sql)<1) {
-            //echo "Line ".$line." is not in the line record or synonym table\n";
-            return false;
+    if ($line_sql = mysqli_query($mysqli, "SELECT line_record_uid
+        FROM line_records
+        WHERE line_record_name = '$line'
+        OR line_record_name = '$line_nosp'
+        OR line_record_name = '$line_us'
+        OR line_record_name = '$line_hyp'")) {
+        $line_cnt = mysqli_num_rows($line_sql);
+        if ($line_cnt < 1) {
+            if ($line_sql = mysqli_query($mysqli, "SELECT line_record_uid
+            FROM line_synonyms
+            WHERE line_synonym_name = '$line'
+            OR line_synonym_name = '$line_nosp'
+            OR line_synonym_name = '$line_us'
+            OR line_synonym_name = '$line_hyp'")) {
+                $line_cnt = mysqli_num_rows($line_sql);
+            } else {
+                echo "Error: sql query\n";
+                return false;
+            }
         }
+    } else {
+        echo "Error: sql query\n";
+        return false;
     }
     /* Do not add duplicates */
     $result = array();
-    while ($row = mysqli_fetch_array($line_sql, MYSQL_ASSOC)) {
-        if (!in_array($row["lruid"], $result)) {
-            $result[] = $row["lruid"];
+    while ($row = mysqli_fetch_array($line_sql)) {
+        $lruid = $row[0];
+        if (in_array($lruid, $result)) {
+            echo "skip $lruid\n";
+        } elseif (is_numeric($lruid)) {
+            $result[] = $lruid;
+        } else {
+            echo "skip empty $lruid\n";
         }
+    }
+    if (empty($result)) {
+        echo "Error: no results for $line\n";
+        return false;
     }
     return $result;
 }

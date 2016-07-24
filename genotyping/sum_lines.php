@@ -33,8 +33,8 @@ if (isset($_GET['uid'])) {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $trial, $e_uid);
         while (mysqli_stmt_fetch($stmt)) {
-          $empty[$trial] = "";
-          $trial_list[$e_uid] = $trial;
+            $empty[$trial] = "";
+            $trial_list[$e_uid] = $trial;
         }
         mysqli_stmt_close($stmt);
     }
@@ -69,7 +69,7 @@ if (isset($_GET['uid'])) {
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $uid);
             mysqli_stmt_execute($stmt);
-            mysqli_stmt_bind_result($stmt, $marke_uid);
+            mysqli_stmt_bind_result($stmt, $marker_uid);
             while (mysqli_stmt_fetch($stmt)) {
                 $marker_all1[] = $marker_uid;
             }
@@ -89,7 +89,7 @@ if (isset($_GET['uid'])) {
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
                 mysqli_stmt_bind_param($stmt, "i", $uid);
                 mysqli_stmt_execute($stmt);
-                mysqli_stmt_bind_result($stmt, $marker_uid, $alleles1); 
+                mysqli_stmt_bind_result($stmt, $marker_uid, $alleles1);
                 while (mysqli_stmt_fetch($stmt)) {
                     $count2++;
                     $marker_list2[$marker_uid] = $alleles1;
@@ -151,7 +151,7 @@ if (isset($_GET['uid'])) {
         echo "<h3>Allele Conflicts for $name_list[$uid] sorted by marker name</h3>\n";
         echo "<table>\n";
         echo "<tr><td>marker name\n";
-        foreach ($empty as $trial=>$allele) {
+        foreach ($empty as $trial => $allele) {
             echo "<td>$trial";
         }
         while (mysqli_stmt_fetch($stmt)) {
@@ -160,7 +160,7 @@ if (isset($_GET['uid'])) {
             } else {
                 if ($count > 0) {
                     echo "<tr><td>$prev";
-                    foreach ($allele_ary as $t1=>$a) {
+                    foreach ($allele_ary as $t1 => $a) {
                         echo "<td>$a";
                     }
                     echo "\n";
@@ -173,7 +173,7 @@ if (isset($_GET['uid'])) {
         }
     }
     echo "<tr><td>$prev";
-    foreach ($allele_ary as $t1=>$a) {
+    foreach ($allele_ary as $t1 => $a) {
         echo "<td>$a";
     }
     echo "\n";

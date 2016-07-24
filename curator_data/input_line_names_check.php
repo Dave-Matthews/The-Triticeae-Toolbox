@@ -5,8 +5,8 @@
 
 require 'config.php';
 include $config['root_dir'] . 'includes/bootstrap_curator.inc';
-require_once("../lib/Excel/reader.php"); // Microsoft Excel library
-connect();
+require_once "../lib/Excel/reader.php"; // Microsoft Excel library
+$mysqli = connecti();
 loginTest();
 
 $row = loadUser($_SESSION['username']);
@@ -15,9 +15,9 @@ authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
 /* The Excel file must have this string in cell B2.  Modify when a new template is needed.*/
-$TemplateVersions = array('Wheat' => '1Jul13', 
-			  'Barley' => '11Dec14',
-			  'Oat' => '29Jan15');
+$TemplateVersions = array('Wheat' => '1Jul13',
+  'Barley' => '11Dec14',
+  'Oat' => '29Jan15');
 $cnt = 0;  // Count of errors
 
 function die_nice($message = "")
@@ -35,14 +35,15 @@ function die_nice($message = "")
 /* Show more informative messages when we get invalid data. */
 function errmsg($sql, $err)
 {
+    global $mysqli;
     if (preg_match('/^Data truncated/', $err)) {
         // Undefined value for an enum type
         $pieces = preg_split("/'/", $err);
         $column = $pieces[1];
         $msg = "Unallowed value for field <b>$column</b>. ";
         // Only works for table line_records.  Could pass table name as parameter.
-        $r = mysql_query("describe line_records $column");
-        $columninfo = mysql_fetch_row($r);
+        $r = mysqli_query($mysqli, "describe line_records $column");
+        $columninfo = mysqli_fetch_row($r);
         $msg .= "Allowed values are: ".$columninfo[1];
         $msg .= "<br>Command: ".$sql."<br>";
         die_nice($msg);
@@ -60,7 +61,7 @@ class LineNames_Check
     // Using the class's constructor to decide which action to perform
     public function __construct($function = null)
     {
-        switch($function) {
+        switch ($function) {
             case 'typeDatabase':
                 $this->type_Database(); /* update database */
                 break;
@@ -70,18 +71,21 @@ class LineNames_Check
         }
     }
 
-  private function typeLineNameCheck() {
-    global $config;
-    include($config['root_dir'] . 'theme/admin_header.php');
-    echo "<h2>Line information: Validation</h2>"; 
-    $this->type_Line_Name();
-    $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
-  }
-	
-  private function type_Line_Name() {
-    global $TemplateVersions;
-    global $cnt;
+    private function typeLineNameCheck()
+    {
+        global $config;
+        include $config['root_dir'] . 'theme/admin_header.php';
+        echo "<h2>Line information: Validation</h2>";
+        $this->type_Line_Name();
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
+
+    private function type_Line_Name()
+    {
+        global $TemplateVersions;
+        global $cnt;
+        global $mysqli;
 ?>
 
 <script type="text/javascript">
@@ -101,51 +105,50 @@ class LineNames_Check
   th.marker { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
   td.marker { padding: 5px 0; border: 0 !important; }
 </style>
-		
-<?php
-  $row = loadUser($_SESSION['username']);
-  $username=$row['name'];
-	
-  if ($_FILES['file']['name'] == ""){
-    error(1, "No File Uploaded");
-    print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
-  }
-  else {
-    //$tmp_dir="uploads/tmpdir_".$username."_".rand();
-    $tmp_dir="uploads/".str_replace(' ', '_', $username)."_".date('yMd_G:i');
-    umask(0);
-    if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) 
-      mkdir($tmp_dir, 0777);
-    $target_path=$tmp_dir."/";
-    $uploadfile=$_FILES['file']['name'];
-    $uftype=$_FILES['file']['type'];
-    //	if (strpos($uploadfile, ".xls") === FALSE) {
-    if (preg_match('/\.xls$/', $uploadfile) == 0) {
-      error(1, "Only xls format is accepted. <br>");
-      print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
-    }
-    else {
-      if(move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
-	/* Read Excel worksheet 0 into $linedata[]. */
-	$datafile = $target_path.$uploadfile;
-	$reader = new Spreadsheet_Excel_Reader();
-	$reader->setOutputEncoding('CP1251');
-	$reader->read($datafile);
-	$linedata = $reader->sheets[0];
-	$cols = $reader->sheets[0]['numCols'];
-	$rows = $reader->sheets[0]['numRows'];
-	// Read the Template Version and check it.
-	$crop = $linedata['cells'][3][2];
-	if (!in_array($crop, array_keys($TemplateVersions))) {
-	  $croplist = implode(", ", array_keys($TemplateVersions));
-	  die ("Cell B3: Crop must be one of <b>$croplist</b>.");
-	}
+
+    <?php
+    $row = loadUser($_SESSION['username']);
+    $username=$row['name'];
+
+    if ($_FILES['file']['name'] == "") {
+        error(1, "No File Uploaded");
+        print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
+    } else {
+        //$tmp_dir="uploads/tmpdir_".$username."_".rand();
+        $tmp_dir="uploads/".str_replace(' ', '_', $username)."_".date('yMd_G:i');
+        umask(0);
+        if (!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
+            mkdir($tmp_dir, 0777);
+        }
+        $target_path=$tmp_dir."/";
+        $uploadfile=$_FILES['file']['name'];
+        $uftype=$_FILES['file']['type'];
+        //if (strpos($uploadfile, ".xls") === FALSE) {
+        if (preg_match('/\.xls$/', $uploadfile) == 0) {
+            error(1, "Only xls format is accepted. <br>");
+            print "<input type='Button' value='Return' onClick='history.go(-1); return;'>";
+        } else {
+            if (move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
+                /* Read Excel worksheet 0 into $linedata[]. */
+                $datafile = $target_path.$uploadfile;
+                $reader = new Spreadsheet_Excel_Reader();
+                $reader->setOutputEncoding('CP1251');
+                $reader->read($datafile);
+                $linedata = $reader->sheets[0];
+                $cols = $reader->sheets[0]['numCols'];
+                $rows = $reader->sheets[0]['numRows'];
+                // Read the Template Version and check it.
+                $crop = $linedata['cells'][3][2];
+                if (!in_array($crop, array_keys($TemplateVersions))) {
+                    $croplist = implode(", ", array_keys($TemplateVersions));
+                    die("Cell B3: Crop must be one of <b>$croplist</b>.");
+                }
 	if ($linedata['cells'][2][2] != $TemplateVersions[$crop] )
 	  die ("Incorrect Submission Form version for $crop.  Cell B2 must say \"" .$TemplateVersions[$crop]. "\".");
 
 	// Lookup all the Breeding Programs in the database.
-	$sql = mysql_query("SELECT distinct data_program_code from CAPdata_programs") or errmsg($sql, mysql_error());
-	while ($row = mysql_fetch_row($sql))
+	$sql = mysqli_query($mysqli, "SELECT distinct data_program_code from CAPdata_programs") or errmsg($sql, mysqli_error($mysqli));
+	while ($row = mysqli_fetch_row($sql))
 	  $bpcodes[] = $row[0];
 	// Try to read the Breeding Program from row 4.
 	if (stripos($linedata['cells'][4][1],"*Breeding Program") !== FALSE) {
@@ -174,8 +177,8 @@ class LineNames_Check
 			       'pedigree' => -2,
 			       'comments' => -2 );
 	// Available line properties:
-	$res = mysql_query("select name from properties") or die (mysql_error());
-	while ($r = mysql_fetch_row($res))
+	$res = mysqli_query($mysqli, "select name from properties") or die (mysqli_error($mysqli));
+	while ($r = mysqli_fetch_row($res))
 	  $properties[] = $r[0];
 
 	// First, locate the header line and read it into $header[].
@@ -232,8 +235,8 @@ class LineNames_Check
 	    if (empty($propuid))
 	      die('The Genetic Character "Species" must be defined and its allowed values specified.');
 	    $sql = "select value from property_values where property_uid = $propuid";
-	    $res = mysql_query($sql) or die(mysql_error()."<br>Query was:<br>".$sql);
-	    while ($r = mysql_fetch_row($res)) 
+	    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query was:<br>".$sql);
+	    while ($r = mysqli_fetch_row($res)) 
 	      $allowedvals[$pr][] = $r[0];
 	    $columnOffsets[$pr] = $columnOffset+1;
 	    $ourprops[] = $pr;
@@ -250,8 +253,8 @@ class LineNames_Check
 	      // Get this property's allowed values.
 	      $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 	      $sql = "select value from property_values where property_uid = $propuid";
-	      $res = mysql_query($sql) or die(mysql_error());
-	      while ($r = mysql_fetch_row($res)) 
+	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	      while ($r = mysqli_fetch_row($res)) 
 		$allowedvals[$pr][] = $r[0];
 	      $columnOffsets[$columnName] = $columnOffset+1;
 	      $ourprops[] = $pr;
@@ -341,9 +344,9 @@ class LineNames_Check
 		      WHERE bpcr.line_record_uid = lr.line_record_uid
 		      AND barley_pedigree_catalog_uid=2
 		      AND barley_ref_number = '$grin'";
-	      $res = mysql_query($sql) or errmsg($sql, mysql_error());
-	      if (mysql_num_rows($res) > 0) {
-		$row = mysql_fetch_row($res);
+	      $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+	      if (mysqli_num_rows($res) > 0) {
+		$row = mysqli_fetch_row($res);
 		if ($row[0] != $line) 
 		  die_nice("Row $irow, Line $line: GRIN Accession $grin is already used for Line $row[0].");
 	      }
@@ -404,9 +407,9 @@ class LineNames_Check
 		// If it's listed as a synonym, don't make it a line name too.
 		$sql = "select distinct line_record_name from line_synonyms ls, line_records lr
 		    where line_synonym_name = '$line' and ls.line_record_uid = lr.line_record_uid";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error());
-		if (mysql_num_rows($res) > 0) {
-		  $rn = mysql_fetch_row($res);
+		$res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+		if (mysqli_num_rows($res) > 0) {
+		  $rn = mysqli_fetch_row($res);
 		  $realname = $rn[0];
 		  // It's okay for a synonym to be the same as the name except for UPPER/Mixed case.
 		  if ($realname != $line)
@@ -449,15 +452,15 @@ class LineNames_Check
 		  elseif (count($linesyn_uid) == 1) {
 		    // Is it in the synonym table?
 		    $sql = "select line_synonym_name, line_record_uid from line_synonyms where line_synonym_name like '$syn'";
-		    $r = mysql_query($sql) or errmsg($sql, mysql_error());
-		    if (mysql_num_rows($r) > 0) {
+		    $r = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+		    if (mysqli_num_rows($r) > 0) {
 		      // It's a synonym.  For the current line?
-		      $found = mysql_fetch_row($r);
+		      $found = mysqli_fetch_row($r);
 		      if (strtoupper($found[0]) == strtoupper($syn)) {
 			if ($found[1] != $line_uid[0]) {
-			  $sql = mysql_query("SELECT line_record_name from line_records where line_record_uid = $found[1]")
-			    or errmsg($sql, mysql_error());
-			  $row = mysql_fetch_array($sql);
+			  $sql = mysqli_query($mysqli, "SELECT line_record_name from line_records where line_record_uid = $found[1]")
+			    or errmsg($sql, mysqli_error($mysqli));
+			  $row = mysqli_fetch_array($sql);
 			  $line_name = $row['line_record_name'];
 			  die_nice("$line alias '$syn' is already a synonym for a different line, $line_name.");
 			}
@@ -479,11 +482,11 @@ class LineNames_Check
 	  // $line_uids is a string containing 1 uid.  
 	  $line_updates =implode(",",$line_uids);
 	  // Get line names.
-	  $line_sql = mysql_query("SELECT line_record_name as name
+	  $line_sql = mysqli_query($mysqli, "SELECT line_record_name as name
                         FROM line_records
                         WHERE line_record_uid IN ($line_updates)") 
-	    or errmsg($sql, mysql_error());
-	  while ($row = mysql_fetch_array($line_sql, MYSQL_ASSOC)) {
+	    or errmsg($sql, mysqli_error($mysqli));
+	  while ($row = mysqli_fetch_array($line_sql, MYSQL_ASSOC)) {
 	    $line_update_names[] = $row["name"];
 	  }
 	  $line_update_data = $line_update_names;
@@ -624,7 +627,8 @@ class LineNames_Check
     /* Validation completed, now load the database. */
     private function type_Database() {
       global $config;
-      include($config['root_dir'] . 'theme/admin_header.php');
+      global $mysqli;
+      include $config['root_dir'] . 'theme/admin_header.php';
       global $cnt;
       $datafile = $_GET['linedata'];
       $filename = $_GET['file_name'];
@@ -650,8 +654,8 @@ class LineNames_Check
 	$firstprop = 6;
 
       // Available line properties:
-      $res = mysql_query("select name from properties") or errmsg($sql, mysql_error());
-      while ($r = mysql_fetch_row($res))
+      $res = mysqli_query($mysqli, "select name from properties") or errmsg($sql, mysqli_error($mysqli));
+      while ($r = mysqli_fetch_row($res))
 	$properties[] = $r[0];
 
       // First, locate the header line and read it into $header[].
@@ -710,8 +714,8 @@ class LineNames_Check
 	  // Get this property's allowed values.
 	  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 	  $sql = "select value from property_values where property_uid = $propuid";
-	  $res = mysql_query($sql) or errmsg($sql, mysql_error());
-	  while ($r = mysql_fetch_row($res)) 
+	  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+	  while ($r = mysqli_fetch_row($res)) 
 	    $allowedvals[$pr][] = $r[0];
 	  /* $columnOffsets[$columnName] = $columnOffset+1; */
 	  $columnOffsets[$pr] = $columnOffset+1;
@@ -785,23 +789,23 @@ class LineNames_Check
 	    $sql_end = "NOW(),NOW())";
 	    if (!empty($bp)) {
 	      $sql_beg .= "breeding_program_code,";
-	      $bp = mysql_real_escape_string($bp);
+	      $bp = mysqli_real_escape_string($mysqli, $bp);
 	      $sql_mid .= "'$bp', ";
 	    }
 	    if (!empty($mybp)) {
 	      $sql_beg .= "breeding_program_code,";
-	      $mybp = mysql_real_escape_string($mybp);
+	      $mybp = mysqli_real_escape_string($mysqli, $mybp);
 	      $sql_mid .= "'$mybp', ";
 	    }
 	    if (!empty($pedstring)) {
 	      $sql_beg .= "pedigree_string,";
-	      $pedstring = mysql_real_escape_string($pedstring);
+	      $pedstring = mysqli_real_escape_string($mysqli, $pedstring);
 	      $sql_mid .= "'$pedstring', ";
 	    }
 	    // For numbers, 0 is empty.
 	    if (isset($generation) AND $generation != "") {
 	      $sql_beg .= "generation,";
-	      $generation = mysql_real_escape_string($generation);
+	      $generation = mysqli_real_escape_string($mysqli, $generation);
 	      $sql_mid .= "'$generation', ";
 	    }
 	    /* if (!empty($species)) { */
@@ -811,24 +815,24 @@ class LineNames_Check
 	    /* } */
 	    if (!empty($comments)) {
 	      $sql_beg .= "description,";
-	      $comments = mysql_real_escape_string($comments);
+	      $comments = mysqli_real_escape_string($mysqli, $comments);
 	      $sql_mid .= "'$comments', ";
 	    }
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
-	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
-	    $line_uid = mysql_insert_id();
+	    $rlinsyn=mysqli_query($mysqli, $sql) or $linesuccess = errmsg($sql, mysqli_error($mysqli));
+	    $line_uid = mysqli_insert_id($mysqli);
 	    // $line_uid is no longer an array===FALSE, cf. above, it's an int.
 	    if ($linesuccess) {
 	      // Insert property values in table line_properties.
 	      foreach ($ourprops as $pr) {
                 if (!empty($propval[$pr])) {
-		  $propval[$pr] = mysql_real_escape_string($propval[$pr]);
+		  $propval[$pr] = mysqli_real_escape_string($mysqli, $propval[$pr]);
 		  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 		  $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$propval[$pr]'");
 		  $sql = "insert into line_properties (line_record_uid, property_value_uid) values ($line_uid, $propvaluid)";
-		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		}
 	      }
 	      // Insert synonyms.
@@ -838,7 +842,7 @@ class LineNames_Check
 		    $sql = "insert into line_synonyms 
 		      (line_record_uid, line_synonym_name, updated_on, created_on) values 
 		      ('$line_uid', '$syn', NOW(),NOW())";
-		    $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		    $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		  }
 		}	  
 	      }
@@ -848,18 +852,18 @@ class LineNames_Check
 		$sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
                 WHERE barley_pedigree_catalog_uid=2
                 AND line_record_uid = '$line_uid'";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error());
-		if (mysql_num_rows($res) == 1) {
+		$res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+		if (mysqli_num_rows($res) == 1) {
 		  $sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
                 updated_on=NOW() WHERE barley_pedigree_catalog_uid=2 
                 AND line_record_uid = '$line_uid'";
-		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		}
-		elseif (mysql_num_rows($res) == 0) {
+		elseif (mysqli_num_rows($res) == 0) {
 		  $sql = "insert into barley_pedigree_catalog_ref 
                 (barley_pedigree_catalog_uid, line_record_uid, barley_ref_number, 
                 updated_on, created_on) values ('2', '$line_uid', '$grin', NOW(),NOW())";
-		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		}
 		else echo "Unexpected: Line '$line' already has multiple GRIN accessions. Not adding.<br>";
 	      }
@@ -874,20 +878,20 @@ class LineNames_Check
 	    $sql_mid = "";
 	    $sql_end = "updated_on=NOW() where line_record_uid = '$line_uid'";
 	    if (!empty($bp)) {
-              $bp = mysql_real_escape_string($bp);
+              $bp = mysqli_real_escape_string($mysqli, $bp);
 	      $sql_mid .= "breeding_program_code='$bp', ";
 	    }
 	    if (!empty($mybp)) {
-	      $mybp = mysql_real_escape_string($mybp);
+	      $mybp = mysqli_real_escape_string($mysqli, $mybp);
 	      $sql_mid .= "breeding_program_code='$mybp', ";
 	    }
 	    if (!empty($pedstring)) {
-	      $pedstring = mysql_real_escape_string($pedstring);
+	      $pedstring = mysqli_real_escape_string($mysqli, $pedstring);
 	      $sql_mid .= "pedigree_string = '$pedstring', ";
 	    }
 	    // For numbers, 0 is empty.
 	    if (isset($generation) AND $generation != "") {
-              $generation = mysql_real_escape_string($generation);
+              $generation = mysqli_real_escape_string($mysqli, $generation);
 	      $sql_mid .= "generation = '$generation', ";
 	    }
 	    /* if (!empty($species)) { */
@@ -895,17 +899,17 @@ class LineNames_Check
 	    /*   $sql_mid .= "species = '$species', "; */
 	    /* } */
 	    if (!empty($comments)) {
-              $comments = mysql_real_escape_string($comments);
+              $comments = mysqli_real_escape_string($mysqli, $comments);
 	      $sql_mid .= "description = '$comments', ";
 	    }
 	    $sql = $sql_beg.$sql_mid.$sql_end;
 	    $linesuccess = TRUE;
-	    $rlinsyn=mysql_query($sql) or $linesuccess = errmsg($sql, mysql_error());
+	    $rlinsyn=mysqli_query($mysqli, $sql) or $linesuccess = errmsg($sql, mysqli_error($mysqli));
             if ($linesuccess) {
 	      // Update property values in table line_properties.
 	      foreach ($ourprops as $pr) {
 		if (!empty($propval[$pr])) {
-		  $propval[$pr] = mysql_real_escape_string($propval[$pr]);
+		  $propval[$pr] = mysqli_real_escape_string($mysqli, $propval[$pr]);
 		  $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 		  $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$propval[$pr]'");
@@ -914,28 +918,28 @@ class LineNames_Check
 			      from line_properties lp, property_values pv
 			      where line_record_uid = $line_uid and property_uid = $propuid
 			      and lp.property_value_uid = pv.property_values_uid");
-		  if (!empty($linepropuid)) 
-		    mysql_query("update line_properties 
-                        set property_value_uid = $propvaluid
-                        where line_properties_uid = $linepropuid") or errmsg($sql, mysql_error());
-		  else 
-		    mysql_query("insert into line_properties (line_record_uid, property_value_uid) 
-                          values ($line_uid, $propvaluid)") or errmsg($sql, mysql_error());
+		  if (!empty($linepropuid)) {
+                    $sql = "update line_properties set property_value_uid = $propvaluid where line_properties_uid = $linepropuid";
+		    mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+		  } else {
+                    $sql = "insert into line_properties (line_record_uid, property_value_uid) values ($line_uid, $propvaluid)";
+		    mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+                  }
 		}
 	      }
 	      // Update synonyms.
 	      if (!empty($synonyms)) {
 		// Don't add the synonym if it's already there.
-		$res = mysql_query("select line_synonym_name from line_synonyms where line_record_uid = $line_uid") 
-		  or errmsg($sql, mysql_error());
-		while ($row = mysql_fetch_row($res))
+		$res = mysqli_query($mysqli, "select line_synonym_name from line_synonyms where line_record_uid = $line_uid") 
+		  or errmsg($sql, mysqli_error($mysqli));
+		while ($row = mysqli_fetch_row($res))
 		  $oldsyns[] = $row[0];
 		foreach ($synonyms as $syn) {
 		  if (!empty($syn) AND !in_array($syn, $oldsyns)) {
 		    $sql = "insert into line_synonyms 
 	  	      (line_record_uid, line_synonym_name, updated_on, created_on) values 
 		      ('$line_uid', '$syn', NOW(),NOW())";
-		    $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		    $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		  }  
 		}  // end foreach ($synonyms as $syn)
 	      }  // end if (!empty($synonyms))
@@ -945,18 +949,18 @@ class LineNames_Check
 		$sql = "select barley_pedigree_catalog_ref_uid from barley_pedigree_catalog_ref
                 WHERE barley_pedigree_catalog_uid=2
                 AND line_record_uid = '$line_uid'";
-		$res = mysql_query($sql) or errmsg($sql, mysql_error());
-		if (mysql_num_rows($res) == 1) {
+		$res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+		if (mysqli_num_rows($res) == 1) {
 		  $sql = "update barley_pedigree_catalog_ref set barley_ref_number = '$grin',
                 updated_on=NOW() WHERE barley_pedigree_catalog_uid=2 
                 AND line_record_uid = '$line_uid'";
-		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		}
-		elseif (mysql_num_rows($res) == 0) {
+		elseif (mysqli_num_rows($res) == 0) {
 		  $sql = "insert into barley_pedigree_catalog_ref 
                 (barley_pedigree_catalog_uid, line_record_uid, barley_ref_number, 
                 updated_on, created_on) values ('2', '$line_uid', '$grin', NOW(),NOW())";
-		  $res = mysql_query($sql) or errmsg($sql, mysql_error());
+		  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 		}
 	      } /* end of if (!empty($grin)) */
 	    } /* end of if ($linesuccess) */
@@ -975,9 +979,9 @@ class LineNames_Check
 	// Timestamp, e.g. _28Jan12_23:01
 	$ts = date("_jMy_H:i");
 	$filename = $filename . $ts;
-	$devnull = mysql_query("INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysql_error());
+	$devnull = mysqli_query($mysqli, "INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysqli_error($mysqli));
       }
       $footer_div = 1;
-      include($config['root_dir'].'theme/footer.php');
+      include $config['root_dir'].'theme/footer.php';
     } /* end of function type_Database */
 } /* end of class */

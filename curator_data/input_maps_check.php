@@ -58,10 +58,10 @@ class MapsCheck
         $footer_div = 1;
         include($config['root_dir'].'theme/footer.php');
     }
-	
+
     private function type_Maps()
     {
-	?>
+        ?>
         <script type="text/javascript" src="curator_data/input_maps.js"></script>
 	<style type="text/css">
 			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
@@ -88,11 +88,11 @@ class MapsCheck
         global $mysqli;
         $row = loadUser($_SESSION['username']);
 
-	$username = $row['name'];
+        $username = $row['name'];
         $username = preg_replace('/\s+/', '', $username);
-	
-	$tmp_dir="uploads/tmpdir_".$username."_".rand();
-	umask(0);
+
+        $tmp_dir="uploads/tmpdir_".$username."_".rand();
+        umask(0);
 	
 	if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
 		mkdir($tmp_dir, 0777);
@@ -408,7 +408,11 @@ class MapsCheck
 
 	// If new mapset, then find all the chromosome names to make a newmapset
 	// then find min and max position
-	
+
+        $sql = "INSERT INTO map (mapset_uid, map_name, map_start, map_end, updated_on, created_on)
+                                VALUES (?, ?, ?, ?, NOW(),NOW())";
+        $stmt = mysqli_prepare($mysqli, $sql);
+        mysqli_stmt_bind_param($stmt, "isii", $mapset_uid, $mapnametmp, $minval, $maxval);
 	if ($new_map == 'TRUE') {		
 		$map_name = array_unique($chrom);
 		echo "size map".sizeof($map_name)."\n";
@@ -429,19 +433,16 @@ class MapsCheck
 					$minval = $start_pos[$chrom_vals[$cnt]];
 				}
 			}
-		//	echo "i'm in second loop". count($start_pos)."into loop".$cstr." ".count($chrom_vals)." ".$minval." ".$maxval. "end of second loop"."\n";
 			$mapnametmp = $mapset_prefix."_".$cstr;
-			$sql = "INSERT INTO map (mapset_uid, map_name, map_start, map_end, updated_on, created_on)
-				VALUES ($mapset_uid, '$mapnametmp', $minval,$maxval, NOW(),NOW())";
-			$res = mysqli_query($mysqli, $sql);
-			if (!$res) { //catch it and go on if duplicate key message comes up for the first time through a new map
+                        if (!mysqli_stmt_execute($stmt)) {
 				$message  = 'Invalid query: ' . mysqli_error($myslqi) . "i have an error"."\n";
 				$message .= 'Whole query: ' . $query. "\n";
 				if (strpos($query,"uplicate")) {echo $message;
 				} else {die($message);}
 			}
                         $map_chr_new[$cstr] = $mapnametmp;
-		}	
+		}
+                mysqli_stmt_close($stmt);
 		
 		/* map uid's exist only for the existing mapsets so for new ones we need to read it from the map table after we create */
 	        echo "List of map entries<br>\n";	

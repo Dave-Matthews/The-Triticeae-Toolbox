@@ -8,35 +8,35 @@
  * @author Clay Birkett <claybirkett@gmail.com>
 */
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap_curator.inc');
-connect();
+include $config['root_dir'].'includes/bootstrap_curator.inc';
+$mysqli = connect();
 
 // Update cache table if necessary. Empty?
-    if(mysql_num_rows(mysql_query("select line_record_uid from allele_duplicates")) == 0)
-      $update = TRUE;
+if (mysqli_num_rows(mysqli_query($mysqli, "select line_record_uid from allele_duplicates")) == 0) {
+    $update = true;
+}
+// Out of date?
+$sql = "select if( datediff(
+        (select max(updated_on) from allele_frequencies),
+        (select max(updated_on) from allele_duplicates)
+        ) > 0, 'need_update', 'okay')";
+$need = mysql_grab($sql);
+if ($need == 'need_update') {
+    $update = true;
+}
 
-    // Out of date?
-    $sql = "select if( datediff(
-            (select max(updated_on) from allele_frequencies),
-            (select max(updated_on) from allele_duplicates)
-          ) > 0, 'need_update', 'okay')";
-    $need = mysql_grab($sql);
-    if ($need == 'need_update') {
-        $update = TRUE;
-    }
-
-    if ($update) {
+if ($update) {
     //update table
 
     $sql = "delete from allele_duplicates";
     set_time_limit(0);
-    $result = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
     $sql = "select line_record_uid, count(distinct(marker_uid)) as temp from allele_conflicts
       group by line_record_uid order by temp DESC";
-    $result = mysql_query($sql) or die(mysql_error());
-    while ($row=mysql_fetch_row($result)) {
-       $uid = $row[0];
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row=mysqli_fetch_row($result)) {
+        $uid = $row[0];
 
         $sql = "select distinct(e.trial_code), e.experiment_uid
           from allele_conflicts a, line_records l, markers m, experiments e
@@ -44,8 +44,8 @@ connect();
           and a.marker_uid = m.marker_uid
           and a.experiment_uid = e.experiment_uid
           and l.line_record_uid = $uid";
-        $result2 = mysql_query($sql) or die(mysql_error());
-        while ($row2=mysql_fetch_row($result2)) {
+        $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row2=mysqli_fetch_row($result2)) {
           $trial = $row2[0];
           $e_uid = $row2[1];
           $trial_list[$e_uid] = $trial;
@@ -61,8 +61,8 @@ connect();
           $sql = "select marker_uid, alleles from allele_conflicts
              where line_record_uid = $uid
              and experiment_uid = $trial1";
-          $result2 = mysql_query($sql) or die(mysql_error());
-          while ($row2=mysql_fetch_row($result2)) {
+          $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+          while ($row2=mysqli_fetch_row($result2)) {
              $count1++;
              $marker_uid = $row2[0];
              $alleles1 = $row2[1];
@@ -71,8 +71,8 @@ connect();
           $sql = "select marker_uid from allele_cache
               where line_record_uid = $uid and experiment_uid = $trial1";
           //echo "$sql<br>\n";
-          $result2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-          while ($row2=mysql_fetch_row($result2)) {
+          $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+          while ($row2=mysqli_fetch_row($result2)) {
              $count1++;
              $marker_uid = $row2[0];
              $marker_all1[] = $marker_uid;
@@ -84,8 +84,8 @@ connect();
             $sql = "select marker_uid, alleles from allele_conflicts
               where line_record_uid = $uid
               and experiment_uid = $trial2";
-            $result2 = mysql_query($sql) or die(mysql_error());
-            while ($row2=mysql_fetch_row($result2)) {
+            $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row2=mysqli_fetch_row($result2)) {
                $count2++;
                $marker_uid = $row2[0];
                $alleles1 = $row2[1];
@@ -93,8 +93,8 @@ connect();
             }
             $sql = "select marker_uid from allele_cache where line_record_uid = $uid and experiment_uid = $trial2";
             //echo "$sql<br>\n";
-            $result3 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-            while ($row3=mysql_fetch_row($result3)) {
+            $result3 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row3=mysqli_fetch_row($result3)) {
               $count2++;
               $marker_uid = $row3[0];
               $marker_all2[] = $marker_uid;
@@ -124,7 +124,7 @@ connect();
         }
         $max_perc = round(100*$max_perc, 0);
         $sql = "insert into allele_duplicates (line_record_uid, duplicates, conflicts, percent_conf) values ($uid, $max_count_dup, $max_count_con, $max_perc)";
-        $result2 = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+        $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         echo "$uid $sql<br>\n";
         flush();
     }

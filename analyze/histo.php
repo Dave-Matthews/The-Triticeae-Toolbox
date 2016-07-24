@@ -1,30 +1,31 @@
 <?php
 /**
  * Display histogram
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/histo.php
- * 
+ *
  * The purpose of this script is to generate one or more histograms of phenotype data
  *
  */
 
+namespace T3;
+
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'] . 'downloads/downloads_class2.php';
 
 $mysqli = connecti();
 
-new Downloads($_GET['function']);
+$dObj = new Downloads();
+new Histo($_GET['function']);
 
 /** Using a PHP class to display histogram
- * 
+ *
  * @category PHP
  * @package  T3
  * @author   Clay Birkett <claybirkett@gmail.com>
@@ -32,35 +33,34 @@ new Downloads($_GET['function']);
  * @link     http://triticeaetoolbox.org/wheat/histo.php
  *
  */
-class Downloads
+class Histo
 {
-    /** 
+    /**
      * Using the class's constructor to decide which action to perform
-     * 
+     *
      * @param string $function action to perform
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
-        case 'run_histo':
-            $this->runHisto();
-            break;
-        case "download_session_v4":
-            $this->_type1Session(V4);
-            break;
-        default:
-            $this->type1Select();
-            break;
+        switch ($function) {
+            case 'run_histo':
+                $this->runHisto();
+                break;
+            case "download_session_v4":
+                $this->_type1Session(V4);
+                break;
+            default:
+                $this->type1Select();
+                break;
         }
     }
 
     /**
      * load header and footer then check session to use existing data selection
-     * 
+     *
      * @return NULL
      */
-    function type1Select()
+    private function type1Select()
     {
         global $config;
         include $config['root_dir'].'theme/normal_header.php';
@@ -74,7 +74,7 @@ class Downloads
 
     /**
      * check for required inputs
-     * 
+     *
      * @return NULL
      */
     function type1Checksession()
@@ -162,7 +162,7 @@ class Downloads
                 if ($triallabel == "") {
                     $triallabel = "triallabel <- list()\n";
                 }
-                $triallabel .= "triallabel[$uid] <- \"$trial\"\n";
+                $triallabel .= "triallabel[\"$trial\"] <- \"$trial\"\n";
                 $ntrials++;
             }
         }
@@ -203,125 +203,6 @@ class Downloads
         } else {
                   echo "Error in R script R/GShisto.R<br>\n";
         }
-    }
-
-    /**
-     * Build trait download file for Tassel program interface
-     * 
-     * @param unknown_type $experiments experiments
-     * @param unknown_type $traits      traits
-     * @param unknown_type $datasets    dataset
-     * 
-     * @return NULL
-     */
-    private function _type1BuildTasselTraitsDownload($experiments, $traits, $datasets)
-    {
-        global $mysqli;
-        $delimiter = "\t";
-        $output = '';
-        $outputheader1 = '';
-        $outputheader3 = "<Trial>";
-
-        //only use first trait
-        $pattern = "/([0-9]+)/";
-        if (preg_match($pattern, $traits, $match)) {
-            $traits = $match[1];
-        } else {
-            echo "error - can not identify trait $traits\n";
-            die();
-        }
-
-        if (isset($_SESSION['selected_lines'])) {
-            $lines = $_SESSION['selected_lines'];
-        } else {
-            die("Error: should have lines selected<br>\n");
-        }
-        $selectedlines = implode(",", $lines);
-        $outputheader2 = "gid" . $delimiter . "pheno" . $delimiter . "trial" . $delimiter . "year";
-
-        $sql_option = "";
-        if (preg_match("/\d/", $experiments)) {
-            $sql_option .= "AND tb.experiment_uid IN ($experiments)";
-        }
-        if (preg_match("/\d/", $datasets)) {
-            $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-        }
-        $sql = "SELECT DISTINCT lr.line_record_name, lr.line_record_uid
-               FROM line_records as lr, tht_base as tb, phenotype_data as pd
-               WHERE lr.line_record_uid=tb.line_record_uid
-               AND pd.tht_base_uid = tb.tht_base_uid
-               AND pd.phenotype_uid = $traits
-                 $sql_option";
-      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-      while ($row = mysqli_fetch_array($res)) {
-          $lines_names[] = $row['line_record_name'];
-          $line_uid[] = $row['line_record_uid'];
-      }
-      $nlines = count($lines_names);
-      if ($nlines == 0) {
-        die("<font color=\"red\">Error: no phenotype measurements for this combination of traits and trials</font>");
-      }      
-
-      $outputheader1 = "$nlines".$delimiter."$ncols".$delimiter.$nheaderlines;
-          $output = $outputheader2."\n";
-
-      if (isset($_SESSION['selected_trials'])) {
-          $selectedtrials = $_SESSION['selected_trials'];
-          $selectedtrials = implode(",",$selectedtrials);
-      }
-      if (preg_match("/\d/",$selectedtrials)) {
-          $sql_option = " WHERE tb.experiment_uid IN ($selectedtrials) AND ";
-      } else{
-          $sql_option = " WHERE ";
-      }
-      $found = 0;
-      foreach ($lines as $uid) {
-          $sql = "SELECT line_record_name, tb.experiment_uid, experiment_year as exper 
-                    from line_records as lr, tht_base as tb, experiments as exp
-                    $sql_option
-                    lr.line_record_uid=tb.line_record_uid
-                    and tb.experiment_uid = exp.experiment_uid
-                    and lr.line_record_uid = $uid";
-            //echo "$sql<br>\n";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-            if (preg_match("/\d/",$selectedtrials)) {   //for case where there are phenotype measurements
-            while ($row = mysqli_fetch_array($res)) {
-              $found = 1;
-              $line_name = $row[0];
-              $exper = $row[1];
-              $year = $row[2];
-              $sql = "select pd.value as value
-                     from tht_base as tb, phenotype_data as pd
-                     WHERE tb.experiment_uid = $exper AND 
-                     tb.line_record_uid  = $uid
-                     AND pd.tht_base_uid = tb.tht_base_uid
-                     AND pd.phenotype_uid = $traits";
-              $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-              if ($row2 = mysqli_fetch_array($res2)) {
-                $value = $row2['value'];
-              } else {
-                $value = "-999";
-              }
-
-              $outline = $line_name.$delimiter.$value.$delimiter.$exper.$delimiter.$year."\n";
-              $output .= $outline;
-            }
-            } else {    //for case where there are no phenotype measurements
-            if ($row = mysqli_fetch_array($res)) {
-              $line_name = $row[0];
-              $year = $row[2];
-              $exper = 0;    //use 0 to indicate the prediction set
-              $value = "-999";
-              $outline = $line_name.$delimiter.$value.$delimiter.$exper.$delimiter.$year."\n";
-              $output .= $outline;
-            }
-         }
-      }
-      if ($found == 0) {
-        die("<font color=\"red\">Error: no phenotype measurements for this combination of traits and trials</font>");
-      }
-
-      return $output;
     }
 
     private function _type1Session() {
@@ -369,11 +250,13 @@ class Downloads
        $filename6 = 'THT_R_error_' . $unique_str . '.txt';
        $filename7 = 'THT_result_' . $unique_str . '.csv';
 
+       global $dObj;
        if(!file_exists($dir.$filename2)){
                     //$h = fopen($dir.$filename2, "w+");
                     $datasets_exp = "";
                     $subset = "yes";
-                    $output = $this->_type1BuildTasselTraitsDownload($experiments_t,$phenotype,$datasets_exp,$subset);
+                    //$output = $this->_type1BuildTasselTraitsDownload($experiments_t,$phenotype,$datasets_exp,$subset);
+                    $output = $dObj->type1_build_traits_download($experiments_t, $phenotype, $datasets_exp);
                     if ($output != NULL) {
                       $h = fopen($dir.$filename2, "w+");
                       fwrite($h,$output);

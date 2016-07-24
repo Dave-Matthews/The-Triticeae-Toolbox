@@ -1,17 +1,14 @@
 <?php
 /**
  * Canopy Spectral Reflectance, Fieldbook import
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_field_check.php
- * 
+ *
  */
 
 require 'config.php';
@@ -19,7 +16,6 @@ require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 require '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
-connect();
 $mysqli = connecti();
 loginTest();
 
@@ -35,7 +31,7 @@ ob_end_flush();
 new Data_Check($_GET['function']);
 
 /** Using a PHP class to implement Field Book import
- * 
+ *
  * @category PHP
  * @package  T3
  * @author   Clay Birkett <claybirkett@gmail.com>
@@ -53,14 +49,13 @@ class Data_Check
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
-        case 'typeDatabase':
-            $this->type_Database(); /* update database */
-            break;
-        default:
-            $this->typeExperimentCheck(); /* intial case*/
-            break;
+        switch ($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
+            default:
+                $this->typeExperimentCheck(); /* intial case*/
+                break;
         }
     }
 
@@ -125,16 +120,16 @@ class Data_Check
   //  echo "$sql<br>\n";
   //  die("Error: could not find trial code in database $experiment_uid<br>\n");
   //}
-  if (file_exists($raw_path)) {
-    $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(64, 80));
-    $tmp1 = $_FILES['file']['name'][0];
-    $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][0];
-    //echo "replace $tmp1 $tmp2 $raw_path<br>\n";
-    $meta_path = str_replace("$tmp1", "$unq_file_name", "$meta_path",$count);
-    $raw_path = str_replace("$tmp1", "$unq_file_name", "$raw_path",$count);
-  } else {
-    $unq_file_name = $_FILES['file']['name'][0];
-  }
+    if (file_exists($raw_path)) {
+        $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(64, 80));
+        $tmp1 = $_FILES['file']['name'][0];
+        $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][0];
+        //echo "replace $tmp1 $tmp2 $raw_path<br>\n";
+        $meta_path = str_replace("$tmp1", "$unq_file_name", "$meta_path",$count);
+        $raw_path = str_replace("$tmp1", "$unq_file_name", "$raw_path",$count);
+    } else {
+        $unq_file_name = $_FILES['file']['name'][0];
+    }
   if (empty($_FILES['file']['name'][0])) {
     if (empty($_POST['filename'])) {
       echo "missing Data file\n";

@@ -33,8 +33,8 @@
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 <script src="jquery.smartmenus.js" type="text/javascript"></script>
 
-<link href='sm-core-css.css' rel='stylesheet' type='text/css' />
-<link href='theme/sm-cleant3.css' rel='stylesheet' type='text/css' />
+<link href="sm-core-css.css" rel="stylesheet" type="text/css">
+<link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
 <script>
 jQuery.noConflict();
 jQuery( document ).ready(function( $ ) {
@@ -43,7 +43,6 @@ jQuery( document ).ready(function( $ ) {
 </script>
 
 <?php
-connect();
 // clear session if it contains variables from another database
 $database = mysql_grab("select value from settings where name='database'");
 $temp = $_SESSION['database'];
@@ -62,15 +61,11 @@ if (empty($title)) {
     $title = "The Triticeae Toolbox";
 }
 echo "<title>$title</title>";
-global $usegbrowse;
+require_once $config['root_dir'].'includes/analyticstracking.php';
 
     ?>
-    </head>
-    <body onload="javascript:setup();">
-    <?php
-    //not working since server upgrade
-    require_once $config['root_dir'].'includes/analyticstracking.php';
-?>
+</head>
+<body onload="javascript:setup();">
 <div id="container">
   <div id="barleyimg">
   </div>
@@ -141,6 +136,8 @@ global $usegbrowse;
           <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
  	  <li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
         </ul>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/outlier.php" title="Filter outliers">Filter outliers</a>
+        <!--li><a href="<?php echo $config['base_url']; ?>analyze/training.php" title="Optimize training set">Optimize training set</a-->
 	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>

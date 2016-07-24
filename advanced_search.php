@@ -1,18 +1,15 @@
 <?php
 /**
  * select lines by haplotype
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/andvanced_search.php
  */
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
-connect();
+include $config['root_dir'].'includes/bootstrap.inc';
+include $config['root_dir'].'theme/normal_header.php';
+$mysqli = connecti();
 ?>
 
 <div id="primaryContentContainer">
@@ -28,6 +25,7 @@ connect();
 	 * @param array $cross 2D array of all allele combinations
 	 */
 	function combinations($num_markers, $marker_idx, $marker_list, $cross) { 
+          global $mysqli;
 	  global $dispMissing;
 	  $sub = $num_markers - 1; /* which column of marker_idx to increment */
 	  $i = 0;
@@ -50,11 +48,11 @@ connect();
           $query_str="select E.line_record_name, E.line_record_uid, E.marker_uid, E.alleles from allele_cache as E where
           $marker_instr $in_these_lines";
  	  //print $query_str;
-          $result=mysql_query($query_str) or die(mysql_error() . $query_str);
+          $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli));
 	  $lines = array();
           $line_uids=array();
           $line_names=array();
-                            while ($row=mysql_fetch_assoc($result)) {
+                            while ($row=mysqli_fetch_assoc($result)) {
                                 $linename=$row['line_record_name'];
                                 $lineuid=$row['line_record_uid'];
                                 $mkruid=$row['marker_uid'];
@@ -145,12 +143,12 @@ connect();
 						C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid
                           $marker_instr $in_these_lines";
 			  //print $query_str;
-			  $result=mysql_query($query_str) or die(mysql_error() . $query_str);
+			  $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli));
 			  //print "Number of rows = ". mysql_num_rows($result) . "\n";
 			  $lines = array();
 			  $line_uids=array();
 			  $line_names=array();
-			  while ($row=mysql_fetch_assoc($result)) {
+			  while ($row=mysqli_fetch_assoc($result)) {
 				$linename=$row['line_record_name'];
 				$lineuid=$row['line_record_uid'];
 				$mkruid=$row['marker_uid'];
@@ -291,7 +289,7 @@ connect();
 
   //echo "<pre>$search_str\n\n\n\n\n\n</pre>";
 
-			$search = mysql_query($search_str) or die("Error with ".$search_str);
+			$search = mysqli_query($mysqli, $search_str) or die("Error with ".$search_str);
 			$compare = "na_value=$value";
 			}
 		else {
@@ -307,13 +305,13 @@ connect();
 			//echo "<pre>$search_str\n\n\n\n\n\n</pre>";
 
 
-			$search = mysql_query($search_str) or die("Error with ".$search_str);
+			$search = mysqli_query($mysqli, $search_str) or die("Error with ".$search_str);
 			$compare = "first_value=$first&last_value=$last";
 		}
 		$selLines = array();
 		$linenames= array();
-		if(mysql_num_rows($search) > 0) {
-			while($line = mysql_fetch_assoc($search)) {
+		if(mysqli_num_rows($search) > 0) {
+			while($line = mysqli_fetch_assoc($search)) {
 					array_push($selLines, $line['line_record_uid']);
 					$linenames[$line['line_record_uid']] =$line['line_record_name'];
 			}
@@ -356,12 +354,12 @@ connect();
 				C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid and
 				A.line_record_uid in (".$lines_instr.")";
 
-		$result=mysql_query($query_str) or die($sql);
+		$result=mysqli_query($mysqli, $query_str) or die($sql);
 		$lines = array();
 		$line_uids=array();
 		$line_names=array();
 		$mkrs=array();
-		while ($row=mysql_fetch_assoc($result)) {
+		while ($row=mysqli_fetch_assoc($result)) {
 			$linename=$row['line_record_name'];
 			$lineuid=$row['line_record_uid'];
 			$mkruid=$row['marker_uid'];
@@ -435,20 +433,20 @@ connect();
 			foreach($_SESSION['clicked_buttons'] as $marker) {
 
 				// Show Marker Name
-				$nme = mysql_query("SELECT marker_name FROM markers WHERE marker_uid = $marker") or die(mysql_error());
-				$row = mysql_fetch_assoc($nme);
+				$nme = mysqli_query($mysqli, "SELECT marker_name FROM markers WHERE marker_uid = $marker") or die(mysqli_error($mysqli));
+				$row = mysqli_fetch_assoc($nme);
 				echo "<th>$row[marker_name]</th>";
 
 				// Show Alleles corresponding to the marker.
-				$allele = mysql_query("SELECT DISTINCT allele_1, allele_2
+				$allele = mysqli_query($mysqli, "SELECT DISTINCT allele_1, allele_2
                                                         FROM alleles, genotyping_data
                                                         WHERE genotyping_data.marker_uid = $marker
                                                                 AND genotyping_data.genotyping_data_uid = alleles.genotyping_data_uid
                                                         ORDER BY allele_1 ASC
-                                                ") or die(mysql_error());
-				if(mysql_num_rows($allele) > 0) {
+                                                ") or die(mysqli_error($mysqli));
+				if(mysqli_num_rows($allele) > 0) {
                                   $j = 0;
-				  while ($row = mysql_fetch_assoc($allele)) {
+				  while ($row = mysqli_fetch_assoc($allele)) {
 				    $alleles = $row[allele_1].$row[allele_2];
                                     $marker_list[$i] = $marker;
 				    $marker_idx[$i] = 0;

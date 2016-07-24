@@ -1,7 +1,7 @@
 <?php
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-connect();
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+$mysqli = connecti();
 loginTest();
 if (loginTest2()) {
   $row = loadUser($_SESSION['username']);
@@ -9,7 +9,7 @@ if (loginTest2()) {
   $myid = $row['users_uid'];
  }
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
-include($config['root_dir'].'theme/admin_header.php');
+include $config['root_dir'].'theme/admin_header.php';
 ?>
 
   <div class="section">
@@ -25,8 +25,8 @@ if (!empty($panel) AND $panel != "&lt;panel name&gt;") {
   if ($desc == "&lt;description&gt;")
     $desc = "";
   $sql="select linepanels_uid from linepanels where name = '$panel'";
-  $r = mysql_query($sql) or die(mysql_error());
-  if (mysql_num_rows($r) > 0)
+  $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if (mysqli_num_rows($r) > 0)
     echo "<p><font color=red>Panel \"$panel\" already exists.</font>";
   else {
     if (count($_SESSION['selected_lines']) < 2) 
@@ -34,7 +34,7 @@ if (!empty($panel) AND $panel != "&lt;panel name&gt;") {
     else {
       $lineids = implode(",", $_SESSION['selected_lines']);
       $sql = "insert into linepanels (name, comment, line_ids) values ('$panel', '$desc', '$lineids')";
-      $r = mysql_query($sql) or die(mysql_error());
+      $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
       echo "Panel \"$panel\" added.<p>";
     }
   }
@@ -55,7 +55,7 @@ if (isset($_POST['deselLines'])) {
 if (isset($_POST[delete])) {
   $remove = $_POST[panelist];
   $sql = "delete from linepanels where linepanels_uid = $remove";
-  $r = mysql_query($sql) or die(mysql_error());
+  $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
   $feedback = "Panel deleted.<p>";
  }
 
@@ -63,7 +63,7 @@ if (isset($_POST[delete])) {
 if (isset($_POST[update])) {
   $panelid = $_POST[panelist];
   $sql = "update linepanels set comment = '".$_POST[editdesc]."' where linepanels_uid = $panelid";
-  $r = mysql_query($sql) or die(mysql_error());
+  $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
   $feedback =  "Description updated.<p>";
  }
 // End of handling user input.
@@ -91,8 +91,8 @@ echo "<font color=blue><b>Currently selected lines</b></font>: $selectedcount";
 print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
 print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
 foreach ($_SESSION['selected_lines'] as $lineuid) {
-  $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-  while ($row=mysql_fetch_assoc($result)) {
+  $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+  while ($row=mysqli_fetch_assoc($result)) {
     $selval=$row['line_record_name'];
     print "<option value='$lineuid'>$selval</option>";
   }
@@ -107,8 +107,8 @@ if ($username)
   store_session_variables('selected_lines', $username);
 
 // Edit panel descriptions, or delete.
-$r = mysql_query("select * from linepanels") or die(mysql_error());
-if (mysql_num_rows($r) > 0) {
+$r = mysqli_query($mysqli, "select * from linepanels") or die(mysqli_error($mysqli));
+if (mysqli_num_rows($r) > 0) {
   print "</div><div class='section'><h1>Edit Panel Description</h1>";
   // If user has sent a command and we're refreshing the page, show confirmation.
   echo $feedback;
@@ -116,7 +116,7 @@ if (mysql_num_rows($r) > 0) {
   print "<table><tr><th>Name<th>Description";
   print "<tr><td><select id=panelist name=panelist style='width: 16em' onchange='pickpanel(this)'>";
   print "<option value=0>Which panel?...</option>";
-  while ($row = mysql_fetch_assoc($r)) {
+  while ($row = mysqli_fetch_assoc($r)) {
     $count = count(explode(',', $row['line_ids']));
     $lpid = $row['linepanels_uid'];
     $lpname = $row['name'];
@@ -132,7 +132,7 @@ if (mysql_num_rows($r) > 0) {
 
 print "</div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); 
+include $config['root_dir'].'theme/footer.php'; 
 ?>
 
 <script type=text/javascript>

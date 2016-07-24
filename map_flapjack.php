@@ -8,9 +8,8 @@
 //*************************************************************************************
 
 require_once('config.php');
-include($config['root_dir'].'includes/bootstrap.inc');
-connect();
-
+include $config['root_dir'].'includes/bootstrap.inc';
+$mysqli = connecti();
 
 new Map_FlapJack($_GET['function']);
 
@@ -59,17 +58,17 @@ class Map_FlapJack
         //fwrite($fh, "\n");
         $tab = "\t";
         $sql_map = "SELECT map_name FROM map where mapset_uid = " . $mapsetID;
-        $res_map = mysql_query($sql_map) or die("Error: Can't locate map name - " . mysql_error());
+        $res_map = mysqli_query($mysqli, $sql_map) or die("Error: Can't locate map name - " . mysqli_error($mysqli));
 	
-        while ($row_map = mysql_fetch_assoc($res_map)) {
+        while ($row_map = mysqli_fetch_assoc($res_map)) {
 	
  	       	$sql = "SELECT mkr.marker_name, mk.start_position,  mk.chromosome  
                     FROM map m, markers_in_maps mk, markers mkr 
                     where  map_name='".$row_map['map_name']."' and m.map_uid = mk.map_uid 
                     AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position";
-			$res = mysql_query($sql) or die("Error: map data retrieval - " . mysql_error());
+			$res = mysqli_query($mysqli, $sql) or die("Error: map data retrieval - " . mysqli_error($mysqli));
 		    echo "<pre>";
-            while ($row = mysql_fetch_assoc($res)) {
+            while ($row = mysqli_fetch_assoc($res)) {
                 if (empty($row['marker_name'])) continue;
             	$stringData = $row['marker_name'].$tab.$row['chromosome'].$tab.$row['start_position'].PHP_EOL;
                 //fwrite($fh, $stringData);
@@ -94,14 +93,15 @@ class Map_FlapJack
     }
 
     private function typeMapSet() {
-		global $config;
+	global $config;
+        global $mysqli;
         global $mapsetHash;
         
-        include($config['root_dir'].'theme/normal_header.php');
+        include $config['root_dir'].'theme/normal_header.php';
         $sql = "SELECT comments, mapset_uid FROM mapset";
 
-        $res = mysql_query($sql) or die("Error: Unable to create comment hash table - ". mysql_error());
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Error: Unable to create comment hash table - ". mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
            // echo $row['mapset_uid'] ."<br>";
             if (empty($row)) continue;
 			$mapsetHash[$row['mapset_uid']] = $row['comments'];
@@ -174,8 +174,8 @@ class Map_FlapJack
         // Select Mapset Name for the drop down menu
         $sql = "SELECT mapset_name, mapset_uid FROM mapset ORDER BY mapset_name DESC";
 
-        $res = mysql_query($sql) or die("Error: Unable to get mapset names and uids ". mysql_error());
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Error: Unable to get mapset names and uids ". mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
             if (empty($row['mapset_name'])) continue;
 	?>
 			<option value="<?php echo $row['mapset_uid']; ?>"><?php echo $row['mapset_name']; ?></option>
@@ -196,4 +196,3 @@ class Map_FlapJack
     }	
 
  } /* end of class */
-?>

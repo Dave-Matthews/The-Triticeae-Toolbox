@@ -4,7 +4,7 @@ require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 ini_set("auto_detect_line_endings", true);
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */
@@ -58,6 +58,7 @@ private function typePedigreeCheck()
 	
 	private function type_Pedigree_Information()
 	{
+            global $mysqli;
 	?>
 	<script type="text/javascript">
 	
@@ -273,9 +274,9 @@ private function typePedigreeCheck()
     If yes, then check if changed, if no change, do nothing
     If not in table, then add to pedigree relations table */
             if (($e1!==0)AND($par1!=="TBD")AND($par1!=="NA")AND($par1_uid!==FALSE)AND($line_uid!==FALSE)) {
-                $sql_ped = mysql_query("SELECT COUNT(*) AS cnt FROM pedigree_relations
+                $sql_ped = mysqli_query($mysqli, "SELECT COUNT(*) AS cnt FROM pedigree_relations
                                 WHERE line_record_uid=$line_uid AND parent_id =$par1_uid");
-                $n_match = mysql_fetch_assoc($sql_ped);
+                $n_match = mysqli_fetch_assoc($sql_ped);
     
     
                if ($n_match['cnt']==1) {
@@ -289,9 +290,9 @@ private function typePedigreeCheck()
             
              // repeat for parent 2
             if (($e2!==0)AND($par2!=="TBD")AND($par2!=="NA")AND($par2_uid!==FALSE)AND($line_uid!==FALSE)) {
-                $sql_ped = mysql_query("SELECT COUNT(*) AS cnt FROM pedigree_relations
+                $sql_ped = mysqli_query($mysqli, "SELECT COUNT(*) AS cnt FROM pedigree_relations
                                WHERE line_record_uid=$line_uid AND parent_id =$par2_uid");
-               $n_match = mysql_fetch_assoc($sql_ped);
+               $n_match = mysqli_fetch_assoc($sql_ped);
                if ($n_match['cnt']==1) {
                    //echo "Line ".$line." Parent 2 ".$par2." in pedigree_relations table\n";
                }elseif ($n_match['cnt']>1){
@@ -476,7 +477,7 @@ private function typePedigreeCheck()
                 $sql = $sql."'$pedstring',";
             }
             $sql = $sql."NOW(), NOW())";
-            $result=mysql_query($sql) or die(mysql_error());
+            $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             return $result;
         }	
 	
@@ -491,7 +492,7 @@ private function typePedigreeCheck()
             $sql = $sql."updated_on=NOW()
                     WHERE line_record_uid=$line_uid";
 
-            $result=mysql_query($sql) or die(mysql_error());
+            $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             return $result;
         }
 	
@@ -589,21 +590,20 @@ private function typePedigreeCheck()
     If yes, then check if changed, if no change, do nothing
     If not in table, then add to pedigree relations table */
             if (($e1!==0)AND($par1!=="TBD")AND($par1!=="NA")) {
-                $sql_ped = mysql_query("SELECT COUNT(*) AS cnt FROM pedigree_relations
+                $sql_ped = mysqli_query($mysqli, "SELECT COUNT(*) AS cnt FROM pedigree_relations
                                 WHERE line_record_uid=$line_uid AND parent_id =$par1_uid");
-                $n_match = mysql_fetch_assoc($sql_ped);
-    
+                $n_match = mysqli_fetch_assoc($sql_ped);
     
                if ($n_match['cnt']==1) {
                    // echo "Line ".$line." Parent 1 ".$par1." is already in the table\n";
                     $sql_upaddped = ("UPDATE pedigree_relations
                                  SET contribution=$con1,selfing = '$self1',updated_on=NOW()
                                  WHERE line_record_uid=$line_uid AND parent_id =$par1_uid");
-                    $result=mysql_query($sql_upaddped) or die(mysql_error());
+                    $result=mysqli_query($mysqli, $sql_upaddped) or die(mysqli_error($mysqli));
                 } elseif ($n_match['cnt']==0) {
                     $sql_upaddped = ("INSERT pedigree_relations (line_record_uid,parent_id,contribution,selfing,updated_on,created_on)
                                  VALUES ($line_uid,$par1_uid,$con1,'$self1',NOW(),NOW())");
-                    $result=mysql_query($sql_upaddped) or die(mysql_error());
+                    $result=mysqli_query($mysqli, $sql_upaddped) or die(mysqli_error($mysqli));
                 } else{
                       //   echo "multiple pedigree for same parent-child set, parent:".$line_uid." ".$par1_uid."\n";
                 }
@@ -611,19 +611,19 @@ private function typePedigreeCheck()
             
              // repeat for parent 2
             if (($e2!==0)AND($par2!=="TBD")AND($par2!=="NA")) {
-                $sql_ped = mysql_query("SELECT COUNT(*) AS cnt FROM pedigree_relations
+                $sql_ped = mysqli_query($mysqli, "SELECT COUNT(*) AS cnt FROM pedigree_relations
                                WHERE line_record_uid=$line_uid AND parent_id =$par2_uid");
-               $n_match = mysql_fetch_assoc($sql_ped);
+               $n_match = mysqli_fetch_assoc($sql_ped);
                if ($n_match['cnt']==1) {
                   // echo "Line ".$line." Parent 2 ".$par2." is already in the table\n";
                    $sql_upaddped = ("UPDATE pedigree_relations
                                 SET contribution=$con2,selfing = '$self2',updated_on=NOW()
                                 WHERE line_record_uid=$line_uid AND parent_id =$par2_uid");
-                   $result=mysql_query($sql_upaddped) or die(mysql_error());
+                   $result=mysqli_query($mysqli, $sql_upaddped) or die(mysqli_error($mysqli));
                } elseif ($n_match['cnt']==0) {
                    $sql_upaddped = ("INSERT pedigree_relations (line_record_uid,parent_id,contribution,selfing,updated_on,created_on)
                                 VALUES ($line_uid,$par2_uid,$con2,'$self2',NOW(),NOW())");
-                   $result=mysql_query($sql_upaddped) or die(mysql_error());
+                   $result=mysqli_query($mysqli, $sql_upaddped) or die(mysqli_error($mysqli));
    
                }else{
                       //  echo "multiple pedigree for same parent-child set, parent:".$line_uid." ".$par2_uid."\n";
@@ -638,7 +638,7 @@ private function typePedigreeCheck()
 										VALUES('$filename', '$username')";
 					
 					
-	$ped_table=mysql_query($sql) or die(mysql_error());   
+	$ped_table=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));   
         
 	echo " <b>The Data is inserted/updated successfully </b>";
 	echo"<br/><br/>";
@@ -647,16 +647,9 @@ private function typePedigreeCheck()
 	
 	<?php
 		$footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
-	
+    include $config['root_dir'].'theme/footer.php';
 		
 	} /* end of function type_database */
 	
-	
-	
-	
-	
-
 } /* end of class */
 
-?>

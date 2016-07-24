@@ -1,15 +1,15 @@
 <?php
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-connect();
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+$mysqli = connecti();
 loginTest();
 if (loginTest2()) {
-  $row = loadUser($_SESSION['username']);
-  $myname = $row['users_name'];
-  $myid = $row['users_uid'];
- }
+    $row = loadUser($_SESSION['username']);
+    $myname = $row['users_name'];
+    $myid = $row['users_uid'];
+}
 authenticate_redirect(array(USER_TYPE_PUBLIC,USER_TYPE_PARTICIPANT,USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
-include($config['root_dir'].'theme/admin_header.php');
+include $config['root_dir'].'theme/admin_header.php';
 ?>
 
 <style type='text/css'>
@@ -17,31 +17,30 @@ include($config['root_dir'].'theme/admin_header.php');
 </style>
 
 <div id="primaryContentContainer">
-  <div id="primaryContent">
-  <div class="section">
-  <h1>Create a Marker Panel</h1>
+<div id="primaryContent">
+<div class="section">
+<h1>Create a Marker Panel</h1>
 
-  <?php
-  // If we're re-entering the script with data, handle it.
-  // 1. New panel from Create button:
-  if ( isset($_POST['panel']) && $_POST['panel'] != "" ) {
+<?php
+// If we're re-entering the script with data, handle it.
+// 1. New panel from Create button:
+if (isset($_POST['panel']) && $_POST['panel'] != "") {
     $panel = $_POST['panel'];
     $comment = $_POST['comment'];
     $sql="select markerpanels_uid from markerpanels where name = '$panel' and users_uid = $myid";
-    $r = mysql_query($sql) or die(mysql_error());
-    if (mysql_num_rows($r) > 0)
-      echo "<p><font color=red>Panel \"$panel\" already exists.</font>";
-    else {
-      if (count($_SESSION['clicked_buttons']) == 0) {
-	echo "<p><font color=red>Please <a href='".$config['base_url']."genotyping/marker_selection.php'>select some markers</a> first.</font>";
-      }
-      else {
-	$markerids = implode(",", $_SESSION['clicked_buttons']);
-	$sql = "insert into markerpanels (name, users_uid, comment, marker_ids) values ('$panel', $myid, '$comment', '$markerids')";
-	$r = mysql_query($sql) or die(mysql_error());
-      }
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if (mysqli_num_rows($r) > 0) {
+        echo "<p><font color=red>Panel \"$panel\" already exists.</font>";
+    } else {
+        if (count($_SESSION['clicked_buttons']) == 0) {
+	    echo "<p><font color=red>Please <a href='".$config['base_url']."genotyping/marker_selection.php'>select some markers</a> first.</font>";
+        } else {
+	    $markerids = implode(",", $_SESSION['clicked_buttons']);
+	    $sql = "insert into markerpanels (name, users_uid, comment, marker_ids) values ('$panel', $myid, '$comment', '$markerids')";
+	    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        }
     }
-  }
+}
 // 2. "Deselect markers" button:
 if (isset($_POST['deselLines'])) {
   $selected_markers = $_SESSION['clicked_buttons'];
@@ -58,7 +57,7 @@ if (isset($_POST['deselPanel'])) {
   for ($i=0; $i < count($remove); $i++) {
     $sql = "delete from markerpanels
          where markerpanels_uid = $remove[$i]";
-    $r = mysql_query($sql) or die(mysql_error());
+    $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
   }
 }
 // End of handling user input.
@@ -85,9 +84,9 @@ $display = $_SESSION['clicked_buttons'] ? "":" style='display: none;'";
 <?php
 if (isset($_SESSION['clicked_buttons'])) {
 foreach ($_SESSION['clicked_buttons'] as $markeruid) {
-  $result=mysql_query("select marker_name from markers where marker_uid=$markeruid") 
+  $result=mysqli_query($mysqli, "select marker_name from markers where marker_uid=$markeruid") 
   or die("invalid marker uid\n");
-  while ($row=mysql_fetch_assoc($result)) {
+  while ($row=mysqli_fetch_assoc($result)) {
     $selval=$row['marker_name'];
     print "<option value='$markeruid'>$selval</option>\n";
   }
@@ -114,13 +113,13 @@ if ($username)
   store_session_variables('selected_markers', $username);
 
 // Show current list of panels, if any.
-$r = mysql_query("select * from markerpanels where users_uid = $myid") or die(mysql_error());
-if (mysql_num_rows($r) > 0) {
+$r = mysqli_query($mysqli, "select * from markerpanels where users_uid = $myid") or die(mysqli_error($mysqli));
+if (mysqli_num_rows($r) > 0) {
   print "</div><div class='section'><h1>My Panels</h1>";
   print "<table><tr><td>";
   print "<form id='deselPanelForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
   print "<select name='deselPanel[]' multiple='multiple' style='width: 16em' onclick='showcomment(this.value)'>";
-  while ($row = mysql_fetch_array($r)) {
+  while ($row = mysqli_fetch_array($r)) {
     if (empty($row['marker_ids']))
       $count = 0;
     else {

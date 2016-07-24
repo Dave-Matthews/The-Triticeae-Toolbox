@@ -6,9 +6,9 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */
@@ -16,7 +16,7 @@ $row = loadUser($_SESSION['username']);
 
 /* ****************************** */
 ob_start();
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
@@ -43,7 +43,7 @@ if( ($id = array_search("Delete", $_POST)) != NULL) {
 	if(deletePedigree($ids[1], $ids[2]))
 		echo "<p>Success. Do you wish to <a href=\"".$config['base_url']."login/pedigreeAdd.php?add=single\">add a new pedigree</a>?</p>";
 	else
-		error(1, mysql_error());
+		error(1, mysqli_error($mysqli));
 }
 ?>
 
@@ -83,4 +83,4 @@ if(isset($_REQUEST['line'])) {
 </div>
 </div>
 
-<?php include($config['root_dir'] . 'theme/footer.php');?>
+<?php include $config['root_dir'] . 'theme/footer.php';?>

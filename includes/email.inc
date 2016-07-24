@@ -79,10 +79,13 @@ function send_email($to, $subject, $message, $attachments = array())
         syslog(LOG_INFO, "to: $to\nemail:\n$message");
         closelog();
     }
-    $mobj = &Mail::factory(
-        setting('mailbackend', 'sendmail'),
-        array('host' => $smtpserver, 'port' => $smtpport));
-    return $mobj->send(array($to), $headers, $message);
+    $mobj =& Mail::factory('sendmail', array('host' => $smtpserver, 'port' => $smtpport));
+    if (PEAR::isError($mobj)) {
+        echo $mobj->getMessage() . "\n" . $mobj->getUserInfo() . "\n";
+        die();
+    } else {
+        return $mobj->send(array($to), $headers, $message);
+    }
 }
 
 /** Same as above except specifying the From: address as a parameter.

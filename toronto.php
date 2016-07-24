@@ -1,8 +1,7 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
-connect();
+include $config['root_dir'].'includes/bootstrap.inc';
+include $config['root_dir'].'theme/admin_header.php';
 ?>
 
 <style type=text/css>
@@ -64,5 +63,5 @@ Statement</a> below.
 
 <?php
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); 
+include $config['root_dir'].'theme/footer.php'; 
 ?>

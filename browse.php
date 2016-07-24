@@ -1,10 +1,12 @@
 <?php
-// browse.php, DEM apr2015
-// Display the hits from Quick Search in a tidy pageable table.
+/**
+ * browse.php, DEM apr2015
+ * Display the hits from Quick Search in a tidy pageable table.
+ */
 
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/admin_header.php');
+require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'theme/admin_header.php';
 $mysqli = connecti();
 
 $table = mysqli_real_escape_string($mysqli, $_GET['table']);
@@ -89,18 +91,18 @@ if (is_array($uids)) {
 $tablelabel = beautifulTableName($table)."s"; // for display
 // Rename phenotype experiments as "Trials".
 if ($table == "experiments") {
-  $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
-  if ($expttype == 1)
-    $tablelabel = "Trials"; 
+    $tablelabel = "Trials";
 }
 // Use a better class name than the table name:
-if ($tablelabel == 'Experiment Sets') $tablelabel = 'Experiments';
+if ($tablelabel == 'Experiment Sets') {
+    $tablelabel = 'Experiments';
+}
 
 // Alphabetize
 $sql = "select $key, $uniqname from $table where $key in ($uidlist) order by $uniqname";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query was:<br>$sql");
 while ($record = mysqli_fetch_row($res)) {
-  $records[] = array($record[0], $record[1]);
+    $records[] = array($record[0], $record[1]);
 };
 $numrecords = count($records);
 
@@ -110,23 +112,28 @@ print "<h1>$tablelabel</h1>";
 print "<table>";
 // row, column and cell count from 0; page counts from 1.
 for ($rw = 0; $rw < $numrows; $rw++) {
-  print "<tr>";
-  for ($clm = 0; $clm < $numcols; $clm++) {
-    $cell = (($page - 1) * $pagesize) + ($clm * $numrows + $rw);
-    if ($cell < $numrecords) {
-      $uid = $records[$cell][0];
-      $name = $records[$cell][1];
-      // Intercept experiments and route to display_phenotype.php or display_genotype.php.
-      if ($table == "experiments") {
-	if ($expttype == 1)
-	  print "<td><a href='display_phenotype.php?trial_code=$name'>$name</a>";
-	else
-	  print "<td><a href='display_genotype.php?trial_code=$name'>$name</a>";
-      }
-      else 
-	print "<td><a href='view.php?table=$table&uid=$uid'>$name</a>";
+    print "<tr>";
+    for ($clm = 0; $clm < $numcols; $clm++) {
+        $cell = (($page - 1) * $pagesize) + ($clm * $numrows + $rw);
+        if ($cell < $numrecords) {
+            $uid = $records[$cell][0];
+            $name = $records[$cell][1];
+            // Intercept experiments and route to display_phenotype.php or display_genotype.php.
+            if ($table == "experiments") {
+                $sql = "select experiment_type_uid from experiments where trial_code = \"$name\"";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $record = mysqli_fetch_row($res);
+                $expttype = $record[0];
+                if ($expttype == 1) {
+                    print "<td><a href='display_phenotype.php?trial_code=$name'>$name</a>";
+                } else {
+                    print "<td><a href='display_genotype.php?trial_code=$name'>$name</a>";
+                }
+            } else {
+                print "<td><a href='view.php?table=$table&uid=$uid'>$name</a>";
+            }
+        }
     }
-  }
 }
 print "</table>";
 
@@ -139,7 +146,7 @@ if ($numrecords > $pagesize) {
   print "<select onchange=\"window.open('browse.php?table=$table&page='+this.options[this.selectedIndex].value+'&col=$_GET[col]&keywords=$_GET[keywords]', '_self')\">";
   // Divide the number of pages into at most 20 lumps.
   $lumps = $numpages;
-  while ($lumps > 20) 
+  while ($lumps > 20)
     $lumps = ceil($lumps / 3);
   $lumpsize = floor($numpages / $lumps);
   for ($i = 0; $i < $lumps; $i++) {
@@ -157,5 +164,4 @@ if ($numrecords > $pagesize) {
 
 print "</div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); 
-?>
+require $config['root_dir'].'theme/footer.php';

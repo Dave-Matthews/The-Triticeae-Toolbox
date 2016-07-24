@@ -5,9 +5,8 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
-connect();
 loginTest();
 
 /* ******************************* */
@@ -86,11 +85,6 @@ private function typePedigree()
 	</tr>
 	</table>
 	
-	
-
-	
-		
-		
 <?php
  
 	} /* end of type_Pedigree_Name function*/

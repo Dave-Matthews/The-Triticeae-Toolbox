@@ -48,8 +48,8 @@ if (isset($_GET['mml'])) {
 <?php
 if (isset($_SESSION['selected_lines'])) {
     $selected_lines = $_SESSION['selected_lines'];
-    if (isset($_SESSION['geno_exp'])) {
-        $experiment_uid = $_SESSION['geno_exp'][0];
+    if (isset($_SESSION['geno_exps'])) {
+        $experiment_uid = $_SESSION['geno_exps'][0];
         calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
     } else {
         calculate_af($selected_lines, $min_maf, $max_missing, $max_miss_line);
@@ -60,8 +60,11 @@ if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) =
     // No lines selected so prompt to get some.
     echo "<br><a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
     echo "(Patience required for more than a few hundred lines.)";
-} elseif (!isset($_SESSION['filtered_lines'])) {
+} elseif (!isset($_SESSION['filtered_markers'])) {
     echo "Error: filtering routine did not work<br>\n";
+    die();
+} elseif (isset($_SESSION['geno_exps'])) {
+    echo "<br><font color=red>Error: This tool does not work with a Genotype Experiment selection</font>";
     die();
 } else {
     $sel_lines = implode(",", $_SESSION['filtered_lines']);
@@ -105,19 +108,19 @@ if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) =
             $update = true;
         }
     }
-  if ($update) {
-    echo "Updating table allele_byline_clust...<p>";
-    ini_set('memory_limit', '4G');
-    mysqli_query($mysqli, "truncate table allele_byline_clust") or die(mysqli_error($mysqli));
-    $lookup = array('AA' => '1',
+    if ($update) {
+        echo "Updating table allele_byline_clust...<p>";
+        ini_set('memory_limit', '4G');
+        mysqli_query($mysqli, "truncate table allele_byline_clust") or die(mysqli_error($mysqli));
+        $lookup = array('AA' => '1',
 		    'BB' => '0',
 		    'AB' => '0.5');
-    // Compute global allele frequencies.
-    $sql = "select marker_uid, maf from allele_frequencies";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_array($res)){
-      $afreq[$row[0]] = $row[1];
-    }
+        // Compute global allele frequencies.
+        $sql = "select marker_uid, maf from allele_frequencies";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)){
+            $afreq[$row[0]] = $row[1];
+        }
     // Read in the allele_byline table.
     $sql = "select * from allele_byline";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));

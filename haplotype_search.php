@@ -68,7 +68,7 @@ class Haplotype
    $query_str="select E.line_record_name, E.line_record_uid, E.marker_uid, E.alleles from allele_cache as E where
    $marker_instr $in_these_lines";
    //print $query_str;
-   $result=mysqli_query($mysqli, $query_str) or die(mysqli_error());
+   $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli) . "<br>" . $query_str);
    $lines = array();
    $line_uids=array();
    $line_names=array();
@@ -167,7 +167,7 @@ class Haplotype
 		  echo "$tmp markers selected<br>\n";
 		  echo "Error - Please select no more than 5 markers<br>";
 		  echo "<p><a href=genotyping/marker_selection.php>Select markers</a></p>";
-		  break;
+		  return;
 		}
 		if (isset($_POST['dispMissing'])) {
 		  $dispMissing = 1;

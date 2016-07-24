@@ -5,9 +5,9 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */

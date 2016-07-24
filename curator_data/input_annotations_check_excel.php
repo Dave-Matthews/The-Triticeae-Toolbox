@@ -15,7 +15,7 @@ require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
 require_once "../lib/Excel/excel_reader2.php"; // Microsoft Excel library
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */
@@ -56,19 +56,21 @@ class Annotations_Check
     private function typeAnnotationCheck()
     {
 	global $config;
-        include($config['root_dir'] . 'theme/admin_header.php');
+        global $mysqli;
+        include $config['root_dir'] . 'theme/admin_header.php';
 
         echo "<h2> Add/Update Experiment Annotations: Validation</h2>"; 
 
         $this->type_Annotation();
 
         $footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+        include $config['root_dir'].'theme/footer.php';
     }
 	
 	
 	private function type_Annotation()
 	{
+            global $mysqli;
 	?>
 	<script type="text/javascript">
 	
@@ -281,9 +283,9 @@ class Annotations_Check
 	}
 	else {$sql = "SELECT CAPdata_programs_uid FROM CAPdata_programs
 		WHERE data_program_code= '$bp'";
-	  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	  if (1 == mysql_num_rows($res))		{
-	    $row = mysql_fetch_assoc($res);
+	  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	  if (1 == mysqli_num_rows($res))		{
+	    $row = mysqli_fetch_assoc($res);
 	    $capdata_uid = $row['CAPdata_programs_uid'];
 	  }
 	  else {
@@ -294,8 +296,8 @@ class Annotations_Check
 
         // get list of current locations in database
         $sql = "select location from phenotype_experiment_info";
-        $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_assoc($res)) {
           $loc = $row['location'];
           $valid_loc[$loc] = 1;
         }
@@ -311,7 +313,7 @@ class Annotations_Check
 	  // Set the index for array $experiments[].
 	  $index = $i - 2;
 
-	  $trialcode = $experiments[$index]->trialcode = mysql_real_escape_string(trim($trialcode_row[$i]));
+	  $trialcode = $experiments[$index]->trialcode = mysqli_real_escape_string($mysqli, trim($trialcode_row[$i]));
 	  if (DEBUG>1) {echo "experiments trialcode [".$i."] is set to".$experiments[$index]->trialcode."<br>";}
 	  // Trial code. Verify not null, then see if it is in db AND unique.
 	  if (is_null($trialcode)) {
@@ -321,13 +323,13 @@ class Annotations_Check
 	  }
 	  else   {
 	    $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$trialcode}'";
-	    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	    if (mysql_num_rows($res)==1) { //yes, experiment found once  
-	      $row = mysql_fetch_assoc($res);
+	    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	    if (mysqli_num_rows($res)==1) { //yes, experiment found once  
+	      $row = mysqli_fetch_assoc($res);
 	      $exp_id = $row['experiment_uid'];
 	      if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 	    } 
-	    elseif (mysql_num_rows($res)>1) { //yes, experiment found more than once, bad
+	    elseif (mysqli_num_rows($res)>1) { //yes, experiment found more than once, bad
 	      if (DEBUG>1) {echo "Trial code ".$trialcode." linked to multiple experiments-must fix"."<br/>";}
 	      $error_flag = ($error_flag) | (8);
 	      exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
@@ -336,21 +338,21 @@ class Annotations_Check
 
 	  /* dem may13: Use mysql_real_escape_string consistently. */		
 	  /* $experiments[$index]->location = addslashes($location_row[$i]); */
-	  $experiments[$index]->location = mysql_real_escape_string($location_row[$i]);
-	  $experiments[$index]->latitude = mysql_real_escape_string($latitude_row[$i]);
-	  $experiments[$index]->longitude = mysql_real_escape_string($longitude_row[$i]);
-	  $experiments[$index]->collaborator = mysql_real_escape_string($collaborator_row[$i]);
-	  $experiments[$index]->trialdesc = mysql_real_escape_string(trim($trialdesc_row[$i]));
-	  $experiments[$index]->greenhouse = mysql_real_escape_string($greenhouse_row[$i]);
+	  $experiments[$index]->location = mysqli_real_escape_string($mysqli, $location_row[$i]);
+	  $experiments[$index]->latitude = mysqli_real_escape_string($mysqli, $latitude_row[$i]);
+	  $experiments[$index]->longitude = mysqli_real_escape_string($mysqli, $longitude_row[$i]);
+	  $experiments[$index]->collaborator = mysqli_real_escape_string($mysqli, $collaborator_row[$i]);
+	  $experiments[$index]->trialdesc = mysqli_real_escape_string($mysqli, trim($trialdesc_row[$i]));
+	  $experiments[$index]->greenhouse = mysqli_real_escape_string($mysqli, $greenhouse_row[$i]);
 	  /* $experiments[$index]->seedingrate = $seedingrate_row[$i]; */
-	  $experiments[$index]->seedingrate = mysql_real_escape_string($seedingrate_row[$i]);
-	  $experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
-	  $experiments[$index]->experimentset = mysql_real_escape_string(trim($experimentset_row[$i]));
+	  $experiments[$index]->seedingrate = mysqli_real_escape_string($mysqli, $seedingrate_row[$i]);
+	  $experiments[$index]->experimentaldesign = mysqli_real_escape_string($mysqli, $experimentaldesign_row[$i]);
+	  $experiments[$index]->experimentset = mysqli_real_escape_string($mysqli, trim($experimentset_row[$i]));
 
 	  // Check key data fields in the experiment to ensure valid values
 	  // Required fields include: year, location, collaborator (who performed experiment)
 
-	  $year = mysql_real_escape_string($year_row[$i]);
+	  $year = mysqli_real_escape_string($mysqli, $year_row[$i]);
 	  $experiments[$index]->year = $year;
 	  $today = getdate();
 	  // dem may12: Allow old data, and next year.
@@ -459,7 +461,7 @@ class Annotations_Check
 	}
 
 	// Greenhouse trial?
-	$experiments[$index]->greenhouse = mysql_real_escape_string($greenhouse_row[$i]);
+	$experiments[$index]->greenhouse = mysqli_real_escape_string($mysqli, $greenhouse_row[$i]);
 	$gh = $experiments[$index]->greenhouse;
 	if ($gh != "yes" AND $gh != "no") {
 	  echo "<b>Error</b>, column <b>".chr($i+64)."</b>: 'Greenhouse trial?' must be yes or no, not \"$gh\".<br>";
@@ -467,13 +469,13 @@ class Annotations_Check
 	}
 	
 	// Plot Size
-	$experiments[$index]->plotsize = mysql_real_escape_string($plotsize_row[$i]);
+	$experiments[$index]->plotsize = mysqli_real_escape_string($mysqli, $plotsize_row[$i]);
 		
 	// Harvest Area
-	$experiments[$index]->harvestedarea = mysql_real_escape_string($harvestedarea_row[$i]);
+	$experiments[$index]->harvestedarea = mysqli_real_escape_string($mysqli, $harvestedarea_row[$i]);
 
 	// Irrigation
-	$experiments[$index]->irrigation = mysql_real_escape_string($irrigation_row[$i]);
+	$experiments[$index]->irrigation = mysqli_real_escape_string($mysqli, $irrigation_row[$i]);
 	$ir = $experiments[$index]->irrigation;
 	if ($ir != "yes" AND $ir != "no") {
 	  echo "<b>Error</b>, column <font color=red><b>".chr($i+64)."</b></font>: 'Irrigation' must be yes or no, not \"$ir\".<br>";
@@ -481,7 +483,7 @@ class Annotations_Check
 	}
 
 	// Other Remarks
-	$experiments[$index]->otherremarks = mysql_real_escape_string(htmlentities($otherremarks_row[$i]));
+	$experiments[$index]->otherremarks = mysqli_real_escape_string($mysqli, htmlentities($otherremarks_row[$i]));
 		
 	}
 	
@@ -520,8 +522,8 @@ class Annotations_Check
 	    for ($i = 2; $cols >= $i; $i++)  {
 	      print "<tr><td><font color=red>";
 	      $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialcode_row[$i]'";
-	      $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	      if (mysql_num_rows($res)!==0) //yes, experiment found, so update
+	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	      if (mysqli_num_rows($res)!==0) //yes, experiment found, so update
 		print "Update</td><td>";
 	      else 
 		print "New</td><td>";
@@ -582,7 +584,8 @@ class Annotations_Check
 	
 	private function type_Database() {
 	  global $config;
-	  include($config['root_dir'] . 'theme/admin_header.php');
+          global $mysqli;
+	  include $config['root_dir'] . 'theme/admin_header.php';
 		
 	  $datafile = $_GET['linedata'];
 	  $filename = $_GET['file_name'];
@@ -700,16 +703,16 @@ class Annotations_Check
 	  // Set the index for array $experiments[].
 	  $index = $i - 2;
 
-	  $trialcode = $experiments[$index]->trialcode = mysql_real_escape_string(trim($trialcode_row[$i]));
+	  $trialcode = $experiments[$index]->trialcode = mysqli_real_escape_string($mysqli, trim($trialcode_row[$i]));
 	  if (DEBUG>1) {echo "experiments trialcode [".$i."] is set to".$experiments[$index]->trialcode."\n";}
 	  $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$trialcode}'";
-	  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-	  if (mysql_num_rows($res)==1) {  //yes, experiment found once
-	    $row = mysql_fetch_assoc($res);
+	  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+	  if (mysqli_num_rows($res)==1) {  //yes, experiment found once
+	    $row = mysqli_fetch_assoc($res);
 	    $exp_id = $row['experiment_uid'];
 	    if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 	  } 
-	  elseif (mysql_num_rows($res)>1)  { //yes, experiment found more than once, bad
+	  elseif (mysqli_num_rows($res)>1)  { //yes, experiment found more than once, bad
 	    if (DEBUG>1) {echo "Trial code ".$trialcode." linked to multiple experiments-must fix\n";}
 	    $error_flag = ($error_flag) | (8);
 	  }
@@ -725,15 +728,15 @@ class Annotations_Check
 	  }
 
 	  $experiments[$index]->location = addslashes($location_row[$i]);
-	  $experiments[$index]->latitude = mysql_real_escape_string($latitude_row[$i]);
-	  $experiments[$index]->longitude = mysql_real_escape_string($longitude_row[$i]);
-	  $experiments[$index]->collaborator = mysql_real_escape_string($collaborator_row[$i]);
+	  $experiments[$index]->latitude = mysqli_real_escape_string($mysqli, $latitude_row[$i]);
+	  $experiments[$index]->longitude = mysqli_real_escape_string($mysqli, $longitude_row[$i]);
+	  $experiments[$index]->collaborator = mysqli_real_escape_string($mysqli, $collaborator_row[$i]);
 	  $experiments[$index]->seedingrate = $seedingrate_row[$i];
-	  $experiments[$index]->trialdesc = mysql_real_escape_string(trim($trialdesc_row[$i]));
-	  $experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
-	  $experiments[$index]->beginweatherdate = mysql_real_escape_string($beginweatherdate_row[$i]);
-	  $experiments[$index]->greenhouse = mysql_real_escape_string($greenhouse_row[$i]);
-	  $experiments[$index]->experimentset = mysql_real_escape_string(trim($experimentset_row[$i]));
+	  $experiments[$index]->trialdesc = mysqli_real_escape_string($mysqli, trim($trialdesc_row[$i]));
+	  $experiments[$index]->experimentaldesign = mysqli_real_escape_string($mysqli, $experimentaldesign_row[$i]);
+	  $experiments[$index]->beginweatherdate = mysqli_real_escape_string($mysqli, $beginweatherdate_row[$i]);
+	  $experiments[$index]->greenhouse = mysqli_real_escape_string($mysqli, $greenhouse_row[$i]);
+	  $experiments[$index]->experimentset = mysqli_real_escape_string($mysqli, trim($experimentset_row[$i]));
 
 	      // Planting Date
 	      $teststr= addcslashes(trim($plantingdate_row[$i]),"\0..\37!@\177..\377");
@@ -783,10 +786,10 @@ class Annotations_Check
 	      }
 		
 	      // Plot Size
-	      $experiments[$index]->plotsize = mysql_real_escape_string($plotsize_row[$i]);
+	      $experiments[$index]->plotsize = mysqli_real_escape_string($mysqli, $plotsize_row[$i]);
 			
 	      // Harvest Area
-	      $experiments[$index]->harvestedarea = mysql_real_escape_string($harvestedarea_row[$i]);
+	      $experiments[$index]->harvestedarea = mysqli_real_escape_string($mysqli, $harvestedarea_row[$i]);
 	      // irrigation
 	      if (FALSE !== stripos($irrigation_row[$i], "yes"))
 		{
@@ -798,7 +801,7 @@ class Annotations_Check
 		}
 		
 	      // Other Remarks
-	      $experiments[$index]->otherremarks = mysql_real_escape_string(htmlentities($otherremarks_row[$i]));
+	      $experiments[$index]->otherremarks = mysqli_real_escape_string($mysqli, htmlentities($otherremarks_row[$i]));
 		
 	}
 	
@@ -823,9 +826,9 @@ class Annotations_Check
 		$CAPcode = $bp;
 		$sql = "SELECT CAPdata_programs_uid FROM CAPdata_programs
 			WHERE data_program_code= '$bp'";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		if (1 == mysql_num_rows($res)) {
-		    $row = mysql_fetch_assoc($res);
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		if (1 == mysqli_num_rows($res)) {
+		    $row = mysqli_fetch_assoc($res);
 		    $capdata_uid = $row['CAPdata_programs_uid'];
 		  }
 		else die ("CAPcode not found for Breeding Program $bp.");
@@ -833,28 +836,28 @@ class Annotations_Check
 		// Get code for phenotype experiments
 		$sql = "SELECT experiment_type_uid FROM experiment_types
 							WHERE experiment_type_name = 'phenotype'";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		$row = mysql_fetch_assoc($res);
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		$row = mysqli_fetch_assoc($res);
 		$exptype_id = $row['experiment_type_uid'];
 
 		// get experiment_set_uid
 		if (preg_match("/[A-Za-z0-9]+/",$experiment->experimentset)) {
 		  $sql = "SELECT experiment_set_uid FROM experiment_set WHERE experiment_set_name = '{$experiment->experimentset}'";
-		  $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		  if (mysql_num_rows($res)==0) //no, experiment not found, so isert 
+		  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		  if (mysqli_num_rows($res)==0) //no, experiment not found, so isert 
 		    {
 		      $sql = "insert into experiment_set set
                                         experiment_set_name = '{$experiment->experimentset}'";
 		      //echo "SQL ".$sql."<br>\n";
-		      mysql_query($sql) or die(mysql_error());
+		      mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		      $sql = "select experiment_set_uid from experiment_set where experiment_set_name = '{$experiment->experimentset}'";
 		      //echo "SQL ".$sql."<br>\n";
-		      $res = mysql_query($sql) or die(mysql_error());
-		      $row = mysql_fetch_assoc($res);
+		      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		      $row = mysqli_fetch_assoc($res);
 		      $experiment_set_uid = $row['experiment_set_uid'];
 		      //print "experiment found $experiment_set_uid<br>\n";
 		    } else {
-		    $row = mysql_fetch_assoc($res);
+		    $row = mysqli_fetch_assoc($res);
 		    $experiment_set_uid = $row['experiment_set_uid'];
 		    //print "experiment found $experiment->experimentset<br>$sql<br>\n";
 		  }  
@@ -867,8 +870,8 @@ class Annotations_Check
 		// First check if this trial code is in the database, if yes, then update all fields;
 		// if no then insert into table
 		$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$experiment->trialcode}'";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		if ($row = mysql_fetch_assoc($res)) { //yes, experiment found, so update
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		if ($row = mysqli_fetch_assoc($res)) { //yes, experiment found, so update
 		    $exp_id = $row['experiment_uid'];
 		
 		    //update experiment information
@@ -884,7 +887,7 @@ class Annotations_Check
 			   created_on = NOW()
 			WHERE experiment_uid = $exp_id";
 		    echo "Table <b>experiments</b> updated.<br>\n";
-		    mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 
 		    // Also update CAPdata_programs_uid in table 'datasets', if different.
 		    // Get the current value:
@@ -892,11 +895,11 @@ class Annotations_Check
 		    	    from datasets d, datasets_experiments de
 		    	    where de.experiment_uid = $exp_id
 		            and d.datasets_uid = de.datasets_uid ";
-		    $res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		    if ($row = mysql_fetch_row($res)) {
+		    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		    if ($row = mysqli_fetch_row($res)) {
 		        if ($row[1] != $capdata_uid) {
 		            $sql = "update datasets set CAPdata_programs_uid = $capdata_uid where datasets_uid = $row[0]";
-		            mysql_query($sql) or die(mysql_error() . "<br>$sql");
+		            mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 		        }
                     }
 
@@ -929,10 +932,10 @@ class Annotations_Check
 				updated_on = NOW()
 			WHERE experiment_uid = $exp_id";
 		    if (DEBUG>2) {echo "update phenotypeexp SQL ".$sql."\n";}
-		    mysql_query($sql) or die("
+		    mysqli_query($mysqli, $sql) or die("
 <p><font color=red>MySQL error while updating <b>phenotype_experiment_info</b> table.</font>
 <p><b>Message:</b>
-<br>". mysql_error() . "
+<br>". mysqli_error($mysqli) . "
 <p><b>Command:</b>
 <br>$sql
 <p><input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">
@@ -949,14 +952,14 @@ class Annotations_Check
 		    trial_code = '{$experiment->trialcode}',
 		    experiment_year = '{$experiment->year}', 
 		    data_public_flag = '$data_public_flag', created_on = NOW()";
-		  mysql_query($sql) or die(mysql_error() . "<br>Command:<pre>$sql");
+		  mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>Command:<pre>$sql");
 		  echo "New entry added for $experiment->trialcode to <b>experiments</b> table.<br>\n";
 					
 		  //get experiment_uid set genotype experiments info table
 		  $sql = "SELECT experiment_uid FROM experiments
 									WHERE trial_code = '{$experiment->trialcode}' limit 1";
-		  $res = mysql_query($sql) or die(mysql_error());
-		  $row = mysql_fetch_assoc($res);
+		  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		  $row = mysqli_fetch_assoc($res);
 		  $exp_id = $row['experiment_uid'];
 		  if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 
@@ -984,10 +987,10 @@ class Annotations_Check
 			  greenhouse_trial = '{$experiment->greenhouse}',
 			  $sql_optional
 			  created_on = NOW()";
-		  mysql_query($sql) or die("
+		  mysqli_query($mysqli, $sql) or die("
 		    <p><font color=red>MySQL error while inserting into <b>phenotype_experiment_info</b> table.</font>
 		    <p><b>Message:</b>
-		    <br>". mysql_error() . "
+		    <br>". mysqli_error($mysqli) . "
 		    <p><b>Command:</b>
 		    <br>$sql
 		    <p><input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">
@@ -1007,12 +1010,12 @@ class Annotations_Check
 	       // Timestamp, e.g. _28Jan12_23:01
 	       $ts = date("_jMy_H:i");
 	    $filename = $filename . $ts;
-	    $devnull = mysql_query("INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysql_error());
+	    $devnull = mysqli_query($mysqli, "INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysqli_error($mysqli));
 
 	  }
 
 	  $footer_div = 1;
-	  include($config['root_dir'].'theme/footer.php');
+	  include $config['root_dir'].'theme/footer.php';
 	
 	
 		

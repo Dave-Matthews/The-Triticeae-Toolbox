@@ -1,16 +1,18 @@
 <?php
-// login/ajaxfunctions.php, dem jul2013
-// PHP functions that are called via html GET by javascript functions in this directory.
+/**
+ * login/ajaxfunctions.php, dem jul2013
+ * PHP functions that are called via html GET by javascript functions in this directory.
+ */
 
 require 'config.php';
-include("$config[root_dir]/includes/bootstrap_curator.inc");
-$link = connect();
+require "$config[root_dir]/includes/bootstrap_curator.inc";
+$link = connecti();
 
 $functioncall = $_GET[func];
 unset($_GET['func']);   //removing function name                                                            
 call_user_func($functioncall, $_GET);
 // Close mysql connection to prevent overloading.
-mysql_close($link);
+mysqli_close($link);
 
 
 // called by line_panels.php pickpanel()

@@ -665,20 +665,17 @@ function getAccessionName($id) {
  */ 
 function getSynonymNames($id) {
     global $mysqli;
-	$sql_syn = mysqli_query($mysqli, "
-			SELECT line_synonym_name
-			FROM line_synonyms
-			WHERE line_record_uid = '$id'
-			");
+    $sql = "SELECT line_synonym_name FROM line_synonyms WHERE line_record_uid = '$id'";
+    if ($sql_syn = mysqli_query($mysqli, $sql)) {
+        if (mysqli_num_rows($sql_syn) < 1) {
+            return false;
+        }
 
-	if(mysqli_num_rows($sql_syn) < 1) {
-		return FALSE;
-	}
-
-	while($row = mysqli_fetch_array($sql_syn)) {
-		$synonyms[] = $row['line_synonym_name'];
-	}
-	return $synonyms;
+        while ($row = mysqli_fetch_array($sql_syn)) {
+            $synonyms[] = $row['line_synonym_name'];
+        }
+        return $synonyms;
+    }
 }
 
 /*
@@ -688,7 +685,7 @@ function getSynonymNames($id) {
  * @param $id - the id of the line whose synonyms to retrieve
  * @return the corresponding synonyms if they exists in the database. If it does not,
  * 	the function returns FALSE.
- */ 
+ */
 function getBarleyPedigreeCatalogIDs($id) {
     global $mysqli;
 	$sql_bpc = mysqli_query($mysqli, "

@@ -8,31 +8,31 @@
 // 1/28/2011  JLee  Add ability to add multiple lines and synonym translation
 
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap.inc';
-connect();
-include $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'includes/bootstrap.inc';
+$mysqli = connecti();
+require $config['root_dir'] . 'theme/admin_header.php';
 
 if($_SERVER['REQUEST_METHOD'] == "POST") {
-  // Store what the user's previous selections were so we can
-  // redisplay them as the page is redrawn.
-  $name = $_POST['LineSearchInput'];
-  $hardness = $_POST['hardness'];
-  $color = $_POST['color'];
-  $awned =  $_POST['awned'];
-  $hardSelected[$hardness] = 'checked="checked"';
-  $colorSelected[$color] = 'checked="checked"';
-  $awnSelected[$awned] = 'checked="checked"';
-  if(is_array($_POST['breedingprogramcode'])) 
-    foreach ($_POST['breedingprogramcode'] as $key => $value) 
-      $breeding[$value] = 'selected="selected"';
-  if(is_array($_POST['species'])) 
-    foreach ($_POST['species'] as $key => $value) 
-      $species[$value] = 'selected="selected"';
-  if(is_array($_POST['panel'])) 
-    foreach ($_POST['panel'] as $key => $value) {
-      $panelselect[$value] = 'selected="selected"';
-      $panel[] = $value;
-    }
+    // Store what the user's previous selections were so we can
+    // redisplay them as the page is redrawn.
+    $name = $_POST['LineSearchInput'];
+    $hardness = $_POST['hardness'];
+    $color = $_POST['color'];
+    $awned =  $_POST['awned'];
+    $hardSelected[$hardness] = 'checked="checked"';
+    $colorSelected[$color] = 'checked="checked"';
+    $awnSelected[$awned] = 'checked="checked"';
+    if(is_array($_POST['breedingprogramcode'])) 
+      foreach ($_POST['breedingprogramcode'] as $key => $value) 
+        $breeding[$value] = 'selected="selected"';
+    if(is_array($_POST['species'])) 
+      foreach ($_POST['species'] as $key => $value) 
+        $species[$value] = 'selected="selected"';
+    if(is_array($_POST['panel'])) 
+      foreach ($_POST['panel'] as $key => $value) {
+        $panelselect[$value] = 'selected="selected"';
+        $panel[] = $value;
+      }
   if(is_array($_POST['growthhabit'])) 
     foreach ($_POST['growthhabit'] as $key => $value) 
       $growth[$value] = 'selected="selected"';
@@ -59,16 +59,16 @@ if($_SERVER['REQUEST_METHOD'] == "POST") {
   <form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
   <input type=hidden name="search" value="yes">
   
-   <tr><td><b>Name</b> <br/>
-      <textarea name="LineSearchInput" rows="3" cols="18" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
-      <br> E.g. Cayuga, tur*ey, iwa860*<br>
-      Synonyms will be translated.<br></td>
-      <td colspan=2><b> Data program </b> <br/>
-      <select name="breedingprogramcode[]" multiple="multiple" size="6" style="width: 22em; height: 8em;">
+  <tr><td><b>Name</b> <br/>
+  <textarea name="LineSearchInput" rows="3" cols="18" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
+  <br> E.g. Cayuga, tur*ey, iwa860*<br>
+  Synonyms will be translated.<br></td>
+  <td colspan=2><b> Data program </b> <br/>
+  <select name="breedingprogramcode[]" multiple="multiple" size="6" style="width: 22em; height: 8em;">
 <?php 
-      $sql = "SELECT DISTINCT(l.breeding_program_code), c.data_program_name FROM line_records l, CAPdata_programs c WHERE l.breeding_program_code = c.data_program_code ";
-      $res = mysql_query($sql) or die(mysql_error());
-      while ($resp = mysql_fetch_assoc($res)) {
+$sql = "SELECT DISTINCT(l.breeding_program_code), c.data_program_name FROM line_records l, CAPdata_programs c WHERE l.breeding_program_code = c.data_program_code ";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($resp = mysqli_fetch_assoc($res)) {
 ?>
 	<option value="<?php echo $resp['breeding_program_code'] ?>" <?php echo $breeding[$resp['breeding_program_code']]?>><?php echo $resp['breeding_program_code'] ?><?php echo "--".$resp['data_program_name'] ?></option>
 <?php
@@ -79,21 +79,21 @@ if($_SERVER['REQUEST_METHOD'] == "POST") {
 <select name="year[]" multiple="multiple" size="6">
 <?php
 $sql = "select distinct experiment_year from experiments order by experiment_year DESC";
-		$res = mysql_query($sql) or die(mysql_error());
-		while ($resp = mysql_fetch_assoc($res))
-		{
-		  ?>
-		  <option value="<?php echo $resp['experiment_year'] ?>" <?php echo $yr[$resp['experiment_year']]?>> <?php echo $resp['experiment_year'] ?> </option>
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($resp = mysqli_fetch_assoc($res))
+{
+  ?>
+  <option value="<?php echo $resp['experiment_year'] ?>" <?php echo $yr[$resp['experiment_year']]?>> <?php echo $resp['experiment_year'] ?> </option>
 <?php
-		    }
+    }
 ?>
        </select><br><br></td>
       <td> <b>Species</b> <br/>
       <select name="species[]" multiple="multiple" size="6" style="height: 8em;">
       <?php
       $sql = "SELECT DISTINCT(species) FROM line_records WHERE species NOT LIKE 'NULL' AND NOT species = ''";
-      $res = mysql_query($sql) or die(mysql_error());
-      while ($resp = mysql_fetch_row($res)) {
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+      while ($resp = mysqli_fetch_row($res)) {
 	$s = $resp[0];
  	echo "<option value='$s' $species[$s]>$s</option>";
       }
@@ -108,9 +108,9 @@ if (loginTest2()) {
   $row = loadUser($_SESSION['username']);
   $myid = $row['users_uid'];
   $sql = "SELECT linepanels_uid, name FROM linepanels where users_uid = $myid";
-  $res = mysql_query($sql) or die(mysql_error());
-  if (mysql_num_rows($res) > 0) {
-    while ($resp = mysql_fetch_row($res)) {
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+  if (mysqli_num_rows($res) > 0) {
+    while ($resp = mysqli_fetch_row($res)) {
       $lpid = $resp[0];
       $s = $resp[1];
       echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
@@ -119,8 +119,8 @@ if (loginTest2()) {
   }
 }
 $sql = "SELECT linepanels_uid, name FROM linepanels where users_uid IS NULL";
-$res = mysql_query($sql) or die(mysql_error());
-while ($resp = mysql_fetch_row($res)) {
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($resp = mysqli_fetch_row($res)) {
   $lpid = $resp[0];
   $s = $resp[1];
   echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
@@ -138,8 +138,8 @@ while ($resp = mysql_fetch_row($res)) {
       <select name="growthhabit[]" multiple="multiple" size="4" style="width: 3em;height: 5em;">
 <?php
       $sql = "SELECT DISTINCT(growth_habit) FROM line_records WHERE growth_habit NOT LIKE 'NULL' AND NOT growth_habit = ''";
-      $res = mysql_query($sql) or die(mysql_error());
-      while ($resp = mysql_fetch_assoc($res))
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+      while ($resp = mysqli_fetch_assoc($res))
 	{
 ?>
 	  <option value="<?php echo $resp['growth_habit'] ?>" <?php echo $growth[$resp['growth_habit']]?>><?php echo $resp['growth_habit'] ?></option>
@@ -308,12 +308,12 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 	 AND (count($growthHabit) == 0)
 	 AND (strlen($awned) == 0) 
          AND (count($panel) == 0))
-      $result = mysql_query("SELECT line_record_name FROM line_records where line_record_name = NULL");
+      $result = mysqli_query($mysqli, "SELECT line_record_name FROM line_records where line_record_name = NULL");
     else  {
       $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
-      $result=mysql_query($TheQuery) or die(mysql_error()."<br>Query was:<br>".$TheQuery);
+      $result=mysqli_query($mysqli, $TheQuery) or die(mysqli_error($mysqli)."<br>Query was:<br>".$TheQuery);
     }
-    $linesfound = mysql_num_rows($result);
+    $linesfound = mysqli_num_rows($result);
 
     // Show failures from the Name box that don't match any line names.
     foreach ($nonHits as $i) 
@@ -327,7 +327,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     print "<br><select name='selLines[]' multiple='multiple' style='height: 17em; width: 13em'>";
     if ($linesfound > 0) {
       $_SESSION['linesfound'] = array();
-      while($row = mysql_fetch_assoc($result)) {
+      while($row = mysqli_fetch_assoc($result)) {
 	$line_record_name = $row['line_record_name'];
 	$line_record_uid = $row['line_record_uid'];
 	echo "<option value='$line_record_uid' selected>$line_record_name</option>";
@@ -410,8 +410,8 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
   print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\">";
   print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 15em;width: 13em\">";
   foreach ($_SESSION['selected_lines'] as $lineuid) {
-    $result=mysql_query("select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-    while ($row=mysql_fetch_assoc($result)) {
+    $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+    while ($row=mysqli_fetch_assoc($result)) {
       $selval=$row['line_record_name'];
       print "<option value=\"$lineuid\" selected>$selval</option>\n";
     }

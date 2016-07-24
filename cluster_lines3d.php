@@ -83,6 +83,10 @@ else {
     }
   }
   print "</textarea>";
+  if (isset($_SESSION['geno_exps'])) {
+      echo "<br><br><font color=red>Error: This tool does not work with a Genotype Experiment selection</font>";
+      die();
+  }
 ?>
   <script type="text/javascript" src="cluster3.js"></script>
   <p>How many clusters?&nbsp;

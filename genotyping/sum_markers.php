@@ -2,7 +2,7 @@
 
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-connecti();
+$mysqli = connecti();
 
 require $config['root_dir'].'theme/admin_header.php';
 
@@ -12,12 +12,13 @@ echo ", and <a href=genotyping/allele_conflicts.php>All Allele Conflicts</a>.<br
 
 if (isset($_GET['uid'])) {
     $uid = intval($_GET['uid']);
-    $sql = "select marker_name from markers where marker_uid = $uid";
-    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    if ($row=mysqli_fetch_row($result)) {
-        $marker_name = $row[0];
-    } else {
-        $marker_name = "unknown";
+    $sql = "select marker_name from markers where marker_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $marker_name);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
     }
     echo "<h3>Allele Conflicts for $marker_name between experiments</h3>\n";
 
@@ -27,15 +28,16 @@ if (isset($_GET['uid'])) {
     where a.line_record_uid = l.line_record_uid
     and a.marker_uid = m.marker_uid
     and a.experiment_uid = e.experiment_uid
-    and m.marker_uid = $uid";
-    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    $count = 0;
-    while ($row=mysqli_fetch_row($result)) {
-        $count++;
-        $trial = $row[0];
-        $e_uid = $row[1];
-        $empty[$trial] = "";
-        $trial_list[$e_uid] = $trial;
+    and m.marker_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $trial, $e_uid);
+        while (mysqli_stmt_fetch($stmt)) {
+            $empty[$trial] = "";
+            $trial_list[$e_uid] = $trial;
+        }
+        mysqli_stmt_close($stmt);
     }
 
     echo "<table>";

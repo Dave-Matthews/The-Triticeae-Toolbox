@@ -16,7 +16,6 @@ require 'config.php';
  */
 require $config['root_dir'] . 'includes/bootstrap.inc';
 
-global $mysqli;
 $mysqli = connecti();
 
 /* ******************************* */

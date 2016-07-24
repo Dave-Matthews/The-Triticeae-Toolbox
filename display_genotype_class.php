@@ -207,8 +207,9 @@ class ShowData
             $min_maf = 0;
         }
         $max_miss_line = 10;
-        if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml']))
-           $max_miss_line = $_GET['mml'];
+        if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml'])) {
+             $max_miss_line = $_GET['mml'];
+        }
         $sql_mstat = "SELECT marker_uid, maf, missing, total 
            FROM allele_frequencies
            WHERE experiment_uid = $experiment_uid";
@@ -217,19 +218,19 @@ class ShowData
         $num_mark = mysqli_num_rows($res);
         $num_maf = $num_miss = 0;
 
-    echo "<h3>Description</h3><p>";
-    echo "<table>";
-    echo "<tr> <td>Experiment Short Name</td><td>".$experiment_short_name."</td></tr>";
-    echo "<tr> <td>Platform</td><td>".$platform_name."</td></tr>";
-    echo "<tr> <td>Data Program</td><td>".$data_program_name." (".$data_program_code.")</td></tr>";
-    echo "<tr> <td>Breeding Program</td><td>".$breeding_program_name."</td></tr>";
-    echo "<tr> <td>OPA Name</td><td>".$row_Gen_Info['OPA_name']."</td></tr>";
-    echo "<tr> <td>Processing Date</td><td>".$row_Gen_Info['processing_date']."</td></tr>";
-    echo "<tr> <td>Software</td><td>".$row_Gen_Info['analysis_software']."</td></tr>";
-    echo "<tr> <td>Software version</td><td>".$row_Gen_Info['BGST_version_number']."</td></tr>";
-    echo "<tr> <td>Comments</td><td>".$row_Gen_Info['comments']."</td></tr>";
-    echo "</table><p>";
-?>
+        echo "<h3>Description</h3><p>";
+        echo "<table>";
+        echo "<tr> <td>Experiment Short Name</td><td>".$experiment_short_name."</td></tr>";
+        echo "<tr> <td>Platform</td><td>".$platform_name."</td></tr>";
+        echo "<tr> <td>Data Program</td><td>".$data_program_name." (".$data_program_code.")</td></tr>";
+        echo "<tr> <td>Breeding Program</td><td>".$breeding_program_name."</td></tr>";
+        echo "<tr> <td>OPA Name</td><td>".$row_Gen_Info['OPA_name']."</td></tr>";
+        echo "<tr> <td>Processing Date</td><td>".$row_Gen_Info['processing_date']."</td></tr>";
+        echo "<tr> <td>Software</td><td>".$row_Gen_Info['analysis_software']."</td></tr>";
+        echo "<tr> <td>Software version</td><td>".$row_Gen_Info['BGST_version_number']."</td></tr>";
+        echo "<tr> <td>Comments</td><td>".$row_Gen_Info['comments']."</td></tr>";
+        echo "</table><p>";
+        ?>
 
 <h3>Download</h3>
 <b><?php echo ($num_mark) ?></b> markers were assayed for <b><?php echo ($line_total) ?></b> lines.
@@ -245,16 +246,16 @@ class ShowData
 <input type="submit" value="Select experiment" style="color:blue"> (lines and markers)
 </form>
 <br>
-<?php
+    <?php
     if ($gbs_exp == "yes") {
         calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
     } else {
         calculate_af($lines_ids, $min_maf, $max_missing, $max_miss_line);
     }
-?>
+    ?>
 
 <p>
-  Maximum Missing Data: <input type="text" name="mm" id="mm" size="1" value="<?php echo ($max_missing) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
+  Maximum Missing Data: <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
   Minimum MAF: <input type="text" name="mmaf" id="mmaf" size="1" value="<?php echo ($min_maf) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
   <input type="button" value="Refresh" onclick="javascript:mrefresh('<?php echo $trial_code ?>');return false;" /><br>
   <div id="status"></div>
@@ -286,14 +287,16 @@ class ShowData
     echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
     echo "</table>";
   
-  } /* End of function type_DataInformation*/
+    } /* End of function type_DataInformation*/
 
-  private function type_Tab_Delimiter_GBS() {
+    private function type_Tab_Delimiter_GBS()
+    {
       $dtype = "";
       $experiment_uid = $_GET['expuid'];
       $max_missing = 99.9;//IN PERCENT
-      if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
+      if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm'])) {
           $max_missing = $_GET['mm'];
+      }
       if ($max_missing > 100)
           $max_missing = 100;
       elseif ($max_missing < 0)

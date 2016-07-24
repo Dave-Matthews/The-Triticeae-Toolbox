@@ -7,9 +7,9 @@ require 'config.php';
  * 3/29/2012 C.Birkett changed intersect option to use SESSION variable, then DispPhenotype will show trial only if it is in selected lines
  */
 require $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'theme/admin_header.php';
 $mysqli = connecti();
 
-require $config['root_dir'] . 'theme/admin_header.php';
 /*******************************/ ?>
 
 <div id="primaryContentContainer">
@@ -271,10 +271,11 @@ $in_these_trials
 // Test for currently selected lines.
 $username=$_SESSION['username'];
 if ($username && !isset($_SESSION['selected_lines'])) {
-  $stored = retrieve_session_variables('selected_lines', $username);
-  if (-1 != $stored)
-    $_SESSION['selected_lines'] = $stored;
- }
+    $stored = retrieve_session_variables('selected_lines', $username);
+    if (-1 != $stored) {
+        $_SESSION['selected_lines'] = $stored;
+    }
+}
 ?>
 </td>
 
@@ -286,29 +287,29 @@ if ($username && !isset($_SESSION['selected_lines'])) {
 </div>
 <?php
 if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
-  print "<div class='boxContent'>";
-  $selectedcount = count($_SESSION['selected_lines']);
-  echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
+    print "<div class='boxContent'>";
+    $selectedcount = count($_SESSION['selected_lines']);
+    echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
 
-  $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
-  print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
-  print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
-  foreach ($_SESSION['selected_lines'] as $lineuid) {
-    $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-    while ($row=mysqli_fetch_assoc($result)) {
-      $selval=$row['line_record_name'];
-      print "<option value=\"$lineuid\">$selval</option>\n";
+    $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
+    print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
+    print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 12em;width: 16em\">";
+    foreach ($_SESSION['selected_lines'] as $lineuid) {
+        $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid")
+            or die("invalid line uid\n");
+        while ($row=mysqli_fetch_assoc($result)) {
+            $selval=$row['line_record_name'];
+            print "<option value=\"$lineuid\">$selval</option>\n";
+        }
     }
-  }
-  print "</select>";
-  print "<p><input type='submit' value='Deselect highlighted lines'>";
-  print "</form>";
-  print "</div>";
+    print "</select>";
+    print "<p><input type='submit' value='Deselect highlighted lines'>";
+    print "</form>";
+    print "</div>";
 }
 ?>
   </div>
   </div>
   </div>
 
-
-<?php include($config['root_dir'] . 'theme/footer.php'); ?>
+<?php require $config['root_dir'] . 'theme/footer.php';

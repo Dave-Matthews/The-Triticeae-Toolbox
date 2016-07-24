@@ -33,6 +33,9 @@ try {
     if (isset($postVar['linelist'])) {
         $postVar['linelist'] = explode(",", $postVar['linelist']);
     }
+    if (isset($postVar['contents'])) {
+        $postVar['contents'] = "";
+    }
     $request = array(
     'GET' => $getVar,
     'POST' => $postVar,

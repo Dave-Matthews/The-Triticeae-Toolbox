@@ -1,24 +1,24 @@
 <?php
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap.inc');
+require $config['root_dir'] . 'includes/bootstrap.inc';
 
-connect();
+$mysqli = connecti();
 
-  global $config;
-  include($config['root_dir'] . 'theme/admin_header.php');
-  if (isset($_GET['uid'])) {
+global $config;
+require $config['root_dir'] . 'theme/admin_header.php';
+if (isset($_GET['uid'])) {
     $experiment_uid = $_GET['uid'];
-  } else {
+} else {
     die("Error - no experiment found<br>\n");
-  }
+}
 
-  $count = 0;
-  $sql = "select * from csr_system where system_uid =$experiment_uid";
-  $res = mysql_query($sql) or die (mysql_error());
-  echo "<h2>CSR Spectrometer System</h2>\n";
-  echo "<table>";
-  while ($row = mysql_fetch_assoc($res)) {
+$count = 0;
+$sql = "select * from csr_system where system_uid =$experiment_uid";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+echo "<h2>CSR Spectrometer System</h2>\n";
+echo "<table>";
+while ($row = mysqli_fetch_assoc($res)) {
     $system_name = $row["system_name"];
     $instrument = $row["instrument"];
     $serial_num = $row["serial_num"];
@@ -47,6 +47,5 @@ connect();
     echo "<tr><td>Bandwidths<td>$bandwidths";
     echo "<tr><td>Comments<td>$comments\n";
     $count++;
-  }
-  echo "</table>";
-
+}
+echo "</table>";

@@ -1,36 +1,36 @@
 <?php
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap.inc');
+require $config['root_dir'] . 'includes/bootstrap.inc';
 
-connect();
+$mysqli = connecti();
 
   global $config;
-  include($config['root_dir'] . 'theme/admin_header.php');
+  require $config['root_dir'] . 'theme/admin_header.php';
   if (isset($_GET['uid'])) {
     $uid = $_GET['uid'];
   } else {
     die("Error - no experiment found<br>\n");
   }
   $sql = "select trial_code from experiments, csr_measurement where experiments.experiment_uid = csr_measurement.experiment_uid and measurement_uid = $uid";
-  $res = mysql_query($sql) or die (mysql_error());
-  if ($row = mysql_fetch_assoc($res)) {
+  $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
+  if ($row = mysqli_fetch_assoc($res)) {
     $trial_code = $row["trial_code"];
   } else {
     die("Error - invalid uid $uid<br>\n");
   }
 
   $sql = "select * from csr_measurement_rd";
-  $res = mysql_query($sql) or die (mysql_error());
-  while ($row = mysql_fetch_assoc($res)) {
+  $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
+  while ($row = mysqli_fetch_assoc($res)) {
     $rd_uid = $row["radiation_dir_uid"];
     $direction = $row["direction"];
     $dir_list[$rd_uid] = $direction;
   }
 
   $sql = "select * from csr_system";
-  $res = mysql_query($sql) or die (mysql_error());
-  while ($row = mysql_fetch_assoc($res)) {
+  $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
+  while ($row = mysqli_fetch_assoc($res)) {
     $sy_uid = $row["system_uid"];
     $name = $row["system_name"];
     $spect_list[$sy_uid] = $name;
@@ -38,10 +38,10 @@ connect();
 
   $count = 0;
   $sql = "select * from csr_measurement where measurement_uid = $uid";
-  $res = mysql_query($sql) or die (mysql_error());
+  $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
   echo "<h2>CSR Annotation for $trial_code</h2>\n";
   echo "<table>";
-  while ($row = mysql_fetch_assoc($res)) {
+  while ($row = mysqli_fetch_assoc($res)) {
     $rad_dir_uid = $row["radiation_dir_uid"];
     $measure_date = $row["measure_date"];
     $growth_stage = $row["growth_stage"];

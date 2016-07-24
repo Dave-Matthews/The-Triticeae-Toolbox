@@ -12,21 +12,21 @@ require $config['root_dir'] . 'theme/admin_header.php';
 ?>
 
 <div id="primaryContentContainer">
-	<div id="primaryContent">
+<div id="primaryContent">
 
-	<h2>Alleles for all lines</h2>
+<h2>Alleles for all lines</h2>
 
 <?php
 if (isset($_GET['marker']) && ($_GET['marker'] != "")) {
     $marker_uid = $_GET['marker'];
     $sql = "select marker_name from markers where marker_uid = $marker_uid";
-    $stmt = mysqli_prepare($mysqli, "SELECT marker_name from markers where marker_uid = ?");
-    if (mysqli_stmt_bind_param($stmt, "i", $marker_uid)) {
+    if ($stmt = mysqli_prepare($mysqli, "SELECT marker_name from markers where marker_uid = ?")) {
+        mysqli_stmt_bind_param($stmt, "i", $marker_uid);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $markername);
         mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
     }
-    mysqli_stmt_close($stmt);
 } elseif (isset($_GET['markername']) && ($_GET['markername'] != "")) {
     $markername = $_GET['markername'];
     $markername = strip_tags($markername);
@@ -36,8 +36,8 @@ if (isset($_GET['marker']) && ($_GET['marker'] != "")) {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $marker_uid);
         mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
     }
-    mysqli_stmt_close($stmt);
 } else {
     $marker_uid = "";
 }

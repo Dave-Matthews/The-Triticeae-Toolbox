@@ -8,7 +8,7 @@
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
-connect();
+$mysqli = connecti();
 loginTest();
 ob_start();
 require $config['root_dir'] . 'theme/admin_header.php';
@@ -28,8 +28,9 @@ ob_end_flush();
 // Has a Synonym update been submitted?
 if (!is_null($_GET['newsyn'])) {
   $input = $_GET;
-  foreach($input as $k=>$v)
+  foreach ($input as $k=>$v) {
     $input[$k] = addslashes($v);
+  }
   array_pop($input); // Remove line name.
   $line_uid = array_pop($input);
   $newsyn = array_pop($input);
@@ -50,7 +51,7 @@ if (!is_null($_GET['newsyn'])) {
 	$sql = "insert into line_synonyms 
            (line_record_uid, line_synonym_name, updated_on, created_on) 
            values ($line_uid, '$newsyn', now(), now())";
-	$res = mysql_query($sql) or die(mysql_error()."<br>Query: ".$sql);
+	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query: ".$sql);
 	$flag = 1;
       }
     }
@@ -59,15 +60,15 @@ if (!is_null($_GET['newsyn'])) {
     if (empty($v)) {
       // Delete the record.
       $sql = "delete from line_synonyms where line_synonyms_uid = $k";
-      $res = mysql_query($sql) or die(mysql_error()."<br>Query: ".$sql);
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query: ".$sql);
       $flag = 1;
     }
     else {
       $oldval = mysql_grab("select line_synonym_name from line_synonyms where line_synonyms_uid = $k");
       if ($oldval != $v) {
 	// Edit the value.
-	$res = mysql_query("update line_synonyms set line_synonym_name = '$v', updated_on = now()
-             where line_synonyms_uid = $k") or die(mysql_error()."<br>Query: ".$sql);
+	$res = mysqli_query($mysqli, "update line_synonyms set line_synonym_name = '$v', updated_on = now()
+             where line_synonyms_uid = $k") or die(mysqli_error($mysqli)."<br>Query: ".$sql);
 	$flag = 1;
       }
     }
@@ -90,14 +91,14 @@ if(!is_null($_GET['newgrin'])) {
     $sql = "insert into barley_pedigree_catalog_ref
            (barley_pedigree_catalog_uid, line_record_uid, barley_ref_number, updated_on, created_on) 
            values (2, $line_uid, '$newgrin', now(), now())";
-    $res = mysql_query($sql) or die(mysql_error()."<br>Query: ".$sql);
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query: ".$sql);
     $flag = 1;
   }
   foreach($input as $k=>$v) {
     if (empty($v)) {
       // Delete the record.
       $sql = "delete from barley_pedigree_catalog_ref where barley_pedigree_catalog_ref_uid = $k";
-      $res = mysql_query($sql) or die(mysql_error()."<br>Query: ".$sql);
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query: ".$sql);
       $flag = 1;
     }
     else {
@@ -105,8 +106,8 @@ if(!is_null($_GET['newgrin'])) {
                             where barley_pedigree_catalog_ref_uid = $k");
       if ($oldval != $v) {
 	// Edit the value.
-	$res = mysql_query("update barley_pedigree_catalog_ref set barley_ref_number = '$v', updated_on = now()
-             where barley_pedigree_catalog_ref_uid = $k") or die(mysql_error()."<br>Query: ".$sql);
+	$res = mysqli_query($mysqli, "update barley_pedigree_catalog_ref set barley_ref_number = '$v', updated_on = now()
+             where barley_pedigree_catalog_ref_uid = $k") or die(mysqli_error($mysqli)."<br>Query: ".$sql);
 	$flag = 1;
       }
     }
@@ -126,8 +127,8 @@ if(isset($_GET['line'])) {
     echo "<b>Synonyms</b><br>";
     $sql = "select line_synonyms_uid, line_synonym_name
             from line_synonyms where line_record_uid = $line_uid";
-    $res = mysql_query($sql) or die(mysql_error());
-    while($row = mysql_fetch_row($res)) 
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while($row = mysqli_fetch_row($res)) 
       echo "<input type=text name='$row[0]' value='$row[1]'><br>";
     echo "<input type=text name='newsyn'><br>";
     echo "<input type=hidden name='line_uid' value='$line_uid'>";
@@ -140,8 +141,8 @@ if(isset($_GET['line'])) {
     $sql = "select barley_pedigree_catalog_ref_uid, barley_ref_number
             from barley_pedigree_catalog_ref where line_record_uid = $line_uid
             and barley_pedigree_catalog_uid = 2";
-    $res = mysql_query($sql) or die(mysql_error());
-    while($row = mysql_fetch_row($res)) 
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while($row = mysqli_fetch_row($res)) 
       echo "<input type=text name='$row[0]' value='$row[1]'><br>";
     echo "<input type=text name='newgrin'><br>";
     echo "<input type=hidden name='line_uid' value='$line_uid'>";
@@ -193,14 +194,14 @@ echo "</div>";
       echo "<tr><td><strong>Parents</strong>";
       foreach ($ids as $lnid) {
 	echo "<td>";
-	$res = mysql_query("select line_record_name
+	$res = mysqli_query($mysqli, "select line_record_name
 			    from line_records
 			    where line_record_uid in (
 			      select parent_id
 			      from pedigree_relations
 			      where line_record_uid = $lnid)");
 	$r = array();
-	while ($row = mysql_fetch_row($res)) 
+	while ($row = mysqli_fetch_row($res)) 
 	  $r[] = $row[0];
 	$parents[$lnid] = implode(", ", $r);
 	echo $parents[$lnid];
@@ -224,8 +225,8 @@ echo "</div>";
       }
       // Panels
       $sql = "select linepanels_uid, name, line_ids from linepanels";
-      $res = mysql_query($sql) or die(mysql_error());
-      while ($row = mysql_fetch_row($res)) {
+      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+      while ($row = mysqli_fetch_row($res)) {
 	$panelid = $row[0];
 	$members[$panelid] = explode(",", $row[2]);
 	foreach ($ids as $lnid) {
@@ -238,8 +239,12 @@ echo "</div>";
       }
       echo "<tr><td><strong>Panels</strong>";
       foreach ($ids as $lnid) {
-	$panelist = implode(", ", $panelnames[$lnid]);
-        echo "<td>$panelist";
+        if (is_array($panelnames[$lnid])) {
+	    $panelist = implode(", ", $panelnames[$lnid]);
+            echo "<td>$panelist";
+        } else {
+            echo "<td>";
+        }
       }
       // Phenotype data
       echo "<tr><td><strong>Phenotype Trials</strong>";
@@ -250,11 +255,15 @@ echo "</div>";
 	 and e.experiment_type_uid = et.experiment_type_uid
 	 and experiment_type_name = 'phenotype'
 	 and line_record_uid = $lnid";
-	$res = mysql_query($sql) or die(mysql_error());
-	while ($tr = mysql_fetch_row($res))
+	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	while ($tr = mysqli_fetch_row($res))
 	  $trials[$lnid][] = $tr[0];
-	$triallist = implode(", ", $trials[$lnid]);
-	echo "<td>$triallist";
+        if (is_array($trials[$lnid])) {
+	    $triallist = implode(", ", $trials[$lnid]);
+	    echo "<td>$triallist";
+        } else {
+            echo "<td>";
+        }
       }
       // Validation: Can't both be in the same trial.
       foreach ($trials[$oline_uid] as $tr)
@@ -269,11 +278,15 @@ echo "</div>";
 	 and e.experiment_type_uid = et.experiment_type_uid
 	 and experiment_type_name = 'genotype'
 	 and line_record_uid = $lnid";
-	$res = mysql_query($sql) or die(mysql_error());
-	while ($ge = mysql_fetch_row($res))
+	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	while ($ge = mysqli_fetch_row($res))
 	  $gexpts[$lnid][] = $ge[0];
-	$gexptlist = implode(", ", $gexpts[$lnid]);
-	echo "<td>$gexptlist";
+	if (is_array($gexpts[$lnid])) {
+            $gexptlist = implode(", ", $gexpts[$lnid]);
+	    echo "<td>$gexptlist";
+        } else {
+            echo "<td>";
+        }
       }
       // Validation: Can't both be in the same genotyping experiment.
       foreach ($gexpts[$oline_uid] as $ge)
@@ -322,7 +335,7 @@ echo "</div>";
 	    unset($members[$panelid][$inpanel[$panelid][$oline_uid]]);
 	    $memberlist = implode(',', $members[$panelid]);
 	    $sql = "update linepanels set line_ids = '$memberlist' where linepanels_uid = $panelid";
-	    $res = mysql_query($sql) or die("<p><b>Error: </b>".mysql_error()."<br>Command was:<br>$sql");
+	    $res = mysqli_query($mysqli, $sql) or die("<p><b>Error: </b>".mysqli_error($mysqli)."<br>Command was:<br>$sql");
 	  }
 	  // Move phenotype and genotype data from oldline to keepline by replacing tht_base.line_record_uid and fieldbook.line_uid.
 	  // Delete from pedigree_relations both as line_record_uid and parent_id.
@@ -336,7 +349,7 @@ echo "</div>";
                             "delete from allele_bymarker_idx where line_record_uid = $oline_uid",
 			    "delete from line_records where line_record_uid = $oline_uid");
 	  foreach ($commands as $sql) {
-	    $res = mysql_query($sql) or die("<p><b>Error: </b>".mysql_error()."<br>Command was:<br>$sql");
+	    $res = mysqli_query($mysqli, $sql) or die("<p><b>Error: </b>".mysqli_error($mysqli)."<br>Command was:<br>$sql");
 	  }
 	  echo "<p>Line <b>$oldline</b> deleted. Phenotype and genotype data merged into <b>$keepline</b>.";
           echo "<br>Recreating allele_bymarker and allele_bymarker_idx table.\n";

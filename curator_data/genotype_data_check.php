@@ -26,7 +26,7 @@ require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 //require_once $config['root_dir'] . 'includes/email.inc';
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */

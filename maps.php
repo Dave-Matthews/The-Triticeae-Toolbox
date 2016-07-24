@@ -14,15 +14,16 @@
  * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks
 */
 
+ini_set('memory_limit', '4G');
 require_once 'config.php';
 require_once $config['root_dir'].'includes/bootstrap.inc';
-connect();
+$mysqli = connecti();
 
 $mapsetStr = "";
 $sql = "select mapset_name from mapset";
-$sql_r = mysql_query($sql) or die(mysql_error());
+$sql_r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
-while ($row = mysql_fetch_assoc($sql_r)) {
+while ($row = mysqli_fetch_assoc($sql_r)) {
     $val = $row["mapset_name"];
     //echo 	$row["mapset_name"];
     $mapsetStr.= $val.",";
@@ -84,30 +85,31 @@ class Maps
     // javascript code required by itself and the other typeMapset actions.
     private function typeMapSetDisplay()
     {
+        global $mysqli;
     ?>
-		<!--Style sheet for better user interface-->
-		
-		<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; }
-			table {background: none; border-collapse: collapse}
-			td {border: 1px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-		<style type="text/css">
+<!--Style sheet for better user interface-->
 
-                   table.marker
-                   {background: none; border-collapse: collapse}
-                    th.marker
-		      { background: #5b53a6; color: #fff; border: 1px solid #666 !important; border-color: black; text-align: left;}
+<style type="text/css">
+th {background: #5B53A6 !important; color: white !important; }
+table {background: none; border-collapse: collapse}
+td {border: 1px solid #eee !important;}
+h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+</style>
+<style type="text/css">
+
+        table.marker
+        {background: none; border-collapse: collapse}
+        th.marker
+      { background: #5b53a6; color: #fff; border: 1px solid #666 !important; border-color: black; text-align: left;}
                     
-                    td.marker
-                    { border: 1 !important; }
+        td.marker
+        { border: 1 !important; }
         </style>
 <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
 <?php
 $sql = "select value from settings where name = \"database\"";
-$res = mysql_query($sql) or die(mysql_error());
-if ($row = mysql_fetch_array($res)) {
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+if ($row = mysqli_fetch_array($res)) {
     $value = $row[0];
     $jb_path = "../jbrowse/$value";
     $jb_url = "/jbrowse/?data=$value";
@@ -132,16 +134,16 @@ if ($row = mysql_fetch_array($res)) {
       
       /* Function for invoking export to excel functionality  */
       function load_excel() {
-	  excel_str1 =	markers_annotation_str;
-	  excel_str2 =  maps_str;
-	  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeMarkerExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + excel_str2;
-	  // Opens the url in the same window
-	  window.open(url, "_self");
-      }
+  excel_str1 = markers_annotation_str;
+  excel_str2 = maps_str;
+  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeMarkerExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + excel_str2;
+  // Opens the url in the same window
+  window.open(url, "_self");
+}
       
       /* Function to open annotation link in a new window */
       function link_for_value(link) {
-	  myWin = window.open(link, '');
+          myWin = window.open(link, '');
 	  // 		link_url = link;
 	  // 		window.open(link_url,
 	  // 'open_window',
@@ -272,8 +274,7 @@ if ($row = mysql_fetch_array($res)) {
 			
     function load_marker_annotation()
     {
-						
-                $('marker_annotation_loader').hide();
+        $('marker_annotation_loader').hide();
                 
 				new Ajax.Updater(
                     $('marker_annotation_loader'),
@@ -319,8 +320,8 @@ if ($row = mysql_fetch_array($res)) {
 	
             <?php
             $sql = "SELECT count(*) from mapset";
-            $res = mysql_query($sql) or die(mysql_error());
-            $row = mysql_fetch_array($res);
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_array($res);
             $height = $row[0] + 1 + 0.3*$row[0];
             ?>
 
@@ -341,8 +342,8 @@ if ($row = mysql_fetch_array($res)) {
     // Select Mapset Name for the drop down menu
     $sql = "SELECT mapset_name FROM mapset ORDER BY mapset_name DESC";
 
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res)) {
         ?><option value="<?php echo $row['mapset_name'] ?>"><?php echo $row['mapset_name'] ?></option>
         <?php
     }
@@ -354,8 +355,8 @@ if ($row = mysql_fetch_array($res)) {
     <?php
 
     $sql = "SELECT map_type FROM mapset ORDER BY mapset_name DESC";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res)) {
         ?><option value="<?php echo $row['map_type'] ?>"><?php echo $row['map_type'] ?></option>
         <?php
     }
@@ -366,8 +367,8 @@ if ($row = mysql_fetch_array($res)) {
     <select disabled name="MapUnit" size="10" style="height: <?php echo $height ?>em;width: 6em" >
     <?php
     $sql = "SELECT map_unit FROM mapset ORDER BY mapset_name DESC";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res)) {
         ?><option value="<?php echo $row['map_unit'] ?>"><?php echo $row['map_unit'] ?></option>
         <?php
     }
@@ -382,10 +383,11 @@ if ($row = mysql_fetch_array($res)) {
 	<?php
 
     $sql = "SELECT comments FROM mapset ORDER BY mapset_name DESC";
-    $res = mysql_query($sql) or die(mysql_error());
-    while ($row = mysql_fetch_assoc($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($res)) {
+        $comments = htmlentities($row['comments']);
         ?>
-				<option value="<?php echo $row['comments'] ?>"><?php echo $row['comments'] ?></option>
+				<option value="<?php echo $comments ?>"><?php echo $row['comments'] ?></option>
 			<?php
 		}
 		?>
@@ -404,16 +406,17 @@ if ($row = mysql_fetch_array($res)) {
 	<?php
 			}
 			
-	private function type_Maps()
-	{
-		$mapset_query = $_GET['mset'];
-                $sql = "SELECT count(*) from mapset";
-                $res = mysql_query($sql) or die(mysql_error());
-                $row = mysql_fetch_array($res);
-                $height = $row[0] + 1 + 0.3*$row[0];
-                if ($height < 14) {
-                  $height = 14;
-                }
+    private function type_Maps()
+    {
+        global $mysqli;
+	$mapset_query = $_GET['mset'];
+        $sql = "SELECT count(*) from mapset";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $row = mysqli_fetch_array($res);
+        $height = $row[0] + 1 + 0.3*$row[0];
+        if ($height < 14) {
+            $height = 14;
+        }
 		
 ?>
 
@@ -427,12 +430,10 @@ if ($row = mysql_fetch_array($res)) {
 		<select name="mapsdetails" size="10" style="height: <?php echo $height ?>em" onchange="javascript: update_maps(this.value)">
 <?php
 	/* Query for fetching Map Names based on user selected mapset name */
-		$sql = "SELECT m.map_name FROM map m, mapset ms where mapset_name='".$mapset_query."' and m.mapset_uid = ms.mapset_uid";
-
-		
-
-			$res = mysql_query($sql) or die(mysql_error());
-		while ($row = mysql_fetch_assoc($res)) {
+		$sql = "SELECT m.map_name FROM map m, mapset ms
+                 where mapset_name='".$mapset_query."' and m.mapset_uid = ms.mapset_uid order by m.map_name";
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($res)) {
 			?>
 			<!-- Display Map names-->		
 				<option value="<?php echo $row['map_name'] ?>"><?php echo $row['map_name'] ?></option>
@@ -448,8 +449,9 @@ if ($row = mysql_fetch_array($res)) {
 }
 
 private function type_Markers()
-	{
-		$maps_query = $_GET['mp']; 
+{
+        global $mysqli;
+	$maps_query = $_GET['mp']; 
 		
 		/* For debugging
 			$firephp = FirePHP::getInstance(true);
@@ -480,13 +482,13 @@ private function type_Markers()
 		/* $sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position"; */
 		$sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.bin_name, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position";
 
-			$res = mysql_query($sql) or die(mysql_error());
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 			
 			?>
 		
 	
 			<?php
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 			?>
 	
 		<tr>
@@ -518,29 +520,23 @@ private function type_Markers()
 
 private function type_Marker_Annotation()
 {
-		$mark_ann_query = $_GET['mkan']; 
-		
-		/* For debugging
-			$firephp = FirePHP::getInstance(true);
-			$firephp->log($mark_ann_query,"mark_ann_query");
-		*/
-		
-		$sql = "SELECT mat.name_annotation FROM  markers m, marker_annotations ma,  marker_annotation_types mat
- 								where m.marker_name = '".$mark_ann_query."' AND
-								m.marker_uid = ma.marker_uid AND
-								ma.marker_annotation_type_uid = mat.marker_annotation_type_uid";
-
+    global $mysqli;
+    $mark_ann_query = $_GET['mkan']; 
+    $sql = "SELECT mat.name_annotation FROM  markers m, marker_annotations ma,  marker_annotation_types mat
+ 						where m.marker_name = '".$mark_ann_query."' AND
+						m.marker_uid = ma.marker_uid AND
+						ma.marker_annotation_type_uid = mat.marker_annotation_type_uid";
 	
-			$res = mysql_query($sql) or die(mysql_error());
-			
-	?>
-	<div>
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+
+    ?>
+    <div>
 
 <table >
 <tr><h2>Marker Annotations</h2></tr>
 	<tr> <h3> Marker Selected: <?php echo $mark_ann_query; ?> </h3> </tr>
 	<?php
-			if (mysql_num_rows($res) >= 1)
+			if (mysqli_num_rows($res) >= 1)
 			{
 ?>
 
@@ -556,10 +552,10 @@ private function type_Marker_Annotation()
 								m.marker_uid = ma.marker_uid AND
 								ma.marker_annotation_type_uid = mat.marker_annotation_type_uid AND
                                                                 mat.linkout_string_for_annotation IS NOT NULL";
-   	        $res = mysql_query($sql) or die(mysql_error());
+   	        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
 		/* Display Annotation Names that have linkouts. */
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 		  ?>	
 			<option value="<?php echo $row['name_annotation'] ?>"><?php echo $row['name_annotation'] ?></option>
 		    <?php 
@@ -579,14 +575,14 @@ private function type_Marker_Annotation()
 								m.marker_uid = ma.marker_uid AND
 								ma.marker_annotation_type_uid = mat.marker_annotation_type_uid AND
                                                                 mat.linkout_string_for_annotation IS NOT NULL";
-			$res = mysql_query($sql) or die(mysql_error());
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 					
 			/* Display Annotation Value with active link */
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 			$reg_pattern = "XXXX";
 			$replace_string = $row['value'];
 			$source_string = $row['linkout_string_for_annotation'];
-			$linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
+			$linkString = preg_replace($reg_pattern,$replace_string,$source_string);
 		?>	
 			<option value="<?php echo $linkString ?>"><?php echo $row['value'] ?></option>
 			<?php
@@ -614,8 +610,8 @@ private function type_Marker_Annotation()
 								m.marker_uid = ma.marker_uid AND
 								ma.marker_annotation_type_uid = mat.marker_annotation_type_uid AND
                                                                 mat.linkout_string_for_annotation IS NULL";
-			$res = mysql_query($sql) or die(mysql_error());
-		  while ($row = mysql_fetch_assoc($res)) {
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+		  while ($row = mysqli_fetch_assoc($res)) {
 		    echo $row['name_annotation'].": ".$row['value']."<br>";
 		      } 
 ?>
@@ -652,9 +648,9 @@ private function type_Annotation_Comments()
 		$sql = "SELECT comments FROM   marker_annotation_types 	where name_annotation = '".$comment_query."' ";
 
 	
-			$res = mysql_query($sql) or die(mysql_error());
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 					
-		while ($row = mysql_fetch_assoc($res)) {
+		while ($row = mysqli_fetch_assoc($res)) {
 		
 		?>	
 			<!-- Display Annotation Comments-->		
@@ -675,8 +671,9 @@ private function type_Annotation_Comments()
 <?php
 }
 private function type_Marker_Excel()
-	{
-require_once 'Spreadsheet/Excel/Writer.php';
+{
+    global $mysqli;
+    require_once 'Spreadsheet/Excel/Writer.php';
 	
 		$excel_markername = $_GET['mxls1'];
 		$excel_mapname = $_GET['mxls2'];  
@@ -728,11 +725,11 @@ $fullquery="SELECT mk.marker_name, mim.start_position, mim.end_position, mim.chr
 						
 
 
-$result=mysql_query($fullquery);
+$result=mysqli_query($mysqli, $fullquery);
 
 $i=1;
 
-while($row=mysql_fetch_assoc($result)){
+while($row=mysqli_fetch_assoc($result)){
 
 
  /* Add formatting */
@@ -765,7 +762,7 @@ $innerquery = "SELECT ma.value, mat.name_annotation as Annotation_Name, mat.link
 							 mk.marker_uid = ma.marker_uid AND
 							 ma.marker_annotation_type_uid = mat.marker_annotation_type_uid ";
 
-$innerresult=mysql_query($innerquery);
+$innerresult=mysqli_query($mysqli, $innerquery);
 
 
 
@@ -776,203 +773,130 @@ $probe32Count = 1;
 $probe35Count = 1;
 
 $test1 = $j;
-while($row=mysql_fetch_assoc($innerresult)){
+while ($row=mysqli_fetch_assoc($innerresult)) {
 
-/* replacing value in link out string */ 
+    /* replacing value in link out string */ 
+    $reg_pattern = "XXXX";
+    $replace_string = $row[value];
+    $source_string = $row[Annotation_Link];
+    $linkString = preg_replace($reg_pattern,$replace_string,$source_string);
 
-$reg_pattern = "XXXX";
-$replace_string = $row[value];
-$source_string = $row[Annotation_Link];
-$linkString = ereg_replace($reg_pattern,$replace_string,$source_string);
+    if ($row[Annotation_Name] == "HARVEST_U32") {
 
-/* For debugging
-		$firephp->log($linkString,"linkString");
-*/
+        /* Check if link exists */
+        if ($row[Annotation_Link] != "") {
+            $worksheet->writeUrl($j, 5, "$linkString", "$row[value]",$format_link);
+        } else {
+            $worksheet->write($j, 5, "$row[value]",$format_row);
+        }
+    }
 
-if ($row[Annotation_Name] == "HARVEST_U32")
-{
+    if ($row[Annotation_Name] == "HARVEST_U35") {
 
-/* Check if link exists */
+        /* Check if link exists */
+        if ($row[Annotation_Link] != "") {
+            $worksheet->writeUrl($j, 6, "$linkString", "$row[value]",$format_link);
+        } else {
+            $worksheet->write($j, 6, "$row[value]",$format_row);
+        }
+    }
 
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 5, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 5, "$row[value]",$format_row);
-}
-}
+if ($row[Annotation_Name] == "U32_PROBE_SET") {
 
-if ($row[Annotation_Name] == "HARVEST_U35")
-{
-
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 6, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 6, "$row[value]",$format_row);
-}
-
-}
-
-if ($row[Annotation_Name] == "U32_PROBE_SET")
-{
-
-/* Check if link exists */
-if ($probe32Count != 1)
-{
-$j = $j + 1;
-}
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 7, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 7, "$row[value]",$format_row);
-}
-$probe32Count = $probe32Count + 1;
-$jcount = $j;
+    /* Check if link exists */
+    if ($probe32Count != 1) {
+        $j = $j + 1;
+    }
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 7, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 7, "$row[value]",$format_row);
+    }
+    $probe32Count = $probe32Count + 1;
+    $jcount = $j;
 }
 
-if ($row[Annotation_Name] == "U32_RICE_LOCUS")
-{
+if ($row[Annotation_Name] == "U32_RICE_LOCUS") {
+    $j = $test1;
 
-$j = $test1;
-
-
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 8, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 8, "$row[value]",$format_row);
+    /* Check if link exists */
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 8, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 8, "$row[value]",$format_row);
+    }
 }
 
+if ($row[Annotation_Name] == "U32_RICE_DESCRIPTION") {
+    $j = $test1;
+
+    /* Check if link exists */
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 9, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 9, "$row[value]",$format_row);
+    }
 }
 
-if ($row[Annotation_Name] == "U32_RICE_DESCRIPTION")
-{
+if ($row[Annotation_Name] == "U35_PROBE_SET") {
+    if ($probe35count == 1) {
+        $j = $test1;
+    }
+    /* Check if link exists */
+    if ($probe35Count != 1) {
+        $j = $j + 1;
+    }
 
-$j = $test1;
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 10, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 10, "$row[value]",$format_row);
+    }
 
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 9, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 9, "$row[value]",$format_row);
-}
-
-}
-
-if ($row[Annotation_Name] == "U35_PROBE_SET")
-{
-if ($probe35count == 1)
-{
-$j = $test1;
-}
-/* Check if link exists */
-
-if ($probe35Count != 1)
-{
-$j = $j + 1;
+    $probe35Count = $probe35Count + 1;
+    $jcount1 = $j;
 }
 
+if ($row[Annotation_Name] == "U35_RICE_LOCUS") {
+    $j = $test1;
 
-if($row[Annotation_Link] != "")
-{
-
-
-$worksheet->writeUrl($j, 10, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 10, "$row[value]",$format_row);
-}
-
-$probe35Count = $probe35Count + 1;
-$jcount1 = $j;
-
+    /* Check if link exists */
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 11, "$linkString", "$row[value]",$format_link);
+    } else {
+        $worksheet->write($j, 11, "$row[value]",$format_row);
+    }
 
 }
 
-if ($row[Annotation_Name] == "U35_RICE_LOCUS")
-{
-$j = $test1;
+if ($row[Annotation_Name] == "U35_RICE_DESCRIPTION") {
+    $j = $test1;
 
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 11, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 11, "$row[value]",$format_row);
-}
-
-}
-
-if ($row[Annotation_Name] == "U35_RICE_DESCRIPTION")
-{
-
-$j = $test1;
-
-/* Check if link exists */
-
-if($row[Annotation_Link] != "")
-{
-$worksheet->writeUrl($j, 12, "$linkString", "$row[value]",$format_link);
-}
-else{
-$worksheet->write($j, 12, "$row[value]",$format_row);
-}
-
+    /* Check if link exists */
+    if ($row[Annotation_Link] != "") {
+        $worksheet->writeUrl($j, 12, "$linkString", "$row[value]", $format_link);
+    } else {
+        $worksheet->write($j, 12, "$row[value]", $format_row);
+    }
 }
  
- if ( ($probe35Count == 1) AND ($probe32Count == 1) )
- {
- 
- $i = $j;
- }
-
-/* For debugging
-		$firephp->log($jcount,"jcount");
-		$firephp->log($jcount1,"jcount1");
-*/
-
- else 
- {
-if ($jcount >= $jcount1)
- { 
- $i = $jcount ;
- }
- if ($jcount1 >= $jcount)
- {
- $i = $jcount1 ;
- }
- }
-
- 
- }
- 
- /* end of inner while loop */
- 
-$i++;
-/* For debugging
-		$firephp->log($i,"i");
-*/
-
+if (($probe35Count == 1) and ($probe32Count == 1)) {
+    $i = $j;
+} else {
+    if ($jcount >= $jcount1) {
+        $i = $jcount;
+    }
+    if ($jcount1 >= $jcount) {
+        $i = $jcount1;
+    }
+}
+    }
+    /* end of inner while loop */
+    $i++;
 }
 
-/* Sending it to the excel sheet*/
-
-$workbook->send('Maps_Details.xls');
-$workbook->close();
-}
+    /* Sending it to the excel sheet*/
+    $workbook->send('Maps_Details.xls');
+    $workbook->close();
+    }
 }/* end of class */
