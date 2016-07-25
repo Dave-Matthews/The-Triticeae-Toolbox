@@ -9,9 +9,9 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 $row = loadUser($_SESSION['username']);
@@ -21,7 +21,7 @@ $row = loadUser($_SESSION['username']);
 
 ////////////////////////////////////////////////////////////////////////////////
 ob_start();
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,4 +130,4 @@ function writeUploadLog($fname) {
 </div>
 </div>
 
-<?php include($config['root_dir'] . '/theme/footer.php');?>
+<?php include $config['root_dir'] . '/theme/footer.php';?>
