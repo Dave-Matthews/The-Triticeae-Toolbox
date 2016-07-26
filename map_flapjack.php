@@ -38,7 +38,7 @@ class Map_FlapJack
 	}
 
    private function type_output() {
-//        global $config;
+        global $mysqli;
 //		include($config['root_dir'] . 'theme/admin_header.php');
 
     	$mapsetID = $_GET["msid"];
@@ -144,6 +144,7 @@ class Map_FlapJack
 		}
         
         function create_output (mapsetID) {
+        global $mysqli;
 		
            //alert (" I was here");
             var url="<?php echo $_SERVER[PHP_SELF];?>?function=typeMapOut" + "&msid=" + mapsetID;
