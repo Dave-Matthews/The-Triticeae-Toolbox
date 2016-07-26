@@ -1,14 +1,13 @@
-<?php 
-//*************************************************************************************
-// 4/26/2011 J.Lee	Redirect output file to Temp folder and 
-//					Address possible concurrency issue, hardwire map data
-//                  MSIE about box not adjustable, comments not updated when 
-//                  selecting mapset, etc.
-//
-//*************************************************************************************
+<?php
+/**
+/ 4/26/2011 J.Lee  Redirect output file to Temp folder and
+/		   Address possible concurrency issue, hardwire map data
+/                  MSIE about box not adjustable, comments not updated when
+/                  selecting mapset, etc.
+*/
 
-require_once('config.php');
-include $config['root_dir'].'includes/bootstrap.inc';
+require_once 'config.php';
+require $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
 
 new Map_FlapJack($_GET['function']);
@@ -17,16 +16,15 @@ class Map_FlapJack
 {
     
     private $delimiter = "\t";
-	public $mapsetHash = array();
-    
-     	
-	// Using the class's constructor to decide which action to perform
-	public function __construct($function = null) {	
+    public $mapsetHash = array();
 
-		switch($function)
-		{
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null) {	
+
+    switch($function)
+    {
 			
-            case 'typeMapOut':
+        case 'typeMapOut':
                 $this->type_output();
 				break;
                 
@@ -102,9 +100,8 @@ class Map_FlapJack
 
         $res = mysqli_query($mysqli, $sql) or die("Error: Unable to create comment hash table - ". mysqli_error($mysqli));
         while ($row = mysqli_fetch_assoc($res)) {
-           // echo $row['mapset_uid'] ."<br>";
-            if (empty($row)) continue;
-			$mapsetHash[$row['mapset_uid']] = $row['comments'];
+            $mapset_uid = $row['mapset_uid'];
+            $mapsetHash[$mapset_uid] = $row['comments'];
         }
 
 		echo "<h2>Map Sets Details</h2>"; 
