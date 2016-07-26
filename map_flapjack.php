@@ -116,6 +116,7 @@ class Map_FlapJack
 	
 	
 	private function type_MapSet_Display() 	{
+        global $mysqli;
         global $mapsetHash;
         
 ?>
@@ -144,7 +145,6 @@ class Map_FlapJack
 		}
         
         function create_output (mapsetID) {
-        global $mysqli;
 		
            //alert (" I was here");
             var url="<?php echo $_SERVER[PHP_SELF];?>?function=typeMapOut" + "&msid=" + mapsetID;
