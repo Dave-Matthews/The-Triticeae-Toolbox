@@ -104,12 +104,12 @@ class Map_FlapJack
             $mapsetHash[$mapset_uid] = $row['comments'];
         }
 
-		echo "<h2>Map Sets Details</h2>"; 
-		$this->type_MapSet_Display();
+	echo "<h2>Map Sets Details</h2>"; 
+	$this->type_MapSet_Display();
 
-		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-	}
+	$footer_div = 1;
+        include $config['root_dir'].'theme/footer.php'; 
+}
 	
 	
 	private function type_MapSet_Display() 	{
@@ -121,10 +121,10 @@ class Map_FlapJack
 	
         function load_flapjack() {
 			
-			var url="<?php echo $_SERVER[PHP_SELF];?>?function=typeFlapJack";
-            url = url.replace(/\/\/\/+/g, '/');
+	var url="<?php echo $_SERVER[PHP_SELF];?>?function=typeFlapJack";
+        url = url.replace(/\/\/\/+/g, '/');
 			// Opens the url in the same window
-            window.open(url, "_self");
+        window.open(url, "_self");
         }
 	  
         function display_comments(comvalue) {
