@@ -127,7 +127,7 @@ class Map_FlapJack
             window.open(url, "_self");
         }
 	  
-        function display_comments (comvalue) {
+        function display_comments(comvalue) {
 			
             var commentLookup = <?php echo json_encode($mapsetHash); ?>;
 			var comment_str = commentLookup[comvalue];
@@ -141,7 +141,7 @@ class Map_FlapJack
         
 		}
         
-        function create_output (mapsetID) {
+        function create_output(mapsetID) {
 		
            //alert (" I was here");
             var url="<?php echo $_SERVER[PHP_SELF];?>?function=typeMapOut" + "&msid=" + mapsetID;
