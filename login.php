@@ -372,7 +372,11 @@ function HTMLProcessLogin()
             $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
         }
     } elseif (!isVerified($_POST['email'])) {
-        $rv = HTMLLoginForm("You cannot login until you confirm your email address, using the link was sent to you at the time of registration.");
+        $rv = HTMLLoginForm("You cannot login until you confirm your email address, using the link was sent to you at the time of registration.
+              <form action=\"{$_SERVER['SCRIPT_NAME']}\" method=\"post\">
+              <input type=\"hidden\" name=\"email\" value=\"$email\">
+              <input type=\"submit\" name=\"resend_registration\" value=\"Send Register\" />
+              </form>");
     } else {
         if (isUser($email, $password)) {
             // Successful login
@@ -387,10 +391,10 @@ function HTMLProcessLogin()
             }
             // Store user_types_uid in $_SESSION.
             $sql = "select users_uid, user_types_uid, name from users where users_name = SHA1('$email')";
-	    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $row = mysqli_fetch_row($res);
-	    $_SESSION['userid'] = $row[0];
-	    $_SESSION['usertype'] = $row[1];
+            $_SESSION['userid'] = $row[0];
+            $_SESSION['usertype'] = $row[1];
             $_SESSION['name'] = $row[2];
             $sql = "update users set lastaccess = now() where
             users_name = '$email'";
@@ -451,10 +455,10 @@ function HTMLProcessForgot()
         $key = setting('passresetkey');
         $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
         send_email($email, "T3: Reset Your Password",
-	       "Hi,
+       "Hi,
 Per your request, please visit the following URL to reset your password:
 https:{$root}resetpass.php?token=$urltoken");
-    return "An email has been sent to you with a link to reset your
+      return "An email has been sent to you with a link to reset your
 password.";
     } else {
         return "<h3 style='color: red'>No such user, please register.</h3>";
@@ -465,18 +469,19 @@ password.";
  * Process password change situation and return appropriate html
  * fragment
  */
-function HTMLProcessChange() {
-  global $mysqli;
-  $_SESSION['login_referer_override'] = '/';
-  $email = $_POST['txt_email'];
-  $pass = $_POST['OldPass'];
-  $rv = "";
-  if (isset($email)) {
-    if (isUser($email, $pass))
-      if ($_POST['NewPass1'] == $_POST['NewPass2']) {
-	$sql_email = mysqli_real_escape_string($mysqli, $email);
-	$sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
-	$sql = "update users  set pass=SHA1('$sql_pass')
+function HTMLProcessChange()
+{
+    global $mysqli;
+    $_SESSION['login_referer_override'] = '/';
+    $email = $_POST['txt_email'];
+    $pass = $_POST['OldPass'];
+    $rv = "";
+    if (isset($email)) {
+      if (isUser($email, $pass))
+        if ($_POST['NewPass1'] == $_POST['NewPass2']) {
+	  $sql_email = mysqli_real_escape_string($mysqli, $email);
+	  $sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
+	  $sql = "update users  set pass=SHA1('$sql_pass')
 where users_name=SHA1('$sql_email')";
 	if (mysqli_query($mysqli, $sql))
 	  $rv .= "<h3>Password successfully updated</h3>";
@@ -520,8 +525,46 @@ if (isset($_POST['submit_login'])) {
   }
   else
     echo HTMLLoginForm();
- }
- else if (isset($_POST['submit_registration'])) {
+ } elseif (isset($_POST['resend_registration'])) {
+   $email = $_POST['email'];
+   if (empty($email)) {
+     $error = true;
+     $error_msg .= "- You must provide your e-mail addresses.\n";
+   } else {
+     $safe_email = mysqli_real_escape_string($mysqli, $email);
+     $safe_password = mysqli_real_escape_string($mysqli, $password);
+     $safe_name = mysqli_real_escape_string($mysqli, $name);
+     $sql = "SELECT SHA1('$safe_password') AS password";
+     $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
+     if ($row = mysqli_fetch_assoc($res)) {
+         $hash_password = $row['password'];
+     } else {
+         die("SQL Error hashing password\n");
+     }
+     $sql = "SELECT SHA1('$safe_email') AS email";
+     $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing email\n");
+     if ($row = mysqli_fetch_assoc($res)) {
+         $hash_email = $row['email'];
+     } else {
+         die("SQL Error hashing email\n");
+     }
+     $key = setting('encryptionkey');
+     $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
+     send_email($email, "T3 registration in progress",
+"Thank you for requesting an account on T3.
+
+To complete your registration, please confirm that you requested it 
+by visiting the following URL:
+https:{$root}fromemail.php?token=$urltoken
+
+Your registration will be complete when you have performed this step.
+
+Sincerely,
+The Triticeae Toolbox Team
+");
+   }
+   echo HTMLRegistrationSuccess($name, $email);
+ } elseif (isset($_POST['submit_registration'])) {
    $name = $_POST['name'];
    $email = $_POST['email'];
    $cemail = $_POST['cemail'];
