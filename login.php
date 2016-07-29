@@ -610,33 +610,36 @@ The Triticeae Toolbox Team
      $error_msg .= "That e-mail address already has an account associated with it. Please, try again.";
    }
 
-   if ($error)
-     echo HTMLRegistrationForm($error_msg, $name, $email, $cemail,
+   if ($error) {
+       echo HTMLRegistrationForm($error_msg, $name, $email, $cemail,
 			       $answer, $institution);
-   else {
-     $safe_email = mysqli_real_escape_string($mysqli, $email);
-     $safe_password = mysqli_real_escape_string($mysqli, $password);
-     $safe_name = mysqli_real_escape_string($mysqli, $name);
-     $sql = "SELECT SHA1('$safe_password') AS password";
-     $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
-     if ($row = mysqli_fetch_assoc($res)) {
-         $hash_password = $row['password'];
-     } else {
-         die("SQL Error hashing password\n");
-     }
-     $sql = "SELECT SHA1('$safe_email') AS email";
-     $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing email\n");
-     if ($row = mysqli_fetch_assoc($res)) {
-         $hash_email = $row['email'];
-     } else {
-         die("SQL Error hashing email\n");
-     }
-     $safe_institution = $institution ? "'" . mysqli_real_escape_string($mysqli, $institution) . "'" : 'NULL';
-     $desired_usertype = ($answer == 'yes' ? USER_TYPE_PARTICIPANT :
+   } else {
+       $safe_email = mysqli_real_escape_string($mysqli, $email);
+       $safe_password = mysqli_real_escape_string($mysqli, $password);
+       $safe_name = mysqli_real_escape_string($mysqli, $name);
+       $sql = "SELECT SHA1('$safe_password') AS password";
+       $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
+       if ($row = mysqli_fetch_assoc($res)) {
+           $hash_password = $row['password'];
+       } else {
+           die("SQL Error hashing password\n");
+       }
+       $sql = "SELECT SHA1('$safe_email') AS email";
+       $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing email\n");
+       if ($row = mysqli_fetch_assoc($res)) {
+           $hash_email = $row['email'];
+       } else {
+           die("SQL Error hashing email\n");
+       }
+       $safe_institution = $institution ? "'" . mysqli_real_escape_string($mysqli, $institution) . "'" : 'NULL';
+       $desired_usertype = ($answer == 'yes' ? USER_TYPE_PARTICIPANT :
 			  USER_TYPE_PUBLIC);
      /* DEM jan2014 For Sandbox databases, make any registrant a Curator. */
-     /* $safe_usertype = USER_TYPE_CURATOR; */
-     $safe_usertype = USER_TYPE_PUBLIC;
+     if (preg_match("/sandbox/", $_SERVER['SERVER_NAME'])) {
+         $safe_usertype = USER_TYPE_CURATOR;
+     } else {
+         $safe_usertype = USER_TYPE_PUBLIC;
+     }
      $sql = "insert into users (user_types_uid, users_name, pass,
 name, email, institution) values ($safe_usertype, '$hash_email',
 '$hash_password', '$safe_name', '$hash_email',
