@@ -96,33 +96,33 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <a href="">Home</a>
     <li><a href="" title="Lines and Phenotypes">Select</a>
       <ul>
-	<li>
+      <li>
           <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
             Wizard (Lines, Traits, Trials)</a>
-	  <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php" title="Select by name, source, or simply-inherited characters">
-	    Lines by Properties</a>
-	<li>
-	  <a href="<?php echo $config['base_url']; ?>phenotype/compare.php" title="Select within a range of trait values">
-	    Lines by Phenotype</a>
-	<li><a href="<?php echo $config['base_url']; ?>haplotype_search.php" title="Select desired alleles for a set of markers">
-	    Lines by Haplotype</a>
-        <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
+          <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php" title="Select by name, source, or simply-inherited characters">
+            Lines by Properties</a>
+      <li>
+          <a href="<?php echo $config['base_url']; ?>phenotype/compare.php" title="Select within a range of trait values">
+            Lines by Phenotype</a>
+      <li><a href="<?php echo $config['base_url']; ?>haplotype_search.php" title="Select desired alleles for a set of markers">
+            Lines by Haplotype</a>
+      <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
             Lines by Genotype Experiment</a>
     <?php
     /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
     /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
     if (loginTest2()) : ?>
-	<li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><b>My Line Panels</b></a>
+        <li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><b>My Line Panels</b></a>
         <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><b>My Marker Panels</b></a>
     <?php
     endif
     ?>
-	<li>
-	  <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
-	    Traits and Trials</a>
-	<li>
-	  <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select by name or map position">
-	    Markers</a>
+        <li>
+          <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
+            Traits and Trials</a>
+        <li>
+          <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select by name or map position">
+            Markers</a>
         <li>
           <a href="<?php echo $config['base_url']; ?>maps/select_map.php" title="Select genetic map">Genetic Map</a>
         <li>
@@ -263,6 +263,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
   <ul>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
+    <li><a href="<?php echo $config['base_url']; ?>curator_data/instructions.php" title="Submit Data to T3">Data Submission</a>
     <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Traits and units used">Trait Descriptions</a>
     <li><a href="<?php echo $config['base_url']; ?>properties.php" title="Environment-independent line properties">Genetic Character Descriptions</a>
     <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">Contributing Data Programs</a>
