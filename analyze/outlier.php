@@ -388,7 +388,7 @@ class Outlier
         
         if (file_exists("/tmp/tht/$filename2")) {
               //exec("cat /tmp/tht/$filename3 ../R/outlierMeanAnalysis2.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
-              exec("cat /tmp/tht/$filename3 ../R/OutlierMean5.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
+              exec("cat /tmp/tht/$filename3 ../R/OutlierDetectionSymetric.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
         } else {
               die("Error: no file for analysis<br>\n");
         }
