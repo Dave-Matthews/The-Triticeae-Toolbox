@@ -9,8 +9,8 @@
 
 require_once 'config.php';
 
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'theme/admin_header.php';
 
 ?>
 
@@ -69,7 +69,7 @@ if ($blast_flag == 1) {
 }
 if (!$blast_flag && !$jobid) {
 	echo "<p>Error: No job submitted.</p>";	
-	footer();
+        include($config['root_dir'] . 'theme/footer.php');
 	exit;
 }
 
@@ -430,13 +430,12 @@ if (file_exists($errFile) && filesize($errFile) > 0) {
 						$page = $element[0];
 						$queryName = $element[1];
 						$target_name = $element[7];
-                                                if (preg_match("/^(\d[A-Z]+_\d+)/",$target_name,$match)) {
-                                                  $contig = $match[1];
-                                                  $target_link = "<a href=\"http://urgi.versailles.inra.fr/gb2/gbrowse/wheat_survey_sequence_annotation/?name=$contig\" target=\"_new\">$contig</a>";
+						if (preg_match("/(\d+)\|([A-Za-z0-9\_\-]+)$/",$target_name,$match)) {
+                                                  $marker_name = $match[2];
                                                 } else {
                                                   $marker_name = $target_name;
-                                                  $target_link = "<a href=./view.php?table=markers&name=$marker_name>$marker_name</a>";
                                                 }
+                                                $target_link = "<a href=./view.php?table=markers&name=$marker_name>$marker_name</a>";
 						$var_target = $page."\t".$element[1]."\t".$element[2];
 						if(count($element) != 1) {
 							if($queryName == $preQueryName) {
@@ -518,4 +517,4 @@ ResultGraph feature from <a href="mailto:flemming@ipk-gatersleben.de">Steffen Fl
 
 <?php 
   $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); ?>
+include $config['root_dir'].'theme/footer.php'; ?>

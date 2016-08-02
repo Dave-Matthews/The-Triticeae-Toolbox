@@ -9,8 +9,8 @@
 
 require 'config.php';
 
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'theme/admin_header.php';
 ?>
 
 <script type="text/javascript" src='viroblast/javascripts/viroblast.js'></script>
@@ -47,7 +47,7 @@ while(!feof($fp)) {
 		continue;
 	}
 	if (!preg_match("/^\s*#/", $blastdbstring)) {
-		$blastdbArray = split(":", $blastdbstring);	
+		$blastdbArray = preg_split("/:/", $blastdbstring);	
 		$blastProgram = $blastdbArray[0];
 		$dbString = $blastdbArray[1];
 		
@@ -123,4 +123,4 @@ ResultGraph feature from <a href="mailto:flemming@ipk-gatersleben.de">Steffen Fl
 </div>
 <?php 
   $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); ?>
+include $config['root_dir'].'theme/footer.php'; ?>
