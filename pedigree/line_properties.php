@@ -325,26 +325,31 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
         }
       }
     }
-    if (count($propvalids) != 0)    {
-      foreach ($propvalids as $pvid) {
-	if ($count == 0)   
-	  $where .= "line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
-	else    	
-	  $where .= " AND line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
-	$count++;
-      }
+    if (count($propvalids) != 0) {
+        $combCount = 0;    //used to combine more than one species
+        foreach ($propvalids as $pvid) {
+            if ($count == 0) {
+                $where .= "line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
+            } elseif ($combCount == 0) {
+                $where .= " AND line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
+            } else {
+                $where .= " OR line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
+            }
+            $count++;
+            $combCount++;
+        }
     }
-    if (count($panel) != 0)    {
-      $sql = "select line_ids from linepanels where linepanels_uid = ?";
-      if ($stmt = mysqli_prepare($mysqli, $sql)) {
-          mysqli_stmt_bind_param($stmt, "i", $p);
-          foreach($panel as $p) {
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_bind_result($stmt, $uid);
-            mysqli_stmt_fetch($stmt);
-            $idlist .= "$uid,";
-          }
-          mysqli_stmt_close($stmt);
+    if (count($panel) != 0) {
+        $sql = "select line_ids from linepanels where linepanels_uid = ?";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $p);
+            foreach($panel as $p) {
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $uid);
+                mysqli_stmt_fetch($stmt);
+                $idlist .= "$uid,";
+            }
+            mysqli_stmt_close($stmt);
       }
       $idlist = rtrim($idlist, ',');
       if ($count == 0)    	
@@ -474,7 +479,7 @@ if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
   print "<br><input type='submit' name='WhichBtn' value='Deselect highlighted lines' />";
   print "</form>";
 	
-  $display1 = $_SESSION['selected_lines'] ? "":" style='display: none;'";	
+  $display1 = $_SESSION['selected_lines'] ? "":" style='display: none;'";
   /* print "<form id='showPedigreeInfo' action='pedigree/pedigree_info.php' method='post' $display1>"; */
   /* print "<input type='submit' name='WhichBtn' value='Show line information'></form>"; */
   print "<button onclick=\"location.href='".$config['base_url']."pedigree/pedigree_info.php'\">Show line information</button>";
