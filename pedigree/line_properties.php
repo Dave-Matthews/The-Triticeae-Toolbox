@@ -331,13 +331,14 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
             if ($count == 0) {
                 $where .= "line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
             } elseif ($combCount == 0) {
-                $where .= " AND line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
+                $where .= " AND (line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
             } else {
                 $where .= " OR line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
             }
             $count++;
             $combCount++;
         }
+        $where .= ")";
     }
     if (count($panel) != 0) {
         $sql = "select line_ids from linepanels where linepanels_uid = ?";
@@ -375,6 +376,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
           $linesfound = 0;
       }
     }
+    //echo "$TheQuery\n";
 
     /* Search Results: */
     /* echo "</div><div class='boxContent'><table width=500px><tr><td>"; */
