@@ -383,7 +383,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
           $linesfound = 0;
       }
     }
-    echo "$TheQuery\n";
+    //echo "$TheQuery\n";
 
     /* Search Results: */
     /* echo "</div><div class='boxContent'><table width=500px><tr><td>"; */
