@@ -320,26 +320,33 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $pvid);
             mysqli_stmt_fetch($stmt);
-            $propvalids[] = $pvid;
+            $propvalids2[] = $pvid;
             mysqli_stmt_close($stmt);
         }
       }
     }
     if (count($propvalids) != 0) {
-        $combCount = 0;    //used to combine more than one species
-        foreach ($propvalids as $pvid) {
-            if ($count == 0) {
-                $where .= "line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
-            } elseif ($combCount == 0) {
-                $where .= " AND (line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
-            } else {
-                $where .= " OR line_record_uid IN (select line_record_uid from line_properties where property_value_uid = $pvid)";
-            }
-            $count++;
-            $combCount++;
-        }
-        $where .= ")";
+        $geneticStr = implode("','", $propvalids);
     }
+    if (count($propvalids2) != 0) {
+        $speciesStr = implode("','", $propvalids2);
+    }
+
+    if (count($propvalids2) != 0) {
+        if ($count != 0) {
+            $where .= " AND ";
+        }
+        $where .= "line_record_uid IN (select line_record_uid from line_properties where property_value_uid IN ('".$speciesStr."'))";
+        if (count($propvalids) != 0) {
+            $where .= "AND line_record_uid IN (select line_record_uid from line_properties where property_value_uid IN ('".$geneticStr."'))";
+        }
+    } elseif (count($propvalids) != 0) {
+        if ($count != 0) {
+            $where .= "AND ";
+        }
+        $where .= "line_record_uid IN (select line_record_uid from line_properties where property_value_uid IN ('".$geneticStr."'))";
+    }
+    
     if (count($panel) != 0) {
         $sql = "select line_ids from linepanels where linepanels_uid = ?";
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
@@ -376,7 +383,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
           $linesfound = 0;
       }
     }
-    //echo "$TheQuery\n";
+    echo "$TheQuery\n";
 
     /* Search Results: */
     /* echo "</div><div class='boxContent'><table width=500px><tr><td>"; */
