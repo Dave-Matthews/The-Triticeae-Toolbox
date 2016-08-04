@@ -579,7 +579,7 @@ private function type_Marker_Annotation()
 					
 			/* Display Annotation Value with active link */
 		while ($row = mysqli_fetch_assoc($res)) {
-			$reg_pattern = "XXXX";
+			$reg_pattern = "/XXXX/";
 			$replace_string = $row['value'];
 			$source_string = $row['linkout_string_for_annotation'];
 			$linkString = preg_replace($reg_pattern,$replace_string,$source_string);
@@ -776,7 +776,7 @@ $test1 = $j;
 while ($row=mysqli_fetch_assoc($innerresult)) {
 
     /* replacing value in link out string */ 
-    $reg_pattern = "XXXX";
+    $reg_pattern = "/XXXX/";
     $replace_string = $row[value];
     $source_string = $row[Annotation_Link];
     $linkString = preg_replace($reg_pattern,$replace_string,$source_string);

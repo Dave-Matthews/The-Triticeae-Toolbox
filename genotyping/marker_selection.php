@@ -17,7 +17,7 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
-session_start();
+//session_start();
 require $config['root_dir'].'theme/admin_header.php';
 ?>
 
@@ -39,10 +39,15 @@ function getSubmittedMapid()
 {
     global $mysqli;
     $us_mapname=$_POST['mapname'] or die('No mapname submitted.');
-    $sql = "select map_uid from map
-    where map_name='" . mysqli_real_escape_string($mysqli, $us_mapname) . "'";
-    $sqlr = mysqli_fetch_assoc(mysqli_query($mysqli, $sql));
-    return $sqlr['map_uid'];
+    $sql = "select map_uid from map where map_name = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $us_mapname);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $sqlr);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+    }
+    return $sqlr;
 }
 
 if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
@@ -57,28 +62,37 @@ if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
         $mkrnm = $selmkrnames[0];
         $sql = "select marker_uid from marker_synonyms where value REGEXP \"$mkrnm\" UNION
           select marker_uid from markers where marker_name REGEXP \"$mkrnm\"";
-        $r = mysqli_query($mysqli, $sql);
-        if (mysqli_num_rows($r) == 0) {
-            echo "<font color=red>\"$mkrnm\" not found.</font><br>";
-        } else {
-            while ($row = mysqli_fetch_row($r)) {
-                $selmkrs[] = $row[0];
-            }
-        }
-        $_SESSION['clicked_buttons'] = $selmkrs;
-    } else {
-        foreach ($selmkrnames as $mkrnm) {
-            $sql = "select distinct marker_uid from marker_synonyms where value = '$mkrnm' UNION
-            select marker_uid from markers where marker_name = '$mkrnm'";
-            $r = mysqli_query($mysqli, $sql);
+        if ($r = mysqli_query($mysqli, $sql)) {
             if (mysqli_num_rows($r) == 0) {
                 echo "<font color=red>\"$mkrnm\" not found.</font><br>";
             } else {
-                $row = mysqli_fetch_row($r);
-                // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
-                if (! in_array($row[0], $selmkrs)) {
-                    array_push($selmkrs, $row[0]);
+                while ($row = mysqli_fetch_row($r)) {
+                    $selmkrs[] = $row[0];
                 }
+            }
+            $_SESSION['clicked_buttons'] = $selmkrs;
+        } else {
+            echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+        }
+    } else {
+        foreach ($selmkrnames as $mkrnm) {
+            $sql = "select distinct marker_uid from marker_synonyms where value = ? UNION
+            select marker_uid from markers where marker_name = ?";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "ss", $mkrnm, $mkrnm);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $row);
+                if (mysqli_stmt_fetch($stmt)) {
+                    // Trap case where a marker is entered twice, even as synonym, e.g. 11_0090 and 1375-2534.
+                    if (! in_array($row[0], $selmkrs)) {
+                        array_push($selmkrs, $row[0]);
+                    }
+                } else {
+                    echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+                }
+                mysqli_stmt_close($stmt);
+            } else {
+                echo "Eror mysqli_error($mysqli\n";
             }
         }
         $clkmkrs=$_SESSION['clicked_buttons'];
