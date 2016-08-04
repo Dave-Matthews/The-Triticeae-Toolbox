@@ -201,9 +201,8 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         $mapid = current($mapids);
         next($mapids);
         $sql = "select marker_name from markers where marker_uid=$mkruid";
-        $result=mysqli_query($mysqli, $sql)
-          or die(mysqli_error($mysqli) . "marker_uid $mkruid not found\n");
-        while ($row=mysqli_fetch_assoc($result)) {
+        if ($result=mysqli_query($mysqli, $sql)) {
+            $row=mysqli_fetch_assoc($result);
             $selval=$row['marker_name'];
             $selchr=$row['chromosome'];
             if (! in_array($selval, $markerlist)) {
