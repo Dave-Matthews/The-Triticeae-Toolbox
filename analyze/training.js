@@ -17,6 +17,7 @@ function displayOut() {
             alert("Error in display");
         }
     });
+    Element.hide("spinner");
 }
 
 function use_session2() {
@@ -34,6 +35,7 @@ function use_session2() {
             displayOut();
         },
         error: function () {
+            Element.hide("spinner");
             alert("Error analyzing outlier");
         }
     });
