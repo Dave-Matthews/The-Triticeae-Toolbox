@@ -247,7 +247,7 @@ class Training
             </div>
             <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <table><tr><td>Remove markers missing &gt; <input type="text" name="MMM" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data<br>
-                           Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />%of data<br>
+                           Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data<br>
             </table><br>
             <table>
             <tr><td rowspan="2"><input type="button" value="Analyze" onclick="javascript:use_session('v4');">
@@ -266,6 +266,7 @@ class Training
             print "<br><input type='submit' value='Save Candidates' /> then continue to select prediction set<br><br>";
             print "</form>";
             ?>
+            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
             </div>
         <?php
         } else {
@@ -371,15 +372,15 @@ class Training
             fwrite($h, $cmd4);
             fwrite($h, $cmd5);
             fwrite($h, $cmd6);
-            fwrite($h, $cmd7);
-            fwrite($h, $cmd8);
-            fwrite($h, $cmd9);
-            fwrite($h, $cmd10);
-            fwrite($h, $cmd11);
-            fwrite($h, $cmd12);
-            fwrite($h, $cmd13);
-            fwrite($h, $cmd14);
-            fwrite($h, $cmd15);
+            #fwrite($h, $cmd7);
+            #fwrite($h, $cmd8);
+            #fwrite($h, $cmd9);
+            #fwrite($h, $cmd10);
+            #fwrite($h, $cmd11);
+            #fwrite($h, $cmd12);
+            #fwrite($h, $cmd13);
+            #fwrite($h, $cmd14);
+            #fwrite($h, $cmd15);
             if (isset($_SESSION['username'])) {
                 $emailAddr = $_SESSION['username'];
                 $emailAddr = "email <- \"$emailAddr\"\n";

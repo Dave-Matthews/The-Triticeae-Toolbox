@@ -4,7 +4,7 @@
 
 #setwd("/tmp/tht")
 library(rrBLUP)
-#library(STPGA3)
+library(STPGA)
 
 ###This was just used to time the run time of the script, can be removed in production
 strt<-Sys.time()
