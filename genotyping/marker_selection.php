@@ -162,11 +162,17 @@ if (isset($_POST['selMkrs']) || isset($_POST['selbyname'])) {
 
 if (isset($_POST['deselMkrs'])) {
     $selmkrs=$_SESSION['clicked_buttons'];
-    $mapids=$_SESSION['mapids'];
     foreach ($_POST['deselMkrs'] as $mkr) {
         if (($mkridx=array_search($mkr, $selmkrs)) !== false) {
             array_splice($selmkrs, $mkridx, 1);
-            array_splice($mapids, $mkridx, 1);
+        }
+    }
+    if (isset($_SESSION['mapids'])) {
+        $mapids=$_SESSION['mapids'];
+        foreach ($_POST['deselMkrs'] as $mkr) {
+            if (($mkridx=array_search($mkr, $selmkrs)) !== false) {
+                array_splice($mapids, $mkridx, 1);
+            }
         }
     }
     if (count($selmkrs) > 0) {
