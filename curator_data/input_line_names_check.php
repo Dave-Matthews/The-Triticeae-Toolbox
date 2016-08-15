@@ -490,7 +490,7 @@ class LineNames_Check
                         FROM line_records
                         WHERE line_record_uid IN ($line_updates)") 
 	    or errmsg($sql, mysqli_error($mysqli));
-	  while ($row = mysqli_fetch_array($line_sql, MYSQL_ASSOC)) {
+	  while ($row = mysqli_fetch_array($line_sql, MYSQLI_ASSOC)) {
 	    $line_update_names[] = $row["name"];
 	  }
 	  $line_update_data = $line_update_names;
