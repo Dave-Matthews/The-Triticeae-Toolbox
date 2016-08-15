@@ -158,7 +158,7 @@ class LineNames_Check
                     // If it's there, all lines in this file are from one BP.
                     $singleBP = ture;
                     $bp = $linedata['cells'][4][2];
-                    if ((in_array($bp, $bpcodes) === false) OR (strlen($bp) == 0)) {
+                    if ((in_array($bp, $bpcodes) === false) or (strlen($bp) == 0)) {
                         die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br>");
                     }
                 }
