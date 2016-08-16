@@ -1499,7 +1499,7 @@ class Downloads
            $selected_map = $_SESSION['selected_map'];
          } else {
            $selected_map = "";
-           echo "<font color=red>Warning - no marker location will be given</font>";
+           //echo "<font color=red>Warning - no marker location will be given</font>";
          }
 	
 	 if (count($markers)>0) {

@@ -83,7 +83,7 @@ class Training
            td {border: 1px solid #eee !important;}
            h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style-->
-        <script type="text/javascript" src="analyze/training.js"></script>
+        <script type="text/javascript" src="analyze/training01.js"></script>
         <h2>Selection of an Optimized Training set for use in Genomic Prediction</h2>
         <div id="step1" style="float: left; margin-bottom: 1.5em; width: 100%">
         Optimized training sets uses the genotypes of the individuals in the test set to improve the performance of prediction models.
@@ -276,7 +276,7 @@ class Training
         <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
         </div>
-        <div id="step6" style="float: left; margin-bottom: 1.5em;">
+        <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
         </div>
         <div id="step7" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div></div>
@@ -385,9 +385,9 @@ class Training
         }
         if ($estimate > 3000) {
             exec("cat $dir/$filename3 ../R/optimizedTrainingSet.R | R --vanilla > /dev/null 2> $dir/$filename5 &\n");
-        } else {
+            echo "<br>Analysis will be run in background. <a target=\"_new\" href=\"$result_url\">Check this link</a> for results.\n";
+        } elseif ($estimate > 0) {
             exec("cat $dir/$filename3 ../R/optimizedTrainingSet.R | R --vanilla > /dev/null 2> $dir/$filename5\n");
-            echo "<table><tr><td>";
             if (file_exists("$dir/$filename5")) {
                 $h = fopen("$dir/$filename5", "r");
                 echo "<br>\n";
@@ -398,12 +398,8 @@ class Training
             } else {
                 echo "Error in R script, result file not found<br>\n";
             }
-            if (file_exists("$dir/$filename4")) {
-                 print "<td><img src=\"$dir/$filename4\" /><br>";
-            } else {
-                echo "Error in R script, PCA plot not found<br>\n";
-            }
-            echo "</table>";
+        } else {
+            echo "<br><font color=\"red\">Error - no lines selected</font>\n";
         }
 
     }
@@ -443,8 +439,6 @@ class Training
                 print "<td><img src=\"$dir/$filename4\" /><br>";
             }
             echo "</table>";
-        } else {
-            echo "Analysis will be run in background. <a target=\"_new\" href=\"$result_url\">Check this link</a> for results.\n";
         }
     }
 
