@@ -93,51 +93,51 @@ class SelectPhenotypeExp
             case 'step5programs':
                 $this->step5_programs();
                 break;
-        case 'step2lines':
-            $this->step2_lines();
-            break;
-        case 'step3lines':
-            $this->step3_lines();
-            break;
-        case 'step4lines':
-            $this->step4_lines();
-            break;
-        case 'step1breedprog':
-            $this->step1_breedprog();
-            break;
-        case 'step1phenotype':
-            $this->step1_phenotype();
-            break;
-        case 'step2phenotype':
-            $this->step2_phenotype();
-            break;
-        case 'step3phenotype':
-            $this->step3_phenotype();
-            break;
-        case 'step4phenotype':
-            $this->step4_phenotype();
-            break;
-        case 'step5phenotype':
-            $this->step5_phenotype();
-            break;
-        case 'step1yearprog':
-            $this->step1_yearprog();
-            break;
-        case 'type1traits':
-            $this->type1_traits();
-            break;
-        case 'type1markers':
-            $this->type1_markers();
-            break;
-        case 'type2markers':
-            $this->type2_markers();
-            break;
-        case 'refreshtitle':
-            echo $this->refresh_title();
-            break;
-        default:
-            $this->type1_select();
-            break;
+            case 'step2lines':
+                $this->step2_lines();
+                break;
+            case 'step3lines':
+                $this->step3_lines();
+                break;
+            case 'step4lines':
+                $this->step4_lines();
+                break;
+            case 'step1breedprog':
+                $this->step1_breedprog();
+                break;
+            case 'step1phenotype':
+                $this->step1_phenotype();
+                break;
+            case 'step2phenotype':
+                $this->step2_phenotype();
+                break;
+            case 'step3phenotype':
+                $this->step3_phenotype();
+                break;
+            case 'step4phenotype':
+                $this->step4_phenotype();
+                break;
+            case 'step5phenotype':
+                $this->step5_phenotype();
+                break;
+            case 'step1yearprog':
+                $this->step1_yearprog();
+                break;
+            case 'type1traits':
+                $this->type1_traits();
+                break;
+            case 'type1markers':
+                $this->type1_markers();
+                break;
+            case 'type2markers':
+                $this->type2_markers();
+                break;
+            case 'refreshtitle':
+                echo $this->refresh_title();
+                break;
+            default:
+                $this->type1_select();
+                break;
         }
     }
 
@@ -154,13 +154,13 @@ class SelectPhenotypeExp
         $saved_session = "";
         $this->type1_checksession();
         include $config['root_dir'].'theme/footer.php';
-    }	
-	
-	/**
-	 * When there is no data saved in session this handles outputting the header and footer and calls the first real action of the type1 download.
-	 */ 
-	private function type1()
-	{
+    }
+
+    /**
+     * When there is no data saved in session this handles outputting the header and footer and calls the first real action of the type1 download.
+     */
+    private function type1()
+    {
 		global $config;
 		unset($_SESSION['selected_lines']);
 		unset($_SESSION['phenotype']);
@@ -817,7 +817,7 @@ class SelectPhenotypeExp
     <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
     <?php
     if ($program_type == "data") {
-        $sql = "SELECT e.experiment_year AS year, trial_code 
+        $sql = "SELECT e.experiment_year AS year 
         FROM experiments AS e, experiment_types AS et
         WHERE e.experiment_type_uid = et.experiment_type_uid
         AND et.experiment_type_name = 'phenotype'
@@ -825,7 +825,7 @@ class SelectPhenotypeExp
         GROUP BY e.experiment_year DESC";
     } else { 
         $sql = "SELECT DISTINCT
-        e.experiment_year as year, data_program_code
+        e.experiment_year as year
         FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
         WHERE program_type = 'breeding'
         AND lr.breeding_program_code = data_program_code
