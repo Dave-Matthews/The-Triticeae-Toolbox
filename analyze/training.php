@@ -158,7 +158,7 @@ class Training
                 }
             }
             print "</select><br><br>";
-            if (isset($_SESSION['selected_lines'])) { 
+            if (isset($_SESSION['selected_lines'])) {
                 $count = count($_SESSION['selected_lines']);
                 $display = $_SESSION['selected_lines'];
                 print "<form action=\"analyze/training.php\">";
@@ -193,14 +193,14 @@ class Training
             }
             $min_maf = 0;
             $max_missing = 10;
-            $max_miss_line = 10; 
+            $max_miss_line = 10;
 
             ?>
             <table><tr><td>Remove markers missing &gt; <input type="text" name="MMM" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data<br>
                            Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data<br>
             </table><br>
             <table>
-            <tr><td><input type="button" value="Analyze" onclick="javascript:use_session('v4');">
+            <tr><td><input type="button" value="Analyze" onclick="javascript:use_session();">
             <td><input type="text" id="notoselect" size=4 value="25" /> Number of lines to select for training set<br>
               <tr><td><select name="errorstat" id="errorstat">
               <option value="PEVMEAN"> PEVMEAN
@@ -250,7 +250,7 @@ class Training
                            Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data<br>
             </table><br>
             <table>
-            <tr><td rowspan="2"><input type="button" value="Analyze" onclick="javascript:use_session('v4');">
+            <tr><td rowspan="2"><input type="button" value="Analyze" onclick="javascript:use_session();">
             <td><input type="text" id="notoselect" size=4 value="25" /><td>Number of lines to select for training set
                   <tr><td><select name="errorstat" id="errorstat">
                   <option value="PEVMEAN"> PEVMEAN
@@ -302,9 +302,9 @@ class Training
         }
         $markers = $_SESSION['filtered_markers'];
 
-    if (isset($_SESSION['username'])) {
-        $emailAddr = $_SESSION['username'];
-    } 
+        if (isset($_SESSION['username'])) {
+            $emailAddr = $_SESSION['username'];
+        }
         $dir = '/tmp/tht/';
         $filename3 = 'THTdownload_gensel.R';
         $filename4 = "pca.png";
@@ -327,8 +327,9 @@ class Training
             $output = $dObj->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
         }
         fclose($h);
+        $estimate = count($lines) + count($markers);
       
-        if (isset($_SESSION['candidate_lines']) && isset($_SESSION['selected_lines'])) { 
+        if (isset($_SESSION['candidate_lines']) && isset($_SESSION['selected_lines'])) {
             $line_ary = $_SESSION['selected_lines'];
             foreach ($line_ary as $lineuid) {
                 $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
@@ -372,46 +373,38 @@ class Training
             fwrite($h, $cmd4);
             fwrite($h, $cmd5);
             fwrite($h, $cmd6);
-            #fwrite($h, $cmd7);
-            #fwrite($h, $cmd8);
-            #fwrite($h, $cmd9);
-            #fwrite($h, $cmd10);
-            #fwrite($h, $cmd11);
-            #fwrite($h, $cmd12);
-            #fwrite($h, $cmd13);
-            #fwrite($h, $cmd14);
-            #fwrite($h, $cmd15);
+            $result_url = $config['base_url'] . "analyze/training.php?function=status&unq=$unique_str";
             if (isset($_SESSION['username'])) {
                 $emailAddr = $_SESSION['username'];
                 $emailAddr = "email <- \"$emailAddr\"\n";
                 fwrite($h, $emailAddr);
-                $result_url = $config['base_url'] . "analyze/training.php?function=status&unq=$unique_str";
                 $result_url = "result_url <- \"$result_url\"\n";
                 fwrite($h, $result_url);
             }
             fclose($h);
         }
-        if (file_exists("/tmp/tht/$filename2")) {
-              exec("cat $dir/$filename3 ../R/optimizedTrainingSet.R | R --vanilla > /dev/null 2> $dir/$filename5\n");
+        if ($estimate > 3000) {
+            exec("cat $dir/$filename3 ../R/optimizedTrainingSet.R | R --vanilla > /dev/null 2> $dir/$filename5 &\n");
         } else {
-              die("Error: no file for analysis<br>\n");
-        }
-
-        echo "<table><tr><td>";
-        if (file_exists("$dir/$filename5")) {
-            $h = fopen("$dir/$filename5", "r");
-            echo "<br>\n";
-            while ($line=fgets($h)) {
-                echo "$line<br>\n";
+            exec("cat $dir/$filename3 ../R/optimizedTrainingSet.R | R --vanilla > /dev/null 2> $dir/$filename5\n");
+            echo "<table><tr><td>";
+            if (file_exists("$dir/$filename5")) {
+                $h = fopen("$dir/$filename5", "r");
+                echo "<br>\n";
+                while ($line=fgets($h)) {
+                    echo "$line<br>\n";
+                }
+                fclose($h);
+            } else {
+                echo "Error in R script, result file not found<br>\n";
             }
-            fclose($h);
+            if (file_exists("$dir/$filename4")) {
+                 print "<td><img src=\"$dir/$filename4\" /><br>";
+            } else {
+                echo "Error in R script, PCA plot not found<br>\n";
+            }
+            echo "</table>";
         }
-        if (file_exists("$dir/$filename4")) {
-             print "<td><img src=\"$dir/$filename4\" /><br>";
-        } else {
-            echo "Error in R script PCA<br>\n";
-        }
-        echo "</table>";
 
     }
 
@@ -420,11 +413,20 @@ class Training
         $unique_str = intval($_GET['unq']);
         $dir = "/tmp/tht/download_" . $unique_str;
 
-        $filename4 = "pca.png";
+        $result_url = $config['base_url'] . "analyze/training.php?function=status&unq=$unique_str";
 
-        echo "<table><tr><td>";
+        $filename = "$dir/THT_process_error.txt";
+        if (file_exists("$filename")) {
+            $h = fopen("$filename", "r");
+            while ($line=fgets($h)) {
+                echo "$line\n";
+            }
+            fclose($h);
+        }
         $filename = "$dir/OptimizedTrainingList.txt";
         if (file_exists("$filename")) {
+            $filename4 = "pca.png";
+            echo "<table><tr><td>";
             echo "<a href=\"$filename\" target=\"_new\">Download File</a><br>";
             $h = fopen("$filename", "r");
             echo "<table>";
@@ -437,20 +439,37 @@ class Training
             }
             echo "</table>";
             fclose($h);
-        }
-        if (file_exists("$dir/$filename4")) {
-                  print "<td><img src=\"$dir/$filename4\" /><br>";
+            if (file_exists("$dir/$filename4")) {
+                print "<td><img src=\"$dir/$filename4\" /><br>";
+            }
+            echo "</table>";
         } else {
-                  echo "Error in R script PCA<br>\n";
+            echo "Analysis will be run in background. <a target=\"_new\" href=\"$result_url\">Check this link</a> for results.\n";
         }
-        echo "</table>";
     }
 
     private function showStatus()
     {
         global $config;
         include $config['root_dir'].'theme/normal_header.php';
-        $this->displayOut();
+      
+        $unique_str = intval($_GET['unq']);
+        $dir = "/tmp/tht/download_" . $unique_str;
+
+        $filename = "$dir/THT_process_error.txt";
+        if (file_exists("$filename")) {
+            $h = fopen("$filename", "r");
+            while ($line=fgets($h)) {
+                echo "$line\n";
+            }
+            fclose($h);
+        }
+        $filename = "$dir/OptimizedTrainingList.txt";
+        if (file_exists("$filename")) {
+            $this->displayOut();
+        } else {
+            echo "Analysis not complete\n";
+        }
         echo "</div>";
         include $config['root_dir'].'theme/footer.php';
     }
@@ -499,6 +518,4 @@ class Training
             calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
         }
     }
-
-        
 }

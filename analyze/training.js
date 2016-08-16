@@ -14,7 +14,7 @@ function displayOut() {
             jQuery("#step6").html(data);
         },
         error: function () {
-            alert("Error in display");
+            alert("Error in display or results");
         }
     });
     Element.hide("spinner");
