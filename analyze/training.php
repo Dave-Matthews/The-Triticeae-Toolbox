@@ -2,12 +2,11 @@
 /**
  * Display outlier traits
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/analyze/training.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/analyze/training.php
  *
  * The purpose of this script is to generate a training set of lines
- *
  */
 
 namespace T3;
@@ -69,7 +68,7 @@ class Training
     }
 
     /**
-     * check for required inputs
+     * Check for required inputs
      *
      * @return NULL
      */
@@ -91,7 +90,7 @@ class Training
         The functions to perform these analyses<br>  are available in the ‘STPGA 2.0’ R package. The default values are npop = 100 and niterations = 1000.
         Calculation of the training set can typically take anywhere from 5 minutes to 4 hours depending on the size of the dataset and the parameters selected.
         You will receive an email notification when your results are available. 
-        Isidro, J., Jannink, J., Akdemir, D. et al. Theor Appl Genet (2015) 128: 145. doi:10.1007/s00122-014-2418-4. <a target="_new" href="http://link.springer.com/article/10.1007/s00122-014-2418-4">Training set optimization under population structure in genomic selection.</a><br>
+        Deniz Akdemir, Julio Sanchez and Jean-Luc Jannink. Genetics Selection Evolution 2015 47:38 DOI: 10.1186/s12711-015-0116-6. <a target="_new" href="https://gsejournal.biomedcentral.com/articles/10.1186/s12711-015-0116-6">Optimization of genomic selection training populations with a genetic algorithm.</a><br>
         Missing genotype data can cause inaccurate results, the default filter setting removes markers missing greater than 10% of data.<br>
         </div>
         <div id="step2" style="float: left; margin-bottom: 1.5em; width: 100%">
@@ -188,14 +187,21 @@ class Training
                         $duplicateList[] = " $lineName";
                     }
                 }
-                $duplicateList = implode(",", $duplicateList);
-                echo "Duplicates: $duplicateList\n";
+                $cnt = count($duplicateList);
+                if ($cnt > 0) {
+                    $duplicateList = implode(",", $duplicateList);
+                    echo "Duplicates: $duplicateList\n";
+                } else {
+                    echo "Duplicates: none\n";
+                }
             }
             $min_maf = 0;
             $max_missing = 10;
             $max_miss_line = 10;
 
             ?>
+            </div>
+            <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
             <table><tr><td>Remove markers missing &gt; <input type="text" name="MMM" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data<br>
                            Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data<br>
             </table><br>
@@ -204,13 +210,14 @@ class Training
             <td><input type="text" id="notoselect" size=4 value="25" /> Number of lines to select for training set<br>
               <tr><td><select name="errorstat" id="errorstat">
               <option value="PEVMEAN"> PEVMEAN
-              <option value="PEVMAX"> PEVMAX
               <option value="CDMEAN"> CDMEAN
+              <option value="DOPT"> DOPT
               <option value="AOPT"> AOPT
               </select>
             </table>
+            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+            </div>
             <?php
-            echo "</div>";
         } elseif (isset($_SESSION['selected_lines'])) {
             $count = count($_SESSION['selected_lines']);
             $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
@@ -254,8 +261,8 @@ class Training
             <td><input type="text" id="notoselect" size=4 value="25" /><td>Number of lines to select for training set
                   <tr><td><select name="errorstat" id="errorstat">
                   <option value="PEVMEAN"> PEVMEAN
-                  <option value="PEVMAX"> PEVMAX
                   <option value="CDMEAN"> CDMEAN
+                  <option value="DOPT"> DOPT
                   <option value="AOPT"> AOPT
                   </select>
                 <td>optimality criterion
