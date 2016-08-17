@@ -499,24 +499,25 @@ class Training
             $experiment_uid = $_SESSION['candidate_exp'][0];
             calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
             //findCommonLines($lines);
-        } elseif ($training_lines == "") {
-            if (isset($_SESSION['candidate_lines'])) {
-                $lines = $_SESSION['candidate_lines'];
-                if (isset($_SESSION['selected_lines'])) {
-                    $tmp = $_SESSION['filtered_lines'];
-                    foreach ($tmp as $line) {
-                        if (!in_array($line, $lines)) {
-                            $lines[] = $line;
-                            $selectedlinescount++;
-                        }
+        } elseif (isset($_SESSION['candidate_lines'])) {
+            $lines = $_SESSION['candidate_lines'];
+            if (isset($_SESSION['selected_lines'])) {
+                $tmp = $_SESSION['selected_lines'];
+                foreach ($tmp as $line) {
+                    if (!in_array($line, $lines)) {
+                        $lines[] = $line;
+                        $selectedlinescount++;
                     }
                 }
             } elseif (isset($_SESSION['selected_lines'])) {
                 $lines = $_SESSION['selected_lines'];
             }
             calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
+        } elseif (isset($_SESSION['selected_lines'])) {
+            $lines = $_SESSION['selected_lines'];
+            calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
         } else {
-            calculate_af($training_lines, $min_maf, $max_missing, $max_miss_line);
+            echo "Error - no lines selected\n";
         }
     }
 }
