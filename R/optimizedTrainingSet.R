@@ -17,7 +17,7 @@ snpData <- snpData[, -(1:3), drop=FALSE]
 mrkData_all <- as.matrix(snpData)
 
 ###Create Imputed Genotype Data
-mrkRelMat <- A.mat(mrkData_all, return.imputed=TRUE)
+mrkRelMat <- A.mat(t(mrkData_all), return.imputed=TRUE)
 mrkData.imputed <- mrkRelMat$imputed
 
 ####Create the Covariance Matrix
@@ -41,7 +41,7 @@ candidates <- setdiff(rownames(Kmat), test$y)
 ###For live use npop > 100, niteration > 100
 #notoselect <-25 
 npop <- 100
-niterations <- 1000 
+niterations <- 1000
 
 ###Distinguishing between examples where a test set is defined or where one is not specified. (Two different functions in STPGA package)
 out_flag <- ifelse(length(unique(test$y)) > 0, TRUE, FALSE)
