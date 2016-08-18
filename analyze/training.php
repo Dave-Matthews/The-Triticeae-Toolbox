@@ -82,7 +82,7 @@ class Training
            td {border: 1px solid #eee !important;}
            h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style-->
-        <script type="text/javascript" src="analyze/training01.js"></script>
+        <script type="text/javascript" src="analyze/training02.js"></script>
         <h2>Selection of an Optimized Training set for use in Genomic Prediction</h2>
         <div id="step1" style="float: left; margin-bottom: 1.5em; width: 100%">
         Optimized training sets uses the genotypes of the individuals in the test set to improve the performance of prediction models.
@@ -158,10 +158,10 @@ class Training
             }
             print "</select><br><br>";
             if (isset($_SESSION['selected_lines'])) {
-                $count = count($_SESSION['selected_lines']);
+                $count2 = count($_SESSION['selected_lines']);
                 $display = $_SESSION['selected_lines'];
                 print "<form action=\"analyze/training.php\">";
-                echo "<b>Test</b> $count lines\n";
+                echo "<b>Test</b> $count2 lines\n";
                 print "<input type=\"hidden\" value=\"clearT\" name=\"cmd\">";
                 print "<input type='submit' value='Clear Test' /> ";
                 print "The test set are the individuals for which you would like to select an optimized training set. If a test set is not defined then a training set will be selected that optimizes the prediction accuracy of the entire population.<br>";
@@ -177,6 +177,10 @@ class Training
                     }
                 }
                 print "</select><br><br>";
+                if ($count2 > $count) {
+                    echo "<font color=\"red\">Error - Test set must be smaller than Candidate set</font><br></div></div>";
+                    return;
+                }
             }
              //check overlap between candidate and test selection
             if (isset($_SESSION['selected_lines'])) {
@@ -500,19 +504,33 @@ class Training
             calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
             //findCommonLines($lines);
         } elseif (isset($_SESSION['candidate_lines'])) {
+            // when there is both candidate and test then call filter on each set because they will have differenct amount of missing data
+            // then combine the results of filtered data and save for download and analysis
             $lines = $_SESSION['candidate_lines'];
+            echo "Candidates<br>\n";
+            calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
             if (isset($_SESSION['selected_lines'])) {
-                $tmp = $_SESSION['selected_lines'];
-                foreach ($tmp as $line) {
-                    if (!in_array($line, $lines)) {
-                        $lines[] = $line;
+                $filtered_lines = $_SESSION['filtered_lines'];
+                $lines2 = $_SESSION['selected_lines'];
+                $selectedlinescount = count($filtered_lines);
+                echo "<br>Test<br>\n";
+                calculate_af($lines2, $min_maf, $max_missing, $max_miss_line);
+                $filtered_lines2 = $_SESSION['filtered_lines'];
+                $tmp = count($filtered_lines2);
+                foreach ($filtered_lines2 as $line) {
+                    if (!in_array($line, $filtered_lines)) {
+                        $filtered_lines[] = $line;
                         $selectedlinescount++;
+                    } else {
+                        echo "duplicate $line\n";
                     }
                 }
+                $_SESSION['filtered_lines'] = $filtered_lines;
+                echo "<br>Total lines = $selectedlinescount<br>\n";
             } elseif (isset($_SESSION['selected_lines'])) {
                 $lines = $_SESSION['selected_lines'];
+                calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
             }
-            calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
         } elseif (isset($_SESSION['selected_lines'])) {
             $lines = $_SESSION['selected_lines'];
             calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
