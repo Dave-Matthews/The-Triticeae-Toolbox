@@ -308,10 +308,22 @@ class Training
             $typeGE = "true";
             $lines = $_SESSION['selected_lines'];
             $experiment_uid = $_SESSION['geno_exps'][0];
-        } else {
+        } elseif (isset($_SESSION['filtered_lines'])) {
             $lines = $_SESSION['filtered_lines'];
+        } else {
+            die("Error - please select lines.\n");
         }
         $markers = $_SESSION['filtered_markers'];
+
+        //check for illegal conditions
+        if (isset($_SESSION['selected_lines'])) {
+            $tmp = $_SESSION['selected_lines'];
+            $count = count($tmp);
+            if ($notoselect > $count) {
+                echo "Error - Entry for \"Number of lines to select\" must be less than number of lines in Test or Candidate set<br>\n";
+                break;
+            }
+        }
 
         if (isset($_SESSION['username'])) {
             $emailAddr = $_SESSION['username'];
