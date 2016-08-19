@@ -68,11 +68,13 @@ FinalBestList <- TrainList[[1]]
 
 ###Plot PC
 whichBest <- colnames(snpData) %in% FinalBestList
-whichColor <- rep("red", times = length(snpData))
+whichCand <- colnames(snpData) %in% candidates
+whichColor <- rep("green", times = length(snpData))
+whichColor[whichCand] <- "red"
 whichColor[whichBest] <- "blue"
 pca = prcomp(Kmat, scale=T)
 scores <- pca$x[,1:2]
-plot(scores, col = whichColor, main = "PCA plot, Blue = selected lines")
+plot(scores, col = whichColor, main = "PCA plot, Red = candidate, Blue = selected lines, Green = test")
 dev.set(dev.next())
 
 ###Write text file of germplasm lines selected for inclusion in the optimized training set.  This training set can then be used with the existing Genomic Prediction toll on T3.

@@ -367,7 +367,7 @@ class Training
             $h = fopen("$dir/$filename3", "w");
             $cmd1 = "snpData <- read.table(\"$dir/$filename\", sep=\"\\t\", header=TRUE, stringsAsFactors=FALSE, na.strings='NA', row.names=1, check.names=FALSE)\n";
             $cmd2 = "setwd(\"$dir\")\n";
-            $png = "png(\"$dir/$filename4\", width=400, height=400)\n";
+            $png = "png(\"$dir/$filename4\", width=500, height=400)\n";
             $cmd4 = "notoselect <- $notoselect\n";
             $cmd5 = "errorstat <- \"$errorstat\"\n";
             $cmd6 = "test <- data.frame(y=c($line_str))\n";
