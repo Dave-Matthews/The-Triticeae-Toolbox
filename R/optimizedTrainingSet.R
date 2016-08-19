@@ -21,14 +21,14 @@ mrkRelMat <- A.mat(t(mrkData_all), return.imputed=TRUE)
 mrkData.imputed <- mrkRelMat$imputed
 
 ####Create the Covariance Matrix
-Kmat <- cov((mrkData.imputed))
+Kmat <- cov(t(mrkData.imputed))
 Kmat <- Kmat/mean(diag(Kmat))
 
 LambdaTrait <- 1/nrow(mrkData.imputed)
 
 ###This gives a better result (improves about 15%) if tol is set to 0.01, but the calculation takes too long.
 ###tol used in the selection of the number of Principal Components. Calculates a threshold = Stdev of first PC * tol. Any subsequent PCs with a stdev greater than this threshold are included
-pca.eg <- prcomp(mrkData.imputed, scale=FALSE, tol=0.05)
+pca.eg <- prcomp(t(mrkData.imputed), scale=FALSE, tol=0.05)
 PCAs <- Kmat%*%pca.eg$rotation
 
 ###Test set are the ones we want to predict. Candidates are ones from which training set can be selected.
