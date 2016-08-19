@@ -178,8 +178,8 @@ class Training
                 }
                 print "</select><br><br>";
                 if ($count2 > $count) {
-                    echo "<font color=\"red\">Error - Test set must be smaller than Candidate set</font><br></div></div>";
-                    return;
+                    //echo "<font color=\"red\">Error - Test set must be smaller than Candidate set</font><br></div></div>";
+                    //return;
                 }
             }
              //check overlap between candidate and test selection
