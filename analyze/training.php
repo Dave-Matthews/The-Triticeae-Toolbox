@@ -320,8 +320,7 @@ class Training
             $tmp = $_SESSION['selected_lines'];
             $count = count($tmp);
             if ($notoselect > $count) {
-                echo "Error - Entry for \"Number of lines to select\" must be less than number of lines in Test or Candidate set<br>\n";
-                break;
+                die("Error - Entry for \"Number of lines to select\" must be less than number of lines in Test or Candidate set<br>\n");
             }
         }
 
