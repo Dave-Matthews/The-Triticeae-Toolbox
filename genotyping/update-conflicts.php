@@ -9,7 +9,7 @@
 */
 require 'config.php';
 include $config['root_dir'].'includes/bootstrap_curator.inc';
-$mysqli = connect();
+$mysqli = connecti();
 
 // Update cache table if necessary. Empty?
 if (mysqli_num_rows(mysqli_query($mysqli, "select line_record_uid from allele_duplicates")) == 0) {
@@ -46,9 +46,9 @@ if ($update) {
           and l.line_record_uid = $uid";
         $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row2=mysqli_fetch_row($result2)) {
-          $trial = $row2[0];
-          $e_uid = $row2[1];
-          $trial_list[$e_uid] = $trial;
+            $trial = $row2[0];
+            $e_uid = $row2[1];
+            $trial_list[$e_uid] = $trial;
         }
 
         $count_duplicate = 0;
