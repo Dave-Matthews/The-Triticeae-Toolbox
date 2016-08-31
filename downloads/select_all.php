@@ -75,6 +75,9 @@ class SelectPhenotypeExp
             case 'step1dataprog':
                 $this->step1_dataprog();
                 break;
+            case 'step1experiment':
+                $this->step1Experiment();
+                break;
             case 'step1lines':
                 $this->step1_lines();
                 break;
@@ -129,6 +132,9 @@ class SelectPhenotypeExp
             case 'type1markers':
                 $this->type1_markers();
                 break;
+            case 'type2experiments':
+                $this->type2Experiments();
+                break;
             case 'type2markers':
                 $this->type2_markers();
                 break;
@@ -174,6 +180,7 @@ class SelectPhenotypeExp
 		<select name="select1" onchange="javascript: update_select1(this.options)">
 		<option value="BreedingProgram">Breeding Program</option>
                 <option value="DataProgram">Data Program</option>
+                <option value="Experiment">Experiment</option>
 		<option value="Lines">Lines</option>
 		<option value="Locations">Locations</option>
 		<option value="Phenotypes">Trait Category</option>
@@ -240,11 +247,12 @@ class SelectPhenotypeExp
 		<select name="select1" onchange="javascript: update_select1(this.options)">
 		  <option value="BreedingProgram">Breeding Program</option>
                   <option value="DataProgram">Data Program</option>
+                  <option value="Experiment">Experiment</option>
 		  <option value="Lines">Lines</option> 
 		  <option value="Locations">Locations</option>
 		  <option value="Phenotypes">Trait Category</option>
 		</select></p>
-		        <script type="text/javascript" src="downloads/downloads11.js"></script>
+		        <script type="text/javascript" src="downloads/downloads12.js"></script>
                 <?php 
                 $this->step1_breedprog();
                 ?>
@@ -975,17 +983,43 @@ class SelectPhenotypeExp
 </select>
 </table>
 <?php
-	}	
-	
-	/**
-	 * starting with lines display the selected lines
-	 */
-        private function step1_lines()
-        {
-            global $mysqli;
-            if (isset($_SESSION['selected_lines'])) {
-		$selectedlines= $_SESSION['selected_lines'];
-	    $count = count($_SESSION['selected_lines']);
+	}
+
+    /**
+     * starting with experiments display
+     */
+    private function step1Experiment()
+    {
+        global $mysqli;
+        ?>
+        <div id="step11">
+        <table class="tableclass1">
+        <tr>
+            <th>Experiment</th>
+        </tr>
+        <tr><td><select name="experiment" multiple="multiple" style="height: 12em;" onchange="javascript: update_experiments(this.options)">
+        <?php
+        $sql = "select experiment_set_uid as id, experiment_set_name as name from experiment_set
+          order by experiment_set_name";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
+            ?>
+            <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
+            <?php
+        }
+        echo "</select>";
+        echo "</table>";
+    }
+
+    /**
+     * starting with lines display the selected lines
+     */
+    private function step1_lines()
+    {
+        global $mysqli;
+        if (isset($_SESSION['selected_lines'])) {
+            $selectedlines= $_SESSION['selected_lines'];
+            $count = count($_SESSION['selected_lines']);
             ?>
 	    <table id="phenotypeSelTab" class="tableclass1">
 	    <tr>
@@ -1320,7 +1354,7 @@ class SelectPhenotypeExp
 	 <th>Trials</th>
 	 </tr>
 	 <tr><td>
-	 <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_experiments(this.options)">
+	 <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_trials(this.options)">
 	 <?php
 	 $sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year
 	 FROM experiments AS e, experiment_types AS e_t, phenotype_experiment_info AS p_e
@@ -1695,7 +1729,7 @@ class SelectPhenotypeExp
 	<tr><th>Trials</th></tr>
 	<tr><td>
 		<select name="experiments" multiple="multiple"
-		  style="height: 12em" onchange="javascript: update_experiments(this.options)">
+		  style="height: 12em" onchange="javascript: update_trials(this.options)">
 <?php
 //	List phenotype experiments associated with a list of breeding programs and years selected by the user,
 //  needs to used datasets/experiments 
@@ -1752,7 +1786,38 @@ class SelectPhenotypeExp
 </div>
 <?php
 	}
-	
+
+    /**
+     * display a list of trials
+     */
+    private function type2Experiments()
+    {
+        global $mysqli;
+        $exptuid = $_GET['expt'];
+        ?>
+    <p>2.
+    <select>
+    <option>Trials</option>
+    </select></p>
+    <div>
+    <table class="tableclass1">
+        <tr><th>Trials</th></tr>
+        <tr><td>
+                <select name="experiments" multiple="multiple"
+                  style="height: 12em" onchange="javascript: update_trials(this.options)">
+        <?php
+        $sql = "SELECT experiment_uid as id, trial_code as name from experiments
+            where experiment_set_uid='$exptuid'";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
+            ?>
+            <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></options>
+            <?php
+        }
+        echo "</select>";
+        echo "</table>";
+    }
+
 	/**
 	 * display traits given a list of experiments
 	 */
