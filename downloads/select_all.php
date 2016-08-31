@@ -1793,7 +1793,8 @@ class SelectPhenotypeExp
     private function type2Experiments()
     {
         global $mysqli;
-        $exptuid = $_GET['expt'];
+        $exptuids = $_GET['expt'];
+        $exptuid_ary = explode(",", $exptuids);
         ?>
     <p>2.
     <select>
@@ -1806,36 +1807,41 @@ class SelectPhenotypeExp
                 <select name="experiments" multiple="multiple"
                   style="height: 12em" onchange="javascript: update_trials(this.options)">
         <?php
-        $sql = "SELECT experiment_uid as id, trial_code as name from experiments
-            where experiment_set_uid='$exptuid'";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_assoc($res)) {
-            ?>
-            <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></options>
-            <?php
+        foreach ($exptuid_ary as $exptuid) {
+            $sql = "SELECT experiment_uid as id, trial_code as name from experiments
+            where experiment_set_uid IN (?) order by experiment_year";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "i", $exptuid);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $id, $name);
+                while (mysqli_stmt_fetch($stmt)) {
+                    ?>
+                    <option value="<?php echo $id ?>"><?php echo $name ?></options>
+                    <?php
+                }
+                mysqli_stmt_close($stmt);
+            }
         }
         echo "</select>";
         echo "</table>";
     }
 
-	/**
-	 * display traits given a list of experiments
-	 */
-	private function type1_traits()
-	{
-             global $mysqli;
-		$experiments = $_GET['exps'];
-		
-		if (empty($experiments))
-		{
-			echo "
-				4. <select><option>Traits</option></select>
-				<div>
-					<p><em>No Trials Selected</em></p>
-				</div>";
-		}
-		else
-		{
+    /**
+     * display traits given a list of experiments
+     */
+    private function type1_traits()
+    {
+        global $mysqli;
+        $experiments = $_GET['exps'];
+
+        if (empty($experiments))
+        {
+            echo "
+			4. <select><option>Traits</option></select>
+			<div>
+				<p><em>No Trials Selected</em></p>
+			</div>";
+	} else {
 ?>
 <p>4. 
 <select><option>Traits</option></select></p>
