@@ -144,10 +144,10 @@ if ($row = mysqli_fetch_array($res)) {
       /* Function to open annotation link in a new window */
       function link_for_value(link) {
           myWin = window.open(link, '');
-	  // 		link_url = link;
-	  // 		window.open(link_url,
-	  // 'open_window',
-	  // 'menubar, toolbar, location, directories, status, scrollbars, resizable, dependent, width=640, height=480, left=0, top=0');
+          // 		link_url = link;
+          // 		window.open(link_url,
+          // 'open_window',
+          // 'menubar, toolbar, location, directories, status, scrollbars, resizable, dependent, width=640, height=480, left=0, top=0');
 	  // link_url = link;
 	  // Just open a new tab instead.  In Mac Safari, this changes focus to that tab.
 	  // In Firefox it does not unless we leave the name (second argument) empty.
@@ -624,12 +624,8 @@ private function type_Marker_Annotation()
 }
 private function type_Annotation_Comments()
 	{
+                global $mysqli;
 		$comment_query = $_GET['anncom']; 
-		
-		/* For debugging
-			$firephp = FirePHP::getInstance(true);
-			$firephp->log($comment_query,"comment_query");
-		*/
 ?>
 
 
