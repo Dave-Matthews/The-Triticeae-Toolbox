@@ -143,7 +143,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
     <tr><td><img id="captcha" src="./securimage/securimage_show.php"
 		 alt="CAPTCHA image"><br>
 	    <a href="#" onclick="document.getElementById('captcha').src = './securimage/securimage_show.php?' + Math.random();
-				 return false;"></td>
+				 return false">[ Different Image ]</a></td>
       <td>CAPTCHA:
 	<input type="text" name="captcha_code" size="10"
 		 maxlength="6"></td></tr></table>
@@ -454,12 +454,14 @@ function HTMLProcessForgot()
     if (isRegistered($email) || isOldRegistered($email)) {
         $key = setting('passresetkey');
         $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-        send_email($email, "T3: Reset Your Password",
-       "Hi,
-Per your request, please visit the following URL to reset your password:
-https:{$root}resetpass.php?token=$urltoken");
-      return "An email has been sent to you with a link to reset your
-password.";
+        send_email(
+            $email,
+            "T3: Reset Your Password",
+            "Hi, Per your request, please visit the following URL to reset your password:
+            https:{$root}resetpass.php?token=$urltoken"
+        );
+        return "An email has been sent to you with a link to reset your
+        password.";
     } else {
         return "<h3 style='color: red'>No such user, please register.</h3>";
     }
@@ -477,24 +479,25 @@ function HTMLProcessChange()
     $pass = $_POST['OldPass'];
     $rv = "";
     if (isset($email)) {
-      if (isUser($email, $pass))
-        if ($_POST['NewPass1'] == $_POST['NewPass2']) {
-	  $sql_email = mysqli_real_escape_string($mysqli, $email);
-	  $sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
-	  $sql = "update users  set pass=SHA1('$sql_pass')
+        if (isUser($email, $pass)) {
+            if ($_POST['NewPass1'] == $_POST['NewPass2']) {
+                $sql_email = mysqli_real_escape_string($mysqli, $email);
+                $sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
+                $sql = "update users  set pass=SHA1('$sql_pass')
 where users_name=SHA1('$sql_email')";
-	if (mysqli_query($mysqli, $sql))
-	  $rv .= "<h3>Password successfully updated</h3>";
-	else
-	  $rv .= "<div id='form_error'>unexpected error while updating your password..</div>";
-      }
-      else
-	$rv .= "<div id='form_error'>the two values you provided do not match..</div>";
-    else
-      $rv .= "<div id='form_error'>username/password pair not recognized</div>";
-  }
-  else
-    $rv .= <<<HTML
+                if (mysqli_query($mysqli, $sql)) {
+                    $rv .= "<h3>Password successfully updated</h3>";
+                } else {
+                    $rv .= "<div id='form_error'>unexpected error while updating your password..</div>";
+                }
+            } else {
+                $rv .= "<div id='form_error'>the two values you provided do not match..</div>";
+            }
+        } else {
+            $rv .= "<div id='form_error'>username/password pair not recognized</div>";
+        }
+    } else {
+        $rv .= <<<HTML
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
 <input type="hidden" name="answer" value="change">
 <input type="hidden" name="submit_login" value="">
@@ -507,7 +510,8 @@ Retype New Password: <input name="NewPass2" type="password"></input>
 <input name="cmd_submit" type="submit" value="Submit"></input>
 </form>
 HTML;
-  return $rv;
+    }
+    return $rv;
 }
 
 if (isset($_POST['submit_login'])) {
