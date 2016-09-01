@@ -91,13 +91,15 @@ class Training
         Calculation of the training set can typically take anywhere from 5 minutes to 4 hours depending on the size of the dataset and the parameters selected.
         You will receive an email notification when your results are available. 
         Deniz Akdemir, Julio Sanchez and Jean-Luc Jannink. Genetics Selection Evolution 2015 47:38 DOI: 10.1186/s12711-015-0116-6. <a target="_new" href="https://gsejournal.biomedcentral.com/articles/10.1186/s12711-015-0116-6">Optimization of genomic selection training populations with a genetic algorithm.</a><br>
-        Missing genotype data can cause inaccurate results, the default filter setting removes markers missing greater than 10% of data.<br>
+        Missing genotype data can cause inaccurate results, the default filter setting removes markers missing greater than 10% of data.
+        If a Test set is used it should have common markers with the Candidate set.<br>
         </div>
         <div id="step2" style="float: left; margin-bottom: 1.5em; width: 100%">
         <?php
-        echo "<b>Consensus Genotype data</b> - Select <a href=\"downloads/select_all.php\">lines, trait, and trials</a> for a Candidate Set.<br><br>";
+        echo "<b>Consensus Genotype data</b> - Select <a href=\"downloads/select_all.php\">lines, trait, and trials</a> for a Candidate Set. ";
+        echo "To select a test set first select \"Save Candidates\" then use the <a href=\"downloads/select_all.php\">lines, trait, and trials</a> page to pick any set of lines with common markers with the Candidate set.<br>";
         echo "<b>Single Experiment Genotype data</b> - Select <a href=\"downloads/select_genotype.php\">lines by genotype experiment</a> for a Candidate Set. ";
-        echo "To select a test set use the <a href=\"pedigree/line_properties.php\">lines by properties</a> page to pick a subset of lines from the current genotype experiment.<br><br>";
+        echo "To select a test set first select \"Save Candidates\", highlight the lines not desired in the Test set, select \"Deselect highlighted lines\", then \"Analyze\".<br><br>";
         if (!isset($_SESSION['username'])) {
             echo "Login, to receive email notification when the analysis is finished.<br>\n";
         }
@@ -133,6 +135,13 @@ class Training
             }
         } elseif ($command == "clearT") {
             unset($_SESSION['selected_lines']);
+        } elseif (isset($_POST['deselLines'])) {
+            $selected_lines = $_SESSION['selected_lines'];
+            foreach ($_POST['deselLines'] as $line_uid) {
+                if (($lineidx = array_search($line_uid, $selected_lines)) !== false)
+                    array_splice($selected_lines, $lineidx,1);
+            }
+            $_SESSION['selected_lines']=$selected_lines;
         }
         ?>
         <div id="step3" style="float: left; margin-bottom: 1.5em; width: 50%">
@@ -164,10 +173,11 @@ class Training
                 echo "<b>Test</b> $count2 lines\n";
                 print "<input type=\"hidden\" value=\"clearT\" name=\"cmd\">";
                 print "<input type='submit' value='Clear Test' /> ";
-                print "The test set are the individuals for which you would like to select an optimized training set. If a test set is not defined then a training set will be selected that optimizes the prediction accuracy of the entire population.<br>";
-                print "</form>";
                 ?>
-                <select multiple="multiple" style="height: 15em;width: 13em">
+                The test set are the individuals for which you would like to select an optimized training set. If a test set is not defined then a training set will be selected that optimizes the prediction accuracy of the entire population.<br>
+                </form>
+                <form id="deselLinesForm" action="analyze/training.php" method="post">
+                <select name="deselLines[]" multiple="multiple" style="height: 15em;width: 13em">
                 <?php
                 foreach ($display as $lineuid) {
                     $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
@@ -177,13 +187,13 @@ class Training
                     }
                 }
                 print "</select><br><br>";
-                if ($count2 > $count) {
-                    //echo "<font color=\"red\">Error - Test set must be smaller than Candidate set</font><br></div></div>";
-                    //return;
+                if (isset($_SESSION['geno_exps'])) {
+                    print "<input type='submit' name='WhichBtn' value='Deselect highlighted lines' />";
                 }
+                print "</form>";
             }
-             //check overlap between candidate and test selection
-            if (isset($_SESSION['selected_lines'])) {
+             //check overlap between candidate and test line selection
+            if (isset($_SESSION['selected_lines']) && (!isset($_SESSION['geno_exps']))) {
                 $tmp = $_SESSION['candidate_lines'];
                 foreach ($_SESSION['selected_lines'] as $lineuid) {
                     if (in_array($lineuid, $tmp)) {
@@ -522,22 +532,34 @@ class Training
             calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
             if (isset($_SESSION['selected_lines'])) {
                 $filtered_lines = $_SESSION['filtered_lines'];
+                $filtered_markers = $_SESSION['filtered_markers'];
                 $lines2 = $_SESSION['selected_lines'];
                 $selectedlinescount = count($filtered_lines);
                 echo "<br>Test<br>\n";
                 calculate_af($lines2, $min_maf, $max_missing, $max_miss_line);
                 $filtered_lines2 = $_SESSION['filtered_lines'];
+                $filtered_markers2 = $_SESSION['filtered_markers'];
                 $tmp = count($filtered_lines2);
                 foreach ($filtered_lines2 as $line) {
                     if (!in_array($line, $filtered_lines)) {
                         $filtered_lines[] = $line;
                         $selectedlinescount++;
-                    } else {
-                        echo "duplicate $line\n";
                     }
                 }
                 $_SESSION['filtered_lines'] = $filtered_lines;
                 echo "<br>Total lines = $selectedlinescount<br>\n";
+                $selectedmarkerscount = 0;
+                foreach ($filtered_markers2 as $marker) {
+                    if (in_array($marker, $filtered_markers)) {
+                        $selectedmarkerscount++;
+                    }
+                }
+                echo "Common markers = $selectedmarkerscount ";
+                if ($selectedmarkerscount < (0.5 * $markers1count)) {
+                    echo "<font color=\"red\">Warning: Test set should have common markers with Candidates for accurate prediction</font>";
+                } else {
+                    echo "<br>\n";
+                }
             } elseif (isset($_SESSION['selected_lines'])) {
                 $lines = $_SESSION['selected_lines'];
                 calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
