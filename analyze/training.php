@@ -138,8 +138,9 @@ class Training
         } elseif (isset($_POST['deselLines'])) {
             $selected_lines = $_SESSION['selected_lines'];
             foreach ($_POST['deselLines'] as $line_uid) {
-                if (($lineidx = array_search($line_uid, $selected_lines)) !== false)
-                    array_splice($selected_lines, $lineidx,1);
+                if (($lineidx = array_search($line_uid, $selected_lines)) !== false) {
+                    array_splice($selected_lines, $lineidx, 1);
+                }
             }
             $_SESSION['selected_lines']=$selected_lines;
         }
