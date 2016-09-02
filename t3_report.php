@@ -270,13 +270,14 @@ if ($query == 'geno') {
     // now get a count including GBS
     $allele_count2 = 0;
     $sql = "select alleles from allele_bymarker_exp_101";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $res = mysqli_query($mysqli, $sql, MYSQLI_USE_RESULT) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $alleles = $row[0];
         $ary = explode(",", $alleles);
         $count = count($ary);
         $allele_count2 += $count;
     }
+    mysqli_free_result($res);
 
     $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
