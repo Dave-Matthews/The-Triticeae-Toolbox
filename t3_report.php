@@ -264,6 +264,17 @@ if ($query == 'geno') {
     } else {
         print "error $sql<br>\n";
     }
+    // now get a count including GBS
+    $allele_count2 = 0;
+    $sql = "select alleles from allele_bymarker_exp_101";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $alleles = $row[0];
+        $ary = explode(",", $alleles);
+        $count = count($ary);
+        $allele_count2 += $count;
+    }
+
     $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($res)) {
@@ -296,6 +307,7 @@ if ($query == 'geno') {
         fwrite($fp, "$LinesWithGeno\n");
         fwrite($fp, "$MarkersWithGeno\n");
         fwrite($fp, "$MarkersNoGeno\n");
+        fwrite($fp, "$allele_count2\n");
         fclose($fp);
     }
     return;
@@ -357,6 +369,7 @@ if ($query == 'geno') {
         $LinesWithGeno = fgets($fp);
         $MarkersWithGeno = fgets($fp);
         $MarkersNoGeno = fgets($fp);
+        $allele_count2 = fgets($fp);
         fclose($fp);
     } else {
         exec($cmd);
@@ -369,65 +382,66 @@ if ($query == 'geno') {
     } else {
         exec($cmd);
     }
-  $allele_count = number_format($allele_count);
-  $date = date_create(date('Y-m-d'));
-  $date = $date->format('Y-m-d');
-  if ($output == "excel") {
-    $worksheet->write(0, 0, "$db Data Submission Report $date", $format_title);
-    $worksheet->write(0, 1, "", $format_title);
-    $worksheet->write(0, 2, "", $format_title);
-    $worksheet->write(0, 3, "", $format_title);
-  } elseif ($output == "") {
-    print "<h2>$db Data Submission Report $date</h2>";
-  }
-  if($output == "") {
-    print "<form action=t3_report.php method='get'>";
-    print "<input type=hidden name='output' value='excel'>";
-    print "<input type='submit' value='Download tables to MS Excel'>";
-    print "</form><br>";
-  }
+    $allele_count = number_format($allele_count);
+    $allele_count2 = number_format($allele_count2);
+    $date = date_create(date('Y-m-d'));
+    $date = $date->format('Y-m-d');
+    if ($output == "excel") {
+        $worksheet->write(0, 0, "$db Data Submission Report $date", $format_title);
+        $worksheet->write(0, 1, "", $format_title);
+        $worksheet->write(0, 2, "", $format_title);
+        $worksheet->write(0, 3, "", $format_title);
+    } elseif ($output == "") {
+        print "<h2>$db Data Submission Report $date</h2>";
+    }
+    if ($output == "") {
+        print "<form action=t3_report.php method='get'>";
+        print "<input type=hidden name='output' value='excel'>";
+        print "<input type='submit' value='Download tables to MS Excel'>";
+        print "</form><br>";
+    }
 
-  $this_week = date_create(date('Y-m-d'));
-  $this_month = date_create(date('Y-m-d')); 
-  $this_week->sub(new DateInterval('P7D'));
-  $this_month->sub(new DateInterval('P30D'));
-  $this_week = $this_week->format('Y-m-d');
-  $this_month = $this_month->format ('Y-m-d');
-  if ($output == "excel") {
-    $worksheet->write(1, 0, "Trials", $format_header);
-  } else {
-    print "<b>Experiments and Trials</b>\n";
-    print "<table>\n";
-  }
-  $sql = "select count(experiment_set_uid) from experiment_set";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  if ($row = mysqli_fetch_row($res)) {
-    $count = $row[0];
+    $this_week = date_create(date('Y-m-d'));
+    $this_month = date_create(date('Y-m-d'));
+    $this_week->sub(new DateInterval('P7D'));
+    $this_month->sub(new DateInterval('P30D'));
+    $this_week = $this_week->format('Y-m-d');
+    $this_month = $this_month->format('Y-m-d');
     if ($output == "excel") {
-        $worksheet->write(2, 0, "Phenotype Experiments");
-        $worksheet->write(2, 1, "$count");
+        $worksheet->write(1, 0, "Trials", $format_header);
     } else {
-        print "<tr><td>Phenotype Experiments<td>$count<td><a href='".$config['base_url']."t3_report.php?query=PExps'>List all experiments</a>\n";
+        print "<b>Experiments and Trials</b>\n";
+        print "<table>\n";
     }
-  }
-  $sql = "select count(experiment_uid) from experiments where experiment_type_uid = 1"; 
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  if ($row = mysqli_fetch_row($res)) {
-    $count = $row[0];
-    if ($output == "excel") {
-        $worksheet->write(3, 0, "Phenotype Trials submitted");
-        $worksheet->write(3, 1, "$count");
+    $sql = "select count(experiment_set_uid) from experiment_set";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
+        $count = $row[0];
+        if ($output == "excel") {
+            $worksheet->write(2, 0, "Phenotype Experiments");
+            $worksheet->write(2, 1, "$count");
+        } else {
+            print "<tr><td>Phenotype Experiments<td>$count<td><a href='".$config['base_url']."t3_report.php?query=PExps'>List all experiments</a>\n";
+        }
+    }
+    $sql = "select count(experiment_uid) from experiments where experiment_type_uid = 1";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
+        $count = $row[0];
+        if ($output == "excel") {
+            $worksheet->write(3, 0, "Phenotype Trials submitted");
+            $worksheet->write(3, 1, "$count");
+        } else {
+            print "<tr><td>Phenotype Trials</td><td>$count<td><a href='".$config['base_url']."t3_report.php?query=PTrials'>List all trials</a></td></tr>\n";
+        }
+    }
+    $sql = "select count(experiment_uid) from experiments where experiment_type_uid = 2";
+    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
+        $count = $row[0];
     } else {
-        print "<tr><td>Phenotype Trials</td><td>$count<td><a href='".$config['base_url']."t3_report.php?query=PTrials'>List all trials</a></td></tr>\n";
+        print "error $sql<br>\n";
     }
-  }
-  $sql = "select count(experiment_uid) from experiments where experiment_type_uid = 2";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  if ($row = mysqli_fetch_row($res)) {
-    $count = $row[0];
-  } else {
-    print "error $sql<br>\n";
-  }
   if ($output == "excel") {
     $worksheet->write(4, 0, "Genotype Trials submitted");
     $worksheet->write(4, 1, "$count");
@@ -633,7 +647,8 @@ if ($query == 'geno') {
         $worksheet->write($index, 1, "$allele_count");
         $index++;
   } else {
-        echo "<tr><td>Total genotype data<td>$allele_count<td><a href=\"" . $config['base_url'] . "t3_report.php?query=geno2\">List genotyping data by experiment</a>";
+        echo "<tr><td>Total genotype data, consensus<td>$allele_count<td><a href=\"" . $config['base_url'] . "t3_report.php?query=geno2\">List genotyping data by experiment</a>";
+        echo "<tr><td>Total genotype data<td>$allele_count2<td><a href=\"" . $config['base_url'] . "t3_report.php?query=geno2\">List genotyping data by experiment</a>";
   }
 
   if ($output == "excel") {
