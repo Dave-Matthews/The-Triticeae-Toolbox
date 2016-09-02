@@ -9,7 +9,9 @@
  * @link    http://triticeaetoolbox.org/wheat/t3_report.php
  */
 
+set_time_limit(0);
 ini_set('memory_limit', '4G');
+
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 
