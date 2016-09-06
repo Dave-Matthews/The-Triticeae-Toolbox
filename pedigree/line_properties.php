@@ -62,14 +62,14 @@ if (empty($_POST) or $_POST['WhichBtn']) {
 
   <table width="650px">
     <tr style="height:20px"><td style="text-align:left;">
-	<h3>Passport data</h3>
+    <h3>Passport data</h3>
       <td><td><td>
-	<form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
-	  <!--  <input type=hidden name="search" value="yes"> -->
-	  
-	  <tr style="vertical-align: top">
-	    <td><b>Name</b> <br>
-	      <textarea name="LineSearchInput" rows="3" cols="18" style="height: 6em;">
+      <form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
+      <!--  <input type=hidden name="search" value="yes"> -->
+  
+      <tr style="vertical-align: top">
+      <td><b>Name</b> <br>
+      <textarea name="LineSearchInput" rows="3" cols="18" style="height: 6em;">
 <?php
 $nm = explode('\r\n', $name);
 foreach ($nm as $n) {
@@ -79,22 +79,22 @@ foreach ($nm as $n) {
 }
 ?>
 </textarea>
-	      <br> E.g. Cayuga, tur*ey, iwa860*<br>
-	      Synonyms will be translated.<br>
-	    <td><b> Source </b> <br>
-	      <select name="breedingprogramcode[]" multiple="multiple" size="6" style="width: 22em; height: 8em;">
+      <br> E.g. Cayuga, tur*ey, iwa860*<br>
+      Synonyms will be translated.<br>
+      <td><b> Source </b> <br>
+      <select name="breedingprogramcode[]" multiple="multiple" size="6" style="width: 22em; height: 8em;">
     <?php
     $sql = "SELECT DISTINCT(l.breeding_program_code), c.data_program_name FROM line_records l, CAPdata_programs c WHERE l.breeding_program_code = c.data_program_code ORDER by l.breeding_program_code";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($resp = mysqli_fetch_assoc($res)) {
     ?>
-	<option value="<?php echo $resp['breeding_program_code'] ?>" <?php echo $breeding[$resp['breeding_program_code']]?>><?php echo $resp['breeding_program_code'] ?><?php echo "--".$resp['data_program_name'] ?></option>
+    <option value="<?php echo $resp['breeding_program_code'] ?>" <?php echo $breeding[$resp['breeding_program_code']]?>><?php echo $resp['breeding_program_code'] ?><?php echo "--".$resp['data_program_name'] ?></option>
 <?php
     }
 ?>
-	      </select><br><br>
-	    <td><b>Year</b><br>
-	      <select name="year[]" multiple="multiple" size="6">
+      </select><br><br>
+      <td><b>Year</b><br>
+      <select name="year[]" multiple="multiple" size="6">
 <?php
 $sql = "select distinct experiment_year from experiments order by experiment_year DESC";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -104,9 +104,9 @@ while ($resp = mysqli_fetch_assoc($res)) {
     <?php
 }
 ?>
-	      </select><br><br></td>
-	    <td> <b>Species</b> <br>
-	      <select name="species[]" multiple="multiple" size="6" style="height: 8em;">
+      </select><br><br></td>
+      <td> <b>Species</b> <br>
+      <select name="species[]" multiple="multiple" size="6" style="height: 8em;">
 <?php
 /* $sql = "SELECT DISTINCT(species) FROM line_records WHERE species NOT LIKE 'NULL' AND NOT species = ''"; */
 $sql = "select pv.value from properties p, property_values pv
@@ -122,20 +122,20 @@ while ($resp = mysqli_fetch_row($res)) {
 
   <table width=650px>
     <tr><td style="text-align:left;">
-	<h3>Genetic characters</h3>
-	<table id="PropertySelTable" style="table-layout: fixed; width: 350px;">
-	  <tr>
-	    <th width=120px>Category
-	    <th width=150px>Property/Gene
-	    <th width=80px>Value/Allele
-	  </tr>
-	  <tr class="nohover">
-	    <td>
+    <h3>Genetic characters</h3>
+    <table id="PropertySelTable" style="table-layout: fixed; width: 350px;">
+    <tr>
+    <th width=120px>Category
+    <th width=150px>Property/Gene
+    <th width=80px>Value/Allele
+    </tr>
+    <tr class="nohover">
+    <td>
               <!-- DispPropSel() in includes/core.js passes further activity to  -->
-	      <!-- includes/ajaxlib.php functions DispPropCategorySel() etc. -->
-	      <select size=5 
-		      onfocus="DispPropSel(this.value, 'PropCategory')" 
-		      onchange="DispPropSel(this.value, 'PropCategory')">
+      <!-- includes/ajaxlib.php functions DispPropCategorySel() etc. -->
+      <select size=5 
+      onfocus="DispPropSel(this.value, 'PropCategory')" 
+      onchange="DispPropSel(this.value, 'PropCategory')">
 <?php 
 // DEM jul2016: Show only categories that do include Genetic Characters.
 /* showTableOptions("phenotype_category");  */
@@ -154,7 +154,7 @@ while($row = mysqli_fetch_assoc($res))
 <?php
 if (!empty($propvals)) {
     foreach ($propvals as $pv) {
-        echo "$pv[1] = $pv[2], ";
+        echo "$pv[1] = $pv[2] or ";
     }
 }
 ?>
@@ -264,7 +264,7 @@ if (!empty($_POST)) {
     } // end if (strlen($linenames) != 0)
     if (count($breedingProgram) != 0) {
         $tmp = implode("','", $breedingProgram);
-        if (preg_match("/([A-Z,']+)/", $tmp, $match)) {
+        if (preg_match("/([A-Z0-9,']+)/", $tmp, $match)) {
             $breedingCode = $match[1];
         } else {
             $breedingCode = "";
