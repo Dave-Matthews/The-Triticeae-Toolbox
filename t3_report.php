@@ -74,24 +74,38 @@ if ($query == 'geno') {
     print "</table>\n";
     print "total $count markers missing genotype data<br>\n";
 } elseif ($query == 'geno2') {
-    $count = 0;
+    $total_count = 0;
     include $config['root_dir'].'theme/normal_header.php';
     print "<h1>Genotyping data by experiment</h1>\n";
     print "<table border=0>";
-    print "<tr><td>Trial Code<td>experiment name<td>genotyp markers\n";
+    print "<tr><td>Trial Code<td>experiment name<td>lines<td>markers<td>genotyp data\n";
     if (preg_match('/THT/', $db)) {
         $sql = "select experiment_short_name, count(marker_uid) from experiments as e, tht_base as tb, genotyping_data as gd where e.experiment_uid = tb.experiment_uid AND gd.tht_base_uid = tb.tht_base_uid group by e.experiment_uid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($res)) {
+            $total_count += $row[2];
+            print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$row[0]'>$row[0]</a><td>$row[1]<td>$row[2]\n";
+        }
     } else {
-        $sql = "select trial_code, experiment_short_name, count(marker_uid) from experiments, allele_frequencies where experiments.experiment_uid = allele_frequencies.experiment_uid group by allele_frequencies.experiment_uid";
+        $sql = "select experiments.experiment_uid, trial_code, experiment_short_name, count(marker_uid) from experiments, allele_frequencies where experiments.experiment_uid = allele_frequencies.experiment_uid group by allele_frequencies.experiment_uid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($res)) {
+            $experiment_uid = $row[0];
+            $trial_code = $row[1];
+            $experiment_short_name = $row[2];
+            $num_mark = $row[3];
+            $sql = "select count(line_record_uid) from tht_base where experiment_uid = $experiment_uid";
+            $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row2 = mysqli_fetch_row($res2);
+            $line_count = $row2[0];
+            $geno_count = $line_count * $num_mark;
+            $total_count += $geno_count;
+            $geno_count = number_format($geno_count);
+            print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$experiment_short_name<td>$line_count<td>$num_mark<td>$geno_count\n";
+        }
     }
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_row($res)) {
-        $count=$count+$row[2];
-        print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$row[0]'>$row[0]</a><td>$row[1]<td>$row[2]\n";
-        flush();
-    }
-    $count = number_format($count);
-    print "<tr><td>total<td><td>$count\n";
+    $total_count = number_format($total_count);
+    print "<tr><td>total<td><td><td><td>$total_count\n";
     print "</table>";
 } elseif ($query == 'linegeno') {
     include $config['root_dir'].'theme/normal_header.php';
@@ -440,7 +454,7 @@ if ($query == 'geno') {
         }
     }
     $sql = "select count(experiment_uid) from experiments where experiment_type_uid = 2";
-    $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($res)) {
         $count = $row[0];
     } else {
