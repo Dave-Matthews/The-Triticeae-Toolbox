@@ -2,11 +2,11 @@
 // dem 23oct2014 Edit contents of the "What's New" box.
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-connect();
+$mysqli = connecti();
 loginTest();
 
 ob_start();
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 authenticate_redirect(array(USER_TYPE_CURATOR,USER_TYPE_ADMINISTRATOR));
 ob_end_flush();
 
@@ -45,5 +45,5 @@ echo "<input type='submit' value='Update'>";
 echo "</form>";
 
 echo "</div>";
-include($config['root_dir'] . 'theme/footer.php');
+include $config['root_dir'] . 'theme/footer.php';
 ?>

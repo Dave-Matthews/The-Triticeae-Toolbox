@@ -3,38 +3,38 @@
 // 30jan2012 DEM Taken from edit_traits.php.
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-connect();
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+$mysqli = connecti();
 loginTest();
 
 ob_start();
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'theme/admin_header.php';
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
 /*
  * Session variable stores duplicate records, do we wish to edit duplicates?
  */
-if(isset($_SESSION['DupProgRecords'])) {
-  sort($_SESSION['DupProgRecords']);
-  $drds = $_SESSION['DupProgRecords'];
+if (isset($_SESSION['DupProgRecords'])) {
+    sort($_SESSION['DupProgRecords']);
+    $drds = $_SESSION['DupProgRecords'];
 }
-if(count($drds) == 0) {
-  unset($_SESSION['DupProgRecords']);
-  unset($drds);
+if (count($drds) == 0) {
+    unset($_SESSION['DupProgRecords']);
+    unset($drds);
 }
 
 /*
  * Has form data been submitted?  Then handle it.
  */
 if (!empty($_POST[adding])) {
-  // Add a new Program.
-  $prcode = $_POST[code];
-  $prname = $_POST[name];
-  $prtype = $_POST[type];
-  $prinst = $_POST[inst];
-  $prcollab = $_POST[collab];
-  $prdesc = $_POST[desc];
+    // Add a new Program.
+    $prcode = $_POST[code];
+    $prname = $_POST[name];
+    $prtype = $_POST[type];
+    $prinst = $_POST[inst];
+    $prcollab = $_POST[collab];
+    $prdesc = $_POST[desc];
   // Validate
   if (empty($prcode))
     $adderr = "Program Code is required.  Nothing added.<br>";
@@ -72,7 +72,7 @@ if (!empty($_POST[adding])) {
 	  '$prcollab',
 	  '$prdesc',
 	  NOW() )";
-    mysql_query($sql) or die("Insert failed.<br>".mysql_error());
+    mysqli_query($mysqli, $sql) or die("Insert failed.<br>".mysqli_error($mysqli));
     $adderr = "Program $prcode added.";
   }
 }
@@ -113,7 +113,7 @@ if (!empty($_POST[instn])) {
 	  '$instcountry',
           '',
 	  NOW() )";
-    mysql_query($sql) or die("Insert failed.<br>".mysql_error());
+    mysqli_query($mysqli, $sql) or die("Insert failed.<br>".mysqli_error($mysqli));
     $insterr = "Institution $instname added.";
   }
 }
@@ -131,8 +131,8 @@ if (!empty($_POST['Delete'])) {
   echo "Attempting to delete CAP Data Program id = $id, code = $code...<p>";
   $sql = "delete from CAPdata_programs where CAPdata_programs_uid = $id";
   //  $res = mysql_query($sql) or die(mysql_error());
-  $res = mysql_query($sql);
-  $err = mysql_error();
+  $res = mysqli_query($mysqli, $sql);
+  $err = mysqli_error($mysqli);
   if (!empty($err)) {
     if (strpos($err, "a foreign key constraint fails"))
       echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this program. The error message is:<br>$err";
@@ -189,8 +189,8 @@ if(isset($_GET['start']))
     <tr><td>Institution<td>
 	<select name=inst><option value="">
 <?php
-  $res = mysql_query("select institutions_uid, institutions_name from institutions") or die(mysql_error());
-   while($r = mysql_fetch_row($res))
+  $res = mysqli_query($mysqli, "select institutions_uid, institutions_name from institutions") or die(mysqli_error($mysqli));
+   while($r = mysqli_fetch_row($res))
      echo "<option value=$r[0]>$r[1]";
 ?>
 	</select>
@@ -241,7 +241,7 @@ else
   echo "<p>Search returned no results</p>";
 
 echo "</div></div></div>";
-include($config['root_dir'] . 'theme/footer.php');
+include $config['root_dir'] . 'theme/footer.php';
 
 
 
