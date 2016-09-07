@@ -78,7 +78,7 @@ if ($query == 'geno') {
     include $config['root_dir'].'theme/normal_header.php';
     print "<h1>Genotyping data by experiment</h1>\n";
     print "<table border=0>";
-    print "<tr><td>Trial Code<td>experiment name<td>lines<td>markers<td>genotyp data\n";
+    print "<tr><td>Trial Code<td>experiment name<td>platform<td>lines<td>markers<td>genotype data\n";
     if (preg_match('/THT/', $db)) {
         $sql = "select experiment_short_name, count(marker_uid) from experiments as e, tht_base as tb, genotyping_data as gd where e.experiment_uid = tb.experiment_uid AND gd.tht_base_uid = tb.tht_base_uid group by e.experiment_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -87,6 +87,13 @@ if ($query == 'geno') {
             print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$row[0]'>$row[0]</a><td>$row[1]<td>$row[2]\n";
         }
     } else {
+        $sql = "select experiment_uid, platform_name from genotype_experiment_info, platform where genotype_experiment_info.platform_uid = platform.platform_uid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($res)) {
+            $euid = $row[0];
+            $platform_name = $row[1];
+            $platform_list[$euid] = $platform_name;
+        }
         $sql = "select experiments.experiment_uid, trial_code, experiment_short_name, count(marker_uid) from experiments, allele_frequencies where experiments.experiment_uid = allele_frequencies.experiment_uid group by allele_frequencies.experiment_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($res)) {
@@ -101,7 +108,7 @@ if ($query == 'geno') {
             $geno_count = $line_count * $num_mark;
             $total_count += $geno_count;
             $geno_count = number_format($geno_count);
-            print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$experiment_short_name<td>$line_count<td>$num_mark<td>$geno_count\n";
+            print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$experiment_short_name<td>$platform_list[$experiment_uid]<td>$line_count<td>$num_mark<td>$geno_count\n";
         }
     }
     $total_count = number_format($total_count);
