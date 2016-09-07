@@ -283,15 +283,20 @@ if ($query == 'geno') {
     }
     // now get a count including GBS
     $allele_count2 = 0;
-    $sql = "select alleles from allele_bymarker_exp_101";
-    $res = mysqli_query($mysqli, $sql, MYSQLI_USE_RESULT) or die(mysqli_error($mysqli));
+    $sql = "select experiments.experiment_uid, trial_code, experiment_short_name, count(marker_uid) from experiments, allele_frequencies where experiments.experiment_uid = allele_frequencies.experiment_uid group by allele_frequencies.experiment_uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
-        $alleles = $row[0];
-        $ary = explode(",", $alleles);
-        $count = count($ary);
-        $allele_count2 += $count;
+        $experiment_uid = $row[0];
+        $trial_code = $row[1];
+        $experiment_short_name = $row[2];
+        $num_mark = $row[3];
+        $sql = "select count(line_record_uid) from tht_base where experiment_uid = $experiment_uid";
+        $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $row2 = mysqli_fetch_row($res2);
+        $line_count = $row2[0];
+        $geno_count = $line_count * $num_mark;
+        $allele_count2 += $geno_count;
     }
-    mysqli_free_result($res);
 
     $sql = "select date_format(max(created_on),'%m-%d-%Y') from genotyping_data";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -460,12 +465,12 @@ if ($query == 'geno') {
     } else {
         print "error $sql<br>\n";
     }
-  if ($output == "excel") {
-    $worksheet->write(4, 0, "Genotype Trials submitted");
-    $worksheet->write(4, 1, "$count");
-  } elseif ($output == "") {
-    print "<tr><td>Genotype Trials</td><td>$count<td><a href='".$config['base_url']."t3_report.php?query=GTrials'>List all trials</a></td></tr>\n";
-  }
+    if ($output == "excel") {
+        $worksheet->write(4, 0, "Genotype Trials submitted");
+        $worksheet->write(4, 1, "$count");
+    } elseif ($output == "") {
+        print "<tr><td>Genotype Trials</td><td>$count<td><a href='".$config['base_url']."t3_report.php?query=GTrials'>List all trials</a></td></tr>\n";
+    }
 
   $sql = "select count(distinct(capdata_programs_uid)) from experiments";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
