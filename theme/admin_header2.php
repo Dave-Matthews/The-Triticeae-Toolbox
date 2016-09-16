@@ -10,13 +10,9 @@
  *
  */
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
 <head>
-<!-- "chrome=1"is required for X3DOM (WebGL) function in IE with Flash or Chrome Frame. -->
-<!-- July 2015 Chrome Frame is no longer supported so emulating IE8 is pointless -->
-<!-- <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8,chrome=1"> -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
 <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
@@ -25,18 +21,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <base href="<?php echo $config['base_url']; ?>" >
-<!--link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css"-->
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.3.0/prototype.js"></script>
 <script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+<script src="//code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
 <script src="jquery.smartmenus.js" type="text/javascript"></script>
 
 <link href="sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
 <script>
-jQuery.noConflict();
 jQuery( document ).ready(function( $ ) {
     $('#main-menu').smartmenus();
 });
