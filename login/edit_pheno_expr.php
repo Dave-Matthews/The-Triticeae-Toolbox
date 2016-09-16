@@ -3,7 +3,7 @@
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'includes/bootstrap_curator2.inc';
 $mysqli = connecti();
 loginTest();
 
