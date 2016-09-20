@@ -12,7 +12,7 @@
 namespace T3;
 
 require_once 'config.php';
-require $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'includes/bootstrap2.inc';
 require $config['root_dir'] . 'downloads/marker_filter.php';
 require $config['root_dir'] . 'downloads/downloads_class2.php';
 set_time_limit(0);
@@ -58,7 +58,7 @@ class Training
     private function type1Select()
     {
         global $config;
-        include $config['root_dir'].'theme/normal_header.php';
+        include $config['root_dir'].'theme/admin_header2.php';
         $phenotype = "";
         $lines = "";
         $markers = "";
@@ -82,7 +82,7 @@ class Training
            td {border: 1px solid #eee !important;}
            h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style-->
-        <script type="text/javascript" src="analyze/training02.js"></script>
+        <script type="text/javascript" src="analyze/training03.js"></script>
         <h2>Selection of an Optimized Training set for use in Genomic Prediction</h2>
         <div id="step1" style="float: left; margin-bottom: 1.5em; width: 100%">
         Optimized training sets uses the genotypes of the individuals in the test set to improve the performance of prediction models.
@@ -159,12 +159,16 @@ class Training
             ?>
             <select multiple="multiple" style="height: 15em;width: 13em">
             <?php
-            foreach ($display as $lineuid) {
-                $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-                while ($row=mysqli_fetch_assoc($result)) {
-                    $selval=$row['line_record_name'];
+            $sql = "select line_record_name from line_records where line_record_uid= ?";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                foreach ($display as $lineuid) {
+                    mysqli_stmt_bind_param($stmt, "i", $lineuid);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $selval);
+                    mysqli_stmt_fetch($stmt);
                     print "<option value=\"$lineuid\">$selval</option>\n";
                 }
+                mysqli_stmt_close($stmt);
             }
             print "</select><br><br>";
             if (isset($_SESSION['selected_lines'])) {
@@ -180,12 +184,16 @@ class Training
                 <form id="deselLinesForm" action="analyze/training.php" method="post">
                 <select name="deselLines[]" multiple="multiple" style="height: 15em;width: 13em">
                 <?php
-                foreach ($display as $lineuid) {
-                    $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-                    while ($row=mysqli_fetch_assoc($result)) {
-                        $selval=$row['line_record_name'];
+                $sql = "select line_record_name from line_records where line_record_uid= ?";
+                if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                    foreach ($display as $lineuid) {
+                        mysqli_stmt_bind_param($stmt, "i", $lineuid);
+                        mysqli_stmt_execute($stmt);
+                        mysqli_stmt_bind_result($stmt, $selval);
+                        mysqli_stmt_fetch($stmt);
                         print "<option value=\"$lineuid\" selected>$selval</option>\n";
                     }
+                    mysqli_stmt_close($stmt);
                 }
                 print "</select><br><br>";
                 if (isset($_SESSION['geno_exps'])) {
@@ -246,12 +254,16 @@ class Training
             <form action="training.php">
             <select multiple="multiple" style="height: 15em;width: 13em">
             <?php
-            foreach ($_SESSION['selected_lines'] as $lineuid) {
-                $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-                while ($row=mysqli_fetch_assoc($result)) {
-                    $selval=$row['line_record_name'];
+            $sql = "select line_record_name from line_records where line_record_uid= ?";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                foreach ($_SESSION['selected_lines'] as $lineuid) {
+                    mysqli_stmt_bind_param($stmt, "i", $lineuid);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $selval);
+                    mysqli_stmt_fetch($stmt);
                     print "<option value=\"$lineuid\" selected>$selval</option>\n";
                 }
+                mysqli_stmt_close($stmt);
             }
             print "</select>";
             print "</form>";
@@ -364,11 +376,16 @@ class Training
       
         if (isset($_SESSION['candidate_lines']) && isset($_SESSION['selected_lines'])) {
             $line_ary = $_SESSION['selected_lines'];
-            foreach ($line_ary as $lineuid) {
-                $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-                while ($row=mysqli_fetch_assoc($result)) {
-                    $line_ary2[] = $row['line_record_name'];
+            $sql = "select line_record_name from line_records where line_record_uid= ?";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                foreach ($line_ary as $lineuid) {
+                    mysqli_stmt_bind_param($stmt, "i", $lineuid);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $line_record_name);
+                    mysqli_stmt_fetch($stmt);
+                    $line_ary2[] = $line_record_name;
                 }
+                mysqli_stmt_close($stmt);
             }
             $line_str = "\"" . implode("\",\"", $line_ary2) . "\"";
         } else {
