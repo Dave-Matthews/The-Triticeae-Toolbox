@@ -17,7 +17,7 @@ function displayOut() {
             alert("Error in display or results");
         }
     });
-    Element.hide("spinner");
+    $("spinner").hide();
 }
 
 function use_session2() {
