@@ -59,7 +59,7 @@ $sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 if ($query == 'geno') {
     $count = 0;
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     print "markers with no genotype data<br>\n";
     print "<table border=0>";
     print "<tr><td>marker_uid<td>marker_name\n";
@@ -75,7 +75,7 @@ if ($query == 'geno') {
     print "total $count markers missing genotype data<br>\n";
 } elseif ($query == 'geno2') {
     $total_count = 0;
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     print "<h1>Genotyping data by experiment</h1>\n";
     print "<table border=0>";
     print "<tr><td>Trial Code<td>experiment name<td>platform<td>lines<td>markers<td>genotype data\n";
@@ -115,7 +115,7 @@ if ($query == 'geno') {
     print "<tr><td>total<td><td><td><td>$total_count\n";
     print "</table>";
 } elseif ($query == 'linegeno') {
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     print "Lines with genotyping data\n";
     print "<table border=0>";
     print "<tr><td>breeding program code<td>count\n";
@@ -133,7 +133,7 @@ if ($query == 'geno') {
     }
     print "</table>\n";
 } elseif ($query == 'linephen') {
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     print "Lines with phenotype data\n";
     print "<table border=0>";
     print "<tr><td>breeding program code<td>count\n";
@@ -150,7 +150,7 @@ if ($query == 'geno') {
         }
     }
 } elseif ($query == 'Lines') {
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     print "Top 100 Line names ordered by creation date<br><br>\n";
     print "<form action=t3_report.php method='POST'>";
     print "<input type=hidden name=query value=Lines />";
@@ -175,7 +175,7 @@ if ($query == 'geno') {
         print "<tr><td><a href='".$config['base_url']."view.php?table=line_records&uid=$uid'>$name</a><td>$date\n";
     }
 } elseif ($query == 'Markers') {
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     if ($opt == "") {
         $msg_opt = "";
     } else {
@@ -218,17 +218,18 @@ if ($query == 'geno') {
     }
     print "</table>";
 } elseif ($query == 'PExps') {
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     print "Phenotype experiments<br><br>\n";
     print "<table border=0>";
-    $sql = "select experiment_set_name from experiment_set";
+    print "<tr><td>Name<td>Description<td>Coordinator\n";
+    $sql = "select experiment_set_name, description, coordinator from experiment_set";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
-        print "<tr><td>$row[0]\n";
+        print "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
     }
     print "</table>";
 } elseif ($query == 'PTrials') {
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     print "Phenotype trials ordered by creation date<br><br>\n";
     print "<table border=0>";
     print "<tr><td>Trial Code<td>Experiment Name<td>Plot Level data<td>created on\n";
@@ -259,7 +260,7 @@ if ($query == 'geno') {
     }
     print "</table>";
 } elseif ($query == 'GTrials') {
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     print "Trials ordered by creation date<br><br>\n";
     print "<table border=0>";
     print "<tr><td>Trial Code<td>Experiment Name<td>type<td>created on\n";
@@ -342,7 +343,7 @@ if ($query == 'geno') {
     }
     return;
 } elseif ($query == "csr1") {
-    include $config['root_dir'].'theme/normal_header.php';
+    include $config['root_dir'].'theme/admin_header2.php';
     print "<h3>Trials with Canopy Spectral Reflectance (CSR) data</h3>\n";
     print "<table border=0>";
     print "<tr><td>Trial Code<td>Year<td>Files loaded\n";
@@ -376,7 +377,7 @@ if ($query == 'geno') {
         $format_title->setAlign('merge');
         $worksheet =& $workbook->addWorksheet() or die("can not open workbook");
     } else {
-        include($config['root_dir'].'theme/normal_header.php');
+        include($config['root_dir'].'theme/admin_header2.php');
         print "<div class=box>";
         $worksheet = null;
     }

@@ -4,9 +4,9 @@
  *
  * PHP version 5.3
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/theme/admin_header.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/theme/admin_header.php
  *
  */
 ?>
@@ -36,6 +36,12 @@ jQuery( document ).ready(function( $ ) {
 </script>
 
 <?php
+// get species
+if (preg_match("/([A-Za-z]+)\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
+    $species = $match[1];
+} else {
+    $species = "";
+}
 // clear session if it contains variables from another database
 $database = mysql_grab("select value from settings where name='database'");
 $temp = $_SESSION['database'];
@@ -132,9 +138,12 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>analyze/outlier.php" title="Filter outliers">Filter outliers</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/training.php" title="Optimize training set">Optimize training set</a>
 	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
+        <li><a href="" title="Summary statistics">Summary statistics</a>
+        <ul>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/table.php" title="Boxplot">Traits and Trials Table</a>
+        </ul>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value vs Trials">Compare Trials</a>
@@ -146,6 +155,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 	<li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
 	    BLAST Search against Markers</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
+        <li><a href="/jbrowse/?data=<?php echo $species ?>" title="JBrowse">JBrowse</a>
         <?php
         if (file_exists($config['root_dir']."genotyping/marker_report_ref.php")) {
             ?><li><a href="<?php echo $config['base_url'];
