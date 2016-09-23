@@ -17,11 +17,16 @@ ob_end_flush();
 if (!empty($_GET[mapsetuid])) {
     $msuid = intval($_GET[mapsetuid]);
     $msname = mysql_grab("select mapset_name from mapset where mapset_uid = $msuid");
-    $sql = "delete from markers_in_maps where map_uid in (
-	    select map_uid from map m, mapset ms
-	    where m.mapset_uid = $msuid
-	    and m.mapset_uid = ms.mapset_uid)";
-    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $sql = "select map_uid from map m, mapset ms
+            where m.mapset_uid = $msuid
+            and m.mapset_uid = ms.mapset_uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) { 
+        $map_uid = $row[0];
+        $sql = "delete from markers_in_maps where map_uid = $map_uid";
+        mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        echo "finished map_uid = $map_uid\n";
+    }
     $sql = "delete from map where mapset_uid = $msuid";
     mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $sql = "delete from mapset where mapset_uid = $msuid";
