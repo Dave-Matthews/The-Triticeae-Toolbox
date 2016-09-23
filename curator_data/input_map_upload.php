@@ -3,9 +3,9 @@
 // 12/14/2010 JLee  Change to use curator bootstrap
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'theme/admin_header.php');
-connect();
+include $config['root_dir'] . 'includes/bootstrap_curator2.inc';
+include $config['root_dir'] . 'theme/admin_header2.php';
+$mysqli =  connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
 
@@ -13,27 +13,20 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-// Shortcut function for mysql_query().
-function mysqlq($command) {
-  mysql_query($command);
-  $errmsg = mysql_error();
-  if (!empty($errmsg)) {
-    echo $errmsg . "<br>Command was:<br>" . $command . "\n";
-    exit;
-  }
-}
-
 // If we're re-entering the script with a mapset to delete:
 if (!empty($_GET[mapsetuid])) {
-  $msuid = $_GET[mapsetuid];
-  $msname = mysql_grab("select mapset_name from mapset where mapset_uid = $msuid");
-  mysqlq("delete from markers_in_maps where map_uid in (
+    $msuid = intval($_GET[mapsetuid]);
+    $msname = mysql_grab("select mapset_name from mapset where mapset_uid = $msuid");
+    $sql = "delete from markers_in_maps where map_uid in (
 	    select map_uid from map m, mapset ms
 	    where m.mapset_uid = $msuid
-	    and m.mapset_uid = ms.mapset_uid)");
-  mysqlq("delete from map where mapset_uid = $msuid");
-  mysqlq("delete from mapset where mapset_uid = $msuid");
-  $deleted = $msname;
+	    and m.mapset_uid = ms.mapset_uid)";
+    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $sql = "delete from map where mapset_uid = $msuid";
+    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $sql = "delete from mapset where mapset_uid = $msuid";
+    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $deleted = $msname;
 }
 ?>
 
@@ -83,8 +76,8 @@ if (!empty($_GET[mapsetuid])) {
 	<option value=''>Choose from below...</option>
 <?php
   $sql = "select mapset_name as name, mapset_uid as uid from mapset order by mapset_name";
-  $r = mysql_query($sql) or die("<pre>" . mysql_error() . "<br>$sql");
-  while($row = mysql_fetch_assoc($r)) {
+  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+  while($row = mysqli_fetch_assoc($r)) {
     $name = $row['name'];
     $uid = $row['uid'];
     echo "<option value='$uid'>$name</option>\n";
@@ -107,6 +100,4 @@ if (!empty($_GET[mapsetuid])) {
 
 
 $footer_div = 1;
-include($config['root_dir'].'theme/footer.php');
-
-?>
+include $config['root_dir'].'theme/footer.php';
