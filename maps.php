@@ -445,11 +445,11 @@ private function type_Markers()
  <table style="table-layout:fixed; width: 530px">
 	<tr>
    <th style="width: 25px; "class="marker">&nbsp;&nbsp;Info</th>
-   <th style="width: 150px;" class="marker">Marker</th>
+   <th style="width: 175px;" class="marker">Marker</th>
    <th style="width: 50px;" class="marker">Chromo- some </th>
    <th style="width: 50px;" class="marker" >Start </th>
    <th style="width: 50px;" class="marker" >End </th>
-   <th style="width: 150px;" class="marker">Bin </th>
+   <th style="width: 175px;" class="marker">Bin </th>
    <th style="width: 30px;" class="marker">Arm</th>
    </tr>
  <!--/table> 
@@ -477,11 +477,11 @@ private function type_Markers()
 		    <input type="radio" name="btn1" value="<?php echo $row['marker_name'] ?>" onclick="javascript: update_markers_annotations(this.value)" /> 
 		    </td>
 		    <!-- Display Marker name, start position, chromosome, arm-->		
-		    <td style="width: 150px;" class="marker"><?php echo $row['marker_name'] ?> </td>
+		    <td style="width: 175px;" class="marker"><?php echo $row['marker_name'] ?> </td>
 		    <td style="width: 50px;" class="marker"> <?php echo $row['chromosome'] ?>   </td>
 		    <td style="width: 50px;" class="marker"> <?php echo $row['start_position'] ?> </td>
 		    <td style="width: 50px;" class="marker"> <?php echo $row['end_position'] ?> </td>
-		    <td style="width: 150px;" class="marker"> <?php echo $row['bin_name'] ?> </td>
+		    <td style="width: 175px;" class="marker"> <?php echo $row['bin_name'] ?> </td>
 		    <td style="width: 30px;" class="marker"> <?php echo $row['arm'] ?>	</td>
 		    </tr>
 		    <?php
