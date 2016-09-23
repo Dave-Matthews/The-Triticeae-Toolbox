@@ -144,25 +144,11 @@ if ($row = mysqli_fetch_array($res)) {
       /* Function to open annotation link in a new window */
       function link_for_value(link) {
           myWin = window.open(link, '');
-          // 		link_url = link;
-          // 		window.open(link_url,
-          // 'open_window',
-          // 'menubar, toolbar, location, directories, status, scrollbars, resizable, dependent, width=640, height=480, left=0, top=0');
-	  // link_url = link;
-	  // Just open a new tab instead.  In Mac Safari, this changes focus to that tab.
-	  // In Firefox it does not unless we leave the name (second argument) empty.
-	  // myWin = window.open(link, 'open_window');
-	  //myWin.focus(); // Does nothing.
       }
 	    
       /* Function for displaying extended comments in a pop up window */
       function display_comments(comvalue) {
 	  alert(comvalue);
-	  // This is ugly:
-	  // comment_str = comvalue;
-	  // my_window= window.open ("",  "mywindow1","status=1,width=800,height=300");
-	  // my_window.document.write(comment_str);
-	  // if (window.focus) {my_window.focus()}
       }
       
       /* Function for passing selected mapset name */
@@ -453,28 +439,23 @@ private function type_Markers()
         global $mysqli;
 	$maps_query = $_GET['mp']; 
 		
-		/* For debugging
-			$firephp = FirePHP::getInstance(true);
-			$firephp->log($maps_query,"maps_query");
-		*/
 ?>
 <h2>Map</h2>
  <div id="map_gbrowse"></div>
- <table style="table-layout:fixed; width: 510px">
+ <table style="table-layout:fixed; width: 530px">
 	<tr>
-   <th style="width: 25px;"class="marker">&nbsp;&nbsp;Info</th>
-	<th style="width: 125px;" class="marker">Marker</th>
-	<th style="width: 50px;" class="marker">Chromo- some </th>
-	<th style="width: 50px;" class="marker" >Start </th>
-	<th style="width: 50px;" class="marker" >End </th>
-	<th style="width: 100px; border-right: 0px" class="marker">Bin </th>
-	<!-- <th style="width: 130px;" class="marker">Arm </th> -->
-	<th style="width: 15px; padding: 0; border: 0px" class="marker"></th>
-	</tr>
-	</table> 
+   <th style="width: 25px; "class="marker">&nbsp;&nbsp;Info</th>
+   <th style="width: 125px;" class="marker">Marker</th>
+   <th style="width: 50px;" class="marker">Chromo- some </th>
+   <th style="width: 50px;" class="marker" >Start </th>
+   <th style="width: 50px;" class="marker" >End </th>
+   <th style="width: 100px;" class="marker">Bin </th>
+   <th style="width: 30px;" class="marker">Arm</th>
+   </tr>
+ <!--/table> 
 
 <div style="padding: 0; height: 300px; width: 507px;  overflow: scroll;border: 1px solid #5b53a6;">
-<table style="table-layout:fixed; ">	
+<table style="table-layout:fixed; "-->	
 	
 <?php
 
@@ -501,7 +482,7 @@ private function type_Markers()
 		    <td style="width: 50px;" class="marker"> <?php echo $row['start_position'] ?> </td>
 		    <td style="width: 50px;" class="marker"> <?php echo $row['end_position'] ?> </td>
 		    <td style="width: 100px;" class="marker"> <?php echo $row['bin_name'] ?> </td>
-		    <!-- <td style="width: 160px;" class="marker"> <?php echo $row['arm'] ?>	</td> -->
+		    <td style="width: 30px;" class="marker"> <?php echo $row['arm'] ?>	</td>
 		    </tr>
 		    <?php
 		}
