@@ -85,12 +85,12 @@ class Training
         <script type="text/javascript" src="analyze/training03.js"></script>
         <h2>Selection of an Optimized Training set for use in Genomic Prediction</h2>
         <div id="step1" style="float: left; margin-bottom: 1.5em; width: 100%">
-        Optimized training sets uses the genotypes of the individuals in the test set to improve the performance of prediction models.
-        These optimized training sets are calculated<br> via a genetic algorithm combined with a reliability measure of genomic estimated breeding values (GEBV) for any given test set.
-        The functions to perform these analyses<br>  are available in the ‘STPGA 2.0’ R package. The default values are npop = 100 and niterations = 1000.
+        This analysis is used prediction problems where per individual cost of observing / analyzing the response variable is high and therefore a small number of training examples is sought or when the candidate set from which the training set must be chosen (is not representative of the test data set). The optimized training sets are calculated via a genetic algorithm combined with a reliability measure of genomic estimated breeding values (GEBV) for any given test set.
+        The functions to perform these analyses are available in the <a href="https://CRAN.R-project.org/package=STPGA">STPGA 3.0 R package</a>. The default values are npop = 100 and niterations = 1000.
         Calculation of the training set can typically take anywhere from 5 minutes to 4 hours depending on the size of the dataset and the parameters selected.
         You will receive an email notification when your results are available. 
-        Deniz Akdemir, Julio Sanchez and Jean-Luc Jannink. Genetics Selection Evolution 2015 47:38 DOI: 10.1186/s12711-015-0116-6. <a target="_new" href="https://gsejournal.biomedcentral.com/articles/10.1186/s12711-015-0116-6">Optimization of genomic selection training populations with a genetic algorithm.</a><br>
+        Reference: Deniz Akdemir, Julio Sanchez and Jean-Luc Jannink. Genetics Selection Evolution201547:38 DOI: 10.1186/s12711-015-0116-6.
+        <a target="_new" href="https://gsejournal.biomedcentral.com/articles/10.1186/s12711-015-0116-6">Optimization of genomic selection training populations with a genetic algorithm.</a><br>
         Missing genotype data can cause inaccurate results, the default filter setting removes markers missing greater than 10% of data.
         If a Test set is used it should have common markers with the Candidate set.<br>
         </div>
