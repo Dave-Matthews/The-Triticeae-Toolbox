@@ -461,17 +461,11 @@ private function type_Markers()
 
 	/* Query for fetching marker name, start position, end position, chromosome and arm values based on user selected map name */
 		/* $sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position"; */
-		$sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.bin_name, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position";
+		$sql = "SELECT mkr.marker_name, mk.start_position, mk.end_position, mk.bin_name, mk.chromosome, mk.arm  FROM map m, markers_in_maps mk, markers mkr where map_name='".$maps_query."' and m.map_uid = mk.map_uid AND mk.marker_uid = mkr.marker_uid ORDER BY mk.start_position limit 1000";
 
-			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-			
-			?>
-		
-	
-			<?php
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		while ($row = mysqli_fetch_assoc($res)) {
-			?>
-	
+		?>
 		<tr>
 		    <td style="width: 25px;" class="marker">
 		    <input type="radio" name="btn1" value="<?php echo $row['marker_name'] ?>" onclick="javascript: update_markers_annotations(this.value)" /> 
