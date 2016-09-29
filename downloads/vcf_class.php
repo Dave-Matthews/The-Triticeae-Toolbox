@@ -284,6 +284,7 @@ function createVcfBeagle()
         $logfile2 = "$tmpdir/download_$unique_str/process_error2.txt";
         $logfile3 = "$tmpdir/download_$unique_str/process_error3.txt";
         $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
+        $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile3 out=$infile4 window=5000 overlap=500 > /dev/null 2> $logfile2";
         //echo "Creating a phased genotype\n";
         //exec($cmd);
 
@@ -349,6 +350,7 @@ function runBeagle($impute)
     $infile2 = "/var/www/html/t3/wheat/raw/genotype/" . $chr . "_WEC_var_phased.vcf.gz";
 
     $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
+    $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile3 out=$infile4 window=5000 overlap=500 > /dev/null 2> $logfile2";
     echo "<br>Creating a phased genotype.<br>$cmd\n";
     exec($cmd);
 
@@ -359,6 +361,7 @@ function runBeagle($impute)
 
     $infile6 .= ".vcf.gz";
     $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 window=5000 overlap = 500 > /dev/null 2> $logfile4";
+    $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 window=5000 overlap = 500 > /dev/null 2> $logfile4";
     echo "<br>Running beagle.r1399 to impute target<br>\n$cmd\n";
     exec($cmd);
     $outfile1 .= ".vcf.gz";
@@ -450,6 +453,7 @@ function runBeagleVerify($impute)
     $infile2 = "/var/www/html/t3/wheat/raw/genotype/" . $chr . "_WEC_var_phased.vcf.gz";
 
     $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
+    $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile3 out=$infile4 window=5000 overlap=500 > /dev/null 2> $logfile2";
     echo "<br>Creating a phased genotype.<br>$cmd\n";
     exec($cmd);
 
@@ -499,6 +503,7 @@ function runBeagleVerify($impute)
     fclose($fh);
 
     $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile6v ref=$infile2 out=$outfile1 nthreads=20 impute=false > /dev/null 2> $logfile4";
+    $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile6v ref=$infile2 out=$outfile1 nthreads=20 impute=false > /dev/null 2> $logfile4";
     echo "<br>Running beagle.r1399 to impute target<br>\n$cmd\n";
     exec($cmd);
     $outfile1 .= ".vcf.gz";
@@ -532,6 +537,7 @@ function runBeagleChrom()
         //exec($cmd);
 
         $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
+        $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
         echo "<br>Creating a phased genotype.<br>\n";
         exec($cmd);
 
@@ -543,6 +549,7 @@ function runBeagleChrom()
 
         $infile6 .= ".vcf.gz";
         $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile2 ref=$infile6 out=$outfile > /dev/null 2> $logfile4";
+        $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile2 ref=$infile6 out=$outfile > /dev/null 2> $logfile4";
         echo "<br>Imputing target data.<br>$cmd\n";
         exec($cmd);
 }
