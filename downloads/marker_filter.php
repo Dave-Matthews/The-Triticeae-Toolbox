@@ -10,7 +10,7 @@
  */
 
 /**
- * calculate allele frequencies using allele_frequencies table
+ * Calculate allele frequencies using allele_frequencies table
  *
  * @param array $lines         selected lines
  * @param float $min_maf       minimum marker allele frequence
@@ -92,7 +92,7 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
 }
 
     /**
-     * calculate allele frequence and missing data using selected lines
+     * Calculate allele frequence and missing data using selected lines
      *
      * @param array  $lines         selected lines
      * @param floats $min_maf       minimum marker allele frequency
@@ -225,6 +225,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
         }
         $lines_removed = 0;
         $lines_removed_name = "";
+        $lines_filtered = array();
         $num_line = 0;
         foreach ($lines as $line_record_uid) {
             $miss = 100*$line_misscnt[$line_record_uid]/$num_markers;
@@ -275,12 +276,12 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
 }
 
     /**
-     * calculate allele frequence and missing data using selected lines and allele_frequencies table
+     * Calculate allele frequence and missing data using selected experiment and allele_frequencies table
      *
-     * @param array  $lines         selected lines
-     * @param floats $min_maf       minimum marker allele frequency
-     * @param floats $max_missing   maximum missing markers
-     * @param floats $max_miss_line maximum missing lines
+     * @param integer $experiment_uid experiment uid
+     * @param floats  $min_maf        minimum marker allele frequency
+     * @param floats  $max_missing    maximum missing markers
+     * @param floats  $max_miss_line  maximum missing lines
      *
      * @return $markers_filtered, $lines_filtered
     */

@@ -2,12 +2,12 @@
 // 14feb13 dem Created, from store_traits.php.
 
 require 'config.php';
-include("../includes/bootstrap_curator.inc");
-include("../theme/admin_header.php");
+include "../includes/bootstrap_curator.inc";
+include "../theme/admin_header.php";
 /*
  * Logged in page initialization
  */
-connect();
+$mysqli = connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
 ob_start();
@@ -66,14 +66,14 @@ for ($i = 4; $i <= $data->sheets[0]['numRows']; $i++) {
     }
     // DO NOT create a new category.  Die if it doesn't already exist.
     $sql = "select phenotype_category_uid from phenotype_category where phenotype_category_name = '$line[3]'";
-    $res = mysql_query($sql) or die(mysql_error());
-    if(mysql_num_rows($res) == 0) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if(mysqli_num_rows($res) == 0) {
       echo "Category '$line[3]' in row $i doesn&apos;t exist yet.<br>";
       print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2);\">";
       exit;
     }
     else {
-      $r = mysql_fetch_row($res);
+      $r = mysqli_fetch_row($res);
       $cat_id = $r[0];
     }
     $pname = $line[1];
@@ -88,7 +88,7 @@ for ($i = 4; $i <= $data->sheets[0]['numRows']; $i++) {
       $drds++;
       $sql = "update properties set name = '$pname', phenotype_category_uid = $cat_id, description = '$desc' where properties_uid = $puid";
     }
-    mysql_query($sql) or die(mysql_error()."<br>Query was:<br>$sql");
+    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query was:<br>$sql");
     $puid = mysql_grab("select properties_uid from properties where name = '$pname'");
       
     //Now add the values to table property_values.
@@ -98,21 +98,21 @@ for ($i = 4; $i <= $data->sheets[0]['numRows']; $i++) {
     // Get the existing values of this property.
     $loadedvals = array();
     $sql = "select property_values_uid, value from property_values where property_uid = $puid";
-    $res = mysql_query($sql) or die (mysql_error()."<br>Query was:<br>$sql");
-    while ($r = mysql_fetch_row($res)) {
+    $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli)."<br>Query was:<br>$sql");
+    while ($r = mysqli_fetch_row($res)) {
       $valuid = $r[0];
       $loadedvals[] = $r[1];
       if (!in_array($r[1], $vals)) {
 	// The user no longer wants it.  Okay to delete?
 	// Check whether any line_properties have been loaded using the old values.
 	$sql = "select line_properties_uid from line_properties where property_value_uid = $valuid";
-	$res2 = mysql_query($sql) or die (mysql_error()."<br>Query was:<br>$sql");
-	$valused = mysql_num_rows($res2);
+	$res2 = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli)."<br>Query was:<br>$sql");
+	$valused = mysqli_num_rows($res2);
 	if ($valused > 0) 
 	  $warns .= "$pname = $r[1]: <b>$valused</b><br>";
 	else {
 	  $sql = "delete from property_values where property_values_uid = $r[0]";
-	  mysql_query($sql) or die (mysql_error()."<br>Query was:<br>$sql");
+	  mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli)."<br>Query was:<br>$sql");
 	}
       }
     }
@@ -120,7 +120,7 @@ for ($i = 4; $i <= $data->sheets[0]['numRows']; $i++) {
     $newvals = array_diff($vals, $loadedvals);
     foreach ($newvals as $nv) {
       $sql = "insert into property_values values (DEFAULT, $puid, '$nv')";
-      mysql_query($sql) or die (mysql_error()."<br>Query was:<br>$sql");
+      mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli)."<br>Query was:<br>$sql");
     }
     $inum++;
   }
@@ -140,4 +140,4 @@ if (!empty($warns))
 <input type="Button" value="Return" onClick="history.go(-2);">
 </div>
 
-<?php include("../theme/footer.php");?>
+<?php include "../theme/footer.php";?>

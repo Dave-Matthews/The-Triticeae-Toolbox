@@ -7,7 +7,6 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/admin_header.php';
-connect();
 ?>
 
 <style type="text/css">
@@ -29,8 +28,8 @@ connect();
     the <b>Curate</b> menu, which is available to registered Sandbox
     users.
     <li>To make updates or corrections, edit your file and reload.
-    <li>Please use the <a href="http://malt.pw.usda.gov/t3/sandbox/wheat">wheat</a> 
-      or <a href="http://malt.pw.usda.gov/t3/sandbox/barley">barley</a> Sandbox database
+    <li>Please use the <a href="http://t3sandbox.org/t3/sandbox/wheat">wheat</a> 
+      or <a href="http://t3sandbox.org/t3/sandbox/barley">barley</a> Sandbox database
       for test-loading your files.  When they&apos;re ready,
       click here to submit them to the T3 Curator for loading into the official database.
       <br><input type="Button" value="Submit" onclick="window.open('<?php echo $config['base_url']?>curator_data/queue.php','_self')">
@@ -41,13 +40,25 @@ connect();
     - Rules for filling in the templates, and sequence of submission
 <br>
     <b>Tutorials</b><br>
-    &bull; <a href="curator_data/tutorial/T3_Lesson1_LineUpload.html" target="_blank">Lesson One.</a> Germplasm file creation and upload<br>
-    &bull; <a href="curator_data/tutorial/T3_Lesson2_Phenotype2012.html" target="_blank">Lesson Two.</a>
-    (<a href="curator_data/tutorial/T3_Lesson2_Phenotype.pdf">.pdf</a>)
-    Phenotype trial descriptions and data<br>
-&bull; <a href="curator_data/tutorial/T3_Lesson3_GenotypeUpload.html" target="_blank">Lesson Three.</a> Genotype trial descriptions and data<br>
-&bull; <a href="curator_data/tutorial/T3_line_panels.pdf" target="_blank">Lesson Four.</a> How to create germplasm line panels in T3<br>
-
+    <?php
+    $files = scandir($config['root_dir'] . "curator_data/tutorial");
+    foreach ($files as $item) {
+        if (preg_match("/(^[^_]+)_([^\s]+)/", $item, $match)) {
+            $item_tag = $match[1];
+            $item_des = $match[2];
+        } else {
+            $item_tag = $item;
+            $item_des = $item;
+        }
+        if (preg_match("/pdf/", $item_des) || preg_match("/html/", $item_des)) {
+            $item_clean = preg_replace("/\.pdf/", "", $item_des);
+            $item_clean = preg_replace("/\.html/", "", $item_clean);
+            $item_clean = preg_replace("/_/", " ", $item_clean);
+            echo "<a href=\"" . "curator_data/tutorial/" . "$item\">$item_tag</a>  $item_clean<br>\n";
+        }
+    }
+    echo "<br>\n";
+    ?>
 
 <h3>Data Templates</h3>
 

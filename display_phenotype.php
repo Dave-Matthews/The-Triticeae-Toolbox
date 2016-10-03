@@ -112,31 +112,30 @@ if (($data_public_flag == 0) and
               .$row_pei['latitude']." / ".$row_pei['longitude'].")</td></tr>";
     echo "<tr> <td>Collaborator</td><td>".$row_pei['collaborator']."</td></tr>";
     echo "<tr> <td>Planting Date</td><td>".$row_pei['planting_date']."</td></tr>";
-        echo "<tr> <td>Harvest Date</td><td>".$row_pei['harvest_date']."</td></tr>";
-        echo "<tr> <td>Begin Weather Date</td><td>".$row_pei['begin_weather_date']."</td></tr>";
-        echo "<tr> <td>Greenhouse?</td><td>".$row_pei['greenhouse_trial']."</td></tr>";
-        echo "<tr> <td>Seeding Rate (plants/m<sup>2</sup>)</td><td>".$row_pei['seeding_rate']."</td></tr>";
-        echo "<tr> <td>Experiment Design</td><td>".$row_pei['experiment_design']."</td></tr>";
-        echo "<tr> <td>Plot Size (m<sup>2</sup>)</td><td>".$row_pei['plot_size']."</td></tr>";
-        echo "<tr> <td>Harvest Area (m<sup>2</sup>)</td><td>".$row_pei['harvest_area']."</td></tr>";
-        echo "<tr> <td>Irrigation</td><td>".$row_pei['irrigation']."</td></tr>";
-	echo "<tr> <td>Number of Entries</td><td>".$row_pei['number_entries']."</td></tr>";
-        echo "<tr> <td>Number of Replications</td><td>".$row_pei['number_replications']."</td></tr>";
-        echo "<tr> <td>Comments</td><td>".$row_pei['other_remarks']."</td></tr>";
-	echo "<tr> <td>Data Program</td><td>".$dataprogram."</td></tr>";
-        echo "</table><p>";
+    echo "<tr> <td>Harvest Date</td><td>".$row_pei['harvest_date']."</td></tr>";
+    echo "<tr> <td>Begin Weather Date</td><td>".$row_pei['begin_weather_date']."</td></tr>";
+    echo "<tr> <td>Greenhouse?</td><td>".$row_pei['greenhouse_trial']."</td></tr>";
+    echo "<tr> <td>Seeding Rate (plants/m<sup>2</sup>)</td><td>".$row_pei['seeding_rate']."</td></tr>";
+    echo "<tr> <td>Experiment Design</td><td>".$row_pei['experiment_design']."</td></tr>";
+    echo "<tr> <td>Plot Size (m<sup>2</sup>)</td><td>".$row_pei['plot_size']."</td></tr>";
+    echo "<tr> <td>Harvest Area (m<sup>2</sup>)</td><td>".$row_pei['harvest_area']."</td></tr>";
+    echo "<tr> <td>Irrigation</td><td>".$row_pei['irrigation']."</td></tr>";
+    echo "<tr> <td>Number of Entries</td><td>".$row_pei['number_entries']."</td></tr>";
+    echo "<tr> <td>Number of Replications</td><td>".$row_pei['number_replications']."</td></tr>";
+    echo "<tr> <td>Comments</td><td>".$row_pei['other_remarks']."</td></tr>";
+    echo "<tr> <td>Data Program</td><td>".$dataprogram."</td></tr>";
+    echo "</table><p>";
 
-        // get all line data for this experiment
-        $sql="SELECT tht_base_uid, line_record_uid, check_line FROM tht_base WHERE experiment_uid='$experiment_uid'";
-        $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    // get all line data for this experiment
+    $sql="SELECT tht_base_uid, line_record_uid, check_line FROM tht_base WHERE experiment_uid='$experiment_uid'";
+    $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         
-        while($row_thtbase=mysqli_fetch_array($result_thtbase))
-        {
-            $thtbase_uid[] = $row_thtbase['tht_base_uid'];
-            $linerecord_uid[] = $row_thtbase['line_record_uid'];
-            $check_line[] = $row_thtbase['check_line'];
-            //echo $row_thtbase['tht_base_uid']."  ".$row_thtbase['line_record_uid']."  ".$row_thtbase['check_line']."<br>";
-        }
+    while ($row_thtbase=mysqli_fetch_array($result_thtbase)) {
+         $thtbase_uid[] = $row_thtbase['tht_base_uid'];
+         $linerecord_uid[] = $row_thtbase['line_record_uid'];
+         $check_line[] = $row_thtbase['check_line'];
+         //echo $row_thtbase['tht_base_uid']."  ".$row_thtbase['line_record_uid']."  ".$row_thtbase['check_line']."<br>";
+    }
         $num_lines = count($linerecord_uid);
         //echo $num_lines."<br>";
         $titles=array('Line Name'); //stores the titles for the display table with units
@@ -166,6 +165,7 @@ if (($data_public_flag == 0) and
         $titles[]="Check"; //add the check column to the display table
         
         $all_rows=array(); //2D array that will hold the values in table format to be displayed
+        $sum_rows=array(); //summary statistics
         $all_rows_long=array(); // For the full unrounded values
         $single_row=array(); //1D array which will hold each row values in the table format to be displayed
         $single_row_long=array(); 
@@ -346,10 +346,10 @@ and bcr.line_record_uid = '$linerecorduid'";
         $ufmean= implode($delimiter, $unformat_mean_arr)."\n";
         $ufse= implode($delimiter, $unformat_se_arr)."\n";
         
-        $all_rows[]=$mean_arr;
-        $all_rows[]=$se_arr;
-        $all_rows[]=$nr_arr;
-        $all_rows[]=$prob_arr;
+        $sum_rows[]=$mean_arr;
+        $sum_rows[]=$se_arr;
+        $sum_rows[]=$nr_arr;
+        $sum_rows[]=$prob_arr;
         $all_rows_long[]=$mean_arr;
         $all_rows_long[]=$se_arr;
         $all_rows_long[]=$nr_arr;
@@ -426,6 +426,20 @@ function output_file_plot(puid) {
 			<?php
 			}/* end of for i loop */
 			?>
+</table>
+</div>
+<div style="padding: 0; width: <?php echo $tablewidth; ?>px; border: 1px solid #5b53a6; clear: both">
+<table>
+    <?php
+    for ($i = 0; $i < 4; $i++) {
+        echo "<tr>";
+        for ($j = 0; $j < count($single_row); $j++) {
+            echo "<td><div style=\"width: 75px; word-wrap: break-word\">";
+            echo $sum_rows[$i][$j];
+            echo "</div></td>";
+        }
+    }
+    ?>
 </table>
 </div>			
         

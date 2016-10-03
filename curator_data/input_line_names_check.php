@@ -1,7 +1,8 @@
 <?php
-// 4apr2016 dem: Handle template for any of our crops
-// aug2014 dem: Allow a different Breeding Program for each Line.
-// 21feb2013 dem: Use line_properties table instead of schema-coded properties.
+/** 4apr2016 dem: Handle template for any of our crops
+ * aug2014 dem: Allow a different Breeding Program for each Line.
+ * 21feb2013 dem: Use line_properties table instead of schema-coded properties.
+ */
 
 require 'config.php';
 include $config['root_dir'] . 'includes/bootstrap_curator.inc';
@@ -143,21 +144,24 @@ class LineNames_Check
                     $croplist = implode(", ", array_keys($TemplateVersions));
                     die("Cell B3: Crop must be one of <b>$croplist</b>.");
                 }
-	if ($linedata['cells'][2][2] != $TemplateVersions[$crop] )
-	  die ("Incorrect Submission Form version for $crop.  Cell B2 must say \"" .$TemplateVersions[$crop]. "\".");
+                if ($linedata['cells'][2][2] != $TemplateVersions[$crop]) {
+                    die("Incorrect Submission Form version for $crop.  Cell B2 must say \"" .$TemplateVersions[$crop]. "\".");
+                }
 
-	// Lookup all the Breeding Programs in the database.
-	$sql = mysqli_query($mysqli, "SELECT distinct data_program_code from CAPdata_programs") or errmsg($sql, mysqli_error($mysqli));
-	while ($row = mysqli_fetch_row($sql))
-	  $bpcodes[] = $row[0];
-	// Try to read the Breeding Program from row 4.
-	if (stripos($linedata['cells'][4][1],"*Breeding Program") !== FALSE) {
-	  // If it's there, all lines in this file are from one BP.
-	  $singleBP = TRUE;
-	  $bp = $linedata['cells'][4][2];
-	  if ((in_array($bp, $bpcodes) === FALSE) OR (strlen($bp) == 0) ) 
-	    die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br>");
-	}
+                // Lookup all the Breeding Programs in the database.
+                $sql = mysqli_query($mysqli, "SELECT distinct data_program_code from CAPdata_programs") or errmsg($sql, mysqli_error($mysqli));
+                while ($row = mysqli_fetch_row($sql)) {
+                    $bpcodes[] = $row[0];
+                }
+                // Try to read the Breeding Program from row 4.
+                if (stripos($linedata['cells'][4][1], "*Breeding Program") !== false) {
+                    // If it's there, all lines in this file are from one BP.
+                    $singleBP = ture;
+                    $bp = $linedata['cells'][4][2];
+                    if ((in_array($bp, $bpcodes) === false) or (strlen($bp) == 0)) {
+                        die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br>");
+                    }
+                }
 	// Initialize the column number for the first Property.  First column is 0.
 	// 23mar2015 Now Species is treated as a Genetic Character (Property). 
 	if ($singleBP)
@@ -486,7 +490,7 @@ class LineNames_Check
                         FROM line_records
                         WHERE line_record_uid IN ($line_updates)") 
 	    or errmsg($sql, mysqli_error($mysqli));
-	  while ($row = mysqli_fetch_array($line_sql, MYSQL_ASSOC)) {
+	  while ($row = mysqli_fetch_array($line_sql, MYSQLI_ASSOC)) {
 	    $line_update_names[] = $row["name"];
 	  }
 	  $line_update_data = $line_update_names;

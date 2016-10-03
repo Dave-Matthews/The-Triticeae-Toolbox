@@ -1461,7 +1461,7 @@ class Downloads
 		    }
                   } else {
                     $sql = "select line_record_name from line_records where line_record_uid = $line_record_uid";
-                    $res = mysqli_query($sql) or die(mysqli_error($mysqli));
+                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                     if ($row = mysqli_fetch_array($res)) {
                       $line_name = $row[0];
                       foreach ($marker_list as $marker_id) {
@@ -1499,7 +1499,7 @@ class Downloads
            $selected_map = $_SESSION['selected_map'];
          } else {
            $selected_map = "";
-           echo "<font color=red>Warning - no marker location will be given</font>";
+           //echo "<font color=red>Warning - no marker location will be given</font>";
          }
 	
 	 if (count($markers)>0) {

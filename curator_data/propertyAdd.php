@@ -3,13 +3,13 @@
 // 14feb2013 dem Add new property values.  Taken from ./traitAdd.php
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'] . 'theme/admin_header.php');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'] . 'theme/admin_header.php';
 
 /*
  * Logged in page initialization
  */
-connect();
+$mysqli = connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
 ob_start();
@@ -50,4 +50,4 @@ function filelink($path, $label) {
 </div>
 </div>
 
-<?php include($config['root_dir'] . '/theme/footer.php');?>
+<?php include $config['root_dir'] . '/theme/footer.php';?>

@@ -250,18 +250,18 @@ class Downloads
             $lines_str = "";
         }
         if (isset($_SESSION['filtered_markers'])) {
-		    $selectcount = $_SESSION['filtered_markers'];
-		    $markers = $_SESSION['filtered_markers'];
-		    $markers_str = implode(",", $markers);
+            $selectcount = $_SESSION['filtered_markers'];
+            $markers = $_SESSION['filtered_markers'];
+            $markers_str = implode(",", $markers);
         }
         if (isset($_SESSION['selected_traits'])) {
-		    $phenotype = $_SESSION['selected_traits'];
-                    $phenotype = implode(",", $phenotype);
-	} else {
-		    $phenotype = "";
-	}
+            $phenotype = $_SESSION['selected_traits'];
+            $phenotype = implode(",", $phenotype);
+        } else {
+            $phenotype = "";
+        }
 
-	//get genotype experiments
+        //get genotype experiments
         $typeG = $_GET['typeG'];
         $typeGE = $_GET['typeGE'];
         $max_missing = $_GET['mm'];
@@ -384,27 +384,27 @@ class Downloads
             if ($typeGE == "true") {
                 $output = type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
             } else {
-                $output = $this->type3BuildMarkersDownload($lines, $markers, $dtype,$h);
+                $output = $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
             }
             fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
-                $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-                $output = $this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp, $subset, $dtype);
+                $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+                $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype);
                 fwrite($h, $output);
                 fclose($h);
             }
             $filename = "snpfile.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
-        } elseif ($version == "V7") {  //Download for synbreed 
+        } elseif ($version == "V7") {  //Download for synbreed
             $dtype = "AB";
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
                 $filename = "traits.txt";
-                $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-                $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
+                $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+                $output = $this->type1_build_traits_download($experiments_t, $phenotype, $datasets_exp);
                 fwrite($h, $output);
                 fclose($h);
             }
@@ -1539,7 +1539,7 @@ class Downloads
 		    }
                   } else {
                     $sql = "select line_record_name from line_records where line_record_uid = $line_record_uid";
-                    $res = mysqli_query($sql) or die(mysqli_error($mysqli));
+                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                     if ($row = mysqli_fetch_array($res)) {
                       $line_name = $row[0];
                       foreach ($marker_list as $marker_id) {

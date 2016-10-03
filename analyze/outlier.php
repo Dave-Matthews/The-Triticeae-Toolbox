@@ -12,7 +12,7 @@
 namespace T3;
 
 require_once 'config.php';
-require $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'includes/bootstrap2.inc';
 require $config['root_dir'] . 'downloads/downloads_class2.php';
 
 $mysqli = connecti();
@@ -69,7 +69,7 @@ class Outlier
     private function type1Select()
     {
         global $config;
-        include $config['root_dir'].'theme/normal_header.php';
+        include $config['root_dir'].'theme/admin_header2.php';
         $phenotype = "";
         $lines = "";
         $markers = "";
@@ -119,7 +119,7 @@ class Outlier
            td {border: 1px solid #eee !important;}
            h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style>
-        <script type="text/javascript" src="analyze/outlier.js"></script>
+        <script type="text/javascript" src="analyze/outlier01.js"></script>
         <h2>Detect outliers for selected traits and trials</h2>
         <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
         Outlier detection in trial mean data is performed using a Bonferroni-Holm test to judge
@@ -180,6 +180,11 @@ class Outlier
     {
         unset($_SESSION['outliers']);
     }
+
+    /**
+     * save outliers in session variable then you will have the option of excluding these measurements during analysis and download
+     * not implimented yet
+     */
 
     private function saveOutlier()
     {
@@ -319,17 +324,6 @@ class Outlier
         if (isset($_SESSION['selected_trials'])) {
             $trial = $_SESSION['selected_trials'];
             $experiments_t = implode(",", $trial);
-            foreach ($trial as $uid) {
-                $sql = "select trial_code from experiments where experiment_uid = $uid";
-                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                if ($row = mysqli_fetch_array($res)) {
-                    $trial = $row[0];
-                }
-                if ($triallabel == "") {
-                    $triallabel = "triallabel <- list()\n";
-                }
-                $triallabel .= "triallabel[$uid] <- \"$trial\"\n";
-            }
         }
         if (isset($_SESSION['selected_lines'])) {
               $selectedlinescount = count($_SESSION['selected_lines']);
@@ -340,12 +334,6 @@ class Outlier
         if (isset($_SESSION['selected_traits'])) {
             $phenotype_ary = $_SESSION['selected_traits'];
             $phenotype = implode(",", $phenotype_ary);
-            foreach ($phenotype_ary as $val) {
-                $sql = "select phenotypes_name from phenotypes where phenotype_uid = $val";
-                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                $row = mysqli_fetch_array($res);
-                $phenolabel = $row[0];
-            }
         }
       
         $dir = '/tmp/tht/';
@@ -388,7 +376,7 @@ class Outlier
         
         if (file_exists("/tmp/tht/$filename2")) {
               //exec("cat /tmp/tht/$filename3 ../R/outlierMeanAnalysis2.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
-              exec("cat /tmp/tht/$filename3 ../R/OutlierMean5.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
+              exec("cat /tmp/tht/$filename3 ../R/OutlierDetectionSymetric.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
         } else {
               die("Error: no file for analysis<br>\n");
         }
