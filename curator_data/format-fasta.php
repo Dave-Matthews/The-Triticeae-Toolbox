@@ -50,7 +50,7 @@ while ($row = mysqli_fetch_array($res)) {
     if (preg_match($pattern, $name, $match)) {
         $name = $match[0];
     }
-    $pattern = "/[A-Za-z]/";
+    $pattern = "/[A-Za-z]/\[[A-Z]\/[A-Z]\][A-Za-z][";
     if (preg_match($pattern, $seq)) {
         $replace = "R";
         $pattern = "/\[A\/G\]/";
