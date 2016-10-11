@@ -82,7 +82,7 @@ class Training
            td {border: 1px solid #eee !important;}
            h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         </style-->
-        <script type="text/javascript" src="analyze/training03.js"></script>
+        <script type="text/javascript" src="analyze/training04.js"></script>
         <h2>Selection of an Optimized Training set for use in Genomic Prediction</h2>
         <div id="step1" style="float: left; margin-bottom: 1.5em; width: 100%">
         This analysis is used prediction problems where per individual cost of observing / analyzing the response variable is high and therefore a small number of training examples is sought or when the candidate set from which the training set must be chosen (is not representative of the test data set). The optimized training sets are calculated via a genetic algorithm combined with a reliability measure of genomic estimated breeding values (GEBV) for any given test set.
@@ -238,7 +238,6 @@ class Training
               <option value="AOPT"> AOPT
               </select>
             </table>
-            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
             </div>
             <?php
         } elseif (isset($_SESSION['selected_lines'])) {
@@ -298,9 +297,8 @@ class Training
             print "<form action=\"analyze/training.php\">";
             print "<input type=\"hidden\" value=\"saveC\" name=\"cmd\">";
             print "<br><input type='submit' value='Save Candidates' /> then continue to select prediction set<br><br>";
-            print "</form>";
             ?>
-            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+            </form>
             </div>
         <?php
         } else {
@@ -352,8 +350,8 @@ class Training
         }
         $dir = '/tmp/tht/';
         $filename3 = 'THTdownload_gensel.R';
-        $filename4 = "pca.png";
-        //$filename4 = "Rplots.pdf";
+        $filename4 = "iterat.png";
+        $filename4b = "pca.png";
         $filename5 = 'THT_process_error.txt';
         $filename6 = 'THT_R_error.txt';
         $filename7 = 'THT_result1.csv';
@@ -395,7 +393,8 @@ class Training
             $h = fopen("$dir/$filename3", "w");
             $cmd1 = "snpData <- read.table(\"$dir/$filename\", sep=\"\\t\", header=TRUE, stringsAsFactors=FALSE, na.strings='NA', row.names=1, check.names=FALSE)\n";
             $cmd2 = "setwd(\"$dir\")\n";
-            $png = "png(\"$dir/$filename4\", width=500, height=400)\n";
+            $png1 = "png(\"$dir/$filename4\", width=500, height=400)\n";
+            $png2 = "png(\"$dir/$filename4b\", width=500, height=400)\n";
             $cmd4 = "notoselect <- $notoselect\n";
             $cmd5 = "errorstat <- \"$errorstat\"\n";
             $cmd6 = "test <- data.frame(y=c($line_str))\n";
@@ -417,7 +416,8 @@ class Training
             $cmd14 = "source(\"$tmp\")\n";
             $tmp = $config['root_dir'] . "R/STPGA3/makeonecross.R";
             $cmd15 = "source(\"$tmp\")\n";
-            fwrite($h, $png);
+            fwrite($h, $png1);
+            fwrite($h, $png2);
             fwrite($h, $cmd1);
             fwrite($h, $cmd2);
             fwrite($h, $cmd4);
@@ -451,7 +451,6 @@ class Training
         } else {
             echo "<br><font color=\"red\">Error - no lines selected</font>\n";
         }
-
     }
 
     private function displayOut()
@@ -471,12 +470,13 @@ class Training
         }
         $filename = "$dir/OptimizedTrainingList.txt";
         if (file_exists("$filename")) {
-            $filename4 = "pca.png";
+            $filename4 = "iterat.png";
+            $filename4b = "pca.png";
             echo "<table><tr><td>";
             echo "<a href=\"$filename\" target=\"_new\">Download File</a><br>";
             $h = fopen("$filename", "r");
             echo "<table>";
-            echo "<tr><td><b>Optimized training set</b><br>\n";
+            echo "<tr><td><b>Optimized training set</b><td>Plots\n";
             while ($line=fgetcsv($h, 0, "\t")) {
                 echo "<tr>";
                 foreach ($line as $val) {
@@ -487,6 +487,10 @@ class Training
             fclose($h);
             if (file_exists("$dir/$filename4")) {
                 print "<td><img src=\"$dir/$filename4\" /><br>";
+            }
+            if (file_exists("$dir/$filename4b")) {
+                print "convergence of genetic algorithm<br>";
+                print "<img src=\"$dir/$filename4b\" /><br>";
             }
             echo "</table>";
         }
