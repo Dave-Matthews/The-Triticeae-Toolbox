@@ -92,7 +92,7 @@ whichColor[whichCand] <- "red"
 whichColor[whichBest] <- "blue"
 pca = prcomp(Kmat, scale=T)
 scores <- pca$x[,1:2]
-plot(scores, col = addTrans(whichColor,200), main = "PCA plot, Red = candidate, Blue = selected lines, Green = test")
+plot(scores, col = addTrans(whichColor,200), pch=16, main = "PCA plot, Red = candidate, Blue = selected lines, Green = test")
 dev.set(dev.next())
 
 ###Write text file of germplasm lines selected for inclusion in the optimized training set.  This training set can then be used with the existing Genomic Prediction toll on T3.
