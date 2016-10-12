@@ -630,7 +630,7 @@ class Downloads
     {
         global $mysqli;
         // get species
-        if (preg_match("/([A-Za-z]+)\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
+        if (preg_match("/([A-Za-z]+)\/[^\/]+\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
             $species = $match[1];
         } else {
             $species = "";
