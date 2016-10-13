@@ -12,7 +12,7 @@ jQuery(function () {
         modal: true,
         buttons: {
             "Don't agree": function () {
-                document.location.href = '../';
+                document.location.href = "../";
             },
             "Agree": function () {
                 document.cookie = "T3terms=usage_policy_approved; " + expires;
