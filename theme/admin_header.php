@@ -44,7 +44,7 @@ jQuery( document ).ready(function( $ ) {
 
 <?php
 // get species
-if (preg_match("/([A-Za-z]+)\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
+if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {
     $species = $match[1];
 } else {
     $species = "";
@@ -162,7 +162,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 	<li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
 	    BLAST Search against Markers</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
-        <li><a href="/jbrowse/?data=<?php echo $species ?>" title="JBrowse">Genome Browser</a>
+        <li><a href="/jbrowse/?data=<?php echo $species ?>" title="JBrowse">JBrowse - Genome Browser</a>
         <?php
         if (file_exists($config['root_dir']."genotyping/marker_report_ref.php")) {
             ?><li><a href="<?php echo $config['base_url'];
