@@ -25,7 +25,7 @@
  */
 $progPath = realpath(dirname(__FILE__).'/../').'/';
 
-require "$progPath" . "includes/bootstrap_curator.inc";
+require "$progPath" . "includes/bootstrap_curator2.inc";
 require_once "$progPath" . "includes/email.inc";
 
 ini_set("auto_detect_line_endings", true);
