@@ -231,7 +231,7 @@ if ($gDataFile == "") {
 
 if ($emailAddr == "") {
     echo "No email address. \n";
-    exit (1);
+    exit(1);
 }
 
 // Check for zip file
@@ -318,7 +318,7 @@ while (($line = fgets($reader)) !== false) {
             or exitFatal($errFile, "Database Error: Dataset experiment uid lookup - ".mysqli_error($mysqli));
         if ($row = mysqli_fetch_assoc($res)) {
             $de_uid=implode(",", $row);
-	} else {
+        } else {
             exitFatal($errFile, "not found - $sql");
         }
 
@@ -677,7 +677,8 @@ foreach ($uniqExpID as $key=>$expID)  {
     //$tstcnt = 0;
     $res = mysqli_query($mysqli, "SHOW COLUMNS FROM allele_frequencies");
     while ($row = mysqli_fetch_object($res)) {
-        if(ereg(('set|enum'), $row->Type)) {
+        $pattern = '/(set|enum)/';
+        if (preg_match($pattern, $row->Type)) {
             eval(preg_replace('set|enum', '$'.$row->Field.' = array', $row->Type).';');
         }
     }
@@ -746,9 +747,9 @@ foreach ($uniqExpID as $key=>$expID)  {
         $abfreq = round($abcnt / $total,3);
         $maf = round(100 * min((2 * $aacnt + $abcnt) /(2 * $total), ($abcnt + 2 * $bbcnt) / (2 * $total)),1);
         if (($aacnt == $total) or ($abcnt == $total) or ($bbcnt == $total)) {
-            $mono = $monomorphic[0];//is monomorphic
+            $mono = "Y";
         } else {
-            $mono = $monomorphic[1];
+            $mono = "N";
         }
 
        //echo $mono." Miss: ".$misscnt." AA ".$aacnt." BB ".$bbcnt." AB ".$abcnt." MAF ".$maf." total ".$total."\n";
