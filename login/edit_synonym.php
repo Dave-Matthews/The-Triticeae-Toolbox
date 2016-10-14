@@ -27,35 +27,35 @@ ob_end_flush();
 <?php
 // Has a Synonym update been submitted?
 if (!is_null($_GET['newsyn'])) {
-  $input = $_GET;
-  foreach ($input as $k=>$v) {
-    $input[$k] = addslashes($v);
-  }
-  array_pop($input); // Remove line name.
-  $line_uid = array_pop($input);
-  $newsyn = array_pop($input);
-  $changed = array("unchanged", "updated");
-  $flag = 0;
-  if (!empty($newsyn)) {
-    // Does the name already exist as either a synonym or a line name?
-    $lsid = mysql_grab("select line_record_uid from line_records where line_record_name = '$newsyn'");
-    if ($lsid)
-      echo "'$newsyn' already exists as a Line Name.<br>";
-    else {
-      // If not a primary name, check for synonym.
-      $lname = mysql_grab("select line_record_name from line_synonyms ls, line_records lr where line_synonym_name = '$newsyn' and ls.line_record_uid = lr.line_record_uid");
-      if ($lname)
-	echo "'$newsyn' is already a synonym for a different line, $lname.<br>";
-      else {
-	// No problems. Add a new value.
-	$sql = "insert into line_synonyms 
-           (line_record_uid, line_synonym_name, updated_on, created_on) 
-           values ($line_uid, '$newsyn', now(), now())";
-	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query: ".$sql);
-	$flag = 1;
-      }
+    $input = $_GET;
+    foreach ($input as $k => $v) {
+        $input[$k] = addslashes($v);
     }
-  }
+    array_pop($input); // Remove line name.
+    $line_uid = array_pop($input);
+    $newsyn = array_pop($input);
+    $changed = array("unchanged", "updated");
+    $flag = 0;
+    if (!empty($newsyn)) {
+        // Does the name already exist as either a synonym or a line name?
+        $lsid = mysql_grab("select line_record_uid from line_records where line_record_name = '$newsyn'");
+        if ($lsid) {
+             echo "'$newsyn' already exists as a Line Name.<br>";
+        } else {
+        // If not a primary name, check for synonym.
+            $lname = mysql_grab("select line_record_name from line_synonyms ls, line_records lr where line_synonym_name = '$newsyn' and ls.line_record_uid = lr.line_record_uid");
+            if ($lname) {
+                echo "'$newsyn' is already a synonym for a different line, $lname.<br>";
+            } else {
+                // No problems. Add a new value.
+                $sql = "insert into line_synonyms 
+                (line_record_uid, line_synonym_name, updated_on, created_on) 
+                values ($line_uid, '$newsyn', now(), now())";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query: ".$sql);
+                $flag = 1;
+            }
+        }
+    }
   foreach($input as $k=>$v) {
     if (empty($v)) {
       // Delete the record.
@@ -346,6 +346,7 @@ echo "</div>";
 			    "delete from line_synonyms where line_record_uid = $oline_uid",
 			    "delete from barley_pedigree_catalog_ref where line_record_uid = $oline_uid",
 			    "delete from line_properties where line_record_uid = $oline_uid",
+                            "delete from allele_byline where line_record_uid = $oline_uid",
                             "delete from allele_bymarker_idx where line_record_uid = $oline_uid",
 			    "delete from line_records where line_record_uid = $oline_uid");
 	  foreach ($commands as $sql) {

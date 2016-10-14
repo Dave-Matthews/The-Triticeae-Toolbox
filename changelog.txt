@@ -1,0 +1,34 @@
+Sept 16, 2016
+added "Weather Data" download
+
+Sept 1, 2016
+upgrade to Secureimage PHP Captcha
+
+Aug 31, 2016
+add select by experiment to step 1 of wizard
+
+Aug 15, 2016
+added "Optimized Training Set" analysis tool 
+
+July 29, 2016
+added "Filter Outlier" analysis tool
+
+July 13, 2016
+upgrade to Mail.php v1.3.0
+
+July 12, 2016
+updated PHPExcel to v1.8.1
+
+Jun 17, 2016
+added option to download genotype data in VCF format
+
+Mar 18, 2016
+change ontology link from gramene to planteome
+
+Feb 9, 2016
+add QTL Report page
+
+Sept 15, 1015
+use SmartMenu JQuery plugin v1.0.0-beta1
+
+

@@ -1,6 +1,6 @@
 <?php
 /**
- * page footer
+ * Page footer
  *
  * PHP version 5.3
  *
@@ -8,7 +8,6 @@
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/theme/footer.php
- *
  */
 
 if (isset($footer_div)) {
@@ -16,7 +15,7 @@ if (isset($footer_div)) {
     <?php
 }
 if (!isset($_COOKIE["T3terms"])) {
-    ?><link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    ?><link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src="theme/usage_popup.js"></script>
     <div id="dialog-confirm" title="Please Note: Website Data Usage Policy">
     <p><span style="float:left;"></span>

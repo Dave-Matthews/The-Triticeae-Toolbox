@@ -1,7 +1,7 @@
 <?php
 /**
  * create-allele-bymarker.php
- * create 2D table where rows contain marker names and columns contain lines 
+ * create 2D table where rows contain marker names and columns contain lines
  *
  * PHP version 5
  *
@@ -65,7 +65,7 @@ echo "$sql\n";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 $sql = "DROP TABLE IF EXISTS allele_bymarker_idx";
 echo "$sql\n";
-$res = mysql_query($mysqli, $sql) or die(mysqli_error($mysqli));
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 $sql = "RENAME TABLE temp_allele to allele_bymarker_idx";
 echo "$sql\n";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -81,7 +81,7 @@ $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 $empty = array_fill(0, $max_lines, '');
 $k = 0;
 echo "$max_markers markers\n";
-for ($j=0; $j<$max_markers; $j++) { 
+for ($j=0; $j<$max_markers; $j++) {
     $marker_uid = $marker_uid_list[$j];
     $marker_name = $marker_name_list[$j];
     $allele = $empty;
@@ -90,7 +90,7 @@ for ($j=0; $j<$max_markers; $j++) {
     $count = 0;
     $count_dup = 0;
     $dup = array();
-    $dup1 = 0;	//count of duplicate markers within a line
+    $dup1 = 0;    //count of duplicate markers within a line
     while ($row = mysqli_fetch_array($res)) {
         $line_record_uid = $row[0];
         $loc = $line_list[$line_record_uid];
@@ -107,16 +107,24 @@ for ($j=0; $j<$max_markers; $j++) {
         $count++;
     }
     if ($count > 0) {
-        if ($count_dup > 0) { 
+        if ($count_dup > 0) {
             /* echo "$j duplicates found $count_dup\n"; */
             foreach ($dup as $loc => $value) {
                 $duplicates = explode(',', $value);
                 $cntaa = $cntbb = $cntab = $cntba = 0;
                 foreach ($duplicates as $dup_allele) {
-                    if ($dup_allele == 'AA') $cntaa++;
-                    if ($dup_allele == 'BB') $cntbb++;
-                    if ($dup_allele == 'AB') $cntab++;
-                    if ($dup_allele == 'BA') $cntba++;
+                    if ($dup_allele == 'AA') {
+                        $cntaa++;
+                    }
+                    if ($dup_allele == 'BB') {
+                        $cntbb++;
+                    }
+                    if ($dup_allele == 'AB') {
+                        $cntab++;
+                    }
+                    if ($dup_allele == 'BA') {
+                        $cntba++;
+                    }
                 }
                 $max = 0;
                 if ($cntaa == $max) {

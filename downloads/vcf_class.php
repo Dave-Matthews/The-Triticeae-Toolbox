@@ -101,6 +101,13 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
     }
     if (isset($_SESSION['selected_map'])) {
         $selected_map = $_SESSION['selected_map'];
+        $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+        if ($row = mysqli_fetch_array($res)) {
+            $mapset_name = "mapset:$row[0]";
+        } else {
+            echo "Error: map not defined\n";
+        }
         $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome
           from markers, markers_in_maps as mim, map
           where mim.marker_uid = markers.marker_uid
@@ -114,6 +121,8 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
             $marker_list_mapped[$marker_uid] = $mappos;
             $marker_list_chr[$marker_uid] = $mapchr;
         }
+    } else {
+        $mapset_name = "NoMapSelected";
     }
 
     $filename1 = "genotype.vcf";
@@ -156,7 +165,8 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
     $outputheader .= implode("\t", $name);
 
     fwrite($fh1, "##fileformat=VCFv4.2\n");
-    fwrite($fh1, "##reference=triticeaetoolbox.org $trial_code\n");
+    fwrite($fh1, "##reference=triticeaetoolbox.org,GenotypeTrial:$trial_code\n");
+    fwrite($fh1, "##source=$mapset_name\n");
     fwrite($fh1, "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n");
     fwrite($fh1, "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t");
     fwrite($fh1, "$outputheader\n");
@@ -355,13 +365,13 @@ function runBeagle($impute)
     exec($cmd);
 
     $infile4 .= ".vcf.gz";
-    $cmd = "java -jar /usr/local/bin/conform-gt.r1174.jar gt=$infile4 ref=$infile2 chrom=$chr out=$infile6 > /dev/null 2> $logfile3";
+    $cmd = "java -jar /usr/local/bin/conform-gt.24May16.cee.jar gt=$infile4 ref=$infile2 chrom=$chr out=$infile6 > /dev/null 2> $logfile3";
     echo "<br>Running conform-gt $cmd\n";
     exec($cmd);
 
     $infile6 .= ".vcf.gz";
     $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 window=5000 overlap = 500 > /dev/null 2> $logfile4";
-    $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 window=5000 overlap = 500 > /dev/null 2> $logfile4";
+    $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 window=5000 overlap=500 > /dev/null 2> $logfile4";
     echo "<br>Running beagle.r1399 to impute target<br>\n$cmd\n";
     exec($cmd);
     $outfile1 .= ".vcf.gz";
@@ -458,7 +468,7 @@ function runBeagleVerify($impute)
     exec($cmd);
 
     $infile4 .= ".vcf.gz";
-    $cmd = "java -jar /usr/local/bin/conform-gt.r1174.jar gt=$infile4 ref=$infile2 chrom=$chr out=$infile6 > /dev/null 2> $logfile3";
+    $cmd = "java -jar /usr/local/bin/conform-gt.24May16.cee.jar gt=$infile4 ref=$infile2 chrom=$chr out=$infile6 > /dev/null 2> $logfile3";
     echo "<br>Running conform-gt $cmd\n";
     exec($cmd);
 
@@ -475,27 +485,27 @@ function runBeagleVerify($impute)
     $fh = gzopen($infile6v, "w");
     foreach ($lines as $line) {
         if (preg_match("/^#/", $line)) {
-            gzwrite($fh, $line);            
+            gzwrite($fh, $line);
         } else {
             $allele_ary = explode("\t", $line);
             $contig = $allele_ary[2];
             if ($count == $index) {
-              echo "found marker $index $contig\n";
-              $_SESSION['verifyContig'] = $contig;
-              $allele_ary2 = array();
-              foreach ($allele_ary as $i => $allele) {
+                echo "found marker $index $contig\n";
+                $_SESSION['verifyContig'] = $contig;
+                $allele_ary2 = array();
+                foreach ($allele_ary as $i => $allele) {
                     if ($i > 9) {
                         $allele_ary2[] = ".|.";
                     } else {
                         $allele_ary2[] = $allele;
                     }
-              }
-              $allele_str = implode("\t", $allele_ary2);
-              //gzwrite($fh, "$allele_ary[0]\t$allele_ary[1]\t$allele_ary[2]\t$allele_ary[3]\t$allele_ary[4]\t.\tPASS\t.\tGT\t$allele_str\n");
-              gzwrite($fh, "$allele_str\n");
+                }
+                $allele_str = implode("\t", $allele_ary2);
+                //gzwrite($fh, "$allele_ary[0]\t$allele_ary[1]\t$allele_ary[2]\t$allele_ary[3]\t$allele_ary[4]\t.\tPASS\t.\tGT\t$allele_str\n");
+                gzwrite($fh, "$allele_str\n");
             } else {
-              //echo "not found $count $index\n";
-              gzwrite($fh, $line);
+                //echo "not found $count $index\n";
+                gzwrite($fh, $line);
             }
             $count++;
         }
@@ -543,7 +553,7 @@ function runBeagleChrom()
 
         $infile2 .= ".vcf.gz";
         $infile4 .= ".vcf.gz";
-        $cmd = "java -jar /usr/local/bin/conform-gt.r1174.jar gt=$infile4 ref=$infile2 out=$infile6 > /dev/null 2> $logfile3";
+        $cmd = "java -jar /usr/local/bin/conform-gt.24May16.cee.jar gt=$infile4 ref=$infile2 out=$infile6 > /dev/null 2> $logfile3";
         echo "<br>Running conform-gt $cmd\n";
         exec($cmd);
 

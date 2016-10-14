@@ -986,9 +986,9 @@ class Downloads
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
              <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcf');">
-             <td><b>VCF</b> format
              <?php 
              if ($typeGE == "true") {
+                 echo "<td><b>VCF</b> format";
              } else {
              ?>
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">

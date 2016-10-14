@@ -16,45 +16,47 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-new Annotations_Check($_POST['function']);
+new AnnotationsCheck($_POST['function']);
 
-class Annotations_Check
+class AnnotationsCheck
 {
-  private $delimiter = "\t";
-  private $storageArr = array (array());
+    private $delimiter = "\t";
+    private $storageArr = array (array());
 
-  // Using the class's constructor to decide which action to perform
-  public function __construct($function = null)
- {
-    switch($function) 	{
-    case 'typeDatabase':
-      $this->type_Database(); /* update database */
-      break;
-    default:
-      $this->typeAnnotationCheck(); /* intial case*/
-      break;
-    }	
-  }
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch ($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
+            default:
+                $this->typeAnnotationCheck(); /* intial case*/
+                break;
+        }
+    }
 
-  private function typeAnnotationCheck()  {
-    global $config;
-    include($config['root_dir'] . 'theme/admin_header.php');
-    echo "<h2> Enter/Update Annotation Information: Validation</h2>"; 
-    $this->type_Annotation();
-    $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
-  }
-	
-  private function type_Annotation() {
-    ?>
-    <script type="text/javascript">
-      function update_database(filepath, filename, username, data_public_flag) 	{
+    private function typeAnnotationCheck()
+    {
+        global $config;
+        include $config['root_dir'] . 'theme/admin_header.php';
+        echo "<h2> Enter/Update Annotation Information: Validation</h2>";
+        $this->typeAnnotation();
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
+
+    private function typeAnnotation()
+    {
+        ?>
+        <script type="text/javascript">
+        function update_database(filepath, filename, username, data_public_flag) {
       var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&data_public_flag=' + data_public_flag;
       // Opens the url in the same window
       window.open(url, "_self");
     }
     </script>
-	
+
     <style type="text/css">
     th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
     table {background: none; border-collapse: collapse}
@@ -74,7 +76,7 @@ class Annotations_Check
     if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) 
       mkdir($tmp_dir, 0777);
     $target_path=$tmp_dir."/";
-    if($_SERVER['REQUEST_METHOD'] == "POST") 	
+    if($_SERVER['REQUEST_METHOD'] == "POST")
       $data_public_flag = $_POST['flag']; // 1:yes, 0:no
     if ($_FILES['file']['name'][0] == "") {
       error(1, "No File Uploaded");
@@ -245,7 +247,7 @@ class Annotations_Check
   private function type_Database() {
     global $config;
     global $mysqli;
-    include($config['root_dir'] . 'theme/admin_header.php');
+    include $config['root_dir'] . 'theme/admin_header.php';
     $datafile = $_POST['linedata'];
     $filename_old = $_POST['file_name'];
     $filename = $filename_old.rand();

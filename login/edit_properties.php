@@ -51,7 +51,7 @@ elseif (!empty($_POST['Delete'])) {
     $sql = "delete from property_values where property_uid = $id";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     // Delete the property.
-    $sql = "delete from phenotypes where phenotype_uid = $id";
+    $sql = "delete from properties where properties_uid = $id";
     $res = mysqli_query($mysqli, $sql);
     $err = mysqli_error($mysqli);
     if (!empty($err)) {
