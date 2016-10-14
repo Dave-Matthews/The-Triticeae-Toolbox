@@ -1,9 +1,9 @@
 <?php
 require 'config.php';
-require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'includes/bootstrap2.inc';
 $mysqli = connecti();
 
-require $config['root_dir'].'theme/admin_header.php';
+require $config['root_dir'].'theme/admin_header2.php';
 
 $sql = "select line_record_uid, line_record_name from line_records";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -18,8 +18,6 @@ echo ", and <a href=genotyping/allele_conflicts.php>All Allele Conflicts</a>.<br
 
 if (isset($_GET['uid'])) {
     $uid = $_GET['uid'];
-    echo "<h3>Allele Conflicts for $name_list[$uid] between experiments</h2>\n";
-    echo "Each entry has number of conflicts / comparisons (percent conflicts).<br>\n";
  
     //get list of trials
     $sql = "select distinct(e.trial_code), e.experiment_uid
@@ -39,6 +37,13 @@ if (isset($_GET['uid'])) {
         mysqli_stmt_close($stmt);
     }
 
+    if (isset($trial_list)) {
+        echo "<h3>Allele Conflicts for $name_list[$uid] between experiments</h2>\n";
+        echo "Each entry has number of conflicts / comparisons (percent conflicts).<br>\n";
+    } else {
+        echo "Invalid entry";
+        return;
+    }
     echo "<table>";
     echo "<tr><td>";
     foreach ($trial_list as $trial1 => $val1) {
