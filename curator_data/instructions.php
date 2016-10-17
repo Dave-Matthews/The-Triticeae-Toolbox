@@ -56,8 +56,6 @@ require $config['root_dir'].'theme/admin_header2.php';
             $item_clean = preg_replace("/\.pptx/", "", $item_clean);
             $item_clean = preg_replace("/_/", " ", $item_clean);
             echo "<a href=\"" . "curator_data/tutorial/" . "$item\">$item_tag</a>  $item_clean<br>\n";
-        } else {
-            echo "$item_des<br>\n";
         }
     }
     echo "<br>\n";
@@ -207,7 +205,8 @@ require $config['root_dir'].'theme/admin_header2.php';
 </div></div>
 
 <?php
-/** Date-stamp the template files, in red if they're new.
+/**
+ * Date-stamp the template files, in red if they're new.
  * $subdir is relative to curator_data/examples/.
  */
 function filelink($label, $filenm, $subdir)
@@ -223,7 +222,8 @@ function filelink($label, $filenm, $subdir)
     }
 }
 
-/** Variation of filelink(), for items in text instead of in the table.
+/**
+ * Variation of filelink(), for items in text instead of in the table.
  */
 function filelink2($label, $filenm, $subdir)
 {
