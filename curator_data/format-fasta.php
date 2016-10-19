@@ -50,8 +50,16 @@ while ($row = mysqli_fetch_array($res)) {
     if (preg_match($pattern, $name, $match)) {
         $name = $match[0];
     }
-    $pattern = "/[A-Za-z]\[[A-Z]\/[A-Z]\][A-Za-z]/";
-    if (preg_match($pattern, $seq)) {
+    $pattern = "/\[[A-Z]\/[A-Z]\]/";
+    if (!preg_match($pattern, $seq)) {
+        echo "skip, no SNP $seq\n";
+        continue;
+    }
+    $tmp = strlen($seq);
+    if ($tmp < 30) {
+        echo "skip, too short $seq\n";
+        continue;
+    }
         $replace = "R";
         $pattern = "/\[A\/G\]/";
         $seq = preg_replace($pattern, $replace, $seq);
@@ -93,9 +101,6 @@ while ($row = mysqli_fetch_array($res)) {
         fwrite($fh1, ">$name\n$seq\n");
         fwrite($fh2, "$name,$length,$marker_type\n");
         $count++;
-    } else {
-        //echo "skip $name $seq<br>\n";
-    }
 }
 
 echo "$count markers found<br>\n";

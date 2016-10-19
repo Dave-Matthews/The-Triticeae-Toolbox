@@ -985,17 +985,19 @@ class Downloads
              <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>used with <b>TASSEL</b> Version 3, 4, or 5 
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
              <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
-             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcf');">
              <?php 
              if ($typeGE == "true") {
-                 echo "<td><b>VCF</b> format";
+                 ?>
+                 <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcf');">
+                 <td><b>VCF</b> format
+                 <?php
              } else {
-             ?>
-             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
-             <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b>
-             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v7');">
-             <td>genotype coded as {AA, AB, BB}<br>used by <b>synbreed</b>
-             <?php
+                 ?>
+                 <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
+                 <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b>
+                 <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v7');">
+                 <td>genotype coded as {AA, AB, BB}<br>used by <b>synbreed</b>
+                 <?php
              }
              echo "</table>";
           ?><br><br>
