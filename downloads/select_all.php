@@ -78,6 +78,9 @@ class SelectPhenotypeExp
             case 'step1experiment':
                 $this->step1Experiment();
                 break;
+            case 'step2experiment':
+                $this->step2Experiment();
+                break;
             case 'step1lines':
                 $this->step1_lines();
                 break;
@@ -252,7 +255,7 @@ class SelectPhenotypeExp
 		  <option value="Locations">Locations</option>
 		  <option value="Phenotypes">Trait Category</option>
 		</select></p>
-		        <script type="text/javascript" src="downloads/downloads12.js"></script>
+		        <script type="text/javascript" src="downloads/downloads13.js"></script>
                 <?php 
                 $this->step1_breedprog();
                 ?>
@@ -1297,6 +1300,46 @@ class SelectPhenotypeExp
 	 </table>
 	 <?php
 	}
+
+        /**
+         * starting with experiment display years
+         */
+        private function step2Experiment() {
+         global $mysqli;
+         $experiments = $_GET['expt'];
+         ?>
+         <div id="step21">
+         <p>2.
+         <select>
+         <option>Year</option>
+         </select>
+         </p>
+         <table id="phenotypeSelTab" class="tableclass1">
+         <tr>
+         <th>Year</th>
+         </tr>
+         <tr><td>
+         <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript:update_years(this.options)">
+         <?php
+         $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et, phenotype_experiment_info AS p_e
+         WHERE e.experiment_uid = p_e.experiment_uid
+         AND e.experiment_type_uid = et.experiment_type_uid
+         AND et.experiment_type_name = 'phenotype'
+         AND e.experiment_set_uid IN ($experiments)
+         GROUP BY e.experiment_year DESC";
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+         while ($row = mysqli_fetch_assoc($res)) {
+           ?>
+           <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
+           <?php
+         }
+         ?>
+         </select>
+         </td>
+         </table>
+         </div>
+         <?php
+        }
 	
 	/**
 	 * starting with location display years
@@ -1747,6 +1790,7 @@ class SelectPhenotypeExp
                      FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
                      WHERE cp.CAPdata_programs_uid IN ($CAPdata_programs)
                      AND e.experiment_year IN ($years)
+                     AND e.CAPdata_programs_uid = cp.CAPdata_programs_uid
                      AND lr.breeding_program_code = data_program_code
                      AND tb.experiment_uid = e.experiment_uid
                      AND tb.line_record_uid = lr.line_record_uid";
@@ -1778,6 +1822,7 @@ class SelectPhenotypeExp
 				<option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
 <?php
 		}
+                echo "$sql\n";
 ?>
 			</optgroup>
 		</select>
@@ -1795,6 +1840,8 @@ class SelectPhenotypeExp
         global $mysqli;
         $exptuids = $_GET['expt'];
         $exptuid_ary = explode(",", $exptuids);
+        $years = $_GET['yrs'];
+        $years_ary = explode(",", $years);
         ?>
     <p>2.
     <select>
@@ -1804,26 +1851,29 @@ class SelectPhenotypeExp
     <table class="tableclass1">
         <tr><th>Trials</th></tr>
         <tr><td>
-                <select name="experiments" multiple="multiple"
-                  style="height: 12em" onchange="javascript: update_trials(this.options)">
+        <select name="experiments" multiple="multiple"
+        style="height: 12em" onchange="javascript: update_trials(this.options)">
         <?php
         foreach ($exptuid_ary as $exptuid) {
-            $sql = "SELECT experiment_uid as id, trial_code as name from experiments
-            where experiment_set_uid IN (?) order by experiment_year";
-            if ($stmt = mysqli_prepare($mysqli, $sql)) {
-                mysqli_stmt_bind_param($stmt, "i", $exptuid);
-                mysqli_stmt_execute($stmt);
-                mysqli_stmt_bind_result($stmt, $id, $name);
-                while (mysqli_stmt_fetch($stmt)) {
+            foreach ($years_ary as $year) {
+              $sql = "SELECT experiment_uid as id, trial_code as name from experiments
+              where experiment_set_uid = ? and experiment_year = ?";
+              if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                  mysqli_stmt_bind_param($stmt, "ii", $exptuid, $years);
+                  mysqli_stmt_execute($stmt);
+                  mysqli_stmt_bind_result($stmt, $id, $name);
+                  while (mysqli_stmt_fetch($stmt)) {
                     ?>
                     <option value="<?php echo $id ?>"><?php echo $name ?></options>
                     <?php
-                }
-                mysqli_stmt_close($stmt);
+                  }
+                  mysqli_stmt_close($stmt);
+              }
             }
         }
         echo "</select>";
         echo "</table>";
+        echo "</div>";
     }
 
     /**
