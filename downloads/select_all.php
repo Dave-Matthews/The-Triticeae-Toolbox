@@ -888,6 +888,7 @@ class SelectPhenotypeExp
                   data_program_name as name, data_program_code as code, cp.CAPdata_programs_uid as id
                   FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
                   WHERE program_type = 'breeding'
+                  AND e.CAPdata_programs_uid = cp.CAPdata_programs_uid
                   AND lr.breeding_program_code = data_program_code
                   AND tb.experiment_uid = e.experiment_uid
                   AND tb.line_record_uid = lr.line_record_uid
