@@ -68,6 +68,7 @@ from wheat and barley germplasm in the Triticeae CAP. <a href="about.php">More..
 	  data_program_name, data_program_code, cp.CAPdata_programs_uid as uid
 	  FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
 	  WHERE program_type = 'breeding'
+          AND e.CAPdata_programs_uid = cp.CAPdata_programs_uid
 	  AND lr.breeding_program_code = data_program_code
 	  AND tb.experiment_uid = e.experiment_uid
 	  AND tb.line_record_uid = lr.line_record_uid
