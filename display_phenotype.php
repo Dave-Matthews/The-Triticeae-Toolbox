@@ -3,9 +3,7 @@
  * Display phenotype information for experiment
  *
  * PHP version 5.3
- * Prototype version 1.5.0
  *
- * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/display_phenotype.php
  *
@@ -37,7 +35,7 @@
 
 session_start();
 require 'config.php';
-require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'includes/bootstrap2.inc';
 require $config['root_dir'].'theme/normal_header.php';
 $delimiter = "\t";
 $mysqli = connecti();
@@ -48,7 +46,6 @@ $display_name=ucwords($trial_code); //used to display a beautiful name as the pa
 echo "<h1>Trial ".$display_name."</h1>";
         
 // Restrict if private data.
-// $data_public_flag = mysql_grab("SELECT data_public_flag FROM experiments WHERE trial_code='$trial_code'");
 if ($stmt = mysqli_prepare($mysqli, "SELECT data_public_flag FROM experiments WHERE trial_code = ?")) {
     mysqli_stmt_bind_param($stmt, "s", $trial_code);
     mysqli_stmt_execute($stmt);
@@ -66,8 +63,8 @@ if (($data_public_flag == 0) and
     echo "Results of this trial are restricted to project participants.";
 } else {
     $sql="SELECT experiment_uid, experiment_set_uid, experiment_desc_name, experiment_year
-          FROM experiments WHERE trial_code='$trial_code'";
-    if ($stmt = mysqli_prepare($mysqli, "SELECT experiment_uid, experiment_set_uid, experiment_desc_name, experiment_year FROM experiments WHERE trial_code = ?")) {
+          FROM experiments WHERE trial_code = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $trial_code);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $experiment_uid, $set_uid, $exptname, $year);
@@ -136,13 +133,13 @@ if (($data_public_flag == 0) and
          $check_line[] = $row_thtbase['check_line'];
          //echo $row_thtbase['tht_base_uid']."  ".$row_thtbase['line_record_uid']."  ".$row_thtbase['check_line']."<br>";
     }
-        $num_lines = count($linerecord_uid);
-        //echo $num_lines."<br>";
-        $titles=array('Line Name'); //stores the titles for the display table with units
-	$titles[]="GRIN Accession";//add CAP Code column to titles
+    $num_lines = count($linerecord_uid);
+    //echo $num_lines."<br>";
+    $titles=array('Line Name'); //stores the titles for the display table with units
+    $titles[]="GRIN Accession";//add CAP Code column to titles
 
-	if (!empty($thtbase_uid)) {
-        $thtbasestring = implode(",",$thtbase_uid);
+    if (!empty($thtbase_uid)) {
+        $thtbasestring = implode(",", $thtbase_uid);
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
                 FROM phenotype_data as pd, phenotypes as p, units
                 WHERE p.phenotype_uid = pd.phenotype_uid
@@ -153,7 +150,7 @@ if (($data_public_flag == 0) and
         $num_phenotypes = mysqli_num_rows($result1);
 
         //echo "$num_phenotypes Rows\n";
-        while($row1=mysqli_fetch_array($result1))
+        while ($row1=mysqli_fetch_array($result1))
         {
             $phenotype_data_name[]=$row1['name'];
             $phenotype_uid[]=$row1['uid'];
