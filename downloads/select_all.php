@@ -145,7 +145,7 @@ class SelectPhenotypeExp
                 echo $this->refresh_title();
                 break;
             default:
-                $this->type1_select();
+                $this->type1Select();
                 break;
         }
     }
@@ -153,7 +153,7 @@ class SelectPhenotypeExp
     /**
      * load header and footer then check session to use existing data selection
      */
-    private function type1_select()
+    private function type1Select()
     {
         global $config;
         include($config['root_dir'].'theme/normal_header.php');
@@ -170,28 +170,28 @@ class SelectPhenotypeExp
      */
     private function type1()
     {
-		global $config;
-		unset($_SESSION['selected_lines']);
-		unset($_SESSION['phenotype']);
-                unset($_SESSION['selected_traits']);
-                unset($_SESSION['selected_trials']);
-		unset($_SESSION['clicked_buttons']);
-                unset($_SESSION['geno_exps']);
-		
-		?>
-		<p>1.
-		<select name="select1" onchange="javascript: update_select1(this.options)">
-		<option value="BreedingProgram">Breeding Program</option>
-                <option value="DataProgram">Data Program</option>
-                <option value="Experiment">Experiment</option>
-		<option value="Lines">Lines</option>
-		<option value="Locations">Locations</option>
-		<option value="Phenotypes">Trait Category</option>
-		</select></p>
-		<?php 
-		$this->step1_breedprog();
-		$footer_div = 1;
-	}
+        global $config;
+        unset($_SESSION['selected_lines']);
+        unset($_SESSION['phenotype']);
+        unset($_SESSION['selected_traits']);
+        unset($_SESSION['selected_trials']);
+        unset($_SESSION['clicked_buttons']);
+        unset($_SESSION['geno_exps']);
+
+        ?>
+        <p>1.
+        <select name="select1" onchange="javascript: update_select1(this.options)">
+        <option value="BreedingProgram">Breeding Program</option>
+        <option value="DataProgram">Data Program</option>
+        <option value="Experiment">Experiment</option>
+        <option value="Lines">Lines</option>
+        <option value="Locations">Locations</option>
+        <option value="Phenotypes">Trait Category</option>
+        </select></p>
+        <?php
+        $this->step1_breedprog();
+        $footer_div = 1;
+    }
 	
 	/**
 	 * Checks the session variable, if there is lines data saved then go directly to the lines menu
@@ -1860,7 +1860,7 @@ class SelectPhenotypeExp
               $sql = "SELECT experiment_uid as id, trial_code as name from experiments
               where experiment_set_uid = ? and experiment_year = ?";
               if ($stmt = mysqli_prepare($mysqli, $sql)) {
-                  mysqli_stmt_bind_param($stmt, "ii", $exptuid, $years);
+                  mysqli_stmt_bind_param($stmt, "ii", $exptuid, $year);
                   mysqli_stmt_execute($stmt);
                   mysqli_stmt_bind_result($stmt, $id, $name);
                   while (mysqli_stmt_fetch($stmt)) {
