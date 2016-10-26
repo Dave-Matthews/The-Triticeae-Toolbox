@@ -15,34 +15,36 @@ table td { padding: 2px; text-align: center; background-color:white}
 
 <h1>Summary of Trait values in selected Trials</h1>
 
-<?php 
+<?php
 $traits = $_SESSION['selected_traits'];
 $trials = $_SESSION['selected_trials'];
-if (!$traits OR !$trials) {
-  echo "Please select at least one <a href='$config[base_url]phenotype/phenotype_selection.php'>Trait and Trial</a>.<p>";
+if (!$traits or !$trials) {
+    echo "Please select at least one <a href='$config[base_url]phenotype/phenotype_selection.php'>Trait and Trial</a>.<p>";
 } else {
-  // Retrieve the data into array $vals.
-  foreach ($traits as $trait) {
-    foreach ($trials as $trial) {
-      $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
-      $sql = "select lr.line_record_name, pd.value
+    // Retrieve the data into array $vals.
+    foreach ($traits as $trait) {
+        foreach ($trials as $trial) {
+            $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
+            $sql = "select lr.line_record_name, pd.value
 	      from line_records lr, tht_base t, phenotype_data pd
 	      where t.experiment_uid = $trial
 	      and pd.phenotype_uid = $trait
               and lr.line_record_uid = t.line_record_uid
 	      and t.tht_base_uid = pd.tht_base_uid";
-      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-      while ($row = mysqli_fetch_array($res)) {
-	$linename = $row[0]; 
-	$lines[] = $linename;
-	$val = $row[1];
-	// Calculate max and min.
-	if ($max[$trait][$trial] < $val OR !$max[$trait][$trial])
-	  $max[$trait][$trial] = $val;
-	if ($min[$trait][$trial] > $val OR !$min[$trait][$trial])
-	  $min[$trait][$trial] = $val;
-	$vals[$trait][$trial][$linename] = $val;
-      }
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_array($res)) {
+                $linename = $row[0];
+                $lines[] = $linename;
+                $val = $row[1];
+                // Calculate max and min.
+                if ($max[$trait][$trial] < $val or !$max[$trait][$trial]) {
+                    $max[$trait][$trial] = $val;
+                }
+                if ($min[$trait][$trial] > $val or !$min[$trait][$trial]) {
+	            $min[$trait][$trial] = $val;
+                }
+	        $vals[$trait][$trial][$linename] = $val;
+            }
     }
     if (empty($lines)) {
       $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
@@ -73,6 +75,7 @@ if (!$traits OR !$trials) {
 
   // Write $vals to a temporary file for R to calculate LSDs.
   // output row = Traitname, Trialname, Linename, Value
+  // use uid to make it easier to match results with input
   foreach ($traits as $trait) {
     $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
     foreach ($trials as $trial) {
@@ -81,7 +84,7 @@ if (!$traits OR !$trials) {
 	$val = $vals[$trait][$trial][$line];
 	if (!$val) 
 	  $val = "NA";
-	$outdata .= $trtname .",". $trlname .",". $line .",". $val ."\n";
+	$outdata .= $trait .",". $trial .",". $line .",". $val ."\n";
       }
     }
   }
@@ -94,10 +97,10 @@ if (!$traits OR !$trials) {
   // Run TableReportParameters.R to calculate LSD.
   // On tcap, the imbedded '\n' doesn't work.  Use chr(10) instead.
   /* $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, stringsAsFactors=FALSE)\noutFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")\n'; */
-  $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, stringsAsFactors=FALSE)'.chr(10).'outFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")'.chr(10);
+  $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, colClasses=c("factor", "factor", "character", "numeric"))'.chr(10).'outFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")'.chr(10);
   // for debugging:
   /* echo "<pre>"; system("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla 2>&1"); */
-  exec("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla > /dev/null 2> /tmp/tht/stderr.txt$time");
+  exec("echo '$setupR' | cat - ../R/TableReportParameters2.R | R --vanilla > /dev/null 2> /tmp/tht/stderr.txt$time");
   // Show resulting file.
   if (file_exists("/tmp/tht/TableReportOut.txt".$time)) {
       $r = fopen("/tmp/tht/TableReportOut.txt".$time,"r");
@@ -121,21 +124,20 @@ if (!$traits OR !$trials) {
       preg_match('/(^[^\t]*\t)/', $line, $sublines);
       $firstword = rtrim($sublines[1]);
       $linepieces = explode("\t", rtrim($line));
-      if ($firstword == 'lsmeans')
+      if ($firstword == 'lsmeans') {
 	$lsmeansline = $line;
-      elseif ($firstword == 'leastSigDiff') {
+      } elseif ($firstword == 'leastSigDiff') {
 	$lsds = $linepieces;
 	array_shift($lsds);
-      }
-      elseif ($firstword == 'tukeysHSD') {
+      } elseif ($firstword == 'tukeysHSD') {
 	$hsds = $linepieces;
 	array_shift($hsds);
-      }
-      elseif ($firstword == 'trialMeans') {
-	$trialmeanslists = $linepieces;
-	array_shift($trialmeanslists);
-      }
-      else {
+      } elseif ($firstword == 'trialNames') {
+        $trialnameslists = $linepieces[1];
+      } elseif ($firstword == 'trialMeans') {
+	$trialmeanslists = $linepieces[1];
+	//array_shift($trialmeanslists);
+      } else {
 	// It must be a continuation line of the lsmeans.
 	$lsmeansline .= $line;
       }
@@ -147,9 +149,8 @@ if (!$traits OR !$trials) {
       // Result is formatted like "c(12.65, 11.915, ...)".
       $lsmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $lsmeanslists[$i]));
     }
-    for ($i=0; $i < $rtraitcount; $i++) {
-      $trialmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialmeanslists[$i]));
-    }
+    $trialnames = explode(", ", preg_replace("/^c\(|\)$/", "", $trialnameslists));
+    $trialmeans = explode(", ", preg_replace("/^c\(|\)$/", "", $trialmeanslists));
   }
   fclose($r);
   } else {
@@ -160,16 +161,18 @@ if (!$traits OR !$trials) {
   $traitnumber = 0;
   foreach ($traits as $trait) {
     $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-    if (!$lsds[$traitnumber])
+    if (!$lsds[$traitnumber]) {
       $lsdround = "--";
-    else
+    } else {
       $lsdround = round($lsds[$traitnumber], 2);
-    if (!$hsds[$traitnumber])
+    }
+    if (!$hsds[$traitnumber]) {
       $hsdround = "--";
-    else
+    } else {
       $hsdround = round($hsds[$traitnumber], 2);
+    }
     print "<table><tr><th>Trait: $trtname<br>LSD = $lsdround<br>HSD = $hsdround";
-    foreach ($trials as $trial) {
+    foreach ($trialnames as $trial) {
       $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
       print "<th><a href='display_phenotype.php?trial_code=$trialname'>$trialname</a>";
     }
@@ -177,7 +180,8 @@ if (!$traits OR !$trials) {
     $linenumber = 0;
     foreach ($lines as $line) {
       print "<tr><td>$line";
-      foreach ($trials as $trial) {
+      foreach ($trialnames as $trial) {
+        $trial = preg_replace("/\"/", "", $trial);
 	$mn = $min[$trait][$trial];
 	$mx = $max[$trait][$trial];
 	// Omit missing values.  round() seems to return "0" for empty values.
@@ -199,14 +203,15 @@ if (!$traits OR !$trials) {
       $linenumber++;
     }
     print "<tr><td><font color=brown><b>Trial means</b></font>";
-    $trialcount = count($trials);
-    for ($i=0; $i < $trialcount; $i++) {
-      if (!$trialmeans[$traitnumber][$i])
-	$tm = "--";
-      else
-	$tm = round($trialmeans[$traitnumber][$i], 1);
+    foreach ($trialmeans as $mean) {
+      if (!$mean) {
+        $tm = "--";
+      } else {
+        $tm = round($mean, 1);
+      }
       print "<td>$tm";
     }
+    $trialcount = count($trials);
     print "</table><p>";
     $traitnumber++;
   }
@@ -249,4 +254,4 @@ Significant Difference (<em>HSD</em>) in 5% of experiments.<p>
 
 <?php
 $footer_div=1;
-require $config['root_dir'].'theme/footer.php'; 
+require $config['root_dir'].'theme/footer.php';
