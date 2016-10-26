@@ -15,6 +15,22 @@ table td { padding: 2px; text-align: center; background-color:white}
 
 <h1>Summary of Trait values in selected Trials</h1>
 
+<div class='section' style='font-size:100%'>
+<b>Legend</b><br>
+The least squares mean (<em>LSmean</em>) of a line is the best estimate of that
+line's mean based on a linear model.  If a dataset has missing data, the
+LSmean adjusts for the expected value of the missing data based on the
+model, so that the LSmean is less sensitive to missingness than the
+arithmetic mean.<br><br>
+If two lines have the same true mean value, their estimated mean values are
+only expected to differ by more than the Least Significant Difference (<em>LSD</em>)
+in 5% of experiments.<br><br>
+If a number of lines have the same true mean value, the maximum difference
+between any pair of lines is only expected to exceed the Honestly
+Significant Difference (<em>HSD</em>) in 5% of experiments.<br><br>
+
+</div>
+
 <?php
 $traits = $_SESSION['selected_traits'];
 $trials = $_SESSION['selected_trials'];
@@ -41,34 +57,34 @@ if (!$traits or !$trials) {
                     $max[$trait][$trial] = $val;
                 }
                 if ($min[$trait][$trial] > $val or !$min[$trait][$trial]) {
-	            $min[$trait][$trial] = $val;
+                    $min[$trait][$trial] = $val;
                 }
-	        $vals[$trait][$trial][$linename] = $val;
+                $vals[$trait][$trial][$linename] = $val;
             }
+        }
+        if (empty($lines)) {
+            $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
+            echo "Warning: no lines found for trait = $trtname\n";
+        } else {
+            $lines = array_unique($lines);
+            sort($lines);
+        }
     }
-    if (empty($lines)) {
-      $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-      echo "Warning: no lines found for trait = $trtname\n";
-    } else {
-      $lines = array_unique($lines);
-      sort($lines);
-    }
-  }
 
-  // Optionally remove Lines that have any missing values for a Trait/Trial.
-  foreach ($traits as $trait) {
-    foreach ($trials as $trial) {
-      foreach ($lines as $line) {
-	if (!$vals[$trait][$trial][$line]) {
-	  $sparselines[] = $line;
-	  $missingdata = TRUE;
-	}
-      }
-      if (!empty($sparselines)) {
-	$sparselines = array_unique($sparselines);
-	sort($sparselines);
-      }
-    }
+    // Optionally remove Lines that have any missing values for a Trait/Trial.
+    foreach ($traits as $trait) {
+        foreach ($trials as $trial) {
+            foreach ($lines as $line) {
+                if (!$vals[$trait][$trial][$line]) {
+                    $sparselines[] = $line;
+                    $missingdata = true;
+                }
+            }
+            if (!empty($sparselines)) {
+                $sparselines = array_unique($sparselines);
+                sort($sparselines);
+            }
+        }
   }
   if ($_GET['balance'] == 'yes') 
     $lines = array_diff($lines, $sparselines);
@@ -100,7 +116,7 @@ if (!$traits or !$trials) {
   $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, colClasses=c("factor", "factor", "character", "numeric"))'.chr(10).'outFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")'.chr(10);
   // for debugging:
   /* echo "<pre>"; system("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla 2>&1"); */
-  exec("echo '$setupR' | cat - ../R/TableReportParameters2.R | R --vanilla > /dev/null 2> /tmp/tht/stderr.txt$time");
+  exec("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla > /dev/null 2> /tmp/tht/stderr.txt$time");
   // Show resulting file.
   if (file_exists("/tmp/tht/TableReportOut.txt".$time)) {
       $r = fopen("/tmp/tht/TableReportOut.txt".$time,"r");
@@ -234,23 +250,6 @@ if ($missingdata) {
 	    window.location = "<?php echo $_SERVER['PHP_SELF'] ?>" + "?balance=no";
     }
 </script>
-
-<hr>
-<div class='section' style='font-size:100%'>
-<b>Legend</b><p> 
-The least squares mean (<em>LSmean</em>) of a line is the best estimate of that
-line's mean based on a linear model.  If a dataset has missing data, the
-LSmean adjusts for the expected value of the missing data based on the
-model, so that the LSmean is less sensitive to missingness than the
-arithmetic mean.<p>
-If two lines have the same true mean value, their estimated mean values are
-only expected to differ by more than the Least Significant Difference (<em>LSD</em>)
-in 5% of experiments.<p>
-If a number of lines have the same true mean value, the maximum difference
-between any pair of lines is only expected to exceed the Honestly
-Significant Difference (<em>HSD</em>) in 5% of experiments.<p>
-
-</div>
 
 <?php
 $footer_div=1;
