@@ -20,7 +20,7 @@ require_once $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
 
 $mapsetStr = "";
-$sql = "select mapset_name from mapset";
+$sql = "select mapset_name from mapset where data_public_flag = 1";
 $sql_r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
 while ($row = mysqli_fetch_assoc($sql_r)) {
@@ -305,7 +305,7 @@ if ($row = mysqli_fetch_array($res)) {
       </script>		
 	
             <?php
-            $sql = "SELECT count(*) from mapset";
+            $sql = "SELECT count(*) from mapset where data_public_flag = 1";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $row = mysqli_fetch_array($res);
             $height = $row[0] + 1 + 0.3*$row[0];
@@ -326,7 +326,7 @@ if ($row = mysqli_fetch_array($res)) {
 	<?php
 
     // Select Mapset Name for the drop down menu
-    $sql = "SELECT mapset_name FROM mapset ORDER BY mapset_name DESC";
+    $sql = "SELECT mapset_name FROM mapset where data_public_flag = 1 ORDER BY mapset_name DESC";
 
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_assoc($res)) {
@@ -340,7 +340,7 @@ if ($row = mysqli_fetch_array($res)) {
     <select disabled name="MapType" size="10" style="height: <?php echo $height ?>em;" >
     <?php
 
-    $sql = "SELECT map_type FROM mapset ORDER BY mapset_name DESC";
+    $sql = "SELECT map_type FROM mapset WHERE data_public_flag = 1 ORDER BY mapset_name DESC";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_assoc($res)) {
         ?><option value="<?php echo $row['map_type'] ?>"><?php echo $row['map_type'] ?></option>
@@ -352,7 +352,7 @@ if ($row = mysqli_fetch_array($res)) {
     <td>
     <select disabled name="MapUnit" size="10" style="height: <?php echo $height ?>em;width: 6em" >
     <?php
-    $sql = "SELECT map_unit FROM mapset ORDER BY mapset_name DESC";
+    $sql = "SELECT map_unit FROM mapset WHERE data_public_flag = 1 ORDER BY mapset_name DESC";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_assoc($res)) {
         ?><option value="<?php echo $row['map_unit'] ?>"><?php echo $row['map_unit'] ?></option>
@@ -368,7 +368,7 @@ if ($row = mysqli_fetch_array($res)) {
 	<select name="comments" size="10" style="height: <?php echo $height ?>em;width: 28em" onchange="javascript: display_comments(this.value)">
 	<?php
 
-    $sql = "SELECT comments FROM mapset ORDER BY mapset_name DESC";
+    $sql = "SELECT comments FROM mapset where data_public_flag = 1 ORDER BY mapset_name DESC";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_assoc($res)) {
         $comments = htmlentities($row['comments']);
