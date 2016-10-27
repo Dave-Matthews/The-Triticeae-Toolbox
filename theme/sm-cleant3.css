@@ -657,6 +657,10 @@ html>body #logo
 
 .descript {margin-top:8px}
 
+.no-close .ui-dialog-titlebar-close {
+    display: none;
+}
+
 table
 {
     background: url('images/tblbg.png') repeat-x;
