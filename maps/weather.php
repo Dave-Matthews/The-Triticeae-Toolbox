@@ -29,7 +29,7 @@ class Weather
         This tool will retrieve weather data using the Weather Underground R API. Select a location by clicking on the map, select a date range, and then select the "Retrieve Weather" button. The results for the nearest weather station will be displayed. Use the Next/Previous button to select the next closest station. If you receive no data or an R script error then use the Next button to select another station. A Station Type of "pws" is a "personal weather station".<br><br>
         <div id="map" style="height:400px; width:600px"></div>
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-        <script src="maps/weather.js"></script>
+        <script src="maps/weather01.js"></script>
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnJxEsuDGtgqXG27wkA5z7nXxkJCjJwVQ&callback=initMap" async defer></script>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
         <script>
@@ -39,7 +39,8 @@ class Weather
         } );
         </script><br>
     Start Date: <input type="text" name="start" id="date1"><br>
-    Stop Date: <input type="text" name="stop" id="date2"><br><br>
+    Stop Date: <input type="text" name="stop" id="date2"><br>
+    Use only airport stations (more complete data): <input type="checkbox" name="airport" id="type"><br><br>
         <button type="button" onclick="getWeather()">Retrieve Weather</button>
         <div id="step2"></div>
         </div>
@@ -56,6 +57,7 @@ class Weather
         $date1 = $_GET['date1'];
         $date2 = $_GET['date2'];
         $cnt = $_GET['cnt'];
+        $type = $_GET['type'];
         $dir = "/tmp/tht/download_" . $unique_str;
         mkdir("$dir");
         $filename1 = "commands.R";
@@ -71,14 +73,16 @@ class Weather
         $cmd4 = "Srtdate <- as.Date(\"$date1\", format = \"%m/%d/%Y\")\n";
         $cmd5 = "Enddate <- as.Date(\"$date2\", format = \"%m/%d/%Y\")\n";
         $cmd6 = "c <- $cnt\n";
+        $cmd7 = "type <- \"$type\"\n";
         fwrite($h, $cmd1);
         fwrite($h, $cmd2);
         fwrite($h, $cmd3);
         fwrite($h, $cmd4);
         fwrite($h, $cmd5);
         fwrite($h, $cmd6);
+        fwrite($h, $cmd7);
         fclose($h);
-        exec("cat $dir/$filename1 ../R/WeatherTool.R | R --vanilla > /dev/null 2> $dir/$filename2\n");
+        exec("cat $dir/$filename1 ../R/WeatherTool2.R | R --vanilla > /dev/null 2> $dir/$filename2\n");
         ?>
         <br>
         <button type="button" onclick="getPrev()">Prev Station</button>
