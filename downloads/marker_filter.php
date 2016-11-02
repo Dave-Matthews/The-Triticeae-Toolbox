@@ -510,7 +510,7 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
     } else {
         $sql = "select marker_uid, marker_name, chrom, pos, alleles from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp order by BINARY chrom, pos";
     }
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+    $res = mysqli_query($mysqli, $sql, MYSQLI_USE_RESULT) or die(mysqli_error($mysqli) . "<br>" . $sql);
     while ($row = mysqli_fetch_array($res)) {
         $marker_id = $row[0];
         $marker_name = $row[1];
@@ -537,6 +537,7 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
             fwrite($h, "\t$alleles\n");
         }
     }
+    mysqli_free_result($res);
 }
 
 function typeVcfMarkersDownload($lines, $chr, $min_maf, $max_missing, $h)
