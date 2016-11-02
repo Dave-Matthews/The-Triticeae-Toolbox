@@ -65,8 +65,8 @@ require $config['root_dir'].'theme/normal_header.php';
       curation</td></tr>
   <tr><td class="strong">Peter Bradbury</td><td>USDA-ARS, NAA, RWHCAH,
       Ithaca, NY</td><td>Pedigree information and links
-      to <a href="http://www.maizegenetics.net/index.php?page=bioinformatics/tassel/index.html"
-	    title="">TASSEL</a></td></tr>
+      to <a href="http://www.maizegenetics.net/tassel"
+    title="">TASSEL</a></td></tr>
   <tr><td class="strong">Mike Bonman</td><td>USDA-ARS, Aberdeen,
       ID</td><td>GRIN collaboration</td></tr>
   <tr><td class="strong">Harold Bockelman</td><td>USDA-ARS, Aberdeen,
@@ -74,9 +74,9 @@ require $config['root_dir'].'theme/normal_header.php';
   <tr><td class="strong">Tim Close</td><td>Botany and Plant
       Sciences<br/>University of California<br/>Riverside, CA</td><td>Assembly
       and SNP context information from <a href="http://harvest.ucr.edu/"
-					  title="">HarvEST: Barley</a></td></tr>
+  title="">HarvEST: Barley</a></td></tr>
   <tr><td class="strong"><a href="http://triticeaecap.org/about/t-cap-directory/">T-CAP
-	Participants</a></td><td>Throughout the U.S.A.</td><td>Data collection
+      Participants</a></td><td>Throughout the U.S.A.</td><td>Data collection
       and contribution</td></tr>
 </table>
 </p>
@@ -129,9 +129,9 @@ Ware)<br/>
 <h3>Software availability</h3>
 The T3 software is available under the GNU General Public License
 (<a href="docs/LICENSE">LICENSE</a>) and may be downloaded from
-<a href="https://github.com/Dave-Matthews/The-Triticeae-Toolbox">github</a>.
-It requires Unix, Apache, MySQL, and PHP.  Details are in
-the <a href="docs/INSTALL.html">INSTALL</a> document.<br>
+<a href="https://github.com/Dave-Matthews/The-Triticeae-Toolbox">github</a>.<br>
+It requires Unix, Apache, MySQL, and PHP.  Details are in the <a href="docs/INSTALL.html">INSTALL</a> document.<br>
+A list of recent changes to the T3 software are in the <a href="changelog.html">Change Log</a> document.<br>
 The database schema in .sql format
 is <a href="docs/T3wheat_schema.sql">here</a>. Graphical diagrams are
 available in MySQL Workbench (<a href="docs/T3wheat_schema_May2012.mwb">.mwb</a>)
