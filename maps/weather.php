@@ -82,7 +82,7 @@ class Weather
         fwrite($h, $cmd6);
         fwrite($h, $cmd7);
         fclose($h);
-        exec("cat $dir/$filename1 ../R/WeatherTool2.R | R --vanilla > /dev/null 2> $dir/$filename2\n");
+        exec("cat $dir/$filename1 ../R/WeatherTool.R | R --vanilla > /dev/null 2> $dir/$filename2\n");
         ?>
         <br>
         <button type="button" onclick="getPrev()">Prev Station</button>
