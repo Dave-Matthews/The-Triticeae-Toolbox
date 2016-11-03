@@ -1,12 +1,13 @@
 <?php
-// 12/14/2010 JLee  Change to use curator bootstrap
-
+/**
+  12/14/2010 JLee  Change to use curator bootstrap
+ */
 
 session_start();
 $_SESSION['login_referer_override'] = '/';
 require_once 'config.php';
-require_once($config['root_dir'].'includes/bootstrap_curator.inc');
-require_once($config['root_dir'].'includes/aes.inc');
+require_once $config['root_dir'].'includes/bootstrap_curator.inc';
+require_once $config['root_dir'].'includes/aes.inc';
 
 if (!isset($_GET['token'])) {
     die('This script only handles email confirmations.');
@@ -42,7 +43,7 @@ if ($vrfy == 1) {
     with The Triticeae Toolbox. <br /><br>
       <form action="">
       <input type="hidden" name="token"
-      value="{$htmltoken}"></input>
+      value="{$htmltoken}">
       <input type="submit" name="yes" value="Yes, I did"/>
       <input type="submit" name="no" value="No, I did not register"/>
       </form>
@@ -64,4 +65,4 @@ HTML;
 }
 
 $footer_div = 1;
-include($config['root_dir'].'theme/footer.php');
+require $config['root_dir'].'theme/footer.php';
