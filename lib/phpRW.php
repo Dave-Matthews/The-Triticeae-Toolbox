@@ -4,17 +4,17 @@
  *
  * PHP version 5.3
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/lib/RWrap.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/lib/RWrap.php
  */
 
 /**
  * PHP R interface
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/lib/RWrap.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/lib/RWrap.php
  */
 
 class RWrap
@@ -72,7 +72,7 @@ class RWrap
      *
      * @param string $result_file file name
      *
-     * @return file contents 
+     * @return file contents
      */
     public function getResults($result_file)
     {
