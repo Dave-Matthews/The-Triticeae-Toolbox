@@ -1,25 +1,21 @@
 <?php
 /**
  * Canopy Spectral Reflectance, System File import
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_spec_check.php
- * 
+ *
  */
 
 require 'config.php';
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
-connect();
 $mysqli = connecti();
 loginTest();
 
@@ -28,35 +24,35 @@ $userid = $user['users_uid'];
 $username = $user['name'];
 
 //needed for mac compatibility
-ini_set('auto_detect_line_endings',true);
+ini_set('auto_detect_line_endings', true);
 
 ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-new Instrument_Check($_GET['function']);
+new InstrumentCheck($_GET['function']);
 
 /**
  * CSR instrument system description
  */
 
-class Instrument_Check
+class InstrumentCheck
 {
-  /**
-   * Using the class's constructor to decide which action to perform
-   * @param unknown_type $function
-   */
-  public function __construct($function = null) {
-    switch($function)
-      {
-      case 'typeDatabase':
-        $this->type_Database(); /* update database */
-        break;
-      default:
-        $this->typeInstrumentCheck(); /* initial case*/
-        break;
-      }
-  }
+    /**
+     * Using the class's constructor to decide which action to perform
+     * @param unknown_type $function
+     */
+    public function __construct($function = null)
+    {
+        switch ($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
+            default:
+                $this->typeInstrumentCheck(); /* initial case*/
+                break;
+        }
+    }
 
 /**
  * check experiment data before loading into database
@@ -71,7 +67,7 @@ class Instrument_Check
     echo "<h2>CSR Instrument System Validation</h2>";
     $this->type_Instrument_Name();
     $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
+    include $config['root_dir'].'theme/footer.php';
   }
 
 /**

@@ -1,17 +1,14 @@
 <?php
 /**
  * Import CSR fieldbook
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_field.php
- * 
+ *
  */
 
 require 'config.php';
@@ -20,7 +17,6 @@ require 'config.php';
  */
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
-connect();
 $mysqli = connecti();
 loginTest();
 
@@ -36,8 +32,8 @@ ob_end_flush();
 
 new Experiments($_GET['function']);
 
-/** Using a PHP class to implement Field Book import 
- * 
+/** Using a PHP class to implement Field Book import
+ *
  * @category PHP
  * @package  T3
  * @author   Clay Birkett <claybirkett@gmail.com>
@@ -47,27 +43,24 @@ new Experiments($_GET['function']);
 
 class Experiments
 {
-        /** 
-         * Using the class's constructor to decide which action to perform
-         * @param string $function action to perform
-         */
-	public function __construct($function = null)
-	{	
-		switch($function)
-		{
-                    case 'display':
-                                $this->typeDisplay();
-                                break;							
-					
-		    default:
-				$this->typeExperiments(); /* intial case*/
-				break;
-			
-		}	
-	}
+    /**
+    * Using the class's constructor to decide which action to perform
+    * @param string $function action to perform
+    */
+    public function __construct($function = null)
+    {
+        switch ($function) {
+            case 'display':
+                $this->typeDisplay();
+                break;
+            default:
+                $this->typeExperiments(); /* intial case*/
+                break;
+        }
+    }
 
 /**
- * display database fieldbook value for a specified experiment 
+ * display database fieldbook value for a specified experiment
  */
 private function typeDisplay() {
   global $config;
