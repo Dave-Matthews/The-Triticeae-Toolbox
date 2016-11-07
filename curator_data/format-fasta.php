@@ -5,9 +5,9 @@
  *
  * PHP version 5
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/format-fasta.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/format-fasta.php
 */
 
 require 'config.php';
@@ -46,18 +46,18 @@ while ($row = mysqli_fetch_array($res)) {
     $name = $row[0];
     $marker_type = $row[1];
     $seq = $row[2];
-    $pattern = "/[A-Za-z0-9-_\.]+/";
+    $pattern = "/[A-Za-z0-9-_\.\:]+/";
     if (preg_match($pattern, $name, $match)) {
         $name = $match[0];
     }
     $pattern = "/\[[A-Z]\/[A-Z]\]/";
     if (!preg_match($pattern, $seq)) {
-        echo "skip, no SNP $seq\n";
+        //echo "skip, no SNP $seq\n";
         continue;
     }
     $tmp = strlen($seq);
     if ($tmp < 30) {
-        echo "skip, too short $seq\n";
+        //echo "skip, too short $seq\n";
         continue;
     }
         $replace = "R";
