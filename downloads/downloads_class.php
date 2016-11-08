@@ -109,7 +109,7 @@ class Downloads
         include $config['root_dir'].'theme/normal_header.php';
         $this->type1Checksession();
         ?>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
         <script type="text/javascript" src="downloads/downloadsjq04.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
@@ -409,8 +409,8 @@ class Downloads
                 fclose($h);
             }
             $filename = "snpfile.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
         } elseif ($version == "vcf") {
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
@@ -425,18 +425,18 @@ class Downloads
         }
         if ($typeG == "true") {
             $filename = "allele_conflict.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_conflicts_download($lines,$markers);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type2_build_conflicts_download($lines, $markers);
             fwrite($h, $output);
             fclose($h);
         }
         $filename = "/tmp/tht/download_" . $unique_str . ".zip";
-        exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str"); 
+        exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str");
        
         ?>
         <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
         <?php
-	}
+    }
 
     /**
      * use this download when selecting program and year
@@ -742,7 +742,7 @@ class Downloads
         }
 
     /**
-     * verify input
+     * displays current selection and prompts for genetic map if not selected
      *
      * @return null
      */

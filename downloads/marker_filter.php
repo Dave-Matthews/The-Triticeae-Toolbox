@@ -106,13 +106,10 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     global $mysqli;
     if (isset($_SESSION['clicked_buttons'])) {
         $tmp = count($_SESSION['clicked_buttons']);
-        $saved_session = $saved_session . ", $tmp markers";
         $markers = $_SESSION['clicked_buttons'];
-        $marker_str = implode(',', $markers);
     } else {
         $markers_filtered = array();
         $markers = array();
-        $marker_str = "";
     }
 
     //create list of selected markers
@@ -143,6 +140,9 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
    
     //calculate allele frequence and missing
     $marker_misscnt = array();
+    $marker_aacnt = array();
+    $marker_abcnt = array();
+    $marker_bbcnt = array();
     foreach ($lines as $line_record_uid) {
         $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
@@ -256,7 +256,8 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     <br><?php echo ($num_miss) ?><i> markers are missing more than </i><b><?php echo ($max_missing) ?></b><i>% of data
     <br><b><?php echo ($num_removed) ?></b><i> markers removed</i>
     <td><b><?php echo ("$num_markers") ?></b><i> markers</i>
-    <tr><td><?php
+    <tr><td>
+    <?php
     if ($lines_removed == 1) {
         echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
         <?php
@@ -589,7 +590,7 @@ function typeVcfReferenceDownload($chr, $f1, $h1)
                 fwrite($h1, "$line\n");
             }
         }
-        echo "$count with map to $h2<br>\n";
+        echo "$count with map to $h1<br>\n";
     }
 }
 /**
@@ -923,6 +924,8 @@ function typeVcfGetMarkerRef($chr, $f1)
 {
     global $config;
     ini_set("auto_detect_line_endings", true);
+    $max = 0;
+    $min = 10000;
 
     //must have min and max position for each contig for Beagle to work
     $count = 0;
