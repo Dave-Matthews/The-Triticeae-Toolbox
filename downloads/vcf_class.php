@@ -162,7 +162,7 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
             $name[] = "unknown";
         }
     }
-    $outputheader .= implode("\t", $name);
+    $outputheader = implode("\t", $name);
 
     fwrite($fh1, "##fileformat=VCFv4.2\n");
     fwrite($fh1, "##reference=triticeaetoolbox.org,GenotypeTrial:$trial_code\n");
@@ -316,7 +316,7 @@ function createVcfBeagle()
     }
 }
 
-function runBeagle($impute)
+function runBeagle()
 {
     global $mysqli;
     global $config;
