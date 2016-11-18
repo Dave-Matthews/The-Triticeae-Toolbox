@@ -109,7 +109,6 @@ class Downloads
         include $config['root_dir'].'theme/normal_header.php';
         $this->type1Checksession();
         ?>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
         <script type="text/javascript" src="downloads/downloadsjq04.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
