@@ -271,7 +271,7 @@ class Downloads
             $experiments_g = $_SESSION['geno_exps'];
             $geno_str = $experiments_g[0];
             $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $geno_str";
-            if ($stmt = mysqli_prepare($mysqli, $stmt)) {
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
                 mysqli_stmt_bind_param($stmt, "i", $geno_str);
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_bind_result($stmt, $marker_uid);
@@ -285,7 +285,7 @@ class Downloads
         }
 
         $count_markers = count($markers);
-        if ($count_markers <= 1) {
+        if ($count_markers < 1) {
             echo "<font color=red>Error: no markers selected</font><br>\n";
             return;
         }
