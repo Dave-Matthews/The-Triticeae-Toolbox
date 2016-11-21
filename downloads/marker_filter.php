@@ -143,6 +143,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     $marker_aacnt = array();
     $marker_abcnt = array();
     $marker_bbcnt = array();
+
     foreach ($lines as $line_record_uid) {
         $sql = "select alleles from allele_byline where line_record_uid = $line_record_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
@@ -173,6 +174,46 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     }
     $num_mark = 0;
     $num_maf = $num_miss = $num_removed = 0;
+
+    if (isset($_SESSION['clicked_buttons'])) {
+        foreach ($markers as $marker_uid) {
+            if (isset($marker_list_loc[$marker_uid])) {
+                $i = $marker_list_loc[$marker_uid];
+            } else {
+                $sql = "select marker_name from markers where marker_uid = $marker_uid";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)); 
+                $row = mysqli_fetch_array($res);
+                $name = $row[0];
+                echo "<br>Warning: $name maker has not been genotyped\n";
+                $num_removed++;
+                continue;
+            } 
+            $total_af = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i];
+            $total = $total_af + $marker_misscnt[$i];
+            if ($total_af > 0) {
+                $maf1 = (2 * $marker_aacnt[$i] + $marker_abcnt[$i]) / (2 * $total_af);
+                $maf2 = ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / (2 * $total_af);
+                $maf = round(100 * min($maf1, $maf2), 1);
+                $miss = 100 * $marker_misscnt[$i]/$total;
+                if ($maf < $min_maf) {
+                    $num_maf++;
+                }
+                if ($miss > $max_missing) {
+                    $num_miss++;
+                }
+                if (($miss > $max_missing) or ($maf < $min_maf)) {
+                    $num_removed++;
+                } else {
+                    $markers_filtered[] = $marker_uid;
+                }
+                $num_mark++;
+            }
+        }
+        if ($num_mark == 0) {
+            echo "<br><font color=red>Error: selected markers have not been genotyped</font><br>\n";
+            return;
+        }
+    } else {
     foreach ($marker_list as $i => $marker_uid) {
         //if there are selected markers then only calculate allele frequencies for these
         if (isset($_SESSION['clicked_buttons']) && !isset($selected_markers[$marker_uid])) {
@@ -199,6 +240,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
             }
             $num_mark++;
         }
+    }
     }
     //echo "<br>num of markers with data = $num_mark<br>\n";
     $_SESSION['filtered_markers'] = $markers_filtered;
@@ -272,7 +314,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     echo "<td><b>$num_lines</b><i> lines</a>";
     echo ("</table>");
     if (($num_markers == 0) || ($num_lines == 0)) {
-        echo "<font color=red>Warning: Please select new filter paramaters</font>";
+        echo "<font color=red>Warning: Please select new filter paramaters</font><br>";
     }
 }
 
