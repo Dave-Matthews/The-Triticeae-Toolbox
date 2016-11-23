@@ -129,7 +129,7 @@ if (!empty($_POST['Delete'])) {
   $id = ($_POST['Delete']);
   $code = mysql_grab("select data_program_code from CAPdata_programs where CAPdata_programs_uid=$id");
   echo "Attempting to delete CAP Data Program id = $id, code = $code...<p>";
-  $sql = "delete from dataset where CAPdata_program_uid = $id";
+  $sql = "delete from datasets where CAPdata_program_uid = $id";
   $res = mysqli_query($mysqli, $sql);
   $err = mysqli_error($mysqli);
   if (!empty($err)) {
