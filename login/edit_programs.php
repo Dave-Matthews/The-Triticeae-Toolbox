@@ -36,27 +36,31 @@ if (!empty($_POST[adding])) {
     $prcollab = $_POST[collab];
     $prdesc = $_POST[desc];
   // Validate
-  if (empty($prcode))
-    $adderr = "Program Code is required.  Nothing added.<br>";
-  else { 
-    $oldcode = mysql_grab("select data_program_code from CAPdata_programs where data_program_code = '$prcode'");
-    if (!empty($oldcode))
-      $adderr = "Can't add.  Program Code $oldcode already exists.<br>";
-  }
-  if (empty($prname))
-    $adderr .= "Program Name is required.  Nothing added.<br>";
-  else { 
-    $oldname = mysql_grab("select data_program_name from CAPdata_programs where data_program_name = '$prname'");
-    if (!empty($oldname))
-      $adderr .= "Can't add.  Program Name \"$oldname\" already exists.<br>";
-  }
-  if (empty ($prinst))
-    $adderr .= "Institution is required.  Nothing added.<br>";
-  if (empty($prtype))
-    $adderr .= "Program Type is required.  Nothing added.<br>";
-  if (empty($adderr)) {
-  // Validated.  Add the data.
-    $sql = "insert into CAPdata_programs (
+    if (empty($prcode)) {
+        $adderr = "Program Code is required.  Nothing added.<br>";
+    } else {
+        $oldcode = mysql_grab("select data_program_code from CAPdata_programs where data_program_code = '$prcode'");
+        if (!empty($oldcode)) {
+            $adderr = "Can't add.  Program Code $oldcode already exists.<br>";
+        }
+    }
+    if (empty($prname)) {
+        $adderr .= "Program Name is required.  Nothing added.<br>";
+    } else {
+        $oldname = mysql_grab("select data_program_name from CAPdata_programs where data_program_name = '$prname'");
+        if (!empty($oldname)) {
+            $adderr .= "Can't add.  Program Name \"$oldname\" already exists.<br>";
+        }
+    }
+    if (empty($prinst)) {
+        $adderr .= "Institution is required.  Nothing added.<br>";
+    }
+    if (empty($prtype)) {
+        $adderr .= "Program Type is required.  Nothing added.<br>";
+    }
+    if (empty($adderr)) {
+    // Validated.  Add the data.
+        $sql = "insert into CAPdata_programs (
 	  data_program_code,
 	  data_program_name,
 	  institutions_uid,
@@ -72,9 +76,9 @@ if (!empty($_POST[adding])) {
 	  '$prcollab',
 	  '$prdesc',
 	  NOW() )";
-    mysqli_query($mysqli, $sql) or die("Insert failed.<br>".mysqli_error($mysqli));
-    $adderr = "Program $prcode added.";
-  }
+        mysqli_query($mysqli, $sql) or die("Insert failed.<br>".mysqli_error($mysqli));
+        $adderr = "Program $prcode added.";
+    }
 }
 
 if (!empty($_POST[instn])) {
@@ -127,7 +131,32 @@ if( ($id = array_search("Update", $_POST)) != NULL) {
 if (!empty($_POST['Delete'])) {
   // "Delete" button
   $id = ($_POST['Delete']);
+  $name = "";
+  $sql = "select dataset_name from datasets where CAPdata_programs_uid=$id";
+  $res = mysqli_query($mysqli, $sql);
+  while ($row = mysqli_fetch_row($res)) {
+      if ($name == "") {
+          $name = $row[0];
+      } else {
+          $name .= ", $row[0]";
+      }
+  }
+  $trial_code = "";
+  $sql = "select trial_code from experiments where CAPdata_programs_uid= $id";
+  $res = mysqli_query($mysqli, $sql);
+  while ($row = mysqli_fetch_row($res)) {
+      if ($name == "") {
+          $trial_code = $row[0];
+      } else {
+          $trial_code .= ", $row[0]";
+      }
+  }
   $code = mysql_grab("select data_program_code from CAPdata_programs where CAPdata_programs_uid=$id");
+  if ($trial_code != "") {
+      echo "<font color=red><b>Can't delete.</b></font> Data program <b>$code</b> is used in experiment $trial_code.<br>\n";
+      return;
+  }
+
   echo "Attempting to delete CAP Data Program id = $id, code = $code...<p>";
   $sql = "delete from datasets where CAPdata_programs_uid = $id";
   $res = mysqli_query($mysqli, $sql);
@@ -135,7 +164,7 @@ if (!empty($_POST['Delete'])) {
   if (!empty($err)) {
       echo "Error: $err<br>\n";
   } else {
-      echo "Success. Data program deleted from dataset<br>\n";
+      echo "Success. Data program <b>$name</b> deleted from datasets.<br>\n";
   }
   $sql = "delete from CAPdata_programs where CAPdata_programs_uid = $id";
   //  $res = mysql_query($sql) or die(mysql_error());
@@ -146,7 +175,7 @@ if (!empty($_POST['Delete'])) {
       echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this program. The error message is:<br>$err";
   }
   else 
-    echo "Success.  Data program <b>$code</b> deleted.<p>";
+    echo "Success.  Data program <b>$code</b> deleted from CAPdata_programs.<p>";
 }
 
 $searchstring = '';
