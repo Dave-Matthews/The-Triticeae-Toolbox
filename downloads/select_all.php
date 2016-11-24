@@ -5,39 +5,15 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @author  Clay Birkett <cbirkett@gmail.com>
+ * @author  Clay Birkett <clb343@cornell.edu>
  * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
  *
-// |                                                                      |
-// | The purpose of this script is to provide the user with an interface  |
-// | for downloading certain kinds of files from THT.                     |
-// +----------------------------------------------------------------------+
-// | Authors:  Gavin Monroe <gemonroe@iastate.edu>  						|
-// | Updated: December 2008 by Julie A Dickerson, julied@iastate.edu	  |
-// +----------------------------------------------------------------------+
-// +----------------------------------------------------------------------+
-// | Change log								  |
-// | 2/8/11:  DEM - Include markers with MAF = 0 too if user wishes.      |
-// | 1/5/01:  JLee - Add support to generate datafile for Tassel V3       |
-// |                                                                      |
-// | 2/28/09: removed table summarizing all allelles to avoid timeout	  |
-// |          problems when getting SNP data across multiple programs
-// | 5/20/09: added in tassel support functionality and commented out
-// | 			routines for QTLMiner
-// | September 2009: added in the ability put check lines into the output |
-// |			file for traits; if there are multiple check lines of the |
-// | 			same name, then the mean is used.	Also added in seesions  |
-// | 			to verify that data is available for a user.			  |
-// +----------------------------------------------------------------------+
  */
-set_time_limit(0);
 
 // For live website file
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
-date_default_timezone_set('America/Los_Angeles');
 
 // connect to database
 $mysqli = connecti();
@@ -53,11 +29,6 @@ new SelectPhenotypeExp($_GET['function']);
  **/
 class SelectPhenotypeExp
 {
-    /**
-     * Delimiter used for output files
-     */
-    public $delimiter = "\t";
-    
     /**
      * Using the class's constructor to decide which action to perform
      *
@@ -136,7 +107,7 @@ class SelectPhenotypeExp
                 $this->type1_markers();
                 break;
             case 'type2experiments':
-                $this->type2Experiments();
+                $this->step3Experiments();
                 break;
             case 'type2markers':
                 $this->type2_markers();
@@ -192,20 +163,20 @@ class SelectPhenotypeExp
         $this->step1_breedprog();
         $footer_div = 1;
     }
-	
-	/**
-	 * Checks the session variable, if there is lines data saved then go directly to the lines menu
-	 */
-	private function type1_checksession()
+
+    /**
+     * Checks the session variable, if there is lines data saved then go directly to the lines menu
+     */
+    private function type1_checksession()
     {
             ?>
-		<div id="title">
-		<?php
+	<div id="title">
+	<?php
             $phenotype = "";
             $lines = "";
             $markers = "";
             $saved_session = "";
-		    $message1 = $message2 = "";
+            $message1 = $message2 = "";
 
             if (isset($_SESSION['phenotype'])) {
                     $tmp = count($_SESSION['phenotype']);
@@ -1836,7 +1807,7 @@ class SelectPhenotypeExp
     /**
      * display a list of trials
      */
-    private function type2Experiments()
+    private function step3Experiments()
     {
         global $mysqli;
         $exptuids = $_GET['expt'];
@@ -1844,7 +1815,7 @@ class SelectPhenotypeExp
         $years = $_GET['yrs'];
         $years_ary = explode(",", $years);
         ?>
-    <p>2.
+    <p>3.
     <select>
     <option>Trials</option>
     </select></p>
