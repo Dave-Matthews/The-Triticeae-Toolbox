@@ -54,7 +54,8 @@ try {
         $_SESSION['impact'] += $impact;
         if ($_SESSION['impact'] > 50) {
             $impact_sum = $_SESSION['impact'];
-            error_log("A phpids repeated event impact = $impact_sum");
+            $impact_url = $_SERVER['PHP_SELF'];
+            error_log("A phpids repeated event impact = $impact_sum $impact_url");
             $url = $config['base_url'] . 'feedback2.php';
             echo "Error: Please help us to improve the website by submitting <a href=\"$url\">feedback</a>.";
             die();
