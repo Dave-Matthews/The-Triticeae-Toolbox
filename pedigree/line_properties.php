@@ -32,7 +32,7 @@ if (empty($_POST) or $_POST['WhichBtn']) {
     }
     if (is_array($_POST['species'])) {
         foreach ($_POST['species'] as $key => $value) {
-            $species[$value] = 'selected="selected"';
+            $species["$value"] = 'selected="selected"';
         }
     }
     if (is_array($_SESSION['propvals'])) {
