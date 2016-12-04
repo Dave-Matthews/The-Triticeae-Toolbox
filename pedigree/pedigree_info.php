@@ -15,6 +15,7 @@ session_start();
 require 'config.php';
 include $config['root_dir'] . 'includes/bootstrap.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
+set_time_limit(0);
 include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -26,30 +27,32 @@ if ($method == "GET") {
 
 class Pedigree
 {
-  private $delimiter = "\t";
-  // Using the class's constructor to decide which action to perform
-  public function __construct($function = null) {
-    switch($function) {
-    case 'typeLineExcel':
-      $this->type_Line_Excel();  /* Export to excel */
-      break;
-    default:
-      $this->typeLine();  /* Display in browser */
-      break;
+    private $delimiter = "\t";
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch ($function) {
+            case 'typeLineExcel':
+                $this->type_Line_Excel();  /* Export to excel */
+                break;
+            default:
+                $this->typeLine();  /* Display in browser */
+                break;
+        }
     }
-  }
-	
+
   // The wrapper action for the type1 download. Handles outputting the header
   // and footer and calls the first real action of the type1 download.
-  private function typeLine() {
-    global $config;
-    include($config['root_dir'].'theme/normal_header.php');
-    echo " <h2> Line Information</h2>";
-    $this->type_LineInformation();
-    echo "<h3> <a href='pedigree/line_properties.php'> New Line Search</a></h3>";
-    $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
-  }
+    private function typeLine()
+    {
+        global $config;
+        include $config['root_dir'].'theme/admin_header2.php';
+        echo "<h2> Line Information</h2>";
+        $this->type_LineInformation();
+        echo "<h3> <a href='pedigree/line_properties.php'> New Line Search</a></h3>";
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
 
   private function type_LineInformation() {
     global $mysqli;
