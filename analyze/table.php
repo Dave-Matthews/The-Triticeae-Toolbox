@@ -149,24 +149,27 @@ if (!$traits or !$trials) {
 	$hsds = $linepieces;
 	array_shift($hsds);
       } elseif ($firstword == 'trialNames') {
-        $trialnameslists = $linepieces[1];
+        $trialnamesline = $line;
       } elseif ($firstword == 'trialMeans') {
-	$trialmeanslists = $linepieces[1];
-	//array_shift($trialmeanslists);
+	$trialmeansline = $line;
       } else {
 	// It must be a continuation line of the lsmeans.
 	$lsmeansline .= $line;
       }
     }
     // All lines of the file have now been read in.
-    $lsmeanslists = explode("\t", $lsmeansline);
+    $lsmeanslists = explode("\t", rtrim($lsmeansline));
+    $trialnameslists = explode("\t", rtrim($trialnamesline));
+    $trialmeanslists = explode("\t", rtrim($trialmeansline));
     array_shift($lsmeanslists);
+    array_shift($trialnameslists);
+    array_shift($trialmeanslists);
     for ($i=0; $i < $rtraitcount; $i++) {
       // Result is formatted like "c(12.65, 11.915, ...)".
       $lsmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $lsmeanslists[$i]));
+      $trialnames[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialnameslists[$i]));
+      $trialmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialmeanslists[$i]));
     }
-    $trialnames = explode(", ", preg_replace("/^c\(|\)$/", "", $trialnameslists));
-    $trialmeans = explode(", ", preg_replace("/^c\(|\)$/", "", $trialmeanslists));
   }
   fclose($r);
   } else {
@@ -188,7 +191,7 @@ if (!$traits or !$trials) {
       $hsdround = round($hsds[$traitnumber], 2);
     }
     print "<table><tr><th>Trait: $trtname<br>LSD = $lsdround<br>HSD = $hsdround";
-    foreach ($trialnames as $trial) {
+    foreach ($trialnames[$traitnumber] as $trial) {
       $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
       print "<th><a href='display_phenotype.php?trial_code=$trialname'>$trialname</a>";
     }
@@ -196,7 +199,7 @@ if (!$traits or !$trials) {
     $linenumber = 0;
     foreach ($lines as $line) {
       print "<tr><td>$line";
-      foreach ($trialnames as $trial) {
+      foreach ($trialnames[$traitnumber] as $trial) {
         $trial = preg_replace("/\"/", "", $trial);
 	$mn = $min[$trait][$trial];
 	$mx = $max[$trait][$trial];
@@ -208,9 +211,9 @@ if (!$traits or !$trials) {
 	  // Colors greater than 10 are too pale to read.
 	  $col = 10 - floor(10 * ($val - $mn) / ($mx - $mn));
 	  print "<td><font color=$color[$col]><b>$val</b></font>";
-	}
-	else
+	} else {
 	  print "<td>--";
+        }
       }
       $lsm = round($lsmeans[$traitnumber][$linenumber], 1);
       /* $col = 10 - floor(10 * ($lsm - $mn) / ($mx - $mn)); */
@@ -219,7 +222,7 @@ if (!$traits or !$trials) {
       $linenumber++;
     }
     print "<tr><td><font color=brown><b>Trial means</b></font>";
-    foreach ($trialmeans as $mean) {
+    foreach ($trialmeans[$traitnumber] as $mean) {
       if (!$mean) {
         $tm = "--";
       } else {
