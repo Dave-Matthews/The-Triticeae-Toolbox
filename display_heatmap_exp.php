@@ -1,24 +1,24 @@
 <?php
 /**
  * Canopy Spectral Reflectance, Fieldbook import
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_experiment_plot_check.php
- * 
+ *
  */
 
 require 'config.php';
-require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require $config['root_dir'] . 'includes/bootstrap2.inc';
 
 $mysqli = connecti();
 
-new Data_Check($_GET['function']);
+new DataCheck($_GET['function']);
 
-class Data_Check
+class DataCheck
 {
     /**
      * Using the class's constructor to decide which action to perform
@@ -26,21 +26,21 @@ class Data_Check
      */
     public function __construct($function = null)
     {
-        switch ($function)
-        {
-        case 'typeDatabase':
-            $this->type_Database(); /* update database */
-            break;
-        default:
-            $this->typeExperimentCheck(); /* intial case*/
-            break;
+        switch ($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
+            default:
+                $this->typeExperimentCheck(); /* intial case*/
+                break;
         }
     }
 
     /**
      * check experiment data before loading into database
      */
-    private function typeExperimentCheck() {
+    private function typeExperimentCheck()
+    {
         global $config;
         include $config['root_dir'] . 'theme/admin_header2.php';
         echo "<h2>Heatmap of trait by field position</h2>";
@@ -54,16 +54,16 @@ class Data_Check
      * 1. display table or values in row column format
      * 2. call R script for displaying heatmap
      */
-private function type_Experiment_Name()
-{
-   global $mysqli;
-   $sql = "select phenotype_uid, phenotypes_name from phenotypes";
-   $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli). $sql);
-   while ($row = mysqli_fetch_assoc($res)) {
-     $phen_uid = $row["phenotype_uid"];
-     $name = $row["phenotypes_name"];
-     $phen_list[$phen_uid] = $name;
-   }
+    private function type_Experiment_Name()
+    {
+        global $mysqli;
+        $sql = "select phenotype_uid, phenotypes_name from phenotypes";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli). $sql);
+        while ($row = mysqli_fetch_assoc($res)) {
+            $phen_uid = $row["phenotype_uid"];
+            $name = $row["phenotypes_name"];
+            $phen_list[$phen_uid] = $name;
+        }
 
    if (empty($_GET['uid'])) {
      echo "Error: invalid experiment uid<br>\n";
