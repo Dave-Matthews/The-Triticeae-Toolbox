@@ -47,7 +47,7 @@ class Histo
                 $this->runHisto();
                 break;
             case "download_session_v4":
-                $this->_type1Session(V4);
+                $this->type1Session(V4);
                 break;
             default:
                 $this->type1Select();
@@ -77,7 +77,7 @@ class Histo
      *
      * @return NULL
      */
-    function type1Checksession()
+    private function type1Checksession()
     {
         global $mysqli;
         ?>
@@ -92,9 +92,9 @@ class Histo
         <div id="step1" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
         Display a histogram of the selected phenotype data for each trial<br><br>
         <?php
-        if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
+        if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0)) {
             echo "Select a set of <a href=\"downloads/select_all.php\">lines, trials, and traits.</a><br></div></div>\n";
-            return FALSE;
+            return false;
         }
         if (isset($_SESSION['selected_traits'])) {
             $phenotype = $_SESSION['selected_traits'];
@@ -108,7 +108,7 @@ class Histo
                 $phenolabel = $row[0];
                 ?>
                 <tr><td><?php echo $phenolabel ?><td><input type="button" value="Histogram" onclick="javascript:load_histogram('<?php echo $pheno; ?>')">
-                <?php 
+                <?php
             }
             ?>
             </table></div>
@@ -127,10 +127,10 @@ class Histo
 
     /**
      * run R on input files
-     * 
+     *
      * @return NULL
      */
-    function runHisto()
+    private function runHisto()
     {
         global $mysqli;
         $unique_str = $_GET['unq'];
@@ -187,7 +187,7 @@ class Histo
             fclose($h);
         }
         if (file_exists("/tmp/tht/$filename2")) {
-              exec("cat /tmp/tht/$filename3 ../R/GShisto.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
+              exec("cat /tmp/tht/$filename3 ../R/histo.R | R --vanilla > /dev/null 2> /tmp/tht/$filename5");
         } else {
               die("Error: no file for analysis<br>\n");
         }
@@ -205,14 +205,15 @@ class Histo
         }
     }
 
-    private function _type1Session() {
+    private function type1Session()
+    {
         global $config;
         global $mysqli;
         $unique_str = $_GET['unq'];
         $phenotype = $_GET['pheno'];
             if (isset($_SESSION['selected_trials'])) {
               $trial = $_SESSION['selected_trials'];
-              $experiments_t = implode(",",$trial);
+              $experiments_t = implode(",", $trial);
               foreach ($trial as $uid) {
                 $sql = "select trial_code from experiments where experiment_uid = $uid";
                       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
