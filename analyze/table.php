@@ -35,7 +35,9 @@ Significant Difference (<em>HSD</em>) in 5% of experiments.<br><br>
 $traits = $_SESSION['selected_traits'];
 $trials = $_SESSION['selected_trials'];
 if (!$traits or !$trials) {
-    echo "Please select at least one <a href='$config[base_url]phenotype/phenotype_selection.php'>Trait and Trial</a>.<p>";
+    echo "Please select at least one trait and more than one trial, <a href='$config[base_url]phenotype/phenotype_selection.php'>Traits and Trials</a>.<p>";
+} elseif (count($trials) < 2) {
+    echo "Please select more than one trial, <a href='$config[base_url]phenotype/phenotype_selection.php'>Traits and Trials</a>.<p>";
 } else {
     // Retrieve the data into array $vals.
     foreach ($traits as $trait) {
@@ -85,9 +87,9 @@ if (!$traits or !$trials) {
                 sort($sparselines);
             }
         }
-  }
-  if ($_GET['balance'] == 'yes') 
-    $lines = array_diff($lines, $sparselines);
+    }
+    if ($_GET['balance'] == 'yes') 
+        $lines = array_diff($lines, $sparselines);
 
   // Write $vals to a temporary file for R to calculate LSDs.
   // output row = Traitname, Trialname, Linename, Value
