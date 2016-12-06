@@ -264,7 +264,10 @@ if ($_GET['delete']) {
       	mkdir($target_path);
       for ($i=0; $i < count($nf); $i++) {
 	// TODO: add to table input_file_log. Add experiment_set name to path.
-      	if (!rename("/tmp/".$nf[$i], $target_path.$nf[$i])) 
+        if (file_exists($target_path.$nf[$i])) {
+            unlink($target_path.$nf[$i]);
+            rename("/tmp/".$nf[$i], $target_path.$nf[$i]);
+      	} elseif (!rename("/tmp/".$nf[$i], $target_path.$nf[$i])) 
       	  die("<p><b>ERROR</b>: File <b>$nf[$i]</b> could not be saved in archive directory '$target_path'.");
 	if ($ac[$i] == "Add new") {
 	  $logsql = "INSERT INTO input_file_log (file_name, users_name) 
