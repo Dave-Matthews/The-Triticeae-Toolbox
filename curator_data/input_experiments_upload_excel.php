@@ -19,22 +19,25 @@ ob_end_flush();
 
 new Experiments($_GET['function']);
 
-class Experiments {
+class Experiments
+{
 
-  private $delimiter = "\t";
-  // Using the class's constructor to decide which action to perform
-  public function __construct($function = null) {	
-    switch($function) {
-    default:
-      $this->typeExperiments(); /* initial case*/
-      break;
+    private $delimiter = "\t";
+    // Using the class's constructor to decide which action to perform
+    public function __construct($function = null)
+    {
+        switch ($function) {
+            default:
+                $this->typeExperiments(); /* initial case*/
+                break;
+        }
     }
-  }
 
-  private function typeExperiments() {
-    global $config;
-    global $mysqli;
-    include($config['root_dir'] . 'theme/admin_header.php');
+    private function typeExperiments()
+    {
+        global $config;
+        global $mysqli;
+        include $config['root_dir'] . 'theme/admin_header.php';
 ?>
 <style type="text/css">
 table {background: none; border-collapse: collapse}
@@ -46,7 +49,7 @@ h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
            border: 1px solid red; background-color: #efefef;
            position: fixed;
            opacity: 1.0;
-	   overflow: auto;
+           overflow: auto;
            }
 <!-- #dont { position: relative; -->
 <!--         left: 50px; } -->
@@ -58,10 +61,10 @@ h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
 
 <?php
-    echo "<h2>Phenotype Trial Results</h2>"; 
+    echo "<h2>Phenotype Trial Results</h2>";
     $this->type_Experiment_Name();
     $footer_div = 1;
-    include($config['root_dir'].'theme/footer.php');
+    include $config['root_dir'].'theme/footer.php';
   } // end of function typeExperiments()
 
 // Entry states with their own blocks of code:
@@ -295,6 +298,7 @@ if ($_GET['delete']) {
 	  die("<p><b>ERROR</b>: File <b>$newraw[$i]</b> could not be renamed in /tmp/.");
       }
       // Display new files for user decision.
+      $oldfile = array();
       $sql = "select name from rawfiles where experiment_uid = $exptuid";
       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query was:<br>".$sql);
       while ($info = mysqli_fetch_assoc($res)) 
