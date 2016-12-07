@@ -456,10 +456,10 @@ function HTMLProcessForgot()
         $key = setting('passresetkey');
         $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
         send_email($email, "T3: Reset Your Password",
-       "Hi,
+        "Hi,
 Per your request, please visit the following URL to reset your password:
 https:{$root}resetpass.php?token=$urltoken");
-      return "An email has been sent to you with a link to reset your
+        return "An email has been sent to you with a link to reset your
 password.";
     } else {
         return "<h3 style='color: red'>No such user, please register.</h3>";
@@ -478,24 +478,25 @@ function HTMLProcessChange()
     $pass = $_POST['OldPass'];
     $rv = "";
     if (isset($email)) {
-      if (isUser($email, $pass))
-        if ($_POST['NewPass1'] == $_POST['NewPass2']) {
-	  $sql_email = mysqli_real_escape_string($mysqli, $email);
-	  $sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
-	  $sql = "update users  set pass=SHA1('$sql_pass')
-where users_name=SHA1('$sql_email')";
-	if (mysqli_query($mysqli, $sql))
-	  $rv .= "<h3>Password successfully updated</h3>";
-	else
-	  $rv .= "<div id='form_error'>unexpected error while updating your password..</div>";
-      }
-      else
-	$rv .= "<div id='form_error'>the two values you provided do not match..</div>";
-    else
-      $rv .= "<div id='form_error'>username/password pair not recognized</div>";
-  }
-  else
-    $rv .= <<<HTML
+        if (isUser($email, $pass)) {
+            if ($_POST['NewPass1'] == $_POST['NewPass2']) {
+                $sql_email = mysqli_real_escape_string($mysqli, $email);
+                $sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
+                $sql = "update users  set pass=SHA1('$sql_pass')
+                where users_name=SHA1('$sql_email')";
+                if (mysqli_query($mysqli, $sql)) {
+                    $rv .= "<h3>Password successfully updated</h3>";
+                } else {
+                    $rv .= "<div id='form_error'>unexpected error while updating your password..</div>";
+                }
+            } else {
+                $rv .= "<div id='form_error'>the two values you provided do not match..</div>";
+            }
+        } else {
+            $rv .= "<div id='form_error'>username/password pair not recognized</div>";
+        }
+    } else {
+        $rv .= <<<HTML
 <form action="{$_SERVER['SCRIPT_NAME']}" method="post">
 <input type="hidden" name="answer" value="change">
 <input type="hidden" name="submit_login" value="">
@@ -508,21 +509,23 @@ Retype New Password: <input name="NewPass2" type="password">
 <input name="cmd_submit" type="submit" value="Submit">
 </form>
 HTML;
-  return $rv;
+    }
+    return $rv;
 }
 
 if (isset($_POST['submit_login'])) {
-  if (isset($_POST['answer'])) {
-    if ($_POST['answer'] == "no")
-      echo HTMLProcessRegistration();
-    else if ($_POST['answer'] == "yes")
-      echo HTMLProcessLogin();
-    else if ($_POST['answer'] == "forgot")
-      echo HTMLProcessForgot();
-    else if ($_POST['answer'] == "change")
-      echo HTMLProcessChange();
-    else
-      echo HTMLLoginForm();
+    if (isset($_POST['answer'])) {
+        if ($_POST['answer'] == "no") {
+            echo HTMLProcessRegistration();
+        } elseif ($_POST['answer'] == "yes") {
+            echo HTMLProcessLogin();
+        } elseif ($_POST['answer'] == "forgot") {
+            echo HTMLProcessForgot();
+        } elseif ($_POST['answer'] == "change") {
+            echo HTMLProcessChange();
+        } else {
+            echo HTMLLoginForm();
+        }
   }
   else
     echo HTMLLoginForm();
@@ -637,6 +640,8 @@ The Triticeae Toolbox Team
 			  USER_TYPE_PUBLIC);
      /* DEM jan2014 For Sandbox databases, make any registrant a Curator. */
      if (preg_match("/sandbox/", $_SERVER['SERVER_NAME'])) {
+         $safe_usertype = USER_TYPE_CURATOR;
+     } elseif (preg_match("/malt\.pw\.usda/" , $_SERVER['SERVER_NAME'])) {
          $safe_usertype = USER_TYPE_CURATOR;
      } else {
          $safe_usertype = USER_TYPE_PUBLIC;
