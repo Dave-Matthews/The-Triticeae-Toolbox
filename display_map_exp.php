@@ -22,14 +22,11 @@ class DataCheck
 {
   /**
    * Using the class's constructor to decide which action to perform
-   * @param unknown_type $function
+   * @param string $function
    */
     public function __construct($function = null)
     {
         switch ($function) {
-            case 'typeDatabase':
-                $this->type_Database(); /* update database */
-                break;
             default:
                 $this->typeExperimentCheck(); /* intial case*/
                 break;
@@ -44,25 +41,26 @@ class DataCheck
         global $config;
         include $config['root_dir'] . 'theme/admin_header2.php';
         echo "<h2>Numeric map of trait by field position</h2>";
-        $this->type_Experiment_Name();
+        $this->typeExperimentName();
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
-     }
+    }
 
 /***
  * create data file, separate result for each trait
  * 1. display table or values in row column format
  * 2. call R script for displaying heatmap
  */
-private function type_Experiment_Name() {
-   global $mysqli;
-   $sql = "select phenotype_uid, phenotypes_name from phenotypes";
-   $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli). $sql);
-   while ($row = mysqli_fetch_assoc($res)) {
-     $phen_uid = $row["phenotype_uid"];
-     $name = $row["phenotypes_name"];
-     $phen_list[$phen_uid] = $name;
-   }
+    private function typeExperimentName()
+    {
+        global $mysqli;
+        $sql = "select phenotype_uid, phenotypes_name from phenotypes";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli). $sql);
+        while ($row = mysqli_fetch_assoc($res)) {
+            $phen_uid = $row["phenotype_uid"];
+            $name = $row["phenotypes_name"];
+            $phen_list[$phen_uid] = $name;
+        }
 
    if (empty($_GET['uid'])) {
      echo "Error: invalid experiment uid<br>\n";
