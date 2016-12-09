@@ -113,7 +113,6 @@ class DataCheck
           die();
        }
    } else {
-     echo "$sql<br>\n";
      die("Error: no fieldbook entries found");
    }
    echo "<br>\n";
