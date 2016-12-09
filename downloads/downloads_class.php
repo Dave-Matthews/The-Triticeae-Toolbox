@@ -59,38 +59,35 @@ class Downloads
             case 'step1yearprog':
                 $this->step1_yearprog();
                 break;
-            case 'step2lines':
-                echo $this->step2_lines();
-                break;
             case 'searchLines':
-                echo $this->step1_search_lines();
+                $this->step1_search_lines();
                 break;
             case 'download_session_v4':
-                echo $this->type1_session(V4);
+                $this->type1Session(V4);
                 break;
             case 'download_session_v5':
-                echo $this->type1_session(V5);
+                $this->type1Session(V5);
                 break;
             case 'download_session_v6':
-                echo $this->type1_session(V6);
+                $this->type1Session(V6);
                 break;
             case 'download_session_v7':
-                echo $this->type1_session(V7);
+                $this->type1Session(V7);
                 break;
             case 'download_session_v8':
-                echo $this->type2_session(V8);
+                $this->type2Session(V8);
                 break;
             case 'download_session_v9':
-                echo $this->type2_session(V9);
+                $this->type2Session(V9);
                 break;
             case 'download_session_vcf':
-                echo $this->type1_session(vcf);
+                $this->type1Session(vcf);
                 break;
             case 'refreshtitle':
-                echo $this->refresh_title();
+                $this->refreshTitle();
                 break;
             case 'verifyLines':
-                echo $this->verifyLines();
+                $this->verifyLines();
                 break;
             default:
                 $this->type1Select();
@@ -177,7 +174,7 @@ class Downloads
             }
         }
          
-        $this->refresh_title();
+        $this->refreshTitle();
         ?>        
         </div>
         <div id="title2">
@@ -217,7 +214,7 @@ class Downloads
      *
      * @return null
      */
-    private function refresh_title()
+    private function refreshTitle()
     {
         ?>
         <h2>Download Genotype and Phenotype Data</h2>
@@ -230,7 +227,7 @@ class Downloads
      *
      * @param string $version Tassel version of output
      */
-    private function type1_session($version)
+    private function type1Session($version)
     {
         global $mysqli;
         $datasets_exp = "";
@@ -270,13 +267,13 @@ class Downloads
             $lines_str = implode(",", $lines);
             $experiments_g = $_SESSION['geno_exps'];
             $geno_str = $experiments_g[0];
-            $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $geno_str";
+            $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = ?";
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
                 mysqli_stmt_bind_param($stmt, "i", $geno_str);
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_bind_result($stmt, $marker_uid);
                 while (mysqli_stmt_fetch($stmt)) {
-                    $markers[] = $uid;
+                    $markers[] = $marker_uid;
                 }
                 mysqli_stmt_close($stmt);
             }
@@ -441,7 +438,7 @@ class Downloads
      * use this download when selecting program and year
      * @param string $version Tassel version of output
      */
-    private function type2_session($version)
+    private function type2Session($version)
     {
         $subset = "yes";
         $datasets_exp = "";
@@ -494,11 +491,11 @@ class Downloads
         $dtype = "";
  
         $filename = "traits.txt";
-        $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+        $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
         if ($version == "V8") {
-            $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
+            $output = $this->type1_build_traits_download($experiments_t, $phenotype, $datasets_exp);
         } elseif ($version == "V9") {
-            $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype); 
+            $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype);
         }
         fwrite($h, $output);
         fclose($h);
@@ -1132,10 +1129,11 @@ class Downloads
 
     /**
      * Build trait download file for Tassel program interface
-     * @param unknown_type $experiments
-     * @param unknown_type $traits
-     * @param unknown_type $datasets
-     * @param unknown_type $subset
+     * @param string $experiments
+     * @param string $traits
+     * @param string $datasets
+     * @param string $subset
+     * @param string $dtype
      * @return string
      */
     private function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset, $dtype)
@@ -1440,9 +1438,11 @@ class Downloads
 	
 	/**
 	 * build genotype data file when given set of lines and markers
-	 * @param unknown_type $lines
-	 * @param unknown_type $markers
-	 * @param unknown_type $dtype
+	 * @param array $lines
+	 * @param array $markers
+	 * @param string $dtype
+         * @param filetype $h
+         * @return string
 	 */
 	function type2_build_markers_download($lines,$markers,$dtype, $h)
 	{
@@ -1655,15 +1655,6 @@ class Downloads
            $marker_list_type[$marker_uid] = $row[4];
          }
 
-	 //get location in allele_byline for each marker
-	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-	 $i=0;
-	 while ($row = mysqli_fetch_array($res)) {
-	   $marker_idx_list[$row[0]] = $i;
-	   $i++;
-	 }
-	 
 	 //get header, tassel requires all fields even if they are empty
          if ($dtype == "qtlminer") {
            $outputheader = "rs\talleles\tchrom\tpos";
@@ -1685,7 +1676,6 @@ class Downloads
 	 //using a subset of markers so we have to translate into correct index
          $pos_index = 0;
 	 foreach ($marker_list_all as $marker_id => $val) {
-	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
           $marker_type = $marker_list_type[$marker_id];
