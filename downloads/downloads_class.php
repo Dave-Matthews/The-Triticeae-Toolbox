@@ -328,7 +328,7 @@ class Downloads
         if ($version == "V3") {
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-            $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
+            $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
         } elseif ($version == "V4") { //Download for Tassel
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
@@ -358,7 +358,7 @@ class Downloads
             if ($typeG == "true") {
                 $filename = "snpfile.txt";
                 $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-                $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
+                $this->type2_build_markers_download($lines, $markers, $dtype, $h);
                 fwrite($h, $output);
                 fclose($h);
             }
@@ -380,7 +380,7 @@ class Downloads
             }
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-            $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
+            $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
         } elseif ($version == "V7") {  //Download for synbreed
             $dtype = "AB";
@@ -393,7 +393,7 @@ class Downloads
             }
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-            $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
+            $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
         } elseif ($version == "vcf") {
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
