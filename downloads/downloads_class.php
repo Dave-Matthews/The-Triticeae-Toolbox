@@ -98,7 +98,6 @@ class Downloads
     /**
      * load header and footer then check session to use existing data selection
      *
-     * @return null
      */
     private function type1Select()
     {
@@ -114,15 +113,10 @@ class Downloads
     /**
      * Checks the session variable, if there is lines data saved then go directly to the lines menu
      *
-     * @return null
      */
     private function type1Checksession()
     {
-        global $mysqli;
         echo "<div id=\"title\">";
-        $phenotype = "";
-        $lines = "";
-        $markers = "";
         $saved_session = "";
         $message1 = $message2 = "";
         $download_geno = "";
@@ -139,7 +133,6 @@ class Downloads
                 $saved_session = "$tmp phenotypes ";
             }
             $message2 = "download phenotype and genotype data";
-            $phenotype = $_SESSION['phenotype'];
             $download_pheno = "checked";
         } else {
             $message1 = "0 phenotypes";
@@ -152,7 +145,6 @@ class Downloads
             } else {
                 $saved_session = $saved_session . ", $countLines lines";
             }
-            $lines = $_SESSION['selected_lines'];
             if (isset($_SESSION['geno_exps'])) {
                 $download_genoe = "checked";
             } else {
@@ -162,7 +154,6 @@ class Downloads
         if (isset($_SESSION['clicked_buttons'])) {
             $tmp = count($_SESSION['clicked_buttons']);
             $saved_session = $saved_session . ", $tmp markers";
-            $markers = $_SESSION['clicked_buttons'];
             $download_geno = "checked";
         } else {
             if ($message2 == "") {
@@ -212,7 +203,6 @@ class Downloads
     /**
      * display a spinning activity image when a slow function is running
      *
-     * @return null
      */
     private function refreshTitle()
     {
@@ -354,9 +344,9 @@ class Downloads
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             if ($typeGE == "true") {
-                $output = type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
+                type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
             } else {
-                $output = $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
+                $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
             }
             fclose($h);
         } elseif ($version == "V5") { //Download for R
@@ -378,9 +368,9 @@ class Downloads
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             if ($typeGE == "true") {
-                $output = type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
+                type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
             } else {
-                $output = $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
+                $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
             }
             fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
@@ -507,9 +497,8 @@ class Downloads
         ?>
         <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
         <?php
-
     }
-	
+
     /**
      * starting with year
      */
@@ -609,7 +598,7 @@ class Downloads
 	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 	      $row = mysqli_fetch_assoc($res)
 	      ?>
-	      <option disabled value="<?php $uid ?>">
+	      <option disabled value="">
 	      <?php echo $row['line_record_name'] ?>
 	      </option>
 	      <?php
@@ -648,7 +637,7 @@ class Downloads
 	        $row = mysqli_fetch_assoc($res)
 	        ?>
 	        <option disabled value="
-	        <?php $uid ?>">
+	        <?php echo $uid ?>">
 	        <?php echo $row['marker_name'] ?>
 	        </option>
 	        <?php
@@ -740,7 +729,6 @@ class Downloads
     /**
      * displays current selection and prompts for genetic map if not selected
      *
-     * @return null
      */
     private function verifyLines()
     {
@@ -866,7 +854,6 @@ class Downloads
     /**
      * starting with lines display marker data
      *
-     * @return null
      */
     function step5_lines()
     {
