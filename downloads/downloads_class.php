@@ -59,29 +59,26 @@ class Downloads
             case 'step1yearprog':
                 $this->step1Yearprog();
                 break;
-            case 'searchLines':
-                $this->step1_search_lines();
-                break;
             case 'download_session_v4':
-                $this->type1Session(V4);
+                $this->type1Session('V4');
                 break;
             case 'download_session_v5':
-                $this->type1Session(V5);
+                $this->type1Session('V5');
                 break;
             case 'download_session_v6':
-                $this->type1Session(V6);
+                $this->type1Session('V6');
                 break;
             case 'download_session_v7':
-                $this->type1Session(V7);
+                $this->type1Session('V7');
                 break;
             case 'download_session_v8':
-                $this->type2Session(V8);
+                $this->type2Session('V8');
                 break;
             case 'download_session_v9':
-                $this->type2Session(V9);
+                $this->type2Session('V9');
                 break;
             case 'download_session_vcf':
-                $this->type1Session(vcf);
+                $this->type1Session('vcf');
                 break;
             case 'refreshtitle':
                 $this->refreshTitle();
@@ -504,8 +501,8 @@ class Downloads
      */
     private function step1Yearprog()
     {
-    global $mysqli
-     ?>
+        global $mysqli
+        ?>
     <div id="step11" style="float: left; margin-bottom: 1.5em;">
     <table id="phenotypeSelTab" class="tableclass1">
     <tr>
@@ -513,18 +510,17 @@ class Downloads
     </tr>
     <tr><td>
     <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-    <?php
-    $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-    WHERE e.experiment_type_uid = et.experiment_type_uid
-    AND et.experiment_type_name = 'phenotype'
-    GROUP BY e.experiment_year ASC";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_assoc($res))
-    {
-    ?>
+        <?php
+        $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
+        WHERE e.experiment_type_uid = et.experiment_type_uid
+        AND et.experiment_type_name = 'phenotype'
+        GROUP BY e.experiment_year ASC";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
+        ?>
     <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
     <?php
-    }
+        }
     ?>
     </select>
     </td>
@@ -999,7 +995,6 @@ class Downloads
     /**
     * when no marker data selected then only show phenotype download button
     *
-    * @return null
     */
     function step6_lines()
     {
@@ -1429,8 +1424,7 @@ class Downloads
 	 * @param array $lines
 	 * @param array $markers
 	 * @param string $dtype
-         * @param filetype $h
-         * @return string
+         * @param file $h
 	 */
 	function type2_build_markers_download($lines,$markers,$dtype, $h)
 	{
