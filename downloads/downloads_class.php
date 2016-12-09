@@ -57,7 +57,7 @@ class Downloads
                 $this->step6_lines();
                 break;
             case 'step1yearprog':
-                $this->step1_yearprog();
+                $this->step1Yearprog();
                 break;
             case 'searchLines':
                 $this->step1_search_lines();
@@ -502,7 +502,7 @@ class Downloads
     /**
      * starting with year
      */
-    private function step1_yearprog()
+    private function step1Yearprog()
     {
     global $mysqli
      ?>
@@ -1054,7 +1054,7 @@ class Downloads
             $line_list[$line_uid] = $line_name;
         }
 
-        $trait_name = "";
+        $trait_list = array();
         $sql = "select phenotype_uid, phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_array($res)) {
@@ -1072,6 +1072,7 @@ class Downloads
             $expr_list[$uid] = $expr_name;
         }
 
+        $lines = array();
         $sql = "select distinct(tb.line_record_uid)
             from tht_base as tb, phenotype_data as pd
             where tb.experiment_uid IN ($experiments) AND
@@ -1092,13 +1093,13 @@ class Downloads
             pd.tht_base_uid = tb.tht_base_uid
             and pd.phenotype_uid IN ($traits)";
             $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
-            mysqli_stmt_bind_param($stmt, "ii", $line_uid, $expr_uid) or die(mysqli_error($mysqli));
             $ncols = count($empty);
             foreach ($lines as $key=>$line_uid) {
                 $line_name = $line_list[$line_uid];
                 $count = 0;
                 foreach ($expr_list as $expr_uid=>$expr_name) {
                     $outarray = $empty;
+                    $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_bind_result($stmt, $trait_uid, $value);
                     while (mysqli_stmt_fetch($stmt)) {
