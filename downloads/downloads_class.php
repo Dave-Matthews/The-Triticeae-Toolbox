@@ -113,6 +113,7 @@ class Downloads
      */
     private function type1Checksession()
     {
+        global $mysqli;
         echo "<div id=\"title\">";
         $saved_session = "";
         $message1 = $message2 = "";
@@ -529,51 +530,51 @@ class Downloads
     <?php
     }
     
-	/**
-	 * main entry point when there is a line selection in session variable
-	 */
+    /**
+     * main entry point when there is a line selection in session variable
+     */
     private function type1_lines_trial_trait()
     {
-		?>
-		<div id="step11">
-		<?php
-	    $this->step1_lines();
-		?>
-	    </div></div>    
-	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
-	    <?php 
-	    $this->step2_lines();
-	    ?></div>
-	    <div id="step3" style="float: left; margin-bottom: 1.5em;">
-            <?php
-            $this->step3_lines();
-            ?></div>
-	    <div id="step4" style="float: left; margin-bottom: 1.5em;">
-            <?php
-            $this->step4_lines();
-            ?></div>
-            <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-            <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-            <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
-            <script type="text/javascript" src="downloads/downloads07.js"></script>
-            <script type="text/javascript">
-            var mm = 50;
-            var mmaf = 5;
-            if ( window.addEventListener ) {
-                    window.addEventListener( "load", select_download(), false );
-            } else if ( window.attachEvent ) {
-                    window.attachEvent( "onload", select_download);
-            } else if ( window.onload ) {
-                    window.onload = select_download();
-            }
-            </script>
-	    </div></div>
-	    <?php 	
-	}
-	
-	/**
-	 * starting with lines display the selected lines
-	 */
+        ?>
+        <div id="step11">
+        <?php
+        $this->step1_lines();
+        ?>
+    </div></div>    
+    <div id="step2" style="float: left; margin-bottom: 1.5em;">
+    <?php
+        $this->step2_lines();
+        ?></div>
+        <div id="step3" style="float: left; margin-bottom: 1.5em;">
+        <?php
+        $this->step3_lines();
+        ?></div>
+        <div id="step4" style="float: left; margin-bottom: 1.5em;">
+        <?php
+        $this->step4_lines();
+        ?></div>
+        <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
+        <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+        <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+        <script type="text/javascript" src="downloads/downloads07.js"></script>
+        <script type="text/javascript">
+        var mm = 50;
+        var mmaf = 5;
+        if ( window.addEventListener ) {
+                window.addEventListener( "load", select_download(), false );
+        } else if ( window.attachEvent ) {
+                window.attachEvent( "onload", select_download);
+        } else if ( window.onload ) {
+                window.onload = select_download();
+        }
+        </script>
+        </div></div>
+        <?php
+    }
+
+    /**
+     * starting with lines display the selected lines
+     */
 	private function step1_lines()
 	{
             global $mysqli;
