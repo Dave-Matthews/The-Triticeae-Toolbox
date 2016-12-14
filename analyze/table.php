@@ -74,13 +74,20 @@ if (!$traits or !$trials) {
     }
 
     // Optionally remove Lines that have any missing values for a Trait/Trial.
+    $goodLineCnt = 0;
     foreach ($traits as $trait) {
         foreach ($trials as $trial) {
+            $goodValCnt = 0;
             foreach ($lines as $line) {
-                if (!$vals[$trait][$trial][$line]) {
+                if ($vals[$trait][$trial][$line]) {
+                    $goodValCnt++;
+                } else {
                     $sparselines[] = $line;
                     $missingdata = true;
                 }
+            }
+            if ($goodValCnt > 0) {
+                $goodLineCnt++;
             }
             if (!empty($sparselines)) {
                 $sparselines = array_unique($sparselines);
@@ -88,8 +95,12 @@ if (!$traits or !$trials) {
             }
         }
     }
-    if ($_GET['balance'] == 'yes') 
+    if ($goodLineCnt == 0) {
+        echo "<font color=red>Warning: Too many lines with missing data. Please select lines that are measured in all trials.</font><br>\n";
+    }
+    if ($_GET['balance'] == 'yes') {
         $lines = array_diff($lines, $sparselines);
+    }
 
   // Write $vals to a temporary file for R to calculate LSDs.
   // output row = Traitname, Trialname, Linename, Value
