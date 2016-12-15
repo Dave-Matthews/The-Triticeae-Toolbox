@@ -27,7 +27,7 @@ only expected to differ by more than the Least Significant Difference (<em>LSD</
 in 5% of experiments.<br><br>
 If a number of lines have the same true mean value, the maximum difference
 between any pair of lines is only expected to exceed the Honestly
-Significant Difference (<em>HSD</em>) in 5% of experiments.<br><br>
+Significant Difference (<em>HSD</em>) in 5% of experiments.<br>
 
 </div>
 
@@ -42,7 +42,14 @@ if (!$traits or !$trials) {
     // Retrieve the data into array $vals.
     foreach ($traits as $trait) {
         foreach ($trials as $trial) {
-            $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
+            $sql = "select trial_code from experiments where experiment_uid = ?l";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "i", $trial);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $trialname);
+                mysqli_stmt_fetch($stmt);
+                mysqli_stmt_close($stmt);
+            }
             $sql = "select lr.line_record_name, pd.value
 	      from line_records lr, tht_base t, phenotype_data pd
 	      where t.experiment_uid = $trial
@@ -74,20 +81,13 @@ if (!$traits or !$trials) {
     }
 
     // Optionally remove Lines that have any missing values for a Trait/Trial.
-    $goodLineCnt = 0;
     foreach ($traits as $trait) {
         foreach ($trials as $trial) {
-            $goodValCnt = 0;
             foreach ($lines as $line) {
-                if ($vals[$trait][$trial][$line]) {
-                    $goodValCnt++;
-                } else {
+                if (!$vals[$trait][$trial][$line]) {
                     $sparselines[] = $line;
                     $missingdata = true;
                 }
-            }
-            if ($goodValCnt > 0) {
-                $goodLineCnt++;
             }
             if (!empty($sparselines)) {
                 $sparselines = array_unique($sparselines);
@@ -95,27 +95,31 @@ if (!$traits or !$trials) {
             }
         }
     }
-    if ($goodLineCnt == 0) {
-        echo "<font color=red>Warning: Too many lines with missing data. Please select lines that are measured in all trials.</font><br>\n";
-    }
     if ($_GET['balance'] == 'yes') {
         $lines = array_diff($lines, $sparselines);
+    } else {
+        $tmp = array_diff($lines, $sparselines);
+        $tmpCount = count($tmp);
+        if ($tmpCount == 0) {
+            echo "<font color=red>Warning: Too many lines with missing data. Please select lines that are measured in all trials.</font><br>\n";
+        }
     }
 
   // Write $vals to a temporary file for R to calculate LSDs.
   // output row = Traitname, Trialname, Linename, Value
   // use uid to make it easier to match results with input
-  foreach ($traits as $trait) {
-    $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-    foreach ($trials as $trial) {
-      $trlname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
-      foreach ($lines as $line) {
-	$val = $vals[$trait][$trial][$line];
-	if (!$val) 
-	  $val = "NA";
-	$outdata .= $trait .",". $trial .",". $line .",". $val ."\n";
+    foreach ($traits as $trait) {
+        $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
+        foreach ($trials as $trial) {
+            $trlname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
+            foreach ($lines as $line) {
+                $val = $vals[$trait][$trial][$line];
+                if (!$val) {
+                    $val = "NA";
+                }
+                $outdata .= $trait .",". $trial .",". $line .",". $val ."\n";
+          }
       }
-    }
   }
   // Make the filename unique to deal with concurrency.
   $time = time();
@@ -189,6 +193,13 @@ if (!$traits or !$trials) {
       echo "<br>Error: no output from R script /tmp/tht/TableReportOut.txt.$time\n";
   }
 
+  // If there's any missing data offer to remove it.
+  if ($missingdata) {
+    if ($_GET['balance'] == 'yes')
+      $cbox = "checked";
+    print "<input type=checkbox $cbox onclick='javascript:balancedata(this)'> Remove lines with missing data.<P>";
+  }
+
   // Display the table on the page.
   $traitnumber = 0;
   foreach ($traits as $trait) {
@@ -247,13 +258,6 @@ if (!$traits or !$trials) {
     print "</table><p>";
     $traitnumber++;
   }
-}
-
-// If there's any missing data offer to remove it.
-if ($missingdata) {
-  if ($_GET['balance'] == 'yes')
-    $cbox = "checked";
-  print "<input type=checkbox $cbox onclick='javascript:balancedata(this)'> Remove lines with missing data.<P>";
 }
 
 ?>
