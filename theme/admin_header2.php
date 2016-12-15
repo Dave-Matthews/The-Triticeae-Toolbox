@@ -4,13 +4,14 @@
  *
  * PHP version 5.3
  *
- * @author  Clay Birkett <clb343@cornell.edu>
- * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link    http://triticeaetoolbox.org/wheat/theme/admin_header.php
+ * @author   Clay Birkett <clb343@cornell.edu>
+ * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link     http://triticeaetoolbox.org/wheat/theme/admin_header.php
  *
  */
 ?>
-<!DOCTYPE HTML>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
@@ -21,6 +22,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <base href="<?php echo $config['base_url']; ?>" >
+<!--link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css"-->
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -138,8 +140,8 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         </ul>
         <li><a href="<?php echo $config['base_url']; ?>analyze/outlier.php" title="Filter outliers">Filter outliers</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/training.php" title="Optimize training set">Optimize training set</a>
-	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
-        <li><a href="" title="Summary statistics">Summary statistics</a>
+        <li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
+        <li><a href="" title="Traits and Trials statistics">Traits and Trials statistics</a>
         <ul>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>
@@ -148,13 +150,13 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value vs Trials">Compare Trials</a>
-	<li>
-	  <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
-	    Track Alleles through Pedigree</a>
-	<li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
-	<li><a href="<?php echo $config['base_url']; ?>genotyping/sum_lines.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
-	<li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
-	    BLAST Search against Markers</a>
+        <li>
+          <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
+          Track Alleles through Pedigree</a>
+        <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
+        <li><a href="<?php echo $config['base_url']; ?>genotyping/sum_lines.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
+        <li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
+          BLAST Search against Markers</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
         <li><a href="/jbrowse/?data=<?php echo $species ?>" title="JBrowse">JBrowse - Genome Browser</a>
         <?php
@@ -167,7 +169,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         }
         ?>
         <!--li><a href="<?php echo $config['base_url']; ?>downloads/downloads_tassel.php" title="Open TASSEL with selected data">Open TASSEL</a-->
-	  <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
+        <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
       </ul>
     <li><a href="" title="">Download</a>
       <ul>
@@ -287,38 +289,38 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
   <?php if ( isset( $_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ):  ?>
     <li>
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
-            <?php else : ?>
+            <?php else: ?>
     <li>
       <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
-    <?php endif; ?>
+   <?php endif; ?>
 
 <?php
-echo "<p><li><b>Current selections:</b>";
-echo "<li><a href='".$config['base_url']."pedigree/line_properties.php'>Lines:</a> ". count($_SESSION['selected_lines']);
-echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers:</a> ";
-if (isset($_SESSION['clicked_buttons'])) {
-    echo count($_SESSION['clicked_buttons']);
-} elseif (isset($_SESSION['geno_exps_cnt'])) {
-    echo number_format($_SESSION['geno_exps_cnt']);
-} else {
-    echo "All";
-}
-echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits:</a> ";
-if (isset($_SESSION['selected_traits'])) {
-    echo count($_SESSION['selected_traits']);
-} elseif (isset($_SESSION['phenotype'])) {
-    echo count($_SESSION['phenotype']);
-} else {
-    echo "0";
-}
-echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
-if (isset($_SESSION['selected_trials'])) {
-    echo ": " . count($_SESSION['selected_trials']);
-}
-echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
-if (isset($_SESSION['geno_exps'])) {
-    echo ": " . count($_SESSION['geno_exps']);
-}
+   echo "<p><li><b>Current selections:</b>";
+   echo "<li><a href='".$config['base_url']."pedigree/line_properties.php'>Lines:</a> ". count($_SESSION['selected_lines']);
+   echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers:</a> ";
+   if (isset($_SESSION['clicked_buttons'])) {
+     echo count($_SESSION['clicked_buttons']);
+   } elseif (isset($_SESSION['geno_exps_cnt'])) {
+     echo number_format($_SESSION['geno_exps_cnt']);
+   } else {
+     echo "All";
+   }
+   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits:</a> ";
+   if (isset($_SESSION['selected_traits'])) {
+     echo count($_SESSION['selected_traits']);
+   } elseif (isset($_SESSION['phenotype'])) {
+     echo count($_SESSION['phenotype']);
+   } else {
+     echo "0";
+   }
+   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
+   if (isset($_SESSION['selected_trials'])) {
+       echo ": " . count($_SESSION['selected_trials']);
+   }
+   echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
+   if (isset($_SESSION['geno_exps'])) {
+       echo ": " . count($_SESSION['geno_exps']);
+   }
 ?>
 
   <br><br><li>
