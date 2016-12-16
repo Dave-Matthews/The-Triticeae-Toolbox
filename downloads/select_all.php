@@ -113,7 +113,7 @@ class SelectPhenotypeExp
                 $this->type2_markers();
                 break;
             case 'refreshtitle':
-                echo $this->refresh_title();
+                $this->refresh_title();
                 break;
             default:
                 $this->type1Select();
