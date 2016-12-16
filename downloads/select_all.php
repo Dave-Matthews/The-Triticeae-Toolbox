@@ -486,6 +486,7 @@ class SelectPhenotypeExp
 	<select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_trial(this.options)">
         <?php
 
+        $sel_list = array();
 	$sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid, e.experiment_year
 	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
 	 WHERE
@@ -1821,31 +1822,30 @@ class SelectPhenotypeExp
     </select></p>
     <div>
     <table class="tableclass1">
-        <tr><th>Trials</th></tr>
-        <tr><td>
-        <select name="experiments" multiple="multiple"
-        style="height: 12em" onchange="javascript: update_trials(this.options)">
-        <?php
-        foreach ($exptuid_ary as $exptuid) {
-            foreach ($years_ary as $year) {
-              $sql = "SELECT experiment_uid as id, trial_code as name from experiments
+    <tr><th>Trials</th></tr>
+    <tr><td>
+    <select name="experiments" multiple="multiple"
+    style="height: 12em" onchange="javascript: update_trials(this.options)">
+    <?php
+    foreach ($exptuid_ary as $exptuid) {
+        foreach ($years_ary as $year) {
+            $sql = "SELECT experiment_uid as id, trial_code as name from experiments
               where experiment_set_uid = ? and experiment_year = ?";
-              if ($stmt = mysqli_prepare($mysqli, $sql)) {
-                  mysqli_stmt_bind_param($stmt, "ii", $exptuid, $year);
-                  mysqli_stmt_execute($stmt);
-                  mysqli_stmt_bind_result($stmt, $id, $name);
-                  while (mysqli_stmt_fetch($stmt)) {
-                    ?>
-                    <option value="<?php echo $id ?>"><?php echo $name ?></options>
-                    <?php
-                  }
-                  mysqli_stmt_close($stmt);
-              }
+            $stmt = $mysqli->prepare($sql);
+            $stmt->bind_param("ii", $exptuid, $year);
+            $stmt->execute();
+            $stmt->bind_result($id, $name);
+            while ($stmt->fetch()) {
+                ?>
+                <option value="<?php echo $id ?>"><?php echo $name ?></options>
+                <?php
             }
+            $stmt->close();
         }
-        echo "</select>";
-        echo "</table>";
-        echo "</div>";
+    }
+    echo "</select>";
+    echo "</table>";
+    echo "</div>";
     }
 
     /**
