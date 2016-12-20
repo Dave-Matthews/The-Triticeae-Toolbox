@@ -312,7 +312,6 @@ class Annotations_Check
 	// Start reading in the trials.
         $index = -1;
         for ($i = 'B'; $i <= $cols; $i++) {
-	  $colname = chr($i+64);
           $index++;
 	  // Set the index for array $experiments[].
 
@@ -361,13 +360,13 @@ class Annotations_Check
 	  $curr_year = $today['year'] + 1;
 	  if (($year < 1950) OR ($year > $curr_year)) {
 	    echo "Trial Year value not in range [1950 - current year]: 
-                  <font color=red><b>'$year'</b></font>, column $colname<br>";
+                  <font color=red><b>'$year'</b></font>, column $i<br>";
 	    $error_flag = ($error_flag) | (1);
 	  }
 		
 	  $location = $experiments[$index]->location;
 	  if (!$location) {
-	    echo "Column <b>$colname</b>: Location (city, state/province/country) is required.<br>";
+	    echo "Column <b>$i</b>: Location (city, state/province/country) is required.<br>";
 	    $error_flag = ($error_flag) | (2);
           } elseif (!isset($valid_loc[$location])) {
             echo "<font color=red>Warning: $location is not defined in the database, is the spelling correct?</font><br>";
@@ -375,7 +374,7 @@ class Annotations_Check
 
 	  $collab = $experiments[$index]->collaborator;
 	  if (!$collab) {
-	    echo "<b>Error</b>, column <b>".strtoupper($colname)."</b>: Collaborator name (who performed the experiment) is required. Value is \"".$experiments[$index]->collaborator."\".<br>";
+	    echo "<b>Error</b>, column <b>".strtoupper($i)."</b>: Collaborator name (who performed the experiment) is required. Value is \"".$experiments[$index]->collaborator."\".<br>";
 	    $error_flag = ($error_flag) | (8);
           }
 
@@ -391,7 +390,7 @@ class Annotations_Check
             $experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
         } 
 	else {
-	  echo "<b>Error</b>, column $colname: 'Number of entries' must be an integer, value is '$numberofentries_row[$i]'.<br/>";
+	  echo "<b>Error</b>, column $i: 'Number of entries' must be an integer, value is '$numberofentries_row[$i]'.<br/>";
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
         }
  
@@ -407,7 +406,7 @@ class Annotations_Check
 	$teststr= addcslashes(trim($plantingdate_row[$i]),"\0..\37!@\177..\377");
 	$phpdate = date_create_from_format('n/j/Y', $teststr);
 	if ($phpdate === FALSE) {
-	  echo "Couldn't parse Planting Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
+	  echo "Couldn't parse Planting Date for column <font color=red><b>".$i."</b></font>.<p>";
 	  //print_h(date_get_last_errors());  // debug
 	}
 	else {
@@ -427,7 +426,7 @@ class Annotations_Check
 	if ($teststr) {
 	  $phpdate = date_create_from_format('n/j/Y', $teststr);
 	  if ($phpdate === FALSE) {
-	    echo "Couldn't parse Harvest Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
+	    echo "Couldn't parse Harvest Date for column <font color=red><b>".$i."</b></font>.<p>";
 	  }
 	  else {
 	    $fdate = date_format($phpdate, 'n/j/Y');
@@ -447,7 +446,7 @@ class Annotations_Check
 	if ($teststr) {
 	  $phpdate = date_create_from_format('n/j/Y', $teststr);
 	  if ($phpdate === FALSE) {
-	    echo "Couldn't parse Begin Weather Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
+	    echo "Couldn't parse Begin Weather Date for column <font color=red><b>".$i."</b></font>.<p>";
 	  }
 	  else {
 	    $fdate = date_format($phpdate, 'n/j/Y');
@@ -466,7 +465,7 @@ class Annotations_Check
 	$experiments[$index]->greenhouse = mysqli_real_escape_string($mysqli, $greenhouse_row[$i]);
 	$gh = $experiments[$index]->greenhouse;
 	if ($gh != "yes" AND $gh != "no") {
-	  echo "<b>Error</b>, column <b>".chr($i+64)."</b>: 'Greenhouse trial?' must be yes or no, not \"$gh\".<br>";
+	  echo "<b>Error</b>, column <b>".$i."</b>: 'Greenhouse trial?' must be yes or no, not \"$gh\".<br>";
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
 	
@@ -480,7 +479,7 @@ class Annotations_Check
 	$experiments[$index]->irrigation = mysqli_real_escape_string($mysqli, $irrigation_row[$i]);
 	$ir = $experiments[$index]->irrigation;
 	if ($ir != "yes" AND $ir != "no") {
-	  echo "<b>Error</b>, column <font color=red><b>".chr($i+64)."</b></font>: 'Irrigation' must be yes or no, not \"$ir\".<br>";
+	  echo "<b>Error</b>, column <font color=red><b>".$i."</b></font>: 'Irrigation' must be yes or no, not \"$ir\".<br>";
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
 
@@ -709,7 +708,6 @@ class Annotations_Check
           /* Start reading in the Trials.  */
           $index = -1;
 	  for ($i = 'B'; $i <= $cols; $i++) {
-	  $colname = chr($i+64);
           $index++;
           if (DEBUG > 1) {echo "index = $index<br>\n";}
 	  // Set the index for array $experiments[].
@@ -735,7 +733,7 @@ class Annotations_Check
 	  // dem may12: Allow old data, and next year.
 	  $curr_year = $today['year'] + 1;
 	  if (($experiments[$index]->year < 1950) OR ($year > $curr_year)) {
-	    echo "Column $colname: Year <b>'$year'</b> not in range [1950 - current year].<br>";
+	    echo "Column $i: Year <b>'$year'</b> not in range [1950 - current year].<br>";
 	    $error_flag = ($error_flag) | (1);
 	  }
 
