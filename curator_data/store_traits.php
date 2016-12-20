@@ -12,7 +12,7 @@ include("../theme/admin_header.php");
 /*
  * Logged in page initialization
  */
-connect();
+$mysqli = connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
 ob_start();
@@ -24,7 +24,7 @@ $tmpdir=$_post['tmpdir'];
 print "<h2>Storing the traits from: " . basename($infilename) . "</h2>";
 print "<div class=\"boxContent\">";
 
-require_once("../lib/Excel/reader.php");	//include excel reader
+require_once "../lib/Excel/reader.php"; //include excel reader
 
 /* Creating the object */
 $data = new Spreadsheet_Excel_Reader();
@@ -72,14 +72,14 @@ for ($i = 1; $i <= $data->sheets[0]['numRows']; $i++) {
     // DO NOT create a new category.  Die if it doesn't already exist.
     /* $cat_id = array_pop(add_attribute("phenotype_category_name",$line[1],"phenotype_category", "phenotype_category_uid")); */
     $sql = "select phenotype_category_uid from phenotype_category where phenotype_category_name = '$line[1]'";
-    $res = mysql_query($sql) or die(mysql_error());
-    if(mysql_num_rows($res) == 0) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if(mysqli_num_rows($res) == 0) {
       echo "Trait Category '$line[1]' in row $i is invalid.<br>";
       print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2);\">";
       exit;
     }
     else {
-      $row = mysql_fetch_row($res);
+      $row = mysqli_fetch_row($res);
       $cat_id = $row[0];
     }
 
@@ -87,14 +87,14 @@ for ($i = 1; $i <= $data->sheets[0]['numRows']; $i++) {
     // DO NOT create a new unit.  Die if it doesn't already exist.
     /* $unit_id = array_pop(add_attribute("unit_name", addslashes($line[4]),"units", "unit_uid")); */
     $sql = "select unit_uid from units where unit_name = '$line[4]'";
-    $res = mysql_query($sql) or die(mysql_error());
-    if(mysql_num_rows($res) == 0) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if(mysqli_num_rows($res) == 0) {
       echo "Unit '$line[4]' in row $i is invalid.<br>";
       print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2);\">";
       exit;
     }
     else {
-      $row = mysql_fetch_row($res);
+      $row = mysqli_fetch_row($res);
       $unit_id = $row[0];
     }
 
@@ -143,4 +143,4 @@ print "<p>Number of invalid input entries: $inum </p>";
 </div>
 
 
-<?php include("../theme/footer.php");?>
+<?php include "../theme/footer.php";?>

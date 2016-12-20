@@ -30,6 +30,7 @@ if (empty($_POST) or $_POST['WhichBtn']) {
             $yr[$value] = 'selected="selected"';
         }
     }
+    $species = array();
     if (is_array($_POST['species'])) {
         foreach ($_POST['species'] as $key => $value) {
             $species[$value] = 'selected="selected"';
@@ -114,7 +115,12 @@ $sql = "select pv.value from properties p, property_values pv
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($resp = mysqli_fetch_row($res)) {
     $s = $resp[0];
-    echo "<option value='$s' $species[$s]>$s</option>";
+    if (isset($species[$s])) {
+        $option = "selected";
+    } else {
+        $option = "";
+    }
+    echo "<option value='$s' $option]>$s</option>";
 }
 ?>
   </select><br><br>
@@ -136,21 +142,22 @@ while ($resp = mysqli_fetch_row($res)) {
       <select size=5 
       onfocus="DispPropSel(this.value, 'PropCategory')" 
       onchange="DispPropSel(this.value, 'PropCategory')">
-<?php 
+<?php
 // DEM jul2016: Show only categories that do include Genetic Characters.
 /* showTableOptions("phenotype_category");  */
 $sql = "select * from phenotype_category where phenotype_category_uid in (select phenotype_category_uid from properties) order by phenotype_category_name";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-while($row = mysqli_fetch_assoc($res)) 
-  echo "<option value=\"$row[phenotype_category_uid]\">$row[phenotype_category_name]</option>";
+while ($row = mysqli_fetch_assoc($res)) {
+    echo "<option value=\"$row[phenotype_category_uid]\">$row[phenotype_category_name]</option>";
+}
 ?>
-	      </select>
-	    <td><p>Select a Category.</p>
-	    <td>
-	    <td>
-	  </tr>
-	  <!-- Empty row to display the resulting choices and show the previous ones. -->
-	  <tr><td colspan=3>
+      </select>
+      <td><p>Select a Category.</p>
+      <td>
+      <td>
+      </tr>
+      <!-- Empty row to display the resulting choices and show the previous ones. -->
+      <tr><td colspan=3>
 <?php
 if (!empty($propvals)) {
     foreach ($propvals as $pv) {
@@ -158,14 +165,14 @@ if (!empty($propvals)) {
     }
 }
 ?>
-	  </tr>
-	</table>
-      <td style="padding-left:30px"><h3>Preselected line sets</h3>
-	<table>
-	  <tr style="vertical-align:top">
-	    <th>Panel
-	      <tr>
-		<td><select name="panel[]" multiple="multiple" size="6" style="width: 12em; height: 88px;">
+  </tr>
+  </table>
+  <td style="padding-left:30px"><h3>Preselected line sets</h3>
+  <table>
+  <tr style="vertical-align:top">
+  <th>Panel
+  <tr>
+  <td><select name="panel[]" multiple="multiple" size="6" style="width: 12em; height: 88px;">
 <?php
 if (loginTest2()) {
     $row = loadUser($_SESSION['username']);

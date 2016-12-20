@@ -1,60 +1,53 @@
 <?php
 /**
  * Plot level phenotype import
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
- * @link     http://triticeaetoolbox.org/wheat/curator_data/mean_plot_exp.php
- * 
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/mean_plot_exp.php
  */
 
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
-connect();
 $mysqli = connecti();
 loginTest();
 
 new Data_Check($_POST['function']);
 
-/** Using a PHP class to implement the import feature
+/**
+ *  Using a PHP class to implement the import feature
  *
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/mean_plot_exp.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/mean_plot_exp.php
  **/
 
 class Data_Check
 {
     /**
      * Using the class's constructor to decide which action to perform
-     * 
+     *
      * @param string $function action to perform
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
-        case 'typeDatabase':
-            $this->typeDatabase(); /* update database */
-            break;
-        default:
-            $this->typeExperimentCheck(); /* intial case*/
-            break;
+        switch ($function) {
+            case 'typeDatabase':
+                $this->typeDatabase(); /* update database */
+                break;
+            default:
+                $this->typeExperimentCheck(); /* intial case*/
+                break;
         }
     }
 
     /**
-     * display header and footer
-     * 
+     * Display header and footer
+     *
      * @return NULL
      */
     function typeDatabase()
@@ -68,7 +61,7 @@ class Data_Check
     }
 
     /**
-     * save calculated means to database
+     * Save calculated means to database
      * 
      *  @return NULL
      */
@@ -258,6 +251,28 @@ class Data_Check
          }
          fclose($h);
          echo "</table>\n";
+     }
+
+     //update string of measured traits in the experiment
+     $sql = "SELECT p.phenotype_uid AS id, p.phenotypes_name AS name
+             FROM phenotypes AS p, tht_base AS t, phenotype_data AS pd
+             WHERE pd.tht_base_uid = t.tht_base_uid
+             AND p.phenotype_uid = pd.phenotype_uid
+             AND t.experiment_uid = $experiment_uid
+             GROUP BY p.phenotype_uid";
+     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+     while ($row = mysqli_fetch_array($res)) {
+       $phenotypes[] = $row['name'];
+     }
+     $countfound = count($phenotypes);
+     if ($countfound > 0) {
+       $phenotypes = implode(', ',$phenotypes);
+       $sql = "UPDATE experiments SET traits =('$phenotypes') WHERE experiment_uid = $experiment_uid";
+       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+     } else {
+       $badtc = mysql_grab("select trial_code from experiments where experiment_uid = $experiment_uid");
+       echo "Warning: There are no trait values for Trial <b>$badtc</b>.<br>";
+       $emptytrials[$badtc] = $exid;
      }
 
 }

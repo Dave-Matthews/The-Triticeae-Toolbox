@@ -1,17 +1,14 @@
 <?php
 /**
  * Canopy Spectral Reflectance, Phenotype Results import
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_experiment_plot_check.php
- * 
+ *
  */
 
 require 'config.php';
@@ -19,7 +16,6 @@ require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 require '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
-connect();
 $mysqli = connecti();
 loginTest();
 
@@ -32,53 +28,51 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-new Data_Check($_GET['function']);
+new DataCheck($_GET['function']);
 
 /** Using a PHP class to implement Phenotype Results import
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_experiment_plot_check.php
- * 
+ *
  */
-class Data_Check
+class DataCheck
 {
-  /**
-   * Using the class's constructor to decide which action to perform
-   * @param unknown_type $function
-   */
-  public function __construct($function = null) {
-    switch($function)
-      {
-      case 'typeDatabase':
-        $this->type_Database(); /* update database */
-        break;
-      default:
-        $this->typeExperimentCheck(); /* intial case*/
-        break;
-      }
-  }
-
-/**
- * check experiment data before loading into database
- */
-private function typeExperimentCheck()
-        {
-                global $config;
-                include($config['root_dir'] . 'theme/admin_header.php');
-                echo "<h2>Plot Level Data Import</h2>";
-                $this->type_Experiment_Name();
-                $footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+    /**
+     * Using the class's constructor to decide which action to perform
+     * @param unknown_type $function
+     */
+    public function __construct($function = null)
+    {
+        switch ($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
+            default:
+                $this->typeExperimentCheck(); /* intial case*/
+                break;
         }
+    }
 
-/**
- * check experiment data before loading into database
- */
- private function type_Experiment_Name() {
-   global $mysqli;
+    /**
+     * check experiment data before loading into database
+     */
+    private function typeExperimentCheck()
+    {
+        global $config;
+        include $config['root_dir'] . 'theme/admin_header.php';
+        echo "<h2>Plot Level Data Import</h2>";
+        $this->type_Experiment_Name();
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
+
+    /**
+    * check experiment data before loading into database
+    */
+    private function type_Experiment_Name() {
+    global $mysqli;
 ?>
    <script type="text/javascript">
      function update_database(filepath, filename, username, rawdatafile) {
@@ -334,7 +328,7 @@ private function typeExperimentCheck()
                $val = $data[$i]["$j"];
                $plot = $data[$i]["B"];
                $plot_uid = $plot_list[$plot];
-               $sql = "select phenotype_data_uid from phenotype_plot_data where phenotype_uid = $uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
+               $sql = "select phenotype_data_uid from phenotype_plot_data where phenotype_uid = $phenotype_uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
                $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                if ($row = mysqli_fetch_array($res)) {
                  $sql = "update phenotype_plot_data set value = '$val' where phenotype_uid = $phenotype_uid and experiment_uid = $experiment_uid and plot_uid = $plot_uid";
@@ -424,7 +418,7 @@ private function typeExperimentCheck()
          } else {
            $sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW() WHERE input_file_log_uid = '$input_uid'";
          }
-         $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
+         $lin_table = mysqli_query($mysqli, $sql) or die("Database Error: Log record insertion failed - ". mysqli_error($mysqli) ."<br>".$sql);
        }  else {
           echo "<br><font color=red>Error - data not saved</font><br>\n";
        }

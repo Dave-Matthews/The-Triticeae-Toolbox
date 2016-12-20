@@ -28,19 +28,17 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
-new Data_Check($_GET['function']);
+new DataCheck($_GET['function']);
 
 /** Using a PHP class to implement Field Book import
  *
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <claybirkett@gmail.com>
+ * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_field_check.php
  *
  */
 
-class Data_Check
+class DataCheck
 {
     /**
      * Using the class's constructor to decide which action to perform
@@ -69,7 +67,7 @@ class Data_Check
         global $config;
         include $config['root_dir'] . 'theme/admin_header.php';
         echo "<h2>CSR Field Book Data Validation</h2>";
-        $this->type_Experiment_Name();
+        $this->typeExperimentName();
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
     }
@@ -79,7 +77,7 @@ class Data_Check
      *
      * @return null
      */
-    private function type_Experiment_Name()
+    private function typeExperimentName()
     {
         global $mysqli;
         ?>
@@ -120,16 +118,16 @@ class Data_Check
   //  echo "$sql<br>\n";
   //  die("Error: could not find trial code in database $experiment_uid<br>\n");
   //}
-    if (file_exists($raw_path)) {
-        $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(64, 80));
-        $tmp1 = $_FILES['file']['name'][0];
-        $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][0];
-        //echo "replace $tmp1 $tmp2 $raw_path<br>\n";
-        $meta_path = str_replace("$tmp1", "$unq_file_name", "$meta_path",$count);
-        $raw_path = str_replace("$tmp1", "$unq_file_name", "$raw_path",$count);
-    } else {
-        $unq_file_name = $_FILES['file']['name'][0];
-    }
+        if (file_exists($raw_path)) {
+            $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(64, 80));
+            $tmp1 = $_FILES['file']['name'][0];
+            $unq_file_name = $unique_str . "_" . $_FILES['file']['name'][0];
+            //echo "replace $tmp1 $tmp2 $raw_path<br>\n";
+            $meta_path = str_replace("$tmp1", "$unq_file_name", "$meta_path",$count);
+            $raw_path = str_replace("$tmp1", "$unq_file_name", "$raw_path",$count);
+        } else {
+            $unq_file_name = $_FILES['file']['name'][0];
+        }
   if (empty($_FILES['file']['name'][0])) {
     if (empty($_POST['filename'])) {
       echo "missing Data file\n";

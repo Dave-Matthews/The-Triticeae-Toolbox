@@ -16,7 +16,7 @@ calcLSmeanParms <- function(fitLM){
   leastSigDiff <- sqrt(2)*meanSE*qt(1 - 0.025, meanDF)
   tukeysHSD <- meanSE*qtukey(1 - 0.05, nrow(lineLSmeans), meanDF) # Tukey is already two-sided
   trialLSmeans <- summary(lsmeans(fitLM, "trial"))
-  return(list(lsmeans=lineLSmeans$lsmean, leastSigDiff=leastSigDiff, tukeysHSD=tukeysHSD, trialMeans=trialLSmeans$lsmean))
+  return(list(lsmeans=lineLSmeans$lsmean, leastSigDiff=leastSigDiff, tukeysHSD=tukeysHSD, trialNames=levels(trialLSmeans$trial), trialMeans=trialLSmeans$lsmean))
 }
 
 analyzeTrait <- function(trait){

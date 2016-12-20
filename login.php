@@ -50,6 +50,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
     $c_no = "";
     $c_yes = "";
     $c_forgot="";
+    $c_change="";
     if ($answer == "no") {
         $c_no = 'checked="checked"';
     }
@@ -143,7 +144,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
     <tr><td><img id="captcha" src="./securimage/securimage_show.php"
 		 alt="CAPTCHA image"><br>
 	    <a href="#" onclick="document.getElementById('captcha').src = './securimage/securimage_show.php?' + Math.random();
-				 return false">[ Different Image ]</a></td>
+				 return false;"></td>
       <td>CAPTCHA:
 	<input type="text" name="captcha_code" size="10"
 		 maxlength="6"></td></tr></table>
@@ -454,14 +455,12 @@ function HTMLProcessForgot()
     if (isRegistered($email) || isOldRegistered($email)) {
         $key = setting('passresetkey');
         $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-        send_email(
-            $email,
-            "T3: Reset Your Password",
-            "Hi, Per your request, please visit the following URL to reset your password:
-            https:{$root}resetpass.php?token=$urltoken"
-        );
+        send_email($email, "T3: Reset Your Password",
+        "Hi,
+Per your request, please visit the following URL to reset your password:
+https:{$root}resetpass.php?token=$urltoken");
         return "An email has been sent to you with a link to reset your
-        password.";
+password.";
     } else {
         return "<h3 style='color: red'>No such user, please register.</h3>";
     }
@@ -484,7 +483,7 @@ function HTMLProcessChange()
                 $sql_email = mysqli_real_escape_string($mysqli, $email);
                 $sql_pass = mysqli_real_escape_string($mysqli, $_POST['NewPass1']);
                 $sql = "update users  set pass=SHA1('$sql_pass')
-where users_name=SHA1('$sql_email')";
+                where users_name=SHA1('$sql_email')";
                 if (mysqli_query($mysqli, $sql)) {
                     $rv .= "<h3>Password successfully updated</h3>";
                 } else {
@@ -502,12 +501,12 @@ where users_name=SHA1('$sql_email')";
 <input type="hidden" name="answer" value="change">
 <input type="hidden" name="submit_login" value="">
 Email ID: <input name= "txt_email" type="text" value="{$email}">
-<br />Old Password: <input name = "OldPass" type="password"></input>
+<br />Old Password: <input name = "OldPass" type="password">
 <br /><br />
-New Password: <input name="NewPass1" type="password"></input><br />
-Retype New Password: <input name="NewPass2" type="password"></input>
+New Password: <input name="NewPass1" type="password"><br />
+Retype New Password: <input name="NewPass2" type="password">
 <br />
-<input name="cmd_submit" type="submit" value="Submit"></input>
+<input name="cmd_submit" type="submit" value="Submit">
 </form>
 HTML;
     }
@@ -515,17 +514,18 @@ HTML;
 }
 
 if (isset($_POST['submit_login'])) {
-  if (isset($_POST['answer'])) {
-    if ($_POST['answer'] == "no")
-      echo HTMLProcessRegistration();
-    else if ($_POST['answer'] == "yes")
-      echo HTMLProcessLogin();
-    else if ($_POST['answer'] == "forgot")
-      echo HTMLProcessForgot();
-    else if ($_POST['answer'] == "change")
-      echo HTMLProcessChange();
-    else
-      echo HTMLLoginForm();
+    if (isset($_POST['answer'])) {
+        if ($_POST['answer'] == "no") {
+            echo HTMLProcessRegistration();
+        } elseif ($_POST['answer'] == "yes") {
+            echo HTMLProcessLogin();
+        } elseif ($_POST['answer'] == "forgot") {
+            echo HTMLProcessForgot();
+        } elseif ($_POST['answer'] == "change") {
+            echo HTMLProcessChange();
+        } else {
+            echo HTMLLoginForm();
+        }
   }
   else
     echo HTMLLoginForm();
@@ -640,6 +640,8 @@ The Triticeae Toolbox Team
 			  USER_TYPE_PUBLIC);
      /* DEM jan2014 For Sandbox databases, make any registrant a Curator. */
      if (preg_match("/sandbox/", $_SERVER['SERVER_NAME'])) {
+         $safe_usertype = USER_TYPE_CURATOR;
+     } elseif (preg_match("/malt\.pw\.usda/" , $_SERVER['SERVER_NAME'])) {
          $safe_usertype = USER_TYPE_CURATOR;
      } else {
          $safe_usertype = USER_TYPE_PUBLIC;

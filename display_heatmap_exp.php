@@ -1,53 +1,47 @@
 <?php
 /**
  * Canopy Spectral Reflectance, Fieldbook import
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_experiment_plot_check.php
- * 
+ *
  */
 
 require 'config.php';
-require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require $config['root_dir'] . 'includes/bootstrap2.inc';
 
 $mysqli = connecti();
 
-new Data_Check($_GET['function']);
+new DataCheck($_GET['function']);
 
-class Data_Check
+class DataCheck
 {
     /**
      * Using the class's constructor to decide which action to perform
-     * @param unknown_type $function
+     * @param string $function
      */
     public function __construct($function = null)
     {
-        switch($function)
-        {
-        case 'typeDatabase':
-            $this->type_Database(); /* update database */
-            break;
-        default:
-            $this->typeExperimentCheck(); /* intial case*/
-            break;
+        switch ($function) {
+            default:
+                $this->typeExperimentCheck(); /* intial case*/
+                break;
         }
     }
 
     /**
      * check experiment data before loading into database
      */
-    private function typeExperimentCheck() {
+    private function typeExperimentCheck()
+    {
         global $config;
-        include $config['root_dir'] . 'theme/admin_header.php';
+        include $config['root_dir'] . 'theme/admin_header2.php';
         echo "<h2>Heatmap of trait by field position</h2>";
-        $this->type_Experiment_Name();
+        $this->typeExperimentName();
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
     }
@@ -57,55 +51,62 @@ class Data_Check
      * 1. display table or values in row column format
      * 2. call R script for displaying heatmap
      */
-private function type_Experiment_Name()
-{
-   global $mysqli;
-   $sql = "select phenotype_uid, phenotypes_name from phenotypes";
-   $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli). $sql);
-   while ($row = mysqli_fetch_assoc($res)) {
-     $phen_uid = $row["phenotype_uid"];
-     $name = $row["phenotypes_name"];
-     $phen_list[$phen_uid] = $name;
-   }
+    private function typeExperimentName()
+    {
+        global $mysqli;
+        $sql = "select phenotype_uid, phenotypes_name from phenotypes";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli). $sql);
+        while ($row = mysqli_fetch_assoc($res)) {
+            $phen_uid = $row["phenotype_uid"];
+            $name = $row["phenotypes_name"];
+            $phen_list[$phen_uid] = $name;
+        }
 
-   if (empty($_GET['uid'])) {
-     echo "Error: invalid experiment uid<br>\n";
-     die();
-   } 
+        if (empty($_GET['uid'])) {
+            echo "Error: invalid experiment uid<br>\n";
+            die();
+        } 
    $exp_uid = $_GET['uid'];
 
-   $sql = "select trial_code from experiments where experiment_uid = $exp_uid";
-   $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
-   if ($row = mysqli_fetch_assoc($res)) {
-       $name = $row["trial_code"];
+   $sql = "select trial_code from experiments where experiment_uid = ?";
+   if ($stmt = mysqli_prepare($mysqli, $sql)) {
+       mysqli_stmt_bind_param($stmt, "i", $exp_uid);
+       mysqli_stmt_execute($stmt);
+       mysqli_stmt_bind_result($stmt, $name);
+       mysqli_stmt_fetch($stmt);
+       mysqli_stmt_close($stmt);
    }
    echo "$name - \n";
    echo "<a href=display_map_exp.php?uid=$exp_uid>Numeric map</a><br>";
 
-   $sql = "select distinct phenotype_uid from phenotype_plot_data where experiment_uid = $exp_uid";  
-   $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
-   while ($row = mysqli_fetch_assoc($res)) {
-       $uid = $row["phenotype_uid"];
-       $name = $phen_list[$uid];
-       $trait_list[$uid] = $name;
-       //echo "$name<br>\n";
+   $sql = "select distinct phenotype_uid from phenotype_plot_data where experiment_uid = ?";
+   if ($stmt = mysqli_prepare($mysqli, $sql)) {
+       mysqli_stmt_bind_param($stmt, "i", $exp_uid);
+       mysqli_stmt_execute($stmt);
+       mysqli_stmt_bind_result($stmt, $uid);
+       while (mysqli_stmt_fetch($stmt)) {
+           $name = $phen_list[$uid];
+           $trait_list[$uid] = $name;
+       }
+       mysqli_stmt_close($stmt);
    }
   
    $max_row = 0;
    $max_col = 0;
    $found = 0;
-   $sql = "select plot_uid, row_id, column_id from fieldbook where experiment_uid = $exp_uid";
-   $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli) . $sql);
-   while ($row = mysqli_fetch_assoc($res)) {
-       $found = 1;
-       $plot = $row["plot_uid"];
-       $row_id = $row["row_id"];
-       $col_id = $row["column_id"];
-       //echo "row_list $plot $row_id col_list $plot $col_id<br>\n";
-       $row_list[$plot] = $row_id;
-       $col_list[$plot] = $col_id;
-       if ($row_id > $max_row) { $max_row = $row_id; }
-       if ($col_id > $max_col) { $max_col = $col_id; }
+   $sql = "select plot_uid, row_id, column_id from fieldbook where experiment_uid = ?";
+   if ($stmt = mysqli_prepare($mysqli, $sql)) {
+       mysqli_stmt_bind_param($stmt, "i", $exp_uid);
+       mysqli_stmt_execute($stmt);
+       mysqli_stmt_bind_result($stmt, $plot, $row_id, $col_id);
+       while (mysqli_stmt_fetch($stmt)) {
+           $found = 1;
+           $row_list[$plot] = $row_id;
+           $col_list[$plot] = $col_id;
+           if ($row_id > $max_row) { $max_row = $row_id; }
+           if ($col_id > $max_col) { $max_col = $col_id; }
+       }
+       mysqli_stmt_close($stmt);
    }
    if ($found) {
        if (($max_row == 0) || ($max_col == 0)) {
@@ -113,7 +114,6 @@ private function type_Experiment_Name()
           die();
        }
    } else {
-     echo "$sql<br>\n";
      die("Error: no fieldbook entries found");
    }
    echo "<br>\n";
@@ -127,15 +127,18 @@ private function type_Experiment_Name()
      echo "<h3>Trait = $val</h3><br>\n";
      $outputFile = "HeatMap" . $key . ".png";
      $max_val = 0;
-     $sql = "select plot_uid, value from phenotype_plot_data where experiment_uid = $exp_uid and phenotype_uid = $key";
-     $res = mysqli_query($mysqli,$sql) or die (mysqli_error($mysqli));
-     while ($row = mysqli_fetch_assoc($res)) {
-       $plot_uid = $row["plot_uid"];
-       $row_id = $row_list[$plot_uid];
-       $col_id = $col_list[$plot_uid];
-       $value = $row["value"];
-       if ($value > $max_val) $max_val = $value;
-       $pheno_val[$row_id][$col_id] = $value;
+     $sql = "select plot_uid, value from phenotype_plot_data where experiment_uid = ? and phenotype_uid = $key";
+     if ($stmt = mysqli_prepare($mysqli, $sql)) {
+         mysqli_stmt_bind_param($stmt, "i", $exp_uid);
+         mysqli_stmt_execute($stmt);
+         mysqli_stmt_bind_result($stmt, $plot_uid, $value);
+         while (mysqli_stmt_fetch($stmt)) {
+             $row_id = $row_list[$plot_uid];
+             $col_id = $col_list[$plot_uid];
+             if ($value > $max_val) $max_val = $value;
+             $pheno_val[$row_id][$col_id] = $value;
+         }
+         mysqli_stmt_close($stmt);
      }
 
      $h = fopen("/tmp/tht/$unique_str/$inputFile", "w");

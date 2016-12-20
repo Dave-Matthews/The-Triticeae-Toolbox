@@ -11,8 +11,8 @@
  *
  * DEM apr2015 added Deep Search
  */
-include("includes/bootstrap.inc");
-include("theme/normal_header.php");
+include "includes/bootstrap.inc";
+include "theme/normal_header.php";
 $mysqli = connecti();
 $table_name = strip_tags($_REQUEST['table']);
 ?>
@@ -29,11 +29,11 @@ if (isset($_REQUEST['deep'])) {
     /* So use search.inc:desperateTermSearch() instead of generalTermSearch(). */
     $keywords = $_REQUEST['keywords'];
     $found = array();
-    $deepTables = array('line_records', 'experiments', 'markers', 'map', 'mapset', 
-		     'phenotype_experiment_info', 'genotype_experiment_info', 'experiment_set',
-		     'CAPdata_programs', 'csr_system', 'line_synonyms', 
-		     'marker_synonyms', 'phenotypes', 'properties',
-		      'units', 'csr_measurement', 'fieldbook_info');
+    $deepTables = array('line_records', 'experiments', 'markers', 'map', 'mapset',
+     'phenotype_experiment_info', 'genotype_experiment_info', 'experiment_set',
+     'CAPdata_programs', 'csr_system', 'line_synonyms',
+     'marker_synonyms', 'phenotypes', 'properties',
+      'units', 'csr_measurement', 'fieldbook_info');
     // Remove the \ characters inserted before quotes by magic_quotes_gpc.
     $keywords = stripslashes($keywords);
     $kwywords = strip_tags($keywords);
@@ -42,51 +42,51 @@ if (isset($_REQUEST['deep'])) {
         $keywords = trim($keywords, "\"");
         $found = desperateTermSearch($deepTables, $keywords);
     } else {
-    /* Break into separate words and query for each. */
-    $words = explode(" ", $keywords);
-    for($i=0; $i<count($words); $i++) {
-      if(trim($words[$i]) != "") 
-	// Return only items that contain _all_ words (AND) instead of _any_ of them (OR). 
-	$partial[$i] = desperateTermSearch($deepTables, $words[$i]);
+        /* Break into separate words and query for each. */
+        $words = explode(" ", $keywords);
+        for ($i=0; $i<count($words); $i++) {
+            if (trim($words[$i]) != "") {
+                // Return only items that contain _all_ words (AND) instead of _any_ of them (OR).
+                $partial[$i] = desperateTermSearch($deepTables, $words[$i]);
+            }
+        }
+        $found = $partial[0];
+        for ($i = 1; $i < count($words); $i++) {
+            $found = array_intersect($found, $partial[$i]);
+            // Reset the (numeric) key of the array to start at [0].
+            $found = array_merge($found);
+        }
     }
-    $found = $partial[0];
-    for ($i = 1; $i < count($words); $i++) {
-      $found = array_intersect($found, $partial[$i]);
-      // Reset the (numeric) key of the array to start at [0].
-      $found = array_merge($found);
-    }
-  }
-}
-
 /****************************************************************************************/
 /* Quick Search */
-else if (isset($_REQUEST['keywords'])) {
-  /* sidebar general search term has been submitted */
-  $keywords = $_REQUEST['keywords'];
-  $allTables = array();
-  $searchTree = array();
-  $found = array();
+} elseif (isset($_REQUEST['keywords'])) {
+    /* sidebar general search term has been submitted */
+    $keywords = $_REQUEST['keywords'];
+    $allTables = array();
+    $searchTree = array();
+    $found = array();
 
-  /* Populate the allTables array */
-  if (isset($_REQUEST['table'])) 
-    array_push($allTables, mysqli_real_escape_string($mysqli, $_REQUEST['table']));
-  else {
-    $tableQ = mysqli_query($mysqli, "SHOW TABLES");
-    while($row = mysqli_fetch_row($tableQ)) 
-      array_push($allTables, $row[0]);
-  }
+    /* Populate the allTables array */
+    if (isset($_REQUEST['table'])) {
+        array_push($allTables, mysqli_real_escape_string($mysqli, $_REQUEST['table']));
+    } else {
+        $tableQ = mysqli_query($mysqli, "SHOW TABLES");
+        while ($row = mysqli_fetch_row($tableQ)) {
+            array_push($allTables, $row[0]);
+        }
+    }
 
-  /* get unique keys of each table */
-  foreach($allTables as $table) {
-    $ukeys = get_ukey($table);
-    $names = array();
-    /* do not search through _uids */
-    /* do not add duplicates */
-    for($i=0; $i<count($ukeys); $i++) {
-      if (strpos($ukeys[$i], "_uid")  === FALSE) {
-	if (!in_array($ukeys[$i],$names)) 
-	  array_push($names, $ukeys[$i] );
-      }
+    /* get unique keys of each table */
+    foreach ($allTables as $table) {
+        $ukeys = get_ukey($table);
+        $names = array();
+        /* do not search through _uids */
+        /* do not add duplicates */
+        for ($i=0; $i<count($ukeys); $i++) {
+            if (strpos($ukeys[$i], "_uid")  === false) {
+	    if (!in_array($ukeys[$i],$names)) 
+	      array_push($names, $ukeys[$i] );
+        }
     }
     /* add this table to the search tree if there are fields to search */
     if(count($names) > 0) {
@@ -127,19 +127,30 @@ if (count($found) < 1) {
   if (isset($_REQUEST['deep'])) {
     print "<h3>In-Depth Search executed.</h3>";
     print "<p>Keyword \"$keywords\" not found.<p>";
-  }
-  else {
+  } elseif (isset($_REQUEST['keywords'])) {
     print "<p>Keyword \"$keywords\" not found.<p>";
-    print <<<_SEARCHFORM
+    ?>
     <form method="post" action="search.php">
     <div>
     <p><strong>Search deeper: </strong>
     <input type="hidden" name="deep" value="yes">
-    <input type="text" size=30 name="keywords" value=$keywords> 
+    <?php
+    print "<input type=\"text\" size=30 name=\"keywords\" value=$keywords>";
+    ?>
     <input type="submit" class="button" value="Go"><br>
     </div>
     </form>
-_SEARCHFORM;
+    <?php
+  } else {
+    ?>
+    <form method="post" action="search.php">
+    <div>
+    <p><strong>Search: </strong>
+    <input type="text" size=30 name="keywords"> 
+    <input type="submit" class="button" value="Go"><br>
+    </div>
+    </form>
+    <?php
   }
 }
 // If there's only one hit, jump directly to it.

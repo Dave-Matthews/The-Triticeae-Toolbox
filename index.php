@@ -10,7 +10,7 @@
  *
  */
 require 'config.php';
-require $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'includes/bootstrap2.inc';
 require $config['root_dir'].'theme/admin_header2.php';
 $mysqli = connecti();
 $name = get_unique_name("datasets");
@@ -43,7 +43,7 @@ from wheat and barley germplasm in the Triticeae CAP. <a href="about.php">More..
  
   </div>
   <div class="section">
-		
+
   <!-- Box Table B -->
   <p>
   <table cellpadding="0" cellspacing="0"><tbody>
@@ -51,7 +51,7 @@ from wheat and barley germplasm in the Triticeae CAP. <a href="about.php">More..
   <th>Search Trials</th>
   <th>&nbsp;</th>
   </tr>
-	
+
   <tr><td>
   <select onchange="window.open('<?php echo $config['base_url']; ?>search_bp.php?table=CAPdata_programs&uid='+this.options[this.selectedIndex].value,'_top')">
   <option selected value=''>Search by Breeding Program</option>
@@ -64,20 +64,21 @@ from wheat and barley germplasm in the Triticeae CAP. <a href="about.php">More..
   /*    WHERE program_type = 'breeding' */
   /*    AND cp.CAPdata_programs_uid = e.CAPdata_programs_uid */
   /*    order by data_program_name asc;"; */
-  $sql = "SELECT DISTINCT
+    $sql = "SELECT DISTINCT
 	  data_program_name, data_program_code, cp.CAPdata_programs_uid as uid
 	  FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
 	  WHERE program_type = 'breeding'
+          AND e.CAPdata_programs_uid = cp.CAPdata_programs_uid
 	  AND lr.breeding_program_code = data_program_code
 	  AND tb.experiment_uid = e.experiment_uid
 	  AND tb.line_record_uid = lr.line_record_uid
 	  ORDER BY data_program_name asc;";
-   $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
-   while ($row = mysqli_fetch_assoc($r)) {
-       $progname = $row['data_program_name']." - ".$row['data_program_code'];
-       $uid = $row['uid'];
-       echo "<option value='$uid'>$progname</option>\n";
-   }
+    $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+    while ($row = mysqli_fetch_assoc($r)) {
+        $progname = $row['data_program_name']." - ".$row['data_program_code'];
+        $uid = $row['uid'];
+        echo "<option value='$uid'>$progname</option>\n";
+    }
 ?>
   </select>
   <td>Trials containing data from the program&#39;s lines
@@ -85,14 +86,14 @@ from wheat and barley germplasm in the Triticeae CAP. <a href="about.php">More..
   <tr><td>
   <select onchange="window.open('<?php echo $config['base_url']; ?>search_phenotype.php?table=experiments&pheno_name='+this.options[this.selectedIndex].value,'_top')">
   <option selected value="">Search by Trait</option>
-  <?php
-  $sql = "select distinct phenotypes_name from phenotypes
-  order by phenotypes_name";
-  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
-  while ($row = mysqli_fetch_assoc($r)) {
-      $pheno_name = $row['phenotypes_name'];
-      echo "<option value='$pheno_name'>$pheno_name</option>\n";
-  }
+    <?php
+    $sql = "select distinct phenotypes_name from phenotypes
+    order by phenotypes_name";
+    $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n$sql");
+    while ($row = mysqli_fetch_assoc($r)) {
+        $pheno_name = $row['phenotypes_name'];
+        echo "<option value='$pheno_name'>$pheno_name</option>\n";
+    }
 ?>
 </select></td>
 <td></td></tr>
@@ -125,7 +126,7 @@ from wheat and barley germplasm in the Triticeae CAP. <a href="about.php">More..
       echo "<option value=$euid>$ename</option>\n";
   }
 ?>
-</select></td><td>An experiment may have several trials with similar or identical entry lists, performed at different locations and/or different years.
+</select></td><td>An experiment may have several trials with similar or identical entry lists, performed at different locations and/or different years. For a description of each experiment see this <a href="t3_report.php?query=PExps">list</a>.
 </td></tr>
 
 

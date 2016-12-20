@@ -14,9 +14,6 @@
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<!-- "chrome=1"is required for X3DOM (WebGL) function in IE with Flash or Chrome Frame. -->
-<!-- July 2015 Chrome Frame is no longer supported so emulating IE8 is pointless -->
-<!-- <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8,chrome=1"> -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
 <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
@@ -29,6 +26,7 @@
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.3.0/prototype.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
@@ -138,14 +136,14 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <ul>
         <li><a href="" title="Cluster">Cluster</a>
         <ul>
-	  <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
+          <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
           <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
- 	  <li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
+          <li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
         </ul>
         <li><a href="<?php echo $config['base_url']; ?>analyze/outlier.php" title="Filter outliers">Filter outliers</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/training.php" title="Optimize training set">Optimize training set</a>
-	<li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
-        <li><a href="" title="Summary statistics">Summary statistics</a>
+        <li><a href="<?php echo $config['base_url']; ?>Index/traits.php" title="Combination of traits">Selection Index</a>
+        <li><a href="" title="Traits and Trials statistics">Traits and Trials statistics</a>
         <ul>
         <li><a href="<?php echo $config['base_url']; ?>analyze/histo.php" title="Histogram">Traits and Trials Histogram</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/boxplot.php" title="Boxplot">Traits and Trials Boxplot</a>
@@ -154,13 +152,13 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value vs Trials">Compare Trials</a>
-	<li>
-	  <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
-	    Track Alleles through Pedigree</a>
-	<li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
-	<li><a href="<?php echo $config['base_url']; ?>genotyping/sum_lines.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
-	<li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
-	    BLAST Search against Markers</a>
+        <li>
+          <a href="<?php echo $config['base_url']; ?>pedigree/pedigree_tree.php" title="Show pedigree annotated with alleles of selected markers ">
+          Track Alleles through Pedigree</a>
+        <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
+        <li><a href="<?php echo $config['base_url']; ?>genotyping/sum_lines.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
+        <li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
+          BLAST Search against Markers</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
         <li><a href="/jbrowse/?data=<?php echo $species ?>" title="JBrowse">JBrowse - Genome Browser</a>
         <?php
@@ -173,7 +171,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         }
         ?>
         <!--li><a href="<?php echo $config['base_url']; ?>downloads/downloads_tassel.php" title="Open TASSEL with selected data">Open TASSEL</a-->
-	  <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
+        <!--  <li><a href="<?php echo $config['base_url']; ?>not_yet.php" title="Markers polymorphic for a pair of lines">Marker Polymorphisms</a> -->
       </ul>
     <li><a href="" title="">Download</a>
       <ul>
@@ -326,7 +324,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
        echo ": " . count($_SESSION['geno_exps']);
    }
 ?>
-			
+
   <br><br><li>
   <form style="margin-bottom:3px" action="search.php" method="post">
   <input type="hidden" value="Search" >

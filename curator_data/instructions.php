@@ -5,8 +5,8 @@
  * PHP version 5.3
  */
 require 'config.php';
-require $config['root_dir'].'includes/bootstrap.inc';
-require $config['root_dir'].'theme/admin_header.php';
+require $config['root_dir'].'includes/bootstrap2.inc';
+require $config['root_dir'].'theme/admin_header2.php';
 ?>
 
 <style type="text/css">
@@ -50,9 +50,10 @@ require $config['root_dir'].'theme/admin_header.php';
             $item_tag = $item;
             $item_des = $item;
         }
-        if (preg_match("/pdf/", $item_des) || preg_match("/html/", $item_des)) {
+        if (preg_match('/(pdf|html|pptx)/', $item_des)) {
             $item_clean = preg_replace("/\.pdf/", "", $item_des);
             $item_clean = preg_replace("/\.html/", "", $item_clean);
+            $item_clean = preg_replace("/\.pptx/", "", $item_clean);
             $item_clean = preg_replace("/_/", " ", $item_clean);
             echo "<a href=\"" . "curator_data/tutorial/" . "$item\">$item_tag</a>  $item_clean<br>\n";
         }
@@ -204,8 +205,10 @@ require $config['root_dir'].'theme/admin_header.php';
 </div></div>
 
 <?php
-// Date-stamp the template files, in red if they're new.
-// $subdir is relative to curator_data/examples/.
+/**
+ * Date-stamp the template files, in red if they're new.
+ * $subdir is relative to curator_data/examples/.
+ */
 function filelink($label, $filenm, $subdir)
 {
     global $config;
@@ -219,7 +222,9 @@ function filelink($label, $filenm, $subdir)
     }
 }
 
-// Variation of filelink(), for items in text instead of in the table.
+/**
+ * Variation of filelink(), for items in text instead of in the table.
+ */
 function filelink2($label, $filenm, $subdir)
 {
     global $config;

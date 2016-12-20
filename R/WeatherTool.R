@@ -54,6 +54,11 @@ lat_long <- paste(lat, long, sep=",")
 location <- set_location(lat_long = lat_long)
 geo <- as.data.frame(geolookup(location=location, key = get_api_key()), stringsAsFactors=FALSE)
 
+##only use airports
+if (type == "airport") {
+  geo <- geo[which(geo$type=='airport'),]
+}
+
 ##Calculate the distance of each weather station from the Users location in MILES.  1 Mile = 1609.344 Meters
 n <- nrow(geo)
 dist <- as.data.frame(matrix(nrow = n, ncol= 0))
@@ -164,6 +169,7 @@ colnames(Station) <- c("Station ID", "City", "State", "Latitude", "Longitude", "
 
 #Write text file of station data to be displayed as a one line table directly prior to the weather data on T3.
 write.table(Station, "StationInfo.txt", sep="\t", row.names=FALSE, quote=FALSE)
+write.table(geo, "StationList.txt", sep="\t", row.names=FALSE, quote=FALSE)
 
 #Write text file of weather data to be displayed as a table on T3.
 write.table(Data, "WeatherData.txt", sep="\t", row.names=FALSE, quote=FALSE)

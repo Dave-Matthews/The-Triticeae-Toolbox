@@ -5,9 +5,9 @@
  *
  * PHP version 5
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/format-fasta.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/format-fasta.php
 */
 
 require 'config.php';
@@ -41,17 +41,25 @@ if ($fh2 = fopen("$file2", "w")) {
 $count = 0;
 $sql = "select marker_name, marker_type_name, sequence from markers, marker_types
      where markers.marker_type_uid = marker_types.marker_type_uid";
-$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+$res = mysqli_query($mysqli, $sql, MYSQLI_USE_RESULT) or die(mysqli_error($mysqli) . "<br>" . $sql);
 while ($row = mysqli_fetch_array($res)) {
     $name = $row[0];
     $marker_type = $row[1];
     $seq = $row[2];
-    $pattern = "/[A-Za-z0-9-_\.]+/";
+    $pattern = "/[A-Za-z0-9-_\.\:]+/";
     if (preg_match($pattern, $name, $match)) {
         $name = $match[0];
     }
-    $pattern = "/[A-Za-z]\[[A-Z]\/[A-Z]\][A-Za-z]/";
-    if (preg_match($pattern, $seq)) {
+    $pattern = "/\[[A-Z]\/[A-Z]\]/";
+    if (!preg_match($pattern, $seq)) {
+        //echo "skip, no SNP $seq\n";
+        continue;
+    }
+    $tmp = strlen($seq);
+    if ($tmp < 30) {
+        //echo "skip, too short $seq\n";
+        continue;
+    }
         $replace = "R";
         $pattern = "/\[A\/G\]/";
         $seq = preg_replace($pattern, $replace, $seq);
@@ -93,9 +101,6 @@ while ($row = mysqli_fetch_array($res)) {
         fwrite($fh1, ">$name\n$seq\n");
         fwrite($fh2, "$name,$length,$marker_type\n");
         $count++;
-    } else {
-        //echo "skip $name $seq<br>\n";
-    }
 }
 
 echo "$count markers found<br>\n";

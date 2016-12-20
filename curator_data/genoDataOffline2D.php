@@ -679,7 +679,7 @@ foreach ($uniqExpID as $key=>$expID)  {
     while ($row = mysqli_fetch_object($res)) {
         $pattern = '/(set|enum)/';
         if (preg_match($pattern, $row->Type)) {
-            eval(preg_replace('set|enum', '$'.$row->Field.' = array', $row->Type).';');
+            eval(preg_replace($pattern, '$'.$row->Field.' = array', $row->Type).';');
         }
     }
 

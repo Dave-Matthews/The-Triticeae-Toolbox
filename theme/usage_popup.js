@@ -6,6 +6,7 @@ jQuery(function () {
     d.setTime(d.getTime() + (360 * 24 * 60 * 60 * 1000));
     var expires = "expires=" + d.toUTCString();
     jQuery("#dialog-confirm").dialog({
+        dialogClass: "no-close",
         resizable: false,
         height: 250,
         width: 400,

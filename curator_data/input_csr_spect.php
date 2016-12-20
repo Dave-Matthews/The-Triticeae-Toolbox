@@ -4,12 +4,9 @@
  *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/curator_data/input_csr_spect.php
  *
  */
@@ -20,7 +17,6 @@ require 'config.php';
  */
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
-connect();
 $mysqli = connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
@@ -32,9 +28,7 @@ ob_end_flush();
 new Instrument($_GET['function']);
 
 /** Using a PHP class to import CSR System file
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <claybirkett@gmail.com>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/curator_data/input_csr_spect.php
@@ -49,7 +43,7 @@ class Instrument
      * @param string $function action to perform
      */
     public function __construct($function = null)
-    {	
+    {
         switch($function) {
         default:
             $this->_typeInstruments(); /* initial case*/

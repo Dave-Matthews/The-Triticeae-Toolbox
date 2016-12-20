@@ -6,14 +6,14 @@
  */
 
 require 'config.php';
-//define("DEBUG",2);
+//define("DEBUG",3);
 
 /*
  * Logged in page initialization
  */
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
-
-require_once "../lib/Excel/excel_reader2.php"; // Microsoft Excel library
+set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
+require $config['root_dir'] . 'lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 $mysqli = connecti();
 loginTest();
@@ -55,56 +55,50 @@ class Annotations_Check
 
     private function typeAnnotationCheck()
     {
-	global $config;
+        global $config;
         global $mysqli;
         include $config['root_dir'] . 'theme/admin_header.php';
 
-        echo "<h2> Add/Update Experiment Annotations: Validation</h2>"; 
+        echo "<h2> Add/Update Experiment Annotations: Validation</h2>";
 
         $this->type_Annotation();
 
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
     }
-	
-	
-	private function type_Annotation()
-	{
-            global $mysqli;
-	?>
-	<script type="text/javascript">
-	
-	    function update_database(filepath, filename, username, data_public_flag)
-	{
-			
-			
-			var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&public=' + data_public_flag;
-	
-			// Opens the url in the same window
-	   	window.open(url, "_self");
-	}
-	
-	
-	
-	
-	</script>
-	
+
+    private function type_Annotation()
+    {
+        global $mysqli;
+        ?>
+        <script type="text/javascript">
+
+        function update_database(filepath, filename, username, data_public_flag)
+        {
+
+            var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&public=' + data_public_flag;
+
+            // Opens the url in the same window
+            window.open(url, "_self");
+        }
+
+        </script>
+
+        <style type="text/css">
+		th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6; white-space: nowrap }
+		table {background: none; border-collapse: collapse}
+		td {border: 0px solid #eee !important; white-space: nowrap}
+		h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+	</style>
+
 	<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6; white-space: nowrap }
-			table {background: none; border-collapse: collapse}
-			td {border: 0px solid #eee !important; white-space: nowrap}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-		
-		<style type="text/css">
-                   table.marker
-                   {background: none; border-collapse: collapse}
-                    th.marker
-                    { background: #5b53a6; color: #fff; padding: 5px 0; border: 0;}
-                    
+                  table.marker
+                  {background: none; border-collapse: collapse}
+                   th.marker
+                   { background: #5b53a6; color: #fff; padding: 5px 0; border: 0;}
                     td.marker
-                    { padding: 5px 0; border: 0 !important; }
-                </style>
+                   { padding: 5px 0; border: 0 !important; }
+        </style>
 		
 		
 		
@@ -159,96 +153,103 @@ class Annotations_Check
 		
 						
 		/* Read the annotation file */
-	$reader = new Spreadsheet_Excel_Reader();
-	$reader->setOutputEncoding('CP1251');
-	if (strpos($annotfile,'.xls')>0)
-	{
-		$reader->read($annotfile);
-	}else {
-		$reader->read($annotfile . ".xls");
-	}
-	
-	$annots = $reader->sheets[0];
-	$cols = $reader->sheets[0]['numCols'];
-	$rows = $reader->sheets[0]['numRows'];
-	//echo "nrows: ".$rows.", ncols: ".$cols."<br>";
+        $FileType = PHPExcel_IOFactory::identify($annotfile);
+        switch ($FileType) {
+          case 'Excel2007':
+            break;
+          case 'Excel5':
+            break;
+          case 'CSV':
+            break;
+          default:
+            error(1, "Expecting an Excel file. <br> The type of the uploaded file is ".$FileType);
+            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+            die();
+        }
+
+        /* Read the file */
+        $objPHPExcel = PHPExcel_IOFactory::load($annotfile);
+        $sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
+
+        $cols = $objPHPExcel->setActiveSheetIndex(0)->getHighestColumn();
+        $rows = $objPHPExcel->setActiveSheetIndex(0)->getHighestRow();	
 	
 	// find location for each row of data; find where data starts in file
 	for ($i = 1; $i <= $rows; $i++) {
-          if (stripos($annots['cells'][$i][1],'template version')!==FALSE){
+          if (stripos($sheetData[$i]["A"],'template version')!==FALSE){
                 $VERSION = $i;
-          } elseif (stripos($annots['cells'][$i][1],'crop')!==FALSE) {
+          } elseif (stripos($sheetData[$i]["A"],'crop')!==FALSE) {
                 $CROP = $i;
-          } elseif (stripos($annots['cells'][$i][1],'breeding program')!==FALSE) {
+          } elseif (stripos($sheetData[$i]["A"],'breeding program')!==FALSE) {
                 $BREEDINGPROGRAM = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'trial name')!==FALSE) {
+	  } elseif (stripos($sheetData[$i]["A"],'trial name')!==FALSE) {
 		$TRIALCODE = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'trial year')!==FALSE) {
+	  } elseif (stripos($sheetData[$i]["A"],'trial year')!==FALSE) {
 		$TRIALYEAR = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'experiment name')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'experiment name')!==FALSE){
 		$EXPERIMENT_SET = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'location')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'location')!==FALSE){
 		$LOCATION = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'latitude')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'latitude')!==FALSE){
 		$LATIT = $i;
-          } elseif (stripos($annots['cells'][$i][1],'longitude')!==FALSE){
+          } elseif (stripos($sheetData[$i]["A"],'longitude')!==FALSE){
                 $LONGI = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'collaborator')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'collaborator')!==FALSE){
 		$COLLABORATOR = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'trial description')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'trial description')!==FALSE){
 		$TRIAL_DESC = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'planting date')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'planting date')!==FALSE){
 		$PLANTINGDATE = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'harvest date')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'harvest date')!==FALSE){
 		$HARVESTDATE = $i;
-          } elseif (stripos($annots['cells'][$i][1],'begin weather')!==FALSE){
+          } elseif (stripos($sheetData[$i]["A"],'begin weather')!==FALSE){
                 $BEGINWEATHER = $i;
-          } elseif (stripos($annots['cells'][$i][1],'greenhouse')!==FALSE){
+          } elseif (stripos($sheetData[$i]["A"],'greenhouse')!==FALSE){
                 $GREENHOUSE = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'seeding rate')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'seeding rate')!==FALSE){
 		$SEEDINGRATE = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'experimental design')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'experimental design')!==FALSE){
 		$EXPERIMENTALDESIGN = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'number of entries')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'number of entries')!==FALSE){
 		$NUMBEROFENTRIES = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'replications')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'replications')!==FALSE){
 		$NUMBEROFREPLICATIONS = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'plot size')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'plot size')!==FALSE){
 		$PLOTSIZE = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'harvested area')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'harvested area')!==FALSE){
 		$HARVESTEDAREA = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'irrigation')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'irrigation')!==FALSE){
 		$IRRIGATION = $i;
-	  } elseif (stripos($annots['cells'][$i][1],'other')!==FALSE){
+	  } elseif (stripos($sheetData[$i]["A"],'other')!==FALSE){
 		$OTHERREMARKS = $i;
 	  } else {
           }
 	}
 
 	// Identify the Rows.
-	$version_row =                  $annots['cells'][$VERSION];
-        $crop_row = 			$annots['cells'][$CROP];
-	$bp_row =			$annots['cells'][$BREEDINGPROGRAM];
-	$trialcode_row =		$annots['cells'][$TRIALCODE];
-   	$year_row = 			$annots['cells'][$TRIALYEAR];
-	$experimentset_row =	        $annots['cells'][$EXPERIMENT_SET];
-	$location_row =			$annots['cells'][$LOCATION];
-	$latitude_row =			$annots['cells'][$LATIT];
-        $longitude_row = 		$annots['cells'][$LONGI];
-	$collaborator_row =		$annots['cells'][$COLLABORATOR];
-	$trialdesc_row =	        $annots['cells'][$TRIAL_DESC];
-	$plantingdate_row =		$annots['cells'][$PLANTINGDATE];
-	$harvestdate_row =		$annots['cells'][$HARVESTDATE];
-	$beginweatherdate_row = 	$annots['cells'][$BEGINWEATHER];
-	$greenhouse_row = 		$annots['cells'][$GREENHOUSE];
-	$seedingrate_row =		$annots['cells'][$SEEDINGRATE];
-	$experimentaldesign_row =	$annots['cells'][$EXPERIMENTALDESIGN];
-	$numberofentries_row =	        $annots['cells'][$NUMBEROFENTRIES];
-	$numberofreplications_row =	$annots['cells'][$NUMBEROFREPLICATIONS];
-	$plotsize_row =			$annots['cells'][$PLOTSIZE];
-	$harvestedarea_row =		$annots['cells'][$HARVESTEDAREA];
-	$irrigation_row =		$annots['cells'][$IRRIGATION];
-	$otherremarks_row =		$annots['cells'][$OTHERREMARKS];
+	$version_row =                  $sheetData[$VERSION];
+        $crop_row = 			$sheetData[$CROP];
+	$bp_row =			$sheetData[$BREEDINGPROGRAM];
+	$trialcode_row =		$sheetData[$TRIALCODE];
+   	$year_row = 			$sheetData[$TRIALYEAR];
+	$experimentset_row =	        $sheetData[$EXPERIMENT_SET];
+	$location_row =			$sheetData[$LOCATION];
+	$latitude_row =			$sheetData[$LATIT];
+        $longitude_row = 		$sheetData[$LONGI];
+	$collaborator_row =		$sheetData[$COLLABORATOR];
+	$trialdesc_row =	        $sheetData[$TRIAL_DESC];
+	$plantingdate_row =		$sheetData[$PLANTINGDATE];
+	$harvestdate_row =		$sheetData[$HARVESTDATE];
+	$beginweatherdate_row = 	$sheetData[$BEGINWEATHER];
+	$greenhouse_row = 		$sheetData[$GREENHOUSE];
+	$seedingrate_row =		$sheetData[$SEEDINGRATE];
+	$experimentaldesign_row =	$sheetData[$EXPERIMENTALDESIGN];
+	$numberofentries_row =	        $sheetData[$NUMBEROFENTRIES];
+	$numberofreplications_row =	$sheetData[$NUMBEROFREPLICATIONS];
+	$plotsize_row =			$sheetData[$PLOTSIZE];
+	$harvestedarea_row =		$sheetData[$HARVESTEDAREA];
+	$irrigation_row =		$sheetData[$IRRIGATION];
+	$otherremarks_row =		$sheetData[$OTHERREMARKS];
 		
 /*
  * Process the annotation contents.
@@ -256,14 +257,15 @@ class Annotations_Check
 	$error_flag = 0;
 	// How many Trials are annotated in this file?:
 	$n_trials = 0;
-	for ($i = 2; $i <= $cols; $i++) {
+	for ($i = 'B'; $i <= $cols; $i++) {
 	  // Sometimes Excel introduces extra columns in the data files.
 	  // Stop reading at first column where Trial Name is empty.
-	  if (empty($trialcode_row[$i])) 
-	    $cols = $i-1;
-	  else 
+	  if (!empty($trialcode_row[$i])) {
+            $tmp = $i;
 	    $n_trials++;
+          }
 	}
+        $cols = $tmp;
 
 	// dem dec14 Removed.  Not a terrible idea but badly implemented.
 	/* // Check for current version of the Template file, using check_version() from includes/common.inc. */
@@ -276,7 +278,7 @@ class Annotations_Check
 	/* }; */
 
 	// Check for Breeding Program.
-	$bp = trim($bp_row[2]);
+	$bp = trim($bp_row["B"]);
 	if (!$bp) {
 	  echo "Breeding Program Code is required.<br>";
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
@@ -308,10 +310,10 @@ class Annotations_Check
 	  $experiments[$i] = new experiment();
 	}
 	// Start reading in the trials.
-        for ($i = 2; $i <= $cols; $i++) {
-	  $colname = chr($i+64);
+        $index = -1;
+        for ($i = 'B'; $i <= $cols; $i++) {
+          $index++;
 	  // Set the index for array $experiments[].
-	  $index = $i - 2;
 
 	  $trialcode = $experiments[$index]->trialcode = mysqli_real_escape_string($mysqli, trim($trialcode_row[$i]));
 	  if (DEBUG>1) {echo "experiments trialcode [".$i."] is set to".$experiments[$index]->trialcode."<br>";}
@@ -320,8 +322,7 @@ class Annotations_Check
 	    echo "Trial code ".$trialcode." is empty "."<br/>";
 	    $error_flag = ($error_flag) | (4);
 	    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-	  }
-	  else   {
+	  } else {
 	    $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$trialcode}'";
 	    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	    if (mysqli_num_rows($res)==1) { //yes, experiment found once  
@@ -359,13 +360,13 @@ class Annotations_Check
 	  $curr_year = $today['year'] + 1;
 	  if (($year < 1950) OR ($year > $curr_year)) {
 	    echo "Trial Year value not in range [1950 - current year]: 
-                  <font color=red><b>'$year'</b></font>, column $colname<br>";
+                  <font color=red><b>'$year'</b></font>, column $i<br>";
 	    $error_flag = ($error_flag) | (1);
 	  }
 		
 	  $location = $experiments[$index]->location;
 	  if (!$location) {
-	    echo "Column <b>$colname</b>: Location (city, state/province/country) is required.<br>";
+	    echo "Column <b>$i</b>: Location (city, state/province/country) is required.<br>";
 	    $error_flag = ($error_flag) | (2);
           } elseif (!isset($valid_loc[$location])) {
             echo "<font color=red>Warning: $location is not defined in the database, is the spelling correct?</font><br>";
@@ -373,9 +374,9 @@ class Annotations_Check
 
 	  $collab = $experiments[$index]->collaborator;
 	  if (!$collab) {
-	    echo "<b>Error</b>, column <b>".strtoupper($colname)."</b>: Collaborator name (who performed the experiment) is required. Value is \"".$experiments[$index]->collaborator."\".<br>";
+	    echo "<b>Error</b>, column <b>".strtoupper($i)."</b>: Collaborator name (who performed the experiment) is required. Value is \"".$experiments[$index]->collaborator."\".<br>";
 	    $error_flag = ($error_flag) | (8);
-}
+          }
 
         // Check for floating point values 
         if ((strpos($numberofentries_row[$i], '.') != 0) || (strpos($numberofreplications_row[$i], '.') != 0)) {
@@ -389,7 +390,7 @@ class Annotations_Check
             $experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
         } 
 	else {
-	  echo "<b>Error</b>, column $colname: 'Number of entries' must be an integer, value is '$numberofentries_row[$i]'.<br/>";
+	  echo "<b>Error</b>, column $i: 'Number of entries' must be an integer, value is '$numberofentries_row[$i]'.<br/>";
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
         }
  
@@ -405,7 +406,7 @@ class Annotations_Check
 	$teststr= addcslashes(trim($plantingdate_row[$i]),"\0..\37!@\177..\377");
 	$phpdate = date_create_from_format('n/j/Y', $teststr);
 	if ($phpdate === FALSE) {
-	  echo "Couldn't parse Planting Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
+	  echo "Couldn't parse Planting Date for column <font color=red><b>".$i."</b></font>.<p>";
 	  //print_h(date_get_last_errors());  // debug
 	}
 	else {
@@ -425,7 +426,7 @@ class Annotations_Check
 	if ($teststr) {
 	  $phpdate = date_create_from_format('n/j/Y', $teststr);
 	  if ($phpdate === FALSE) {
-	    echo "Couldn't parse Harvest Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
+	    echo "Couldn't parse Harvest Date for column <font color=red><b>".$i."</b></font>.<p>";
 	  }
 	  else {
 	    $fdate = date_format($phpdate, 'n/j/Y');
@@ -445,7 +446,7 @@ class Annotations_Check
 	if ($teststr) {
 	  $phpdate = date_create_from_format('n/j/Y', $teststr);
 	  if ($phpdate === FALSE) {
-	    echo "Couldn't parse Begin Weather Date for column <font color=red><b>".chr($i+64)."</b></font>.<p>";
+	    echo "Couldn't parse Begin Weather Date for column <font color=red><b>".$i."</b></font>.<p>";
 	  }
 	  else {
 	    $fdate = date_format($phpdate, 'n/j/Y');
@@ -464,7 +465,7 @@ class Annotations_Check
 	$experiments[$index]->greenhouse = mysqli_real_escape_string($mysqli, $greenhouse_row[$i]);
 	$gh = $experiments[$index]->greenhouse;
 	if ($gh != "yes" AND $gh != "no") {
-	  echo "<b>Error</b>, column <b>".chr($i+64)."</b>: 'Greenhouse trial?' must be yes or no, not \"$gh\".<br>";
+	  echo "<b>Error</b>, column <b>".$i."</b>: 'Greenhouse trial?' must be yes or no, not \"$gh\".<br>";
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
 	
@@ -478,7 +479,7 @@ class Annotations_Check
 	$experiments[$index]->irrigation = mysqli_real_escape_string($mysqli, $irrigation_row[$i]);
 	$ir = $experiments[$index]->irrigation;
 	if ($ir != "yes" AND $ir != "no") {
-	  echo "<b>Error</b>, column <font color=red><b>".chr($i+64)."</b></font>: 'Irrigation' must be yes or no, not \"$ir\".<br>";
+	  echo "<b>Error</b>, column <font color=red><b>".$i."</b></font>: 'Irrigation' must be yes or no, not \"$ir\".<br>";
 	  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	}
 
@@ -519,7 +520,7 @@ class Annotations_Check
 	    <tbody style="padding: 0; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">	
 
 <?php
-	    for ($i = 2; $cols >= $i; $i++)  {
+	    for ($i = 'B'; $cols >= $i; $i++)  {
 	      print "<tr><td><font color=red>";
 	      $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialcode_row[$i]'";
 	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -532,7 +533,11 @@ class Annotations_Check
 	      print "$newtext<td>";
 	      $newtext = wordwrap($experimentset_row[$i], 6, '<br>');
 	      print "$newtext<td>";
-	      $newtext1 = wordwrap($bp_row[2], 6, '<br>');
+              if (preg_match("/[A-Za-z]/", $bp_row[$i])) {
+	          $newtext1 = wordwrap($bp_row[$i], 6, '<br>');
+              } else {
+                  $newtext1 = wordwrap($bp_row['B'], 6, '<br>');
+              }
 	      print "$newtext1</td><td>";
 	      $newtext = wordwrap($collaborator_row[$i], 12, '<br>');
 	      print "$newtext</td><td>";
@@ -591,126 +596,130 @@ class Annotations_Check
 	  $filename = $_GET['file_name'];
 	  $username = $_GET['user_name'];
 	  $data_public_flag = $_GET['public'];
-	
-	  $reader = new Spreadsheet_Excel_Reader();
-	  $reader->setOutputEncoding('CP1251');
-	  if (strpos($datafile,'.xls')>0)
-	      $reader->read($datafile);
-	  else
-	    $reader->read($datafile . ".xls");
-	
-	  $annots = $reader->sheets[0];
-	  $cols = $reader->sheets[0]['numCols'];
-	  $rows = $reader->sheets[0]['numRows'];
-	
-	  // find location for each row of data; find where data starts in file
-	  for ($i = 1; $i <= $rows; $i++) {
-	    if (stripos($annots['cells'][$i][1],'breeding program')!==FALSE){
-	      $BREEDINGPROGRAM = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'trial name')!==FALSE) {
-	      $TRIALCODE = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'trial year')!==FALSE) {
-	      $TRIALYEAR = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'experiment name')!==FALSE){
-	      $EXPERIMENT_SET = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'location')!==FALSE){
-	      $LOCATION = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'latitude')!==FALSE){
-	      $LATIT = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'longitude')!==FALSE){
-	      $LONGI = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'collaborator')!==FALSE){
-	      $COLLABORATOR = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'trial description')!==FALSE){
-	      $TRIAL_DESC = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'planting date')!==FALSE){
-	      $PLANTINGDATE = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'harvest date')!==FALSE){
-	      $HARVESTDATE = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'begin weather')!==FALSE){
-	      $BEGINWEATHER = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'greenhouse')!==FALSE){
-	      $GREENHOUSE = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'seeding rate')!==FALSE){
-	      $SEEDINGRATE = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'experimental design')!==FALSE){
-	      $EXPERIMENTALDESIGN = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'entries')!==FALSE){
-	      $NUMBEROFENTRIES = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'replications')!==FALSE){
-	      $NUMBEROFREPLICATIONS = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'plot size')!==FALSE){
-	      $PLOTSIZE = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'harvested area')!==FALSE){
-	      $HARVESTEDAREA = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'irrigation')!==FALSE){
-	      $IRRIGATION = $i;
-	    } elseif (stripos($annots['cells'][$i][1],'other')!==FALSE){
-	      $OTHERREMARKS = $i;
-	    }
-	  }
 
-	  $bp_row =			$annots['cells'][$BREEDINGPROGRAM];
-	  $trialcode_row =		$annots['cells'][$TRIALCODE];
-	  $year_row =			$annots['cells'][$TRIALYEAR];
-	  $location_row =		$annots['cells'][$LOCATION];
-	  $latitude_row = 		$annots['cells'][$LATIT];
-	  $longitude_row = 		$annots['cells'][$LONGI];
-	  $collaborator_row =		$annots['cells'][$COLLABORATOR];
-	  $plantingdate_row =		$annots['cells'][$PLANTINGDATE];
-	  $harvestdate_row =		$annots['cells'][$HARVESTDATE];
-	  $beginweatherdate_row = 	$annots['cells'][$BEGINWEATHER];
-	  $greenhouse_row = 		$annots['cells'][$GREENHOUSE];
-	  $seedingrate_row =		$annots['cells'][$SEEDINGRATE];
-	  $experimentset_row =	        $annots['cells'][$EXPERIMENT_SET];
-	  $trialdesc_row =	        $annots['cells'][$TRIAL_DESC];
-	  $experimentaldesign_row =	$annots['cells'][$EXPERIMENTALDESIGN];
-	  $numberofentries_row =	$annots['cells'][$NUMBEROFENTRIES];
-	  $numberofreplications_row =	$annots['cells'][$NUMBEROFREPLICATIONS];
-	  $plotsize_row =		$annots['cells'][$PLOTSIZE];
-	  $harvestedarea_row =		$annots['cells'][$HARVESTEDAREA];
-	  $irrigation_row =		$annots['cells'][$IRRIGATION];
-	  $otherremarks_row =		$annots['cells'][$OTHERREMARKS];
-	
+          $objPHPExcel = PHPExcel_IOFactory::load($datafile);
+          $sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
+
+          $cols = $objPHPExcel->setActiveSheetIndex(0)->getHighestColumn();
+          $rows = $objPHPExcel->setActiveSheetIndex(0)->getHighestRow();
+
+          // find location for each row of data; find where data starts in file
+        for ($i = 1; $i <= $rows; $i++) {
+          if (stripos($sheetData[$i]["A"],'template version')!==FALSE){
+                $VERSION = $i;
+          } elseif (stripos($sheetData[$i]["A"],'crop')!==FALSE) {
+                $CROP = $i;
+          } elseif (stripos($sheetData[$i]["A"],'breeding program')!==FALSE) {
+                $BREEDINGPROGRAM = $i;
+          } elseif (stripos($sheetData[$i]["A"],'trial name')!==FALSE) {
+                $TRIALCODE = $i;
+          } elseif (stripos($sheetData[$i]["A"],'trial year')!==FALSE) {
+                $TRIALYEAR = $i;
+          } elseif (stripos($sheetData[$i]["A"],'experiment name')!==FALSE){
+                $EXPERIMENT_SET = $i;
+          } elseif (stripos($sheetData[$i]["A"],'location')!==FALSE){
+                $LOCATION = $i;
+          } elseif (stripos($sheetData[$i]["A"],'latitude')!==FALSE){
+                $LATIT = $i;
+          } elseif (stripos($sheetData[$i]["A"],'longitude')!==FALSE){
+                $LONGI = $i;
+          } elseif (stripos($sheetData[$i]["A"],'collaborator')!==FALSE){
+                $COLLABORATOR = $i;
+          } elseif (stripos($sheetData[$i]["A"],'trial description')!==FALSE){
+                $TRIAL_DESC = $i;
+          } elseif (stripos($sheetData[$i]["A"],'planting date')!==FALSE){
+                $PLANTINGDATE = $i;
+          } elseif (stripos($sheetData[$i]["A"],'harvest date')!==FALSE){
+                $HARVESTDATE = $i;
+          } elseif (stripos($sheetData[$i]["A"],'begin weather')!==FALSE){
+                $BEGINWEATHER = $i;
+          } elseif (stripos($sheetData[$i]["A"],'greenhouse')!==FALSE){
+                $GREENHOUSE = $i;
+          } elseif (stripos($sheetData[$i]["A"],'seeding rate')!==FALSE){
+                $SEEDINGRATE = $i;
+          } elseif (stripos($sheetData[$i]["A"],'experimental design')!==FALSE){
+                $EXPERIMENTALDESIGN = $i;
+          } elseif (stripos($sheetData[$i]["A"],'number of entries')!==FALSE){
+                $NUMBEROFENTRIES = $i;
+          } elseif (stripos($sheetData[$i]["A"],'replications')!==FALSE){
+                $NUMBEROFREPLICATIONS = $i;
+          } elseif (stripos($sheetData[$i]["A"],'plot size')!==FALSE){
+                $PLOTSIZE = $i;
+          } elseif (stripos($sheetData[$i]["A"],'harvested area')!==FALSE){
+                $HARVESTEDAREA = $i;
+          } elseif (stripos($sheetData[$i]["A"],'irrigation')!==FALSE){
+                $IRRIGATION = $i;
+          } elseif (stripos($sheetData[$i]["A"],'other')!==FALSE){
+                $OTHERREMARKS = $i;
+          } else {
+          }
+        }
+
+        // Identify the Rows.
+        $version_row =                  $sheetData[$VERSION];
+        $crop_row =                     $sheetData[$CROP];
+        $bp_row =                       $sheetData[$BREEDINGPROGRAM];
+        $trialcode_row =                $sheetData[$TRIALCODE];
+        $year_row =                     $sheetData[$TRIALYEAR];
+        $experimentset_row =            $sheetData[$EXPERIMENT_SET];
+        $location_row =                 $sheetData[$LOCATION];
+        $latitude_row =                 $sheetData[$LATIT];
+        $longitude_row =                $sheetData[$LONGI];
+        $collaborator_row =             $sheetData[$COLLABORATOR];
+        $trialdesc_row =                $sheetData[$TRIAL_DESC];
+        $plantingdate_row =             $sheetData[$PLANTINGDATE];
+        $harvestdate_row =              $sheetData[$HARVESTDATE];
+        $beginweatherdate_row =         $sheetData[$BEGINWEATHER];
+        $greenhouse_row =               $sheetData[$GREENHOUSE];
+        $seedingrate_row =              $sheetData[$SEEDINGRATE];
+        $experimentaldesign_row =       $sheetData[$EXPERIMENTALDESIGN];
+        $numberofentries_row =          $sheetData[$NUMBEROFENTRIES];
+        $numberofreplications_row =     $sheetData[$NUMBEROFREPLICATIONS];
+        $plotsize_row =                 $sheetData[$PLOTSIZE];
+        $harvestedarea_row =            $sheetData[$HARVESTEDAREA];
+        $irrigation_row =               $sheetData[$IRRIGATION];
+        $otherremarks_row =             $sheetData[$OTHERREMARKS];
+
 	  /*
 	   * Process the annotations contents.
 	   */
 	  // Breeding Program Code
-	  $bp = trim($bp_row[2]);
+	  $bp = trim($bp_row["B"]);
 	  if (DEBUG>1) {echo "experiments bp [".$i."] is set to $bp.<br>";}
 
 	  $error_flag = 0;
 	  // How many Trials are annotated in this file?:
 	  $n_trials = 0;
-	  for ($i = 2; $i <= $cols; $i++) {
+	  for ($i = 'B'; $i <= $cols; $i++) {
 	    // Sometimes Excel introduces extra columns in the data files.
 	    // Stop reading at first column where Trial Name is empty.
-	    if (empty($trialcode_row[$i])) 
-	      $cols = $i-1;
-	    else 
+	    if (!empty($trialcode_row[$i])) {
+	      $tmp = $i;
 	      $n_trials++;
+            }
 	  }
+          $cols = $tmp;
 
 	  // Create the array to hold the data, $experiments[$index]:
 	  $experiments = array();
-	  for ($i = 0; $i < ($cols-1); $i++)
+	  for ($i = 0; $i < $n_trials; $i++) {
 	      $experiments[$i] = new experiment();
-
-  /* Start reading in the Trials.  */
-
-	  for ($i = 2; $i <= $cols; $i++) {
-	  $colname = chr($i+64);
+          }
+          /* Start reading in the Trials.  */
+          $index = -1;
+	  for ($i = 'B'; $i <= $cols; $i++) {
+          $index++;
+          if (DEBUG > 1) {echo "index = $index<br>\n";}
 	  // Set the index for array $experiments[].
-	  $index = $i - 2;
 
 	  $trialcode = $experiments[$index]->trialcode = mysqli_real_escape_string($mysqli, trim($trialcode_row[$i]));
-	  if (DEBUG>1) {echo "experiments trialcode [".$i."] is set to".$experiments[$index]->trialcode."\n";}
+	  if (DEBUG>1) {echo "experiments trialcode [".$i."] is set to".$experiments[$index]->trialcode."<br>\n";}
 	  $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$trialcode}'";
 	  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	  if (mysqli_num_rows($res)==1) {  //yes, experiment found once
 	    $row = mysqli_fetch_assoc($res);
 	    $exp_id = $row['experiment_uid'];
-	    if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
+	    if (DEBUG>1) {echo "i= $i exp ID ".$exp_id."\n";}
 	  } 
 	  elseif (mysqli_num_rows($res)>1)  { //yes, experiment found more than once, bad
 	    if (DEBUG>1) {echo "Trial code ".$trialcode." linked to multiple experiments-must fix\n";}
@@ -718,15 +727,22 @@ class Annotations_Check
 	  }
 
 	  $year = $year_row[$i];
+          if (DEBUG > 1) {echo "year = $year $i<br>\n";}
 	  $experiments[$index]->year = $year;
 	  $today = getdate();
 	  // dem may12: Allow old data, and next year.
 	  $curr_year = $today['year'] + 1;
 	  if (($experiments[$index]->year < 1950) OR ($year > $curr_year)) {
-	    echo "Column $colname: Year <b>'$year'</b> not in range [1950 - current year].<br>";
+	    echo "Column $i: Year <b>'$year'</b> not in range [1950 - current year].<br>";
 	    $error_flag = ($error_flag) | (1);
 	  }
 
+
+          if (preg_match("/[A-Za-z]/", $bp_row[$i])) {
+              $experiments[$index]->bp = wordwrap($bp_row[$i], 6, '<br>');
+          } else {
+              $experiments[$index]->bp = wordwrap($bp_row['B'], 6, '<br>');
+          }
 	  $experiments[$index]->location = addslashes($location_row[$i]);
 	  $experiments[$index]->latitude = mysqli_real_escape_string($mysqli, $latitude_row[$i]);
 	  $experiments[$index]->longitude = mysqli_real_escape_string($mysqli, $longitude_row[$i]);
@@ -772,7 +788,6 @@ class Annotations_Check
 	      if ((is_numeric($numberofentries_row[$i])) || ($numberofentries_row[$i] == '' )) {
 		$experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
 	      } else {
-		print "i=$i<br>\n";
 		echo "<b>ERROR: Value for 'Number of entries' must be an integer </b><br/><br/>";
 		exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 	      }
@@ -816,14 +831,14 @@ class Annotations_Check
 	    // Insert data into experiments and phenotype_experiments  table
 	    $myind=0;
 	    $experiments_real = array();
-	    for ($i = 0; $i < $n_trials; $i++)
+	    for ($i = 0; $i < $n_trials; $i++) {
 		$experiments_real[$i] = $experiments[$i];
+            }
 	
 	    foreach ($experiments_real as $experiment)
 	      {
 		// Get CAPdata program id
-		/* $CAPcode = $experiments[$myind]->bp; */
-		$CAPcode = $bp;
+		$bp = $experiment->bp;
 		$sql = "SELECT CAPdata_programs_uid FROM CAPdata_programs
 			WHERE data_program_code= '$bp'";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -870,6 +885,7 @@ class Annotations_Check
 		// First check if this trial code is in the database, if yes, then update all fields;
 		// if no then insert into table
 		$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$experiment->trialcode}'";
+                if (DEBUG > 1) { echo "sql = $sql<br>\n"; }
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 		if ($row = mysqli_fetch_assoc($res)) { //yes, experiment found, so update
 		    $exp_id = $row['experiment_uid'];

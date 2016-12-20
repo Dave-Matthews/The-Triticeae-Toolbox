@@ -57,40 +57,34 @@ class Downloads
                 $this->step6_lines();
                 break;
             case 'step1yearprog':
-                $this->step1_yearprog();
-                break;
-            case 'step2lines':
-                echo $this->step2_lines();
-                break;
-            case 'searchLines':
-                echo $this->step1_search_lines();
+                $this->step1Yearprog();
                 break;
             case 'download_session_v4':
-                echo $this->type1_session(V4);
+                $this->type1Session('V4');
                 break;
             case 'download_session_v5':
-                echo $this->type1_session(V5);
+                $this->type1Session('V5');
                 break;
             case 'download_session_v6':
-                echo $this->type1_session(V6);
+                $this->type1Session('V6');
                 break;
             case 'download_session_v7':
-                echo $this->type1_session(V7);
+                $this->type1Session('V7');
                 break;
             case 'download_session_v8':
-                echo $this->type2_session(V8);
+                $this->type2Session('V8');
                 break;
             case 'download_session_v9':
-                echo $this->type2_session(V9);
+                $this->type2Session('V9');
                 break;
             case 'download_session_vcf':
-                echo $this->type1_session(vcf);
+                $this->type1Session('vcf');
                 break;
             case 'refreshtitle':
-                echo $this->refresh_title();
+                $this->refreshTitle();
                 break;
             case 'verifyLines':
-                echo $this->verifyLines();
+                $this->verifyLines();
                 break;
             default:
                 $this->type1Select();
@@ -101,7 +95,6 @@ class Downloads
     /**
      * load header and footer then check session to use existing data selection
      *
-     * @return null
      */
     private function type1Select()
     {
@@ -109,7 +102,6 @@ class Downloads
         include $config['root_dir'].'theme/normal_header.php';
         $this->type1Checksession();
         ?>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
         <script type="text/javascript" src="downloads/downloadsjq04.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
@@ -118,15 +110,11 @@ class Downloads
     /**
      * Checks the session variable, if there is lines data saved then go directly to the lines menu
      *
-     * @return null
      */
     private function type1Checksession()
     {
         global $mysqli;
         echo "<div id=\"title\">";
-        $phenotype = "";
-        $lines = "";
-        $markers = "";
         $saved_session = "";
         $message1 = $message2 = "";
         $download_geno = "";
@@ -143,7 +131,6 @@ class Downloads
                 $saved_session = "$tmp phenotypes ";
             }
             $message2 = "download phenotype and genotype data";
-            $phenotype = $_SESSION['phenotype'];
             $download_pheno = "checked";
         } else {
             $message1 = "0 phenotypes";
@@ -156,7 +143,6 @@ class Downloads
             } else {
                 $saved_session = $saved_session . ", $countLines lines";
             }
-            $lines = $_SESSION['selected_lines'];
             if (isset($_SESSION['geno_exps'])) {
                 $download_genoe = "checked";
             } else {
@@ -166,7 +152,6 @@ class Downloads
         if (isset($_SESSION['clicked_buttons'])) {
             $tmp = count($_SESSION['clicked_buttons']);
             $saved_session = $saved_session . ", $tmp markers";
-            $markers = $_SESSION['clicked_buttons'];
             $download_geno = "checked";
         } else {
             if ($message2 == "") {
@@ -178,7 +163,7 @@ class Downloads
             }
         }
          
-        $this->refresh_title();
+        $this->refreshTitle();
         ?>        
         </div>
         <div id="title2">
@@ -216,9 +201,8 @@ class Downloads
     /**
      * display a spinning activity image when a slow function is running
      *
-     * @return null
      */
-    private function refresh_title()
+    private function refreshTitle()
     {
         ?>
         <h2>Download Genotype and Phenotype Data</h2>
@@ -231,7 +215,7 @@ class Downloads
      *
      * @param string $version Tassel version of output
      */
-    private function type1_session($version)
+    private function type1Session($version)
     {
         global $mysqli;
         $datasets_exp = "";
@@ -271,13 +255,13 @@ class Downloads
             $lines_str = implode(",", $lines);
             $experiments_g = $_SESSION['geno_exps'];
             $geno_str = $experiments_g[0];
-            $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = $geno_str";
-            if ($stmt = mysqli_prepare($mysqli, $stmt)) {
+            $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = ?";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
                 mysqli_stmt_bind_param($stmt, "i", $geno_str);
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_bind_result($stmt, $marker_uid);
                 while (mysqli_stmt_fetch($stmt)) {
-                    $markers[] = $uid;
+                    $markers[] = $marker_uid;
                 }
                 mysqli_stmt_close($stmt);
             }
@@ -286,7 +270,7 @@ class Downloads
         }
 
         $count_markers = count($markers);
-        if ($count_markers <= 1) {
+        if ($count_markers < 1) {
             echo "<font color=red>Error: no markers selected</font><br>\n";
             return;
         }
@@ -345,7 +329,7 @@ class Downloads
         if ($version == "V3") {
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-            $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
+            $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
         } elseif ($version == "V4") { //Download for Tassel
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
@@ -358,9 +342,9 @@ class Downloads
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             if ($typeGE == "true") {
-                $output = type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
+                type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
             } else {
-                $output = $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
+                $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
             }
             fclose($h);
         } elseif ($version == "V5") { //Download for R
@@ -375,16 +359,16 @@ class Downloads
             if ($typeG == "true") {
                 $filename = "snpfile.txt";
                 $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-                $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
+                $this->type2_build_markers_download($lines, $markers, $dtype, $h);
                 fwrite($h, $output);
                 fclose($h);
             }
             $filename = "genotype.hmp.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             if ($typeGE == "true") {
-                $output = type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
+                type4BuildMarkersDownload($geno_str, $min_maf, $max_missing, $dtype, $h);
             } else {
-                $output = $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
+                $this->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
             }
             fclose($h);
         } elseif ($version == "V6") {  //Download for Flapjack
@@ -397,7 +381,7 @@ class Downloads
             }
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-            $output = $this->type2_build_markers_download($lines, $markers, $dtype, $h);
+            $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
         } elseif ($version == "V7") {  //Download for synbreed
             $dtype = "AB";
@@ -409,8 +393,8 @@ class Downloads
                 fclose($h);
             }
             $filename = "snpfile.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_markers_download($lines,$markers,$dtype,$h);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $this->type2_build_markers_download($lines, $markers, $dtype, $h);
             fclose($h);
         } elseif ($version == "vcf") {
             if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
@@ -425,24 +409,24 @@ class Downloads
         }
         if ($typeG == "true") {
             $filename = "allele_conflict.txt";
-            $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
-            $output = $this->type2_build_conflicts_download($lines,$markers);
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->type2_build_conflicts_download($lines, $markers);
             fwrite($h, $output);
             fclose($h);
         }
         $filename = "/tmp/tht/download_" . $unique_str . ".zip";
-        exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str"); 
+        exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str");
        
         ?>
         <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
         <?php
-	}
+    }
 
     /**
      * use this download when selecting program and year
      * @param string $version Tassel version of output
      */
-    private function type2_session($version)
+    private function type2Session($version)
     {
         $subset = "yes";
         $datasets_exp = "";
@@ -495,11 +479,11 @@ class Downloads
         $dtype = "";
  
         $filename = "traits.txt";
-        $h = fopen("/tmp/tht/download_$unique_str/$filename","w");
+        $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
         if ($version == "V8") {
-            $output = $this->type1_build_traits_download($experiments_t,$phenotype,$datasets_exp);
+            $output = $this->type1_build_traits_download($experiments_t, $phenotype, $datasets_exp);
         } elseif ($version == "V9") {
-            $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype); 
+            $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype);
         }
         fwrite($h, $output);
         fclose($h);
@@ -511,16 +495,15 @@ class Downloads
         ?>
         <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
         <?php
-
     }
-	
+
     /**
      * starting with year
      */
-    private function step1_yearprog()
+    private function step1Yearprog()
     {
-    global $mysqli
-     ?>
+        global $mysqli
+        ?>
     <div id="step11" style="float: left; margin-bottom: 1.5em;">
     <table id="phenotypeSelTab" class="tableclass1">
     <tr>
@@ -528,18 +511,17 @@ class Downloads
     </tr>
     <tr><td>
     <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
-    <?php
-    $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-    WHERE e.experiment_type_uid = et.experiment_type_uid
-    AND et.experiment_type_name = 'phenotype'
-    GROUP BY e.experiment_year ASC";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_assoc($res))
-    {
-    ?>
+        <?php
+        $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
+        WHERE e.experiment_type_uid = et.experiment_type_uid
+        AND et.experiment_type_name = 'phenotype'
+        GROUP BY e.experiment_year ASC";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
+        ?>
     <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
     <?php
-    }
+        }
     ?>
     </select>
     </td>
@@ -548,51 +530,51 @@ class Downloads
     <?php
     }
     
-	/**
-	 * main entry point when there is a line selection in session variable
-	 */
+    /**
+     * main entry point when there is a line selection in session variable
+     */
     private function type1_lines_trial_trait()
     {
-		?>
-		<div id="step11">
-		<?php
-	    $this->step1_lines();
-		?>
-	    </div></div>    
-	    <div id="step2" style="float: left; margin-bottom: 1.5em;">
-	    <?php 
-	    $this->step2_lines();
-	    ?></div>
-	    <div id="step3" style="float: left; margin-bottom: 1.5em;">
-            <?php
-            $this->step3_lines();
-            ?></div>
-	    <div id="step4" style="float: left; margin-bottom: 1.5em;">
-            <?php
-            $this->step4_lines();
-            ?></div>
-            <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-            <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-            <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
-            <script type="text/javascript" src="downloads/downloads07.js"></script>
-            <script type="text/javascript">
-            var mm = 50;
-            var mmaf = 5;
-            if ( window.addEventListener ) {
-                    window.addEventListener( "load", select_download(), false );
-            } else if ( window.attachEvent ) {
-                    window.attachEvent( "onload", select_download);
-            } else if ( window.onload ) {
-                    window.onload = select_download();
-            }
-            </script>
-	    </div></div>
-	    <?php 	
-	}
-	
-	/**
-	 * starting with lines display the selected lines
-	 */
+        ?>
+        <div id="step11">
+        <?php
+        $this->step1_lines();
+        ?>
+    </div></div>    
+    <div id="step2" style="float: left; margin-bottom: 1.5em;">
+    <?php
+        $this->step2_lines();
+        ?></div>
+        <div id="step3" style="float: left; margin-bottom: 1.5em;">
+        <?php
+        $this->step3_lines();
+        ?></div>
+        <div id="step4" style="float: left; margin-bottom: 1.5em;">
+        <?php
+        $this->step4_lines();
+        ?></div>
+        <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
+        <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+        <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
+        <script type="text/javascript" src="downloads/downloads07.js"></script>
+        <script type="text/javascript">
+        var mm = 50;
+        var mmaf = 5;
+        if ( window.addEventListener ) {
+                window.addEventListener( "load", select_download(), false );
+        } else if ( window.attachEvent ) {
+                window.attachEvent( "onload", select_download);
+        } else if ( window.onload ) {
+                window.onload = select_download();
+        }
+        </script>
+        </div></div>
+        <?php
+    }
+
+    /**
+     * starting with lines display the selected lines
+     */
 	private function step1_lines()
 	{
             global $mysqli;
@@ -613,7 +595,7 @@ class Downloads
 	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 	      $row = mysqli_fetch_assoc($res)
 	      ?>
-	      <option disabled value="<?php $uid ?>">
+	      <option disabled value="">
 	      <?php echo $row['line_record_name'] ?>
 	      </option>
 	      <?php
@@ -652,7 +634,7 @@ class Downloads
 	        $row = mysqli_fetch_assoc($res)
 	        ?>
 	        <option disabled value="
-	        <?php $uid ?>">
+	        <?php echo $uid ?>">
 	        <?php echo $row['marker_name'] ?>
 	        </option>
 	        <?php
@@ -742,9 +724,8 @@ class Downloads
         }
 
     /**
-     * verify input
+     * displays current selection and prompts for genetic map if not selected
      *
-     * @return null
      */
     private function verifyLines()
     {
@@ -870,7 +851,6 @@ class Downloads
     /**
      * starting with lines display marker data
      *
-     * @return null
      */
     function step5_lines()
     {
@@ -985,17 +965,19 @@ class Downloads
              <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>used with <b>TASSEL</b> Version 3, 4, or 5 
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
              <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
-             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcf');">
              <?php 
              if ($typeGE == "true") {
-                 echo "<td><b>VCF</b> format";
+                 ?>
+                 <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcf');">
+                 <td><b>VCF</b> format
+                 <?php
              } else {
-             ?>
-             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
-             <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b>
-             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v7');">
-             <td>genotype coded as {AA, AB, BB}<br>used by <b>synbreed</b>
-             <?php
+                 ?>
+                 <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
+                 <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b>
+                 <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v7');">
+                 <td>genotype coded as {AA, AB, BB}<br>used by <b>synbreed</b>
+                 <?php
              }
              echo "</table>";
           ?><br><br>
@@ -1014,7 +996,6 @@ class Downloads
     /**
     * when no marker data selected then only show phenotype download button
     *
-    * @return null
     */
     function step6_lines()
     {
@@ -1069,7 +1050,7 @@ class Downloads
             $line_list[$line_uid] = $line_name;
         }
 
-        $trait_name = "";
+        $trait_list = array();
         $sql = "select phenotype_uid, phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_array($res)) {
@@ -1087,6 +1068,7 @@ class Downloads
             $expr_list[$uid] = $expr_name;
         }
 
+        $lines = array();
         $sql = "select distinct(tb.line_record_uid)
             from tht_base as tb, phenotype_data as pd
             where tb.experiment_uid IN ($experiments) AND
@@ -1107,13 +1089,13 @@ class Downloads
             pd.tht_base_uid = tb.tht_base_uid
             and pd.phenotype_uid IN ($traits)";
             $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
-            mysqli_stmt_bind_param($stmt, "ii", $line_uid, $expr_uid) or die(mysqli_error($mysqli));
             $ncols = count($empty);
             foreach ($lines as $key=>$line_uid) {
                 $line_name = $line_list[$line_uid];
                 $count = 0;
                 foreach ($expr_list as $expr_uid=>$expr_name) {
                     $outarray = $empty;
+                    $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_bind_result($stmt, $trait_uid, $value);
                     while (mysqli_stmt_fetch($stmt)) {
@@ -1131,10 +1113,11 @@ class Downloads
 
     /**
      * Build trait download file for Tassel program interface
-     * @param unknown_type $experiments
-     * @param unknown_type $traits
-     * @param unknown_type $datasets
-     * @param unknown_type $subset
+     * @param string $experiments
+     * @param string $traits
+     * @param string $datasets
+     * @param string $subset
+     * @param string $dtype
      * @return string
      */
     private function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset, $dtype)
@@ -1439,9 +1422,10 @@ class Downloads
 	
 	/**
 	 * build genotype data file when given set of lines and markers
-	 * @param unknown_type $lines
-	 * @param unknown_type $markers
-	 * @param unknown_type $dtype
+	 * @param array $lines
+	 * @param array $markers
+	 * @param string $dtype
+         * @param file $h
 	 */
 	function type2_build_markers_download($lines,$markers,$dtype, $h)
 	{
@@ -1654,15 +1638,6 @@ class Downloads
            $marker_list_type[$marker_uid] = $row[4];
          }
 
-	 //get location in allele_byline for each marker
-	 $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-	 $i=0;
-	 while ($row = mysqli_fetch_array($res)) {
-	   $marker_idx_list[$row[0]] = $i;
-	   $i++;
-	 }
-	 
 	 //get header, tassel requires all fields even if they are empty
          if ($dtype == "qtlminer") {
            $outputheader = "rs\talleles\tchrom\tpos";
@@ -1684,7 +1659,6 @@ class Downloads
 	 //using a subset of markers so we have to translate into correct index
          $pos_index = 0;
 	 foreach ($marker_list_all as $marker_id => $val) {
-	  $marker_idx = $marker_idx_list[$marker_id];
           $marker_name = $marker_list_name[$marker_id];
           $allele = $marker_list_allele[$marker_id];
           $marker_type = $marker_list_type[$marker_id];

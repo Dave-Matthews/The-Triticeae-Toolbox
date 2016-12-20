@@ -5,39 +5,15 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @author  Clay Birkett <cbirkett@gmail.com>
+ * @author  Clay Birkett <clb343@cornell.edu>
  * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link    http://triticeaetoolbox.org/wheat/downloads/downloads.php
  *
-// |                                                                      |
-// | The purpose of this script is to provide the user with an interface  |
-// | for downloading certain kinds of files from THT.                     |
-// +----------------------------------------------------------------------+
-// | Authors:  Gavin Monroe <gemonroe@iastate.edu>  						|
-// | Updated: December 2008 by Julie A Dickerson, julied@iastate.edu	  |
-// +----------------------------------------------------------------------+
-// +----------------------------------------------------------------------+
-// | Change log								  |
-// | 2/8/11:  DEM - Include markers with MAF = 0 too if user wishes.      |
-// | 1/5/01:  JLee - Add support to generate datafile for Tassel V3       |
-// |                                                                      |
-// | 2/28/09: removed table summarizing all allelles to avoid timeout	  |
-// |          problems when getting SNP data across multiple programs
-// | 5/20/09: added in tassel support functionality and commented out
-// | 			routines for QTLMiner
-// | September 2009: added in the ability put check lines into the output |
-// |			file for traits; if there are multiple check lines of the |
-// | 			same name, then the mean is used.	Also added in seesions  |
-// | 			to verify that data is available for a user.			  |
-// +----------------------------------------------------------------------+
  */
-set_time_limit(0);
 
 // For live website file
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-set_include_path(GET_INCLUDE_PATH . PATH_SEPARATOR . '../pear/');
-date_default_timezone_set('America/Los_Angeles');
 
 // connect to database
 $mysqli = connecti();
@@ -53,11 +29,6 @@ new SelectPhenotypeExp($_GET['function']);
  **/
 class SelectPhenotypeExp
 {
-    /**
-     * Delimiter used for output files
-     */
-    public $delimiter = "\t";
-    
     /**
      * Using the class's constructor to decide which action to perform
      *
@@ -77,6 +48,9 @@ class SelectPhenotypeExp
                 break;
             case 'step1experiment':
                 $this->step1Experiment();
+                break;
+            case 'step2experiment':
+                $this->step2Experiment();
                 break;
             case 'step1lines':
                 $this->step1_lines();
@@ -133,16 +107,16 @@ class SelectPhenotypeExp
                 $this->type1_markers();
                 break;
             case 'type2experiments':
-                $this->type2Experiments();
+                $this->step3Experiments();
                 break;
             case 'type2markers':
                 $this->type2_markers();
                 break;
             case 'refreshtitle':
-                echo $this->refresh_title();
+                $this->refresh_title();
                 break;
             default:
-                $this->type1_select();
+                $this->type1Select();
                 break;
         }
     }
@@ -150,7 +124,7 @@ class SelectPhenotypeExp
     /**
      * load header and footer then check session to use existing data selection
      */
-    private function type1_select()
+    private function type1Select()
     {
         global $config;
         include($config['root_dir'].'theme/normal_header.php');
@@ -167,42 +141,42 @@ class SelectPhenotypeExp
      */
     private function type1()
     {
-		global $config;
-		unset($_SESSION['selected_lines']);
-		unset($_SESSION['phenotype']);
-                unset($_SESSION['selected_traits']);
-                unset($_SESSION['selected_trials']);
-		unset($_SESSION['clicked_buttons']);
-                unset($_SESSION['geno_exps']);
-		
-		?>
-		<p>1.
-		<select name="select1" onchange="javascript: update_select1(this.options)">
-		<option value="BreedingProgram">Breeding Program</option>
-                <option value="DataProgram">Data Program</option>
-                <option value="Experiment">Experiment</option>
-		<option value="Lines">Lines</option>
-		<option value="Locations">Locations</option>
-		<option value="Phenotypes">Trait Category</option>
-		</select></p>
-		<?php 
-		$this->step1_breedprog();
-		$footer_div = 1;
-	}
-	
-	/**
-	 * Checks the session variable, if there is lines data saved then go directly to the lines menu
-	 */
-	private function type1_checksession()
+        global $config;
+        unset($_SESSION['selected_lines']);
+        unset($_SESSION['phenotype']);
+        unset($_SESSION['selected_traits']);
+        unset($_SESSION['selected_trials']);
+        unset($_SESSION['clicked_buttons']);
+        unset($_SESSION['geno_exps']);
+
+        ?>
+        <p>1.
+        <select name="select1" onchange="javascript: update_select1(this.options)">
+        <option value="BreedingProgram">Breeding Program</option>
+        <option value="DataProgram">Data Program</option>
+        <option value="Experiment">Experiment</option>
+        <option value="Lines">Lines</option>
+        <option value="Locations">Locations</option>
+        <option value="Phenotypes">Trait Category</option>
+        </select></p>
+        <?php
+        $this->step1_breedprog();
+        $footer_div = 1;
+    }
+
+    /**
+     * Checks the session variable, if there is lines data saved then go directly to the lines menu
+     */
+    private function type1_checksession()
     {
             ?>
-		<div id="title">
-		<?php
+	<div id="title">
+	<?php
             $phenotype = "";
             $lines = "";
             $markers = "";
             $saved_session = "";
-		    $message1 = $message2 = "";
+            $message1 = $message2 = "";
 
             if (isset($_SESSION['phenotype'])) {
                     $tmp = count($_SESSION['phenotype']);
@@ -252,7 +226,7 @@ class SelectPhenotypeExp
 		  <option value="Locations">Locations</option>
 		  <option value="Phenotypes">Trait Category</option>
 		</select></p>
-		        <script type="text/javascript" src="downloads/downloads12.js"></script>
+		        <script type="text/javascript" src="downloads/downloads13.js"></script>
                 <?php 
                 $this->step1_breedprog();
                 ?>
@@ -512,6 +486,7 @@ class SelectPhenotypeExp
 	<select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_trial(this.options)">
         <?php
 
+        $sel_list = array();
 	$sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid, e.experiment_year
 	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
 	 WHERE
@@ -885,6 +860,7 @@ class SelectPhenotypeExp
                   data_program_name as name, data_program_code as code, cp.CAPdata_programs_uid as id
                   FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
                   WHERE program_type = 'breeding'
+                  AND e.CAPdata_programs_uid = cp.CAPdata_programs_uid
                   AND lr.breeding_program_code = data_program_code
                   AND tb.experiment_uid = e.experiment_uid
                   AND tb.line_record_uid = lr.line_record_uid
@@ -1297,6 +1273,46 @@ class SelectPhenotypeExp
 	 </table>
 	 <?php
 	}
+
+        /**
+         * starting with experiment display years
+         */
+        private function step2Experiment() {
+         global $mysqli;
+         $experiments = $_GET['expt'];
+         ?>
+         <div id="step21">
+         <p>2.
+         <select>
+         <option>Year</option>
+         </select>
+         </p>
+         <table id="phenotypeSelTab" class="tableclass1">
+         <tr>
+         <th>Year</th>
+         </tr>
+         <tr><td>
+         <select name="year" multiple="multiple" style="height: 12em;" onchange="javascript:update_years(this.options)">
+         <?php
+         $sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et, phenotype_experiment_info AS p_e
+         WHERE e.experiment_uid = p_e.experiment_uid
+         AND e.experiment_type_uid = et.experiment_type_uid
+         AND et.experiment_type_name = 'phenotype'
+         AND e.experiment_set_uid IN ($experiments)
+         GROUP BY e.experiment_year DESC";
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+         while ($row = mysqli_fetch_assoc($res)) {
+           ?>
+           <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
+           <?php
+         }
+         ?>
+         </select>
+         </td>
+         </table>
+         </div>
+         <?php
+        }
 	
 	/**
 	 * starting with location display years
@@ -1747,6 +1763,7 @@ class SelectPhenotypeExp
                      FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
                      WHERE cp.CAPdata_programs_uid IN ($CAPdata_programs)
                      AND e.experiment_year IN ($years)
+                     AND e.CAPdata_programs_uid = cp.CAPdata_programs_uid
                      AND lr.breeding_program_code = data_program_code
                      AND tb.experiment_uid = e.experiment_uid
                      AND tb.line_record_uid = lr.line_record_uid";
@@ -1778,6 +1795,7 @@ class SelectPhenotypeExp
 				<option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
 <?php
 		}
+                echo "$sql\n";
 ?>
 			</optgroup>
 		</select>
@@ -1790,40 +1808,44 @@ class SelectPhenotypeExp
     /**
      * display a list of trials
      */
-    private function type2Experiments()
+    private function step3Experiments()
     {
         global $mysqli;
         $exptuids = $_GET['expt'];
         $exptuid_ary = explode(",", $exptuids);
+        $years = $_GET['yrs'];
+        $years_ary = explode(",", $years);
         ?>
-    <p>2.
+    <p>3.
     <select>
     <option>Trials</option>
     </select></p>
     <div>
     <table class="tableclass1">
-        <tr><th>Trials</th></tr>
-        <tr><td>
-                <select name="experiments" multiple="multiple"
-                  style="height: 12em" onchange="javascript: update_trials(this.options)">
-        <?php
-        foreach ($exptuid_ary as $exptuid) {
+    <tr><th>Trials</th></tr>
+    <tr><td>
+    <select name="experiments" multiple="multiple"
+    style="height: 12em" onchange="javascript: update_trials(this.options)">
+    <?php
+    foreach ($exptuid_ary as $exptuid) {
+        foreach ($years_ary as $year) {
             $sql = "SELECT experiment_uid as id, trial_code as name from experiments
-            where experiment_set_uid IN (?) order by experiment_year";
-            if ($stmt = mysqli_prepare($mysqli, $sql)) {
-                mysqli_stmt_bind_param($stmt, "i", $exptuid);
-                mysqli_stmt_execute($stmt);
-                mysqli_stmt_bind_result($stmt, $id, $name);
-                while (mysqli_stmt_fetch($stmt)) {
-                    ?>
-                    <option value="<?php echo $id ?>"><?php echo $name ?></options>
-                    <?php
-                }
-                mysqli_stmt_close($stmt);
+              where experiment_set_uid = ? and experiment_year = ?";
+            $stmt = $mysqli->prepare($sql);
+            $stmt->bind_param("ii", $exptuid, $year);
+            $stmt->execute();
+            $stmt->bind_result($id, $name);
+            while ($stmt->fetch()) {
+                ?>
+                <option value="<?php echo $id ?>"><?php echo $name ?></options>
+                <?php
             }
+            $stmt->close();
         }
-        echo "</select>";
-        echo "</table>";
+    }
+    echo "</select>";
+    echo "</table>";
+    echo "</div>";
     }
 
     /**
