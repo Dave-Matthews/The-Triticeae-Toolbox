@@ -40,7 +40,7 @@ if (!$traits or !$trials) {
     // Retrieve the data into array $vals.
     foreach ($traits as $trait) {
         foreach ($trials as $trial) {
-            $sql = "select trial_code from experiments where experiment_uid = ?l";
+            $sql = "select trial_code from experiments where experiment_uid = ?";
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
                 mysqli_stmt_bind_param($stmt, "i", $trial);
                 mysqli_stmt_execute($stmt);
