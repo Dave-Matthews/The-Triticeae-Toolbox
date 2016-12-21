@@ -36,8 +36,6 @@ $traits = $_SESSION['selected_traits'];
 $trials = $_SESSION['selected_trials'];
 if (!$traits or !$trials) {
     echo "Please select at least one trait and more than one trial, <a href='$config[base_url]phenotype/phenotype_selection.php'>Traits and Trials</a>.<p>";
-} elseif (count($trials) < 2) {
-    echo "Please select more than one trial, <a href='$config[base_url]phenotype/phenotype_selection.php'>Traits and Trials</a>.<p>";
 } else {
     // Retrieve the data into array $vals.
     foreach ($traits as $trait) {
@@ -81,6 +79,7 @@ if (!$traits or !$trials) {
     }
 
     // Optionally remove Lines that have any missing values for a Trait/Trial.
+    $sparselines = array();
     foreach ($traits as $trait) {
         foreach ($trials as $trial) {
             foreach ($lines as $line) {
@@ -102,6 +101,10 @@ if (!$traits or !$trials) {
         $tmpCount = count($tmp);
         if ($tmpCount == 0) {
             echo "<font color=red>Warning: Too many lines with missing data. Please select lines that are measured in all trials.</font><br>\n";
+            foreach ($tmp as $line) {
+                echo "$line ";
+            }
+            echo "<br>\n";
         }
     }
 
@@ -118,41 +121,42 @@ if (!$traits or !$trials) {
                     $val = "NA";
                 }
                 $outdata .= $trait .",". $trial .",". $line .",". $val ."\n";
-          }
-      }
-  }
-  // Make the filename unique to deal with concurrency.
-  $time = time();
-  $outfile = "/tmp/tht/trialdata.csv".$time;
-  if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
-  file_put_contents($outfile, $outdata);
+            }
+        }
+    }
+    // Make the filename unique to deal with concurrency.
+    $time = time();
+    $outfile = "/tmp/tht/trialdata.csv".$time;
+    if (! file_exists('/tmp/tht')) {
+         mkdir('/tmp/tht');
+    }
+    file_put_contents($outfile, $outdata);
 
-  // Run TableReportParameters.R to calculate LSD.
-  // On tcap, the imbedded '\n' doesn't work.  Use chr(10) instead.
-  /* $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, stringsAsFactors=FALSE)\noutFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")\n'; */
-  $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, colClasses=c("factor", "factor", "character", "numeric"))'.chr(10).'outFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")'.chr(10);
-  // for debugging:
-  /* echo "<pre>"; system("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla 2>&1"); */
-  exec("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla > /dev/null 2> /tmp/tht/stderr.txt$time");
-  // Show resulting file.
-  if (file_exists("/tmp/tht/TableReportOut.txt".$time)) {
-      $r = fopen("/tmp/tht/TableReportOut.txt".$time,"r");
-  // Parse the contents, which look like this:
+    // Run TableReportParameters.R to calculate LSD.
+    // On tcap, the imbedded '\n' doesn't work.  Use chr(10) instead.
+    /* $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, stringsAsFactors=FALSE)\noutFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")\n'; */
+    $setupR = 'oneCol <- read.csv("'.$outfile.'", header=FALSE, colClasses=c("factor", "factor", "character", "numeric"))'.chr(10).'outFile <-c("/tmp/tht/TableReportOut.txt'.$time.'")'.chr(10);
+    // for debugging:
+    /* echo "<pre>"; system("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla 2>&1"); */
+    exec("echo '$setupR' | cat - ../R/TableReportParameters.R | R --vanilla > /dev/null 2> /tmp/tht/stderr.txt$time");
+    // Show resulting file.
+    if (file_exists("/tmp/tht/TableReportOut.txt".$time)) {
+        $r = fopen("/tmp/tht/TableReportOut.txt".$time,"r");
+    // Parse the contents, which look like this:
 /* grain protein   grain yield */
 /* lsmeans c(13.1983026714983, 14.208479386932, 14.02772900566, 14.241295785412) c(5032.09333333334, 4361.38666666667, 4520.99333333333, 4153.36) */
 /* leastSigDiff    0.988636404642669       984.993961827093 */
 /* tukeysHSD       1.64895568849516        1642.88042485672 */
 /* trialMeans      c(14.4973829682375, 13.7909232364558, 13.4685489324335) c(4828.55, 4780.13, 3942.195) */
-  $linenum = 0;
-  while ($line = fgets($r)) {
-    /* echo "$line<br>"; */
-    if ($linenum == 0) {
-      // The first line is the names of the traits.
-      $rtraits = explode("\t", rtrim($line));
-      $rtraitcount = count($rtraits);
-      $linenum++;
-    }
-    else {
+    $linenum = 0;
+    while ($line = fgets($r)) {
+      /* echo "$line<br>"; */
+      if ($linenum == 0) {
+        // The first line is the names of the traits.
+        $rtraits = explode("\t", rtrim($line));
+        $rtraitcount = count($rtraits);
+        $linenum++;
+      } else {
       // Extract the first tab-terminated string.
       preg_match('/(^[^\t]*\t)/', $line, $sublines);
       $firstword = rtrim($sublines[1]);
@@ -199,6 +203,56 @@ if (!$traits or !$trials) {
       $cbox = "checked";
     print "<input type=checkbox $cbox onclick='javascript:balancedata(this)'> Remove lines with missing data.<P>";
   }
+
+  // If only one trial then do not need lsmeans, just show means
+  // Display table summary
+  $countTrials = count($trialnames[0]);
+  if ($countTrials == 1) {
+  $trial = $trialnames[0][0];
+  $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
+  print "Trial means: $trialname<table><tr><th>";
+  $traitnumber = 0;
+  foreach ($traits as $trait) {
+    $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
+    print "<th>$trtname";
+  }
+  foreach ($lines as $line) {
+    print "<tr><td>$line"; 
+    foreach ($traits as $trait) {
+      $traitnumber = 0;
+      foreach ($trialnames[$traitnumber] as $trial) {
+        $mn = $min[$trait][$trial];
+        $mx = $max[$trait][$trial];
+        // Omit missing values.  round() seems to return "0" for empty values.
+        unset($val);
+        if ($vals[$trait][$trial][$line]) {
+          $val = round($vals[$trait][$trial][$line], 1);
+          // Calculate the color. Red is 0, pale yellow is 15. 
+          // Colors greater than 10 are too pale to read.
+          $col = 10 - floor(10 * ($val - $mn) / ($mx - $mn));
+          print "<td><font color=$color[$col]><b>$val</b></font>";
+        } else {
+          print "<td>--";
+        }
+      }
+      $traitnumber++;
+    }
+  }
+  print "<tr><td><font color=brown>Trial Mean</font>";
+  $traitnumber = 0;
+  foreach ($traits as $trait) {
+  foreach ($trialmeans[$traitnumber] as $mean) {
+      if (!$mean) {
+        $tm = "--";
+      } else {
+        $tm = round($mean, 1);
+      }
+      print "<td>$tm";
+  }
+  $traitnumber++;
+  }
+  print "</table><br>";
+  } else {
 
   // Display the table on the page.
   $traitnumber = 0;
@@ -257,6 +311,7 @@ if (!$traits or !$trials) {
     $trialcount = count($trials);
     print "</table><p>";
     $traitnumber++;
+  }
   }
 }
 
