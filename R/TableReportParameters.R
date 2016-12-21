@@ -26,7 +26,7 @@ analyzeTrait <- function(trait){
 
 summaryTrait <- function(trait){
   data <- oneCol[oneCol$trait == trait,]
-  trialMeans <- mean(data$value)
+  trialMeans <- mean(data$value, na.rm=TRUE)
   return(list(trialNames=levels(data$trial), trialMeans=trialMeans))
 }
 
