@@ -1,10 +1,15 @@
 <?php
 
+if (!isset($argv) || ($argc != 1)) {
+    die("Usage: blast-iwgsc.php database\n");
+}
+$db_name = $argv[1];
+
 $db_user = '';
 $db_pass = '';
 $db_host = 'localhost';
 $linkID = mysqli_connect($db_host, $db_user, $db_pass);
-mysqli_select_db($linkID, "T3wheat");
+mysqli_select_db($linkID, $db_name);
 
 /** check how many processes are running */
 function isRunning()

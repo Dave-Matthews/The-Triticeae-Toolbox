@@ -1,13 +1,13 @@
 <?php
 /**
- * load 2D table where rows contain marker names and columns contain lines 
+ * load 2D table where rows contain marker names and columns contain lines
  *
  * PHP version 5
  *
  * @author Clay Birkett <claybirkett@gmail.com>
 */
 
-if ($argc != 4) {
+if (!isset($argv) || ($argc != 4)) {
     die("Usage: load_gbs_bymarker.php database input_file trial_code\n");
 }
 $db_name = $argv[1];
@@ -25,14 +25,14 @@ mysql_select_db($db_name, $linkID);
 $sql = "select experiment_uid from experiments where trial_code = \"$trialcode\"";
 $res = mysql_query($sql) or die(mysql_error());
 if ($row = mysql_fetch_array($res)) {
-  $experiment_uid = $row[0];
+    $experiment_uid = $row[0];
 } else {
-  echo "Error: $sql\n";
+    echo "Error: $sql\n";
 }
 
 if (($fh = fopen($file, "r")) == false) {
-  echo("can not open file $file\n");
-  exit();
+    echo("can not open file $file\n");
+    exit();
 }
 
 $header = fgets($fh);

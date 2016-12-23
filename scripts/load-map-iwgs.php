@@ -1,6 +1,10 @@
 <?php
 
-$db_name = "T3wheat";
+if (!isset($argc) || ($argc != 1)) {
+    die("Usage: load_gbs_frequencies.php database input_file trial_code");
+}
+
+$db_name = $argv[0];
 echo "using database = $db_name\n";
 $db_user = '';
 $db_pass = '';

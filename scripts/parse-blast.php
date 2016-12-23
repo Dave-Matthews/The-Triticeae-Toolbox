@@ -1,10 +1,14 @@
 <?php
 
+if (!isset($argv) || ($argc != 1)) {
+    die("Usage: parse-blast.php database\n");
+}
+$db_name = $argv[1];
+
 ini_set('memory_limit', '4G');
 $file_index = "/var/www/html/t3/wheat/viroblast/db/nucleotide/wheat-index.csv";
 $file_out = "blast.results.txt";
 
-$db_name = "T3wheat";
 $db_user = '';
 $db_pass = '';
 $db_host = 'localhost';
