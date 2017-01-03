@@ -526,25 +526,25 @@ if (isset($_POST['submit_login'])) {
         } else {
             echo HTMLLoginForm();
         }
-  }
-  else
-    echo HTMLLoginForm();
+    } else {
+      echo HTMLLoginForm();
+    }
  } elseif (isset($_POST['resend_registration'])) {
-   $email = $_POST['email'];
-   if (empty($email)) {
-     $error = true;
-     $error_msg .= "- You must provide your e-mail addresses.\n";
-   } else {
-     $safe_email = mysqli_real_escape_string($mysqli, $email);
-     $safe_password = mysqli_real_escape_string($mysqli, $password);
-     $safe_name = mysqli_real_escape_string($mysqli, $name);
-     $sql = "SELECT SHA1('$safe_password') AS password";
-     $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
-     if ($row = mysqli_fetch_assoc($res)) {
-         $hash_password = $row['password'];
+     $email = $_POST['email'];
+     if (empty($email)) {
+         $error = true;
+         $error_msg .= "- You must provide your e-mail addresses.\n";
      } else {
-         die("SQL Error hashing password\n");
-     }
+         $safe_email = mysqli_real_escape_string($mysqli, $email);
+         $safe_password = mysqli_real_escape_string($mysqli, $password);
+         $safe_name = mysqli_real_escape_string($mysqli, $name);
+         $sql = "SELECT SHA1('$safe_password') AS password";
+         $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
+         if ($row = mysqli_fetch_assoc($res)) {
+             $hash_password = $row['password'];
+         } else {
+             die("SQL Error hashing password\n");
+         }
      $sql = "SELECT SHA1('$safe_email') AS email";
      $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing email\n");
      if ($row = mysqli_fetch_assoc($res)) {
@@ -641,8 +641,10 @@ The Triticeae Toolbox Team
      /* DEM jan2014 For Sandbox databases, make any registrant a Curator. */
      if (preg_match("/sandbox/", $_SERVER['SERVER_NAME'])) {
          $safe_usertype = USER_TYPE_CURATOR;
+         $desired_usertype = USER_TYPE_CURATOR;
      } elseif (preg_match("/malt\.pw\.usda/" , $_SERVER['SERVER_NAME'])) {
          $safe_usertype = USER_TYPE_CURATOR;
+         $desired_usertype = USER_TYPE_CURATOR;
      } else {
          $safe_usertype = USER_TYPE_PUBLIC;
      }

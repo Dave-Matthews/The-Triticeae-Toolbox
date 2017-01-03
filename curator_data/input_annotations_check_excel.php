@@ -6,7 +6,7 @@
  */
 
 require 'config.php';
-//define("DEBUG",3);
+//define("DEBUG", 3);
 
 /*
  * Logged in page initialization
@@ -56,7 +56,6 @@ class Annotations_Check
     private function typeAnnotationCheck()
     {
         global $config;
-        global $mysqli;
         include $config['root_dir'] . 'theme/admin_header.php';
 
         echo "<h2> Add/Update Experiment Annotations: Validation</h2>";
@@ -85,13 +84,13 @@ class Annotations_Check
         </script>
 
         <style type="text/css">
-		th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6; white-space: nowrap }
-		table {background: none; border-collapse: collapse}
-		td {border: 0px solid #eee !important; white-space: nowrap}
-		h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-	</style>
+    th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6; white-space: nowrap }
+    table {background: none; border-collapse: collapse}
+    td {border: 0px solid #eee !important; white-space: nowrap}
+    h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+    </style>
 
-	<style type="text/css">
+    <style type="text/css">
                   table.marker
                   {background: none; border-collapse: collapse}
                    th.marker
@@ -99,41 +98,32 @@ class Annotations_Check
                     td.marker
                    { padding: 5px 0; border: 0 !important; }
         </style>
-		
-		
-		
-		      <?php                      // dem 3dec10: Must include these files again, don't know why. 
-		      require 'config.php';
+        <?php                      // dem 3dec10: Must include these files again, don't know why.
+        require 'config.php';
 
-  $row = loadUser($_SESSION['username']);
-	
-	ini_set("memory_limit","24M");
-	
-	$username=$row['name'];
-	
-		      	$tmp_dir=$config['root_dir']."curator_data/uploads/tmpdir_".$username."_".rand();
-	
-	umask(0);
-	
-	if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
-	  mkdir($tmp_dir, 0777) or die("Couldn't mkdir $tmp_dir");
-	}
+        $row = loadUser($_SESSION['username']);
 
-	$target_path=$tmp_dir."/";
+        $username=$row['name'];
 
-	
-	if($_SERVER['REQUEST_METHOD'] == "POST")
-	{
-		$data_public_flag = $_POST['flag']; //1:yes, 0:no
-		//echo" we got the value for data flag".$data_public_flag1;
-	}
-	
-	if ($_FILES['file']['name'][0] == ""){
-		error(1, "No File Uploaded");
-		print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-	}
-	else {
-		
+        $tmp_dir=$config['root_dir']."curator_data/uploads/tmpdir_".$username."_".rand();
+
+        umask(0);
+
+        if (!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
+            mkdir($tmp_dir, 0777) or die("Couldn't mkdir $tmp_dir");
+        }
+
+        $target_path=$tmp_dir."/";
+
+        if ($_SERVER['REQUEST_METHOD'] == "POST") {
+            $data_public_flag = $_POST['flag']; //1:yes, 0:no
+            //echo" we got the value for data flag".$data_public_flag1;
+        }
+
+        if ($_FILES['file']['name'][0] == "") {
+            error(1, "No File Uploaded");
+            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+	} else {
 		$uploadfile=$_FILES['file']['name'][0];
 				
 		$uftype=$_FILES['file']['type'][0];
@@ -173,7 +163,8 @@ class Annotations_Check
 
         $cols = $objPHPExcel->setActiveSheetIndex(0)->getHighestColumn();
         $rows = $objPHPExcel->setActiveSheetIndex(0)->getHighestRow();	
-	
+
+        if (DEBUG>0) { echo "rows= $rows, cols=$cols<br>\n"; }
 	// find location for each row of data; find where data starts in file
 	for ($i = 1; $i <= $rows; $i++) {
           if (stripos($sheetData[$i]["A"],'template version')!==FALSE){
@@ -257,7 +248,7 @@ class Annotations_Check
 	$error_flag = 0;
 	// How many Trials are annotated in this file?:
 	$n_trials = 0;
-	for ($i = 'B'; $i <= $cols; $i++) {
+	for ($i = 'B'; $i != $cols; $i++) {
 	  // Sometimes Excel introduces extra columns in the data files.
 	  // Stop reading at first column where Trial Name is empty.
 	  if (!empty($trialcode_row[$i])) {
@@ -265,7 +256,13 @@ class Annotations_Check
 	    $n_trials++;
           }
 	}
-        $cols = $tmp;
+        if (!empty($trialcode_row[$i])) {
+          $tmp = $i;
+          $n_trials++;
+        }
+        // Set cols to one past last column
+        $cols = ++$tmp;
+        if (DEBUG>0) { echo "cols=$cols<br>\n"; }
 
 	// dem dec14 Removed.  Not a terrible idea but badly implemented.
 	/* // Check for current version of the Template file, using check_version() from includes/common.inc. */
@@ -311,7 +308,7 @@ class Annotations_Check
 	}
 	// Start reading in the trials.
         $index = -1;
-        for ($i = 'B'; $i <= $cols; $i++) {
+        for ($i = 'B'; $i != $cols; $i++) {
           $index++;
 	  // Set the index for array $experiments[].
 
@@ -520,7 +517,7 @@ class Annotations_Check
 	    <tbody style="padding: 0; height: 200px; overflow: scroll;border: 1px solid #5b53a6;">	
 
 <?php
-	    for ($i = 'B'; $cols >= $i; $i++)  {
+	    for ($i = 'B'; $cols != $i; $i++)  {
 	      print "<tr><td><font color=red>";
 	      $sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '$trialcode_row[$i]'";
 	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -690,7 +687,7 @@ class Annotations_Check
 	  $error_flag = 0;
 	  // How many Trials are annotated in this file?:
 	  $n_trials = 0;
-	  for ($i = 'B'; $i <= $cols; $i++) {
+	  for ($i = 'B'; $i != $cols; $i++) {
 	    // Sometimes Excel introduces extra columns in the data files.
 	    // Stop reading at first column where Trial Name is empty.
 	    if (!empty($trialcode_row[$i])) {
@@ -698,7 +695,11 @@ class Annotations_Check
 	      $n_trials++;
             }
 	  }
-          $cols = $tmp;
+          if (!empty($trialcode_row[$i])) {
+            $tmp = $i;
+            $n_trials++;
+          }
+          $cols = ++$tmp;
 
 	  // Create the array to hold the data, $experiments[$index]:
 	  $experiments = array();
@@ -707,7 +708,7 @@ class Annotations_Check
           }
           /* Start reading in the Trials.  */
           $index = -1;
-	  for ($i = 'B'; $i <= $cols; $i++) {
+	  for ($i = 'B'; $i != $cols; $i++) {
           $index++;
           if (DEBUG > 1) {echo "index = $index<br>\n";}
 	  // Set the index for array $experiments[].
@@ -902,7 +903,7 @@ class Annotations_Check
 			   data_public_flag = '$data_public_flag',
 			   created_on = NOW()
 			WHERE experiment_uid = $exp_id";
-		    echo "Table <b>experiments</b> updated.<br>\n";
+		    if (DEBUG > 1) { echo "Table <b>experiments</b> updated.<br>\n"; }
 		    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 
 		    // Also update CAPdata_programs_uid in table 'datasets', if different.
@@ -957,7 +958,7 @@ class Annotations_Check
 <p><input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">
 ");
 
-		    echo "Table <b>phenotype_experiment_info</b> updated.<p>\n";
+		    if (DEBUG>1) {echo "Table <b>phenotype_experiment_info</b> updated.<p>\n";}
 		} 
 		else {
 		  $sql = "

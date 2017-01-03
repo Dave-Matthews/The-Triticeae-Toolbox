@@ -24,8 +24,19 @@ analyzeTrait <- function(trait){
   return(calcLSmeanParms(fitLM))
 }
 
+summaryTrait <- function(trait){
+  data <- oneCol[oneCol$trait == trait,]
+  trialMeans <- mean(data$value, na.rm=TRUE)
+  return(list(trialNames=levels(data$trial), trialMeans=trialMeans))
+}
+
 traitsVec <- unique(oneCol$trait)
-tableReportParms <- sapply(traitsVec, analyzeTrait)
+trialVec <- unique(oneCol$trial)
+if (length(trialVec) > 1) {
+  tableReportParms <- sapply(traitsVec, analyzeTrait)
+} else {
+  tableReportParms <- sapply(traitsVec, summaryTrait)
+}
 # outFile is defined by the calling script as "TableReportOut.txt".$time.
 write.table(tableReportParms, file=outFile, quote=FALSE, sep="\t")
 
