@@ -432,7 +432,7 @@ if (strlen($bstr)>$display_string_len) {
     	            $mkrval="";
                     $sql = "select marker_name, line_record_name, allele_1, allele_2 from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E 
                             where A.marker_uid=B.marker_uid and B.genotyping_data_uid=C.genotyping_data_uid and B.tht_base_uid=D.tht_base_uid 
-                            and D.line_record_uid=E.line_record_uid and line_record_name=\"$linename\" and A.marker_uid=$mkruid";
+                            and D.line_record_uid=E.line_record_uid and line_record_name = ? and A.marker_uid = ?";
                     if ($stmt = mysqli_prepare($mysqli, $sql)) {
                         mysqli_stmt_bind_param($stmt, "si", $linemane, $mkruid);
                         mysqli_stmt_execute($stmt);
