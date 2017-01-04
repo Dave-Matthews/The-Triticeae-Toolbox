@@ -115,5 +115,3 @@ function get_imgmap2 ($pdarr, $linename) {
 	$mxnm=$pdarr[1];
 	return get_imgmap_cladematrix($mx, $mxnm, 40, $linename);
 }
-
-?>

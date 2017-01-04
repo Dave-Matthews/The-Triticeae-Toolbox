@@ -430,10 +430,11 @@ if (strlen($bstr)>$display_string_len) {
     		for ($i=0; $i<count($selected_markers); $i++) {
     			$mkruid=$selected_markers[$i];
     			$mkrval="";
-    			$result=mysqli_query($mysqli, "select marker_name, line_record_name, allele_1, allele_2 from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E 
-									 where A.marker_uid=B.marker_uid and B.genotyping_data_uid=C.genotyping_data_uid and B.tht_base_uid=D.tht_base_uid 
-                                     and D.line_record_uid=E.line_record_uid and line_record_name=\"$linename\" and A.marker_uid=$mkruid")
-			  or die (mysqli_error($mysqli));
+                        $sql = "select marker_name, line_record_name, allele_1, allele_2 from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E 
+                                                                         where A.marker_uid=B.marker_uid and B.genotyping_data_uid=C.genotyping_data_uid and B.tht_base_uid=D.tht_base_uid 
+                                     and D.line_record_uid=E.line_record_uid and line_record_name=\"$linename\" and A.marker_uid=$mkruid";
+
+    			$result=mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
     			if (mysqli_num_rows($result)>=1) {
 					$row = mysqli_fetch_assoc($result);
 					$mkrval=$row['allele_1'].$row['allele_2'];
