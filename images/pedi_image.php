@@ -475,9 +475,6 @@ if (isset($_SESSION['draw_pedigree_matrix'])) {
 	elseif ($mxarea>160) ini_set("memory_limit","7600M");
 	draw_purdy($mx, $mxnm, $dstr, 40);
 	// draw_cladematrix($mx, $mxnm, $dstr, 40);
-}
-else {
+} else {
 	// print_r($_SESSION);
 }
-
-?>
