@@ -1,16 +1,18 @@
 <?php
 
-function get_imgmap_cladematrix (array $mx, array $mxnm, $cell_size, $lnm) {
-	$maxlv=count($mx);
-	$maxcol=count($mx[0])-1;
-	if ($cell_size>10 && $cell_size<50) {
-		$cell_width=$cell_size;
-		$cell_height=$cell_size;
-	}
-	$cell_width=60; // for line names
-	$cell_height=11; // for line names
-	$hlw=0.5; // half of line width
-	$bmg=1; // margin for button. The gap between line-name rectangles.  Larger values shrink the rectangle.
+function get_imgmap_cladematrix(array $mx, array $mxnm, $cell_size, $lnm)
+{
+    global $mysqli;
+    $maxlv=count($mx);
+    $maxcol=count($mx[0])-1;
+    if ($cell_size>10 && $cell_size<50) {
+        $cell_width=$cell_size;
+        $cell_height=$cell_size;
+    }
+    $cell_width=60; // for line names
+    $cell_height=11; // for line names
+    $hlw=0.5; // half of line width
+    $bmg=1; // margin for button. The gap between line-name rectangles.  Larger values shrink the rectangle.
 	$cmg=2; // vertical margin for allele values.
 	$nwidth=14; // width of allele values
 // 	$nheight=$cell_height; // height of a character
@@ -58,9 +60,9 @@ function get_imgmap_cladematrix (array $mx, array $mxnm, $cell_size, $lnm) {
 		$selected_markers=$_SESSION['clicked_buttons'];
     	for ($i=0; $i<count($selected_markers); $i++) {
     		$mkrname="";
-    		$result=mysql_query("SELECT marker_name from markers where marker_uid=".$selected_markers[$i]);
-    		if (mysql_num_rows($result)>=1) {
-				$row = mysql_fetch_assoc($result);
+    		$result=mysqli_query($mysqli, "SELECT marker_name from markers where marker_uid=".$selected_markers[$i]);
+    		if (mysqli_num_rows($result)>=1) {
+				$row = mysqli_fetch_assoc($result);
 				$mkrname=$row['marker_name'];
     		}
     		else continue;

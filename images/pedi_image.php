@@ -1,19 +1,20 @@
 <?php
-	include("../includes/bootstrap.inc");
+include("../includes/bootstrap.inc");
 /**
  * This function will draw the pedigree based on the pedigree matrix
  */
-function draw_matrix (array $mx, $maxcol, array $leaves, array $mxnm) {
-	$maxlv=count($leaves);
-	$cell_width=50;
-	$cell_height=50;
-	$hlw=1; // half of line width
-	$bmg=5; // margin for button
-	$imw=$maxcol*$cell_width+100+3*$cell_width;
-	$imh=$maxlv*$cell_height+100;
-	$x=50;
-	$y=50;
-	$im=imagecreatetruecolor($imw, $imh);
+function draw_matrix(array $mx, $maxcol, array $leaves, array $mxnm)
+{
+    $maxlv=count($leaves);
+    $cell_width=50;
+    $cell_height=50;
+    $hlw=1; // half of line width
+    $bmg=5; // margin for button
+    $imw=$maxcol*$cell_width+100+3*$cell_width;
+    $imh=$maxlv*$cell_height+100;
+    $x=50;
+    $y=50;
+    $im=imagecreatetruecolor($imw, $imh);
     $im_black=imagecolorallocate($im, 0x00, 0x00, 0x00);
     $im_white=imagecolorallocate($im, 0xFF, 0xFF, 0xFF);
     $im_blue=imagecolorallocate($im, 0x00, 0x00, 0xFF);
@@ -31,34 +32,34 @@ function draw_matrix (array $mx, $maxcol, array $leaves, array $mxnm) {
     $im_purple=imagecolorallocate($im, 0xFF, 0x33, 0xFF);
     imagefill($im, 0, 0, $im_white);
     for ($i=$maxcol-1; $i>=0; $i--) {
-    		for ($j=0; $j<$maxlv; $j++) {
-    			$xcoor=$x+($maxcol-1-$i)*$cell_width;
-    			$ycoor=$y+$j*$cell_height;
-    			if ($mx[$j][$i]==2) { // draw a T
-					imagefilledrectangle($im, $xcoor, $ycoor+$cell_height/2-$hlw, $xcoor+$bmg, $ycoor+$cell_height/2+$hlw, $im_black);
-    				imagefilledrectangle($im, $xcoor+$cell_width-$bmg, $ycoor+$cell_height/2-$hlw, $xcoor+$cell_width, $ycoor+$cell_height/2+$hlw, $im_black);
-    				imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor+$cell_height-$bmg, $xcoor+$cell_width/2+$hlw, $ycoor+$cell_height, $im_black);
-    				imagefilledrectangle($im, $xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-5, $im_green);
-    				$bstr=$mxnm[$j][$i];
-    				if (strlen($bstr)>6) {
-    					$bstr=substr($bstr, 0, 6);
-    				}
-    				imagestring($im, 3, $xcoor+$bmg+1, $ycoor+$cell_height/2-10, $bstr, $im_black);
-    			}
-    			elseif ($mx[$j][$i]==1) { // draw a -
-					imagefilledrectangle($im, $xcoor, $ycoor+$cell_height/2-$hlw, $xcoor+$cell_width, $ycoor+$cell_height/2+$hlw, $im_black);
-    			}
-    			elseif ($mx[$j][$i]==0.5) { // draw a |
-					imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor, $xcoor+$cell_width/2+$hlw, $ycoor+$cell_height, $im_black);
-    			}
-    			elseif ($mx[$j][$i]==1.5) { // draw a L
-					imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor, $xcoor+$cell_width/2+$hlw, $ycoor+$cell_height/2, $im_black);
-					imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor+$cell_height/2-$hlw, $xcoor+$cell_width, $ycoor+$cell_height/2+$hlw, $im_black);
-    			}
-    			else {
-    				// leave blank
-    			}
+        for ($j=0; $j<$maxlv; $j++) {
+            $xcoor=$x+($maxcol-1-$i)*$cell_width;
+            $ycoor=$y+$j*$cell_height;
+            if ($mx[$j][$i]==2) { // draw a T
+                imagefilledrectangle($im, $xcoor, $ycoor+$cell_height/2-$hlw, $xcoor+$bmg, $ycoor+$cell_height/2+$hlw, $im_black);
+                imagefilledrectangle($im, $xcoor+$cell_width-$bmg, $ycoor+$cell_height/2-$hlw, $xcoor+$cell_width, $ycoor+$cell_height/2+$hlw, $im_black);
+    		imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor+$cell_height-$bmg, $xcoor+$cell_width/2+$hlw, $ycoor+$cell_height, $im_black);
+    		imagefilledrectangle($im, $xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-5, $im_green);
+    		$bstr=$mxnm[$j][$i];
+    		if (strlen($bstr)>6) {
+    			$bstr=substr($bstr, 0, 6);
     		}
+    		imagestring($im, 3, $xcoor+$bmg+1, $ycoor+$cell_height/2-10, $bstr, $im_black);
+    	}
+    	elseif ($mx[$j][$i]==1) { // draw a -
+		imagefilledrectangle($im, $xcoor, $ycoor+$cell_height/2-$hlw, $xcoor+$cell_width, $ycoor+$cell_height/2+$hlw, $im_black);
+    	}
+    		elseif ($mx[$j][$i]==0.5) { // draw a |
+				imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor, $xcoor+$cell_width/2+$hlw, $ycoor+$cell_height, $im_black);
+    		}
+    		elseif ($mx[$j][$i]==1.5) { // draw a L
+				imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor, $xcoor+$cell_width/2+$hlw, $ycoor+$cell_height/2, $im_black);
+				imagefilledrectangle($im, $xcoor+$cell_width/2-$hlw, $ycoor+$cell_height/2-$hlw, $xcoor+$cell_width, $ycoor+$cell_height/2+$hlw, $im_black);
+    		}
+    		else {
+    			// leave blank
+    		}
+    	}
     }
     $xcoor=$x+($maxcol)*$cell_width;
     for ($k=0; $k<$maxlv; $k++) {
@@ -212,6 +213,7 @@ function draw_cladematrix (array $mx, array $mxnm, $dstr, $cell_size) {
  * draw pedigree trees in purdy notation, consider the recurrent parent in backcross
  */
 function draw_purdy (array $mx, array $mxnm, $dstr, $cell_size) {
+    global $mysqli;
 	$maxlv=count($mx);
 	$maxcol=count($mx[0])-1;
 	if ($cell_size>10 && $cell_size<50) {
@@ -381,9 +383,9 @@ if (strlen($bstr)>$display_string_len) {
 		imagestring($im, 2, $nx+$bmg+1, $cell_height+$bmg, "Markers from number ".($page*$mkrppg+1)." to ".$cnt_all, $im_black);
     	for ($i=0; $i<count($selected_markers); $i++) {
     		$mkrname="";
-    		$result=mysql_query("SELECT marker_name from markers where marker_uid=".$selected_markers[$i]);
-    		if (mysql_num_rows($result)>=1) {
-				$row = mysql_fetch_assoc($result);
+    		$result=mysqli_query($mysqli, "SELECT marker_name from markers where marker_uid=".$selected_markers[$i]);
+    		if (mysqli_num_rows($result)>=1) {
+				$row = mysqli_fetch_assoc($result);
 				$mkrname=$row['marker_name'];
     		}
     		else continue;
@@ -428,12 +430,12 @@ if (strlen($bstr)>$display_string_len) {
     		for ($i=0; $i<count($selected_markers); $i++) {
     			$mkruid=$selected_markers[$i];
     			$mkrval="";
-    			$result=mysql_query("select marker_name, line_record_name, allele_1, allele_2 from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E 
+    			$result=mysqli_query($mysqli, "select marker_name, line_record_name, allele_1, allele_2 from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E 
 									 where A.marker_uid=B.marker_uid and B.genotyping_data_uid=C.genotyping_data_uid and B.tht_base_uid=D.tht_base_uid 
                                      and D.line_record_uid=E.line_record_uid and line_record_name=\"$linename\" and A.marker_uid=$mkruid")
-			  or die (mysql_error());
-    			if (mysql_num_rows($result)>=1) {
-					$row = mysql_fetch_assoc($result);
+			  or die (mysqli_error($mysqli));
+    			if (mysqli_num_rows($result)>=1) {
+					$row = mysqli_fetch_assoc($result);
 					$mkrval=$row['allele_1'].$row['allele_2'];
     			}
     			else {
@@ -454,7 +456,7 @@ if (strlen($bstr)>$display_string_len) {
     imagepng($im);
 }
 
-connect();
+$mysqli = connecti();
 session_start();
 // ini_set("memory_limit","36M");
 if (isset($_SESSION['draw_pedigree_matrix'])) {
