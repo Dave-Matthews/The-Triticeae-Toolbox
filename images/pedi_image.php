@@ -428,25 +428,27 @@ if (strlen($bstr)>$display_string_len) {
 			// $selected_markers=$_SESSION['clicked_buttons'];
 			
     		for ($i=0; $i<count($selected_markers); $i++) {
-    			$mkruid=$selected_markers[$i];
-    			$mkrval="";
-                        $sql = "select marker_name, line_record_name, allele_1, allele_2 from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E 
-                                                                         where A.marker_uid=B.marker_uid and B.genotyping_data_uid=C.genotyping_data_uid and B.tht_base_uid=D.tht_base_uid 
-                                     and D.line_record_uid=E.line_record_uid and line_record_name=\"$linename\" and A.marker_uid=$mkruid";
-
-    			$result=mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
-    			if (mysqli_num_rows($result)>=1) {
-					$row = mysqli_fetch_assoc($result);
-					$mkrval=$row['allele_1'].$row['allele_2'];
-    			}
-    			else {
-    				// print "$linename no marker information\n";
-    			}
-    			
-    			$dnx=$nx+$i*$nwidth;
-    			$dny=$ycoor;
-    			// imagefilledrectangle($im, $dnx+1, $dny+$cmg, $dnx+$nwidth-1, $dny+$nheight-$cmg, $im_grayblue);
-    			draw_character($im, 2, $mkrval, $dnx+1, $dny-$cmg, $dnx+$nwidth-1, $dny+$nheight+$cmg, $im_tomato, $im_seagreen, $im_grayblue, $im_salmon, $im_gray, $im_black);
+    	            $mkruid=$selected_markers[$i];
+    	            $mkrval="";
+                    $sql = "select marker_name, line_record_name, allele_1, allele_2 from markers as A, genotyping_data as B, alleles as C, tht_base as D, line_records as E 
+                            where A.marker_uid=B.marker_uid and B.genotyping_data_uid=C.genotyping_data_uid and B.tht_base_uid=D.tht_base_uid 
+                            and D.line_record_uid=E.line_record_uid and line_record_name=\"$linename\" and A.marker_uid=$mkruid";
+                    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                        mysqli_stmt_bind_param($stmt, "si", $linemane, $mkruid);
+                        mysqli_stmt_execute($stmt);
+                        mysqli_stmt_bind_result($stmt, $marker_name, $line_name, $allele_1, $allele_2);
+                        $mkrval=$allele_1 . $allele_2;
+                        if (mysqli_stmt_fetch($stmt)) {
+                            $mkrval=$allele_1 . $allele_2;
+                        } else {
+                            // print "$linename no marker information\n";
+                        }
+                        mysqli_stmt_close($stmt);
+                    }
+    		    $dnx=$nx+$i*$nwidth;
+    		    $dny=$ycoor;
+    		    // imagefilledrectangle($im, $dnx+1, $dny+$cmg, $dnx+$nwidth-1, $dny+$nheight-$cmg, $im_grayblue);
+    		    draw_character($im, 2, $mkrval, $dnx+1, $dny-$cmg, $dnx+$nwidth-1, $dny+$nheight+$cmg, $im_tomato, $im_seagreen, $im_grayblue, $im_salmon, $im_gray, $im_black);
     		}
 		}
 		$line_mkr[$linename]=1;
