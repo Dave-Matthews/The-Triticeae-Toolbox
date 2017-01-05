@@ -14,18 +14,18 @@ authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
 // If we're re-entering the script with a mapset to delete:
-if (!empty($_GET[mapsetuid])) {
-    $msuid = intval($_GET[mapsetuid]);
+if (!empty($_GET['mapsetuid'])) {
+    $msuid = intval($_GET['mapsetuid']);
     $msname = mysql_grab("select mapset_name from mapset where mapset_uid = $msuid");
     $sql = "select map_uid from map m, mapset ms
             where m.mapset_uid = $msuid
             and m.mapset_uid = ms.mapset_uid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_array($res)) { 
+    while ($row = mysqli_fetch_array($res)) {
         $map_uid = $row[0];
         $sql = "delete from markers_in_maps where map_uid = $map_uid";
         mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        echo "finished map_uid = $map_uid\n";
+        echo "finished map_uid = $map_uid<br>\n";
     }
     $sql = "delete from map where mapset_uid = $msuid";
     mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -48,14 +48,14 @@ if (!empty($_GET[mapsetuid])) {
   <table>
     <tr>
       <td>
-	<p><strong>Map Set Name</strong> 
-	<br><input type="textbox" name="mapset_name">
-      <td>	
-	<p><strong>Map Set Prefix</strong>
-	<br><input type="textbox" name="mapset_prefix" size=7>
-      <td>
-	<p><strong>Species</strong>
-	<br><input type="textbox" name="species" value="Hordeum" size=9>
+    <p><strong>Map Set Name</strong> 
+    <br><input type="textbox" name="mapset_name">
+    <td>	
+    <p><strong>Map Set Prefix</strong>
+    <br><input type="textbox" name="mapset_prefix" size=7>
+    <td>
+    <p><strong>Species</strong>
+    <br><input type="textbox" name="species" value="Hordeum" size=9>
       <td>
 	<p><strong>Map Type</strong>
 	<br><input type="textbox" name="map_type" value="Genetic" size=7>
