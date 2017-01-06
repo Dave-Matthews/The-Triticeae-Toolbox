@@ -42,7 +42,6 @@ class MapsCheck
             default:
                 $this->typeMapsCheck(); /* intial case*/
                 break;
-
         }
     }
 
@@ -63,17 +62,17 @@ class MapsCheck
     {
         ?>
         <script type="text/javascript" src="curator_data/input_maps.js"></script>
+        <style type="text/css">
+        th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+        table {background: none; border-collapse: collapse}
+        td {border: 0px solid #eee !important;}
+        h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+        </style>
+
 	<style type="text/css">
-			th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-			table {background: none; border-collapse: collapse}
-			td {border: 0px solid #eee !important;}
-			h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-		</style>
-		
-		<style type="text/css">
-                   table.marker
-                   {background: none; border-collapse: collapse}
-                    th.marker
+                  table.marker
+                  {background: none; border-collapse: collapse}
+                   th.marker
                     { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
                     
                     td.marker
@@ -94,15 +93,14 @@ class MapsCheck
         $tmp_dir="uploads/tmpdir_".$username."_".rand();
         umask(0);
 	
-	if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
+	if (!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
 		mkdir($tmp_dir, 0777);
 	}
 	$target_path=$tmp_dir."/";
 	if ($_FILES['file']['name'] == ""){
 		error(1, "No File Uploaded");
 		exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-	}
-	else {
+	} else {
 	
 	  $mapset_name = $_POST['mapset_name'];	
 	  $mapset_prefix = $_POST['mapset_prefix'];	
@@ -142,12 +140,12 @@ class MapsCheck
           
 			// echo "testing the marker value". $test."<br/>";
         
-        $m_idx = 1.0 * array_search("Marker", $header);	// numeric typecasting
-        $c_idx = 1.0 * array_search("Chrom", $header);
-        $arm_idx = 1.0 * array_search("Arm", $header);
-        $start_idx = 1.0 * array_search("Start_pos", $header);
-        $end_idx = 1.0 * array_search("End_pos", $header);
-         $bin_idx = 1.0 * array_search("Bin", $header);
+        $m_idx = array_search("Marker", $header);	// numeric typecasting
+        $c_idx = array_search("Chrom", $header);
+        $arm_idx = array_search("Arm", $header);
+        $start_idx = array_search("Start_pos", $header);
+        $end_idx = array_search("End_pos", $header);
+         $bin_idx = array_search("Bin", $header);
          
          $m_c_idx = $m_idx + $c_idx;
          $m_Start_idx = $m_idx + $start_idx;
@@ -340,8 +338,8 @@ class MapsCheck
 	// Make new mapset if it one does not exist yet
 	 if (empty($mapset_uid)) {
 		$new_map = "TRUE";
-		$sql = "INSERT INTO mapset (mapset_name, species, map_type, map_unit, comments, updated_on, created_on)
-			VALUE ('$mapset_name','$species','$map_type','$map_unit','$comments', NOW(),NOW())";
+		$sql = "INSERT INTO mapset (mapset_name, species, map_type, map_unit, data_public_flag, comments, updated_on, created_on)
+			VALUE ('$mapset_name','$species','$map_type','$map_unit', 1, '$comments', NOW(),NOW())";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		$sql = "SELECT mapset_uid FROM mapset WHERE mapset_name = '$mapset_name'";
 
@@ -534,8 +532,8 @@ class MapsCheck
 		$sql = "SELECT mim.markers_in_maps_uid as mimu, count(mim.markers_in_maps_uid) as cntm, mim.map_uid,
 			mim.marker_uid
 			FROM markers_in_maps as mim
-			WHERE mim.marker_uid=$marker_uid AND mim.map_uid IN ($map_string)
-			GROUP BY (markers_in_maps_uid)";
+			WHERE mim.marker_uid=$marker_uid AND mim.map_uid IN ($map_string)";
+			//GROUP BY (markers_in_maps_uid)";
 			
                 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                 $rdata = mysqli_fetch_assoc($res);

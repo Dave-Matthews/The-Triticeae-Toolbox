@@ -1,10 +1,12 @@
 <?php
-// 11jul2013 dem Add "Delete".
-// 12/14/2010 JLee  Change to use curator bootstrap
+/**
+ * 11jul2013 dem Add "Delete".
+ * 12/14/2010 JLee  Change to use curator bootstrap
+ */
 
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap_curator2.inc';
-include $config['root_dir'] . 'theme/admin_header2.php';
+require $config['root_dir'] . 'includes/bootstrap_curator2.inc';
+require $config['root_dir'] . 'theme/admin_header2.php';
 $mysqli =  connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
@@ -15,22 +17,53 @@ ob_end_flush();
 
 // If we're re-entering the script with a mapset to delete:
 if (!empty($_GET['mapsetuid'])) {
-    $msuid = intval($_GET['mapsetuid']);
-    $msname = mysql_grab("select mapset_name from mapset where mapset_uid = $msuid");
-    $sql = "select map_uid from map m, mapset ms
-            where m.mapset_uid = $msuid
-            and m.mapset_uid = ms.mapset_uid";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_array($res)) {
-        $map_uid = $row[0];
-        $sql = "delete from markers_in_maps where map_uid = $map_uid";
-        mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        echo "finished map_uid = $map_uid<br>\n";
+    $msuid = $_GET['mapsetuid'];
+    $sql = "select mapset_name from mapset where mapset_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $msuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $msname);
+        mysqli_stmt_fetch($stmt);
+        echo "found mapset $msname<br>\n";
     }
-    $sql = "delete from map where mapset_uid = $msuid";
-    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    $sql = "delete from mapset where mapset_uid = $msuid";
-    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    mysqli_stmt_close($stmt);
+
+    $map_list = array();
+    $sql = "select map_uid, map_name from map m, mapset ms
+            where m.mapset_uid = ? 
+            and m.mapset_uid = ms.mapset_uid";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $msuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $map_uid, $map_name);
+        while (mysqli_stmt_fetch($stmt)) {
+            $map_list[] = $map_uid;
+            $map_list_name[] = $map_name;
+        }
+        mysqli_stmt_close($stmt);
+    }
+    foreach ($map_list as $key => $map_uid) {
+        $sql = "delete from markers_in_maps where map_uid = ?";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $map_uid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+            echo "deleted map $map_list_name[$key]<br>\n";
+        }
+    }
+    $sql = "delete from map where mapset_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $msuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+    $sql = "delete from mapset where mapset_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $msuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        echo "deleted mapset $msname<br>\n";
+    }
     $deleted = $msname;
 }
 ?>
