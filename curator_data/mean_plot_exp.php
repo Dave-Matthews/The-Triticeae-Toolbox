@@ -50,7 +50,7 @@ class Data_Check
      *
      * @return NULL
      */
-    function typeDatabase()
+    private function typeDatabase()
     {
         global $config;
         include $config['root_dir'] . 'theme/admin_header.php';
@@ -62,10 +62,10 @@ class Data_Check
 
     /**
      * Save calculated means to database
-     * 
+     *
      *  @return NULL
      */
-    function typeDatabaseLoad()
+    private function typeDatabaseLoad()
     {
         global $mysqli;
         $check_list = array();
@@ -111,7 +111,7 @@ class Data_Check
                         $count_item++;
                     }
                 } else {
-                    $line_uid = $line[0]; 
+                    $line_uid = $line[0];
                     $sql = "select check_id from fieldbook where experiment_uid = $experiment_uid and line_uid = $line_uid order by check_id desc";
                     //echo "$sql<br>\n";
                     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -127,23 +127,23 @@ class Data_Check
             fclose($h);
 
          //how many lines are check
-         $check_list_str = "";
-         foreach ($check_list as $key=>$value) {
-             if ($check_list_str == "") {
-                 $check_list_str = $key;
-             } else {
-                 $check_list_str = $check_list_str . ", $key";
-             }
-         }
-         $count = count($check_list);
-         if ($count > 0) {
-             echo "identified line $check_list_str as check<br>\n";
-         }
+            $check_list_str = "";
+            foreach ($check_list as $key => $value) {
+                if ($check_list_str == "") {
+                    $check_list_str = $key;
+                } else {
+                    $check_list_str = $check_list_str . ", $key";
+                }
+            }
+            $count = count($check_list);
+            if ($count > 0) {
+                echo "identified line $check_list_str as check<br>\n";
+            }
          if ($count == 0) {
              echo "no lines identified as check<br>\n";
          }
        
-         $count = 1; 
+         $count = 1;
          $h = fopen("/tmp/tht/$unique_str/mean-output.txt","r");
          echo "<table><tr><td><td>";
          while ($line=fgetcsv($h, 1000, " ")) {
@@ -405,16 +405,17 @@ private function type_Experiment_Name() {
                  $sql = "select line_record_name from line_records where line_record_uid = $line_uid";
                  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
                  if ($row = mysqli_fetch_array($res)) {
-                     $line_name = $row[0];
-                     $line[0] = $line_name;
+                     $line[0] = $row[0];
+                 } else {
+                     $line[0] = "unknown $line[0]";
                  }
              }
              $count++;
-             foreach ($line as $tmp) {
-                 if (is_numeric($tmp)) {
-                     $tmp = number_format ($tmp, 2);
+             foreach ($line as $key => $val) {
+                 if (($key > 0) && is_numeric($val)) {
+                     $val = number_format ($val, 2);
                  }
-                 echo "<td style=\"width:100px\">$tmp";
+                 echo "<td style=\"width:100px\">$val";
              }
          }
          fclose($h);
