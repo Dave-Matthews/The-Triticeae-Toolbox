@@ -89,7 +89,7 @@ class Data_Check
             //query fieldbook table to determine if line is a check
             $count = 0;
             $h = fopen("/tmp/tht/$unique_str/plot-pheno.txt", "r");
-            while ($line=fgetcsv($h, 1000, ",")) {
+            while ($line=fgetcsv($h, 0, ",")) {
                 if ($count == 0) {
                     $count_item = 1;
                     $count_trait = 1;
@@ -146,7 +146,7 @@ class Data_Check
          $count = 1;
          $h = fopen("/tmp/tht/$unique_str/mean-output.txt","r");
          echo "<table><tr><td><td>";
-         while ($line=fgetcsv($h, 1000, " ")) {
+         while ($line=fgetcsv($h, 0, " ")) {
              if ($count == 1) {
                  $count_item = 0;
                  foreach ($line as $line_item) {
@@ -224,7 +224,7 @@ class Data_Check
          echo "<br>Trial summary<br>\n";
          echo "<table><tr><td>trait<td><td>mean<td>standard error<td>num of repl";
          $h = fopen("/tmp/tht/$unique_str/metaData.txt","r");
-         while ($line=fgetcsv($h, 1000, " ")) {
+         while ($line=fgetcsv($h, 0, " ")) {
              if ($count == 0) {
              } else {
                  echo "<tr><td>$line[0]";
@@ -396,7 +396,7 @@ private function type_Experiment_Name() {
          echo "<table>";
          $count = 1;
          $h = fopen("/tmp/tht/$unique_str/$filename4","r");
-         while ($line=fgetcsv($h, 1000, " ")) {
+         while ($line=fgetcsv($h, 0, " ")) {
              if ($count == 1) {
                  echo "<tr><td style=\"width:150px\">line";
              } else {
@@ -427,7 +427,7 @@ private function type_Experiment_Name() {
          echo "<tr><td colspan=3>Trial summary\n";
          echo "<table>";
          $h = fopen("/tmp/tht/$unique_str/metaData.txt","r");
-         while ($line=fgetcsv($h, 1000, " ")) {
+         while ($line=fgetcsv($h, 0, " ")) {
              if ($count == 1) {
                  //echo "<tr><td><td>$line[0]<td>$line[1]<td>$line[2]\n";
                  $header = $line;
