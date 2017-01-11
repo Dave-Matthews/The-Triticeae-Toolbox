@@ -278,7 +278,7 @@ if (!$traits or !$trials) {
   print "<tr><th colspan=4>LSmeans<tr><th>";
   foreach ($traits as $trait) {
     $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-    $url = $config['base_url'] . "analyze/table2.php#$traitnumber";
+    $url = $config['base_url'] . "analyze/table.php#$traitnumber";
     print "<th><a href=\"$url\">$trtname</a>\n";
   }
   $linenumber = 0;
