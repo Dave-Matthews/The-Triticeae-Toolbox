@@ -206,7 +206,7 @@ if (!$traits or !$trials) {
       if ($_GET['balance'] == 'yes') {
           $cbox = "checked";
       }
-      print "<input type=checkbox $cbox onclick='javascript:balancedata(this)'> Remove lines with missing data.<P>";
+      print "<input type=checkbox $cbox onclick='balancedata(this)'> Remove lines with missing data.<P>";
   }
 
   // if there are selected lines offer to display only selected
@@ -214,7 +214,7 @@ if (!$traits or !$trials) {
       if ($_GET['filter'] == 'yes') {
           $cbox2 = "checked";
       }
-      print "<input type=checkbox $cbox2 onclick='javascript:filter(this)'> Show only selected lines.<P>";
+      print "<input type=checkbox $cbox2 onclick='filter(this)'> Show only selected lines.<P>";
   }
 
   // If only one trial then do not need lsmeans, just show means
@@ -227,7 +227,8 @@ if (!$traits or !$trials) {
   $traitnumber = 0;
   foreach ($traits as $trait) {
     $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-    print "<th>$trtname";
+    $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
+    print "<th>$trtname<br>$unit_name";
   }
   foreach ($lines as $line) {
     if ($_GET['filter'] == 'yes') {
@@ -278,8 +279,9 @@ if (!$traits or !$trials) {
   print "<tr><th colspan=4>LSmeans<tr><th>";
   foreach ($traits as $trait) {
     $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
+    $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
     $url = $config['base_url'] . "analyze/table.php#$traitnumber";
-    print "<th><a href=\"$url\">$trtname</a>\n";
+    print "<th><a href=\"$url\">$trtname<br>$unit_name</a>\n";
   }
   $linenumber = 0;
   foreach ($lines as $line) {
@@ -304,6 +306,7 @@ if (!$traits or !$trials) {
   $traitnumber = 0;
   foreach ($traits as $trait) {
     $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
+    $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
     if (!$lsds[$traitnumber]) {
       $lsdround = "--";
     } else {
@@ -315,7 +318,7 @@ if (!$traits or !$trials) {
       $hsdround = round($hsds[$traitnumber], 2);
     }
     print "<p id=\"$traitnumber\"></p>";
-    print "<table><tr><th>Trait: $trtname<br>LSD = $lsdround<br>HSD = $hsdround";
+    print "<table><tr><th>Trait: $trtname<br>$unit_name<br>LSD = $lsdround<br>HSD = $hsdround";
     foreach ($trialnames[$traitnumber] as $trial) {
       $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
       print "<th><a href='display_phenotype.php?trial_code=$trialname'>$trialname</a>";
