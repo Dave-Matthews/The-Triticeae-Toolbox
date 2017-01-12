@@ -130,7 +130,7 @@ Ware)<br/>
 The T3 software is available under the GNU General Public License
 (<a href="docs/LICENSE">LICENSE</a>) and may be downloaded from
 <a href="https://github.com/ClayBirkett/The-Triticeae-Toolbox">GitHub</a>.<br>
-It requires Unix, Apache, MySQL, and PHP.  Details are in the <a href="docs/INSTALL.html">INSTALL</a> document.<br>
+It requires Linux, Apache, MySQL, and PHP.  Details are in the <a href="docs/INSTALL.html">INSTALL</a> document.<br>
 A list of recent changes to the T3 software are in the <a href="changelog.html">Change Log</a> document.<br>
 The database schema in .sql format
 is <a href="docs/T3wheat_schema.sql">here</a>. Graphical diagrams are
