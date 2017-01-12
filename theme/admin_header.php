@@ -166,7 +166,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             ?><li><a href="<?php echo $config['base_url'];
             ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
-            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="QTL Report">QTL Report</a>
+            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="GWAS Results">QTL Report</a>
             <?php
         }
         ?>
@@ -188,7 +188,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
-        <li><a href="<?php echo $config['base_url']; ?>maps/weather.php" titel="Weather data">
+        <li><a href="<?php echo $config['base_url']; ?>maps/weather.php" title="Weather data">
             Weather Data</a>
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
