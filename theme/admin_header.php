@@ -166,7 +166,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             ?><li><a href="<?php echo $config['base_url'];
             ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
-            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="GWAS Results">QTL Report</a>
+            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="GWAS Results">GWAS Results</a>
             <?php
         }
         ?>
