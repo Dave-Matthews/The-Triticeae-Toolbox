@@ -24,7 +24,7 @@ model, so that the LSmean is less sensitive to missingness than the
 arithmetic mean.<br><br>
 If two lines have the same true mean value, their estimated mean values are
 only expected to differ by more than the Least Significant Difference (<em>LSD</em>)
-in 5% of experiments.<br><br>
+in 5% of experiments. 
 If a number of lines have the same true mean value, the maximum difference
 between any pair of lines is only expected to exceed the Honestly
 Significant Difference (<em>HSD</em>) in 5% of experiments.<br>
@@ -206,7 +206,7 @@ if (!$traits or !$trials) {
       if ($_GET['balance'] == 'yes') {
           $cbox = "checked";
       }
-      print "<input type=checkbox $cbox onclick='balancedata(this)'> Remove lines with missing data.<P>";
+      print "<input type=checkbox $cbox onclick='balancedata(this)'> Remove lines with missing data.";
   }
 
   // if there are selected lines offer to display only selected
@@ -214,8 +214,9 @@ if (!$traits or !$trials) {
       if ($_GET['filter'] == 'yes') {
           $cbox2 = "checked";
       }
-      print "<input type=checkbox $cbox2 onclick='filter(this)'> Show only selected lines.<P>";
+      print "<input type=checkbox $cbox2 onclick='filter(this)'> Show only selected lines.";
   }
+  print "<p>";
 
   // If only one trial then do not need lsmeans, just show means
   // Display table summary
