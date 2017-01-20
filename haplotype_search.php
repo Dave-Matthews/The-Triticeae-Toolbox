@@ -41,51 +41,60 @@ class Haplotype
             default:
                 $this->disp_framework();
                 break;
-            }
+        }
     }
 
- function combinations($num_markers, $marker_idx, $marker_list, $cross, $cross_c) {
-   global $dispMissing;
-   global $mysqli;
-   $sub = $num_markers - 1; /* which column of marker_idx to increment */
-   $i = 0;
-   while ($i < $num_markers) {
-     $markers[$marker_list[$i]] = 1;
-     $i++;
-   }
-   foreach($_POST as $k=>$v) {
-     if(strpos(strtolower($k), "marker") !== FALSE) {
-       $check_list[$k] = 1;
-     }
-   }
-   if (isset($_POST['dispMissing'])) {
-     $dispMissing = 1;
-   } else {
-     $dispMissing = 0;
-   }
-   $marker_instr=" E.marker_uid in (".implode("," , array_keys($markers)).")";
-   //$in_these_lines = str_replace("line_records.", "E.", $in_these_lines);
-   $query_str="select E.line_record_name, E.line_record_uid, E.marker_uid, E.alleles from allele_cache as E where
-   $marker_instr $in_these_lines";
-   //print $query_str;
-   $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli));
-   $lines = array();
-   $line_uids=array();
-   $line_names=array();
-   while ($row=mysqli_fetch_assoc($result)) {
-     $linename=$row['line_record_name'];
+    private function combinations($num_markers, $marker_idx, $marker_list, $cross, $cross_c)
+    {
+        global $dispMissing;
+        global $mysqli;
+        $sub = $num_markers - 1; /* which column of marker_idx to increment */
+        $i = 0;
+        while ($i < $num_markers) {
+            $markers[$marker_list[$i]] = 1;
+            $i++;
+        }
+        foreach ($_POST as $k => $v) {
+            if (strpos(strtolower($k), "marker") !== false) {
+                $check_list[$k] = 1;
+            }
+        }
+        if (isset($_POST['dispMissing'])) {
+            $dispMissing = 1;
+        } else {
+            $dispMissing = 0;
+        }
+        $marker_instr=" E.marker_uid in (".implode(",", array_keys($markers)).")";
+        //$in_these_lines = str_replace("line_records.", "E.", $in_these_lines);
+        $query_str="select E.line_record_name, E.line_record_uid, E.marker_uid, E.alleles from allele_cache as E where
+        $marker_instr $in_these_lines";
+        //print $query_str;
+        $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli));
+        $lines = array();
+        $line_uids=array();
+        $line_names=array();
+        while ($row=mysqli_fetch_assoc($result)) {
+            $linename=$row['line_record_name'];
      $lineuid=$row['line_record_uid'];
      $mkruid=$row['marker_uid'];
      $alleleval=$row['alleles'];
      $line_uids[$linename]=$lineuid;
      $line_names[$lineuid]=$linename;
-     if (! isset($lines[$linename])) $lines[$linename]=array();
-     if (! isset($lines[$linename][$mkruid])) $lines[$linename][$mkruid]=$alleleval;
+     if (!isset($lines[$linename])) {
+         $lines[$linename]=array();
+     }
+     if (!isset($lines[$linename][$mkruid])) {
+         $lines[$linename][$mkruid]=$alleleval;
+     }
    }
 
    $i = 0;
    $markers = array();
-   if ($num_markers > 1) { $loop1 = 4; } else { $loop1 = 1; }
+   if ($num_markers > 1) {
+       $loop1 = 4;
+   } else {
+       $loop1 = 1;
+   }
    while ($i < $loop1) {
      $j = 0;
      $marker_idx[$sub] = 0;
@@ -234,7 +243,7 @@ class Haplotype
                               while (mysqli_stmt_fetch($stmt)) {
 			          $alleles = $allele_1.$allele_2;
                                   $alleles_c = $alleles;
-                                  if (($mkrtyp == "GBS") || ($mkrtyp == "DArT Marker")) {
+                                  //if (($mkrtyp == "GBS") || ($mkrtyp == "DArT Marker")) {
                                       if ($alleles=='AA') {
                                           $alleles_c = substr($marker_ab,0,1) . substr($marker_ab,0,1);
                                       } elseif ($alleles=='BB') {
@@ -244,7 +253,7 @@ class Haplotype
                                       } elseif ($alleles=='BA') {
                                           $alleles_c = substr($marker_ab,1,1) . substr($marker_ab,0,1);
                                       }
-                                  }
+                                  //}
 				  $cross[$i][$j] = $alleles;
 				  $crossc[$i][$j] = $alleles_c;
 				  $j++;
