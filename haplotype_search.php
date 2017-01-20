@@ -64,11 +64,11 @@ class Haplotype
      $dispMissing = 0;
    }
    $marker_instr=" E.marker_uid in (".implode("," , array_keys($markers)).")";
-   $in_these_lines = str_replace("line_records.", "E.", $in_these_lines);
+   //$in_these_lines = str_replace("line_records.", "E.", $in_these_lines);
    $query_str="select E.line_record_name, E.line_record_uid, E.marker_uid, E.alleles from allele_cache as E where
    $marker_instr $in_these_lines";
    //print $query_str;
-   $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli) . "<br>" . $query_str);
+   $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli));
    $lines = array();
    $line_uids=array();
    $line_names=array();
@@ -218,6 +218,8 @@ class Haplotype
                                                       $marker_ab=$a_allele . $b_allele;
                                                       mysqli_stmt_close($stmt);
                           }
+                          $marker_list[$i] = $marker;
+                          $marker_idx[$i] = 0;
 			  // Show Alleles corresponding to the marker.
                           $sql = "SELECT DISTINCT allele_1, allele_2
                                                     FROM alleles, genotyping_data
@@ -243,8 +245,6 @@ class Haplotype
                                           $alleles_c = substr($marker_ab,1,1) . substr($marker_ab,0,1);
                                       }
                                   }
-				  $marker_list[$i] = $marker;
-				  $marker_idx[$i] = 0;
 				  $cross[$i][$j] = $alleles;
 				  $crossc[$i][$j] = $alleles_c;
 				  $j++;
@@ -335,7 +335,7 @@ class Haplotype
    C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid
    $marker_instr $in_these_lines";
    //print $query_str;
-   $result=mysqli_query($mysqli, $query_str) or die(mysqli_error());
+   $result=mysqli_query($mysqli, $query_str) or die(mysqli_error($mysqli));
    //print "Number of rows = ". mysql_num_rows($result) . "\n";
    $lines = array();
    $line_uids=array();
@@ -404,7 +404,7 @@ class Haplotype
        $selected_lines = $_SESSION['selected_lines'];
             foreach ($selected_lines as $line) {
               $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-              $res = mysqli_query($mysqli, $sql) or die(mysqli_error());
+              $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
               $row = mysqli_fetch_assoc($res);
               $temp = $row['id'];
               $lines_list[$temp] = 1;
@@ -416,7 +416,7 @@ class Haplotype
             <?php
        foreach ($selLines as $line) {
          $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-              $res = mysqli_query($mysqli, $sql) or die(mysqli_error());
+              $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
               $row = mysqli_fetch_assoc($res);
               $temp = $row['id'];
               $lines_list[$temp] = 1;
@@ -511,7 +511,7 @@ class Haplotype
    
      //echo "<pre>$search_str\n\n\n\n\n\n</pre>";
    
-     $search = mysqli_query($mysqli, $search_str) or die(mysqli_error());
+     $search = mysqli_query($mysqli, $search_str) or die(mysqli_error($mysqli));
      $compare = "na_value=$value";
    }
    else {
@@ -527,7 +527,7 @@ class Haplotype
      //echo "<pre>$search_str\n\n\n\n\n\n</pre>";
    
    
-     $search = mysqli_query($mysqli, $search_str) or die(mysqli_error());
+     $search = mysqli_query($mysqli, $search_str) or die(mysqli_error($mysqli));
      $compare = "first_value=$first&last_value=$last";
    }
    $selLines = array();
