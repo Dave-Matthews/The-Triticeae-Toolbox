@@ -14,8 +14,8 @@ include($config['root_dir'].'theme/admin_header.php');
   <div id="primaryContent">
 
 <?php
-  if (!isset($_GET) OR empty($_GET)) {
-    //Initial entry to the script, nothing done yet. Pick a trial or experiment.
+if (!isset($_GET) or empty($_GET)) {
+//Initial entry to the script, nothing done yet. Pick a trial or experiment.
 ?>
     
   <!-- form to select a Trial: -->
@@ -28,17 +28,17 @@ include($config['root_dir'].'theme/admin_header.php');
     </form>
     <p>
       <select onchange="window.open('<?php echo $config['base_url']; ?>curator_data/delete_experiment.php?exptuid='+this.options[this.selectedIndex].value,'_top')">
-	<option value=''>or choose from below...</option>
+<option value=''>or choose from below...</option>
 <?php
-  $sql = "select trial_code, experiment_uid as uid 
+$sql = "select trial_code, experiment_uid as uid 
 	  from experiments where experiment_type_uid = 1
 	  order by trial_code";
-  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
-  while($row = mysqli_fetch_assoc($r)) {
+$r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+while ($row = mysqli_fetch_assoc($r)) {
     $tc = $row['trial_code'];
     $uid = $row['uid'];
     echo "<option value='$uid'>$tc</option>\n";
-  }
+}
 ?>
   </select>
   </div>
@@ -53,17 +53,17 @@ include($config['root_dir'].'theme/admin_header.php');
     </form>
     <p>
       <select onchange="window.open('<?php echo $config['base_url']; ?>curator_data/delete_experiment.php?exptsetuid='+this.options[this.selectedIndex].value,'_top')">
-	<option value=''>or choose from below...</option>
+<option value=''>or choose from below...</option>
 <?php
-  $sql = "select experiment_set_name as esname, experiment_set_uid as uid 
+$sql = "select experiment_set_name as esname, experiment_set_uid as uid 
           from experiment_set
           order by experiment_set_name";
-  $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
-  while($row = mysqli_fetch_assoc($r)) {
+$r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
+while ($row = mysqli_fetch_assoc($r)) {
     $name = $row['esname'];
     $uid = $row['uid'];
     echo "<option value='$uid'>$name</option>\n";
-  }
+}
 ?>
   </select>
   </div>
@@ -78,23 +78,22 @@ include($config['root_dir'].'theme/admin_header.php');
     </form>
     <p>
       <select onchange="window.open('<?php echo $config['base_url']; ?>curator_data/delete_experiment.php?genoexptuid='+this.options[this.selectedIndex].value,'_top')">
-	<option value=''>or choose from below...</option>
+<option value=''>or choose from below...</option>
 <?php
   $sql = "select trial_code, experiment_uid as uid 
           from experiments where experiment_type_uid = 2 
           order by trial_code";
   $r = mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "<br>$sql");
-  while($row = mysqli_fetch_assoc($r)) {
+while ($row = mysqli_fetch_assoc($r)) {
     $tc = $row['trial_code'];
     $uid = $row['uid'];
     echo "<option value='$uid'>$tc</option>\n";
-  }
+}
 ?>
   </select>
   </div>
 <?php
-
-  } // end of "if (!isset($_GET) OR empty($_GET))"
+} // end of "if (!isset($_GET) OR empty($_GET))"
 
 // Something has been selected. Execute it:
 elseif ($_GET['doit'] == "trial") {
@@ -259,8 +258,12 @@ function delete_trial($uid)
     $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
     $sql = "delete from csr_measurement where experiment_uid = $uid";
     $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
-    $sql = "delete from allele_conflicts where experiment_uid = $uid";
+    $sql = "show tables like 'allele_conflicts'";
     $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
+    if (mysqli_num_rows($r) > 0) { 
+        $sql = "delete from allele_conflicts where experiment_uid = $uid";
+        $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
+    }
     $sql = "delete from experiments where experiment_uid = $uid";
     $r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<p>Query was: $sql");
     echo "Trial deleted.";
