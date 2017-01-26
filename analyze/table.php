@@ -34,12 +34,15 @@ Significant Difference (<em>HSD</em>) in 5% of experiments.<br>
 <?php
 $traits = $_SESSION['selected_traits'];
 $trials = $_SESSION['selected_trials'];
-$line_uids = $_SESSION['selected_lines'];
-foreach ($line_uids as $line) {
-    $sql = "select line_record_name from line_records where line_record_uid = $line";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>\n$sql");
-    $row = mysqli_fetch_array($res);
-    $selected_lines[] = $row[0];
+$selected_lines = array();
+if (isset($_SESSION['selected_lines'])) {
+    $line_uids = $_SESSION['selected_lines'];
+    foreach ($line_uids as $line) {
+        $sql = "select line_record_name from line_records where line_record_uid = $line";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>\n$sql");
+        $row = mysqli_fetch_array($res);
+        $selected_lines[] = $row[0];
+    }
 }
 
 if (!$traits or !$trials) {
@@ -169,45 +172,50 @@ if (!$traits or !$trials) {
                     $lsmeansline = $line;
                 } elseif ($firstword == 'leastSigDiff') {
                     $lsds = $linepieces;
-	            array_shift($lsds);
+                    array_shift($lsds);
                 } elseif ($firstword == 'tukeysHSD') {
-	            $hsds = $linepieces;
-	            array_shift($hsds);
+                    $hsds = $linepieces;
+                    array_shift($hsds);
                 } elseif ($firstword == 'trialNames') {
                     $trialnamesline = $line;
                 } elseif ($firstword == 'trialMeans') {
-	            $trialmeansline = $line;
+                    $trialmeansline = $line;
                 } else {
-	            // It must be a continuation line of the lsmeans.
-	            $lsmeansline .= $line;
+                    // It must be a continuation line of the lsmeans.
+                    $lsmeansline .= $line;
                 }
+            }
+            // All lines of the file have now been read in.
+            $lsmeanslists = explode("\t", rtrim($lsmeansline));
+            $trialnameslists = explode("\t", rtrim($trialnamesline));
+            $trialmeanslists = explode("\t", rtrim($trialmeansline));
+            array_shift($lsmeanslists);
+            array_shift($trialnameslists);
+            array_shift($trialmeanslists);
+            $trialnames = array();
+            for ($i=0; $i < $rtraitcount; $i++) {
+            // Result is formatted like "c(12.65, 11.915, ...)".
+                $lsmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $lsmeanslists[$i]));
+                $trialnames[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialnameslists[$i]));
+                $trialmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialmeanslists[$i]));
+            }
+            if (empty($trialmeans)) {
+                echo "Error: No traits selected<br>\n";
+                break;
+            }
+        }
+        fclose($r);
+    } else {
+        echo "<br>Error: No output from R script /tmp/tht/TableReportOut.txt.$time<br>\n";
     }
-    // All lines of the file have now been read in.
-    $lsmeanslists = explode("\t", rtrim($lsmeansline));
-    $trialnameslists = explode("\t", rtrim($trialnamesline));
-    $trialmeanslists = explode("\t", rtrim($trialmeansline));
-    array_shift($lsmeanslists);
-    array_shift($trialnameslists);
-    array_shift($trialmeanslists);
-    for ($i=0; $i < $rtraitcount; $i++) {
-      // Result is formatted like "c(12.65, 11.915, ...)".
-      $lsmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $lsmeanslists[$i]));
-      $trialnames[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialnameslists[$i]));
-      $trialmeans[$i] = explode(", ", preg_replace("/^c\(|\)$/", "", $trialmeanslists[$i]));
-    }
-  }
-  fclose($r);
-  } else {
-      echo "<br>Error: No output from R script /tmp/tht/TableReportOut.txt.$time<br>\n";
-  }
 
-  // If there's any missing data offer to remove it.
-  if ($missingdata) {
-      if ($_GET['balance'] == 'yes') {
-          $cbox = "checked";
-      }
-      print "<input type=checkbox $cbox onclick='balancedata(this)'> Remove lines with missing data.";
-  }
+    // If there's any missing data offer to remove it.
+    if ($missingdata) {
+        if ($_GET['balance'] == 'yes') {
+            $cbox = "checked";
+        }
+        print "<input type=checkbox $cbox onclick='balancedata(this)'> Remove lines with missing data.";
+    }
 
   // if there are selected lines offer to display only selected
   if (isset($_SESSION['selected_lines'])) {
