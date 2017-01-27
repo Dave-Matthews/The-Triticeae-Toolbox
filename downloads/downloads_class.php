@@ -413,6 +413,11 @@ class Downloads
             $output = $this->type2_build_conflicts_download($lines, $markers);
             fwrite($h, $output);
             fclose($h);
+            $filename = "genotype_experiments.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->listGenotypeTrials($lines);
+            fwrite($h, $output);
+            fclose($h);
         }
         $filename = "/tmp/tht/download_" . $unique_str . ".zip";
         exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str");
@@ -981,10 +986,10 @@ class Downloads
              }
              echo "</table>";
           ?><br><br>
-          The snpfile.txt file has one row for each germplasm line.<br>
-          The genotype.hmp.txt file has one row for each marker similar to the  HapMap format and contains map information.<br>
-          The allele_conflict.txt file list all cases where there have been different results for the same line and marker.<br>
-          The genotype files contains one measurement for each line and marker.<br>
+          snpfile.txt - has one row for each germplasm line.<br>
+          genotype.hmp.txt - has one row for each marker similar to the  HapMap format and contains map information.<br>
+          allele_conflict.txt - list all cases where there have been different results for the same line and marker.<br>
+          genotype_experiments.txt - list the genotype experiments used to calculate consensus measurements.<br>
           Documentation and loading instructions for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
             , <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
             , <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>
@@ -1377,50 +1382,6 @@ class Downloads
 	}
 	
 	/**
-	 * build file listing conflicts in genotype data
-	 * @param unknown_type $experiments
-	 * @param unknown_type $dtype
-	 */
-	function type1_build_conflicts_download($experiments,$dtype) {
-          global $mysqli;
-	 
-	  //get lines and filter to get a list of markers which meet the criteria selected by the user
-	  $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
-	  SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
-	  FROM allele_frequencies AS af, markers as m
-	  WHERE m.marker_uid = af.marker_uid
-	  AND af.experiment_uid in ($experiments)
-	  group by af.marker_uid";
-	 
-	  $res = mysqli_query($mysqli, $sql_mstat) or die(mysqli_error($mysqli));
-	  $num_maf = $num_miss = 0;
-	  while ($row = mysqli_fetch_array($res)){
-	    $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
-	    $miss = round(100*$row["summis"]/$row["total"],1);
-	    if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
-	      $marker_uid[] = $row["marker"];
-	    }
-	  }
-	  $marker_uid = implode(",",$marker_uid);
-	  $output = "line name\tmarker name\talleles\texperiment\n";
-	  $query = "select l.line_record_name, m.marker_name, a.alleles, e.trial_code
-	  from allele_conflicts a, line_records l, markers m, experiments e
-	  where a.line_record_uid = l.line_record_uid
-	  and a.marker_uid = m.marker_uid
-	  and a.experiment_uid = e.experiment_uid
-	  and a.alleles != '--'
-	  and a.marker_uid IN ($marker_uid)
-	  order by l.line_record_name, m.marker_name, e.trial_code";
-	  $res = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
-	  if (mysqli_num_rows($res)>0) {
-	   while ($row = mysqli_fetch_row($res)){
-	    $output.= "$row[0]\t$row[1]\t$row[2]\t$row[3]\n";
-	   }
-	  }
-	  return $output;
-	}
-	
-	/**
 	 * build genotype data file when given set of lines and markers
 	 * @param array $lines
 	 * @param array $markers
@@ -1720,14 +1681,46 @@ class Downloads
 	     $allele_str = implode("\t",$outarray2);
              fwrite($h, "\t$allele_str\n"); 
         }
-	}
+    }
 
-	/**
-	 * build genotype conflicts file when given set of lines and markers
-	 * @param unknown_type $lines
-	 * @param unknown_type $markers
-	 * @return string
-	 */
+    /**
+     * list genotype trials for each line
+     * this call list genotype trials included in consensus genotype measurements
+     * @param array $lines
+     * @return string
+     */
+    private function listGenotypeTrials($lines)
+    {
+        global $mysqli;
+        $output = "line name\ttrials\n";
+        foreach ($lines as $line_id) {
+            $query = "select line_record_name from line_records where line_record_uid = $line_id";
+            $res = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_row($res);
+            $line_name = $row[0];
+            $query = "SELECT distinct(experiments.trial_code)
+                FROM experiments, allele_cache
+                WHERE allele_cache.line_record_uid = '$line_id'
+                AND experiments.experiment_uid = allele_cache.experiment_uid
+                ORDER BY allele_cache.experiment_uid";
+            $res = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            if (mysqli_num_rows($res)>0) {
+                $output.= "$line_name";
+                while ($row = mysqli_fetch_row($res)) {
+                    $output.= "\t$row[0]";
+                }
+                $output.= "\n";
+            }
+        }
+        return $output;
+    }
+
+    /**
+     * build genotype conflicts file when given set of lines and markers
+     * @param unknown_type $lines
+     * @param unknown_type $markers
+     * @return string
+     */
 	function type2_build_conflicts_download($lines,$markers) {
 	  global $mysqli;
 	  if (count($markers)>0) {
