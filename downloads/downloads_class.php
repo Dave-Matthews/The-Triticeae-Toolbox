@@ -102,7 +102,7 @@ class Downloads
         include $config['root_dir'].'theme/normal_header.php';
         $this->type1Checksession();
         ?>
-        <script type="text/javascript" src="downloads/downloadsjq04.js"></script>
+        <script type="text/javascript" src="downloads/downloadsjq05.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
     }
