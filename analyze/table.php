@@ -46,7 +46,7 @@ if (isset($_SESSION['selected_lines'])) {
 }
 
 if (!$traits or !$trials) {
-    echo "Please select at least one trait and more than one trial, <a href='$config[base_url]phenotype/phenotype_selection.php'>Traits and Trials</a>.<p>";
+    echo "Please select at least one trait and one trial, <a href='$config[base_url]phenotype/phenotype_selection.php'>Traits and Trials</a>.<p>";
 } else {
     // Retrieve the data into array $vals.
     $lines = array();
@@ -205,6 +205,8 @@ if (!$traits or !$trials) {
             }
         }
         fclose($r);
+        $count = count($lines);
+        print " $count lines used in LSmean model. ";
     } else {
         echo "<br>Error: No output from R script /tmp/tht/TableReportOut.txt.$time<br>\n";
     }
@@ -214,70 +216,71 @@ if (!$traits or !$trials) {
         if ($_GET['balance'] == 'yes') {
             $cbox = "checked";
         }
-        print "<input type=checkbox $cbox onclick='balancedata(this)'> Remove lines with missing data.";
+        print "<input type=checkbox $cbox onclick='balancedata(this)'> Remove lines with missing data. ";
     }
 
   // if there are selected lines offer to display only selected
-  if (isset($_SESSION['selected_lines'])) {
-      if ($_GET['filter'] == 'yes') {
-          $cbox2 = "checked";
-      }
-      print "<input type=checkbox $cbox2 onclick='filter(this)'> Show only selected lines.";
-  }
-  print "<p>";
+    if (isset($_SESSION['selected_lines'])) {
+        if ($_GET['filter'] == 'no') {
+            $cbox2 = "";
+        } else {
+            $cbox2 = "checked";
+        }
+        print "<input type=checkbox $cbox2 onclick='filter(this)'> Show only selected lines. ";
+    }
+    print "<p>";
 
   // If only one trial then do not need lsmeans, just show means
   // Display table summary
-  $countTrials = count($trialnames[0]);
-  if ($countTrials == 1) {
-  $trial = $trialnames[0][0];
-  $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
-  print "Trial means: $trialname<table><tr><th>";
-  $traitnumber = 0;
-  foreach ($traits as $trait) {
-    $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-    $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
-    print "<th>$trtname<br>$unit_name";
-  }
-  foreach ($lines as $line) {
-    if ($_GET['filter'] == 'yes') {
-        if (!in_array($line, $selected_lines)) {
-            continue;
+    $countTrials = count($trialnames[0]);
+    if ($countTrials == 1) {
+        $trial = $trialnames[0][0];
+        $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
+        print "Trial means: $trialname<table><tr><th>";
+        $traitnumber = 0;
+        foreach ($traits as $trait) {
+            $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
+            $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
+            print "<th>$trtname<br>$unit_name";
         }
-    }
-    print "<tr><td>$line"; 
-    foreach ($traits as $trait) {
-      $traitnumber = 0;
-      foreach ($trialnames[$traitnumber] as $trial) {
-        $mn = $min[$trait][$trial];
-        $mx = $max[$trait][$trial];
-        // Omit missing values.  round() seems to return "0" for empty values.
-        unset($val);
-        if ($vals[$trait][$trial][$line]) {
-          $val = round($vals[$trait][$trial][$line], 1);
-          // Calculate the color. Red is 0, pale yellow is 15. 
-          // Colors greater than 10 are too pale to read.
-          $col = 10 - floor(10 * ($val - $mn) / ($mx - $mn));
-          print "<td><font color=$color[$col]><b>$val</b></font>";
-        } else {
-          print "<td>--";
-        }
-      }
-      $traitnumber++;
-    }
+        foreach ($lines as $line) {
+            if ($_GET['filter'] == 'no') {
+            } elseif (isset($_SESSION['selected_lines']) && !in_array($line, $selected_lines)) {
+                continue;
+            }
+            print "<tr><td>$line";
+            foreach ($traits as $trait) {
+                $traitnumber = 0;
+                foreach ($trialnames[$traitnumber] as $trial) {
+                    $mn = $min[$trait][$trial];
+                    $mx = $max[$trait][$trial];
+                    // Omit missing values.  round() seems to return "0" for empty values.
+                    unset($val);
+                    if ($vals[$trait][$trial][$line]) {
+                        $val = round($vals[$trait][$trial][$line], 1);
+                        // Calculate the color. Red is 0, pale yellow is 15.
+                        // Colors greater than 10 are too pale to read.
+                        $col = 10 - floor(10 * ($val - $mn) / ($mx - $mn));
+                        print "<td><font color=$color[$col]><b>$val</b></font>";
+                    } else {
+                        print "<td>--";
+                    }
+                }
+                $traitnumber++;
+            }
   }
   print "<tr><td><font color=brown>Trial Mean</font>";
   $traitnumber = 0;
   foreach ($traits as $trait) {
-  foreach ($trialmeans[$traitnumber] as $mean) {
-      if (!$mean) {
-        $tm = "--";
-      } else {
-        $tm = round($mean, 1);
+      foreach ($trialmeans[$traitnumber] as $mean) {
+          if (!$mean) {
+            $tm = "--";
+          } else {
+            $tm = round($mean, 1);
+          }
+          print "<td>$tm";
       }
-      print "<td>$tm";
-  }
-  $traitnumber++;
+      $traitnumber++;
   }
   print "</table><br>";
   } else {
@@ -294,10 +297,9 @@ if (!$traits or !$trials) {
   }
   $linenumber = 0;
   foreach ($lines as $line) {
-      if ($_GET['filter'] == 'yes') {
-        if (!in_array($line, $selected_lines)) {
-            continue;
-        }
+      if ($_GET['filter'] == 'no') {
+      } elseif (isset($_SESSION['selected_lines']) && !in_array($line, $selected_lines)) {
+          continue;
       }
       print "<tr><td>$line";
       $lsm = 0;
@@ -335,10 +337,9 @@ if (!$traits or !$trials) {
     print "<th>LSmeans";
     $linenumber = 0;
     foreach ($lines as $line) {
-      if ($_GET['filter'] == 'yes') {
-        if (!in_array($line, $selected_lines)) {
-            continue;
-        }
+      if ($_GET['filter'] == 'no') {
+      } elseif (isset($_SESSION['selected_lines']) && !in_array($line, $selected_lines)) {
+          continue;
       }
       print "<tr><td>$line";
       foreach ($trialnames[$traitnumber] as $trial) {
