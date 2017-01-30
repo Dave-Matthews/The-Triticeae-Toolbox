@@ -580,9 +580,9 @@ class Downloads
     /**
      * starting with lines display the selected lines
      */
-	private function step1_lines()
-	{
-            global $mysqli;
+    private function step1_lines()
+    {
+        global $mysqli;
             ?>
             <table id="phenotypeSelTab" class="tableclass1">
             <tr>
@@ -745,10 +745,6 @@ class Downloads
             $saved_session = "$countLines lines";
         } else {
             $countLines = 0;
-            echo "<font color=\"red\">Choose one or more lines before using a saved selection. </font>";
-            echo "<a href=";
-            echo $config['base_url'];
-            echo "pedigree/line_properties.php>Select lines</a><br>";
         }
         if ($typeP == "true") {
             if (!isset($_SESSION['phenotype'])) {
@@ -764,6 +760,13 @@ class Downloads
             }
         }
         if ($typeG == "true") {
+            if (!isset($_SESSION['selected_lines'])) {
+                $countLines = 0;
+                echo "<font color=\"red\">Choose one or more lines before using a saved selection. </font>";
+                echo "<a href=";
+                echo $config['base_url'];
+                echo "pedigree/line_properties.php>Select lines</a><br>";
+            }
             if (isset($_SESSION['clicked_buttons'])) {
                 $markers = $_SESSION['clicked_buttons'];
                 if (count($markers) > 1000) {
@@ -857,7 +860,7 @@ class Downloads
      * starting with lines display marker data
      *
      */
-    function step5_lines()
+    private function step5_lines()
     {
         if (isset($_GET['use_line']) && ($_GET['use_line'] == "yes")) {
             $use_database = 0;
@@ -874,9 +877,9 @@ class Downloads
         if (isset($_SESSION['selected_lines'])) {
              $countLines = count($_SESSION['selected_lines']);
              $lines = $_SESSION['selected_lines'];
-             $selectedlines = implode(",", $_SESSION['selected_lines']);
         } else {
              $countLines = 0;
+             $lines = array();
         }
         if (isset($_SESSION['selected_trials'])) {
             $countTrials = count($_SESSION['selected_trials']);
@@ -892,39 +895,44 @@ class Downloads
             $geno_exps = "";
         }
          
-	if (isset($_SESSION['clicked_buttons'])) {
+        if (isset($_SESSION['clicked_buttons'])) {
             $tmp = count($_SESSION['clicked_buttons']);
             $saved_session = $saved_session . ", $tmp markers";
-            $markers = $_SESSION['clicked_buttons']; 
-            $marker_str = implode(',',$markers);
-	} else {
+            $markers = $_SESSION['clicked_buttons'];
+            $marker_str = implode(',', $markers);
+        } else {
             $markers = "";
             $marker_str = "";
         }
         $typeGE = $_GET['typeGE'];
+        $typeG = $_GET['typeG'];
 
-
-	 // initialize markers and flags if not already set
-	 $max_missing = 99.9;//IN PERCENT
-	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-	  $max_missing = $_GET['mm'];
-	 if ($max_missing>100)
-	  $max_missing = 100;
-	 elseif ($max_missing<0)
-	 $max_missing = 0;
-	 $min_maf = 0.01;//IN PERCENT
-	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-	  $min_maf = $_GET['mmaf'];
-	 if ($min_maf>100)
-	  $min_maf = 100;
-	 elseif ($min_maf<0)
-	  $min_maf = 0;
-         $max_miss_line = 10;
-         if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml']))
-           $max_miss_line = $_GET['mml'];
-         if ($countLines > 0) {
-            ?>
-            <p>
+        // initialize markers and flags if not already set
+        $max_missing = 99.9;//IN PERCENT
+        if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm'])) {
+            $max_missing = $_GET['mm'];
+        }
+        if ($max_missing>100) {
+            $max_missing = 100;
+	} elseif ($max_missing<0) {
+            $max_missing = 0;
+        }
+	$min_maf = 0.01;//IN PERCENT
+	if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf'])) {
+	    $min_maf = $_GET['mmaf'];
+        }
+	if ($min_maf>100) {
+	    $min_maf = 100;
+	} elseif ($min_maf<0) {
+	    $min_maf = 0;
+        }
+        $max_miss_line = 10;
+        if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml'])) {
+            $max_miss_line = $_GET['mml'];
+        }
+        if ($countLines > 0) {
+        ?>
+        <p>
         Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove markers missing &gt; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />% of data
@@ -946,7 +954,7 @@ class Downloads
                 calculate_afe($geno_exps, $min_maf, $max_missing, $max_miss_line);
                 $countFilterLines = count($lines);
                 $countFilterMarkers = count($_SESSION['filtered_markers']);
-             } else {
+             } elseif ($typeG == "true") {
                 calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
                 $countFilterLines = count($_SESSION['filtered_lines']);
                 $countFilterMarkers = count($_SESSION['filtered_markers']);
@@ -1100,7 +1108,7 @@ class Downloads
                 $count = 0;
                 foreach ($expr_list as $expr_uid=>$expr_name) {
                     $outarray = $empty;
-                    $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
+                    mysqli_stmt_bind_param($stmt, "ii", $line_uid, $expr_uid);
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_bind_result($stmt, $trait_uid, $value);
                     while (mysqli_stmt_fetch($stmt)) {
