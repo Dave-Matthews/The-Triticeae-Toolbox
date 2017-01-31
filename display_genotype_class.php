@@ -250,7 +250,7 @@ class ShowData
     if ($gbs_exp == "yes") {
         calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
     } else {
-        calculate_af($lines_ids, $min_maf, $max_missing, $max_miss_line);
+        calculate_af($line_ids, $min_maf, $max_missing, $max_miss_line);
     }
     ?>
 

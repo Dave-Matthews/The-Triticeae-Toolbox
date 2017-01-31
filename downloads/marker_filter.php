@@ -181,13 +181,13 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 $i = $marker_list_loc[$marker_uid];
             } else {
                 $sql = "select marker_name from markers where marker_uid = $marker_uid";
-                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)); 
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                 $row = mysqli_fetch_array($res);
                 $name = $row[0];
                 echo "<br>Warning: $name maker has not been genotyped\n";
                 $num_removed++;
                 continue;
-            } 
+            }
             $total_af = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i];
             $total = $total_af + $marker_misscnt[$i];
             if ($total_af > 0) {
@@ -208,6 +208,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 }
                 $num_mark++;
             }
+            echo "<br>$marker_uid $total_af $total max_missing=$max_missing miss=$miss\n";
         }
         if ($num_mark == 0) {
             echo "<br><font color=red>Error: selected markers have not been genotyped</font><br>\n";
@@ -425,10 +426,11 @@ function findCommonLines($lines)
     /**
      * build genotype data files for tassel and rrBLUP using genotype experiment
      *
-     * @param unknown_type $lines   lines
-     * @param unknown_type $markers markers
-     * @param integer      $dtype   file format
-     * @param file         $h       file handle
+     * @param integer	$geno_exp	genotype experiment
+     * @param float	$min_maf	minimum allele frequency
+     * @param float	$max_missing	max missing
+     * @param string	$dtype   file format
+     * @param file	$h       file handle
      *
      * @return null
      */
