@@ -29,9 +29,9 @@ while ($row = mysqli_fetch_array($cats)) {
             $desc = $trow['description'];
             $TO = $trow['TO_number'];
             if (preg_match("/TO:/", $TO)) {
-                $TO = "<a href='http://browser.planteome.org/amigo/terms/$TO' target='_new'>$TO</a>";
+                $TO = "<a href='http://browser.planteome.org/amigo/term/$TO' target='_new'>$TO</a>";
             } elseif (preg_match("/CO_/", $TO)) {
-                $TO = "<a href='http://www.cropontology.org/term/$TO/' target='_new'>$TO</a>";
+                $TO = "<a href='http://www.cropontology.org/terms/$TO/' target='_new'>$TO</a>";
             }
       $min = $trow['min_pheno_value'];
       $max = $trow['max_pheno_value'];
