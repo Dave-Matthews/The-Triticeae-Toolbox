@@ -151,6 +151,7 @@ function show_line_records($id)
   if (empty($prnts))
     echo "Not found";
   else {
+    $lnkpts = "";
     foreach ($prnts as $pt) 
       $lnkpts .= "<a href=".$config['base_url']."view.php?table=line_records&name=$pt>$pt</a>, ";
     echo rtrim($lnkpts, ' ,');
@@ -834,7 +835,7 @@ function circularParentTest($line, $parent) {
 
 
 function pediStr2SQL($line, $str) {
-    global $myslqi;
+    global $mysqli;
 	$duplicates = 0;
 
 	//generate array tree based off string 
@@ -859,8 +860,8 @@ function pediStr2SQL($line, $str) {
 				}
 
 				//add each parent and line to the line_record table
-				$ids[0] = add_attribute ("line_record_name", $pedigree[0], "line_record", "line_record_uid");
-				$ids[1] = add_attribute ("line_record_name", $pedigree[1], "line_record", "line_record_uid");
+				$ids[0] = add_attribute("line_record_name", $pedigree[0], "line_record", "line_record_uid");
+				$ids[1] = add_attribute("line_record_name", $pedigree[1], "line_record", "line_record_uid");
 
 				//add the relationsihp to the pedigree_relations table
 				$vals = array(
