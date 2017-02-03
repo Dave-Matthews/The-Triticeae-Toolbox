@@ -11,14 +11,15 @@
  *		$page is the page where this happens.
  * @return nothing - it echos the result, again use with output buffering if you wish.
  */
-function showLines($page, $start=0, $limit=40) {
+function showLines($page, $start = 0, $limit = 40)
+{
     global $mysqli;
     $qstring = "SELECT line_record_uid, line_record_name
 			FROM line_records
-			ORDER BY line_record_name";
+			ORDER BY line_record_name LIMIT ? OFFSET ?";
 
     echo "\n<ul>";
-    if ($stmt = mysqli_prepare($mysqli, "$qstring LIMIT ? OFFSET ?")) {
+    if ($stmt = mysqli_prepare($mysqli, $qstring)) {
         mysqli_stmt_bind_param($stmt, "ii", $limit, $start);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $line_record_uid, $line_record_name);
@@ -34,15 +35,16 @@ function showLines($page, $start=0, $limit=40) {
 /*
   To display something useful for a barley_pedigree_catalog_ref report in view.php.
 */
-function show_barley_pedigree_catalog_ref($id) {
-  global $mysqli;
-  // Show the associated line_record.
-  $sql = "select l.line_record_uid, line_record_name from barley_pedigree_catalog_ref b, line_records l where barley_pedigree_catalog_ref_uid = $id and b.line_record_uid = l.line_record_uid";
-  $res= mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-  $row = mysqli_fetch_row($res);
-  print "<p>Please see Line Record <a href='view.php?table=line_records&uid=$row[0]'>$row[1]</a><p>";
-  // Display the basics.
-  show_general("barley_pedigree_catalog_ref", $id);
+function show_barley_pedigree_catalog_ref($id)
+{
+    global $mysqli;
+    // Show the associated line_record.
+    $sql = "select l.line_record_uid, line_record_name from barley_pedigree_catalog_ref b, line_records l where barley_pedigree_catalog_ref_uid = $id and b.line_record_uid = l.line_record_uid";
+    $res= mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $row = mysqli_fetch_row($res);
+    print "<p>Please see Line Record <a href='view.php?table=line_records&uid=$row[0]'>$row[1]</a><p>";
+    // Display the basics.
+    show_general("barley_pedigree_catalog_ref", $id);
 }
 
 /*
@@ -52,7 +54,8 @@ function show_barley_pedigree_catalog_ref($id) {
  * @param $id - the id of the record of which to retrieve.
  * @return nothing - it echos the result. Use in conjunction with output buffering if you wish to maniuplate.
  */
-function show_line_records($id) {
+function show_line_records($id)
+{
   global $mysqli;
   $name = getAccessionName($id);
   // Passport info
@@ -666,16 +669,14 @@ function getAccessionName($id) {
 function getSynonymNames($id) {
     global $mysqli;
     $sql = "SELECT line_synonym_name FROM line_synonyms WHERE line_record_uid = '$id'";
-    if ($sql_syn = mysqli_query($mysqli, $sql)) {
-        if (mysqli_num_rows($sql_syn) < 1) {
-            return false;
-        }
-
-        while ($row = mysqli_fetch_array($sql_syn)) {
-            $synonyms[] = $row['line_synonym_name'];
-        }
-        return $synonyms;
+    $sql_syn = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
+    if (mysqli_num_rows($sql_syn) < 1) {
+        return false;
     }
+    while ($row = mysqli_fetch_array($sql_syn)) {
+        $synonyms[] = $row['line_synonym_name'];
+    }
+    return $synonyms;
 }
 
 /*
@@ -686,23 +687,23 @@ function getSynonymNames($id) {
  * @return the corresponding synonyms if they exists in the database. If it does not,
  * 	the function returns FALSE.
  */
-function getBarleyPedigreeCatalogIDs($id) {
+function getBarleyPedigreeCatalogIDs($id)
+{
     global $mysqli;
-	$sql_bpc = mysqli_query($mysqli, "
-			SELECT b_ref.barley_ref_number as value, b.barley_pedigree_catalog_name as catname
-			FROM barley_pedigree_catalog_ref AS b_ref, barley_pedigree_catalog AS b
-			WHERE b_ref.line_record_uid = '$id'
-				AND b.barley_pedigree_catalog_uid = b_ref.barley_pedigree_catalog_uid
-			");
+    $sql_bpc = mysqli_query($mysqli, "
+	SELECT b_ref.barley_ref_number as value, b.barley_pedigree_catalog_name as catname
+	FROM barley_pedigree_catalog_ref AS b_ref, barley_pedigree_catalog AS b
+	WHERE b_ref.line_record_uid = '$id'
+	AND b.barley_pedigree_catalog_uid = b_ref.barley_pedigree_catalog_uid
+	") or die(mysqli_error($mysqli));
+    if (mysqli_num_rows($sql_bpc) < 1) {
+	return FALSE;
+    }
 
-	if(mysqli_num_rows($sql_bpc) < 1) {
-		return FALSE;
-	}
-
-	while($row = mysqli_fetch_array($sql_bpc)) {
-		$bpc[] = $row['catname'].": ".$row['value'];
-	}
-	return $bpc;
+    while ($row = mysqli_fetch_array($sql_bpc)) {
+        $bpc[] = $row['catname'].": ".$row['value'];
+    }
+    return $bpc;
 }
 
 /*
@@ -712,26 +713,27 @@ function getBarleyPedigreeCatalogIDs($id) {
  * @param $id - the id of the line whose synonyms to retrieve
  * @return the corresponding synonyms if they exists in the database. If it does not,
  * 	the function returns FALSE.
- */ 
-function getBarleyPedigreeCatalogLink($id) {
+ */
+function getBarleyPedigreeCatalogLink($id)
+{
     global $mysqli;
-	$sql_bpc = mysqli_query($mysqli, "
-			SELECT b_ref.barley_ref_number as value, b.link_out
-			FROM barley_pedigree_catalog_ref AS b_ref, barley_pedigree_catalog AS b
-			WHERE b_ref.line_record_uid = '$id'
-				AND b.barley_pedigree_catalog_uid = b_ref.barley_pedigree_catalog_uid
-			");
+    $sql_bpc = mysqli_query($mysqli, "
+	SELECT b_ref.barley_ref_number as value, b.link_out
+	FROM barley_pedigree_catalog_ref AS b_ref, barley_pedigree_catalog AS b
+	WHERE b_ref.line_record_uid = '$id'
+	AND b.barley_pedigree_catalog_uid = b_ref.barley_pedigree_catalog_uid
+	") or die(mysqli_error($mysqli));
 
-	if(mysqli_num_rows($sql_bpc) < 1) {
-		return FALSE;
-	}
+    if (mysqli_num_rows($sql_bpc) < 1) {
+        return false;
+    }
 
-	while($row = mysqli_fetch_assoc($sql_bpc)) {
-	  // GRIN PI numbers include a required Space character.
-	  $value = urlencode($row['value']);
-	  $url_bpc[] = str_replace('XXXX',$value,$row['link_out']);
-	}
-	return $url_bpc;
+    while ($row = mysqli_fetch_assoc($sql_bpc)) {
+        // GRIN PI numbers include a required Space character.
+        $value = urlencode($row['value']);
+        $url_bpc[] = str_replace('XXXX', $value, $row['link_out']);
+    }
+    return $url_bpc;
 }
 
 /*
@@ -985,5 +987,3 @@ function generate_pedigree_tree($pstr) {
 	 }
 	   return parse_pedigree_matrix($mx, $maxcol-1, 0, $leaves);
 }
-
-?>
