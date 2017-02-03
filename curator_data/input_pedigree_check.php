@@ -458,9 +458,9 @@ private function typePedigreeCheck()
 	{
 	
 	global $config;
+        global $mysqli;
 		include($config['root_dir'] . 'theme/admin_header.php');
 
-	//connect_dev();
 	
 	$datafile = $_GET['pedigreedata'];
 	$filename_old = $_GET['file_name'];
@@ -509,7 +509,7 @@ private function typePedigreeCheck()
         
         // Set up column indices; all columns are required
         $capline_idx = implode(find("CAPLINE", $header),"");
-        $line_idx = 1.0 * array_search("LINE_NAME", $header);;
+        $line_idx = 1 * array_search("LINE_NAME", $header);;
         $par1_idx = implode(find("PARENT_1", $header),"");
         $par2_idx = implode(find("PARENT_2", $header),"");
         $con1_idx = implode(find("CONTRIB_1", $header),"");
