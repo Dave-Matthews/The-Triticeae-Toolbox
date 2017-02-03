@@ -19,15 +19,14 @@ function showLines($page, $start = 0, $limit = 40)
 			ORDER BY line_record_name LIMIT ? OFFSET ?";
 
     echo "\n<ul>";
-    if ($stmt = mysqli_prepare($mysqli, $qstring)) {
-        mysqli_stmt_bind_param($stmt, "ii", $limit, $start);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $line_record_uid, $line_record_name);
-        while (mysqli_stmt_fetch($stmt)) {
-            echo "\n\t<li><a href=\"$page?line=".urlencode($line_record_uid)."\">$line_record_name</a></li>";
-        }
-        mysqli_stmt_close($stmt);
+    $stmt = $mysqli->prepare($qstring);
+    $stmt->bind_param("ii", $limit, $start);
+    $stmt->execute();
+    $stmt->bind_result($line_record_uid, $line_record_name);
+    while ($stmt->fetch()) {
+        echo "\n\t<li><a href=\"$page?line=".urlencode($line_record_uid)."\">$line_record_name</a></li>";
     }
+    $stmt->close();
     echo "\n</ul>";
     showPages($qstring, $page, $start, $limit);
 }
