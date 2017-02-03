@@ -24,8 +24,8 @@ class PedigreeCheck
     private $delimiter = "\t";
     
         // Using the class's constructor to decide which action to perform
-        public function __construct($function = null)
-        {
+    public function __construct($function = null)
+    {
         switch ($function) {
             case 'typeDatabase':
                 $this->type_Database(); /* update database */
@@ -36,9 +36,9 @@ class PedigreeCheck
                 break;
 
             default:
-		$this->typePedigreeCheck(); /* intial case*/
-		break;
-	}	
+                $this->typePedigreeCheck(); /* intial case*/
+                break;
+        }
 }
 
 private function typePedigreeCheck()
@@ -66,7 +66,7 @@ private function typePedigreeCheck()
 	{
 			
 			
-			var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&pedigreedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
+			var url='<?php echo $_SERVER['PHP_SELF'];?>?function=typeDatabase&pedigreedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
 	
 			// Opens the url in the same window
 	   	window.open(url, "_self");
@@ -138,7 +138,7 @@ private function typePedigreeCheck()
         
         // Set up column indices; all columns are required
         $capline_idx = implode(find("CAPLINE", $header),"");
-        $line_idx = 1.0 * array_search("LINE", $header);;
+        $line_idx = 1 * array_search("LINE", $header);;
         $par1_idx = implode(find("PARENT_1", $header),"");
         $par2_idx = implode(find("PARENT_2", $header),"");
         $con1_idx = implode(find("CONTRIB_1", $header),"");
@@ -471,6 +471,7 @@ private function typePedigreeCheck()
 	
 /* This function does a quick add of a line to the line records table */        
         function addline($line,$pedstring){
+            global $mysqli;
             $sql = "INSERT INTO line_records (line_record_name,pedigree_string,updated_on,created_on)
                     VALUES ('$line',";
             if (strlen($pedstring!==0)) {
@@ -484,12 +485,13 @@ private function typePedigreeCheck()
 	
 	/* This function updates the line pedigree string in the line records table */        
 	function updatelineped($line_uid,$pedstring){
-            $sql = "UPDATE line_records SET ";
+            global $mysqli;
+            $sql = "UPDATE line_records SET";
 
             if (strlen($pedstring!==0)) {
-                $sql = $sql."pedigree_string='$pedstring', ";
+                $sql = $sql." pedigree_string='$pedstring', ";
             }
-            $sql = $sql."updated_on=NOW()
+            $sql = $sql." updated_on=NOW()
                     WHERE line_record_uid=$line_uid";
 
             $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
