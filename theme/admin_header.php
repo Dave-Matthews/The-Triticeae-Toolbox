@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('America/Los_Angeles');
 /**
  * Header and Menu
  *
@@ -10,8 +11,7 @@
  *
  */
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
@@ -39,7 +39,6 @@ jQuery( document ).ready(function( $ ) {
     $('#main-menu').smartmenus();
 });
 </script>
-
 <?php
 // get species
 if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {

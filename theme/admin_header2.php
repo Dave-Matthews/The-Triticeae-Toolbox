@@ -10,8 +10,7 @@
  *
  */
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
@@ -325,7 +324,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
   <br><br><li>
   <form style="margin-bottom:3px" action="search.php" method="post">
   <input type="hidden" value="Search" >
-  <input style="width:170px" type="text" name="keywords" value="Quick search..."
+  <input style="width:190px" type="text" name="keywords" value="Quick search..."
    title="This search term will match on any part of a string.
 These regular expressions modify the search
    ^ - beginning of string
