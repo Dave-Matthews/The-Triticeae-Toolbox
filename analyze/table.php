@@ -268,50 +268,49 @@ if (!$traits or !$trials) {
                 }
                 $traitnumber++;
             }
-  }
-  print "<tr><td><font color=brown>Trial Mean</font>";
-  $traitnumber = 0;
-  foreach ($traits as $trait) {
-      foreach ($trialmeans[$traitnumber] as $mean) {
-          if (!$mean) {
-            $tm = "--";
-          } else {
-            $tm = round($mean, 1);
-          }
-          print "<td>$tm";
-      }
-      $traitnumber++;
-  }
-  print "</table><br>";
-  } else {
-
-  // Display summary with links
-  $traitnumber = 0;
-  print "<table>";
-  print "<tr><th colspan=4>LSmeans<tr><th>";
-  foreach ($traits as $trait) {
-    $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-    $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
-    $url = $config['base_url'] . "analyze/table.php#$traitnumber";
-    print "<th><a href=\"$url\">$trtname<br>$unit_name</a>\n";
-  }
-  $linenumber = 0;
-  foreach ($lines as $line) {
-      if ($_GET['filter'] == 'no') {
-      } elseif (isset($_SESSION['selected_lines']) && !in_array($line, $selected_lines)) {
-          continue;
-      }
-      print "<tr><td>$line";
-      $lsm = 0;
-      $traitnumber = 0;
-      foreach ($traits as $trait) {
-          $lsm = round($lsmeans[$traitnumber][$linenumber], 1);
-          print "<td>$lsm";
-          $traitnumber++;
-      }
-      $linenumber++;
-  }
-  print "</table><br>";
+        }
+        print "<tr><td><font color=brown>Trial Mean</font>";
+        $traitnumber = 0;
+        foreach ($traits as $trait) {
+            foreach ($trialmeans[$traitnumber] as $mean) {
+                if (!$mean) {
+                    $tm = "--";
+                } else {
+                    $tm = round($mean, 1);
+                }
+                print "<td>$tm";
+            }
+            $traitnumber++;
+        }
+        print "</table><br>";
+    } else {
+        // Display summary with links
+        $traitnumber = 0;
+        print "<table>";
+        print "<tr><th colspan=4>LSmeans<tr><th>";
+        foreach ($traits as $trait) {
+            $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
+            $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
+            $url = $config['base_url'] . "analyze/table.php#$traitnumber";
+            print "<th><a href=\"$url\">$trtname<br>$unit_name</a>\n";
+        }
+        $linenumber = 0;
+        foreach ($lines as $line) {
+            if ($_GET['filter'] == 'no') {
+            } elseif (isset($_SESSION['selected_lines']) && !in_array($line, $selected_lines)) {
+                continue;
+            }
+            print "<tr><td>$line";
+            $lsm = 0;
+            $traitnumber = 0;
+            foreach ($traits as $trait) {
+                $lsm = round($lsmeans[$traitnumber][$linenumber], 1);
+                print "<td>$lsm";
+                $traitnumber++;
+            }
+            $linenumber++;
+        }
+        print "</table><br>";
 
   // Display the table on the page.
   $traitnumber = 0;
@@ -330,6 +329,10 @@ if (!$traits or !$trials) {
     }
     print "<p id=\"$traitnumber\"></p>";
     print "<table><tr><th>Trait: $trtname<br>$unit_name<br>LSD = $lsdround<br>HSD = $hsdround";
+    //skip trials where trait not measured
+    if (!isset($trialnames[$traitnumber])) {
+        continue;
+    }
     foreach ($trialnames[$traitnumber] as $trial) {
       $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
       print "<th><a href='display_phenotype.php?trial_code=$trialname'>$trialname</a>";
