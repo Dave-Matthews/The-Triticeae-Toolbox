@@ -21,7 +21,7 @@ if (!isset($_COOKIE["T3terms"])) {
     <p><span style="float:left;"></span>
     In 2009 the Toronto International Data Release Workshop agreed on a policy statement about prepublication data sharing. 
     Accordingly, the data producers are making many of the datasets in T3 available prior to publication of a global analysis. 
-    Guidelines for appropriate sharing of these data are given in the excerpt from the <a href="../toronto.php" target="_new">Toronto Statement</a>.<br><br>
+    Guidelines for appropriate sharing of these data are given in the excerpt from the <a href="../toronto.php" target="_blank">Toronto Statement</a>.<br><br>
     I agree to the Data Usage Policy as specified in Toronto Statement.</p>
     </div>
     <?php
