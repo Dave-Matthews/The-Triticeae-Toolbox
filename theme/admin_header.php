@@ -12,7 +12,7 @@ date_default_timezone_set('America/Los_Angeles');
  */
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >

@@ -408,12 +408,12 @@ a:hover
     border-bottom-color: #4DAAB1
 }
 
-#footer a
+footer a
 {
     color: #000;
     border: none
 }
-#footer a:hover
+footer a:hover
 {
     color: #9a292c
 }
@@ -565,7 +565,7 @@ html>body #logo
     text-align:right
 }
 
-#footer
+footer
 {
     margin-left: 230px;
     margin-top: 50px;
