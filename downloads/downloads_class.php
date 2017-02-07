@@ -1587,7 +1587,7 @@ class Downloads
          where marker_uid IN ($markers_str)
          AND markers.marker_type_uid = marker_types.marker_type_uid
          order by BINARY marker_name";
-         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqi));
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
          while ($row = mysqli_fetch_array($res)) {
            $marker_uid = $row[0];
            $marker_name = $row[1];
@@ -1709,8 +1709,7 @@ class Downloads
             $query = "SELECT distinct(experiments.trial_code)
                 FROM experiments, allele_cache
                 WHERE allele_cache.line_record_uid = '$line_id'
-                AND experiments.experiment_uid = allele_cache.experiment_uid
-                ORDER BY allele_cache.experiment_uid";
+                AND experiments.experiment_uid = allele_cache.experiment_uid";
             $res = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
             if (mysqli_num_rows($res)>0) {
                 $output.= "$line_name";
@@ -1997,12 +1996,10 @@ class Downloads
                 }
 
         // make an empty marker with the lines as array keys 
-        $nelem = count($marker_uid);
         $n_lines = count($lines);
                 $empty = array_combine($lines,array_fill(0,$n_lines,'-'));
                 $nemp = count($empty);
                 $line_str = implode($delimiter,$lines);
-                // $firephp = log($nelem." ".$n_lines);
 
                 // write output file header
                 if ($dtype == "FJ") {
@@ -2090,6 +2087,5 @@ class Downloads
 		}
 
 		return $output;
-	}	
-	
+	}
 }// end class
