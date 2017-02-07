@@ -76,7 +76,7 @@ if (!empty($_GET['mapsetuid'])) {
 
 <div class='section'>
 <h1>Add and Upload Map Information </h1>
-<form action="curator_data/input_maps_check.php" method="post" enctype="multipart/form-data">
+<form action="curator_data/input_maps_check_fast.php" method="post" enctype="multipart/form-data">
   <input type="hidden" id="mapsetID" name="MapsetID" value="-1">
   <table>
     <tr>
