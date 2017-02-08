@@ -13,29 +13,6 @@
  */
 
 /**
- * Determines if object o exists in array arr
- *
- * Object o must have a public weakEquals function
- *
- * @param array the array to search
- * @param object the object in question
- * @return boolean TRUE if the object o is in the array arr
- */
-function weakContains(&$arr, &$o)
-{
-    if (is_null($o) || empty($arr)) {
-        return false;
-    }
-    foreach ($arr as &$v) {
-        if ($o->weakEquals($v)) {
-            return true;
-        }
-    }
-    return false;
-}
- 
-
-/**
  * This will update the last access time for a given account
  *
  * @param $account - the unique username for the given account
@@ -140,7 +117,6 @@ function show_datasets($id)
 
         echo viewTable($exp, "experiments");
     }
-
 }
 
 // Security mechanism
@@ -249,7 +225,7 @@ function show_markers($id)
     echo "</tr></table>";
 
     // marker_selection.php wants the name of a map the marker is on.  Probably doesn't matter which.
-    $sql = "select map_name from map, markers_in_maps mm where mm.marker_uid = $id and mm.map_uid = map.map_uid";
+    $sql = "select map_uid from markers_in_maps where marker_uid = $id";
     $r = mysqli_query($mysqli, $sql);
     $row = mysqli_fetch_row($r);
     $mapname = $row[0];
@@ -257,15 +233,14 @@ function show_markers($id)
     if (!empty($mapname)) {
         echo "<h3>Map locations</h3>";
         // Display in table
-        $sql = "select map_name, chromosome, start_position, end_position
+        $sql = "select map_name, chromosome, start_position, end_position, bin_name
 	from map, markers_in_maps
-	where marker_uid = $id and markers_in_maps.map_uid = map.map_uid
-	";
+	where marker_uid = $id and markers_in_maps.map_uid = map.map_uid";
         $r = mysqli_query($mysqli, $sql) or die("Error in show markers");
         if (mysqli_num_rows($r) > 0) {
-            echo "<table><thead><tr><th>Map<th>Chromosome<th>Start<th>End";
+            echo "<table><thead><tr><th>Map<th>Chromosome<th>Start<th>End<th>Bin";
             while ($row = mysqli_fetch_assoc($r)) {
-                echo "<tr><td>$row[map_name]<td>$row[chromosome]<td>$row[start_position]<td>$row[end_position]";
+                echo "<tr><td>$row[map_name]<td>$row[chromosome]<td>$row[start_position]<td>$row[end_position]<td>$row[bin_name]";
             }
             echo "</table>";
         }
@@ -313,7 +288,8 @@ function show_breeding_programs($id)
 /**
  * Breeding program special case for view.php. This will show all the experiments associated with a CAPdata program.
 */
-function show_CAPdata_programs($id) {
+function show_CAPdata_programs($id)
+{
     global $mysqli;
     show_general("CAPdata_programs", $id);
     $expts = mysqli_query($mysqli, "SELECT experiments.experiment_uid, experiments.trial_code,experiment_year
@@ -328,7 +304,8 @@ function show_CAPdata_programs($id) {
 /**
  * Traits special case for view.php. This will show all the experiments associated with a trait ("phenotype").
 */
-function show_phenotypes($id) {
+function show_phenotypes($id)
+{
   global $mysqli;
   show_general("phenotypes", $id);
 
