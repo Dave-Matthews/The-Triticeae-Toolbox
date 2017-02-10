@@ -27,7 +27,7 @@ if (!isset($_COOKIE["T3terms"])) {
     <?php
 }
 ?>
-<footer itemscope itemtype="http://schema.org/Organization" style="padding: 15px 0 0 0; height: 160px; background-color: #f9cb73; top: 0;">
+<footer itemscope itemtype="http://schema.org/Organization" style="padding: 15px 0 0 0; height: 160px; top: 0;">
 <table cellpadding="0" cellspacing="0" border="0" width="700" style="width: 700px; background: transparent; border: 0 !important; margin: 0 auto;">
 <tr>
 <td align="left" style="border: 0 !important">
