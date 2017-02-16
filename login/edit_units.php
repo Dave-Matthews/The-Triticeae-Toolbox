@@ -73,7 +73,7 @@ else
   echo "<p>Search returned no results</p>";
 
 echo "</div></div></div>";
-include($config['root_dir'] . 'theme/footer.php');
+include $config['root_dir'] . 'theme/footer.php';
 
 
 
