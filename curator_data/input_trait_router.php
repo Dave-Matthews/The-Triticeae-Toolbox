@@ -34,6 +34,7 @@ assigned to a <i>Category</i>, e.g. Agronomic, Quality.</p>
 <li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php">Upload</a> a file of traits
 <li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php?add=single">Enter</a> a single trait interactively
 <li><a href="<?php echo $config['base_url'] ?>login/edit_traits.php">Edit/delete</a> existing traits
+<li><a href="<?php echo $config['base_url'] ?>login/edit_units.php">Edit/delete</a> existing traits units
 <li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php?add=category">Add</a> a new Category
 <li><a href="<?php echo $config['base_url'] ?>curator_data/traitAdd.php?add=unit">Add</a> a new Unit
 
