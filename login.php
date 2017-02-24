@@ -2,8 +2,6 @@
 /**
  * Login
  *
- * PHP version 5.3
- *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/login.php
@@ -11,7 +9,6 @@
  * 12/14/2010 JLee  Change to use curator bootstrap
  *
  */
-
 
 session_start();
 session_regenerate_id();
@@ -83,14 +80,14 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
 <script type="text/javascript">
   function validatePassword(pw) {
     if (pw.length < 8) {
-      alert("Please supply a password of at least 8 characters.");
-      return false;
+        alert("Please supply a password of at least 8 characters.");
+        return false;
     }
     return true;
   }
   function guessInstitution(email) {
-    var dm=$domainMap;
-    return dm[email.preg_split('/@/')[1]] || '';
+    var dm = $domainMap;
+    return dm[email.preg_split("/@/")[1]] || "";
   }
 </script>
 
@@ -118,7 +115,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
     <tr><td style="border: none; text-align: right;">
 	<label for="password">I want my password to be:</label></td>
       <td style="border: none;">
-	<input type="password" name="password" id="password" /> At least 8 characters but not special characters "!@#$".</td></tr>
+	<input type="password" name="password" id="password" /> At least 8 characters.</td></tr>
     <tr><td style="border: none; text-align: right;">
 	<label for="cpassword">Type it again:</label></td>
       <td style="border:none;">
@@ -527,31 +524,31 @@ if (isset($_POST['submit_login'])) {
             echo HTMLLoginForm();
         }
     } else {
-      echo HTMLLoginForm();
+        echo HTMLLoginForm();
     }
- } elseif (isset($_POST['resend_registration'])) {
-     $email = $_POST['email'];
-     if (empty($email)) {
-         $error = true;
-         $error_msg .= "- You must provide your e-mail addresses.\n";
-     } else {
-         $safe_email = mysqli_real_escape_string($mysqli, $email);
-         $safe_password = mysqli_real_escape_string($mysqli, $password);
-         $safe_name = mysqli_real_escape_string($mysqli, $name);
-         $sql = "SELECT SHA1('$safe_password') AS password";
-         $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
-         if ($row = mysqli_fetch_assoc($res)) {
-             $hash_password = $row['password'];
-         } else {
-             die("SQL Error hashing password\n");
-         }
-     $sql = "SELECT SHA1('$safe_email') AS email";
-     $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing email\n");
-     if ($row = mysqli_fetch_assoc($res)) {
-         $hash_email = $row['email'];
-     } else {
-         die("SQL Error hashing email\n");
-     }
+} elseif (isset($_POST['resend_registration'])) {
+    $email = $_POST['email'];
+    if (empty($email)) {
+        $error = true;
+        $error_msg .= "- You must provide your e-mail addresses.\n";
+    } else {
+           $safe_email = mysqli_real_escape_string($mysqli, $email);
+           $safe_password = mysqli_real_escape_string($mysqli, $password);
+           $safe_name = mysqli_real_escape_string($mysqli, $name);
+           $sql = "SELECT SHA1('$safe_password') AS password";
+           $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
+           if ($row = mysqli_fetch_assoc($res)) {
+               $hash_password = $row['password'];
+           } else {
+               die("SQL Error hashing password\n");
+           }
+           $sql = "SELECT SHA1('$safe_email') AS email";
+           $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing email\n");
+           if ($row = mysqli_fetch_assoc($res)) {
+               $hash_email = $row['email'];
+           } else {
+               die("SQL Error hashing email\n");
+           }
      $key = setting('encryptionkey');
      $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
      send_email($email, "T3 registration in progress",
