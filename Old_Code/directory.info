@@ -1,4 +1,0 @@
-Directory: import/config
-
-This directory contains YAML files required by scripts that import external data
-into the THT database.
