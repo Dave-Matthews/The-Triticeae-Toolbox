@@ -24,28 +24,12 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
     global $mysqli;
     $tmp = count($lines);
     if ($tmp == 0) {
-        return;
+        return 0;
     }
     $selectedlines = implode(",", $lines);
 
     if (isset($_SESSION['geno_exps'])) {
         $count = $_SESSION['geno_exps_cnt'];
-        return $count;
-        $experiment_uid = $_SESSION['geno_exps'];
-        $experiment_uid = $experiment_uid[0];
-        $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $experiment_uid";
-        $res = mysqli_query(mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
-        while ($row = mysqli_fetch_row($res)) {
-            $marker_uid = $row[0];
-            $maf = $row[1];
-            $miss = $row[2];
-            $total = $row[3];
-            $miss_per = 100 * ($miss / $total);
-            if (($miss_per > $max_missing) or ($maf < $min_maf)) {
-            } else {
-                $markers_filtered[$marker_uid] = 1;
-            }
-        }
     } else {
         //get genotype experiments that correspond with the Datasets (BP and year)
         //selected for the experiments
@@ -86,18 +70,18 @@ function calculate_db($lines, $min_maf, $max_missing, $max_miss_line)
                 $markers_filtered[] = $marker_uid;
             }
         }
+        $count = count($markers_filtered);
     }
-    $count = count($markers_filtered);
     return $count;
 }
 
     /**
      * Calculate allele frequence and missing data using selected lines
      *
-     * @param array  $lines         selected lines
-     * @param floats $min_maf       minimum marker allele frequency
-     * @param floats $max_missing   maximum missing markers
-     * @param floats $max_miss_line maximum missing lines
+     * @param array $lines         selected lines
+     * @param float $min_maf       minimum marker allele frequency
+     * @param float $max_missing   maximum missing markers
+     * @param float $max_miss_line maximum missing lines
      *
      * @return $markers_filtered, $lines_filtered
     */
@@ -181,13 +165,13 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 $i = $marker_list_loc[$marker_uid];
             } else {
                 $sql = "select marker_name from markers where marker_uid = $marker_uid";
-                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)); 
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                 $row = mysqli_fetch_array($res);
                 $name = $row[0];
                 echo "<br>Warning: $name maker has not been genotyped\n";
                 $num_removed++;
                 continue;
-            } 
+            }
             $total_af = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i];
             $total = $total_af + $marker_misscnt[$i];
             if ($total_af > 0) {
@@ -208,6 +192,7 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
                 }
                 $num_mark++;
             }
+            echo "<br>$marker_uid $total_af $total max_missing=$max_missing miss=$miss\n";
         }
         if ($num_mark == 0) {
             echo "<br><font color=red>Error: selected markers have not been genotyped</font><br>\n";
@@ -301,10 +286,10 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
     <tr><td>
     <?php
     if ($lines_removed == 1) {
-        echo ("</i><b>$lines_removed") ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
+        echo "</i><b>$lines_removed" ?></b><i> line is missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data</b></i>
         <?php
     } else {
-        echo ("</i><b>$lines_removed") ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data </b></i>
+        echo "</i><b>$lines_removed" ?></b><i> lines are missing more than </i><b><?php echo ($max_miss_line) ?></b><i>% of data </b></i>
         <?php
     }
     if ($lines_removed_name != "") {
@@ -322,9 +307,9 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
      * Calculate allele frequence and missing data using selected experiment and allele_frequencies table
      *
      * @param integer $experiment_uid experiment uid
-     * @param floats  $min_maf        minimum marker allele frequency
-     * @param floats  $max_missing    maximum missing markers
-     * @param floats  $max_miss_line  maximum missing lines
+     * @param float   $min_maf        minimum marker allele frequency
+     * @param float   $max_missing    maximum missing markers
+     * @param float   $max_miss_line  maximum missing lines
      *
      * @return $markers_filtered, $lines_filtered
     */
@@ -425,10 +410,11 @@ function findCommonLines($lines)
     /**
      * build genotype data files for tassel and rrBLUP using genotype experiment
      *
-     * @param unknown_type $lines   lines
-     * @param unknown_type $markers markers
-     * @param integer      $dtype   file format
-     * @param file         $h       file handle
+     * @param integer	$geno_exp	genotype experiment
+     * @param float	$min_maf	minimum allele frequency
+     * @param float	$max_missing	max missing
+     * @param string	$dtype   file format
+     * @param resource	$h       file handle
      *
      * @return null
      */
@@ -806,10 +792,10 @@ function typeVcfExpMarkersDownloadVerify($geno_exp, $ref_line, $chr, $min_maf, $
      * @param integer $geno_exp    genotype experiment
      * @param array   $ref_line    reference lines
      * @param char    $chr         chromosome
-     * @param real    $min_maf     minimum marker allele frequency
-     * @param real    $max_missing max missing markers
-     * @param file    $fh1         file handle
-     * @param file    $fh2         file handel
+     * @param float   $min_maf     minimum marker allele frequency
+     * @param float   $max_missing max missing markers
+     * @param resource    $fh1         file handle
+     * @param resource    $fh2         file handel
      *
      * @return null
      */

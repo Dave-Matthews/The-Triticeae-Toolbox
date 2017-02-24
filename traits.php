@@ -16,21 +16,23 @@ $mysqli = connecti();
 <?php
 $cats = mysqli_query($mysqli, "select phenotype_category_uid, phenotype_category_name from phenotype_category order by phenotype_category_name");
 while ($row = mysqli_fetch_array($cats)) {
-  $catid = $row['phenotype_category_uid'];
-  $catname = $row['phenotype_category_name'];
-  $res = mysqli_query($mysqli, "select phenotypes_name,description,TO_number, unit_uid, min_pheno_value, max_pheno_value
+    $catid = $row['phenotype_category_uid'];
+    $catname = $row['phenotype_category_name'];
+    $res = mysqli_query($mysqli, "select phenotypes_name,description,TO_number, unit_uid, min_pheno_value, max_pheno_value
                       from phenotypes where phenotype_category_uid = $catid
                       order by phenotypes_name");
-  if (mysqli_num_rows($res) > 0) {
-    print "<tr><th>$catname<th>Ontology<th>Description<th>Min<th>Max<th>Unit<th>Unit info";
-    while ($trow = mysqli_fetch_array($res)) {
-      $name = $trow['phenotypes_name'];
-      $name = "<a href='". $config['base_url'] . "view.php?table=phenotypes&name=$name'>$name</a>";
-      $desc = $trow['description'];
-      $TO = $trow['TO_number'];
-      // Add href to Gramene:
-      //$TO = "<a href='http://archive.gramene.org/db/ontology/search?query=$TO'>$TO</a>";
-      $TO = "<a href='http://browser.planteome.org/amigo/term/$TO'>$TO</a>";
+    if (mysqli_num_rows($res) > 0) {
+        print "<tr><th>$catname<th>Ontology<th>Description<th>Min<th>Max<th>Unit<th>Unit info";
+        while ($trow = mysqli_fetch_array($res)) {
+            $name = $trow['phenotypes_name'];
+            $name = "<a href='". $config['base_url'] . "view.php?table=phenotypes&name=$name'>$name</a>";
+            $desc = $trow['description'];
+            $TO = $trow['TO_number'];
+            if (preg_match("/TO:/", $TO)) {
+                $TO = "<a href='http://browser.planteome.org/amigo/term/$TO' target='_new'>$TO</a>";
+            } elseif (preg_match("/CO_/", $TO)) {
+                $TO = "<a href='http://www.cropontology.org/terms/$TO/' target='_new'>$TO</a>";
+            }
       $min = $trow['min_pheno_value'];
       $max = $trow['max_pheno_value'];
       $uuid = $trow['unit_uid'];
@@ -47,4 +49,4 @@ while ($row = mysqli_fetch_array($cats)) {
 print "</table>";
 print "</div>";
 $footer_div=1;
-include $config['root_dir'].'theme/footer.php'; 
+include $config['root_dir'].'theme/footer.php';

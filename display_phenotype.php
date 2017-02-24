@@ -43,14 +43,15 @@ $mysqli = connecti();
 $trial_code=strip_tags($_GET['trial_code']);
 // Display Header information about the experiment
 $display_name=ucwords($trial_code); //used to display a beautiful name as the page header
-echo "<h1>Trial ".$display_name."</h1>";
         
 // Restrict if private data.
 if ($stmt = mysqli_prepare($mysqli, "SELECT data_public_flag FROM experiments WHERE trial_code = ?")) {
     mysqli_stmt_bind_param($stmt, "s", $trial_code);
     mysqli_stmt_execute($stmt);
     mysqli_stmt_bind_result($stmt, $data_public_flag);
-    if (!mysqli_stmt_fetch($stmt)) {
+    if (mysqli_stmt_fetch($stmt)) {
+        echo "<h1>Trial ".$display_name."</h1>";
+    } else {
         mysqli_stmt_close($stmt);
         die("Error: trial not found\n");
     }
@@ -150,29 +151,30 @@ if (($data_public_flag == 0) and
         $num_phenotypes = mysqli_num_rows($result1);
 
         //echo "$num_phenotypes Rows\n";
-        while ($row1=mysqli_fetch_array($result1))
-        {
+        while ($row1=mysqli_fetch_array($result1)) {
             $phenotype_data_name[]=$row1['name'];
             $phenotype_uid[]=$row1['uid'];
             $unit_sigdigits[]=$row1['sigdig'];
             $unit_name[]=$row1['unit'];
-            $titles[]=ucwords($row1['name'])." (".strtolower($row1['unit']).")";         
+            $titles[]=ucwords($row1['name'])." (".strtolower($row1['unit']).")";
         }
         
         $titles[]="Check"; //add the check column to the display table
-        
+   
         $all_rows=array(); //2D array that will hold the values in table format to be displayed
         $sum_rows=array(); //summary statistics
         $all_rows_long=array(); // For the full unrounded values
         $single_row=array(); //1D array which will hold each row values in the table format to be displayed
-        $single_row_long=array(); 
+        $single_row_long=array();
         
         /* $dir ='./downloads/temp/';				 */
-        $dir ='/tmp/tht/';	
-	if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');			
+        $dir ='/tmp/tht/';
+        if (! file_exists('/tmp/tht')) {
+             mkdir('/tmp/tht');
+        }
 
-	// Clean up old files, older than 1 day.
-	system("find $dir -mtime +1 -name 'THT_Phenotypes_*.txt' -delete");
+        // Clean up old files, older than 1 day.
+        system("find $dir -mtime +1 -name 'THT_Phenotypes_*.txt' -delete");
 
         $stringData = implode($delimiter,$titles);
          

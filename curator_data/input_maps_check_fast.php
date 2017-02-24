@@ -529,27 +529,18 @@ class MapsCheck
 			$map_string = "";
 		}
 		
-		$sql = "SELECT mim.markers_in_maps_uid as mimu, count(mim.markers_in_maps_uid) as cntm, mim.map_uid,
-			mim.marker_uid
-			FROM markers_in_maps as mim
-			WHERE mim.marker_uid=$marker_uid AND mim.map_uid IN ($map_string)";
-			//GROUP BY (markers_in_maps_uid)";
-			
-                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-                $rdata = mysqli_fetch_assoc($res);
-                $mim_uid=$rdata['mimu'];
-                
-		if (empty($mim_uid)) {
+                if (isset($unique_marker_list[$marker_uid])) {
+                    echo "skip duplicate $marker[$cnt]<br>\n";
+                    continue;
+                }
+                    $unique_marker_list[$marker_uid] = 1;
 		
-		 //if not in a current map then insert a new record
-                    //echo "in insert";
-
-		  if (empty($mmap_uid)) {
-		    echo "No Map Set Prefix entered.<br>";
-                    echo "new_map = $new_map<br>\n";
-                    echo "map_idx = $map_idx<br>\n";
-		    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");	  
-		  }
+                    if (empty($mmap_uid)) {
+                        echo "No Map Set Prefix entered.<br>";
+                        echo "new_map = $new_map<br>\n";
+                        echo "map_idx = $map_idx<br>\n";
+		        exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");	  
+		    }
                   
                     $sql_beg = "INSERT INTO markers_in_maps (marker_uid,map_uid, start_position, end_position,chromosome,";
                     $sql_mid = "updated_on,created_on) VALUES ($marker_uid,$mmap_uid,$start_pos[$cnt],$end_pos[$cnt],'$chrom[$cnt]',";
@@ -561,21 +552,21 @@ class MapsCheck
 		    if ($bin[$cnt]!== NULL){
 			$sql_beg .= "bin_name,";
 			$sql_mid .= "'$bin[$cnt]',";
-		  	}
-			$sql = $sql_beg.$sql_mid.$sql_end;
-                } else { 
-                        $sql_beg = "UPDATE markers_in_maps SET map_uid =$mmap_uid,
-                        start_position=$start_pos[$cnt], end_position=$end_pos[$cnt],chromosome='$chrom[$cnt]',";
-                        $sql_end = "updated_on=NOW() WHERE markers_in_maps_uid=$mim_uid";
-                        if ($arm[$cnt]!== NULL){
-				$sql_beg .= "arm='$arm[$cnt]',";
-                        }
-                        if ($bin[$cnt]!== NULL) {
-                            $sql_beg .= "bin_name='$bin[$cnt]',";
-                        }
-                        $sql = $sql_beg.$sql_end;
                     }
-             mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>Command was:<br><pre>$sql</pre>");    
+                    $sql = $sql_beg.$sql_mid.$sql_end;
+                /*} else { 
+                    $sql_beg = "UPDATE markers_in_maps SET map_uid =$mmap_uid,
+                    start_position=$start_pos[$cnt], end_position=$end_pos[$cnt],chromosome='$chrom[$cnt]',";
+                    $sql_end = "updated_on=NOW() WHERE markers_in_maps_uid=$mim_uid";
+                    if ($arm[$cnt]!== NULL){
+                        $sql_beg .= "arm='$arm[$cnt]',";
+                    }
+                    if ($bin[$cnt]!== NULL) {
+                        $sql_beg .= "bin_name='$bin[$cnt]',";
+                    }
+                    $sql = $sql_beg.$sql_end;
+                } */
+                mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>Command was:<br><pre>$sql</pre>");    
 	}
 	
 	/* end inserting main data */

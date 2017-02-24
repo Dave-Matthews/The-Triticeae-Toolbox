@@ -1815,6 +1815,7 @@ class SelectPhenotypeExp
         $exptuid_ary = explode(",", $exptuids);
         $years = $_GET['yrs'];
         $years_ary = explode(",", $years);
+        arsort($years_ary);
         ?>
     <p>3.
     <select>
@@ -1829,8 +1830,8 @@ class SelectPhenotypeExp
     <?php
     foreach ($exptuid_ary as $exptuid) {
         foreach ($years_ary as $year) {
-            $sql = "SELECT experiment_uid as id, trial_code as name from experiments
-              where experiment_set_uid = ? and experiment_year = ?";
+            $sql = "SELECT experiment_uid as id, trial_code from experiments
+              where experiment_set_uid = ? and experiment_year = ? order by trial_code";
             $stmt = $mysqli->prepare($sql);
             $stmt->bind_param("ii", $exptuid, $year);
             $stmt->execute();

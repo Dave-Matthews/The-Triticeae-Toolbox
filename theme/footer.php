@@ -16,18 +16,18 @@ if (isset($footer_div)) {
 }
 if (!isset($_COOKIE["T3terms"])) {
     ?><link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
-    <script src="theme/usage_popup.js"></script>
+    <script src="theme/usage_popup.js" async></script>
     <div id="dialog-confirm" title="Please Note: Website Data Usage Policy">
     <p><span style="float:left;"></span>
     In 2009 the Toronto International Data Release Workshop agreed on a policy statement about prepublication data sharing. 
     Accordingly, the data producers are making many of the datasets in T3 available prior to publication of a global analysis. 
-    Guidelines for appropriate sharing of these data are given in the excerpt from the <a href="../toronto.php" target="_new">Toronto Statement</a>.<br><br>
+    Guidelines for appropriate sharing of these data are given in the excerpt from the <a href="../toronto.php" target="_blank">Toronto Statement</a>.<br><br>
     I agree to the Data Usage Policy as specified in Toronto Statement.</p>
     </div>
     <?php
 }
 ?>
-<div itemscope itemtype="http://schema.org/Organization" id="footer" style="padding: 15px 0 0 0; height: 160px; background-color: #f9cb73; top: 0;">
+<footer itemscope itemtype="http://schema.org/Organization" style="padding: 15px 0 0 0; height: 160px; top: 0;">
 <table cellpadding="0" cellspacing="0" border="0" width="700" style="width: 700px; background: transparent; border: 0 !important; margin: 0 auto;">
 <tr>
 <td align="left" style="border: 0 !important">
@@ -55,7 +55,7 @@ Copyright &copy; 2006 - 2010 <a href="http://www.iastate.edu/" title="Iowa State
 </td>
 </tr>
 </table>
-</div>
+</footer>
 </div>
 </body>
 </html>

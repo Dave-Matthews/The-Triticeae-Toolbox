@@ -1,10 +1,12 @@
 <?php
-// 11jul2013 dem Add "Delete".
-// 12/14/2010 JLee  Change to use curator bootstrap
+/**
+ * 11jul2013 dem Add "Delete".
+ * 12/14/2010 JLee  Change to use curator bootstrap
+ */
 
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap_curator2.inc';
-include $config['root_dir'] . 'theme/admin_header2.php';
+require $config['root_dir'] . 'includes/bootstrap_curator2.inc';
+require $config['root_dir'] . 'theme/admin_header2.php';
 $mysqli =  connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
@@ -14,23 +16,54 @@ authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR));
 ob_end_flush();
 
 // If we're re-entering the script with a mapset to delete:
-if (!empty($_GET[mapsetuid])) {
-    $msuid = intval($_GET[mapsetuid]);
-    $msname = mysql_grab("select mapset_name from mapset where mapset_uid = $msuid");
-    $sql = "select map_uid from map m, mapset ms
-            where m.mapset_uid = $msuid
-            and m.mapset_uid = ms.mapset_uid";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_array($res)) { 
-        $map_uid = $row[0];
-        $sql = "delete from markers_in_maps where map_uid = $map_uid";
-        mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        echo "finished map_uid = $map_uid\n";
+if (!empty($_GET['mapsetuid'])) {
+    $msuid = $_GET['mapsetuid'];
+    $sql = "select mapset_name from mapset where mapset_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $msuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $msname);
+        mysqli_stmt_fetch($stmt);
+        echo "found mapset $msname<br>\n";
     }
-    $sql = "delete from map where mapset_uid = $msuid";
-    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    $sql = "delete from mapset where mapset_uid = $msuid";
-    mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    mysqli_stmt_close($stmt);
+
+    $map_list = array();
+    $sql = "select map_uid, map_name from map m, mapset ms
+            where m.mapset_uid = ? 
+            and m.mapset_uid = ms.mapset_uid";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $msuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $map_uid, $map_name);
+        while (mysqli_stmt_fetch($stmt)) {
+            $map_list[] = $map_uid;
+            $map_list_name[] = $map_name;
+        }
+        mysqli_stmt_close($stmt);
+    }
+    foreach ($map_list as $key => $map_uid) {
+        $sql = "delete from markers_in_maps where map_uid = ?";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "i", $map_uid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+            echo "deleted map $map_list_name[$key]<br>\n";
+        }
+    }
+    $sql = "delete from map where mapset_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $msuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+    $sql = "delete from mapset where mapset_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $msuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        echo "deleted mapset $msname<br>\n";
+    }
     $deleted = $msname;
 }
 ?>
@@ -43,19 +76,19 @@ if (!empty($_GET[mapsetuid])) {
 
 <div class='section'>
 <h1>Add and Upload Map Information </h1>
-<form action="curator_data/input_maps_check.php" method="post" enctype="multipart/form-data">
+<form action="curator_data/input_maps_check_fast.php" method="post" enctype="multipart/form-data">
   <input type="hidden" id="mapsetID" name="MapsetID" value="-1">
   <table>
     <tr>
       <td>
-	<p><strong>Map Set Name</strong> 
-	<br><input type="textbox" name="mapset_name">
-      <td>	
-	<p><strong>Map Set Prefix</strong>
-	<br><input type="textbox" name="mapset_prefix" size=7>
-      <td>
-	<p><strong>Species</strong>
-	<br><input type="textbox" name="species" value="Hordeum" size=9>
+    <p><strong>Map Set Name</strong> 
+    <br><input type="textbox" name="mapset_name">
+    <td>	
+    <p><strong>Map Set Prefix</strong>
+    <br><input type="textbox" name="mapset_prefix" size=7>
+    <td>
+    <p><strong>Species</strong>
+    <br><input type="textbox" name="species" value="Hordeum" size=9>
       <td>
 	<p><strong>Map Type</strong>
 	<br><input type="textbox" name="map_type" value="Genetic" size=7>

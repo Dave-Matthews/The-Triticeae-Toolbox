@@ -102,7 +102,7 @@ class Downloads
         include $config['root_dir'].'theme/normal_header.php';
         $this->type1Checksession();
         ?>
-        <script type="text/javascript" src="downloads/downloadsjq04.js"></script>
+        <script type="text/javascript" src="downloads/downloadsjq05.js"></script>
         <?php
         include $config['root_dir'].'theme/footer.php';
     }
@@ -413,6 +413,11 @@ class Downloads
             $output = $this->type2_build_conflicts_download($lines, $markers);
             fwrite($h, $output);
             fclose($h);
+            $filename = "genotype_experiments.txt";
+            $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+            $output = $this->listGenotypeTrials($lines);
+            fwrite($h, $output);
+            fclose($h);
         }
         $filename = "/tmp/tht/download_" . $unique_str . ".zip";
         exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str");
@@ -575,9 +580,9 @@ class Downloads
     /**
      * starting with lines display the selected lines
      */
-	private function step1_lines()
-	{
-            global $mysqli;
+    private function step1_lines()
+    {
+        global $mysqli;
             ?>
             <table id="phenotypeSelTab" class="tableclass1">
             <tr>
@@ -740,10 +745,6 @@ class Downloads
             $saved_session = "$countLines lines";
         } else {
             $countLines = 0;
-            echo "<font color=\"red\">Choose one or more lines before using a saved selection. </font>";
-            echo "<a href=";
-            echo $config['base_url'];
-            echo "pedigree/line_properties.php>Select lines</a><br>";
         }
         if ($typeP == "true") {
             if (!isset($_SESSION['phenotype'])) {
@@ -759,6 +760,13 @@ class Downloads
             }
         }
         if ($typeG == "true") {
+            if (!isset($_SESSION['selected_lines'])) {
+                $countLines = 0;
+                echo "<font color=\"red\">Choose one or more lines before using a saved selection. </font>";
+                echo "<a href=";
+                echo $config['base_url'];
+                echo "pedigree/line_properties.php>Select lines</a><br>";
+            }
             if (isset($_SESSION['clicked_buttons'])) {
                 $markers = $_SESSION['clicked_buttons'];
                 if (count($markers) > 1000) {
@@ -852,7 +860,7 @@ class Downloads
      * starting with lines display marker data
      *
      */
-    function step5_lines()
+    private function step5_lines()
     {
         if (isset($_GET['use_line']) && ($_GET['use_line'] == "yes")) {
             $use_database = 0;
@@ -869,9 +877,9 @@ class Downloads
         if (isset($_SESSION['selected_lines'])) {
              $countLines = count($_SESSION['selected_lines']);
              $lines = $_SESSION['selected_lines'];
-             $selectedlines = implode(",", $_SESSION['selected_lines']);
         } else {
              $countLines = 0;
+             $lines = array();
         }
         if (isset($_SESSION['selected_trials'])) {
             $countTrials = count($_SESSION['selected_trials']);
@@ -887,39 +895,44 @@ class Downloads
             $geno_exps = "";
         }
          
-	if (isset($_SESSION['clicked_buttons'])) {
+        if (isset($_SESSION['clicked_buttons'])) {
             $tmp = count($_SESSION['clicked_buttons']);
             $saved_session = $saved_session . ", $tmp markers";
-            $markers = $_SESSION['clicked_buttons']; 
-            $marker_str = implode(',',$markers);
-	} else {
+            $markers = $_SESSION['clicked_buttons'];
+            $marker_str = implode(',', $markers);
+        } else {
             $markers = "";
             $marker_str = "";
         }
         $typeGE = $_GET['typeGE'];
+        $typeG = $_GET['typeG'];
 
-
-	 // initialize markers and flags if not already set
-	 $max_missing = 99.9;//IN PERCENT
-	 if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-	  $max_missing = $_GET['mm'];
-	 if ($max_missing>100)
-	  $max_missing = 100;
-	 elseif ($max_missing<0)
-	 $max_missing = 0;
-	 $min_maf = 0.01;//IN PERCENT
-	 if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-	  $min_maf = $_GET['mmaf'];
-	 if ($min_maf>100)
-	  $min_maf = 100;
-	 elseif ($min_maf<0)
-	  $min_maf = 0;
-         $max_miss_line = 10;
-         if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml']))
-           $max_miss_line = $_GET['mml'];
-         if ($countLines > 0) {
-            ?>
-            <p>
+        // initialize markers and flags if not already set
+        $max_missing = 99.9;//IN PERCENT
+        if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm'])) {
+            $max_missing = $_GET['mm'];
+        }
+        if ($max_missing>100) {
+            $max_missing = 100;
+	} elseif ($max_missing<0) {
+            $max_missing = 0;
+        }
+	$min_maf = 0.01;//IN PERCENT
+	if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf'])) {
+	    $min_maf = $_GET['mmaf'];
+        }
+	if ($min_maf>100) {
+	    $min_maf = 100;
+	} elseif ($min_maf<0) {
+	    $min_maf = 0;
+        }
+        $max_miss_line = 10;
+        if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml'])) {
+            $max_miss_line = $_GET['mml'];
+        }
+        if ($countLines > 0) {
+        ?>
+        <p>
         Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove markers missing &gt; <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />% of data
@@ -941,7 +954,7 @@ class Downloads
                 calculate_afe($geno_exps, $min_maf, $max_missing, $max_miss_line);
                 $countFilterLines = count($lines);
                 $countFilterMarkers = count($_SESSION['filtered_markers']);
-             } else {
+             } elseif ($typeG == "true") {
                 calculate_af($lines, $min_maf, $max_missing, $max_miss_line);
                 $countFilterLines = count($_SESSION['filtered_lines']);
                 $countFilterMarkers = count($_SESSION['filtered_markers']);
@@ -981,10 +994,10 @@ class Downloads
              }
              echo "</table>";
           ?><br><br>
-          The snpfile.txt file has one row for each germplasm line.<br>
-          The genotype.hmp.txt file has one row for each marker similar to the  HapMap format and contains map information.<br>
-          The allele_conflict.txt file list all cases where there have been different results for the same line and marker.<br>
-          The genotype files contains one measurement for each line and marker.<br>
+          snpfile.txt - has one row for each germplasm line.<br>
+          genotype.hmp.txt - has one row for each marker similar to the  HapMap format and contains map information.<br>
+          allele_conflict.txt - list all cases where there have been different results for the same line and marker.<br>
+          genotype_experiments.txt - list the genotype experiments used to calculate consensus measurements.<br>
           Documentation and loading instructions for analysis tools can be found at: <a href="http://www.maizegenetics.net/tassel" target="_blank">Tassel</a>
             , <a href="http://www.r-project.org" target="_blank">R (programming language)</a>
             , <a href="http://bioinf.scri.ac.uk/flapjack" target="_blank">Flapjack - Graphical Genotyping</a>
@@ -1095,7 +1108,7 @@ class Downloads
                 $count = 0;
                 foreach ($expr_list as $expr_uid=>$expr_name) {
                     $outarray = $empty;
-                    $stmt = mysqli_prepare($mysqli, $sql) or die(mysqli_error($mysqli));
+                    mysqli_stmt_bind_param($stmt, "ii", $line_uid, $expr_uid);
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_bind_result($stmt, $trait_uid, $value);
                     while (mysqli_stmt_fetch($stmt)) {
@@ -1377,50 +1390,6 @@ class Downloads
 	}
 	
 	/**
-	 * build file listing conflicts in genotype data
-	 * @param unknown_type $experiments
-	 * @param unknown_type $dtype
-	 */
-	function type1_build_conflicts_download($experiments,$dtype) {
-          global $mysqli;
-	 
-	  //get lines and filter to get a list of markers which meet the criteria selected by the user
-	  $sql_mstat = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
-	  SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
-	  FROM allele_frequencies AS af, markers as m
-	  WHERE m.marker_uid = af.marker_uid
-	  AND af.experiment_uid in ($experiments)
-	  group by af.marker_uid";
-	 
-	  $res = mysqli_query($mysqli, $sql_mstat) or die(mysqli_error($mysqli));
-	  $num_maf = $num_miss = 0;
-	  while ($row = mysqli_fetch_array($res)){
-	    $maf = round(100*min((2*$row["sumaa"]+$row["sumab"])/(2*$row["total"]),($row["sumab"]+2*$row["sumbb"])/(2*$row["total"])),1);
-	    $miss = round(100*$row["summis"]/$row["total"],1);
-	    if (($maf >= $min_maf)AND ($miss<=$max_missing)) {
-	      $marker_uid[] = $row["marker"];
-	    }
-	  }
-	  $marker_uid = implode(",",$marker_uid);
-	  $output = "line name\tmarker name\talleles\texperiment\n";
-	  $query = "select l.line_record_name, m.marker_name, a.alleles, e.trial_code
-	  from allele_conflicts a, line_records l, markers m, experiments e
-	  where a.line_record_uid = l.line_record_uid
-	  and a.marker_uid = m.marker_uid
-	  and a.experiment_uid = e.experiment_uid
-	  and a.alleles != '--'
-	  and a.marker_uid IN ($marker_uid)
-	  order by l.line_record_name, m.marker_name, e.trial_code";
-	  $res = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
-	  if (mysqli_num_rows($res)>0) {
-	   while ($row = mysqli_fetch_row($res)){
-	    $output.= "$row[0]\t$row[1]\t$row[2]\t$row[3]\n";
-	   }
-	  }
-	  return $output;
-	}
-	
-	/**
 	 * build genotype data file when given set of lines and markers
 	 * @param array $lines
 	 * @param array $markers
@@ -1618,7 +1587,7 @@ class Downloads
          where marker_uid IN ($markers_str)
          AND markers.marker_type_uid = marker_types.marker_type_uid
          order by BINARY marker_name";
-         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqi));
+         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
          while ($row = mysqli_fetch_array($res)) {
            $marker_uid = $row[0];
            $marker_name = $row[1];
@@ -1720,14 +1689,45 @@ class Downloads
 	     $allele_str = implode("\t",$outarray2);
              fwrite($h, "\t$allele_str\n"); 
         }
-	}
+    }
 
-	/**
-	 * build genotype conflicts file when given set of lines and markers
-	 * @param unknown_type $lines
-	 * @param unknown_type $markers
-	 * @return string
-	 */
+    /**
+     * list genotype trials for each line
+     * this call list genotype trials included in consensus genotype measurements
+     * @param array $lines
+     * @return string
+     */
+    private function listGenotypeTrials($lines)
+    {
+        global $mysqli;
+        $output = "line name\ttrials\n";
+        foreach ($lines as $line_id) {
+            $query = "select line_record_name from line_records where line_record_uid = $line_id";
+            $res = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_row($res);
+            $line_name = $row[0];
+            $query = "SELECT distinct(experiments.trial_code)
+                FROM experiments, allele_cache
+                WHERE allele_cache.line_record_uid = '$line_id'
+                AND experiments.experiment_uid = allele_cache.experiment_uid";
+            $res = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+            if (mysqli_num_rows($res)>0) {
+                $output.= "$line_name";
+                while ($row = mysqli_fetch_row($res)) {
+                    $output.= "\t$row[0]";
+                }
+                $output.= "\n";
+            }
+        }
+        return $output;
+    }
+
+    /**
+     * build genotype conflicts file when given set of lines and markers
+     * @param unknown_type $lines
+     * @param unknown_type $markers
+     * @return string
+     */
 	function type2_build_conflicts_download($lines,$markers) {
 	  global $mysqli;
 	  if (count($markers)>0) {
@@ -1996,12 +1996,10 @@ class Downloads
                 }
 
         // make an empty marker with the lines as array keys 
-        $nelem = count($marker_uid);
         $n_lines = count($lines);
                 $empty = array_combine($lines,array_fill(0,$n_lines,'-'));
                 $nemp = count($empty);
                 $line_str = implode($delimiter,$lines);
-                // $firephp = log($nelem." ".$n_lines);
 
                 // write output file header
                 if ($dtype == "FJ") {
@@ -2089,6 +2087,5 @@ class Downloads
 		}
 
 		return $output;
-	}	
-	
+	}
 }// end class

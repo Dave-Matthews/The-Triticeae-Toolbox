@@ -17,9 +17,9 @@ include $config['root_dir'] . 'theme/admin_header.php';
 
 <form enctype='multipart/form-data' name='blastForm' action = 'viroblast/blastresult.php' method='post'>
 <div class='box'>
-	<div id="title">
-		<span><strong>Basic Search - using default BLAST parameter settings</strong></span>
-	</div>
+<div id="title">
+<span><strong>Basic Search - using default BLAST parameter settings</strong></span>
+</div>
 
 <p>Enter query sequences here in <a href='viroblast/docs/parameters.html#format'>Fasta format</a></p> 
 
@@ -36,16 +36,20 @@ include $config['root_dir'] . 'theme/admin_header.php';
 <a href=viroblast/docs/blast_databases.html>Database(s) </a>
 </td><td>
 <?php
-$fp = fopen ("./viroblast.ini", "r");
-if(!$fp) {
-	echo "<p><strong> Error: Couldn't open file viroblast.ini </strong></p></body></html>";
-	exit;
+if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+    $fp = fopen("./viroblastLocal.ini", "r");
+} else {
+    $fp = fopen("./viroblast.ini", "r");
 }
-while(!feof($fp)) {
-	$blastdbstring = rtrim(fgets($fp));
-	if (!$blastdbstring) {
-		continue;
-	}
+if (!$fp) {
+    echo "<p><strong> Error: Couldn't open file viroblast.ini </strong></p></body></html>";
+    exit;
+}
+while (!feof($fp)) {
+    $blastdbstring = rtrim(fgets($fp));
+    if (!$blastdbstring) {
+        continue;
+    }
 	if (!preg_match("/^\s*#/", $blastdbstring)) {
 		$blastdbArray = preg_split("/:/", $blastdbstring);	
 		$blastProgram = $blastdbArray[0];
@@ -66,7 +70,7 @@ while(!feof($fp)) {
 			}		
 			echo "<input id='$blastProgram' type='hidden' name='blastdb[]' value='$dbString'>";
 		}
-	}	
+    }
 }
 fclose($fp);
 
@@ -98,14 +102,14 @@ fclose($fp);
 <p><input type='button' name="bblast" value='Basic search' onclick="checkform(this.form, this.value)">&nbsp;&nbsp;<input type='reset' value='Reset' onclick="window.location.reload();"></p>
 
 <div id="title">
-	<span><strong>Advanced Search - setting your favorite parameters below</strong></span>
+    <span><strong>Advanced Search - setting your favorite parameters below</strong></span>
 </div>
 
 <div id="adv_parameters">
 
 <script type="text/javascript">
-	var programNode = document.getElementById("programList");
-	changeParameters(programNode.value, 'adv_parameters');
+    var programNode = document.getElementById("programList");
+    changeParameters(programNode.value, 'adv_parameters');
 </script>
 
 </div>
@@ -121,6 +125,6 @@ fclose($fp);
 <br>Used under the <a href="<?php echo $config['base_url'] ?>viroblast/License.mail">Academic License</a>. 
 ResultGraph feature from <a href="mailto:flemming@ipk-gatersleben.de">Steffen Flemming</a> (thanks!).
 </div>
-<?php 
+<?php
   $footer_div=1;
 include $config['root_dir'].'theme/footer.php'; ?>

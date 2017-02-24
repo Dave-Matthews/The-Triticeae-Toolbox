@@ -10,9 +10,8 @@
  *
  */
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
 <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
@@ -22,7 +21,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <base href="<?php echo $config['base_url']; ?>" >
-<!--link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css"-->
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -164,7 +162,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             ?><li><a href="<?php echo $config['base_url'];
             ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
-            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="QTL Report">QTL Report</a>
+            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="GWAS Results">GWAS Results</a>
             <?php
         }
         ?>
@@ -186,7 +184,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
-        <li><a href="<?php echo $config['base_url']; ?>maps/weather.php" titel="Weather data">
+        <li><a href="<?php echo $config['base_url']; ?>maps/weather.php" title="Weather data">
             Weather Data</a>
 	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
