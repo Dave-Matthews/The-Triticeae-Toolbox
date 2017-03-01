@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<meta charset="UTF-8">
 <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
 <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
 <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
@@ -28,7 +28,7 @@
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
 
-<link href="sm-core-css.css" rel="stylesheet" type="text/css">
+<link href="theme/sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
 <script>
 jQuery( document ).ready(function( $ ) {
@@ -265,7 +265,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 ?>
 
   <li>
-  <a href="" title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
+  <a href="" title="<?php echo $lang["desc_sc2"]; ?>">About</a>
   <ul>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
