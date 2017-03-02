@@ -11,7 +11,6 @@
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/normal_header.php';
-$mysqli = connecti();
 ?>
 <script type="text/javascript" src="theme/new.js"></script>
 <?php
