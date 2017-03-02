@@ -63,27 +63,27 @@ if ($count == 0) {
     fwrite($setup, "clustertableFile <-c('clustertable.txt".$time."')\n");
     fclose($setup);
 
-// Remove previous image.  Otherwise if R fails the user gets previous image.
-unlink("/tmp/tht/linecluster.png");
+    // Remove previous image.  Otherwise if R fails the user gets previous image.
+    unlink("/tmp/tht/linecluster.png");
 
-//   For debugging, use this to show the R output:
-//   (Regardless, R error messages will be in the Apache error.log.)
-//echo "<pre>"; system("cat /tmp/tht/setupcluster.R$time R/iPlot.R R/VisualCluster.R | R --vanilla 2>&1");
-exec("cat /tmp/tht/setupcluster.R$time R/iPlot.R R/VisualCluster.R | R --vanilla");
+    //   For debugging, use this to show the R output:
+    //   (Regardless, R error messages will be in the Apache error.log.)
+    //echo "<pre>"; system("cat /tmp/tht/setupcluster.R$time R/iPlot.R R/VisualCluster.R | R --vanilla 2>&1");
+    exec("cat /tmp/tht/setupcluster.R$time R/iPlot.R R/VisualCluster.R | R --vanilla");
 
-// Read in the HTML file with the <img src> png and the <map> coordinates.
-include '/tmp/tht/linecluster.html';
+    // Read in the HTML file with the <img src> png and the <map> coordinates.
+    include '/tmp/tht/linecluster.html';
 
-$clustInfo = file("/tmp/tht/clustInfo.txt".$time);
-unlink("/tmp/tht/clustInfo.txt".$time);
-$clustInfo = preg_replace("/\n/", "", $clustInfo);
-sort($clustInfo);
+    $clustInfo = file("/tmp/tht/clustInfo.txt".$time);
+    unlink("/tmp/tht/clustInfo.txt".$time);
+    $clustInfo = preg_replace("/\n/", "", $clustInfo);
+    sort($clustInfo);
 
-for ($i=0; $i<count($clustInfo); $i++) {
-  $clustInfo[$i] = explode(", ", $clustInfo[$i]);
-  $clustsize[$clustInfo[$i][0]] = $clustInfo[$i][2];
-  $clustlist[$clustInfo[$i][0]] .= $clustInfo[$i][1].", ";
- }
+    for ($i=0; $i<count($clustInfo); $i++) {
+        $clustInfo[$i] = explode(", ", $clustInfo[$i]);
+        $clustsize[$clustInfo[$i][0]] = $clustInfo[$i][2];
+        $clustlist[$clustInfo[$i][0]] .= $clustInfo[$i][1].", ";
+    }
 
 $color = array("black","red","limegreen","blue","cyan","magenta","#dddd00","gray");
 print "<table width=300 style='background-image: none; font-weight: bold'>";
@@ -114,13 +114,17 @@ print "</form>";
 
 print "<p><hr><p>";
 print "<h3>Full cluster contents</h3>";
-$clustertable = file("/tmp/tht/clustertable.txt".$time);
-$clustertable = preg_replace("/\n/", "", $clustertable);
-// Remove the first row, "x".
-array_shift($clustertable);
-for ($i=0; $i<count($clustertable); $i++) {
-  $row = explode("\t", $clustertable[$i]);
-  $contents[$row[1]] .= $row[0].", ";
+if (file_exists("/tmp/tht/clustertable.txt".$time)) {
+    $clustertable = file("/tmp/tht/clustertable.txt".$time);
+    $clustertable = preg_replace("/\n/", "", $clustertable);
+    // Remove the first row, "x".
+    array_shift($clustertable);
+    for ($i=0; $i<count($clustertable); $i++) {
+      $row = explode("\t", $clustertable[$i]);
+      $contents[$row[1]] .= $row[0].", ";
+    }
+} else {
+    echo "Error: cluster file not found\n";
 }
 print "<table width=500 style='background-image: none; font-weight: bold'>";
 print "<thead><tr><th>Cluster</th><th>Lines</th></tr></thead>";
