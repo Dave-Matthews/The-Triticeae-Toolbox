@@ -52,15 +52,17 @@ try {
     }
     $impact_sum = $_SESSION['impact'];
     $impact_url = $_SERVER['PHP_SELF'];
+    //log if impact > 10 or impact_sum > 20
+    //die if impact > 10 or impact_sum > 20
     if ($impact > 10) {
         $_SESSION['impact'] += $impact;
-        $impact_url = $_SERVER['PHP_SELF'];
-        error_log("A phpids repeated event impact = $impact_sum $impact_url");
-        if ($_SESSION['impact'] > 50) {
-            die();
-        }
-    } elseif ($impact_sum > 20) {
-        error_log("A phpids repeated event impact = $impact_sum $impact_url");
+        error_log("A phpids log event impact = $impact_sum $impact_url");
+    }
+    if (($impact > 20) || ($impact_sum > 30)) {
+        error_log("A phpids impact event impact = $impact_sum $impact_url");
+        die();
+    } elseif ($impact_sum > 30) {
+        error_log("A phpids impact_sum event impact = $impact_sum $impact_url");
         die();
     }
 } catch (Exception $e) {
