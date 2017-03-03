@@ -43,8 +43,10 @@ if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {
 } else {
     $species = "";
 }
+
 // clear session if it contains variables from another database
 $database = mysql_grab("select value from settings where name='database'");
+$species = mysql_grab("select value from settings where name='species'");
 $temp = $_SESSION['database'];
 if (empty($database)) {
     //error, settings table should have this entry
@@ -67,16 +69,14 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 </head>
 <body onload="javascript:setup();">
 <div id="container">
-  <div id="barleyimg">
+<div id="barleyimg"><br><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"><?php echo $species; ?></h1>
   </div>
-  <h1 id="logo">
-  The Triticeae Toolbox
-  </h1>
   <div id="util">
   <div id="utilright">
   </div>
   <a href="./feedback.php">Contact Us</a>
   </div>
+  <br><font color=white size=+1><h1 style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;<?php echo $title; ?></h1></font>
 
 <?php
   //The navigation tab menus
