@@ -346,7 +346,7 @@ class LineNames_Check
 	  foreach ($ourprops as $pr) {
 	    $propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
 	    if (!empty($propval[$pr])) {
-	      $propval[$pr] = mysqli_real_escape_string($propval[$pr]);
+	      $propval[$pr] = mysqli_real_escape_string($mysqli, $propval[$pr]);
 	      $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 	      $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$propval[$pr]'");
