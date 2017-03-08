@@ -75,7 +75,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
   </div>
   <a href="./feedback.php">Contact Us</a>
   </div>
-  <br><header style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;<?php echo $title; ?></header>
+  <br><font color=white size=+1><h1 style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;<?php echo $title; ?></h1></font>
 
 <?php
   //The navigation tab menus
