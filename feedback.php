@@ -10,7 +10,6 @@ require_once $config['root_dir'] . 'securimage/securimage.php';
 
 function feedbackForm($name='', $email='', $feedback='')
 {
-  global $mysqli;
   if (!$email) {
     $email = $_SESSION['username'];
     if (!$name) 

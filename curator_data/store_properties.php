@@ -19,7 +19,7 @@ $tmpdir=$_post['tmpdir'];
 print "<h2>Storing the properties from: " . basename($infilename) . "</h2>";
 print "<div class=\"boxContent\">";
 
-require_once("../lib/Excel/reader.php");	//include excel reader
+require_once("../lib/Excel/reader.php");    //include excel reader
 
 $data = new Spreadsheet_Excel_Reader();
 $data->setOutputEncoding('CP1251');
@@ -33,17 +33,18 @@ $version = $data->sheets[0]['cells'][2][2];
 $template = $config['root_dir']."curator_data/examples/T3/property_template.xls";
 // Using check_version() from includes/common.inc.                        
 if (!check_version($version, $template)) {
-  echo "<b>Error</b>: The template file has been updated since your version, <b>\"$version\"</b>.<br> 
+    echo "<b>Error</b>: The template file has been updated since your version, <b>\"$version\"</b>.<br> 
           Please use the new one.<br>";
-  exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");
+    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-2); return;\">");
 };
 echo "<p>";
 
 // Check the column names.
 $target = array('Name','Values','Category','Description');
 for ($j = 1; $j <= 4; $j++) {
-  if ($data->sheets[0]['cells'][3][$j] != $target[$j-1])
-    die("Error: Header column $j must be '{$target[$j-1]}'.");
+    if ($data->sheets[0]['cells'][3][$j] != $target[$j-1]) {
+        die("Error: Header column $j must be '{$target[$j-1]}'.");
+    }
 }
 
 $oldmax = getNumEntries("properties");
@@ -78,7 +79,7 @@ for ($i = 4; $i <= $data->sheets[0]['numRows']; $i++) {
     }
     $pname = $line[1];
     $val_list = trim($line[2], ",");
-    $desc = $line[4];
+    $desc = mysqli_real_escape_string($mysqli, $line[4]);
 
     //Add the new property.  First, check if already in database.
     $puid = mysql_grab("select properties_uid from properties where name = '$pname'");

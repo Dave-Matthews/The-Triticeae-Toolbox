@@ -1,5 +1,4 @@
 <?php
-date_default_timezone_set('America/Los_Angeles');
 /**
  * Header and Menu
  *
@@ -14,7 +13,7 @@ date_default_timezone_set('America/Los_Angeles');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<meta charset="UTF-8">
 <meta name="copyright" content="Copyright (C) 2008 Iowa State University. All rights reserved." >
 <meta name="expires" content="<?php echo date("D, d M Y H:i:s", time()+6*60*60); ?> GMT">
 <meta name="keywords" content="hordeum,toolbox,barley,tht,database" >
@@ -22,7 +21,6 @@ date_default_timezone_set('America/Los_Angeles');
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <base href="<?php echo $config['base_url']; ?>" >
-<!--link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']; ?>theme/new.css"-->
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.3.0/prototype.js"></script>
@@ -31,14 +29,15 @@ date_default_timezone_set('America/Los_Angeles');
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
 
-<link href="sm-core-css.css" rel="stylesheet" type="text/css">
+<link href="theme/sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
 <script>
-jQuery.noConflict();
+jQuery.noConflict();  //by default jQuery uses $ as shortcut for jQuery. To avoid conflict with prototype.js
 jQuery( document ).ready(function( $ ) {
     $('#main-menu').smartmenus();
 });
 </script>
+
 <?php
 // get species
 if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {
@@ -48,6 +47,7 @@ if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {
 }
 // clear session if it contains variables from another database
 $database = mysql_grab("select value from settings where name='database'");
+$species = mysql_grab("select value from settings where name='species'");
 $temp = $_SESSION['database'];
 if (empty($database)) {
     //error, settings table should have this entry
@@ -70,16 +70,14 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 </head>
 <body onload="javascript:setup();">
 <div id="container">
-  <div id="barleyimg">
+<div id="barleyimg"><br><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"><?php echo $species; ?></h1>
   </div>
-  <h1 id="logo">
-  The Triticeae Toolbox
-  </h1>
   <div id="util">
   <div id="utilright">
   </div>
   <a href="./feedback.php">Contact Us</a>
   </div>
+  <br><font color=white size=+1><h1 style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;<?php echo $title; ?></h1></font>
 
 <?php
   //The navigation tab menus
@@ -268,7 +266,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 ?>
 
   <li>
-  <a href="" title="<?php echo $lang["desc_sc2"]; ?>">About T3</a>
+  <a href="" title="<?php echo $lang["desc_sc2"]; ?>">About</a>
   <ul>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>

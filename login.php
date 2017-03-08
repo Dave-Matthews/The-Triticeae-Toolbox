@@ -364,11 +364,7 @@ function HTMLProcessLogin()
     $password = $_POST['password'];
     $rv = '';
     if (!isRegistered($email)) {
-        if (isOldRegistered($email)) {
-            $rv = HTMLLoginForm("Address <b>'$email'</b> is an old account. Please select \"I forgot my password\" button to reset your password.");
-        } else {
-            $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
-        }
+        $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
     } elseif (!isVerified($_POST['email'])) {
         $rv = HTMLLoginForm("You cannot login until you confirm your email address, using the link was sent to you at the time of registration.
               <form action=\"{$_SERVER['SCRIPT_NAME']}\" method=\"post\">
@@ -414,11 +410,7 @@ function HTMLProcessLogin()
             $rv = HTMLLoginSuccess();
         } else {
             if (!passIsRight($_POST['email'], $_POST['password'])) {
-                if (isOldUser($email, $password)) {
-                    $rv = HTMLLoginForm("You hava an old account. Please select \"I forgot my password\" button to reset your password");
-                } else {
-                    $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
-                }
+                $rv = HTMLLoginForm("You entered an incorrect e-mail/password combination. Please, try again.");
             } else {
                 $rv = HTMLLoginForm("Login failed for unknown reason.");
             }
@@ -449,7 +441,7 @@ function HTMLProcessForgot()
     // ensure that we go back to home..
     $_SESSION['login_referer_override'] = '/';
     $email = $_POST['email'];
-    if (isRegistered($email) || isOldRegistered($email)) {
+    if (isRegistered($email)) {
         $key = setting('passresetkey');
         $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
         send_email($email, "T3: Reset Your Password",

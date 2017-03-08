@@ -29,7 +29,8 @@ function die_nice($message = "")
 }
 
 /* Show more informative messages when we get invalid data. */
-function errmsg($sql, $err) {
+function errmsg($sql, $err)
+{
   global $mysqli;
   if (preg_match('/^Data truncated/', $err)) {
     // Undefined value for an enum type
@@ -63,7 +64,7 @@ class LineNames_Check
     private $delimiter = "\t";
     // Using the class's constructor to decide which action to perform
     public function __construct($function = null)
-    {	
+    {
       switch($function)
 	{
 	case 'typeDatabase':
@@ -72,7 +73,7 @@ class LineNames_Check
 	default:
 	  $this->typeLineNameCheck(); /* initial case*/
 	  break;
-	}	
+	}
     }
 
     private function typeLineNameCheck() {
@@ -135,7 +136,7 @@ class LineNames_Check
 	  print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
 	}
 	else {
-	  if(move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
+	  if (move_uploaded_file($_FILES['file']['tmp_name'], $target_path.$uploadfile)) {
 	    /* start reading the excel */
 	    $datafile = $target_path.$uploadfile;
 	    $reader = new Spreadsheet_Excel_Reader();
@@ -346,7 +347,7 @@ class LineNames_Check
 	  foreach ($ourprops as $pr) {
 	    $propval[$pr] = addcslashes(trim($linedata['cells'][$irow][$columnOffsets[$pr]]),"\0..\37!@\177..\377");
 	    if (!empty($propval[$pr])) {
-	      $propval[$pr] = mysqli_real_escape_string($propval[$pr]);
+	      $propval[$pr] = mysqli_real_escape_string($mysqli, $propval[$pr]);
 	      $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
 	      $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$propval[$pr]'");
@@ -376,8 +377,6 @@ class LineNames_Check
       $devnull = mysqli_query($mysqli, "INSERT INTO input_file_log (file_name,users_name) VALUES('$filename', '$username')") or die(mysqli_error($mysqli));
 
       $footer_div = 1;
-      include($config['root_dir'].'theme/footer.php');
-		
+      include $config['root_dir'].'theme/footer.php';
     } /* end of function type_Database */
-
 } /* end of class */

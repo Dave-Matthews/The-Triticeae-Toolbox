@@ -17,7 +17,7 @@ require $config['root_dir'] . 'theme/admin_header.php';
 <h2>Show Pedigree Tree
 <?php
 if (isset($_GET['line_name'])) {
-    echo " : " . $_GET['line_name'];
+    echo " : " . htmlspecialchars($_GET['line_name']);
     ?>
     </h2>
     <?php
@@ -25,7 +25,7 @@ if (isset($_GET['line_name'])) {
 
 
     ?>
-    <?php echo ($_REQUEST['line'] != "") ? " : " . $_REQUEST['line'] : "" ; ?></h2>
+    <?php echo (htmlspecialchars($_REQUEST['line']) != "") ? " : " . htmlspecialchars($_REQUEST['line']) : "" ; ?></h2>
     <div class="section">
 
 <?php
