@@ -70,14 +70,14 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 </head>
 <body onload="javascript:setup();">
 <div id="container">
-<div id="barleyimg"><br><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"><?php echo $species; ?></h1>
+<div id="barleyimg"><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"><?php echo $species; ?></h1>
   </div>
   <div id="util">
   <div id="utilright">
   </div>
   <a href="./feedback.php">Contact Us</a>
   </div>
-  <br><font color=white size=+1><h1 style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;<?php echo $title; ?></h1></font>
+  <h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;">&nbsp;&nbsp;<?php echo $title; ?></h1>
 
 <?php
   //The navigation tab menus
@@ -277,14 +277,13 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <!-- <li><a href="<?php echo $config['base_url']; ?>acknowledge.php" title="Contributions from other projects">Acknowledgments</a> -->
     <!-- <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of the data">Terms of Use</a> -->
   </ul>
-			
-			
+
 </ul>
 </div>
 <div id="quicklinks">
   <h2>Quick Links </h2>
   <ul>
-  <?php if ( isset( $_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ):  ?>
+  <?php if (isset($_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ):  ?>
     <li>
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
             <?php else : ?>
