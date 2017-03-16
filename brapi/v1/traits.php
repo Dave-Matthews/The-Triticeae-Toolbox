@@ -33,7 +33,8 @@ if (isset($_GET['page'])) {
 header("Content-Type: application/json");
 if ($action == "list") {
     $count = 0;
-    $metadata['metadata']['status'] = null;
+    $metadata['metadata']['status'] = array();
+    $metadata['metadata']['datafiles'] = array();
     $sql = "select phenotype_uid, phenotypes_name, TO_number, unit_name, description
     from phenotypes, units
     WHERE phenotypes.unit_uid = units.unit_uid";
@@ -55,18 +56,18 @@ if ($action == "list") {
     echo json_encode($response);
 } elseif ($uid != "") {
     $pos = 1;
-    $pheno_list =  explode(",", $uid);
+    //$pheno_list =  explode(",", $uid);
     //allowed values for Android Field Book are numeric, qualitative, percent, date, boolean, text, audio
     $sql = "select phenotype_uid, phenotypes_name, datatype, unit_name, description
         from phenotypes, units
         WHERE phenotypes.unit_uid = units.unit_uid
-        AND phenotype_uid IN ($uid)";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-    while ($row = mysqli_fetch_row($res)) {
-        $temp["traitId"]= $row[0];
-        $temp["name"] = $row[1];
-        $fmt = $row[2];
-        $units = $row[4];
+        AND phenotype_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $uid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $temp["traitId"], $temp["name"], $fmt, $temp["unit"], $temp["description"]);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
         if ($units == "percent") {
             $fmt = "percent";
         } elseif ($fmt == "continuous") {
@@ -75,8 +76,6 @@ if ($action == "list") {
             $fmt = "numeric";
         }
         $temp["format"] = $fmt;
-        $temp["unit"] = $row[3];
-        $temp["method"] = $row[4];
         $temp["defaultValue"] = "";
         $temp["minimum"] = "";
         $temp["maximum"] = "";
