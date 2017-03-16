@@ -70,14 +70,14 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 </head>
 <body onload="javascript:setup();">
 <div id="container">
-<div id="barleyimg"><br><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"><?php echo $species; ?></h1>
+<div id="barleyimg"><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"><?php echo $species; ?></h1>
   </div>
   <div id="util">
   <div id="utilright">
   </div>
   <a href="./feedback.php">Contact Us</a>
   </div>
-  <br><font color=white size=+1><h1 style="text-shadow: 2px 2px 5px black">&nbsp;&nbsp;<?php echo $title; ?></h1></font>
+  <h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;">&nbsp;&nbsp;<?php echo $title; ?></h1>
 
 <?php
   //The navigation tab menus
@@ -95,7 +95,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
   <ul id="main-menu" class="sm sm-clean">
     <li>
       <a href="">Home</a>
-    <li><a href="" title="Lines and Phenotypes">Select</a>
+    <li><a href="">Select</a>
       <ul>
       <li>
           <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
@@ -172,7 +172,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       </ul>
     <li><a href="" title="">Download</a>
       <ul>
-	<li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
+    <li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
         <?php
         if (file_exists($config['root_dir']."downloads/impute.php")) {
@@ -180,18 +180,17 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             <?php
         }
         ?>
-	<li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
-	    SNP Alleles and Sequences</a> 
+        <li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
+    SNP Alleles and Sequences</a> 
         <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
         <li><a href="<?php echo $config['base_url']; ?>maps/weather.php" title="Weather data">
             Weather Data</a>
-	<li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
+        <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
 
     <?php
-  //  if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) )
     if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
     ?> 
     <li> <a href="" title="Add, edit or delete data">Curate</a>
@@ -266,7 +265,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 ?>
 
   <li>
-  <a href="" title="<?php echo $lang["desc_sc2"]; ?>">About</a>
+  <a href="" title="<?php echo $lang["desc_sc2"]; ?>">Resources</a>
   <ul>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
@@ -278,17 +277,16 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <!-- <li><a href="<?php echo $config['base_url']; ?>acknowledge.php" title="Contributions from other projects">Acknowledgments</a> -->
     <!-- <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of the data">Terms of Use</a> -->
   </ul>
-			
-			
+
 </ul>
 </div>
 <div id="quicklinks">
   <h2>Quick Links </h2>
   <ul>
-  <?php if ( isset( $_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ):  ?>
+  <?php if (isset($_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ):  ?>
     <li>
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
-            <?php else: ?>
+            <?php else : ?>
     <li>
       <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
    <?php endif; ?>
@@ -320,7 +318,10 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
    if (isset($_SESSION['geno_exps'])) {
        echo ": " . count($_SESSION['geno_exps']);
    }
-?>
+   if (isset($_SESSION['selected_lines']) || isset($_SESSION['selected_traits']) || isset($_SESSION['selected_trials'])) {
+       echo "<p><a href='downloads/clear_selection.php'>Clear Selection</a>";
+   }
+   ?>
 
   <br><br><li>
   <form style="margin-bottom:3px" action="search.php" method="post">

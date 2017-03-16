@@ -28,7 +28,14 @@ if (isset($_SESSION['clicked_buttons'])) {
 } else {
     echo "All";
 }
-echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits</a>: ". count($_SESSION['selected_traits']);
+echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits</a>: ";
+if (isset($_WESSION['selected_traits'])) {
+    echo count($_SESSION['selected_traits']);
+} elseif (isset($_SESSION['phenotype'])) {
+    echo count($_SESSION['phenotype']);
+} else {
+    echo "0";
+}
 echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
 if (isset($_SESSION['selected_trials'])) {
     echo ": " . count($_SESSION['selected_trials']);
@@ -36,6 +43,9 @@ if (isset($_SESSION['selected_trials'])) {
 echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
 if (isset($_SESSION['geno_exps'])) {
     echo ": " . count($_SESSION['geno_exps']);
+}
+if (isset($_SESSION['selected_lines']) || isset($_SESSION['selected_traits']) || isset($_SESSION['selected_trials'])) {
+    echo "<p><a href='downloads/clear_selection.php'>Clear Selection</a>";
 }
 ?>
   <br><br><li>

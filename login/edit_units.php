@@ -16,10 +16,35 @@ ob_end_flush();
  * Has an update been submitted?
  */
 if (($id = array_search("Update", $_POST)) != null) {
-  foreach ($_POST as $k => $v) {
-      $_POST[$k] = addslashes($v);
+    foreach ($_POST as $k => $v) {
+        $_POST[$k] = addslashes($v);
+    }
+    updateTable($_POST, "units", array("unit_uid"=>$id));
+} elseif (!empty($_POST['Delete'])) {
+// Deleting a unit?
+    $id = ($_POST['Delete']);
+    $name = mysql_grab("select unit_name from units where unit_uid = $id");
+    echo "Attempting to delete Unit id = $id, <b>$name</b>...<p>";
+    // Is there data for this trait?
+    $sql = "select * from phenotypes where unit_uid = $id";
+    $res = mysqli_query($mysqli, $sql);
+    $datacount = mysqli_num_rows($res);
+    if ($datacount > 0)
+        echo "<font color=red><b>Can't delete.</b></font> There are <b>$datacount</b> phenotypes using this unit.";
+    else {
+        // Delete the unit.
+        $sql = "delete from units where unit_uid = $id";
+    $res = mysqli_query($mysqli, $sql);
+    $err = mysqli_error($mysqli);
+    if (!empty($err)) {
+      if (strpos($err, "a foreign key constraint fails"))
+        echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this unit. The error message is:<br>$err";
+      else
+        echo "<font color=red><b>Can't delete.</b></font> The error message is:<br>$err";
+    }
+    else
+      echo "Success.  Unit <b>$name</b> deleted.<p>";
   }
-  updateTable($_POST, "units", array("unit_uid"=>$id));
 }
 
 $searchstring = '';

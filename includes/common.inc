@@ -108,9 +108,7 @@ function validateForm($array)
     }
 
     return $ret;
-
 }
-
 
 /**
  * This function displays a list of all the elements in the table in HTML selection box format.
@@ -118,50 +116,31 @@ function validateForm($array)
  * It utilizes get_pkey() to get the primary key of that table.
  *
  * @param $table - the table to select from
- * @param $selected - This parameter will tell which option is to be default selected.  
+ * @param $selected - This parameter will tell which option is to be default selected.
  *
  * @return void - this function prints its output.
  */
-function showTableOptions($table, $selected="null", $orderby="uid") {
+function showTableOptions($table, $selected = "null", $orderby = "uid")
+{
     global $mysqli;
 
-	$uid = get_pkey($table);
-	$name = get_unique_name($table);
+    $uid = get_pkey($table);
+    $name = get_unique_name($table);
 
-	// dem 23oct14: No, let's show all programs whether breeding or not.
-	/* if($table=='CAPdata_programs') */
-	/* { */
-	/* $q = mysql_query("SELECT $uid, $name */
-	/* 		  FROM $table WHERE program_type='breeding' */
-	/* 		  ORDER BY $uid */
-	/* 		") */
-	/*      or die(mysql_error()); */
-	/* } */
-	/* else */
-	/* { */
-	  // DEM 9feb11: I think it's (almost?) always better to sort by name than by uid.
-	  // To do it, use optional third parameter = "name".
-// 	$q = mysql_query("SELECT $uid, $name
-// 			  FROM $table 
-// 			  ORDER BY $uid
-// 			")
-// 	     or die(mysql_error());
-	  $sortorder = $uid;
-	  if (isset($orderby) && $orderby == "name") {
-	      $sortorder = $name;
-	    }
-	$q = mysqli_query($mysqli, "SELECT $uid, $name
-			  FROM $table 
-			  ORDER BY $sortorder
-			")
-	     or die(mysqli_error($mysqli));
-	/* } */
+    $sortorder = $uid;
+    if (isset($orderby) && $orderby == "name") {
+        $sortorder = $name;
+    }
+    $q = mysqli_query($mysqli, "SELECT $uid, $name
+	  FROM $table 
+	  ORDER BY $sortorder
+	")
+    or die(mysqli_error($mysqli));
 
-	while($row = mysqli_fetch_assoc($q)) {
-		$sel = ($row[$uid] == $selected) ? "selected=\"selected\"" : "";
-		echo "\n\t<option value=\"$row[$uid]\" $sel>$row[$name]</option>";
-	}
-
+    while ($row = mysqli_fetch_assoc($q)) {
+	$sel = ($row[$uid] == $selected) ? "selected=\"selected\"" : "";
+	echo "\n\t<option value=\"$row[$uid]\" $sel>$row[$name]</option>";
+    }
 }
 
 /**
@@ -781,8 +760,7 @@ function editGeneral($table, $where, $return_page, array $ignore, $limit="20", $
 	 	 * Generate Edit Output
 		 */
 		// Enable the Delete option only for tables that have good foreign key constraints to prevent orphan data.
-		/* if ($table == 'CAPdata_programs') */
-		if (in_array($table, array('CAPdata_programs', 'phenotypes', 'properties')))
+		if (in_array($table, array('CAPdata_programs', 'phenotypes', 'properties', 'units')))
 		  $deletebutton = "<button type='submit' name='Delete' value='$row[$pkey]' disabled>Delete</button>";
 		$line = "
 		<tr><form name=\"$table$count\" id=\"$table$count\" action=\"$return_page\" method=\"post\">
@@ -1064,7 +1042,6 @@ function store_file_process_info() {
 	NOTE: this function DOES NOT direcly output its result.
  */
 function displayTable($query, $sortable=FALSE, $link="") {
-    global $mysqli;
 	$tables = array();
 	$ret = "\n<table class='tableclass1'>\n";
 
@@ -1118,7 +1095,6 @@ function displayTable($query, $sortable=FALSE, $link="") {
  * into ACTG
  */
 function displayTableConvert($query, $sortable=FALSE, $lookup) {
-    global $mysqli;
         $tables = array();
         $ret = "\n<table class='tableclass1'>\n";
 
@@ -1175,7 +1151,6 @@ function displayTableConvert($query, $sortable=FALSE, $lookup) {
  * truncation according to units.sigdigits_display.  DEM 11aug10
  */
 function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
-  global $mysqli;
   $tables = array();
   /* $ret = "\n<table class='tableclass1'>\n"; */
   $ret = "\n<div style='max-height: 400px; width: 450px; overflow: auto'><table>\n";
