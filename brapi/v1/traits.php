@@ -27,7 +27,7 @@ if (isset($_GET['pageSize'])) {
 if (isset($_GET['page'])) {
     $currentPage = $_GET['page'];
 } else {
-    $currentPage = 1;
+    $currentPage = 0;
 }
 
 header("Content-Type: application/json");
@@ -58,14 +58,14 @@ if ($action == "list") {
     $pos = 1;
     //$pheno_list =  explode(",", $uid);
     //allowed values for Android Field Book are numeric, qualitative, percent, date, boolean, text, audio
-    $sql = "select phenotype_uid, phenotypes_name, datatype, unit_name, description
+    $sql = "select phenotype_uid, phenotypes_name, TO_number, datatype, unit_name, description
         from phenotypes, units
         WHERE phenotypes.unit_uid = units.unit_uid
         AND phenotype_uid = ?";
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $uid);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $temp["traitId"], $temp["name"], $fmt, $temp["unit"], $temp["description"]);
+        mysqli_stmt_bind_result($stmt, $temp["traitId"], $temp["name"], $observ, $fmt, $temp["unit"], $temp["description"]);
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt);
         if ($units == "percent") {
@@ -75,10 +75,11 @@ if ($action == "list") {
         } elseif ($fmt == "discrete") {
             $fmt = "numeric";
         }
+        $temp["observationVariables"] = array($observ);
         $temp["format"] = $fmt;
-        $temp["defaultValue"] = "";
-        $temp["minimum"] = "";
-        $temp["maximum"] = "";
+        $temp["defaultValue"] = null;
+        $temp["minimum"] = null;
+        $temp["maximum"] = null;
         $temp["categories"] = "";
         $temp["isVisible"] = "";
         $temp["realPosition"] = $pos;
