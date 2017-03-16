@@ -3,9 +3,11 @@
 # Function connect() below requires the connection information in
 # /data/tht_data/mysql_connections/T3wheat+_readonly.inc
 
-if (!isset($dontconnect))
-$dontconnect = false;
+if (!isset($dontconnect)) {
+    $dontconnect = false;
+}
 
+date_default_timezone_set('America/Los_Angeles');
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 session_start();
@@ -21,21 +23,26 @@ session_start();
  */
 $maintenance = false;
 
+$usegbrowse = true; /* set to false if GBrowse not installed*/
+
 /******************************************************************************/
 if (!isset($_SESSION['maintenance_override'])) {
-	if (isset($_GET['maintenance']) && $_GET['maintenance'] == 'override')
-		$_SESSION['maintenance_override'] = true;
-	else
-		$_SESSION['maintenance_override'] = false;
+    if (isset($_GET['maintenance']) && $_GET['maintenance'] == 'override') {
+        $_SESSION['maintenance_override'] = true;
+    } else {
+        $_SESSION['maintenance_override'] = false;
+    }
+} elseif ($_SESSION['maintenance_override'] === false) {
+    if (isset($_GET['maintenance']) && $_GET['maintenance'] == 'override') {
+        $_SESSION['maintenance_override'] = true;
+    }
 }
-else if ($_SESSION['maintenance_override'] === false)
-	if (isset($_GET['maintenance']) && $_GET['maintenance'] == 'override')
-		$_SESSION['maintenance_override'] = true;
-
-if ($maintenance && $_SESSION['maintenance_override'] !== true)
-	die("<h1>This site is currently undergoing maintenance. Please check back later. Thank you.</h1>");
-if (!$maintenance && isset($_SESSION['maintenance_override']))
-	unset($_SESSION['maintenance_override']);
+if ($maintenance && $_SESSION['maintenance_override'] !== true) {
+    die("<h1>This site is currently undergoing maintenance. Please check back later. Thank you.</h1>");
+}
+if (!$maintenance && isset($_SESSION['maintenance_override'])) {
+    unset($_SESSION['maintenance_override']);
+}
 /******************************************************************************/
 
 if (!(isset($config['base_url']) && isset($config['root_dir']))) {
@@ -52,14 +59,13 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
 	require('common.inc');
 	require('error.inc');
 	require('login.inc');
-	//require($config['root_dir'].'includes/model.inc');
 
 	// specific libraries
 	require('general.inc');
 	require('traits.inc');
 	require('pedigree.inc');
 	require('image.inc');
-    require('marker.inc');
+        require('marker.inc');
 	require('search.inc');
 	require('globals.inc');
         require('phpids.inc');
@@ -185,8 +191,8 @@ function connecti() {
                                             $ini_config);
   extract($db_config);
   $mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
-  if ($mysqli->connect_errno) {
-    die($mysqli->connect_errno() . " " . $mysqli->connect_error);
+  if ($mysqli->connect_error) {
+    die('Connect Error: ' . $mysqli->connect_error);
   } else {
     mysqli_select_db($mysqli, $db_name);
   }
@@ -271,39 +277,6 @@ function censor() {
 	}
 
 }
-
-/*
- * This function completely cleans all html out of a string including
- * javascript, style tags, and multiline comments including CDATA comments
- *
- * Note: this function was written by "admin at automapit dot com", modified by
- *      "uersoy at tnn dot net" and can be found
- * 	 http://us2.php.net/manual/en/function.strip-tags.php#71962
- *
- */
-function html2txt($document){
-
-	$search = array(
-		'@<script[^>]*?>.*?</script>@si',   // Strip out javascript
-                '@<style[^>]*?>.*?</style>@siU',    // Strip style tags properly
-                '@<[\/\!]*?[^<>]*?>@si',            // Strip out HTML tags
-                '@<![\s\S]*?--[ \t\n\r]*>@'         // Strip multi-line comments including CDATA
-	);
-
-	$text = preg_replace($search, '', $document);
-	return $text;
-
-}
-
-
-
-
-
-
-
-
-
-
 
 /*
  * This function tests whether or not a session has been started

@@ -408,12 +408,12 @@ a:hover
     border-bottom-color: #4DAAB1
 }
 
-#footer a
+footer a
 {
     color: #000;
     border: none
 }
-#footer a:hover
+footer a:hover
 {
     color: #9a292c
 }
@@ -565,12 +565,18 @@ html>body #logo
     text-align:right
 }
 
-#footer
+header
+{
+    color: white;
+    font-size: +1
+}
+
+footer
 {
     margin-left: 230px;
     margin-top: 50px;
     padding-top: 25px;
-    background: #85cacf url('images/foothdg.png') repeat-x;
+    background: #f9cb73 url('images/foothdg.png') repeat-x;
     text-align: center;
     clear: both;
 }
@@ -643,7 +649,7 @@ html>body #logo
     float: left;
     min-height: 450px;
     margin-right: 10px;
-    margin-top: 160px;
+    margin-top: 65px;
     margin-left: 245px;
     font-size: 1.2em
 }
