@@ -10,7 +10,7 @@ require 'config.php';
  */
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
 include($config['root_dir'].'theme/normal_header.php');
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ************************************/
@@ -21,21 +21,21 @@ ob_start();
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR));
 ob_end_flush();
 
-$table = mysql_real_escape_string($_GET['table']);
+$table = mysqli_real_escape_string($mysqli, $_GET['table']);
 $capTable = strtoupper($table);
 $start = $_GET['start'];
 if ($start < 0) $start = 0;
 
 $sql =  "SELECT count(*) as num FROM $table";
-$query = mysql_query($sql);
-$rdata = mysql_fetch_assoc($query);
+$query = mysqli_query($mysqli, $sql);
+$rdata = mysqli_fetch_assoc($query);
 $max = $rdata['num'];
 $lStart = $max - 500;
 $pStart = $start - 500;
 $nStart = $start + 500;	
 
 $sql = "SELECT * FROM $table limit ". $start . ', 500';
-$query = mysql_query($sql);
+$query = mysqli_query($mysqli, $sql);
 
 $fc = 1;
 
@@ -51,7 +51,7 @@ if ($start+500 < $max) {
 echo "</div>";
 echo "<table border=\"1\">\n<tr>\n\t";
 
-while($row = mysql_fetch_assoc($query)) {
+while($row = mysqli_fetch_assoc($query)) {
 
 	if($fc == 1) {
 		foreach($row as $k=>$v) {
