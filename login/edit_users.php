@@ -4,7 +4,7 @@
 
 require 'config.php';
 include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-connect();
+$mysqli = connecti();
 loginTest();
 
 ob_start();
@@ -27,8 +27,8 @@ elseif (!empty($_POST['Delete'])) {
   $code = mysql_grab("select name from users where users_uid=$id");
   echo "Attempting to delete user id = $id, name = $code...<p>";
   $sql = "delete from users where users_uid = $id";
-  $res = mysql_query($sql);
-  $err = mysql_error();
+  $res = mysqli_query($mysqli, $sql);
+  $err = mysqli_error($mysqli);
   if (!empty($err)) {
     if (strpos($err, "a foreign key constraint fails"))
       echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this user. The error message is:<br>$err";

@@ -5,7 +5,7 @@ require 'config.php';
  */
 include("../includes/bootstrap.inc");
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */

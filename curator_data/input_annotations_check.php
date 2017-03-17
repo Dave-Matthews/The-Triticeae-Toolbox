@@ -16,7 +16,7 @@ require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 
 require_once "../lib/Excel/reader.php"; // Microsoft Excel library
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */
@@ -317,10 +317,10 @@ private function typeAnnotationCheck()
 		$CAPcode = $experiments[$index]->collabcode;
 		$sql = "SELECT CAPdata_programs_uid FROM CAPdata_programs
 					WHERE data_program_code= '$CAPcode'";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		if (1 == mysql_num_rows($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		if (1 == mysqli_num_rows($res))
 		{
-			$row = mysql_fetch_assoc($res);
+			$row = mysqli_fetch_assoc($res);
 			$capdata_uid = $row['CAPdata_programs_uid'];
 		}else{
 			echo "CAP data program ID ".$CAPcode." does not exist "."<br/>";
@@ -331,7 +331,7 @@ private function typeAnnotationCheck()
 			echo "CAPcode ".$CAPcode." uid ".$capdata_uid."\n";
 		}
 		
-		$trialcode = $experiments[$index]->trialcode = mysql_real_escape_string(trim($trialcode_row[$i]));
+		$trialcode = $experiments[$index]->trialcode = mysqli_real_escape_string($mysqli, trim($trialcode_row[$i]));
 		
 //	echo" the trial code is". $trialcode;	
 		
@@ -344,14 +344,14 @@ private function typeAnnotationCheck()
 		} else {
 			
 			$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$trialcode}'";
-			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	
-			if (mysql_num_rows($res)==1) //yes, experiment found once
+			if (mysqli_num_rows($res)==1) //yes, experiment found once
 			{
-				$row = mysql_fetch_assoc($res);
+				$row = mysqli_fetch_assoc($res);
 				$exp_id = $row['experiment_uid'];
 				if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
-			} elseif (mysql_num_rows($res)>1) //yes, experiment found more than once, bad
+			} elseif (mysqli_num_rows($res)>1) //yes, experiment found more than once, bad
 			{
 				if (DEBUG>1) {echo "Trial code ".$trialcode." linked to multiple experiments-must fix"."<br/>";}
 				$error_flag = ($error_flag)&(8);
@@ -360,7 +360,7 @@ private function typeAnnotationCheck()
 		}
 		
 		
-		$experiments[$index]->experimentshortname = mysql_real_escape_string(trim($experimentshortname_row[$i]));
+		$experiments[$index]->experimentshortname = mysqli_real_escape_string($mysqli, trim($experimentshortname_row[$i]));
 		if (is_null($experiments[$index]->experimentshortname)) {
 			echo "Short Name  is empty "."<br/>";
 			$error_flag = ($error_flag)&(16);
@@ -370,8 +370,8 @@ private function typeAnnotationCheck()
 		$experiments[$index]->bp = trim($bp_row[$i]);
 		if (DEBUG>1) {echo "experiments bp [".$i."] is set to".$experiments[$index]->bp."\n";}
 		$experiments[$index]->location = addslashes($location_row[$i]);
-		$experiments[$index]->latlong = mysql_real_escape_string($latlong_row[$i]);
-		$experiments[$index]->collaborator = mysql_real_escape_string($collaborator_row[$i]);
+		$experiments[$index]->latlong = mysqli_real_escape_string($mysqli, $latlong_row[$i]);
+		$experiments[$index]->collaborator = mysqli_real_escape_string($mysqli, $collaborator_row[$i]);
 		$experiments[$index]->collabcode = $collabcode_row[$i];
 
 		// Planting Date
@@ -398,15 +398,15 @@ private function typeAnnotationCheck()
 		$experiments[$index]->seedingrate = $seedingrate_row[$i];
 		
 
-		$experiments[$index]->experimentname = mysql_real_escape_string(trim($experimentname_row[$i]));
-		$experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
+		$experiments[$index]->experimentname = mysqli_real_escape_string($mysqli, trim($experimentname_row[$i]));
+		$experiments[$index]->experimentaldesign = mysqli_real_escape_string($mysqli, $experimentaldesign_row[$i]);
 		
 		// Number of Replications
 		$experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
 		$experiments[$index]->numberofreplications = intval($numberofreplications_row[$i]);
 		
 		// Plot Size
-		$experiments[$index]->plotsize = mysql_real_escape_string($plotsize_row[$i]);
+		$experiments[$index]->plotsize = mysqli_real_escape_string($mysqli, $plotsize_row[$i]);
 		
 			// Harvest Date
 		// convert Microsoft Excel timestamp to Unix timestamp
@@ -431,7 +431,7 @@ private function typeAnnotationCheck()
 
 	
 		// Harvest Area
-		$experiments[$index]->harvestedarea = mysql_real_escape_string($harvestedarea_row[$i]);
+		$experiments[$index]->harvestedarea = mysqli_real_escape_string($mysqli, $harvestedarea_row[$i]);
 		// irrigation
 		if (FALSE !== stripos($irrigation_row[$i], "yes"))
 		{
@@ -443,7 +443,7 @@ private function typeAnnotationCheck()
 		}
 		
 		// Other Remarks
-		$experiments[$index]->otherremarks = mysql_real_escape_string(htmlentities($otherremarks_row[$i]));
+		$experiments[$index]->otherremarks = mysqli_real_escape_string($mysqli, htmlentities($otherremarks_row[$i]));
 		
 	}
 	
@@ -775,10 +775,10 @@ private function typeAnnotationCheck()
 		$CAPcode = $experiments[$index]->collabcode;
 		$sql = "SELECT CAPdata_programs_uid FROM CAPdata_programs
 					WHERE data_program_code= '$CAPcode'";
-		$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-		if (1 == mysql_num_rows($res))
+		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+		if (1 == mysqli_num_rows($res))
 		{
-			$row = mysql_fetch_assoc($res);
+			$row = mysqli_fetch_assoc($res);
 			$capdata_uid = $row['CAPdata_programs_uid'];
 		}else{
 			echo "CAP data program ID ".$CAPcode." does not exist \n";
@@ -788,7 +788,7 @@ private function typeAnnotationCheck()
 			echo "CAPcode ".$CAPcode." uid ".$capdata_uid."\n";
 		}
 		
-		$trialcode = $experiments[$index]->trialcode = mysql_real_escape_string(trim($trialcode_row[$i]));
+		$trialcode = $experiments[$index]->trialcode = mysqli_real_escape_string($mysqli, trim($trialcode_row[$i]));
 		if (DEBUG>1) {echo "experiments trialcode [".$i."] is set to".$experiments[$index]->trialcode."\n";}
 		// Trial code-verify not null, then see if it is in db AND unique
 		if (is_null($trialcode)) {
@@ -797,14 +797,14 @@ private function typeAnnotationCheck()
 		} else {
 			
 			$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$trialcode}'";
-			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 	
-			if (mysql_num_rows($res)==1) //yes, experiment found once
+			if (mysqli_num_rows($res)==1) //yes, experiment found once
 			{
-				$row = mysql_fetch_assoc($res);
+				$row = mysqli_fetch_assoc($res);
 				$exp_id = $row['experiment_uid'];
 				if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
-			} elseif (mysql_num_rows($res)>1) //yes, experiment found more than once, bad
+			} elseif (mysqli_num_rows($res)>1) //yes, experiment found more than once, bad
 			{
 				if (DEBUG>1) {echo "Trial code ".$trialcode." linked to multiple experiments-must fix\n";}
 				$error_flag = ($error_flag)&(8);
@@ -812,7 +812,7 @@ private function typeAnnotationCheck()
 		}
 		
 		
-		$experiments[$index]->experimentshortname = mysql_real_escape_string(trim($experimentshortname_row[$i]));
+		$experiments[$index]->experimentshortname = mysqli_real_escape_string($mysqli, trim($experimentshortname_row[$i]));
 		if (is_null($experiments[$index]->experimentshortname)) {
 			echo "Short Name  is empty \n";
 			$error_flag = ($error_flag)&(16);
@@ -821,8 +821,8 @@ private function typeAnnotationCheck()
 		$experiments[$index]->bp = trim($bp_row[$i]);
 		if (DEBUG>1) {echo "experiments bp [".$i."] is set to".$experiments[$index]->bp."\n";}
 		$experiments[$index]->location = addslashes($location_row[$i]);
-		$experiments[$index]->latlong = mysql_real_escape_string($latlong_row[$i]);
-		$experiments[$index]->collaborator = mysql_real_escape_string($collaborator_row[$i]);
+		$experiments[$index]->latlong = mysqli_real_escape_string($mysqli, $latlong_row[$i]);
+		$experiments[$index]->collaborator = mysqli_real_escape_string($mysqli, $collaborator_row[$i]);
 		$experiments[$index]->collabcode = $collabcode_row[$i];
 
 		// Planting Date
@@ -849,15 +849,15 @@ private function typeAnnotationCheck()
 		$experiments[$index]->seedingrate = $seedingrate_row[$i];
 		
 
-		$experiments[$index]->experimentname = mysql_real_escape_string(trim($experimentname_row[$i]));
-		$experiments[$index]->experimentaldesign = mysql_real_escape_string($experimentaldesign_row[$i]);
+		$experiments[$index]->experimentname = mysqli_real_escape_string($mysqli, trim($experimentname_row[$i]));
+		$experiments[$index]->experimentaldesign = mysqli_real_escape_string($mysqli, $experimentaldesign_row[$i]);
 		
 		// Number of Replications
 		$experiments[$index]->numberofentries = intval($numberofentries_row[$i]);
 		$experiments[$index]->numberofreplications = intval($numberofreplications_row[$i]);
 		
 		// Plot Size
-		$experiments[$index]->plotsize = mysql_real_escape_string($plotsize_row[$i]);
+		$experiments[$index]->plotsize = mysqli_real_escape_string($mysqli, $plotsize_row[$i]);
 		
 			// Harvest Date
 		// convert Microsoft Excel timestamp to Unix timestamp
@@ -883,7 +883,7 @@ private function typeAnnotationCheck()
 		
 	
 		// Harvest Area
-		$experiments[$index]->harvestedarea = mysql_real_escape_string($harvestedarea_row[$i]);
+		$experiments[$index]->harvestedarea = mysqli_real_escape_string($mysqli, $harvestedarea_row[$i]);
 		// irrigation
 		if (FALSE !== stripos($irrigation_row[$i], "yes"))
 		{
@@ -895,7 +895,7 @@ private function typeAnnotationCheck()
 		}
 		
 		// Other Remarks
-		$experiments[$index]->otherremarks = mysql_real_escape_string(htmlentities($otherremarks_row[$i]));
+		$experiments[$index]->otherremarks = mysqli_real_escape_string($mysqli, htmlentities($otherremarks_row[$i]));
 		
 	}
 	
@@ -924,10 +924,10 @@ private function typeAnnotationCheck()
 		
 			$sql = "SELECT CAPdata_programs_uid FROM CAPdata_programs
 							WHERE data_program_code= '$CAPcode'";
-			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-			if (1 == mysql_num_rows($res))
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+			if (1 == mysqli_num_rows($res))
 			{
-				$row = mysql_fetch_assoc($res);
+				$row = mysqli_fetch_assoc($res);
 				$capdata_uid = $row['CAPdata_programs_uid'];
 			}
 		
@@ -935,19 +935,19 @@ private function typeAnnotationCheck()
 		// Get code for phenotype experiments
 			$sql = "SELECT experiment_type_uid FROM experiment_types
 							WHERE experiment_type_name = 'phenotype'";
-			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
-			$row = mysql_fetch_assoc($res);
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+			$row = mysqli_fetch_assoc($res);
 			$exptype_id = $row['experiment_type_uid'];
 			
 			// Insert or update experiment table data
 			// First check if this trial code is in the database, if yes, then update all fields;
 			// if no then insert into table
 			$sql = "SELECT experiment_uid FROM experiments WHERE trial_code = '{$experiment->trialcode}'";
-			$res = mysql_query($sql) or die(mysql_error() . "<br>$sql");
+			$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 			
-			if (mysql_num_rows($res)!==0) //yes, experiment found, so update
+			if (mysqli_num_rows($res)!==0) //yes, experiment found, so update
 			{
-					$row = mysql_fetch_assoc($res);
+					$row = mysqli_fetch_assoc($res);
 					$exp_id = $row['experiment_uid'];
 					if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 		
@@ -965,7 +965,7 @@ private function typeAnnotationCheck()
 								WHERE experiment_uid = $exp_id";
 					if (DEBUG>2) {echo "update exp SQL ".$sql."\n";}
 					
-					mysql_query($sql) or die(mysql_error() . "<br>$sql");
+					mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 					//update phenotype experiment information
 					$sql = " UPDATE phenotype_experiment_info
 								set
@@ -986,7 +986,7 @@ private function typeAnnotationCheck()
 								WHERE experiment_uid = $exp_id";
 					if (DEBUG>2) {echo "update phenotypeexp SQL ".$sql."\n";}
 					
-					mysql_query($sql) or die(mysql_error() . "<br>$sql");
+					mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 			} else {
 					$sql = "
 						insert into
@@ -1003,13 +1003,13 @@ private function typeAnnotationCheck()
 					";
 					//if (DEBUG>2) {echo "insert exp SQL ".$sql."\n";}
 					
-					mysql_query($sql) or die(mysql_error());
+					mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 					
 					//get experiment_uid set genotype experiments info table
 					$sql = "SELECT experiment_uid FROM experiments
 									WHERE trial_code = '{$experiment->trialcode}' limit 1";
-					$res = mysql_query($sql) or die(mysql_error());
-					$row = mysql_fetch_assoc($res);
+					$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+					$row = mysqli_fetch_assoc($res);
 					$exp_id = $row['experiment_uid'];
 				//	if (DEBUG>1) {echo "exp ID ".$exp_id."\n";}
 					$sql = "
@@ -1033,7 +1033,7 @@ private function typeAnnotationCheck()
 							created_on = NOW()
 					";
 				//	if (DEBUG>2) {echo "insert phenotype exp SQL ".$sql."\n";}
-					mysql_query($sql) or die(mysql_error());
+					mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 				
 				
 			
@@ -1053,13 +1053,13 @@ private function typeAnnotationCheck()
 										VALUES('$filename', '$username')";
 					
 					
-	$lin_table=mysql_query($sql) or die(mysql_error());
+	$lin_table=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
 
 
 
 		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+        include $config['root_dir'].'theme/footer.php';
 	
 	
 		

@@ -10,7 +10,7 @@ require 'config.php';
  
 include($config['root_dir'] . 'includes/bootstrap.inc');
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */
@@ -48,8 +48,8 @@ ob_end_flush();
 		<select name='table_sel' size=5>
 		
 	<?php
-		$result = mysql_query("show tables") or die(mysql_error);
-		while ($row = mysql_fetch_assoc($result)) {
+		$result = mysqli_query($mysqli, "show tables") or die(mysqli_error($mysqli));
+		while ($row = mysqli_fetch_assoc($result)) {
 			$selval=implode("",array_slice($row,0,1));
 			print "<option value=\"$selval\">$selval</option>\n";
 		}

@@ -4,7 +4,7 @@
 /* Logged in page initialization */
 include("../includes/bootstrap_curator.inc");
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 $row = loadUser($_SESSION['username']);
@@ -31,8 +31,8 @@ print "<h3>Select a table from the list</h3>";
 print "<form id='form_table_sel' method='post'>\n";
 print "<p>";
 print "<select id='table_sel' size=5>\n";
-$result=mysql_query("show tables") or die(mysql_error);
-while ($row=mysql_fetch_assoc($result)) {
+$result=mysqli_query($mysqli, "show tables") or die(mysqli_error($mysqli));
+while ($row=mysqli_fetch_assoc($result)) {
 	$selval=implode("",array_slice($row,0,1));
 	print "<option value=\"$selval\">$selval</option>\n";
 }

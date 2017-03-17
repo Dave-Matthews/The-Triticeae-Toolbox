@@ -3,9 +3,9 @@
 /*
  * Logged in page initialization
  */
-include("../includes/bootstrap.inc");
+include "../includes/bootstrap.inc";
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 /* ******************************* */
@@ -13,7 +13,7 @@ $row = loadUser($_SESSION['username']);
 
 ////////////////////////////////////////////////////////////////////////////////
 ob_start();
-include("../theme/admin_header.php");
+include "../theme/admin_header.php";
 authenticate_redirect(array(USER_TYPE_ADMINISTRATOR, USER_TYPE_CURATOR, USER_TYPE_PARTICIPANT));
 ob_end_flush();
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,8 +38,8 @@ ob_end_flush();
 		$regiontbls=table_by_type($regions[$i]);
 		print ucfirst($regions[$i])." Tables</th></tr><tr><td style=\"padding:0;border:0\">";
 		print "<table class=\"tableclass1\" style=\"border:0\" cellspacing=\"0\" cellpadding=\"0\"><thead><tr><th style=\"font-style:italic\">Table Name</th><th style=\"font-style:italic\">Entries</th></tr></thead>";
-		$tables = mysql_query("SHOW TABLES");
-		while($table = mysql_fetch_row($tables)) {
+		$tables = mysqli_query($mysqli, "SHOW TABLES");
+		while($table = mysqli_fetch_row($tables)) {
 			$tablename=$table[0];
 			if (! in_array($tablename, $regiontbls)) continue;
 			echo "<tr>\n";
@@ -64,4 +64,4 @@ ob_end_flush();
 </div>
 
 
-<?php include("../theme/footer.php");?>
+<?php include "../theme/footer.php";?>

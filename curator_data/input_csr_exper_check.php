@@ -5,11 +5,8 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @category PHP
- * @package  T3
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/input_csr_exper_check.php
  *
  */
@@ -19,7 +16,6 @@ require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 require $config['root_dir'] . 'lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
-connect();
 $mysqli = connecti();
 loginTest();
 

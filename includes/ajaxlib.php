@@ -619,7 +619,6 @@ _ULLOGIN;
  * Handel logout in ajax
  */
 function ajaxLogout () {
-	connect();
 	session_start();
    	if(isLoggedIn($_SESSION['username'], $_SESSION['password'])) {
    		updateLastAccess($_SESSION['username'], $_SESSION['logintime']);
@@ -1387,10 +1386,11 @@ function DispPropertySel($arr) {
      WHERE property_uid = $id") or die(mysqli_error($mysqli));
     if(mysqli_num_rows($query) > 0) {
       // Strange.  (this.value..) works in IE and Chrome in DispPropCategorySel() but not here.
-      echo "<select size=3 onchange=\"DispPropSel(this.options[this.selectedIndex].value, 'PropValue')\">";
+      echo "<select multiple size=3 onchange=\"javascript: update_propery(this.options)\">";
       while($row = mysqli_fetch_row($query)) 
 	echo "<option value='$row[0]'>$row[1]</option>";
-      echo "</select>";
+      echo "</select><br><br>";
+      echo "<input type=\"button\" value=\"Add\" onclick=\"DispPropSel()\">";
     }
   }
 }
@@ -1407,7 +1407,12 @@ function DispPropValueSel($arr) {
      where property_values_uid = $id
      and pr.properties_uid = pv.property_uid") or die (mysqli_error($mysqli));
   $row = mysqli_fetch_row($query);
-  echo "$row[0] = $row[1], ";
+  $count = count($_SESSION['propvals']);
+  if ($count == 0) {
+      echo "$row[0] = $row[1]";
+  } else {
+      echo " or $row[0] = $row[1]";
+  }
   // Doesn't work:
   //echo "<input type=hidden name='charlie' value='bill'>";
   // All I can think of to return this value to line_properties.php is via cookie.
