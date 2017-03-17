@@ -203,13 +203,13 @@ function connect() {
   $db_config = array_merge_recursive_unique($db_config,
 					    $ini_config);
   extract($db_config);
-  $linkID = mysql_connect($db_host, $db_user, $db_pass);
-  if(!$linkID)
-    die(mysql_error());
-  else {
-    mysql_select_db($db_name, $linkID);
-    mysql_query("set SESSION sql_mode='STRICT_ALL_TABLES'") or die(mysql_error());
-  }
+  //$linkID = mysql_connect($db_host, $db_user, $db_pass);
+  //if(!$linkID)
+  //  die(mysql_error());
+  //else {
+  //  mysql_select_db($db_name, $linkID);
+  //  mysql_query("set SESSION sql_mode='STRICT_ALL_TABLES'") or die(mysql_error());
+  //}
   return $linkID;
 }
 
