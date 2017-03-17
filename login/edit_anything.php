@@ -7,7 +7,7 @@ include($config['root_dir'] . 'theme/admin_header.php');
 /*
  * Logged in page initialization
  */
-connect();
+$mysqli = connecti();
 loginTest();
 $row = loadUser($_SESSION['username']);
 ob_start();
@@ -46,8 +46,8 @@ else {
     echo "<b>$table</b>: Table name may not contain a \".\" Only this database can be edited.<p>";
     exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");	 
   }
-  $res = mysql_query("show tables like '$table'");
-  if (mysql_num_rows($res) == 0) {
+  $res = mysqli_query($mysqli, "show tables like '$table'");
+  if (mysqli_num_rows($res) == 0) {
     echo "Table <b>$table</b> does not exist.<p>";
     exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
 }

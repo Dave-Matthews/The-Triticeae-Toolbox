@@ -1,29 +1,23 @@
 <?php
 /**
  * Download Gateway New
- * 
+ *
  * PHP version 5.3
  * Prototype version 1.5.0
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @version  GIT: 2
  * @link     http://triticeaetoolbox.org/wheat/curator_data/fieldbook_export.php
- * 
+ *
  */
 require_once 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
-connect();
 $mysqli = connecti();
 
 new Tablet($_GET['function']);
 
 /** Using a PHP class to implement the "Tablet" feature
- * 
- * @category PHP
- * @package  T3
+ *
  * @author   Clay Birkett <claybirkett@gmail.com>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/curator_data/fieldbook_export.php

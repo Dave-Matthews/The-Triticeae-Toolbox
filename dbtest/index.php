@@ -9,9 +9,9 @@ require 'config.php';
 /*
  * Logged in page initialization
  */
-include($config['root_dir'] . 'includes/bootstrap_curator.inc');
-include($config['root_dir'].'theme/normal_header.php');
-connect();
+include $config['root_dir'] . 'includes/bootstrap_curator.inc';
+include $config['root_dir'].'theme/normal_header.php';
+$mysqli = connecti();
 loginTest();
 
 /* ************************************/
@@ -32,8 +32,8 @@ ob_end_flush();
 	$tables = array();
 	$i = 0;
 
-	$query = mysql_query("SHOW TABLES");
-	while($row = mysql_fetch_row($query)) {
+	$query = mysqli_query($mysqli, "SHOW TABLES");
+	while($row = mysqli_fetch_row($query)) {
 
 		$tables[$i] = $row[0];
 		$i++;
@@ -42,13 +42,13 @@ ob_end_flush();
 
 	for($i=0; $i<count($tables); $i++) {
 
-		$query = mysql_query("DESCRIBE $tables[$i]");
+		$query = mysqli_query($mysqli, "DESCRIBE $tables[$i]");
 		$fc = 1;
 
 		echo "<strong>$tables[$i]</strong>: <a href=\"dbtest/viewtable.php?table=$tables[$i]&start=0 \">View Contents</a> <br />";// ---- <a href=\"deleteTable.php?table=$tables[$i]\">Delete Contents</a> <br />";
 		echo "<table border=\"1\">\n<tr>\n\t";
 
-		while($row = mysql_fetch_assoc($query)) {
+		while($row = mysqli_fetch_assoc($query)) {
 
 			if($fc == 1) {
 

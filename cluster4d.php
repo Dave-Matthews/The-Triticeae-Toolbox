@@ -2,7 +2,6 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/admin_header.php';
-connect();
 ?>
 
 <div id="primaryContentContainer">

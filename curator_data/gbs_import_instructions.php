@@ -1,7 +1,6 @@
 <?php
 require 'config.php';
 require_once $config['root_dir'].'includes/bootstrap.inc';
-connect();
 require  $config['root_dir'].'theme/normal_header.php';
 ?>
 <title>GBS import instructions</title>
