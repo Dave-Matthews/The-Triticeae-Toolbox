@@ -48,7 +48,7 @@ ob_end_flush();
 		echo "<strong>$tables[$i]</strong>: <a href=\"dbtest/viewtable.php?table=$tables[$i]&start=0 \">View Contents</a> <br />";// ---- <a href=\"deleteTable.php?table=$tables[$i]\">Delete Contents</a> <br />";
 		echo "<table border=\"1\">\n<tr>\n\t";
 
-		while($row = mysqli_fetch_assoc($mysqli, $query)) {
+		while($row = mysqli_fetch_assoc($query)) {
 
 			if($fc == 1) {
 
