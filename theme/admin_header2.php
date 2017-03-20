@@ -108,6 +108,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
             Lines by Genotype Experiment</a>
     <?php
+    $species = strtolower($species);  //needed for JBrowse link
     /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
     /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
     if (loginTest2()) : ?>
@@ -281,33 +282,33 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 <div id="quicklinks">
   <h2>Quick Links </h2>
   <ul>
-  <?php if (isset($_SESSION['username'] ) && !isset( $_REQUEST['logout'] ) ):  ?>
+    <?php if (isset($_SESSION['username']) && !isset($_REQUEST['logout'])) : ?>
     <li>
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
             <?php else : ?>
     <li>
       <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
-   <?php endif; ?>
+    <?php endif; ?>
 
 <?php
-   echo "<p><li><b>Current selections:</b>";
-   echo "<li><a href='".$config['base_url']."pedigree/line_properties.php'>Lines:</a> ". count($_SESSION['selected_lines']);
-   echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers:</a> ";
-   if (isset($_SESSION['clicked_buttons'])) {
-     echo count($_SESSION['clicked_buttons']);
-   } elseif (isset($_SESSION['geno_exps_cnt'])) {
-     echo number_format($_SESSION['geno_exps_cnt']);
-   } else {
-     echo "All";
-   }
-   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits:</a> ";
-   if (isset($_SESSION['selected_traits'])) {
-     echo count($_SESSION['selected_traits']);
-   } elseif (isset($_SESSION['phenotype'])) {
-     echo count($_SESSION['phenotype']);
-   } else {
-     echo "0";
-   }
+echo "<p><li><b>Current selections:</b>";
+echo "<li><a href='".$config['base_url']."pedigree/line_properties.php'>Lines:</a> ". count($_SESSION['selected_lines']);
+echo "<li><a href='".$config['base_url']."genotyping/marker_selection.php'>Markers:</a> ";
+if (isset($_SESSION['clicked_buttons'])) {
+    echo count($_SESSION['clicked_buttons']);
+} elseif (isset($_SESSION['geno_exps_cnt'])) {
+    echo number_format($_SESSION['geno_exps_cnt']);
+} else {
+    echo "All";
+}
+echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits:</a> ";
+if (isset($_SESSION['selected_traits'])) {
+    echo count($_SESSION['selected_traits']);
+} elseif (isset($_SESSION['phenotype'])) {
+    echo count($_SESSION['phenotype']);
+} else {
+    echo "0";
+}
    echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
    if (isset($_SESSION['selected_trials'])) {
        echo ": " . count($_SESSION['selected_trials']);
