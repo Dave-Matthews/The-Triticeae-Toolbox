@@ -100,20 +100,21 @@ function DispSelContents($arr)
     echo "</table>\n";
 }
 
-function InsertByAjax($arr) {
+function InsertByAjax($arr)
+{
     global $mysqli;
     if ($arr['tablename']=="") {
-	print "Invalid Input for InsertByAjax";
+        print "Invalid Input for InsertByAjax";
     } else {
-	// print "Table name ".$arr['tablename']."\n";
+        // print "Table name ".$arr['tablename']."\n";
     }
-	$tablename=$arr['tablename'];
-	unset($arr['tablename']);
-	$result=mysqli_query($mysqli, "show tables like \"$tablename\"");
-	if(mysqli_num_rows($result) <= 0) {
-		print "Invalid table name";
-		return;
-	}
+    $tablename=$arr['tablename'];
+    unset($arr['tablename']);
+    $result=mysqli_query($mysqli, "show tables like \"$tablename\"");
+    if (mysqli_num_rows($result) <= 0) {
+        print "Invalid table name";
+        return;
+    }
 	$attributes=array_keys($arr);
 
 	$vals=array();
@@ -266,7 +267,7 @@ function InsertTableByAjax($arr) {
 		// check if all the foreignkeys are defined
 		$foreign_table_flag=0;
 		if (array_key_exists($tbl, $tbl_dep)) {
-			foreach ($tbl_dep[$tbl] as $frntbl=>$frnfld) {
+			foreach ($tbl_dep[$tbl] as $frntbl => $frnfld) {
 				if (! array_key_exists($frntbl, $foreign_table_ids)) {
 					$foreign_table_flag++;
 				}
@@ -815,7 +816,7 @@ function get_selopts_str($table) {
  */
 function ajaxSubmitForm ($arr) {
 	$flag=0; // flag>0 if error
-	$submit_message;
+	$submit_message="";
 	$tablename="";
 	$flds=array();
 	if (! isset($arr['formsubmitstr']) || strlen($arr['formsubmitstr'])<1) {
