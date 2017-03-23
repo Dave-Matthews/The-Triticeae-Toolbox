@@ -313,10 +313,10 @@ if (!$traits or !$trials) {
         print "</table><br>";
 
   // Display the table on the page.
-  $traitnumber = 0;
-  foreach ($traits as $trait) {
-    $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
-    $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
+        $traitnumber = 0;
+        foreach ($traits as $trait) {
+            $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
+            $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
     if (!$lsds[$traitnumber]) {
       $lsdround = "--";
     } else {
@@ -355,8 +355,12 @@ if (!$traits or !$trials) {
 	  $val = round($vals[$trait][$trial][$line], 1);
 	  // Calculate the color. Red is 0, pale yellow is 15. 
 	  // Colors greater than 10 are too pale to read.
-	  $col = 10 - floor(10 * ($val - $mn) / ($mx - $mn));
-	  print "<td><font color=$color[$col]><b>$val</b></font>";
+          if (($mx - $mn) != 0) {
+	      $col = 10 - floor(10 * ($val - $mn) / ($mx - $mn));
+	      print "<td><font color=$color[$col]><b>$val</b></font>";
+          } else {
+              print "<td><b>$val</b>";
+          }
 	} else {
 	  print "<td>--";
         }

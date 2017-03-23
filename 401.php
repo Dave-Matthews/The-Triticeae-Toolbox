@@ -1,6 +1,5 @@
 <?php
 include("includes/bootstrap.inc");
-connect();
 include("theme/normal_header.php");
 ?>
 

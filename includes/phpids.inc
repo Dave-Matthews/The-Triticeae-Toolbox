@@ -24,6 +24,9 @@ try {
     //unserialize data so it will not be detected as intrusion
     $getVar = $_GET;
     $postVar = $_POST;
+    if (isset($getVar['bp'])) {
+        $getVar['bp'] = explode(",", $getVar['bp']);
+    }
     if (isset($getVar['exps'])) {
         $getVar['exps'] = explode(",", $getVar['exps']);
     }
