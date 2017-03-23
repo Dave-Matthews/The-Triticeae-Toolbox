@@ -19,7 +19,7 @@
   - PHPIDS web application security
     - Edit lib/phpids-0.7/lib/IDS/Config/Config.ini.php to specify filter_path and tmp_path
 - For some functions
-  - GBrowse
+  - JBrowse
   - pclzip.lib.php
   - libzzip
   - for ViroBLAST
@@ -172,25 +172,8 @@ e.g. www-data
 
 Then restart the Apache server to read the new php.ini configuration.
 
-<b>GBrowse</b>
+<b>JBrowse</b>
 
-Installing GBrowse should have created a gbrowse.conf/ directory in the
-Apache configuration directory, e.g. in /etc/apache2/.  Edit the
-tht.conf file in the repository's gbrowse-generated/ directory to
-replace "&lt;password>" with the publicuser password you assigned for
-the gtht database above, and move tht.conf to the gbrowse.conf/
-directory.
-
-Add the following stanza to your Apache configuration file, e.g.
-/etc/apache2/sites-available/default, and restart Apache.
-
-Alias /perl/ "/cgi-bin/"
-&lt;Location /perl/>
-     SetHandler perl-script
-     PerlResponseHandler ModPerl::Registry
-     PerlOptions +ParseHeaders
-     Options +ExecCGI
-     Order allow,deny
-     Allow from all
-&lt;/Location>
-
+See installation instructions at http://jbrowse.org/code/JBrowse-1.12.1/docs/tutorial.
+The installation should be in the DocumentRoot of Apache. As and example, if the installed version is JBrowse-1.12.1 use the following command
+sudo ln -s JBrowse-1.12.1/ jbrowse
