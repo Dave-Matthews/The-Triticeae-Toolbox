@@ -32,4 +32,8 @@ require_once $config['root_dir'].'downloads/marker_filter.php';
 require_once $config['root_dir'].'downloads/vcf_class.php';
 require 'downloads_class.php';
 
-new Downloads($_GET['function']);
+if (isset($_GET['function'])) {
+    new Downloads($_GET['function']);
+} else {
+    new Downloads("web");
+}
