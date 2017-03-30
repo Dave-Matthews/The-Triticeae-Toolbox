@@ -253,7 +253,7 @@ class SelectPhenotypeExp
       ?>
       <h2>Select Lines, Traits, and Trials</h2>
       <p>
-      Select genotype and phenotype data for analysis or download.
+      Select phenotype data for analysis or download. When you save the selection, the genotype experiment selection is cleared and consensus genotypes will be used.<br>
       <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
       <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;">
       <?php 
@@ -1014,8 +1014,7 @@ class SelectPhenotypeExp
 	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 	      $row = mysqli_fetch_assoc($res)
 	      ?>
-	      <option disabled="disabled" value="
-	      <?php $uid ?>">
+	      <option disabled="disabled" value="">
 	      <?php echo $row['line_record_name'] ?>
 	      </option>
 	      <?php
