@@ -54,27 +54,30 @@ class Pedigree
         include $config['root_dir'].'theme/footer.php';
     }
 
-  private function type_LineInformation() {
-    global $mysqli;
-    // If we clicked on the button for Lines Found, retrieve that cookie instead.
-    if ($_GET['lf'] == "yes") {
-      $linelist = $_SESSION['linesfound'];
-      // Flag for the Download Line Data button to use:
-      $lf = "&lf=yes";
-    }
-    else 
-      $linelist = $_SESSION['selected_lines'];
-    // Find which Properties this set of lines has any values for.
-    $ourprops = array(); 
-    foreach ($linelist as $lineuid) {
-      $propresult = mysqli_query($mysqli, "select property_uid
-	 from line_properties lp, property_values pv
-	 where lp.property_value_uid = pv.property_values_uid
-	 and lp.line_record_uid = $lineuid");
-      while ($pr = mysqli_fetch_assoc($propresult)) 
-	if (!in_array($pr['property_uid'], $ourprops)) 
-	  $ourprops[] = $pr['property_uid'];  // array of uids
-    }
+    private function type_LineInformation()
+    {
+        global $mysqli;
+        // If we clicked on the button for Lines Found, retrieve that cookie instead.
+        if ($_GET['lf'] == "yes") {
+            $linelist = $_SESSION['linesfound'];
+            // Flag for the Download Line Data button to use:
+            $lf = "&lf=yes";
+        } else {
+            $linelist = $_SESSION['selected_lines'];
+        }
+        // Find which Properties this set of lines has any values for.
+        $ourprops = array();
+        foreach ($linelist as $lineuid) {
+            $propresult = mysqli_query($mysqli, "select property_uid
+	    from line_properties lp, property_values pv
+	    where lp.property_value_uid = pv.property_values_uid
+	    and lp.line_record_uid = $lineuid");
+            while ($pr = mysqli_fetch_assoc($propresult)) {
+                if (!in_array($pr['property_uid'], $ourprops)) {
+                    $ourprops[] = $pr['property_uid'];  // array of uids
+                }
+            }
+        }
 ?>
 
 <script type="text/javascript">
@@ -105,7 +108,7 @@ function load_excel() {
       <th style="width: 80px;" class="marker">Pedigree</th>
       <th style="width: 40px;" class="marker">Gener ation</th>
       <th style="width: 80px;" class="marker">Comment</th>
-<?php 
+<?php
  foreach ($ourprops as $pr) {
       $prname = mysql_grab("select name from properties where properties_uid = $pr");
       echo "<th style='width: 50px; word-wrap: break-word' class=marker>".$prname."</th>";
@@ -183,7 +186,7 @@ function load_excel() {
 </table>
 </div>
 <br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/><br>
-<!--br><a href="<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>">Download Line Data</a->
+<!--br><a href="<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>">Download Line Data</a-->
 
 <?php
 } /* End of function type_LineInformation*/
