@@ -1502,7 +1502,7 @@ function find($string, $array = array ())
 {
     foreach ($array as $key => $value) {
         unset($array[$key]);
-        if (strpos($value, $string) !== false) {
+        if (stripos($value, $string) !== false) {
             $array[$key] = $key;
         }
     }
