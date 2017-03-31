@@ -1467,6 +1467,7 @@ class Downloads
       $output = '';
       $outputheader1 = '';
       $outputheader3 = "<Trial>";
+      $removeOutlier = "";
       
       //only use first trait
       $pattern = "/([0-9]+)/";
@@ -1515,7 +1516,7 @@ class Downloads
       $nlines = count($lines_names);
       //die($sql . "<br>" . $nlines);
 
-          $outputheader1 = "$nlines".$delimiter."$ncols".$delimiter.$nheaderlines;
+          //$outputheader1 = "$nlines".$delimiter."$ncols".$delimiter.$nheaderlines;
           $output = $outputheader2."\n";
 	  
           //add lines from pred set
