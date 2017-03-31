@@ -17,7 +17,7 @@ namespace T3;
 
 require_once 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-require $config['root_dir'] . 'downloads/downloads_class2.php';
+require $config['root_dir'] . 'downloads/downloads_class.php';
 
 $mysqli = connecti();
 
@@ -26,9 +26,7 @@ new Histo($_GET['function']);
 
 /** Using a PHP class to display histogram
  *
- * @category PHP
- * @package  T3
- * @author   Clay Birkett <claybirkett@gmail.com>
+ * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/histo.php
  *
@@ -199,9 +197,12 @@ class Histo
             fclose($h);
         }
         if (file_exists("/tmp/tht/$filename4")) {
-                  print "<img src=\"/tmp/tht/$filename4\" /><br>";
+            print "<img src=\"/tmp/tht/$filename4\"/>";
+            print "<form method=\"get\" action=\"/tmp/tht/$filename4\">";
+            print "<button type=\"submit\">Download Image</button>";
+            print "</form>";
         } else {
-                  echo "Error in R script R/GShisto.R<br>\n";
+            echo "Error in R script R/GShisto.R<br>\n";
         }
     }
 

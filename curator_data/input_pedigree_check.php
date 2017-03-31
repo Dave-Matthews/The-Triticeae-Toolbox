@@ -39,21 +39,20 @@ class PedigreeCheck
                 $this->typePedigreeCheck(); /* intial case*/
                 break;
         }
-}
+    }
 
-private function typePedigreeCheck()
-	{
-		global $config;
-		include($config['root_dir'] . 'theme/admin_header.php');
+    private function typePedigreeCheck()
+    {
+        global $config;
+        include $config['root_dir'] . 'theme/admin_header.php';
 
-		echo "<h2> Enter/Update Pedigree Information: Validation</h2>"; 
-		
-			
-		$this->type_Pedigree_Information();
+        echo "<h2> Enter/Update Pedigree Information: Validation</h2>";
 
-		$footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
-	}
+	$this->type_Pedigree_Information();
+
+	$footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    }
 	
 	
 	private function type_Pedigree_Information()

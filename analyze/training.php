@@ -14,7 +14,7 @@ namespace T3;
 require_once 'config.php';
 require $config['root_dir'] . 'includes/bootstrap2.inc';
 require $config['root_dir'] . 'downloads/marker_filter.php';
-require $config['root_dir'] . 'downloads/downloads_class2.php';
+require $config['root_dir'] . 'downloads/downloads_class.php';
 set_time_limit(0);
 
 $mysqli = connecti();
@@ -238,6 +238,7 @@ class Training
               <option value="AOPT"> AOPT
               </select>
             </table>
+            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
             </div>
             <?php
         } elseif (isset($_SESSION['selected_lines'])) {
@@ -365,9 +366,9 @@ class Training
         $dtype = "qtlminer";
         $h = fopen("$dir/$filename", "w");
         if ($typeGE == "true") {
-            $output = type4BuildMarkersDownload($experiment_uid, $min_maf, $max_missing, $dtype, $h);
+            type4BuildMarkersDownload($experiment_uid, $min_maf, $max_missing, $dtype, $h);
         } else {
-            $output = $dObj->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
+            $dObj->type3BuildMarkersDownload($lines, $markers, $dtype, $h);
         }
         fclose($h);
         $estimate = count($lines) + count($markers);

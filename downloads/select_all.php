@@ -253,7 +253,7 @@ class SelectPhenotypeExp
       ?>
       <h2>Select Lines, Traits, and Trials</h2>
       <p>
-      Select genotype and phenotype data for analysis or download.
+      Select phenotype data for analysis or download. When you save the selection, the genotype experiment selection is cleared and consensus genotypes will be used.<br>
       <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
       <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;">
       <?php 
@@ -538,32 +538,37 @@ class SelectPhenotypeExp
      * starting with phenotype display lines
      */
 	private function step4_phenotype()
-    { 
-        global $mysqli; 
-    	$phen_item = $_GET['pi'];
-		$experiments = $_GET['e'];
-		$subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-		$selected_lines = array();
-		$_SESSION['phenotype'] = $phen_item; // Empty the session array.
-		
-		if (count($_SESSION['selected_lines']) > 0) {
-		 $sub_ckd = ""; $all_ckd = "checked";
-		} else {
-		 $sub_ckd = "disabled"; $all_ckd = "checked";
-		}
-		if ($subset == "yes") {
-		 $sub_ckd = "yes"; $yes_ckd = "checked";
-		} elseif ($subset == "no") {
-		 $sub_ckd = ""; $all_ckd = "checked";
-		} elseif ($subset == "comb") {
-		 $sub_ckd = ""; $cmb_ckd = "checked";
-		}
-		?>
-		<p>4.
-		<select name="select1">
-		  <option value="BreedingProgram">Lines</option>
-		</select></p>
-		
+    {
+        global $mysqli;
+        $phen_item = $_GET['pi'];
+        $experiments = $_GET['e'];
+        $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+	$selected_lines = array();
+	$_SESSION['phenotype'] = $phen_item; // Empty the session array.
+
+	if (count($_SESSION['selected_lines']) > 0) {
+	 $sub_ckd = "";
+         $all_ckd = "checked";
+	} else {
+	 $sub_ckd = "disabled";
+         $all_ckd = "checked";
+	}
+	if ($subset == "yes") {
+	 $sub_ckd = "yes";
+         $yes_ckd = "checked";
+	} elseif ($subset == "no") {
+	 $sub_ckd = "";
+         $all_ckd = "checked";
+	} elseif ($subset == "comb") {
+	 $sub_ckd = "";
+         $cmb_ckd = "checked";
+	}
+	?>
+	<p>4.
+	<select name="select1">
+	  <option value="BreedingProgram">Lines</option>
+	</select></p>
+
         <table id="phenotypeSelTab" class="tableclass1">
 		<tr>
 			<th>Lines</th>
@@ -571,9 +576,9 @@ class SelectPhenotypeExp
 		<tr><td>
 		<select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
                 <?php
+        $lines_list = array();
+        $lines_new = "";
         if ($sub_ckd == "checked") {
-          $lines_list = array();
-          $lines_new = "";
           $selected_lines = $_SESSION['selected_lines'];
           foreach ($selected_lines as $line) {
             $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
@@ -1009,8 +1014,7 @@ class SelectPhenotypeExp
 	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 	      $row = mysqli_fetch_assoc($res)
 	      ?>
-	      <option disabled="disabled" value="
-	      <?php $uid ?>">
+	      <option disabled="disabled" value="">
 	      <?php echo $row['line_record_name'] ?>
 	      </option>
 	      <?php

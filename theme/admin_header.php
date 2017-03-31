@@ -70,7 +70,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 </head>
 <body onload="javascript:setup();">
 <div id="container">
-<div id="barleyimg"><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"><?php echo $species; ?></h1>
+<div id="barleyimg"><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"></h1>
   </div>
   <div id="util">
   <div id="utilright">

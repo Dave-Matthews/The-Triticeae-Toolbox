@@ -86,7 +86,7 @@ class Downloads
             case 'verifyLines':
                 $this->verifyLines();
                 break;
-            default:
+            case 'web':
                 $this->type1Select();
                 break;
         }
@@ -1050,7 +1050,7 @@ class Downloads
      * 
      * @return NULL
      */
-    function type1_build_traits_download($experiments, $traits, $datasets)
+    public function type1_build_traits_download($experiments, $traits, $datasets)
     {
         global $mysqli;
         $delimiter = "\t";
@@ -1133,7 +1133,7 @@ class Downloads
      * @param string $dtype
      * @return string
      */
-    private function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset, $dtype)
+    public function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset, $dtype)
     {
         global $mysqli;
         $delimiter = "\t";
