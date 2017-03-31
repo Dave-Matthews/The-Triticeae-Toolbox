@@ -189,7 +189,7 @@ function connecti() {
   if ($mysqli->connect_errno) {
     die($mysqli->connect_errno() . " " . $mysqli->connect_error);
   } else {
-    $mysqli->query("set SESSION sql_mode='STRICT_ALL_TABLES'") or die(mysql_error());
+    $mysqli->query("set SESSION sql_mode='STRICT_ALL_TABLES'") or die($mysqli->error);
   }
   return $mysqli;
 }
@@ -320,7 +320,6 @@ function authenticate_redirect($allowed_user_types){
  * @author Gavin Monroe
  */
 function authenticate($allowed_user_types){
-  	connect();
 	if(loginTest2()){
 		$row = loadUser($_SESSION['username']);
 		$user_type_id = $row['user_types_uid'];
