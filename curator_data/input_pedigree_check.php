@@ -467,9 +467,9 @@ class PedigreeCheck
 	
 	$username = $_GET['user_name'];
 	
-	
-/* This function does a quick add of a line to the line records table */        
-        function addline($line,$pedstring){
+/* This function does a quick add of a line to the line records table */
+        function addline($line, $pedstring)
+        {
             global $mysqli;
             $sql = "INSERT INTO line_records (line_record_name,pedigree_string,updated_on,created_on)
                     VALUES ('$line',";
@@ -477,13 +477,13 @@ class PedigreeCheck
                 $sql = $sql."'$pedstring',";
             }
             $sql = $sql."NOW(), NOW())";
-            $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
             return $result;
-        }	
-	
-	
-	/* This function updates the line pedigree string in the line records table */        
-	function updatelineped($line_uid,$pedstring){
+        }
+
+        /* This function updates the line pedigree string in the line records table */
+        function updatelineped($line_uid, $pedstring)
+        {
             global $mysqli;
             $sql = "UPDATE line_records SET";
 
@@ -493,37 +493,30 @@ class PedigreeCheck
             $sql = $sql." updated_on=NOW()
                     WHERE line_record_uid=$line_uid";
 
-            $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
             return $result;
         }
-	
-	
-	
-	
-	
-	
-	
-	$handle = fopen($datafile, "r");
+
+        $handle = fopen($datafile, "r");
         $header = fgetcsv($handle, 0, "\t");
         
         // Set up column indices; all columns are required
-        $capline_idx = implode(find("CAPLINE", $header),"");
-        $line_idx = 1 * array_search("LINE_NAME", $header);;
-        $par1_idx = implode(find("PARENT_1", $header),"");
-        $par2_idx = implode(find("PARENT_2", $header),"");
-        $con1_idx = implode(find("CONTRIB_1", $header),"");
-        $con2_idx = implode(find("CONTRIB_2", $header),"");
-        $self1_idx = implode(find("SELFING_1", $header),"");
-        $self2_idx = implode(find("SELFING_2", $header),"");
-        $pedstring_idx = implode(find("pedigree", $header),"");
-        
-	
+        $capline_idx = implode(find("CAPLINE", $header), "");
+        $line_idx = 1 * array_search("LINE_NAME", $header);
+        $par1_idx = implode(find("PARENT_1", $header), "");
+        $par2_idx = implode(find("PARENT_2", $header), "");
+        $con1_idx = implode(find("CONTRIB_1", $header), "");
+        $con2_idx = implode(find("CONTRIB_2", $header), "");
+        $self1_idx = implode(find("SELFING_1", $header), "");
+        $self2_idx = implode(find("SELFING_2", $header), "");
+        $pedstring_idx = implode(find("pedigree", $header), "");
     
-    
-  //  Step 2. Read in data, a line at a time  
+  //  Step 2. Read in data, a line at a time
        
-        while (($data = fgetcsv($handle, 0, "\t")) !== FALSE) {
-            if ($capline_idx!==FALSE) {$capline = trim($data[$capline_idx]);}
+        while (($data = fgetcsv($handle, 0, "\t")) !== false) {
+            if ($capline_idx!==false) {
+                $capline = trim($data[$capline_idx]);
+            }
             $line = trim($data[$line_idx]);
             $par1 = trim($data[$par1_idx]);
             $par2 = trim($data[$par2_idx]);
@@ -534,21 +527,24 @@ class PedigreeCheck
             $pedstring = addslashes(trim($data[$pedstring_idx]));
             
             //check for empty values and replace with defaults if needed
-            $e1=strlen($par1);$e2=strlen($par2);
-            $ec1=strlen($con1);$ec2=strlen($con2);
-            $es1=strlen($self1);$es2=strlen($self2);
+            $e1=strlen($par1);
+            $e2=strlen($par2);
+            $ec1=strlen($con1);
+            $ec2=strlen($con2);
+            $es1=strlen($self1);
+            $es2=strlen($self2);
             
             //set defaults if not given
-            if ($ec1==0){
+            if ($ec1==0) {
                 $con1 = 0.5;
             }
-            if ($ec2==0){
+            if ($ec2==0) {
                 $con2 = 0.5;
             }
-            if ($es1==0){
+            if ($es1==0) {
                 $self1 = "FN";
             }
-            if ($es2==0){
+            if ($es2==0) {
                 $self2 = "FN";
             }
 
@@ -559,29 +555,29 @@ class PedigreeCheck
     b. If yes, then get the line_record_uids, also update pedigree strings
     c. If no, add this line and its pedigree string to the line record table.*/
             $line_uid =get_lineuid($line);
-            if ($line_uid===FALSE) {
-                $result = addline($line,$pedstring);
+            if ($line_uid===false) {
+                $result = addline($line, $pedstring);
                 $line_uid =get_lineuid($line);
             } else {
-                updatelineped(implode(",",$line_uid),$pedstring); //add in pedigree string
+                updatelineped(implode(",", $line_uid), $pedstring); //add in pedigree string
             }
-            $line_uid = implode(",",$line_uid);
+            $line_uid = implode(",", $line_uid);
             
-            if (($e1!==0)AND($par1!=="TBD")AND($par1!==NA)) {
+            if (($e1!==0) and ($par1!=="TBD") and ($par1!==NA)) {
                 $par1_uid =get_lineuid($par1);
-                if ($par1_uid===FALSE) {
-                    $result = addline($par1,"");
+                if ($par1_uid===false) {
+                    $result = addline($par1, "");
                     $par1_uid =get_lineuid($par1);
                 }
-                $par1_uid = implode(",",$par1_uid);
-          }
-            if (($e2!==0)AND($par2!=="TBD")AND($par2!==NA)) {
+                $par1_uid = implode(",", $par1_uid);
+            }
+            if (($e2!==0) and ($par2!=="TBD") and ($par2!==NA)) {
                 $par2_uid =get_lineuid($par2);
-                if ($par2_uid===FALSE) {
-                    $result = addline($par2,"");
+                if ($par2_uid===false) {
+                    $result = addline($par2, "");
                     $par2_uid =get_lineuid($par2);
                 }
-                $par2_uid = implode(",",$par2_uid);
+                $par2_uid = implode(",", $par2_uid);
             }
            
            
@@ -590,7 +586,7 @@ class PedigreeCheck
 /* 4. Check if information for this inbred/parent combo is already in table, Skip if either parent is blank
     If yes, then check if changed, if no change, do nothing
     If not in table, then add to pedigree relations table */
-            if (($e1!==0)AND($par1!=="TBD")AND($par1!=="NA")) {
+            if (($e1!==0) and ($par1!=="TBD") and ($par1!=="NA")) {
                 $sql_ped = mysqli_query($mysqli, "SELECT COUNT(*) AS cnt FROM pedigree_relations
                                 WHERE line_record_uid=$line_uid AND parent_id =$par1_uid");
                 $n_match = mysqli_fetch_assoc($sql_ped);
@@ -636,8 +632,7 @@ class PedigreeCheck
         }
         
      $sql = "INSERT INTO input_file_log (file_name,users_name)
-										VALUES('$filename', '$username')";
-					
+	VALUES('$filename', '$username')";
 					
 	$ped_table=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));   
         
@@ -647,10 +642,8 @@ class PedigreeCheck
 	<a href="./curator_data/input_pedigree_upload.php"> Go Back To Main Page </a>
 	
 	<?php
-		$footer_div = 1;
-    include $config['root_dir'].'theme/footer.php';
-		
-	} /* end of function type_database */
-	
+        $footer_div = 1;
+        include $config['root_dir'].'theme/footer.php';
+    } /* end of function type_database */
 } /* end of class */
 
