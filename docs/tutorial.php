@@ -1,17 +1,15 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
-include($config['root_dir'].'theme/normal_header.php');
-connect();
+include $config['root_dir'].'includes/bootstrap.inc';
+include $config['root_dir'].'theme/normal_header.php';
+$mysqli = connecti();
 $name = get_unique_name("datasets");
 ?>
 
-<link rel="stylesheet" type="text/css" href="http://wheat.pw.usda.gov/tht/theme/new.css">
-
 <div id="primaryContentContainer">
   <div id="primaryContent">
-  <h1>THT Tutorial</h1>
-THT is a database of phenotypes and molecular alleles for a large set of germplasm
+  <h1>T3 Tutorial</h1>
+T3 is a database of phenotypes and molecular alleles for a large set of germplasm
 lines, to be extracted for association mapping of traits to markers using analysis 
 software such as <a href="http://www.maizegenetics.net/tassel">Tassel</a>.  In addition
 it includes pedigrees of the germplasm lines and map positions of the markers.
@@ -41,7 +39,6 @@ traits.txt, snpfile.txt, and annotated_alignment.txt, suitable for loading into 
 
 <h4>Viewing maps</h4>
 ...
-
 <?php 
   $footer_div=1;
-include($config['root_dir'].'theme/footer.php'); ?>
+include $config['root_dir'].'theme/footer.php';
