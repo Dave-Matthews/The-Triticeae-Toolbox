@@ -46,12 +46,9 @@ if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {
     $species = "";
 }
 // clear session if it contains variables from another database
-$database = mysql_grab("select value from settings where name='database'");
+$database = mysql_grab("select database()");
 $species = mysql_grab("select value from settings where name='species'");
-$temp = $_SESSION['database'];
-if (empty($database)) {
-    //error, settings table should have this entry
-} elseif ($temp != $database) {
+if ($_SESSION['database'] != $database) {
     session_unset();
 }
 $_SESSION['database'] = $database;
@@ -309,18 +306,18 @@ if (isset($_SESSION['selected_traits'])) {
 } else {
     echo "0";
 }
-   echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
-   if (isset($_SESSION['selected_trials'])) {
-       echo ": " . count($_SESSION['selected_trials']);
-   }
-   echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
-   if (isset($_SESSION['geno_exps'])) {
-       echo ": " . count($_SESSION['geno_exps']);
-   }
-   if (isset($_SESSION['selected_lines']) || isset($_SESSION['selected_traits']) || isset($_SESSION['selected_trials'])) {
-       echo "<p><a href='downloads/clear_selection.php'>Clear Selection</a>";
-   }
-   ?>
+echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
+if (isset($_SESSION['selected_trials'])) {
+    echo ": " . count($_SESSION['selected_trials']);
+}
+echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
+if (isset($_SESSION['geno_exps'])) {
+    echo ": " . count($_SESSION['geno_exps']);
+}
+if (isset($_SESSION['selected_lines']) || isset($_SESSION['selected_traits']) || isset($_SESSION['selected_trials'])) {
+    echo "<p><a href='downloads/clear_selection.php'>Clear Selection</a>";
+}
+?>
 
   <br><br><li>
   <form style="margin-bottom:3px" action="search.php" method="post">
