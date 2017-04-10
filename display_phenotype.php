@@ -271,7 +271,7 @@ if (($data_public_flag == 0) and
             //-----------------------------------------get statistics
         $mean_arr=array('Mean','');
         $se_arr=array('Standard Error','');
-        // Unformatted mean and SE 
+        // Unformatted mean and SE
         $unformat_mean_arr=array('Mean','');
         $unformat_se_arr=array('Standard Error','');
  
@@ -283,8 +283,7 @@ if (($data_public_flag == 0) and
         $fnr="Number Replicates,";
         $fprob="Prob gt F,";
          
-        for($i=0;$i<$num_phenotypes;$i++)
-        {
+        for ($i=0;$i<$num_phenotypes;$i++) {
             $puid=$phenotype_uid[$i];
             $sigdig=$unit_sigdigits[$i];
          
@@ -438,6 +437,7 @@ function output_file_plot(puid) {
 </div>			
         
 <?php
+}
     echo "<br>";
     echo "<form>";
     echo "<input type='button' value='Download Trial Data' onclick=\"javascript:output_file2('$experiment_uid');\" />";
@@ -450,7 +450,6 @@ function output_file_plot(puid) {
         echo "<input type='button' value='Download Plot Data' onclick=\"javascript:output_file_plot('$experiment_uid');\" />";
         echo "</form>";
     }
-} 
 
 $sourcesql="SELECT input_data_file_name FROM experiments WHERE trial_code='$trial_code'";
 $sourceres=mysqli_query($mysqli, $sourcesql) or die(mysqli_error($mysqli));
@@ -527,7 +526,6 @@ while ($row = mysqli_fetch_array($res)) {
   echo "<td><a href=$trial>Calculate Index</a>";
 }
 echo "</table>";
-
 }
   
     //-----------------------------------------------------------------------------------
