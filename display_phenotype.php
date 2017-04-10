@@ -152,7 +152,7 @@ if (($data_public_flag == 0) and
     if ($num_phenotypes > 10000) {
         echo "$num_lines lines<br>$num_pheno phenotypes measured<br>\n";
         echo "values will not be displayed if there are over 10000 phenotypes measuerements<br>\n";
-        $num_phenotypes = 0;
+        die();
     } elseif (!empty($thtbase_uid)) {
         $thtbasestring = implode(",", $thtbase_uid);
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
