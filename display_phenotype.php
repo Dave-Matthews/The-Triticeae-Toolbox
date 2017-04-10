@@ -152,7 +152,6 @@ if (($data_public_flag == 0) and
     if ($num_phenotypes > 100) {
         echo "$num_lines lines<br>$num_phenotypes phenotypes measured<br>\n";
         echo "<font color=\"red\">Warning: Values will not be displayed if there are over 100 phenotypes measuered.</font><br>\n";
-        die();
     } elseif (!empty($thtbase_uid)) {
         $thtbasestring = implode(",", $thtbase_uid);
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
@@ -237,31 +236,34 @@ if (($data_public_flag == 0) and
                     $row_val=mysqli_fetch_assoc($result_val);
                     $val=$row_val['value'];
                     $val_long=$val;
-		    if ($sigdig >= 0) {
-                          $val = floatval($val);
-		          $val=number_format($val,$sigdig);
+                    if ($sigdig >= 0) {
+                        $val = floatval($val);
+                        $val=number_format($val, $sigdig);
                     }
-		} else {
-		    $val = "--"; 
-		    $val_long = "--";
-		}
-		if (empty($val)) {
-		  $val = "--";
-		  $val_long = "--";
-		}
+                } else {
+                    $val = "--";
+                    $val_long = "--";
+                }
+                if (empty($val)) {
+                    $val = "--";
+                    $val_long = "--";
+                }
                 $single_row[$i+2]=$val;
-		        $single_row_long[$i+2]=$val_long;
+                $single_row_long[$i+2]=$val_long;
             }
         //-----------------------------------------check line addition
 
-            if($check_line[$lr_i]=='yes') $check=1;
-            else $check=0;
+            if ($check_line[$lr_i]=='yes') {
+                $check=1;
+            } else {
+                $check=0;
+            }
             //echo $check;
             $single_row[$num_phenotypes+2]=$check;
             $single_row_long[$num_phenotypes+2]=$check;
             //-----------------------------------------
             //var_dump($single_row_long);
-            $stringData= implode($delimiter,$single_row_long);
+            $stringData= implode($delimiter, $single_row_long);
             
             $all_rows[]=$single_row;
             $all_rows_long[]=$single_row_long;
