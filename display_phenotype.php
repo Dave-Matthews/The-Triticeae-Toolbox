@@ -150,8 +150,8 @@ if (($data_public_flag == 0) and
     $titles[]="GRIN Accession";//add CAP Code column to titles
 
     if ($num_phenotypes > 10000) {
-        echo "$num_lines lines<br>$num_pheno phenotypes measured<br>\n";
-        echo "values will not be displayed if there are over 10000 phenotypes measuerements<br>\n";
+        echo "$num_lines lines<br>$num_phenotypes phenotypes measurements<br>\n";
+        echo "<font color=\"red\">Warning: Values will not be displayed if there are over 10000 phenotypes measuerements.</font><br>\n";
         die();
     } elseif (!empty($thtbase_uid)) {
         $thtbasestring = implode(",", $thtbase_uid);
