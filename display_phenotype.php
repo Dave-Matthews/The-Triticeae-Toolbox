@@ -151,7 +151,7 @@ if (($data_public_flag == 0) and
 
     if ($num_phenotypes > 100) {
         echo "$num_lines lines<br>$num_phenotypes phenotypes measured<br>\n";
-        echo "<font color=\"red\">Warning: Values will not be displayed if there are over 100 phenotypes measuered.</font><br>\n";
+        echo "<font color=\"red\">Warning: Values will not be displayed when there are over 100 phenotypes measuered.</font><br>\n";
     } elseif (!empty($thtbase_uid)) {
         $thtbasestring = implode(",", $thtbase_uid);
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
@@ -283,7 +283,7 @@ if (($data_public_flag == 0) and
         $fnr="Number Replicates,";
         $fprob="Prob gt F,";
          
-        for ($i=0;$i<$num_phenotypes;$i++) {
+        for ($i=0; $i<$num_phenotypes; $i++) {
             $puid=$phenotype_uid[$i];
             $sigdig=$unit_sigdigits[$i];
          
@@ -360,22 +360,6 @@ if (($data_public_flag == 0) and
 	h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
 
-<script type="text/javascript">
-
-function output_file(url) {
-        window.open(url);
-}
-function output_file2(puid) {
-    url = "download_phenotype.php?function=downloadMean&pi=" + puid;
-    window.open(url);
-}
-
-function output_file_plot(puid) {
-    url = "download_phenotype.php?function=downloadPlot&pi=" + puid;
-    window.open(url);
-}
-</script>
-
 <!-- Calculate the width of the table based on the number of columns. -->		
 <?php $tablewidth = count($single_row) * 92 + 10;  ?>
 			  
@@ -438,6 +422,24 @@ function output_file_plot(puid) {
         
 <?php
 }
+?>
+<script type="text/javascript">
+
+function output_file(url) {
+        window.open(url);
+}
+function output_file2(puid) {
+    url = "download_phenotype.php?function=downloadMean&pi=" + puid;
+    window.open(url);
+}
+
+function output_file_plot(puid) {
+    url = "download_phenotype.php?function=downloadPlot&pi=" + puid;
+    window.open(url);
+}
+</script>
+<?php
+
     echo "<br>";
     echo "<form>";
     echo "<input type='button' value='Download Trial Data' onclick=\"javascript:output_file2('$experiment_uid');\" />";
