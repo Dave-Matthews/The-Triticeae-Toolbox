@@ -39,6 +39,9 @@ require $config['root_dir'].'includes/bootstrap2.inc';
 require $config['root_dir'].'theme/normal_header.php';
 $delimiter = "\t";
 $mysqli = connecti();
+?>
+<script type="text/javascript" src="display_phenotype.js"></script>
+<?php
 
 $trial_code=strip_tags($_GET['trial_code']);
 // Display Header information about the experiment
@@ -298,7 +301,7 @@ if (($data_public_flag == 0) and
             $nr=$row_mdata['number_replicates'];
             $prob=$row_mdata['prob_gt_F'];
         
-            if($mean!=0) {	
+            if ($mean!=0) {	
                 $unformat_mean_arr[] = $mean;
                 if ($sigdig>=0) $mean=number_format($mean,$sigdig);
                 $mean_arr[] = $mean;
@@ -307,7 +310,7 @@ if (($data_public_flag == 0) and
                 $mean_arr[]="--";
             }
             
-            if($se!=0) {	
+            if ($se!=0) {	
                 $unformat_se_arr[] = $se;                
                 if ($sigdig>=0) $se=number_format($se,$sigdig);
                 $se_arr[] = $se;
@@ -422,24 +425,6 @@ if (($data_public_flag == 0) and
         
 <?php
 }
-?>
-<script type="text/javascript">
-
-function output_file(url) {
-        window.open(url);
-}
-function output_file2(puid) {
-    url = "download_phenotype.php?function=downloadMean&pi=" + puid;
-    window.open(url);
-}
-
-function output_file_plot(puid) {
-    url = "download_phenotype.php?function=downloadPlot&pi=" + puid;
-    window.open(url);
-}
-</script>
-<?php
-
     echo "<br>";
     echo "<form>";
     echo "<input type='button' value='Download Trial Data' onclick=\"javascript:output_file2('$experiment_uid');\" />";
