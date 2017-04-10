@@ -135,11 +135,24 @@ if (($data_public_flag == 0) and
          //echo $row_thtbase['tht_base_uid']."  ".$row_thtbase['line_record_uid']."  ".$row_thtbase['check_line']."<br>";
     }
     $num_lines = count($linerecord_uid);
+
+    $num_pheno = 0;
+    $sql="SELECT count(distinct(phenotype_uid)) from tht_base, phenotype_data
+          WHERE tht_base.tht_base_uid = phenotype_data.tht_base_uid
+          AND experiment_uid = $experiment_uid";
+    $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row_thtbase=mysqli_fetch_array($result_thtbase)) {
+        $num_pheno = $row[0];
+    }
+
     //echo $num_lines."<br>";
     $titles=array('Line Name'); //stores the titles for the display table with units
     $titles[]="GRIN Accession";//add CAP Code column to titles
 
-    if (!empty($thtbase_uid)) {
+    if ($num_pheno > 100) {
+        echo "$num_lines lines<br>$num_pheno phenotypes measured<br>\n";
+        echo "values will not be displayed if there are over 100 phenotypes measuered<br>\n";
+    } elseif (!empty($thtbase_uid)) {
         $thtbasestring = implode(",", $thtbase_uid);
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
                 FROM phenotype_data as pd, phenotypes as p, units
@@ -176,12 +189,11 @@ if (($data_public_flag == 0) and
         // Clean up old files, older than 1 day.
         system("find $dir -mtime +1 -name 'THT_Phenotypes_*.txt' -delete");
 
-        $stringData = implode($delimiter,$titles);
+        $stringData = implode($delimiter, $titles);
          
         //---------------------------------------------------------------------------------------------------------------
         //Go through lines to create a data table for display
-        for ($lr_i=0;$lr_i<$num_lines;$lr_i++)
-        {
+        for ($lr_i=0; $lr_i<$num_lines; $lr_i++) {
             $thtbaseuid=$thtbase_uid[$lr_i];
             $linerecorduid=$linerecord_uid[$lr_i];
             //echo $linerecorduid."  ".$thtbaseuid."<br>";
@@ -202,11 +214,11 @@ if (($data_public_flag == 0) and
 /* 	    $row_cc=mysql_fetch_assoc($result_cc); */
 /* 	    $single_row[1]=$row_cc['line_synonym_name']; */
 /* 	    $single_row_long[1]=$row_cc['line_synonym_name']; */
-$sql_gr="select barley_ref_number
-from barley_pedigree_catalog bc, barley_pedigree_catalog_ref bcr
-where barley_pedigree_catalog_name = 'GRIN'
-and bc.barley_pedigree_catalog_uid = bcr.barley_pedigree_catalog_uid
-and bcr.line_record_uid = '$linerecorduid'";
+    $sql_gr="select barley_ref_number
+    from barley_pedigree_catalog bc, barley_pedigree_catalog_ref bcr
+    where barley_pedigree_catalog_name = 'GRIN'
+    and bc.barley_pedigree_catalog_uid = bcr.barley_pedigree_catalog_uid
+    and bcr.line_record_uid = '$linerecorduid'";
 	    $result_gr=mysqli_query($mysqli, $sql_gr) or die(mysqli_error($mysqli));
 	    $row_gr=mysqli_fetch_assoc($result_gr);
 	    $single_row[1]=$row_gr['barley_ref_number'];
