@@ -137,7 +137,7 @@ if (($data_public_flag == 0) and
     $num_lines = count($linerecord_uid);
 
     $num_pheno = 0;
-    $sql="SELECT count(distinct(phenotype_uid)) from tht_base, phenotype_data
+    $sql="SELECT count(*) from tht_base, phenotype_data
           WHERE tht_base.tht_base_uid = phenotype_data.tht_base_uid
           AND experiment_uid = $experiment_uid";
     $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -149,9 +149,10 @@ if (($data_public_flag == 0) and
     $titles=array('Line Name'); //stores the titles for the display table with units
     $titles[]="GRIN Accession";//add CAP Code column to titles
 
-    if ($num_pheno > 100) {
+    if ($num_phenotypes > 10000) {
         echo "$num_lines lines<br>$num_pheno phenotypes measured<br>\n";
-        echo "values will not be displayed if there are over 100 phenotypes measuered<br>\n";
+        echo "values will not be displayed if there are over 10000 phenotypes measuerements<br>\n";
+        $num_phenotypes = 0;
     } elseif (!empty($thtbase_uid)) {
         $thtbasestring = implode(",", $thtbase_uid);
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
@@ -214,37 +215,17 @@ if (($data_public_flag == 0) and
 /* 	    $row_cc=mysql_fetch_assoc($result_cc); */
 /* 	    $single_row[1]=$row_cc['line_synonym_name']; */
 /* 	    $single_row_long[1]=$row_cc['line_synonym_name']; */
-    $sql_gr="select barley_ref_number
-    from barley_pedigree_catalog bc, barley_pedigree_catalog_ref bcr
-    where barley_pedigree_catalog_name = 'GRIN'
-    and bc.barley_pedigree_catalog_uid = bcr.barley_pedigree_catalog_uid
-    and bcr.line_record_uid = '$linerecorduid'";
-	    $result_gr=mysqli_query($mysqli, $sql_gr) or die(mysqli_error($mysqli));
-	    $row_gr=mysqli_fetch_assoc($result_gr);
-	    $single_row[1]=$row_gr['barley_ref_number'];
-	    $single_row_long[1]=$row_gr['barley_ref_number'];
+            $sql_gr="select barley_ref_number
+             from barley_pedigree_catalog bc, barley_pedigree_catalog_ref bcr
+             where barley_pedigree_catalog_name = 'GRIN'
+             and bc.barley_pedigree_catalog_uid = bcr.barley_pedigree_catalog_uid
+             and bcr.line_record_uid = '$linerecorduid'";
+            $result_gr=mysqli_query($mysqli, $sql_gr) or die(mysqli_error($mysqli));
+            $row_gr=mysqli_fetch_assoc($result_gr);
+            $single_row[1]=$row_gr['barley_ref_number'];
+            $single_row_long[1]=$row_gr['barley_ref_number'];
 
-/* We don't need the bp code if we have the CAP code.
-            //get the bp code
-
-            $sql_dpc="SELECT cap.data_program_code
-                        FROM CAPdata_programs as cap, tht_base as tb, datasets_experiments as de,datasets as d
-                        WHERE tb.tht_base_uid='$thtbaseuid'
-                            AND de.datasets_experiments_uid = tb.datasets_experiments_uid
-                            AND d.datasets_uid = de.datasets_uid
-                            AND cap.CAPdata_programs_uid = d.CAPdata_programs_uid";
-            $res_dpc=mysql_query($sql_dpc) or die(mysql_error());
-            $num_dp = mysql_num_rows($res_dpc);
-            $dpc='';
-            if ($num_dp>0) {
-                $row_dpc=mysql_fetch_assoc($res_dpc);
-                $dpc=$row_dpc['data_program_code'];
-             }
-            $single_row[1]=$dpc;
-*/
-
-            for($i=0;$i<$num_phenotypes;$i++)
-            {
+            for ($i=0; $i<$num_phenotypes; $i++) {
                 $puid=$phenotype_uid[$i];
                 $sigdig=$unit_sigdigits[$i];
                 $sql_val="SELECT value FROM phenotype_data
@@ -252,7 +233,7 @@ if (($data_public_flag == 0) and
                     AND phenotype_uid = '$puid'";
                 //echo $sql_val."<br>";
                 $result_val=mysqli_query($mysqli, $sql_val);
-                if (mysqli_num_rows($result_val) > 0){
+                if (mysqli_num_rows($result_val) > 0) {
                     $row_val=mysqli_fetch_assoc($result_val);
                     $val=$row_val['value'];
 		    $val_long=$val;
