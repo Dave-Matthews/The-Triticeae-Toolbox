@@ -142,7 +142,7 @@ if (($data_public_flag == 0) and
           AND experiment_uid = $experiment_uid";
     $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row_thtbase=mysqli_fetch_array($result_thtbase)) {
-        $num_phenotypes = $rowthtbase[0];
+        $num_phenotypes = $row_thtbase[0];
     }
 
     //echo $num_lines."<br>";
