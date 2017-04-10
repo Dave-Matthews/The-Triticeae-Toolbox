@@ -136,13 +136,13 @@ if (($data_public_flag == 0) and
     }
     $num_lines = count($linerecord_uid);
 
-    $num_pheno = 0;
+    $num_phenotypes = 0;
     $sql="SELECT count(*) from tht_base, phenotype_data
           WHERE tht_base.tht_base_uid = phenotype_data.tht_base_uid
           AND experiment_uid = $experiment_uid";
     $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row_thtbase=mysqli_fetch_array($result_thtbase)) {
-        $num_pheno = $row[0];
+        $num_phenotypes = $row[0];
     }
 
     //echo $num_lines."<br>";
@@ -236,7 +236,7 @@ if (($data_public_flag == 0) and
                 if (mysqli_num_rows($result_val) > 0) {
                     $row_val=mysqli_fetch_assoc($result_val);
                     $val=$row_val['value'];
-		    $val_long=$val;
+                    $val_long=$val;
 		    if ($sigdig >= 0) {
                           $val = floatval($val);
 		          $val=number_format($val,$sigdig);
