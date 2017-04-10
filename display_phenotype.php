@@ -137,7 +137,7 @@ if (($data_public_flag == 0) and
     $num_lines = count($linerecord_uid);
 
     $num_phenotypes = 0;
-    $sql="SELECT count(*) from tht_base, phenotype_data
+    $sql="SELECT count(distinct(phenotype_uid)) from tht_base, phenotype_data
           WHERE tht_base.tht_base_uid = phenotype_data.tht_base_uid
           AND experiment_uid = $experiment_uid";
     $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -149,9 +149,9 @@ if (($data_public_flag == 0) and
     $titles=array('Line Name'); //stores the titles for the display table with units
     $titles[]="GRIN Accession";//add CAP Code column to titles
 
-    if ($num_phenotypes > 10000) {
-        echo "$num_lines lines<br>$num_phenotypes phenotypes measurements<br>\n";
-        echo "<font color=\"red\">Warning: Values will not be displayed if there are over 10000 phenotypes measuerements.</font><br>\n";
+    if ($num_phenotypes > 100) {
+        echo "$num_lines lines<br>$num_phenotypes phenotypes measured<br>\n";
+        echo "<font color=\"red\">Warning: Values will not be displayed if there are over 100 phenotypes measuered.</font><br>\n";
         die();
     } elseif (!empty($thtbase_uid)) {
         $thtbasestring = implode(",", $thtbase_uid);
