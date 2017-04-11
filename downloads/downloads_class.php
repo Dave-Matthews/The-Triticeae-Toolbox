@@ -1160,8 +1160,8 @@ class Downloads
         } else {
             $sql_option = "AND tb.experiment_uid IN ($experiments)";
         }
-        $selectedlines = implode(",", $_SESSION['selected_lines']);
         if (count($_SESSION['selected_lines']) > 0) {
+            $selectedlines = implode(",", $_SESSION['selected_lines']);
             $sql_option = $sql_option . " AND tb.line_record_uid IN ($selectedlines)";
         }
         $sql = "SELECT DISTINCT e.trial_code, e.experiment_uid, p.phenotypes_name,p.phenotype_uid
@@ -1541,7 +1541,7 @@ class Downloads
 	 if (count($lines)>0) {
 	  $lines_str = implode(",", $lines);
 	 } else {
-	  $lines_str = "";
+	  die("Error: no lines selected");
 	 }
 	 
          //generate an array of selected lines that can be used with isset statement
