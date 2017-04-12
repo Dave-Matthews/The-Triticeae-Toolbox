@@ -31,7 +31,7 @@ The Triticeae Toolbox (T3) is a repository for public wheat data.
 </ul>
 <p>
 <p><b>
-<a href="docs/tutorial.php">Select Data</a></b></p>
+<a href="docs/tutorial.php">How to Select Data</a></b></p>
 <ul>
 Learn how to use the selection tools found under the "Select" menu, how to download this data and how to analyze it using one of the tools in the "Analyze" menu.
 </ul>
