@@ -80,12 +80,12 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
   //The navigation tab menus
   //Tooltips:
   $lang = array(
-      "desc_sc1" => "Search by germplasm and phenotype information",
-      "desc_sc2" => "Credits, data status ... ",
-      "desc_sc3" => "Search by genotyping information",
-      "desc_sc4" => "Search by Expression Related information.",
-      "desc_sc5" => "Database administration",
-      "desc_sc6" => "Visualization tools",
+    "desc_sc1" => "Search by germplasm and phenotype information",
+    "desc_sc2" => "Credits, data status ... ",
+    "desc_sc3" => "Search by genotyping information",
+    "desc_sc4" => "Search by Expression Related information.",
+    "desc_sc5" => "Database administration",
+    "desc_sc6" => "Visualization tools",
   );
 ?>
 <div id="nav">
@@ -95,45 +95,45 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <li><a href="">Select</a>
       <ul>
       <li>
-          <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
-            Wizard (Lines, Traits, Trials)</a>
-          <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php" title="Select by name, source, or simply-inherited characters">
-            Lines by Properties</a>
+      <a href="<?php echo $config['base_url']; ?>downloads/select_all.php" title="Lines and Phenotypes">
+        Wizard (Lines, Traits, Trials)</a>
+      <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php" title="Select by name, source, or simply-inherited characters">
+        Lines by Properties</a>
       <li>
-          <a href="<?php echo $config['base_url']; ?>phenotype/compare.php" title="Select within a range of trait values">
-            Lines by Phenotype</a>
+      <a href="<?php echo $config['base_url']; ?>phenotype/compare.php" title="Select within a range of trait values">
+        Lines by Phenotype</a>
       <li><a href="<?php echo $config['base_url']; ?>haplotype_search.php" title="Select desired alleles for a set of markers">
-            Lines by Haplotype</a>
+        Lines by Haplotype</a>
       <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
-            Lines by Genotype Experiment</a>
+        Lines by Genotype Experiment</a>
     <?php
     $species = strtolower($species);  //needed for JBrowse link
     /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
     /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
     if (loginTest2()) : ?>
-        <li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><b>My Line Panels</b></a>
-        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><b>My Marker Panels</b></a>
-    <?php
+        <li><a href="<?php echo $config['base_url']; ?>myown/panels.php" title="Panels I created"><font color=yellow>My Line Panels</font></a>
+        <li><a href="<?php echo $config['base_url']; ?>genotyping/panels.php" title="Panels I created"><font color=yellow>My Marker Panels</font></a>
+        <?php
     endif
     ?>
-        <li>
-          <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
-            Traits and Trials</a>
-        <li>
-          <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select by name or map position">
-            Markers</a>
-        <li>
-          <a href="<?php echo $config['base_url']; ?>maps/select_map.php" title="Select genetic map">Genetic Map</a>
-        <li>
-          <a href="<?php echo $config['base_url']; ?>downloads/clear_selection.php" title="Clear selection">Clear selection</a>
-      </ul>
+    <li>
+    <a href="<?php echo $config['base_url']; ?>phenotype/phenotype_selection.php" title='"Phenotype" = a Trait value in a particular Trial'>
+        Traits and Trials</a>
+    <li>
+    <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select by name or map position">
+        Markers</a>
+    <li>
+    <a href="<?php echo $config['base_url']; ?>maps/select_map.php" title="Select genetic map">Genetic Map</a>
+    <li>
+    <a href="<?php echo $config['base_url']; ?>downloads/clear_selection.php" title="Clear selection">Clear selection</a>
+    </ul>
     <li><a href="" title="<?php echo $lang["desc_sc6"]; ?>">Analyze</a>
       <ul>
         <li><a href="" title="Cluster">Cluster</a>
         <ul>
-          <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
-          <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
-          <li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
+        <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
+        <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
+        <li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
         </ul>
         <li><a href="<?php echo $config['base_url']; ?>analyze/outlier.php" title="Filter outliers">Filter outliers</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/training.php" title="Optimize training set">Optimize training set</a>
@@ -153,7 +153,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>pedigree/parse_pedigree.php" title="Parse a pedigree string in Purdy notation">Parse Purdy Pedigrees</a>
         <li><a href="<?php echo $config['base_url']; ?>genotyping/sum_lines.php" title="Disagreements among repeated genotyping experiments">Allele Data Conflicts</a>
         <li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
-          BLAST Search against Markers</a>
+          BLAST</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
         <li><a href="/jbrowse/?data=<?php echo $species ?>" title="JBrowse">JBrowse - Genome Browser</a>
         <?php
@@ -168,7 +168,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       </ul>
     <li><a href="" title="">Download</a>
       <ul>
-    <li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
+      <li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
         <?php
         if (file_exists($config['root_dir']."downloads/impute.php")) {
@@ -177,7 +177,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         }
         ?>
         <li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
-    SNP Alleles and Sequences</a> 
+            SNP Alleles and Sequences</a> 
         <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
         <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
