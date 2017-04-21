@@ -107,7 +107,7 @@ function get_imgmap_cladematrix(array $mx, array $mxnm, $cell_size, $lnm)
 function get_imgmap ($pdarr) {
 	$mx=$pdarr[0];
 	$mxnm=$pdarr[1];
-	return get_imgmap_cladematrix($mx, $mxnm, 40);
+	return get_imgmap_cladematrix($mx, $mxnm, 40, null);
 }
 
 function get_imgmap2 ($pdarr, $linename) {
