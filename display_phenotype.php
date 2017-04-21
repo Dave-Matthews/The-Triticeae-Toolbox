@@ -39,6 +39,9 @@ require $config['root_dir'].'includes/bootstrap2.inc';
 require $config['root_dir'].'theme/normal_header.php';
 $delimiter = "\t";
 $mysqli = connecti();
+?>
+<script type="text/javascript" src="display_phenotype.js"></script>
+<?php
 
 $trial_code=strip_tags($_GET['trial_code']);
 // Display Header information about the experiment
@@ -135,11 +138,24 @@ if (($data_public_flag == 0) and
          //echo $row_thtbase['tht_base_uid']."  ".$row_thtbase['line_record_uid']."  ".$row_thtbase['check_line']."<br>";
     }
     $num_lines = count($linerecord_uid);
+
+    $num_phenotypes = 0;
+    $sql="SELECT count(distinct(phenotype_uid)) from tht_base, phenotype_data
+          WHERE tht_base.tht_base_uid = phenotype_data.tht_base_uid
+          AND experiment_uid = $experiment_uid";
+    $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row_thtbase=mysqli_fetch_array($result_thtbase)) {
+        $num_phenotypes = $row_thtbase[0];
+    }
+
     //echo $num_lines."<br>";
     $titles=array('Line Name'); //stores the titles for the display table with units
     $titles[]="GRIN Accession";//add CAP Code column to titles
 
-    if (!empty($thtbase_uid)) {
+    if ($num_phenotypes > 100) {
+        echo "$num_lines lines<br>$num_phenotypes phenotypes measured<br>\n";
+        echo "<font color=\"red\">Warning: Values will not be displayed when there are over 100 phenotypes measuered.</font><br>\n";
+    } elseif (!empty($thtbase_uid)) {
         $thtbasestring = implode(",", $thtbase_uid);
         $sql1="SELECT DISTINCT p.phenotypes_name as name, p.phenotype_uid as uid, units.unit_name as unit, units.sigdigits_display as sigdig
                 FROM phenotype_data as pd, phenotypes as p, units
@@ -176,12 +192,11 @@ if (($data_public_flag == 0) and
         // Clean up old files, older than 1 day.
         system("find $dir -mtime +1 -name 'THT_Phenotypes_*.txt' -delete");
 
-        $stringData = implode($delimiter,$titles);
+        $stringData = implode($delimiter, $titles);
          
         //---------------------------------------------------------------------------------------------------------------
         //Go through lines to create a data table for display
-        for ($lr_i=0;$lr_i<$num_lines;$lr_i++)
-        {
+        for ($lr_i=0; $lr_i<$num_lines; $lr_i++) {
             $thtbaseuid=$thtbase_uid[$lr_i];
             $linerecorduid=$linerecord_uid[$lr_i];
             //echo $linerecorduid."  ".$thtbaseuid."<br>";
@@ -202,37 +217,17 @@ if (($data_public_flag == 0) and
 /* 	    $row_cc=mysql_fetch_assoc($result_cc); */
 /* 	    $single_row[1]=$row_cc['line_synonym_name']; */
 /* 	    $single_row_long[1]=$row_cc['line_synonym_name']; */
-$sql_gr="select barley_ref_number
-from barley_pedigree_catalog bc, barley_pedigree_catalog_ref bcr
-where barley_pedigree_catalog_name = 'GRIN'
-and bc.barley_pedigree_catalog_uid = bcr.barley_pedigree_catalog_uid
-and bcr.line_record_uid = '$linerecorduid'";
-	    $result_gr=mysqli_query($mysqli, $sql_gr) or die(mysqli_error($mysqli));
-	    $row_gr=mysqli_fetch_assoc($result_gr);
-	    $single_row[1]=$row_gr['barley_ref_number'];
-	    $single_row_long[1]=$row_gr['barley_ref_number'];
+            $sql_gr="select barley_ref_number
+             from barley_pedigree_catalog bc, barley_pedigree_catalog_ref bcr
+             where barley_pedigree_catalog_name = 'GRIN'
+             and bc.barley_pedigree_catalog_uid = bcr.barley_pedigree_catalog_uid
+             and bcr.line_record_uid = '$linerecorduid'";
+            $result_gr=mysqli_query($mysqli, $sql_gr) or die(mysqli_error($mysqli));
+            $row_gr=mysqli_fetch_assoc($result_gr);
+            $single_row[1]=$row_gr['barley_ref_number'];
+            $single_row_long[1]=$row_gr['barley_ref_number'];
 
-/* We don't need the bp code if we have the CAP code.
-            //get the bp code
-
-            $sql_dpc="SELECT cap.data_program_code
-                        FROM CAPdata_programs as cap, tht_base as tb, datasets_experiments as de,datasets as d
-                        WHERE tb.tht_base_uid='$thtbaseuid'
-                            AND de.datasets_experiments_uid = tb.datasets_experiments_uid
-                            AND d.datasets_uid = de.datasets_uid
-                            AND cap.CAPdata_programs_uid = d.CAPdata_programs_uid";
-            $res_dpc=mysql_query($sql_dpc) or die(mysql_error());
-            $num_dp = mysql_num_rows($res_dpc);
-            $dpc='';
-            if ($num_dp>0) {
-                $row_dpc=mysql_fetch_assoc($res_dpc);
-                $dpc=$row_dpc['data_program_code'];
-             }
-            $single_row[1]=$dpc;
-*/
-
-            for($i=0;$i<$num_phenotypes;$i++)
-            {
+            for ($i=0; $i<$num_phenotypes; $i++) {
                 $puid=$phenotype_uid[$i];
                 $sigdig=$unit_sigdigits[$i];
                 $sql_val="SELECT value FROM phenotype_data
@@ -240,35 +235,38 @@ and bcr.line_record_uid = '$linerecorduid'";
                     AND phenotype_uid = '$puid'";
                 //echo $sql_val."<br>";
                 $result_val=mysqli_query($mysqli, $sql_val);
-                if (mysqli_num_rows($result_val) > 0){
+                if (mysqli_num_rows($result_val) > 0) {
                     $row_val=mysqli_fetch_assoc($result_val);
                     $val=$row_val['value'];
-		    $val_long=$val;
-		    if ($sigdig >= 0) {
-                          $val = floatval($val);
-		          $val=number_format($val,$sigdig);
+                    $val_long=$val;
+                    if ($sigdig >= 0) {
+                        $val = floatval($val);
+                        $val=number_format($val, $sigdig);
                     }
-		} else {
-		    $val = "--"; 
-		    $val_long = "--";
-		}
-		if (empty($val)) {
-		  $val = "--";
-		  $val_long = "--";
-		}
+                } else {
+                    $val = "--";
+                    $val_long = "--";
+                }
+                if (empty($val)) {
+                    $val = "--";
+                    $val_long = "--";
+                }
                 $single_row[$i+2]=$val;
-		        $single_row_long[$i+2]=$val_long;
+                $single_row_long[$i+2]=$val_long;
             }
         //-----------------------------------------check line addition
 
-            if($check_line[$lr_i]=='yes') $check=1;
-            else $check=0;
+            if ($check_line[$lr_i]=='yes') {
+                $check=1;
+            } else {
+                $check=0;
+            }
             //echo $check;
             $single_row[$num_phenotypes+2]=$check;
             $single_row_long[$num_phenotypes+2]=$check;
             //-----------------------------------------
             //var_dump($single_row_long);
-            $stringData= implode($delimiter,$single_row_long);
+            $stringData= implode($delimiter, $single_row_long);
             
             $all_rows[]=$single_row;
             $all_rows_long[]=$single_row_long;
@@ -276,7 +274,7 @@ and bcr.line_record_uid = '$linerecorduid'";
             //-----------------------------------------get statistics
         $mean_arr=array('Mean','');
         $se_arr=array('Standard Error','');
-        // Unformatted mean and SE 
+        // Unformatted mean and SE
         $unformat_mean_arr=array('Mean','');
         $unformat_se_arr=array('Standard Error','');
  
@@ -288,8 +286,7 @@ and bcr.line_record_uid = '$linerecorduid'";
         $fnr="Number Replicates,";
         $fprob="Prob gt F,";
          
-        for($i=0;$i<$num_phenotypes;$i++)
-        {
+        for ($i=0; $i<$num_phenotypes; $i++) {
             $puid=$phenotype_uid[$i];
             $sigdig=$unit_sigdigits[$i];
          
@@ -304,7 +301,7 @@ and bcr.line_record_uid = '$linerecorduid'";
             $nr=$row_mdata['number_replicates'];
             $prob=$row_mdata['prob_gt_F'];
         
-            if($mean!=0) {	
+            if ($mean!=0) {	
                 $unformat_mean_arr[] = $mean;
                 if ($sigdig>=0) $mean=number_format($mean,$sigdig);
                 $mean_arr[] = $mean;
@@ -313,7 +310,7 @@ and bcr.line_record_uid = '$linerecorduid'";
                 $mean_arr[]="--";
             }
             
-            if($se!=0) {	
+            if ($se!=0) {	
                 $unformat_se_arr[] = $se;                
                 if ($sigdig>=0) $se=number_format($se,$sigdig);
                 $se_arr[] = $se;
@@ -365,22 +362,6 @@ and bcr.line_record_uid = '$linerecorduid'";
 	td {border: 1px solid #eee !important;}
 	h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
-
-<script type="text/javascript">
-
-function output_file(url) {
-        window.open(url);
-}
-function output_file2(puid) {
-    url = "download_phenotype.php?function=downloadMean&pi=" + puid;
-    window.open(url);
-}
-
-function output_file_plot(puid) {
-    url = "download_phenotype.php?function=downloadPlot&pi=" + puid;
-    window.open(url);
-}
-</script>
 
 <!-- Calculate the width of the table based on the number of columns. -->		
 <?php $tablewidth = count($single_row) * 92 + 10;  ?>
@@ -443,6 +424,7 @@ function output_file_plot(puid) {
 </div>			
         
 <?php
+}
     echo "<br>";
     echo "<form>";
     echo "<input type='button' value='Download Trial Data' onclick=\"javascript:output_file2('$experiment_uid');\" />";
@@ -455,7 +437,6 @@ function output_file_plot(puid) {
         echo "<input type='button' value='Download Plot Data' onclick=\"javascript:output_file_plot('$experiment_uid');\" />";
         echo "</form>";
     }
-} 
 
 $sourcesql="SELECT input_data_file_name FROM experiments WHERE trial_code='$trial_code'";
 $sourceres=mysqli_query($mysqli, $sourcesql) or die(mysqli_error($mysqli));
@@ -532,7 +513,6 @@ while ($row = mysqli_fetch_array($res)) {
   echo "<td><a href=$trial>Calculate Index</a>";
 }
 echo "</table>";
-
 }
   
     //-----------------------------------------------------------------------------------
