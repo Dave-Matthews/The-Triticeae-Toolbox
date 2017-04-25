@@ -35,6 +35,8 @@ $ourcalls['markerprofiles'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['calls'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['studies-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['studies'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['traits'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 
 /* If no request parameters, list all calls supported. */
