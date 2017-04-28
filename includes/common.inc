@@ -1178,12 +1178,16 @@ function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
     $ret .= "\n<tr>\n";
     // table body contents
     foreach($row as $k=>$v) {
-      if(isset($tables[$k])) 
-	$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
-      if(strcmp($k,"trial_code") == 0) 
-	$v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
-      if(strcmp($k,"value") == 0 && $sigdig>=0) 
-	$v = number_format($v,$sigdig);
+      if (isset($tables[$k])) 
+        $v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+      if (strcmp($k, "trial_code") == 0) { 
+        $v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
+      }
+      if (strcmp($k, "value") == 0 && $sigdig>=0) {
+        if (is_float($v)) {
+          $v = number_format($v, $sigdig);
+        }
+      }
       $ret .= "\t<td>$v</td>\n";
     }
     $ret .= "\n</tr>\n";
