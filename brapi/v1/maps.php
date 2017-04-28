@@ -53,7 +53,8 @@ if (isset($_GET['uid'])) {
     $uid = $_REQUEST['uid'];
 }
 if ($action == "list") {
-    $linearray['metadata']['status'] = null;
+    $linearray['metadata']['status'] = array();
+    $linearray['metadata']['datafiles'] = array();
     //first query all data
     $sql = "select mapset.mapset_uid, mapset_name, species, map_type, map_unit, published_on, comments
     from mapset, markers_in_maps as mim, map
@@ -74,7 +75,7 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $uid = $row[1];
-        $temp["mapId"] = (integer) $row[1];
+        $temp["mapDbId"] = (integer) $row[1];
         $temp["name"] = $row[2];
         $temp["species"] = $row[3];
         $temp["type"] = $row[4];
@@ -82,12 +83,10 @@ if ($action == "list") {
         $temp["publishedDate"] = $row[6];
         // Handle values 0000-00-00.
         if (preg_match("/0000-00-00/", $temp["publishedDate"])) {
-            unset($temp["publishedDate"]);
         } else {
             $timestamp = strtotime($temp["publishedDate"]);
             // Handle missing values.
             if ($timestamp == 0) {
-                unset($temp["publishedDate"]);
             } else {
                 $temp['publishedDate'] = date("Y-m-d", $timestamp);
             }
@@ -108,7 +107,8 @@ if ($action == "list") {
     $return = json_encode($linearray);
     echo "$return";
 } elseif ($action === "details") {
-    $linearray['metadata']['status'] = null;
+    $linearray['metadata']['status'] = array();
+    $linearray['metadata']['datafiles'] = array();
     //first query all data
     $sql = "select markers.marker_uid, markers.marker_name, start_position, chromosome, arm
         from markers_in_maps, markers, map
@@ -135,7 +135,7 @@ if ($action == "list") {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $mapset_name, $map_type, $map_unit);
         mysqli_stmt_fetch($stmt);
-        $results["mapId"] = $uid;
+        $results["mapDbId"] = $uid;
         $results["name"] = $mapset_name;
         $results["type"] = $map_type;
         $results["unit"] = $map_unit;
@@ -219,7 +219,7 @@ if ($action == "list") {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
             while (mysqli_stmt_fetch($stmt)) {
-                 $temp2["markerId"] = (integer) $marker_uid;
+                 $temp2["markerDbId"] = (integer) $marker_uid;
                  $temp2["markerName"] = $marker_name;
                  $temp2["location"] = $start_position;
                  $temp2["linkageGroup"] = $chromosome;

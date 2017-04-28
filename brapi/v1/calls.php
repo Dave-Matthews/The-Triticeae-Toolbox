@@ -30,12 +30,15 @@ if (isset($_GET['page'])) {
 }
 
 /* Array of our supported calls */
-$ourcalls['allelematrix'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['allelematrix-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['markerprofiles'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['calls'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['studies-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['studies'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['traits'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['maps'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {
