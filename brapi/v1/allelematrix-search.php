@@ -76,7 +76,17 @@ if (isset($_GET['markerprofileDbId'])) {
             $lineuid = $match[1];
             $expid = $match[2];
         } else {
-            dieNice("invalid format of marker profile id $item"); 
+            dieNice("invalid format of marker profile id $item");
+        }
+
+        //get marker_uid
+        $sql = "select marker_index from allele_byline_expidx where experiment_uid = $expid";
+        $res = mysqli_query($mysqli, $sql);
+        if ($row = mysqli_fetch_row($res)) {
+            $marker_index = $row[0];
+            $marker_index = explode(",", $marker_index);
+        } else {
+            dieNice("invalid experiment $expid");
         }
 
         //now get just those selected
@@ -85,24 +95,28 @@ if (isset($_GET['markerprofileDbId'])) {
               and experiment_uid = $expid
               and not alleles = '--'
               order by marker_uid";
+        $sql = "select alleles from allele_byline_exp where experiment_uid = $expid and line_record_uid = $lineuid)";
         if ($currentPage == 1) {
-            $sql .= " limit $pageSize";
         } else {
             $offset = ($currentPage - 1) * $pageSize;
             if ($offset < 1) {
                 $offset = 1;
             }
-            $sql .= " limit $offset, $pageSize";
         }
         $found = 0;
         $res = mysqli_query($mysqli, $sql);
         while ($row = mysqli_fetch_row($res)) {
-            $num_rows++;
             $found = 1;
-            $dataList[] = array("$row[0]", "$item", "$row[1]");
+            $alleles = $row[0];
+            $alleles_ary = explode(",", $alleles);
+            foreach ($alleles_ary as $i => $v) {
+                $num_rows++;
+                $marker_uid = $marker_index[$i];
+                $dataList[] = array( "$marker_index[$i]", "$item", "$v");
+            }
         }
         if ($found == 0) {
-            dieNice("invalid format of marker profile id $item");
+            dieNice("marker profile not found $item");
         }
         $resultProfile[] = $item;
     }
