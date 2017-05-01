@@ -70,6 +70,7 @@ if ($action == "list") {
     $sql = "select count(*), mapset.mapset_uid, mapset_name, species, map_type, map_unit, published_on, comments
     from mapset, markers_in_maps as mim, map
     WHERE mim.map_uid = map.map_uid
+    AND data_public_flag > 0
     AND map.mapset_uid = mapset.mapset_uid
     GROUP BY mapset.mapset_uid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -114,7 +115,9 @@ if ($action == "list") {
         from markers_in_maps, markers, map
         where markers_in_maps.marker_uid = markers.marker_uid
         AND map.map_uid = markers_in_maps.map_uid
-        AND mapset_uid = ?";
+        AND data_public_flag > 0
+        AND mapset_uid = ?
+        GROUP by chromosome";
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "i", $uid);
         mysqli_stmt_execute($stmt);
@@ -168,6 +171,7 @@ if ($action == "list") {
             from markers_in_maps, markers, map
             where markers_in_maps.marker_uid = markers.marker_uid
             AND map.map_uid = markers_in_maps.map_uid
+            AND data_public_flag > 0
             AND mapset_uid = ?";
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $uid);
@@ -182,6 +186,7 @@ if ($action == "list") {
             from markers_in_maps, markers, map
             where markers_in_maps.marker_uid = markers.marker_uid
             AND map.map_uid = markers_in_maps.map_uid
+            AND data_public_flag > 0
             AND mapset_uid = ?
             AND chromosome = ?";
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
