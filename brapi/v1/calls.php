@@ -30,7 +30,7 @@ if (isset($_GET['page'])) {
 }
 
 /* Array of our supported calls */
-$ourcalls['allelematrix-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['allelematrix-search'] = ['datatypes' => ['json'], 'methods' => ["GET", "POST"]];
 $ourcalls['markerprofiles'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['calls'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];

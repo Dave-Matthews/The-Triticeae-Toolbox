@@ -4,42 +4,62 @@ $mysqli = connecti();
 
 $self = $_SERVER['PHP_SELF'];
 $script = $_SERVER["SCRIPT_NAME"]."/";
+$rest = str_replace($script, "", $self);
+$rest = explode("/", $rest);
+
 $results['metadata']['status'] = array();
 $results['metadata']['datafiles'] = array();
 
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-} elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    die("does not support POST");
-} else {
-    die("missing uid parameter");
-}
-
-if (isset($_GET['pageSize'])) {
-    $pageSize = $_GET['pageSize'];
+if (isset($_REQUEST['pageSize'])) {
+    $pageSize = $_REQUEST['pageSize'];
 } else {
     $pageSize = 1000;
 }
-if (isset($_GET['page'])) {
-    $currentPage = $_GET['page'];
+if (isset($_REQUEST['page'])) {
+    $currentPage = $_REQUEST['page'];
 } else {
     $currentPage = 1;
 }
 
 header("Content-Type: application/json");
 
-function dieNice($msg)
+function dieNice($code, $msg)
 {
     global $results;
     $results['metadata']['pagination'] = null;
-    $results['metadata']['status'][] = array("code" => "SQL", "message" => "SQL Error: $msg");
+    $results['metadata']['status'][] = array("code" => $code, "message" => "$msg");
     $results['result'] = null;
     $return = json_encode($results);
     die("$return");
 }
 
-if (isset($_GET['markerprofileDbId'])) {
+if ($rest[0] == "status") {
+    if (isset($rest[1])) {
+        $unqStr = $rest[1];
+    } else {
+        dieNice("Error", "missing message id");
+    }
+    $results['metadata']['pagination'] = null;
+    $results['result'] = null;
+    $tmpFile = "/tmp/tht/download_" . $unqStr . ".txt";
+    $statusFile = "/tmp/tht/status_" . $unqStr . ".txt";
+    $results['metadata']['datafiles'] = array($tmpFile);
+    if (file_exists($statusFile)) {
+        if (filesize($statusFile) > 0) {
+            $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "FAILED");
+        } else {
+            $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "FINISHED");
+        }
+    } else {
+        $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "PENDING");
+    }
+    $return = json_encode($results);
+    die("$return");
+} elseif (isset($_REQUEST['markerprofileDbId'])) {
+    $uniqueStr = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
+    $errorFile = "/tmp/tht/error_" . $uniqueStr . ".txt";
     //list of markerprofileDbId can be in either format
-    $tmp = $_GET['markerprofileDbId'];
+    $tmp = $_REQUEST['markerprofileDbId'];
     if (preg_match("/,/", $tmp)) {
         $profile_list = explode(",", $tmp);
     } else {
@@ -62,21 +82,21 @@ if (isset($_GET['markerprofileDbId'])) {
             continue;
         }
     }
-    $exp_lst = implode(",", $exp_ary);
-    $num_rows = 0;
-    $sql = "select count from allele_byline_exp where experiment_uid IN ($exp_lst)";
-    //$res = mysqli_query($mysqli, $sql) or dieNice("invalid experiment_uid");
-    //while ($row = mysqli_fetch_row($res)) {
-    //    $num_rows += $row[0];
-    //}
 
+    $countExp = count($profile_list);
+    if ($countExp > 1) {
+        $cmd = "php allelematrix-search-offline.php \"$tmp\" \"$uniqueStr\" > /dev/null 2> $errorFile";
+        exec($cmd);
+        dieNice("asynchid", "$uniqueStr");
+    }
+    $num_rows = 0;
     foreach ($profile_list as $item) {
         //echo "profile = $item\n";
         if (preg_match("/(\d+)_(\d+)/", $item, $match)) {
             $lineuid = $match[1];
             $expid = $match[2];
         } else {
-            dieNice("invalid format of marker profile id $item");
+            dieNice("Error", "invalid format of marker profile id $item");
         }
 
         //get marker_uid
@@ -86,16 +106,11 @@ if (isset($_GET['markerprofileDbId'])) {
             $marker_index = $row[0];
             $marker_index = explode(",", $marker_index);
         } else {
-            dieNice("invalid experiment $expid");
+            dieNice("Error", "invalid experiment $expid");
         }
 
         //now get just those selected
-        $sql = "select marker_uid, alleles from allele_cache
-              where line_record_uid = $lineuid
-              and experiment_uid = $expid
-              and not alleles = '--'
-              order by marker_uid";
-        $sql = "select alleles from allele_byline_exp where experiment_uid = $expid and line_record_uid = $lineuid)";
+        $sql = "select alleles from allele_byline_exp where experiment_uid = $expid and line_record_uid = $lineuid";
         if ($currentPage == 1) {
         } else {
             $offset = ($currentPage - 1) * $pageSize;
@@ -104,25 +119,33 @@ if (isset($_GET['markerprofileDbId'])) {
             }
         }
         $found = 0;
-        $res = mysqli_query($mysqli, $sql);
-        while ($row = mysqli_fetch_row($res)) {
-            $found = 1;
-            $alleles = $row[0];
-            $alleles_ary = explode(",", $alleles);
-            foreach ($alleles_ary as $i => $v) {
-                $num_rows++;
-                $marker_uid = $marker_index[$i];
-                $dataList[] = array( "$marker_index[$i]", "$item", "$v");
+        if ($res = mysqli_query($mysqli, $sql)) {
+            while ($row = mysqli_fetch_row($res)) {
+                $found = 1;
+                $alleles = $row[0];
+                $alleles_ary = explode(",", $alleles);
+                foreach ($alleles_ary as $i => $v) {
+                    if ($v[0] == $v[1]) {
+                        $v = $v[0];
+                    } else {
+                        $v = $v[0] . "/" . $v[1];
+                    }
+                    $num_rows++;
+                    $marker_uid = $marker_index[$i];
+                    $dataList[] = array( "$marker_index[$i]", "$item", "$v");
+                }
             }
+        } else {
+            dieNice("SQL", mysqli_error($mysqli));
         }
         if ($found == 0) {
-            dieNice("marker profile not found $item");
+            dieNice("Error", "marker profile not found $item");
         }
         $resultProfile[] = $item;
     }
 } else {
     //first query all data
-    dieNice("need markerprofileDbId");
+    dieNice("Error", "need markerprofileDbId");
     $num_rows = 0;
     $profile_list = array();
     if ($currentPage == 1) {
