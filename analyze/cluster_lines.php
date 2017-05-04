@@ -44,9 +44,9 @@ if (isset($_GET['mycluster'])) {
 // If only a few lines are selected, reduce the suggested number of clusters.
 $clusters = 5;
 if (isset($_SESSION['selected_lines'])) {
-  $linecount = count($_SESSION['selected_lines']);
-  $clusters = min($clusters, $linecount - 1);
- }
+    $linecount = count($_SESSION['selected_lines']);
+    $clusters = min($clusters, $linecount - 1);
+}
 
 ?>
 
@@ -75,13 +75,13 @@ if (isset($_SESSION['selected_lines'])) {
   <input type='hidden' name='time' value=<?php echo $time ?> >
 
   <script type="text/javascript" src="analyze/cluster.js"></script>
-  <?php
+<?php
 
-        $min_maf = 5;
-        $max_missing = 10;
-        $max_miss_line = 10;
-        $arg = "$time,$linecount";
-        ?>
+$min_maf = 5;
+$max_missing = 10;
+$max_miss_line = 10;
+$arg = "$time,$linecount";
+?>
         <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data

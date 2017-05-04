@@ -27,15 +27,16 @@ if ($count == 0) {
     echo "Reselect markers with less filtering</font>";
     echo "<p><input type='Button' value='Back' onClick='history.go(-1)'>";
 } else {
-
 // Store the input parameters in file setupclust3d.txt.
-if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
-$setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
-if (isset($_SESSION['username'])) {
+    if (! file_exists('/tmp/tht')) {
+         mkdir('/tmp/tht');
+    }
+    $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
+    if (isset($_SESSION['username'])) {
     $emailAddr = $_SESSION['username'];
     $emailAddr = "email <- \"$emailAddr\"\n";
     fwrite($setup, $emailAddr);
-    $result_url = $config['base_url'] . "cluster3_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
+    $result_url = $config['base_url'] . "cluster4_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
     $result_url = "result_url <- \"$result_url\"\n";
     fwrite($setup, $result_url);
 }

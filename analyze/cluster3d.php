@@ -29,11 +29,12 @@ if ($count == 0) {
     echo "Reselect markers with less filtering</font>";
     echo "<p><input type='Button' value='Back' onClick='history.go(-1)'>";
 } else {
-
-// Store the input parameters in file setupclust3d.txt.
-if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
-$setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
-if (isset($_SESSION['username'])) {
+    // Store the input parameters in file setupclust3d.txt.
+    if (! file_exists('/tmp/tht')) {
+        mkdir('/tmp/tht');
+    }
+    $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
+    if (isset($_SESSION['username'])) {
     $emailAddr = $_SESSION['username'];
     $emailAddr = "email <- \"$emailAddr\"\n";
     fwrite($setup, $emailAddr);
