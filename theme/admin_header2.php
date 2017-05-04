@@ -129,9 +129,9 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <ul>
         <li><a href="" title="Cluster">Cluster</a>
         <ul>
-        <li><a href="<?php echo $config['base_url']; ?>cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
-        <li><a href="<?php echo $config['base_url']; ?>cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
-        <li><a href="<?php echo $config['base_url']; ?>cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/cluster_lines.php" title="Genetic structure">Cluster Lines by Genotype</a>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/cluster_lines3d.php" title="Genetic structure">Cluster Lines 3D (pam)</a>
+        <li><a href="<?php echo $config['base_url']; ?>analyze/cluster_lines4d.php" title="Genetic structure">Cluster Lines 3D (hclust)</a>
         </ul>
         <li><a href="<?php echo $config['base_url']; ?>analyze/outlier.php" title="Filter outliers">Filter outliers</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/training.php" title="Optimize training set">Optimize training set</a>
