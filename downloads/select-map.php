@@ -1,4 +1,4 @@
-<div id="select-map" title="Select Genetic Map">
+<div id="select-map" title="Select Genetic Map" style="display:none;">
 <form name="myForm" action="maps/select_map.php">
 <?php
 if (isset($_SESSION['selected_map'])) {
@@ -31,8 +31,9 @@ while ($row = mysqli_fetch_assoc($res)) {
           <input type=\"radio\" name=\"map\" value=\"$uid\" $checked onchange=\"javascript: save_map(this.value)\">
           <td>$count<td>$val<td><article title=\"$comment\">$comm</article>\n";
 }
-echo "</table>";
-echo "</form>";
-echo "<div id=\"select-map2\">";
-echo "</div>";
-echo "</div>";
+?>
+</table>
+</form>
+<div id="select-map2" style="display:none">
+</div>
+</div>

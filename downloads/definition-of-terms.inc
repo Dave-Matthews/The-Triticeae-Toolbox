@@ -1,4 +1,4 @@
-<div id="define-terms" title="Definition of Terms">
+<div id="define-terms" title="Definition of Terms" style="display:none;">
 <form name="defForm">
 <b>Genotype Consensus</b> - When the same line and marker is measured in multiple genotype experiments a consensus genotype is calculated using majority rule. If there is no majority then the value is set to missing.<br><br>
 <b>Genotype Experiment</b> - Genotypes measured for a set of lines and markers using a common platform (Infinium, GoldenGate, Sequenom, etc). A list of all genotype experiment and links to their description can be found in List of <a id="input" href="t3_report.php?query=GTrials" target="_new">Genotype Experiments</a>.<br><br>
