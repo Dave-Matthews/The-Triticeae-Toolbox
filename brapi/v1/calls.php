@@ -9,7 +9,6 @@
 
 require '../../includes/bootstrap.inc';
 $mysqli = connecti();
-ini_set('memory_limit', '2G');
 
 // URI is something like /calls?call=allelematrix&datatype=tsv&pageSize=100&page=1
 if (isset($_GET['call'])) {
@@ -32,13 +31,18 @@ if (isset($_GET['page'])) {
 /* Array of our supported calls */
 $ourcalls['allelematrix-search'] = ['datatypes' => ['json'], 'methods' => ["GET", "POST"]];
 $ourcalls['markerprofiles'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['markerprofiles/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['calls'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['studies-search/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['studies/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['traits'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['maps/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['maps/id/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {

@@ -11,6 +11,11 @@ if (is_numeric($rest[0])) {
 } else {
     $action = "list";
 }
+if (isset($rest[1]) && ($rest[1] == "table")) {
+    $outFormat = "table";
+} else {
+    $outFormat = "json";
+}
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
     //echo "cmd = $action<br>\n";
@@ -27,19 +32,23 @@ if (isset($_GET['pageSize'])) {
 if (isset($_GET['page'])) {
     $currentPage = $_GET['page'];
 } else {
-    $currentPage = 1;
+    $currentPage = 0;
+}
+if (isset($_GET['studyType'])) {
+    $studyType = $_GET['studyType'];
 }
 
 function dieNice($msg)
 {
     $linearray["metadata"]["pagination"] = null;
     $linearray["metadata"]["status"] = array("code" => 1, "message" => "SQL Error: $msg");
+    $linearray["metadata"]["datafiles"] = array();
     $linearray["result"] = null;
     $return = json_encode($linearray);
     die("$return");
 }
 
-header("Content-Type: application/json");
+//header("Content-Type: application/json");
 if ($action == "list") {
     if (isset($_GET['program'])) {
         $cap_uid = $_GET['program'];
@@ -48,25 +57,32 @@ if ($action == "list") {
         $sql_opt = "";
     }
     $linearray['metadata']['pagination'] = $pageList;
-    $linearray['metadata']['status'] = null;
+    $linearray['metadata']['status'] = array();
+    $linearray['metadata']['datafiles'] = array();
 
     //first query all data
-    $sql = "select experiment_uid, experiment_type_name, trial_code, CAPdata_programs_uid, experiment_year
+    if (isset($studyType)) {
+        $options = " and experiment_type_name = \"$studyType\"";
+    } else {
+        $options = "";
+    }
+    $sql = "select experiment_uid, experiment_set_uid, experiment_type_name, trial_code, CAPdata_programs_uid, experiment_year
         from experiments, experiment_types
-        where experiments.experiment_type_uid = experiment_types.experiment_type_uid";
+        where experiments.experiment_type_uid = experiment_types.experiment_type_uid
+        $options";
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
     $tot_pag = ceil($num_rows / $pageSize);
-    $pageList = array( "pageSize" => $pageSize, "currentPage" => 1, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
     //now get just those selected
-    if ($currentPage == 1) {
+    if ($currentPage == 0) {
         $sql .= " limit $pageSize";
     } else {
-        $offset = ($currentPage - 1) * $pageSize;
-        if ($offset < 1) {
-            $offset = 1;
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
         }
         $sql .= " limit $offset, $pageSize";
     }
@@ -75,11 +91,20 @@ if ($action == "list") {
         $uid = $row[0];
         $trial = $row[1];
         $data["studyDbId"] = $row[0];
-        $data["studyType"] = $row[1];
-        $data["name"] = $row[2];
-        $CAP_uid = $row[3];
-        $data["years"] = $row[4];
-        $data["programDbId"] = $row[3];
+        $data["trialDbId"] = $row[1];
+        $data["studyType"] = $row[2];
+        $data["studyName"] = $row[3];
+        $data["trialName"] = null;
+        $CAP_uid = $row[4];
+        $data["years"] = $row[5];
+        $data["programDbId"] = $row[4];
+        if (isset($data["trialDbId"])) {
+            $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $row[1]";
+            $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql");
+            if ($row2 = mysqli_fetch_row($res2)) {
+                $data["trialName"] = $row2[0];
+            }
+        }
         $sql = "select location, planting_date, harvest_date from phenotype_experiment_info where experiment_uid = $row[0]";
         $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($res2)) {
@@ -99,6 +124,7 @@ if ($action == "list") {
     }
     $linearray['result']['data'] = $temp;
     $return = json_encode($linearray);
+    header("Content-Type: application/json");
     echo "$return";
 } elseif ($uid != "") {
     $sql = "select line_record_uid, line_record_name from line_records";
@@ -139,6 +165,7 @@ if ($action == "list") {
     } else {
         $results = null;
         $return = json_encode($results);
+        header("Content-Type: application/json");
         echo "$return";
         die();
     }
@@ -170,7 +197,16 @@ if ($action == "list") {
         }
         $results["design"][] = $temp;
     }
-    $return = json_encode($results);
+    if ($outFormat == "json") {
+        $return = json_encode($results);
+        header("Content-Type: application/json");
+    } else {
+        $return = "";
+        foreach ($results["design"] as $entry) {
+            $return .= implode(",", $entry) . "\n";
+        }
+        header("Content-Type: text/csv");
+    }
     echo "$return";
 } else {
     echo "Error: missing experiment id<br>\n";

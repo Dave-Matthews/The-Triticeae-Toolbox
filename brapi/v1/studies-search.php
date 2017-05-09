@@ -32,7 +32,7 @@ if (isset($_GET['pageSize'])) {
 if (isset($_GET['page'])) {
     $currentPage = $_GET['page'];
 } else {
-    $currentPage = 1;
+    $currentPage = 0;
 }
 if (isset($_GET['studyType'])) {
     $studyType = $_GET['studyType'];
@@ -73,16 +73,16 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
     $tot_pag = ceil($num_rows / $pageSize);
-    $pageList = array( "pageSize" => $pageSize, "currentPage" => 1, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
     //now get just those selected
-    if ($currentPage == 1) {
+    if ($currentPage == 0) {
         $sql .= " limit $pageSize";
     } else {
-        $offset = ($currentPage - 1) * $pageSize;
-        if ($offset < 1) {
-            $offset = 1;
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
         }
         $sql .= " limit $offset, $pageSize";
     }
@@ -91,14 +91,14 @@ if ($action == "list") {
         $uid = $row[0];
         $trial = $row[1];
         $data["studyDbId"] = $row[0];
-        $data["trialDbID"] = $row[1];
+        $data["trialDbId"] = $row[1];
         $data["studyType"] = $row[2];
         $data["studyName"] = $row[3];
         $data["trialName"] = null;
         $CAP_uid = $row[4];
         $data["years"] = $row[5];
         $data["programDbId"] = $row[4];
-        if (isset($data["$trialDBID"])) {
+        if (isset($data["trialDbId"])) {
             $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $row[1]";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql");
             if ($row2 = mysqli_fetch_row($res2)) {

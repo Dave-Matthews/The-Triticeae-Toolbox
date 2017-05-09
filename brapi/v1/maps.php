@@ -47,7 +47,7 @@ if (isset($_GET['pageSize'])) {
 if (isset($_GET['page'])) {
     $currentPage = $_GET['page'];
 } else {
-    $currentPage = 1;
+    $currentPage = 0;
 }
 if (isset($_GET['uid'])) {
     $uid = $_REQUEST['uid'];
@@ -64,13 +64,12 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
     $tot_pag = ceil($num_rows / $pageSize);
-    $pageList = array( "pageSize" => $pageSize, "currentPage" => 1, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
     $sql = "select count(*), mapset.mapset_uid, mapset_name, species, map_type, map_unit, published_on, comments
     from mapset, markers_in_maps as mim, map
     WHERE mim.map_uid = map.map_uid
-    AND data_public_flag > 0
     AND map.mapset_uid = mapset.mapset_uid
     GROUP BY mapset.mapset_uid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -111,25 +110,17 @@ if ($action == "list") {
     $linearray['metadata']['status'] = array();
     $linearray['metadata']['datafiles'] = array();
     //first query all data
-    $sql = "select markers.marker_uid, markers.marker_name, start_position, chromosome, arm
+    $sql = "select chromosome
         from markers_in_maps, markers, map
         where markers_in_maps.marker_uid = markers.marker_uid
         AND map.map_uid = markers_in_maps.map_uid
-        AND data_public_flag > 0
-        AND mapset_uid = ?
+        AND mapset_uid = $uid 
         GROUP by chromosome";
-    if ($stmt = mysqli_prepare($mysqli, $sql)) {
-        mysqli_stmt_bind_param($stmt, "i", $uid);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_store_result($stmt);
-        $num_rows = mysqli_stmt_num_rows($stmt);
-        mysqli_stmt_close($stmt);
-    } else {
-        $num_rows = 0;
-        $results['metadata']['status'][] = array("code" => "sql error", "message" => "error connecting to database");
-    }
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $num_rows = mysqli_num_rows($res);
+    $results['metadata']['status'][] = array("code" => "sql error", "message" => "$error");
     $tot_pag = ceil($num_rows / $pageSize);
-    $pageList = array( "pageSize" => $pageSize, "currentPage" => 1, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
     $sql = "select mapset_name, map_type, map_unit from mapset where mapset_uid = ?";
@@ -171,7 +162,6 @@ if ($action == "list") {
             from markers_in_maps, markers, map
             where markers_in_maps.marker_uid = markers.marker_uid
             AND map.map_uid = markers_in_maps.map_uid
-            AND data_public_flag > 0
             AND mapset_uid = ?";
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $uid);
@@ -186,7 +176,6 @@ if ($action == "list") {
             from markers_in_maps, markers, map
             where markers_in_maps.marker_uid = markers.marker_uid
             AND map.map_uid = markers_in_maps.map_uid
-            AND data_public_flag > 0
             AND mapset_uid = ?
             AND chromosome = ?";
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
@@ -199,7 +188,7 @@ if ($action == "list") {
         }
     }
     $tot_pag = ceil($num_rows / $pageSize);
-    $pageList = array( "pageSize" => $pageSize, "currentPage" => 1, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
     if (empty($uid_ary)) {
@@ -209,12 +198,12 @@ if ($action == "list") {
             AND map.map_uid = markers_in_maps.map_uid
             AND mapset_uid = ? 
             order BY chromosome, start_position";
-        if ($currentPage == 1) {
+        if ($currentPage == 0) {
             $sql .= " limit $pageSize";
         } else {
-            $offset = ($currentPage - 1) * $pageSize;
-            if ($offset < 1) {
-                $offset = 1;
+            $offset = $currentPage * $pageSize;
+            if ($offset < 0) {
+                $offset = 0;
             }
             $sql .= " limit $offset, $pageSize";
         }

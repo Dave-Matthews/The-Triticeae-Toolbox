@@ -18,7 +18,7 @@ if (isset($_REQUEST['pageSize'])) {
 if (isset($_REQUEST['page'])) {
     $currentPage = $_REQUEST['page'];
 } else {
-    $currentPage = 1;
+    $currentPage = 0;
 }
 
 header("Content-Type: application/json");
@@ -111,11 +111,11 @@ if ($rest[0] == "status") {
 
         //now get just those selected
         $sql = "select alleles from allele_byline_exp where experiment_uid = $expid and line_record_uid = $lineuid";
-        if ($currentPage == 1) {
+        if ($currentPage == 0) {
         } else {
-            $offset = ($currentPage - 1) * $pageSize;
-            if ($offset < 1) {
-                $offset = 1;
+            $offset = $currentPage * $pageSize;
+            if ($offset < 0) {
+                $offset = 0;
             }
         }
         $found = 0;
@@ -148,11 +148,11 @@ if ($rest[0] == "status") {
     dieNice("Error", "need markerprofileDbId");
     $num_rows = 0;
     $profile_list = array();
-    if ($currentPage == 1) {
+    if ($currentPage == 0) {
         $offset = 0;
         $limit = $pageSize;
     } else {
-        $offset = ($currentPage - 1) * $pageSize;
+        $offset = $currentPage * $pageSize;
         $limit = $offset + $pageSize;
     }
     $sql = "select experiment_uid, line_record_uid, count from allele_byline_exp";
