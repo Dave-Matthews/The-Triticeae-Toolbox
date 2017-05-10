@@ -108,11 +108,13 @@ if ($action == "list") {
         $sql = "select location, planting_date, harvest_date from phenotype_experiment_info where experiment_uid = $row[0]";
         $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($res2)) {
-            $data["locationDbId"] = $row2[0];
+            $data["locationDbId"] = null;
+            $data["locationName"] = $row2[0];
             $data["optionalInfo"]["startDate"] = $row2[1];
             $data["optionalInfo"]["endDate"] = $row2[2];
         } else {
             $data["locationDbId"] = null;
+            $data["locationName"] = null;
             $data["optionalInfo"] = null;
         }
         $sql = "select data_program_name from CAPdata_programs where CAPdata_programs_uid = $CAP_uid";
@@ -134,13 +136,14 @@ if ($action == "list") {
                 $line_record_name = $row[1];
                 $name_list[$line_uid] = $line_record_name;
     }
-    $sql = "select experiment_type_name
+    $sql = "select experiment_type_name, experiment_set_uid
         from experiments, experiment_types
         where experiments.experiment_type_uid = experiment_types.experiment_type_uid
         and experiment_uid = $uid";
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($res)) {
         $type = $row[0];
+        $set = $row[1];
     }
     if ($type == "genotype") {
         $sql = "select trial_code, marker_type_uid, platform_uid
@@ -154,14 +157,17 @@ if ($action == "list") {
     }
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($res)) {
-        $results["studyId"] = $uid;
+        $results["studyDbId"] = $uid;
         $results["studyType"] = "trial";
-        $results["name"] = $row[0];
+        $results["trialDbId"] = $set;
+        $results["trialName"] = null;
+        $results["studyName"] = $row[0];
         $results["objective"] = "";
         $results["startDate"] = $row[1];
-        $results["keyContact"] = $row[2];
+        $results["contacts"] = $row[2];
+        $results["locationDbId"] = null;
         $results["locationName"] = $row[3];
-        $results["designType"] = $row[4];
+        //$results["designType"] = $row[4];
     } else {
         $results = null;
         $return = json_encode($results);
