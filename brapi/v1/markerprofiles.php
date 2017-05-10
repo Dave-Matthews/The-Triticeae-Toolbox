@@ -45,7 +45,7 @@ if (isset($_GET['pageSize'])) {
 if (isset($_GET['page'])) {
     $currentPage = $_GET['page'];
 } else {
-    $currentPage = 1;
+    $currentPage = 0;
 }
 // Get the URI's querystring.
 if ($_GET) {
@@ -132,7 +132,7 @@ if ($command) {
         $res = mysqli_query($mysqli, $sql);
         $count = mysqli_num_rows($res);
         if ($count == 0) {
-            dieNice("experiment $expuid not found");   
+            dieNice("experiment $expuid not found");
         } elseif ($res == false) {
             $response['metadata']['status'][] = array("code" => "sql error", "message" => mysqli_error($mysqli));
         } else {
@@ -198,18 +198,18 @@ if ($command) {
     $num_rows = mysqli_num_rows($res);
 
     //now get just those selected
-    if ($currentPage == 1) {
+    if ($currentPage == 0) {
         $sql .= " limit $pageSize";
     } else {
-        $offset = ($currentPage - 1) * $pageSize;
-        if ($offset < 1) {
-            $offset = 1;
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
         }
         $sql .= " limit $offset, $pageSize";
     }
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $tot_pag = ceil($num_rows / $pageSize);
-    $pageList = array( "pageSize" => $pageSize, "currentPage" => 1, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
     while ($row = mysqli_fetch_row($res)) {
         $count++;
@@ -233,12 +233,12 @@ if ($command) {
     $num_rows = mysqli_num_rows($res);
 
     //now get just those selected
-    if ($currentPage == 1) {
+    if ($currentPage == 0) {
         $sql .= " limit $pageSize";
     } else {
-        $offset = ($currentPage - 1) * $pageSize;
-        if ($offset < 1) {
-            $offset = 1;
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
         }
         $sql .= " limit $offset, $pageSize";
     }

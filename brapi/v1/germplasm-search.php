@@ -33,10 +33,10 @@ if (isset($_GET['pageSize'])) {
 if (isset($_GET['page'])) {
     $currentPage = $_GET['page'];
 } else {
-    $currentPage = 1;
+    $currentPage = 0;
 }
 
-$r['metadata']['status'] = array();;
+$r['metadata']['status'] = array();
 $r['metadata']['datafiles'] = array();
 
 // Is there a command?
@@ -110,12 +110,12 @@ if ($command) {
     } else {
         die(mysqli_error($mysqli));
     }
-    if ($currentPage == 1) {
+    if ($currentPage == 0) {
         $sql .= " limit $pageSize";
     } else {
-        $offset = ($currentPage - 1) * $pageSize;
-        if ($offset < 1) {
-            $offset = 1;
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
         }
         $sql .= " limit $offset, $pageSize";
     }
@@ -170,12 +170,12 @@ if ($command) {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
 
-    if ($currentPage == 1) {
+    if ($currentPage == 0) {
         $sql .= " limit $pageSize";
     } else {
-        $offset = ($currentPage - 1) * $pageSize;
-        if ($offset < 1) {
-            $offset = 1;
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
         }
         $sql .= " limit $offset, $pageSize";
     }
