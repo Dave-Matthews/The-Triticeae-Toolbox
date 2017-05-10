@@ -118,7 +118,7 @@ if ($action == "list") {
         GROUP by chromosome";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
-    $results['metadata']['status'][] = array("code" => "sql error", "message" => "$error");
+    //$results['metadata']['status'][] = array("code" => "sql error", "message" => "$error");
     $tot_pag = ceil($num_rows / $pageSize);
     $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
@@ -145,7 +145,7 @@ if ($action == "list") {
         GROUP BY chromosome";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
-        $temp['linkageGroups'] = $row[2];
+        $temp['linkageGroupId'] = $row[2];
         $temp['numberMarkers'] = $row[0];
         $temp['maxPosition'] = $row[1];
         $results['linkageGroups'][] = $temp;
