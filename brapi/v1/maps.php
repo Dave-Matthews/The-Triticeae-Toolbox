@@ -56,7 +56,7 @@ if ($action == "list") {
     $linearray['metadata']['status'] = array();
     $linearray['metadata']['datafiles'] = array();
     //first query all data
-    $sql = "select mapset.mapset_uid, mapset_name, species, map_type, map_unit, published_on, comments
+    $sql = "select mapset.mapset_uid, mapset_name, species, map_type, map_unit 
     from mapset, markers_in_maps as mim, map
     WHERE mim.map_uid = map.map_uid
     AND map.mapset_uid = mapset.mapset_uid
@@ -67,7 +67,7 @@ if ($action == "list") {
     $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
-    $sql = "select count(*), mapset.mapset_uid, mapset_name, species, map_type, map_unit, published_on, comments
+    $sql = "select count(*), mapset.mapset_uid, mapset_name, species, map_type, map_unit, DATE_FORMAT(published_on, '%Y-%m-%d'), comments
     from mapset, markers_in_maps as mim, map
     WHERE mim.map_uid = map.map_uid
     AND map.mapset_uid = mapset.mapset_uid
@@ -81,16 +81,6 @@ if ($action == "list") {
         $temp["type"] = $row[4];
         $temp["unit"] = $row[5];
         $temp["publishedDate"] = $row[6];
-        // Handle values 0000-00-00.
-        if (preg_match("/0000-00-00/", $temp["publishedDate"])) {
-        } else {
-            $timestamp = strtotime($temp["publishedDate"]);
-            // Handle missing values.
-            if ($timestamp == 0) {
-            } else {
-                $temp['publishedDate'] = date("Y-m-d", $timestamp);
-            }
-        }
         $temp["markerCount"] = (integer) $row[0];
         $sql = "select count(distinct(chromosome)) from markers_in_maps, map
         where map.map_uid = markers_in_maps.map_uid
