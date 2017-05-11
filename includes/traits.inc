@@ -58,15 +58,14 @@ function editSelectPhenotypes($IDRange, $page, $start)
 {
     if (is_array($IDRange)) {
         $where = "";
-		for($i=0; $i<count($IDRange); $i++) {
-			if($i != 0) 
-				$where .= " OR ";
-
-			$where .= "phenotype_uid = '$IDRange[$i]'";
-		}
-
-		editPhenotypeRow($where, $page, $start);
-	}
+        for ($i=0; $i<count($IDRange); $i++) {
+            if ($i != 0) {
+                $where .= " OR ";
+            }
+            $where .= "phenotype_uid = '$IDRange[$i]'";
+        }
+	editPhenotypeRow($where, $page, $start);
+    }
 
 }
 
@@ -241,7 +240,7 @@ function showPhenotypeForLine($line_id, $order = "phenotype_category_name")
     } else {
         /* echo displayTable($resource, TRUE); */
         echo displayLinePheno($resource, false, 1);  // includes/common.inc
-        echo "<p><form action='dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . base64_encode($query) ."' /></form>";
+        echo "<p><form action='dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . urlencode($query) ."' /></form>";
     }
 }
 
