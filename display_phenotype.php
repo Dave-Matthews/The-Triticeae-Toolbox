@@ -301,37 +301,40 @@ if (($data_public_flag == 0) and
             $nr=$row_mdata['number_replicates'];
             $prob=$row_mdata['prob_gt_F'];
         
-            if ($mean!=0) {	
+            if ($mean!=0) {
                 $unformat_mean_arr[] = $mean;
-                if ($sigdig>=0) $mean=number_format($mean,$sigdig);
+                if ($sigdig>=0) {
+                     $mean=number_format($mean, $sigdig);
+                }
                 $mean_arr[] = $mean;
             } else {
                 $unformat_mean_arr[] = "--";
                 $mean_arr[]="--";
             }
             
-            if ($se!=0) {	
-                $unformat_se_arr[] = $se;                
-                if ($sigdig>=0) $se=number_format($se,$sigdig);
+            if ($se!=0) {
+                $unformat_se_arr[] = $se;
+                if ($sigdig>=0) {
+                    $se=number_format($se, $sigdig);
+                }
                 $se_arr[] = $se;
-            } else {	
+            } else {
                 $se_arr[]="--";
                 $unformat_se_arr[] = "--";
             }
             
-            if($nr==0) {
+            if ($nr==0) {
                 $nr="--";
             }
             $nr_arr[]=$nr;
 
 # prob_gt_F is a varchar and can have nonnumeric values like "<.0001".  
-            if($prob!="" && $prob!="NULL") {
+            if ($prob!="" && $prob!="NULL") {
 #                $prob=number_format($prob,2);
                 $prob_arr[]=$prob;
-             } else {
+            } else {
                 $prob_arr[]="--";
             }
-        
         }
         
         $fmean= implode($delimiter, $mean_arr)."\n";
@@ -357,55 +360,52 @@ if (($data_public_flag == 0) and
        
 <!--Style sheet for better user interface-->
 <style type="text/css">
-	th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-	table {background: none; border-collapse: collapse}
-	td {border: 1px solid #eee !important;}
-	h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+    th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+    table {background: none; border-collapse: collapse}
+    td {border: 1px solid #eee !important;}
+    h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 </style>
 
 <!-- Calculate the width of the table based on the number of columns. -->		
 <?php $tablewidth = count($single_row) * 92 + 10;  ?>
-			  
+ 
 <div style="width: <?php echo $tablewidth; ?>px">
 <table>
-        <tr> 
-		
-        <?php
-        for($i=0;$i<count($titles);$i++)
-        {
-        ?>
-			<th><div style="width: 75px;">
-			<?php echo $titles[$i]?>
-			</div></th>
-        <?php
-        }
-        ?>
-        </tr>
+    <tr> 
+    <?php
+    for ($i=0; $i<count($titles); $i++) {
+    ?>
+    <th><div style="width: 75px;">
+    <?php echo $titles[$i]?>
+    </div></th>
+    <?php
+    }
+    ?>
+    </tr>
 </table>
 </div>
 
 <div style="padding: 0; width: <?php echo $tablewidth; ?>px; height: 400px; overflow: scroll; overflow-x: hidden; border: 1px solid #5b53a6; clear: both"> 
 <table>
-			<?php
-				for ($i = 0; $i < count($all_rows); $i++)
-				{
-			?>
-			<tr>
-			<?php
-				for ($j = 0; $j < count($single_row); $j++)
-				{
-			?>
-			<!-- <td><div style="width: 75px; overflow-x: hidden;"> -->
-			<td><div style="width: 75px; word-wrap: break-word">
-			<?php echo $all_rows[$i][$j] ?>
-			</div></td> 
-			<?php
-				}/* end of for j loop */
-			?>
-			</tr>
-			<?php
-			}/* end of for i loop */
-			?>
+<?php
+for ($i = 0; $i < count($all_rows); $i++) {
+    ?>
+    <tr>
+    <?php
+	for ($j = 0; $j < count($single_row); $j++)
+	{
+	?>
+	<!-- <td><div style="width: 75px; overflow-x: hidden;"> -->
+	<td><div style="width: 75px; word-wrap: break-word">
+	<?php echo $all_rows[$i][$j] ?>
+	</div></td> 
+	<?php
+	}/* end of for j loop */
+	?>
+	</tr>
+	<?php
+	}/* end of for i loop */
+	?>
 </table>
 </div>
 <div style="padding: 0; width: <?php echo $tablewidth; ?>px; border: 1px solid #5b53a6; clear: both">
