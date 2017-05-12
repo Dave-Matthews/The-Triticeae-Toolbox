@@ -33,13 +33,15 @@ if (isset($_GET['pageSize'])) {
 if (isset($_GET['page'])) {
     $currentPage = $_GET['page'];
 } else {
-    $currentPage = 1;
+    $currentPage = 0;
 }
+
+$r['metadata']['status'] = array();
+$r['metadata']['datafiles'] = array();
 
 // Is there a command?
 if ($command) {
     $lineuid = $command;
-    $r['metadata']['status'] = null;
     $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $lineuid);
@@ -48,12 +50,13 @@ if ($command) {
         if (mysqli_stmt_fetch($stmt)) {
             $response["germplasmDbId"] = $lineuid;
             $response['defaultDisplayName'] = $line_record_name;
-            $response['germplasmName'] = $line_record_name;
             $response['accessionNumber'] = null;
+            $response['germplasmName'] = $line_record_name;
             $response['germplasmPUI'] = null;
             $response['pedigree'] = null;
-            $response['seedSource'] = null;
-            $response['synonyms'] = array();
+            $response['germplasmSeedSource'] = null;
+            $response['synonyms'] = null;
+            $response['commonCropName'] = null;
         } else {
             $response = null;
             $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
@@ -107,12 +110,12 @@ if ($command) {
     } else {
         die(mysqli_error($mysqli));
     }
-    if ($currentPage == 1) {
+    if ($currentPage == 0) {
         $sql .= " limit $pageSize";
     } else {
-        $offset = ($currentPage - 1) * $pageSize;
-        if ($offset < 1) {
-            $offset = 1;
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
         }
         $sql .= " limit $offset, $pageSize";
     }
@@ -167,12 +170,12 @@ if ($command) {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
 
-    if ($currentPage == 1) {
+    if ($currentPage == 0) {
         $sql .= " limit $pageSize";
     } else {
-        $offset = ($currentPage - 1) * $pageSize;
-        if ($offset < 1) {
-            $offset = 1;
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
         }
         $sql .= " limit $offset, $pageSize";
     }
@@ -181,12 +184,13 @@ if ($command) {
     while ($row = mysqli_fetch_array($res)) {
         $temp['germplasmDbId'] = $row[0];
         $temp['defaultDisplayName'] = $row[1];
-        $temp['germplasmName'] = $row[1];
         $temp['accessionNumber'] = null;
+        $temp['germplasmName'] = $row[1];
         $temp['germplasmPUI'] = null;
         $temp['pedigree'] = null;
-        $temp['seedSource'] = null;
+        $temp['germplasmSeedSource'] = null;
         $temp['synonyms'] = array();
+        $temp['commonCropName'] = null;
         $response[] = $temp;
     }
   

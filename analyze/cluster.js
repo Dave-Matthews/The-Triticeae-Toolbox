@@ -16,7 +16,7 @@ function filter_lines(time, linecount) {
             "Retrieval rate is ca. one minute for 500 lines (1.5 million alleles).";
     jQuery.ajax({
         type: "GET",
-        url: "cluster_getalleles.php",
+        url: "analyze/cluster_getalleles.php",
         data: "time=" + time + "&mmaf=" + mmaf + "&mmm=" + mmm + "&mml=" + mml,
         success: function (data, textStatus) {
             var button = "<p><input type='submit' value='Analyze'><\/form>";

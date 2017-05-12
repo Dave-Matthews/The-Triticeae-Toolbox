@@ -1541,7 +1541,7 @@ class Downloads
 	 if (count($lines)>0) {
 	  $lines_str = implode(",", $lines);
 	 } else {
-	  die("Error: no lines selected");
+	  die("<br><font color=red>Error: no lines selected</font>");
 	 }
 	 
          //generate an array of selected lines that can be used with isset statement
@@ -1969,65 +1969,66 @@ class Downloads
 		AND map.mapset_uid = mapset.mapset_uid
 		AND mapset.mapset_uid = $selected_map
                 order by mim.chromosome, CAST(100*mim.start_position as UNSIGNED), markers.marker_name";
-	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-	while ($row = mysqli_fetch_array($res)) {
-	  $uid = $row[0];
-	  $chr = $row[1];
-	  $pos = $row[2];
-	  $marker_list_mapped[$uid] = "$chr\t$pos";
-	}
-	
-                $marker_list_all = $marker_list_mapped;
-                //get lines and filter to get a list of markers which meet the criteria selected by the user
-                $num_maf = $num_miss = 0;
-                foreach ($marker_list as $i => $uid) {
-                  $marker_name = $marker_list_name[$i];
-                  $marker_list_all_name[$uid] = $marker_name;
-                  if (isset($marker_lookup[$uid])) {
-                      if (isset($marker_list_all[$uid])) {
-                      } else {
-                        $marker_list_all[$uid] = 0;
-                      }
-                  }
-                }
-                if (count($marker_list_all) == 0) {
-                   $output = "no mapped data found";
-                   return $output;
-                }
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
+            $uid = $row[0];
+            $chr = $row[1];
+            $pos = $row[2];
+            $marker_list_mapped[$uid] = "$chr\t$pos";
+        }
 
-        // make an empty marker with the lines as array keys 
-        $n_lines = count($lines);
-                $empty = array_combine($lines,array_fill(0,$n_lines,'-'));
-                $nemp = count($empty);
-                $line_str = implode($delimiter,$lines);
-
-                // write output file header
-                if ($dtype == "FJ") {
-                  $outputheader = "# fjFile = MAP\n";
-                } elseif ($dtype == "R") {
-                  $outputheader = "chr\tpos\n";
+        $marker_list_all = $marker_list_mapped;
+        //get lines and filter to get a list of markers which meet the criteria selected by the user
+        $num_maf = $num_miss = 0;
+        foreach ($marker_list as $i => $uid) {
+            $marker_name = $marker_list_name[$i];
+            $marker_list_all_name[$uid] = $marker_name;
+            if (isset($marker_lookup[$uid])) {
+                if (isset($marker_list_all[$uid])) {
                 } else {
-                  $outputheader = "<Map>\n";
+                      $marker_list_all[$uid] = 0;
                 }
+            }
+        }
+        if (count($marker_list_all) == 0) {
+            $output = "no mapped data found";
+            return $output;
+        }
 
-		$num_markers = 0;
-		/* foreach( $marker_uid as $cnt => $uid) { */
-		foreach($marker_list_all as $uid=>$value) {
-		    $marker_name = $marker_list_all_name[$uid];
-		    $map_loc = $marker_list_mapped[$uid];
-		    $output .= "$marker_name\t$map_loc\n";
-		    $num_markers++;
-		}
-		
-	  return $outputheader.$output;
+        // make an empty marker with the lines as array keys
+        $n_lines = count($lines);
+        $empty = array_combine($lines, array_fill(0, $n_lines, '-'));
+        $nemp = count($empty);
+        $line_str = implode($delimiter, $lines);
+
+        // write output file header
+        if ($dtype == "FJ") {
+            $outputheader = "# fjFile = MAP\n";
+        } elseif ($dtype == "R") {
+            $outputheader = "chr\tpos\n";
+        } else {
+            $outputheader = "<Map>\n";
+        }
+
+        $num_markers = 0;
+        /* foreach( $marker_uid as $cnt => $uid) { */
+        foreach ($marker_list_all as $uid => $value) {
+            $marker_name = $marker_list_all_name[$uid];
+            if (isset($marker_list_mapped[$uid])) {
+                $map_loc = $marker_list_mapped[$uid];
+                $output .= "$marker_name\t$map_loc\n";
+                $num_markers++;
+            }
+        }
+        return $outputheader.$output;
     }
 
     /**
      * create pedigree output file for qtlminer
      * @param string $experiments
      */
-	function type1_build_pedigree_download($experiments)
-	{
+    function type1_build_pedigree_download($experiments)
+    {
             global $mysqli;
 		$delimiter ="\t";
 		// output file header for QTL Miner Pedigree files

@@ -69,7 +69,7 @@ if ($count == 0) {
     //   For debugging, use this to show the R output:
     //   (Regardless, R error messages will be in the Apache error.log.)
     //echo "<pre>"; system("cat /tmp/tht/setupcluster.R$time R/iPlot.R R/VisualCluster.R | R --vanilla 2>&1");
-    exec("cat /tmp/tht/setupcluster.R$time R/iPlot.R R/VisualCluster.R | R --vanilla");
+    exec("cat /tmp/tht/setupcluster.R$time ../R/iPlot.R ../R/VisualCluster.R | R --vanilla");
 
     // Read in the HTML file with the <img src> png and the <map> coordinates.
     include '/tmp/tht/linecluster.html';

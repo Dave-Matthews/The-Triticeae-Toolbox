@@ -74,7 +74,7 @@ function showMarkerForLine($line_id, $order = "marker_name")
         echo displayTable($resource, true);
         echo "<form action='dbtest/exportQueryResult.php' method='post'>
         <input type='submit' value='Export to CSV' />
-        <input type='hidden' name='query_string' value='" . base64_encode($query) ."' />
+        <input type='hidden' name='query_string' value='" . urlencode($query) ."' />
         </form>";
     } else {
         $query = "SELECT experiments.trial_code, line_index
@@ -142,7 +142,7 @@ function showLineForMarker($marker_uid, $order = "line_record_name")
             }
             echo "<form action='dbtest/exportQueryResult.php' method='post'>
             <input type='submit' value='Export to CSV' />
-	    <input type='hidden' name='query_string' value='" . base64_encode($query) ."' />
+	    <input type='hidden' name='query_string' value='" . urlencode($query) ."' />
 	    </form>";
         }
     }
