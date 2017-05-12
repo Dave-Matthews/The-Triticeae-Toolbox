@@ -106,7 +106,20 @@ if (($lineuid != "") && ($expuid != "")) {
     $sql = "select experiment_uid, line_record_name, count from allele_byline_exp
         where line_record_uid = $lineuid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    $count = mysqli_num_rows($res);
+    $num_rows = mysqli_num_rows($res);
+
+    //now get just those selected
+    if ($currentPage == 0) {
+        $sql .= " limit $pageSize";
+    } else {
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
+        }
+        $sql .= " limit $offset, $pageSize";
+    }
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+
     while ($row = mysqli_fetch_row($res)) {
         $expuid = $row[0];
         $resultCount = $row[1];
@@ -127,8 +140,8 @@ if (($lineuid != "") && ($expuid != "")) {
     $response['result']['data'] = $data;
     $response['metadata']['pagination']['pageSize'] = $pageSize;
     $response['metadata']['pagination']['currentPage'] = $currentPage;
-    $response['metadata']['pagination']['totalCount'] = $count;
-    $response['metadata']['pagination']['totalPages'] = ceil($count / $pageSize);
+    $response['metadata']['pagination']['totalCount'] = $num_rows;
+    $response['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
     header("Content-Type: application/json");
     echo json_encode($response);
 } elseif ($expuid != "") {
@@ -137,8 +150,21 @@ if (($lineuid != "") && ($expuid != "")) {
     $sql = "select line_record_uid, line_record_name, count from allele_byline_exp
             where experiment_uid = $expuid";
     $res = mysqli_query($mysqli, $sql);
-    $count = mysqli_num_rows($res);
-    if ($count == 0) {
+    $num_rows = mysqli_num_rows($res);
+
+    //now get just those selected
+    if ($currentPage == 0) {
+        $sql .= " limit $pageSize";
+    } else {
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
+        }
+        $sql .= " limit $offset, $pageSize";
+    }
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+
+    if ($num_rows == 0) {
         dieNice("experiment $expuid not found");
     } elseif ($res == false) {
         $response['metadata']['status'][] = array("code" => "sql error", "message" => mysqli_error($mysqli));
@@ -167,8 +193,8 @@ if (($lineuid != "") && ($expuid != "")) {
     $response['result']['data'] = $data;
     $response['metadata']['pagination']['pageSize'] = $pageSize;
     $response['metadata']['pagination']['currentPage'] = $currentPage;
-    $response['metadata']['pagination']['totalCount'] = $count;
-    $response['metadata']['pagination']['totalPages'] = ceil($count / $pageSize);
+    $response['metadata']['pagination']['totalCount'] = $num_rows;
+    $response['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
     header("Content-Type: application/json");
     echo json_encode($response);
 } elseif (isset($profileid)) {
