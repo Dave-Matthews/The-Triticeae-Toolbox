@@ -74,6 +74,9 @@ if ($count == 0) {
     // Read in the HTML file with the <img src> png and the <map> coordinates.
     include '/tmp/tht/linecluster.html';
 
+    if (!file_exists("/tmp/tht/clustInfo.txt".$time)) {
+        die("Error: cluster file not found\n");
+    }
     $clustInfo = file("/tmp/tht/clustInfo.txt".$time);
     unlink("/tmp/tht/clustInfo.txt".$time);
     $clustInfo = preg_replace("/\n/", "", $clustInfo);
@@ -85,19 +88,19 @@ if ($count == 0) {
         $clustlist[$clustInfo[$i][0]] .= $clustInfo[$i][1].", ";
     }
 
-$color = array("black","red","limegreen","blue","cyan","magenta","#dddd00","gray");
-print "<table width=300 style='background-image: none; font-weight: bold'>";
-print "<thead><tr><th>Cluster</th><th>Sample member</th><th>Lines</th></tr></thead>";
-for ($i=1; $i<count($clustsize)+1; $i++) {
-  $total = $total + $clustsize[$i];
-  print "<tr style='color:".$color[$i-1]."';'>";
-  print "<td>$i</td>";
-  print "<td>".trim($clustlist[$i],', ')."</td>";
-  print "<td>$clustsize[$i]</td>";
-  print "</tr>";
- }
-print "<tr><td>Total:</td><td></td><td>$total</td></tr>";
-print "</table>";
+    $color = array("black","red","limegreen","blue","cyan","magenta","#dddd00","gray");
+    print "<table width=300 style='background-image: none; font-weight: bold'>";
+    print "<thead><tr><th>Cluster</th><th>Sample member</th><th>Lines</th></tr></thead>";
+    for ($i=1; $i<count($clustsize)+1; $i++) {
+        $total = $total + $clustsize[$i];
+        print "<tr style='color:".$color[$i-1]."';'>";
+        print "<td>$i</td>";
+        print "<td>".trim($clustlist[$i], ', ')."</td>";
+        print "<td>$clustsize[$i]</td>";
+        print "</tr>";
+    }
+    print "<tr><td>Total:</td><td></td><td>$total</td></tr>";
+    print "</table>";
 }
 
 print "<P>Select the clusters you want to use.";
@@ -106,7 +109,7 @@ print "<select name='mycluster[]' multiple size=$nclusters>";
 for ($i=0; $i<$nclusters; $i++) {
   $j=$i+1;
   print "<option value=$j>$j</option>";
- }
+}
 print "</select>";
 print "<input type = 'hidden' name = 'time' value = $time>";
 print "<p><input type=submit value='Select'>";
@@ -131,7 +134,7 @@ print "<thead><tr><th>Cluster</th><th>Lines</th></tr></thead>";
 for ($i=1; $i<count($contents)+1; $i++) {
     print "<tr style='color:".$color[$i-1]."';'>";
     print "<td>$i</td>";
-    print "<td>".trim($contents[$i],', ')."</td>";
+    print "<td>".trim($contents[$i], ', ')."</td>";
     print "</tr>";
 }
 print "</table>";
