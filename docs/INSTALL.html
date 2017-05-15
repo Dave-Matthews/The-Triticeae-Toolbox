@@ -6,16 +6,15 @@
   - Apache
   - MySQL
   - PHP, including PEAR
-  - php5-mysql
-  - php5-mysqlnd MySQL module for php5 (Native Driver)
-  - php5-gd for handling graphics directly from PHP scripts
+  - php7.0-mysql or (php5-mysql and php5-mysqlnd)
+  - php7.0-gd or php5-gd for handling graphics directly from PHP scripts
   - Spreadsheet_Excel_Writer and OLE.  Can be installed with:
     % sudo pear install OLE-1.0.0RC2
     % sudo pear install Spreadsheet_Excel_Writer-0.9.2
     % sudo pear install Mail
   - PHPExcel read, write Excel including .xlsx
     copy source files into lib/PHPExcel/Classes
-  - R, version at least 2.15.2
+  - R, version at least 3.0 
     - additional packages: rrBLUP, multicore, rpart, lme4, pheatmap, agricolae, lsmeans
   - PHPIDS web application security
     - Edit lib/phpids-0.7/lib/IDS/Config/Config.ini.php to specify filter_path and tmp_path
@@ -157,7 +156,7 @@ This directory must be writable by Apache user.
 <b>PHP configuration</b>
 
 Some helpful modifications for the php.ini file, such as 
-/etc/php5/apache2/php.ini:
+/etc/php/7.0/apache2/php.ini or /etc/php5/apache2/php.ini:
 
 max_input_time = 600
 memory_limit = 512M
