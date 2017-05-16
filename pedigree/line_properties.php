@@ -131,7 +131,7 @@ while ($resp = mysqli_fetch_row($res)) {
     <h3>Genetic characters</h3>
     <table id="PropertySelTable" style="table-layout: fixed; width: 350px;">
     <tr>
-    <th width=120px>Category
+    <th width=150px>Category
     <th width=150px>Property/Gene
     <th width=80px>Value/Allele
     </tr>
@@ -196,9 +196,9 @@ while ($resp = mysqli_fetch_row($res)) {
     echo "<option value='$lpid' $panelselect[$lpid]>$s</option>";
 }
 ?>
-		</select>
-	      </tr>
-	</table>
+  </select>
+  </tr>
+  </table>
   </table>
   <input type="submit" value="Search"/>
 <?php
@@ -223,16 +223,16 @@ if (!empty($_POST)) {
     $nonHits = array();
 
     // the Name box
-    if (strlen($linenames) != 0)  {
-      // Assume input is punctuated either with commas, tabs or linebreaks. Change to commas.
-      $linenames = str_replace(array('\r\n', ', '), '\t', $linenames);
-      $lineList = explode('\t', $linenames);
-      foreach ($lineList as $word) {
-	  $found = FALSE;
-	  $word = str_replace('*', '%', $word);  // Handle "*" wildcards.
-	  $word = str_replace('&amp;', '&', $word);  // Allow "&" character in line names.
-	  // First check line_records.line_record_name.
-          $sql = "SELECT line_record_name from line_records where line_record_name like ?";
+    if (strlen($linenames) != 0) {
+        // Assume input is punctuated either with commas, tabs or linebreaks. Change to commas.
+        $linenames = str_replace(array('\r\n', ', '), '\t', $linenames);
+        $lineList = explode('\t', $linenames);
+        foreach ($lineList as $word) {
+            $found = false;
+            $word = str_replace('*', '%', $word);  // Handle "*" wildcards.
+            $word = str_replace('&amp;', '&', $word);  // Allow "&" character in line names.
+            // First check line_records.line_record_name.
+            $sql = "SELECT line_record_name from line_records where line_record_name like ?";
                 if ($stmt = mysqli_prepare($mysqli, $sql)) {
                     mysqli_stmt_bind_param($stmt, "s", $word);
                     mysqli_stmt_execute($stmt);
