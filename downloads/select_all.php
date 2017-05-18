@@ -169,29 +169,29 @@ class SelectPhenotypeExp
      */
     private function type1_checksession()
     {
-            ?>
-	<div id="title">
-	<?php
-            $phenotype = "";
-            $lines = "";
-            $markers = "";
-            $saved_session = "";
-            $message1 = $message2 = "";
+        ?>
+        <div id="title">
+        <?php
+        $phenotype = "";
+        $lines = "";
+        $markers = "";
+        $saved_session = "";
+        $message1 = $message2 = "";
 
-            if (isset($_SESSION['phenotype'])) {
-                    $tmp = count($_SESSION['phenotype']);
-                    if ($tmp==1) {
-                        $saved_session = "$tmp phenotype ";
-                    } else {
-                        $saved_session = "$tmp phenotypes ";
-                    }
-                    $message2 = "download phenotype and genotype data";
-                    $phenotype = $_SESSION['phenotype'];
+        if (isset($_SESSION['phenotype'])) {
+            $tmp = count($_SESSION['phenotype']);
+            if ($tmp==1) {
+                 $saved_session = "$tmp phenotype ";
             } else {
-				$message1 = "0 phenotypes";
-				$message2 = " download genotype data";
-			}
-            if (isset($_SESSION['selected_lines'])) {
+                 $saved_session = "$tmp phenotypes ";
+            }
+            $message2 = "download phenotype and genotype data";
+            $phenotype = $_SESSION['phenotype'];
+        } else {
+            $message1 = "0 phenotypes";
+            $message2 = " download genotype data";
+        }
+        if (isset($_SESSION['selected_lines'])) {
                     $countLines = count($_SESSION['selected_lines']);
                     if ($saved_session == "") {
                         $saved_session = "$countLines lines";
@@ -205,14 +205,14 @@ class SelectPhenotypeExp
                     $saved_session = $saved_session . ", $tmp markers";
                     $markers = $_SESSION['clicked_buttons'];
             } else {
-			    if ($message2 == "") {
-			      $message1 = "0 markers ";
-			      $message2 = "for all markers.";
-			    } else {
-			  	  $message1 = $message1 . ", 0 markers ";
-			  	  $message2 = $message2 . " for all markers";
-				}
-			}	
+		if ($message2 == "") {
+		      $message1 = "0 markers ";
+		      $message2 = "for all markers.";
+		    } else {
+		  	  $message1 = $message1 . ", 0 markers ";
+		  	  $message2 = $message2 . " for all markers";
+			}
+		}
             $this->refresh_title();
          ?>        
         </div>
@@ -227,7 +227,7 @@ class SelectPhenotypeExp
 		  <option value="Phenotypes">Trait Category</option>
 		</select></p>
 		        <script type="text/javascript" src="downloads/downloads13.js"></script>
-                <?php 
+                <?php
                 $this->step1_breedprog();
                 ?>
                 </div></div>
@@ -403,7 +403,8 @@ class SelectPhenotypeExp
 		<tr><td>
 			<select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
                 <?php
-		$sql = "SELECT phenotype_category_uid AS id, phenotype_category_name AS name from phenotype_category";
+                $sql = "SELECT distinct(phenotype_category.phenotype_category_uid) AS id, phenotype_category_name AS name from phenotype_category, phenotypes
+                    where phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		while ($row = mysqli_fetch_assoc($res))
 		{
