@@ -144,6 +144,7 @@ function array_merge_recursive_unique($array0, $array1)
 
 
 /*
+ * No longer used but included for compatibility
  * Function that simplifies the connection process
  * Use this function if you want to connect to the database.
  *
@@ -153,24 +154,7 @@ function array_merge_recursive_unique($array0, $array1)
  *
  * @return $linkID - the mysql_connection resource pointer.  returned incase you ever need it.
  */
-print_r($ini_config);
 function connect() {
-  global $dontconnect;
-  $ini_path = dirname(__FILE__) . '/tht.ini';
-  $ini_config = is_readable($ini_path) ?
-    parse_ini_file($ini_path, false):array();
-  if ($dontconnect == true) return null;
-  // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat+_readonly.inc');
-  $db_config = array_merge_recursive_unique($db_config,
-					    $ini_config);
-  extract($db_config);
-  //$linkID = mysql_connect($db_host, $db_user, $db_pass);
-  //if(!$linkID)
-  //  die(mysql_error());
-  //else
-  //  mysql_select_db($db_name, $linkID);
-  return $linkID;
 }
 
 /*
@@ -186,7 +170,7 @@ function connecti() {
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat+_readonly.inc');
+  include('/data/tht_data/mysql_connections/T3wheat_readonly.inc');
   $db_config = array_merge_recursive_unique($db_config,
                                             $ini_config);
   extract($db_config);
