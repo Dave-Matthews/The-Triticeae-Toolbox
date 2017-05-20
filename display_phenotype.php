@@ -35,7 +35,7 @@
 
 session_start();
 require 'config.php';
-require $config['root_dir'].'includes/bootstrap2.inc';
+require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/normal_header.php';
 $delimiter = "\t";
 $mysqli = connecti();

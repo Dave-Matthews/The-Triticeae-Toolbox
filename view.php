@@ -1,5 +1,5 @@
 <?php
-require "includes/bootstrap2.inc";
+require "includes/bootstrap.inc";
 $mysqli = connecti();
 require "theme/normal_header.php";
 
