@@ -1387,11 +1387,11 @@ function DispPropertySel($arr) {
      WHERE property_uid = $id") or die(mysqli_error($mysqli));
     if(mysqli_num_rows($query) > 0) {
       // Strange.  (this.value..) works in IE and Chrome in DispPropCategorySel() but not here.
-      echo "<select multiple size=3 onchange=\"javascript: update_propery(this.options)\">";
+      echo "<select size=3 onchange=\"DispPropSel(this.options[this.selectedIndex].value, 'PropValue')\">";
       while($row = mysqli_fetch_row($query)) 
 	echo "<option value='$row[0]'>$row[1]</option>";
       echo "</select><br><br>";
-      echo "<input type=\"button\" value=\"Add\" onclick=\"DispPropSel()\">";
+      //echo "<input type=\"button\" value=\"Add\" onclick=\"DispPropSel(this.value, 'PropVal')\">";
     }
   }
 }

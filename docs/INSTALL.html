@@ -6,22 +6,19 @@
   - Apache
   - MySQL
   - PHP, including PEAR
-  - php5-mysql
-  - php5-mysqlnd MySQL module for php5 (Native Driver)
-  - php5-gd for handling graphics directly from PHP scripts
+  - php-mysql
+  - php-gd for handling graphics directly from PHP scripts
+  - php-zip
   - Spreadsheet_Excel_Writer and OLE.  Can be installed with:
     % sudo pear install OLE-1.0.0RC2
     % sudo pear install Spreadsheet_Excel_Writer-0.9.2
     % sudo pear install Mail
-  - PHPExcel read, write Excel including .xlsx
-    copy source files into lib/PHPExcel/Classes
-  - R, version at least 2.15.2
-    - additional packages: rrBLUP, multicore, rpart, lme4, pheatmap, agricolae, lsmeans
-  - PHPIDS web application security
-    - Edit lib/phpids-0.7/lib/IDS/Config/Config.ini.php to specify filter_path and tmp_path
+  - R, version at least 3.0 
+    - additional packages: rrBLUP, rpart, lme4, pheatmap, agricolae, lsmeans
+  - Website security
+    ModSecurity
 - For some functions
   - JBrowse
-  - pclzip.lib.php
   - libzzip
   - for ViroBLAST
     - DBD::CSV, XML::DOM and BioPerl. Can be installed with these commands:
@@ -38,6 +35,46 @@
       - Create a symbolic link to the BLAST databases in the viroblast directory
 	e.g. cd viroblast/db
 	e.g. ln -s ../../gbs_files/blast/ nucleotide
+
+<b>Instructions for Ubuntu 16.04</b>
+sudo apt-get install apache2
+sudo apt-get install mysql-server
+sudo apt-get install php libapache2-mod-php php-mysql
+sudo apt-get install php-pear
+sudo apt-get install php-gd
+sudo apt-get install php-zip
+sudo apt-get install php-xml
+sudo apt-get install r-base
+sudo R
+>install.packages("rrBLUP")
+>install.packages("rpart")
+>install.packages("lme4")
+>install.packages("pheatmap")
+>install.packages("agricolae")
+>install.packages("lsmeans")
+sudo cpan DBD::CSV
+sudo cpan XML::DOM
+sudo cpan BioPerl
+sudo mysql -u root
+mysql> create database T3wheat
+mysql> use T3wheat;
+mysql> source T3wheat_schema.sql
+mysql> source T3wheat_skeleton.sql
+cd /var/www/html
+sudo mkdir wheat
+sudo chown <username> wheat
+git clone https://github.com/TriticeaeToolbox/T3.git wheat
+sudo apt-get install libapache2-modsecurity
+cd /etc/modsecurity
+sudo mv modsecurity.conf-recommended modsecurity.conf
+cd /etc/apache2
+sudo mkdir modsecurity-crs
+sudo git clone https://github.com/SpiderLabs/owasp-modsecurity-crs modsecurity-crs
+cd /etc/apache2/modsecurity-crs
+sudo mv crs-setup.conf.example crs-setup.conf
+
+
+<b></b>
 
 <b>Setting up the MySQL databases</b>
 
@@ -89,7 +126,7 @@ read access for the Apache user, e.g.  www-data:
 -r-------- 1 www-data www-data 141 2011-01-31 11:56 T3wheat_writeaccess.inc
 
 Create these files with the contents shown below, and edit your files
-includes/bootstrap.inc and includes/bootstrap_curator.inc to point to the
+includes/bootstrap.inc  and includes/bootstrap_curator.inc to point to the
 correct pathname for your system.
 
 T3wheat_readonly.inc:
@@ -157,7 +194,7 @@ This directory must be writable by Apache user.
 <b>PHP configuration</b>
 
 Some helpful modifications for the php.ini file, such as 
-/etc/php5/apache2/php.ini:
+/etc/php/7.0/apache2/php.ini or /etc/php5/apache2/php.ini:
 
 max_input_time = 600
 memory_limit = 512M

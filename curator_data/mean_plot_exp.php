@@ -144,7 +144,7 @@ class Data_Check
          }
        
          $count = 1;
-         $h = fopen("/tmp/tht/$unique_str/mean-output.txt","r");
+         $h = fopen("/tmp/tht/$unique_str/mean-output.txt", "r");
          echo "<table><tr><td><td>";
          while ($line=fgetcsv($h, 0, " ")) {
              if ($count == 1) {
@@ -172,12 +172,12 @@ class Data_Check
                          }
                          $sql = "select tht_base_uid from tht_base where line_record_uid=$line_uid and experiment_uid=$experiment_uid $sql_opt";
                          //echo "$sql<br>\n";
-                         $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
                          if ($row = mysqli_fetch_array($res)) {
                              $tht_base_uid = $row[0];
                          } else {
                              $sql = "insert into tht_base (line_record_uid, experiment_uid, check_line) values ($line_uid, $experiment_uid, '$check_line')";
-                             $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
                              $tht_base_uid = mysqli_insert_id($mysqli);
                              //echo "$sql<br>\n";
                          }
@@ -274,7 +274,6 @@ class Data_Check
        echo "Warning: There are no trait values for Trial <b>$badtc</b>.<br>";
        $emptytrials[$badtc] = $exid;
      }
-
 }
 
 /**
@@ -364,7 +363,7 @@ private function type_Experiment_Name() {
          $check = $row[5];
          $line_uid = $row[6];
        } else {
-         die("Error: $sql");
+         echo "Error: plot_uid $plot_uid not found in fieldbook\n";
        }
        $sql = "select value, phenotype_uid from phenotype_plot_data where experiment_uid = $uid AND plot_uid = $plot_uid order by phenotype_uid";
        //echo "$sql<br>\n";
@@ -482,12 +481,12 @@ private function type_Experiment_Name() {
           
      echo "$warning<br>\n";
      if (file_exists("/tmp/tht/$unique_str/$filename5")) {
-       $h = fopen("/tmp/tht/$unique_str/$filename5","r");
+       $h = fopen("/tmp/tht/$unique_str/$filename5", "r");
        while ($line=fgets($h)) {
          echo "$line<br>\n";
        }
        fclose($h);
-     } 
+     }
 
      ?>
      <br>
@@ -498,7 +497,6 @@ private function type_Experiment_Name() {
      <input type="submit" value="Save calculated means">
      </form>
      <?php
-
   }
 }
 }

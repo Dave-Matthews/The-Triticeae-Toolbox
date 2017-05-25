@@ -12,7 +12,7 @@
  */
 
 require 'config.php';
-require $config['root_dir'] . 'includes/bootstrap2.inc';
+require $config['root_dir'] . 'includes/bootstrap.inc';
 
 $mysqli = connecti();
 
@@ -65,7 +65,7 @@ class DataCheck
    if (empty($_GET['uid'])) {
      echo "Error: invalid experiment uid<br>\n";
      die();
-   } 
+   }
    $exp_uid = $_GET['uid'];
 
    $sql = "select trial_code from experiments where experiment_uid = ?";
