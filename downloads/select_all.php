@@ -226,7 +226,7 @@ class SelectPhenotypeExp
 		  <option value="Locations">Locations</option>
 		  <option value="Phenotypes">Trait Category</option>
 		</select></p>
-		        <script type="text/javascript" src="downloads/downloads13.js"></script>
+		        <script type="text/javascript" src="downloads/downloads14.js"></script>
                 <?php
                 $this->step1_breedprog();
                 ?>

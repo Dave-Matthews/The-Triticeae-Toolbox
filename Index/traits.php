@@ -78,7 +78,7 @@ foreach ($trialids as $tid) {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $entries = array();
     while ($row = mysqli_fetch_row($res)) {
-        $entries[] = $row[0];  
+        $entries[] = $row[0];
     }
     if ($started > 0) {
         $commonlines = array_intersect($commonlines, $entries);
@@ -88,7 +88,7 @@ foreach ($trialids as $tid) {
     }
 }
 
-if (empty($_GET) or $_GET['reselect']) { 
+if (empty($_GET) or $_REQUEST['reselect']) {
   // Initial entry to the script or resetting parameters.
 ?>
 Choose relative weights and a scaling method to combine the traits into an index.
@@ -99,21 +99,23 @@ Choose relative weights and a scaling method to combine the traits into an index
   <table>
     <tr><th>Trait<th>Weight<th>Reverse scale
 
-<?php 
+<?php
   // If reselecting parameters, read in the old values.
   $weight = $_REQUEST[wt];
   $reverse = $_REQUEST[reverse];
   // If user hasn't yet specified the relative weights, divide equally.
-  foreach ($traitnames as $tn) { 
-    if (!$weight[$tn]) 
+  foreach ($traitnames as $tn) {
+    if (!$weight[$tn]) {
       $weight[$tn] = intval(100 / $traitcount);
+    }
     echo "<tr><td>$tn";
     echo "<td><input type=text name='wt[$tn]' value=$weight[$tn] size=3>";
     echo "<td style=text-align:center>";
-    // Previously reversed?  
+    // Previously reversed?
     $ck = "";
-    if ($reverse[$tn] == 'on')
+    if ($reverse[$tn] == 'on') {
       $ck = "checked";
+    }
     echo "<input type=checkbox name='reverse[$tn]' $ck>";
   }
 ?>
@@ -124,7 +126,8 @@ Choose relative weights and a scaling method to combine the traits into an index
 
 <?php
   // Disallow "Percent of common line" if there are no lines in common across all trials.
-  $dsbl = ""; $choices = "Choose...";
+  $dsbl = "";
+  $choices = "Choose...";
   if (empty($commonlines)) {
     $dsbl = "disabled";
     $choices = "None";
@@ -160,7 +163,7 @@ else { // Submit button was clicked.
     echo " of <b>$baselinename</b>";
   }
   echo ". Weights: <b>".implode($weight, ', ')."</b>. ";
-  echo "<input type=submit name= reselect value=Reselect>";
+  echo "<input type=submit name=reselect value=Reselect>";
   echo "</form>";
 
   $lines = array();
