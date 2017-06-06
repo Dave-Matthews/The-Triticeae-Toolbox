@@ -141,7 +141,7 @@ Choose relative weights and a scaling method to combine the traits into an index
   }
 ?>
 </select>
-<br><input type=radio name=scaling value=rank disabled>Rank in trial
+<br><input type=radio name=scaling value=rank>Rank in trial
 <p><input type=submit value="Submit">
 </form>
 
@@ -153,8 +153,9 @@ else { // Submit button was clicked.
   $totalwt = array_sum($weight); // Needn't add up to 100.
   $reverse = $_REQUEST[reverse];
   $scaling = $_REQUEST[scaling];
-  if ($_REQUEST['base-line'] != 0)
+  if ($_REQUEST['base-line'] != 0) {
     $scaling = "percent";
+  }
   echo "<form method=POST>";
   echo "Scaling method: <b>$scaling</b>";
   if ($scaling == 'percent') {
@@ -211,6 +212,25 @@ else { // Submit button was clicked.
     }
   }
 
+  if ($scaling == "rank") {
+    foreach ($traitnames as $tn) {
+      foreach ($trialnames as $trial) {
+        $sum = 0; $linecount = 0; $devsq = 0;
+        $tmp1 = array();
+        $tmp2 = array();
+        foreach ($lines as $line) {
+          if ($actual[$tn][$trial][$line]) {
+            $tmp1[] = $actual[$tn][$trial][$line];
+            $tmp2[] = $line;
+          }
+        }
+        array_multisort($tmp1, $tmp2);
+        $rankIndex[$tn][$trial] = $tmp1;
+        $rankName[$tn][$trial] = $tmp2;
+      }
+    }
+  }
+
   if ($scaling == 'percent') {
     // Get the values for the "base" line used as reference.
     foreach ($traitnames as $tn) 
@@ -224,7 +244,11 @@ else { // Submit button was clicked.
       $sum = 0; $N = 0;
       foreach ($trialnames as $trial) {
 	if (!empty($actual[$tn][$trial][$line])) {
-	  $sum += scaled($actual[$tn][$trial][$line], $tn, $trial);
+          if ($scaling == 'rank') {
+            $sum += array_search($line, $rankName[$tn][$trial]);
+          } else {
+	    $sum += scaled($actual[$tn][$trial][$line], $tn, $trial);
+          }
 	  $N++;
 	}
       }
@@ -265,7 +289,11 @@ else { // Submit button was clicked.
       // Otherwise calculate.
       if (!$missing) {
         foreach ($traitnames as $tn) {
-	  $weightedval = ($weight[$tn] * scaled($actual[$tn][$trial][$line], $tn, $trial)) / $totalwt;
+          if ($scaling == 'rank') {
+            $weightedval = ($weight[$tn] * array_search($line, $rankName[$tn][$trial])) / $totalwt; 
+          } else {
+	    $weightedval = ($weight[$tn] * scaled($actual[$tn][$trial][$line], $tn, $trial)) / $totalwt;
+          }
 	  if ($reverse[$tn] == 'on')
 	    $weightedval = - $weightedval;
 	  $wv[$tn] = $weightedval;
