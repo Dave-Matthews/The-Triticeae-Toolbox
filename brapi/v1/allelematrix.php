@@ -58,19 +58,27 @@ if ($rest[0] == "status") {
 } elseif (isset($_REQUEST['markerprofileDbId'])) {
     $uniqueStr = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
     $errorFile = "/tmp/tht/error_" . $uniqueStr . ".txt";
-    //list of markerprofileDbId can be in either format
-    $tmp = $_REQUEST['markerprofileDbId'];
-    if (preg_match("/,/", $tmp)) {
-        $profile_list = explode(",", $tmp);
+    /** PHP does not handle multiple paramaters with same name so use URI**/
+    if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+        $request = $_SERVER['REQUEST_URI'];
+    } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $request = file_get_contents('php://input');
     } else {
-        $request = $_SERVER["REQUEST_URI"];
+        dieNice("Error", "invalid request method");
+    }
+    if (preg_match("/,/", $request)) {
+        /** one or more markerprofileDBId seperated by "," **/
+        $profile_str = $request;
+        $profile_list = explode(",", $request);
+    } else {
+        /** each markerprofileDbId a seperate paramater **/
         if (preg_match_all("/markerprofileDbId=([0-9_]+)/", $request, $match)) {
             foreach ($match[1] as $key => $val) {
                 //echo "found $key $val[0] $val\n";
                 $profile_list[] = $val;
             }
         }
-        $tmp = implode(",", $profile_list);
+        $profile_str = implode(",", $profile_list);
     }
 
     //first query all data
@@ -85,7 +93,7 @@ if ($rest[0] == "status") {
 
     $countExp = count($profile_list);
     if ($countExp > 1) {
-        $cmd = "php allelematrix-search-offline.php \"$tmp\" \"$uniqueStr\" > /dev/null 2> $errorFile";
+        $cmd = "php allelematrix-search-offline.php \"$profile_str\" \"$uniqueStr\" > /dev/null 2> $errorFile";
         exec($cmd);
         dieNice("asynchid", "$uniqueStr");
     }
