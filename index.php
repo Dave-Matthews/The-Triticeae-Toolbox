@@ -46,7 +46,7 @@ Find out how to upload data to T3 using the data submission templates.
 <br><br>
 <div style="font-size: 120%">
 Blake, V., Birkett, C.L., Matthews, D.E., Hane, D., Bradbury, P., Jannink, J. 2015. <a href="https://dl.sciencesocieties.org/publications/tpg/pdfs/0/0/plantgenome2014.12.0099" target="_new">The Triticeae Toolbox: Combining Phenotype and Genotype Data to Advance Small-Grains Breeding</a>. The Plant Genome. doi: 10.3835/PlantGenome2014.12.0099.<br>
-The T3 software is available under the GNU General Public License
+The T3 software is open source and available under the GNU General Public License
 (<a href="docs/LICENSE">LICENSE</a>) and may be downloaded from
 <a href="https://github.com/TriticeaeToolbox/T3" target="_new">GitHub</a>.
 </div>
