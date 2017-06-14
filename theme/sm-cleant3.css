@@ -640,8 +640,24 @@ footer
     color:#de5414;
     margin: 0;
     padding: 0;
-    font-size: 1.5em;
+    /*font-size: 1.5em;*/
     margin-bottom: 1em
+}
+
+#primary a 
+{
+    color: #DE5414;
+    margin: 0;
+    padding: 0;
+    font-size: 1.5em;
+    margin-bottom: 1em;
+    text-decoration-color: #DE5414
+}
+#primary a:visited {
+    text-decoration-color: #DE5414
+}
+#primary a:hover {
+    text-decoration-color: #DE5414
 }
 
 /* dem mar12: Set a minimum height to allow room for What's New. */

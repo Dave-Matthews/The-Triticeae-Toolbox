@@ -129,6 +129,13 @@ if ($action == "list") {
     header("Content-Type: application/json");
     echo "$return";
 } elseif ($uid != "") {
+    $linearray['metadata']['pagination'] = null;
+    $linearray['metadata']['status'] = array();
+    $linearray['metadata']['datafiles'] = array();
+
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => 1, "totalPages" => 1 );
+    $linearray['metadata']['pagination'] = $pageList;
+
     $sql = "select line_record_uid, line_record_name from line_records";
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
@@ -144,13 +151,17 @@ if ($action == "list") {
     if ($row = mysqli_fetch_row($res)) {
         $type = $row[0];
         $set = $row[1];
+    } else {
+        $set = null;
     }
     if ($type == "genotype") {
-        $sql = "select trial_code, marker_type_uid, platform_uid
-            from experiments, genotype_experiment_info
-            where experiments.experiment_uid = genotype_experiment_info.experiment_uid";
+        $sql = "select trial_code, marker_type_uid, NULL, processing_date, data_program_name 
+         from experiments, genotype_experiment_info, CAPdata_programs
+         where experiments.experiment_uid = genotype_experiment_info.experiment_uid
+         and experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
+         and experiments.experiment_uid = $uid";
     } else {
-        $sql = "select trial_code, planting_date, collaborator, location, experiment_design
+        $sql = "select trial_code, planting_date, collaborator, begin_weather_date, location, experiment_design
          from experiments, phenotype_experiment_info
          where phenotype_experiment_info.experiment_uid = experiments.experiment_uid
          and experiments.experiment_uid = $uid";
@@ -158,15 +169,15 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($res)) {
         $results["studyDbId"] = $uid;
-        $results["studyType"] = "trial";
+        $results["studyType"] = $type;
         $results["trialDbId"] = $set;
         $results["trialName"] = null;
         $results["studyName"] = $row[0];
         $results["objective"] = "";
         $results["startDate"] = $row[1];
         $results["contacts"] = $row[2];
-        $results["locationDbId"] = null;
-        $results["locationName"] = $row[3];
+        $results["startDate"] = $row[3];
+        $results["location"] = array("locationDbId" => null, "name" => "$row[4]");
         //$results["designType"] = $row[4];
     } else {
         $results = null;
@@ -175,13 +186,24 @@ if ($action == "list") {
         echo "$return";
         die();
     }
-    $sql = "select distinct(line_record_uid) from tht_base where experiment_uid = $uid";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-    while ($row = mysqli_fetch_row($res)) {
-        $temp['germplasmId'] = $row[0];
-        $temp["germplasmName"] = $name_list[$row[0]];
-        $results["design"][] = $temp;
+    if ($type == "genotype") {
+        $sql = "select platform_name
+         from experiments, genotype_experiment_info, platform
+         where experiments.experiment_uid = genotype_experiment_info.experiment_uid
+         and experiments.experiment_uid = $uid";
+        $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_row($res)) {
+            $results["additionalInfo"] =  $row[0];
+        }
     }
+    if (isset($results["trialDbId"])) {
+        $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $uid";
+        $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql");
+        if ($row = mysqli_fetch_row($res)) {
+            $results["trialName"] = $row[0];
+        }
+    }
+
     $sql = "select plot_uid, plot, block, row_id, column_id, replication, check_id, line_uid from fieldbook
         where experiment_uid = $uid order by row_id, plot";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -203,8 +225,9 @@ if ($action == "list") {
         }
         $results["design"][] = $temp;
     }
+    $linearray['result']['data'] = $results;
     if ($outFormat == "json") {
-        $return = json_encode($results);
+        $return = json_encode($linearray);
         header("Content-Type: application/json");
     } else {
         $return = "";
