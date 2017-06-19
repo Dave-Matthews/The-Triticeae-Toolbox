@@ -62,7 +62,8 @@ if ($action == "list") {
 
     //first query all data
     $options = " and experiment_type_name = \"genotype\"";
-    $sql = "select experiment_uid, trial_code, CAPdata_programs_uid, experiments.updated_on 
+    $sql = "select experiment_uid, trial_code, CAPdata_programs_uid,
+        DATE_FORMAT(experiments.updated_on, '%Y-%m-%d')
         from experiments, experiment_types
         where experiments.experiment_type_uid = experiment_types.experiment_type_uid
         $options";
@@ -128,7 +129,7 @@ if ($action == "list") {
     } else {
         $set = null;
     }
-    $sql = "select trial_code, data_program_name, marker_type_uid, processing_date, data_program_name 
+    $sql = "select trial_code, data_program_name, marker_type_uid, DATE_FORMAT(experiments.updated_on, '%Y-%m-%d'), data_program_name 
          from experiments, genotype_experiment_info, CAPdata_programs
          where experiments.experiment_uid = genotype_experiment_info.experiment_uid
          and experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
@@ -140,7 +141,7 @@ if ($action == "list") {
         $data["description"] = $row[1];
         $data["studyDbId"] = $uid;
         $data["studyName"] = $row[0];
-        $data["startDate"] = $row[3];
+        $data["lastUpdated"] = $row[3];
     } else {
         $results = null;
         $return = json_encode($results);
