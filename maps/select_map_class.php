@@ -62,6 +62,10 @@ class Maps
         $sql = "select distinct(mapset.mapset_uid) from mapset, markers_in_maps as mim, map
                WHERE mim.map_uid = map.map_uid
                AND map.mapset_uid = mapset.mapset_uid";
+        if (!authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+            $sql .= " AND mapset.data_public_flag = 1";
+        }
+
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_array($res)) {
             $uid = $row[0];
@@ -203,7 +207,15 @@ class Maps
             $markers_map[] = $row[0];
         }
         if (isset($_SESSION['clicked_buttons'])) {
-            $markers = $_SESSION['clicked_buttons'];
+            $tmp = $_SESSION['clicked_buttons'];
+            foreach ($tmp as $marker_uid) {
+                $markers[$marker_uid] = 1;
+            }
+            foreach ($markers_map as $marker_uid) {
+                if (isset($markers[$marker_uid])) {
+                    $markers_filtered[] = $marker_uid;
+                }
+            }
         } elseif (isset($_SESSION['geno_exps'])) {
             $experiments_g = $_SESSION['geno_exps'];
             $geno_str = $experiments_g[0];
@@ -213,8 +225,7 @@ class Maps
                 $uid = $row[0];
                 $markers[$uid] = 1;
             }
-   
-            foreach ($markers_map as $i => $marker_uid) {
+            foreach ($markers_map as $marker_uid) {
                 if (isset($markers[$marker_uid])) {
                     $markers_filtered[] = $marker_uid;
                 }
