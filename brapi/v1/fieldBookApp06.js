@@ -168,7 +168,7 @@ function getListStudies()
 {
   var items = [];
   var studyId = "";
-  var apiUrlList = document.getElementById("url").value + "/studies";
+  var apiUrlList = document.getElementById("url").value + "/studies-search";
   if (document.getElementById("YesDebug").checked === true) {
       items.push("API call = " + apiUrlList);
   }
