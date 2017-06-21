@@ -143,12 +143,9 @@ function getListCalls()
             if ((key2 == "data") && (typeof val2 == "object")) {
               jQuery.each( val2, function (key3, val3) {
                 if (typeof val3 == "object") {
+                  items.push("<tr>");
                   jQuery.each( val3, function(key4, val4) {
-                    if (key4 == "call") {
-                      items.push("<tr><td>" + val4);
-                    } else {
                       items.push("<td>" + val4);
-                    }
                   });
                 }
               });
