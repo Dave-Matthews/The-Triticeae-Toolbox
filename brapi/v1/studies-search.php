@@ -225,7 +225,7 @@ if ($action == "list") {
         }
         $results["design"][] = $temp;
     }
-    $linearray['result']['data'] = $results;
+    $linearray['result'] = $results;
     if ($outFormat == "json") {
         $return = json_encode($linearray);
         header("Content-Type: application/json");

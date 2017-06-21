@@ -204,10 +204,11 @@ function getListStudies()
             if ((key2 == "data") && (typeof val2 == "object")) {
               jQuery.each( val2, function (key3, val3) {
                 if (typeof val3 == "object") {
+                  items.push("<tr>");
                   jQuery.each( val3, function(key4, val4) {
                     if (key4 == "studyDbId") {
                       studyId = val4;
-                      items.push("<tr><td><button onclick=\"get_detail(" + studyId + ")\">details</button>");
+                      items.push("<td><button onclick=\"get_detail(" + studyId + ")\">details</button>");
                       items.push("<td><button onclick=\"select_study(" + studyId + ")\">select study</button>");
                     } else {
                       items.push("<td>" + val4);
@@ -262,19 +263,15 @@ function get_detail(exp)
           if (key == "metadata") {
             items.push("Metadata<br>");
           } else if (key == "result") {
-            jQuery.each( val , function ( key2, val2 ) {
-            if ((key2 == "data") && (typeof val2 == "object")) {
               items.push("Data<br><table><tr>");
-              jQuery.each( val2 , function ( key3, val3) {
-                if ((key3 == "location") && (typeof val3 == "object")) {
-                  items.push("<tr><td>" + key3 + "<td>" + val3[1]);
+              jQuery.each( val , function ( key2, val2) {
+                if ((key2 == "location") && (typeof val2 == "object")) {
+                  items.push("<tr><td>" + key2 + "<td>" + val2[1]);
                 } else {
-                  items.push("<tr><td>" + key3 + "<td>" + val3);
+                  items.push("<tr><td>" + key2 + "<td>" + val2);
                 }
               });
             } 
-           });
-          }
       });
       items.push("</table>");
       var html = items.join("");
