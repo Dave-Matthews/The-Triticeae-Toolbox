@@ -158,7 +158,7 @@ if($blast_flag == 1) {
 		
 		fwrite($fp1, $querySeq);
 		fclose($fp1);
-                system("find ".$config['root_dir']."$dataPath/* -mmin +60 -delete");
+                system("find "."$dataPath/* -mmin +60 -delete");
 	}else {
 		echo "<p style='color: red'>Error: please enter your query sequence or upload your fasta sequence file.</p><br>";
 		exit;

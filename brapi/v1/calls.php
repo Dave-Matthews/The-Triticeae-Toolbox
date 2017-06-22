@@ -29,6 +29,7 @@ if (isset($_GET['page'])) {
 }
 
 /* Array of our supported calls */
+$ourcalls['allelematrices'] = ['datatypes' => ['flapjack'], 'methods' => ['GET']];
 $ourcalls['allelematrix-search'] = ['datatypes' => ['json'], 'methods' => ["GET", "POST"]];
 $ourcalls['markerprofiles'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['markerprofiles/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
