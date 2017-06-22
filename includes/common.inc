@@ -138,8 +138,8 @@ function showTableOptions($table, $selected = "null", $orderby = "uid")
     or die(mysqli_error($mysqli));
 
     while ($row = mysqli_fetch_assoc($q)) {
-	$sel = ($row[$uid] == $selected) ? "selected=\"selected\"" : "";
-	echo "\n\t<option value=\"$row[$uid]\" $sel>$row[$name]</option>";
+        $sel = ($row[$uid] == $selected) ? "selected=\"selected\"" : "";
+        echo "\n\t<option value=\"$row[$uid]\" $sel>$row[$name]</option>";
     }
 }
 
@@ -150,30 +150,32 @@ function showTableOptions($table, $selected = "null", $orderby = "uid")
  * @param $tablename - the table of which to get the primary key of.
  * @param $pkey - the primary key of the table
  */
-function get_pkey ($tablename) {
-  global $mysqli;
-  $result = mysqli_query($mysqli, "DESC $tablename") or die("Error in includes/common.inc:get_pkey():<br>".
-"<br>Query was: 'DESC ".$tablename."'");
-  $pkey="";
-  while($row = mysqli_fetch_assoc($result)) {
-    foreach($row as $k=>$v) {
-      if (strtolower($k)=='field') 
-	$pkey=$v;
-      break;
+function get_pkey($tablename)
+{
+    global $mysqli;
+    $result = mysqli_query($mysqli, "DESC $tablename") or die("Error in includes/common.inc:get_pkey():<br>Query was: 'DESC ".$tablename."'");
+    $pkey="";
+    while ($row = mysqli_fetch_assoc($result)) {
+        foreach ($row as $k => $v) {
+            if (strtolower($k)=='field') {
+                $pkey=$v;
+            }
+            break;
+        }
+        break;
     }
-    break;
-  }
-  return $pkey;
+    return $pkey;
 }
 
 /**
- * This function gets the unique name of the table that we have set 
+ * This function gets the unique name of the table that we have set
  * a standard to be. It looks at the table creation string and finds
  * the first field with "name" in it. Pretty simple.
  * @param $table - the table of which to search through.
  * @return the unique name field.
  */
-function get_unique_name($table) {
+function get_unique_name($table)
+{
   global $mysqli;
   // dem feb13: ugly special case:
   if ($table == "experiments")

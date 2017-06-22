@@ -16,42 +16,43 @@ ob_end_flush();
 /*
  * Has an update been submitted?
  */
-if( ($id = array_search("Update", $_POST)) != NULL) {
-  foreach($_POST as $k=>$v)
-    $_POST[$k] = addslashes($v);
-  updateTable($_POST, "users", array("users_uid"=>$id));
-}
-elseif (!empty($_POST['Delete'])) {
-  // Delete this record.
-  $id = ($_POST['Delete']);
-  $code = mysql_grab("select name from users where users_uid=$id");
-  echo "Attempting to delete user id = $id, name = $code...<p>";
-  $sql = "delete from users where users_uid = $id";
-  $res = mysqli_query($mysqli, $sql);
-  $err = mysqli_error($mysqli);
-  if (!empty($err)) {
-    if (strpos($err, "a foreign key constraint fails"))
-      echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this user. The error message is:<br>$err";
-  }
-  else 
-    echo "Success.  User <b>$code</b> deleted.<p>";
+if (($id = array_search("Update", $_POST)) != null) {
+    foreach ($_POST as $k => $v) {
+        $_POST[$k] = addslashes($v);
+    }
+    updateTable($_POST, "users", array("users_uid"=>$id));
+} elseif (!empty($_POST['Delete'])) {
+    // Delete this record.
+    $id = ($_POST['Delete']);
+    $code = mysql_grab("select name from users where users_uid=$id");
+    echo "Attempting to delete user id = $id, name = $code...<p>";
+    $sql = "delete from users where users_uid = $id";
+    $res = mysqli_query($mysqli, $sql);
+    $err = mysqli_error($mysqli);
+    if (!empty($err)) {
+        if (strpos($err, "a foreign key constraint fails")) {
+            echo "<font color=red><b>Can't delete.</b></font> Other data is linked to this user. The error message is:<br>$err";
+        }
+    } else {
+        echo "Success.  User <b>$code</b> deleted.<p>";
+    }
 }
 
 $searchstring = '';
-if(isset($_REQUEST['search']) && $_REQUEST['search'] != "") {
-  $tablesToSearch = array("users");
-  $found = array();
-  $searchstring = $_REQUEST['search'];
-  $words = explode(" ", $_REQUEST['search']);
-  foreach($words as $q) {
-    $found = array_merge($found, desperateTermSearch($tablesToSearch, $q));
-  }
-  $drds = array();
-  if(count($found) > 0) {		//if we found results..
-    for($i=0; $i<count($found); $i++) {
-      $parts = explode("@@", $found[$i]);
-      array_push($drds, $parts[2]);
+if (isset($_REQUEST['search']) && $_REQUEST['search'] != "") {
+    $tablesToSearch = array("users");
+    $found = array();
+    $searchstring = $_REQUEST['search'];
+    $words = explode(" ", $_REQUEST['search']);
+    foreach($words as $q) {
+        $found = array_merge($found, desperateTermSearch($tablesToSearch, $q));
     }
+    $drds = array();
+    if(count($found) > 0) {		//if we found results..
+      for($i=0; $i<count($found); $i++) {
+        $parts = explode("@@", $found[$i]);
+        array_push($drds, $parts[2]);
+      }
   }
 }
 
