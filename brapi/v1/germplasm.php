@@ -91,9 +91,9 @@ if ($command) {
     $r['result'] = $response;
     header("Access-Control-Allow-Origin: *");
     echo json_encode($r);
-} elseif (!empty($_GET['name'])) {
+} elseif (!empty($_GET['germplasmName'])) {
     // "Germplasm ID by Name".  URI is germplasm?name={name}
-    $linename = $_GET['name'];
+    $linename = $_GET['germplasmName'];
     if ($matchMethod == "wildcard") {
         $sql = "select line_record_uid, line_record_name, pedigree_string from line_records where line_record_name like ?";
         $linename = "%" . $linename . "%";
