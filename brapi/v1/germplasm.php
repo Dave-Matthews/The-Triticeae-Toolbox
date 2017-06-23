@@ -57,6 +57,7 @@ if ($command) {
             $response['germplasmSeedSource'] = null;
             $response['synonyms'] = null;
             $response['commonCropName'] = null;
+            $response['instituteName'] = null;
         } else {
             $response = null;
             $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
@@ -166,6 +167,14 @@ if ($command) {
     header("Access-Control-Allow-Origin: *");
     echo json_encode($r);
 } else {
+    $sql = "select value from settings where name = \"$species\"";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
+        $species = $row[0];
+    } else {
+        $species = null;
+    }
+
     $sql = "select line_record_uid, line_record_name, pedigree_string from line_records";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
@@ -187,10 +196,15 @@ if ($command) {
         $temp['accessionNumber'] = null;
         $temp['germplasmName'] = $row[1];
         $temp['germplasmPUI'] = null;
-        $temp['pedigree'] = null;
+        if (empty($row[2])) {
+            $temp['pedigree'] = null;
+        } else {
+            $temp['pedigree'] = htmlentities($row[2]);
+        }
         $temp['germplasmSeedSource'] = null;
         $temp['synonyms'] = array();
-        $temp['commonCropName'] = null;
+        $temp['commonCropName'] = $species;
+        $temp['instituteCode'] = null;
         $response[] = $temp;
     }
   
@@ -209,6 +223,7 @@ if ($command) {
             $response[$key]['accessionNumber'] = $row[0];
         }
     }
+        
     $r['metadata']['pagination']['pageSize'] = $pageSize;
     $r['metadata']['pagination']['currentPage'] = $currentPage;
     $r['metadata']['pagination']['totalCount'] = $num_rows;
