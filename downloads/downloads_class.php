@@ -1989,10 +1989,8 @@ class Downloads
         // write output file header
         if ($dtype == "FJ") {
             $outputheader = "# fjFile = MAP\n";
-        } elseif ($dtype == "R") {
-            $outputheader = "chr\tpos\n";
         } else {
-            $outputheader = "<Map>\n";
+            $outputheader = "marker\tchr\tpos\n";
         }
 
         $num_markers = 0;
