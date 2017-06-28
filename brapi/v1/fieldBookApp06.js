@@ -231,6 +231,7 @@ function getListGermp()
 
 function get_detail_germp(exp)
 {
+  var items = [];
   var apiUrl = document.getElementById("url").value + "/germplasm/" + exp;
 
   if (document.getElementById("YesDebug").checked === true) {
