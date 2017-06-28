@@ -39,6 +39,14 @@ if (isset($_GET['page'])) {
 $r['metadata']['status'] = array();
 $r['metadata']['datafiles'] = array();
 
+$sql = "select value from settings where name = \"$species\"";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+if ($row = mysqli_fetch_array($res)) {
+    $species = $row[0];
+} else {
+    $species = null;
+}
+
 // Is there a command?
 if ($command) {
     $lineuid = $command;
@@ -56,7 +64,7 @@ if ($command) {
             $response['pedigree'] = null;
             $response['germplasmSeedSource'] = null;
             $response['synonyms'] = null;
-            $response['commonCropName'] = null;
+            $response['commonCropName'] = $species;
             $response['instituteName'] = null;
         } else {
             $response = null;
@@ -167,14 +175,6 @@ if ($command) {
     header("Access-Control-Allow-Origin: *");
     echo json_encode($r);
 } else {
-    $sql = "select value from settings where name = \"$species\"";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    if ($row = mysqli_fetch_array($res)) {
-        $species = $row[0];
-    } else {
-        $species = null;
-    }
-
     $sql = "select line_record_uid, line_record_name, pedigree_string from line_records";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
