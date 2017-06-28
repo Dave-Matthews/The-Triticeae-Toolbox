@@ -39,7 +39,7 @@ if (isset($_GET['page'])) {
 $r['metadata']['status'] = array();
 $r['metadata']['datafiles'] = array();
 
-$sql = "select value from settings where name = \"$species\"";
+$sql = "select value from settings where name = \"species\"";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 if ($row = mysqli_fetch_array($res)) {
     $species = $row[0];
