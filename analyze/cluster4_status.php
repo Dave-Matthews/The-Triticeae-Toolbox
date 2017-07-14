@@ -8,7 +8,7 @@ require $config['root_dir'].'theme/admin_header.php';
   <img id='spinner' src='./images/progress.gif' alt='Working...' style='display:none;'>
   <div id="primaryContent">
   <h1>Cluster Lines 3D, hclust</h1>
-  <script type="text/javascript" src="cluster4.js"></script>
+  <script type="text/javascript" src="analyze/cluster4.js"></script>
   <div class="section">
 
 <?php

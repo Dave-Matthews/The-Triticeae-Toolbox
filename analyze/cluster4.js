@@ -44,7 +44,7 @@ function get_alleles2(unq_file) {
 }
 
 function run_status(unq_file) {
-  window.location ="cluster4_status.php?clusters=" + clusters + "&time=" + unq_file + "&mmaf=" + mmaf + "&mmm=" + mmm + "&mml=" + mml;
+  window.location ="analyze/cluster4_status.php?clusters=" + clusters + "&time=" + unq_file + "&mmaf=" + mmaf + "&mmm=" + mmm + "&mml=" + mml;
 }
 
 function recluster(unq_file) {
