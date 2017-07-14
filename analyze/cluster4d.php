@@ -107,8 +107,8 @@ else {
  * Show the graphic.
  */
 ?>
-    <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
-    <link rel="stylesheet" type="text/css" href="X3DOM/x3dom.css" />
+    <script type="text/javascript" src="x3dom/x3dom-full.js"></script>
+    <link rel="stylesheet" type="text/css" href="x3dom/x3dom.css" />
     <!-- Box for line names to appear in -->
     <style type="text/css">
       #myoutput {
