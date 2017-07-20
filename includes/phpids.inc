@@ -15,63 +15,6 @@
  * Also do not get rid of the is_array if statement. That will cause very annoying bugs.
  */
 
-set_include_path(get_include_path() . PATH_SEPARATOR . $config['root_dir'] . 'lib/phpids-0.7/lib/');
-set_include_path(get_include_path() . PATH_SEPARATOR . $config['root_dir'] . 'includes/');
-require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Init.php';
-require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Log/Composite.php';
-require_once $config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Log/File.php';
-try {
-    //unserialize data so it will not be detected as intrusion
-    $getVar = $_GET;
-    $postVar = $_POST;
-    if (isset($getVar['bp'])) {
-        $getVar['bp'] = explode(",", $getVar['bp']);
-    }
-    if (isset($getVar['exps'])) {
-        $getVar['exps'] = explode(",", $getVar['exps']);
-    }
-    if (isset($getVar['pi'])) {
-        $getVar['pi'] = explode(",", $getVar['pi']);
-    }
-    if (isset($postVar['linelist'])) {
-        $postVar['linelist'] = explode(",", $postVar['linelist']);
-    }
-    if (isset($postVar['contents'])) {
-        $postVar['contents'] = "";
-    }
-    $request = array(
-    'GET' => $getVar,
-    'POST' => $postVar,
-    'COOKIE' => $_COOKIE
-    );
-    $init = IDS_Init::init($config['root_dir'] . 'lib/phpids-0.7/lib/IDS/Config/Config.ini.php');
-    $ids = new IDS_Monitor($request, $init);
-    $result = $ids->run();
-    $impact = $result->getImpact();
-    if ($impact > 0) {
-            $compositeLog = new IDS_Log_Composite();
-            $compositeLog->addLogger(IDS_Log_file::getInstance($init));
-            $compositeLog->execute($result);
-    }
-    $impact_sum = $_SESSION['impact'];
-    $impact_url = $_SERVER['PHP_SELF'];
-    //log if impact > 10 or impact_sum > 20
-    //die if impact > 10 or impact_sum > 20
-    if ($impact > 10) {
-        $_SESSION['impact'] += $impact;
-        error_log("A phpids log event impact = $impact $impact_url");
-    }
-    if (($impact > 20) || ($impact_sum > 30)) {
-        error_log("A phpids impact event impact = $impact impact_sum = $impact_sum $impact_url");
-        die();
-    } elseif ($impact_sum > 30) {
-        error_log("A phpids impact_sum event impact = $impact impact_sum = $impact_sum $impact_url");
-        die();
-    }
-} catch (Exception $e) {
-    printf('An error occured: %s', $e->getMessage());
-}
-
 if ($dontconnect == false || !isset($dontconnect)) {
     $initial_connect = connecti();
 
