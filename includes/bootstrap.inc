@@ -68,6 +68,7 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
         require('marker.inc');
 	require('search.inc');
 	require('globals.inc');
+        require('phpids.inc');
 
 /*
  * Applying Word Filter
