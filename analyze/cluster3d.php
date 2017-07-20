@@ -38,7 +38,7 @@ if ($count == 0) {
     $emailAddr = $_SESSION['username'];
     $emailAddr = "email <- \"$emailAddr\"\n";
     fwrite($setup, $emailAddr);
-    $result_url = $config['base_url'] . "cluster3_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
+    $result_url = $config['base_url'] . "analyze/cluster3_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
     $result_url = "result_url <- \"$result_url\"\n";
     fwrite($setup, $result_url);
 }

@@ -7,8 +7,8 @@ require $config['root_dir'].'theme/admin_header.php';
 <div id="primaryContentContainer">
   <img id='spinner' src='./images/progress.gif' alt='Working...' style='display:none;'>
   <div id="primaryContent">
-  <h1>Cluster Lines 3D, pam</h1>
-  <script type="text/javascript" src="cluster3.js"></script>
+  <h1>Cluster Lines 3D, hclust</h1>
+  <script type="text/javascript" src="analyze/cluster4.js"></script>
   <div class="section">
 
 <?php
@@ -54,8 +54,8 @@ if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
   $elapsed = date("U", $filetime) - $time;
 }
 ?>
-    <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
-    <link rel="stylesheet" type="text/css" href="X3DOM/x3dom.css" />
+    <script type="text/javascript" src="x3dom/x3dom-full.js"></script>
+    <link rel="stylesheet" type="text/css" href="x3dom/x3dom.css" />
     <!-- Box for line names to appear in -->
     <style type="text/css">
       #myoutput {
@@ -173,7 +173,7 @@ for ($i=0; $i<count($clustertable); $i++) {
 // Modify yellow a bit to show up better in text.
 $color = array('black','red','green','blue','cyan','magenta','orange','#cccc00');
 
-print "<form action='cluster_lines3d.php' method='POST' name='myForm'>";
+print "<form action='cluster_lines4d.php' method='POST' name='myForm'>";
 print "<table width=700 style='background-image: none; font-weight: bold;'>";
 print "<thead><tr><th>&nbsp;</th><th>Cluster</th><th>Count</th><th>Lines</th></tr></thead>";
 for ($i=1; $i<count($clustsize)+1; $i++) {

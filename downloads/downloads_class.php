@@ -994,6 +994,7 @@ class Downloads
              }
              echo "</table>";
           ?><br><br>
+          geneticMap.txt - map file.<br>
           snpfile.txt - has one row for each germplasm line.<br>
           genotype.hmp.txt - has one row for each marker similar to the  HapMap format and contains map information.<br>
           allele_conflict.txt - list all cases where there have been different results for the same line and marker.<br>
@@ -1929,23 +1930,23 @@ class Downloads
          * @param string $dtype
 	 * @return string
 	 */
-    function type1_build_geneticMap($lines,$markers,$dtype)
+    function type1_build_geneticMap($lines, $markers, $dtype)
     {
         global $mysqli;
-	$delimiter ="\t";
-	$output = '';
-	$doneheader = false;
-	
+        $delimiter ="\t";
+        $output = '';
+        $doneheader = false;
+
         if (isset($_SESSION['selected_map'])) {
-           $selected_map = $_SESSION['selected_map'];
+            $selected_map = $_SESSION['selected_map'];
         } else {
-           die("<font color=red>Error - map should be selected before download</font>");
+            die("<font color=red>Error - map should be selected before download</font>");
         }
 
         if (count($markers)>0) {
-           $markers_str = implode(",", $markers);
+            $markers_str = implode(",", $markers);
         } else {
-           die("<font color=red>Error - markers should be selected before download</font>");
+            die("<font color=red>Error - markers should be selected before download</font>");
         }
 
         //generate an array of selected markers that can be used with isset statement
@@ -1953,16 +1954,7 @@ class Downloads
             $marker_lookup[$temp] = 1;
         }
 
-        $sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        $i=0;
-        while ($row = mysqli_fetch_array($res)) {
-            $marker_list[$i] = $row[0];
-            $marker_list_name[$i] = $row[1];
-            $i++;
-        }
-
-	$sql = "select markers.marker_uid,  mim.chromosome, CAST(1000*mim.start_position as UNSIGNED) from markers, markers_in_maps as mim, map, mapset
+        $sql = "select markers.marker_uid,  markers.marker_name, mim.chromosome, CAST(1000*mim.start_position as UNSIGNED) from markers, markers_in_maps as mim, map, mapset
 		where markers.marker_uid IN ($markers_str)
                 AND mim.marker_uid = markers.marker_uid
 		AND mim.map_uid = map.map_uid
@@ -1972,22 +1964,21 @@ class Downloads
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_array($res)) {
             $uid = $row[0];
-            $chr = $row[1];
-            $pos = $row[2];
+            $name = $row[1];
+            $chr = $row[2];
+            $pos = $row[3];
             $marker_list_mapped[$uid] = "$chr\t$pos";
+            $marker_list_name[$uid] = $name;
         }
 
         $marker_list_all = $marker_list_mapped;
         //get lines and filter to get a list of markers which meet the criteria selected by the user
         $num_maf = $num_miss = 0;
-        foreach ($marker_list as $i => $uid) {
-            $marker_name = $marker_list_name[$i];
-            $marker_list_all_name[$uid] = $marker_name;
-            if (isset($marker_lookup[$uid])) {
-                if (isset($marker_list_all[$uid])) {
-                } else {
-                      $marker_list_all[$uid] = 0;
-                }
+        foreach ($marker_lookup as $uid) {
+            $marker_name = $marker_list_name[$uid];
+            if (isset($marker_list_all[$uid])) {
+            } else {
+                  $marker_list_all[$uid] = 0;
             }
         }
         if (count($marker_list_all) == 0) {
@@ -1995,25 +1986,17 @@ class Downloads
             return $output;
         }
 
-        // make an empty marker with the lines as array keys
-        $n_lines = count($lines);
-        $empty = array_combine($lines, array_fill(0, $n_lines, '-'));
-        $nemp = count($empty);
-        $line_str = implode($delimiter, $lines);
-
         // write output file header
         if ($dtype == "FJ") {
             $outputheader = "# fjFile = MAP\n";
-        } elseif ($dtype == "R") {
-            $outputheader = "chr\tpos\n";
         } else {
-            $outputheader = "<Map>\n";
+            $outputheader = "marker\tchr\tpos\n";
         }
 
         $num_markers = 0;
         /* foreach( $marker_uid as $cnt => $uid) { */
         foreach ($marker_list_all as $uid => $value) {
-            $marker_name = $marker_list_all_name[$uid];
+            $marker_name = $marker_list_name[$uid];
             if (isset($marker_list_mapped[$uid])) {
                 $map_loc = $marker_list_mapped[$uid];
                 $output .= "$marker_name\t$map_loc\n";

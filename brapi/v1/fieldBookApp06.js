@@ -66,47 +66,47 @@ function getMarkerprofiles()
         error: function () {
             alert('Error in selecting markerprofiles');
         }
-   });
+    });
 }
 
 function getAlleleMatrix()
 {
-  var items = [];
-  var apiUrl = document.getElementById("url").value + "/allelematrix?" + markerprofileStr;
-  if (document.getElementById("YesDebug").checked === true) {
-    items.push("API call = " + apiUrl);
-  }
-  jQuery.ajax({
-    type: "GET",
-    dataType: "json",
-    url: apiUrl,
-    success: function(data, textStatus) {
-      items.push("<h3>Marker profiles</h3><table><tr>");
-      jQuery.each( data, function( key, val ) {
-        items.push("<tr>");
-        if (key == "metadata") {
-          items.push("<td>metadata");
-        } else if (key == "markerprofileIds") {
-          items.push("<tr><td>markerprofileIds<tr>");
-          items.push("<td>" + val);
-        } else if (key == "scores") {
-          items.push("<tr><td>scores<tr><td>");
-          jQuery.each( val, function( key2, val2 ) {
-            items.push("<tr><td>" + key2 + " " + val2);
-            jQuery.each( val2, function( key3, val3 ) {
-              items.push("<td>" + val3);
+    var items = [];
+    var apiUrl = document.getElementById("url").value + "/allelematrix?" + markerprofileStr;
+    if (document.getElementById("YesDebug").checked === true) {
+        items.push("API call = " + apiUrl);
+    }
+    jQuery.ajax({
+        type: "GET",
+        dataType: "json",
+        url: apiUrl,
+        success: function (data, textStatus) {
+            items.push("<h3>Marker profiles</h3><table><tr>");
+            jQuery.each(data, function (key, val ) {
+                items.push("<tr>");
+                if (key == "metadata") {
+                    items.push("<td>metadata");
+                } else if (key == "markerprofileIds") {
+                    items.push("<tr><td>markerprofileIds<tr>");
+                    items.push("<td>" + val);
+                } else if (key == "scores") {
+                    items.push("<tr><td>scores<tr><td>");
+                    jQuery.each(val, function (key2, val2) {
+                        items.push("<tr><td>" + key2 + " " + val2);
+                        jQuery.each( val2, function (key3, val3 ) {
+                            items.push("<td>" + val3);
+                        });
+                    });
+                }
             });
-          });
+            items.push("</table>");
+            var html = items.join("");
+            jQuery("#step2").html(html);
+        },
+        error: function () {
+            alert('Error in selecting experiment list');
         }
-      });
-      items.push("</table>");
-      var html = items.join("");
-      jQuery("#step2").html(html);
-    },
-      error: function() {
-        alert('Error in selecting experiment list');
-      }
-  });
+    });
 }
 
 function getListCalls()
@@ -164,18 +164,17 @@ function getListCalls()
   document.getElementById("step3").innerHTML = "";
 }
 
-function getListStudies()
+function getListGermp()
 {
-  var items = [];
-  var studyId = "";
-  var apiUrlList = document.getElementById("url").value + "/studies-search";
-  if (document.getElementById("YesDebug").checked === true) {
-      items.push("API call = " + apiUrlList);
-  }
-  jQuery.ajax({
+    var items = [];
+    var apiUrl = document.getElementById("url").value + "/germplasm-search";
+    if (document.getElementById("YesDebug").checked === true) {
+        items.push("API call = " + apiUrl);
+    }
+    jQuery.ajax({
     type: "GET",
     dataType: "json",
-    url: apiUrlList,
+    url: apiUrl,
     success: function(data, textStatus) {
       items.push("<h3>List of studies</h3><table>");
       items.push("<tr>");
@@ -185,7 +184,109 @@ function getListStudies()
         } else if (key == "result") {
           jQuery.each( val, function ( key2, val2 ) {
             if ((key2 == "data") && (typeof val2 == "object")) {
-              items.push("Data<tr><table border=1><tr>");
+              items.push("Data<br><table border=1><tr>");
+              jQuery.each( val2[0], function ( key3, val3 ) {
+                if (key3 == "germplasmDbId") {
+                  items.push("<td>");
+                } else {
+                  items.push("<td>" + key3);
+                }
+              });
+            }
+          });
+        }
+      });
+      jQuery.each( data, function( key, val ) {
+        if (key == "metadata") {
+        } else if (key == "result") {
+          jQuery.each( val, function( key2, val2 ) {
+            if ((key2 == "data") && (typeof val2 == "object")) {
+              jQuery.each( val2, function (key3, val3) {
+                if (typeof val3 == "object") {
+                  items.push("<tr>");
+                  jQuery.each( val3, function(key4, val4) {
+                    if (key4 == "germplasmDbId") {
+                      germplasmDbId = val4;
+                      items.push("<td><button onclick=\"get_detail_germp(" + germplasmDbId + ")\">details</button>");
+                    } else {
+                      items.push("<td>" + val4);
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+      items.push("</table>");
+      var html = items.join("");
+      jQuery("#step2").html(html);
+    },
+    error: function() {
+        alert('Error in selecting experiment list');
+      }
+  });
+  document.getElementById("step3").innerHTML = "";
+}
+
+function get_detail_germp(exp)
+{
+  var items = [];
+  var apiUrl = document.getElementById("url").value + "/germplasm/" + exp;
+
+  if (document.getElementById("YesDebug").checked === true) {
+    items.push("API call = " + apiUrl);
+  }
+  jQuery.ajax({
+    type: "GET",
+    dataType: "json",
+    url: apiUrl,
+    success: function(data, textStatus) {
+      items.push("<h3>Study details</h3><table>");
+      items.push("<tr>");
+      jQuery.each( data, function( key, val ) {
+          if (key == "metadata") {
+            items.push("Metadata<br>");
+          } else if (key == "result") {
+              items.push("Data<br><table><tr>");
+              jQuery.each( val , function ( key2, val2) {
+                  items.push("<tr><td>" + key2 + "<td>" + val2);
+              });
+            }
+      });
+      items.push("</table>");
+      var html = items.join("");
+      jQuery("#step2").html(html);
+    },
+    error: function() {
+        var html = apiUrl + '<br>Error: apiUrl API not implemented';
+        jQuery("#step2").html(html);
+      }
+  });
+}
+
+function getListStudies()
+{
+  var items = [];
+  var studyId = "";
+  var apiUrl = document.getElementById("url").value + "/studies-search";
+  if (document.getElementById("YesDebug").checked === true) {
+      items.push("API call = " + apiUrl);
+  }
+  jQuery.ajax({
+    type: "GET",
+    dataType: "json",
+    url: apiUrl,
+    success: function(data, textStatus) {
+      items.push("<h3>List of studies</h3><table>");
+      items.push("<tr>");
+      jQuery.each( data, function( key, val ) {
+        if (key == "metadata") {
+          items.push("Metadata<br>");
+        } else if (key == "result") {
+          jQuery.each( val, function ( key2, val2 ) {
+            if ((key2 == "data") && (typeof val2 == "object")) {
+              items.push("Data<br><table border=1><tr>");
               jQuery.each( val2[0], function ( key3, val3 ) { 
                 if (key3 == "studyDbId") {
                   items.push("<td><td>");

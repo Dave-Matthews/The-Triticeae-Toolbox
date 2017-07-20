@@ -22,6 +22,8 @@ $line_name_list = array();
 
 $sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+$sql = "SET SESSION sql_log_bin = 0";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
 $max_exp = 0;
 $sql = "select experiment_uid from experiments order by experiment_uid";

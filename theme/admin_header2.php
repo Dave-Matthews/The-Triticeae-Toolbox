@@ -37,6 +37,7 @@ jQuery( document ).ready(function( $ ) {
 </script>
 
 <?php
+global $mysqli;
 // get species
 if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {
     $species = $match[1];
@@ -45,7 +46,6 @@ if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {
 }
 // clear session if it contains variables from another database
 $database = mysql_grab("select database()");
-$species = mysql_grab("select value from settings where name='species'");
 if ($_SESSION['database'] != $database) {
     session_unset();
 }
@@ -143,6 +143,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>analyze/table.php" title="Boxplot">Traits and Trials Table</a>
         </ul>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
+        <li><a href="<?php echo $config['base_url']; ?>gensel2.php" title="GWAS">Genome-wide Associations Studies</a>
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value for 2 Trials">Compare Trials</a>
         <li>
@@ -153,12 +154,30 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
           BLAST</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
-        <li><a href="/jbrowse/?data=<?php echo $species ?>" title="JBrowse">JBrowse - Genome Browser</a>
+        <li><a href="/jbrowse">JBrowse - Genome Browser</a>
         <?php
+        $sql = "select value from settings where name like 'assembly%'";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $rowCnt = mysqli_num_rows($res);
+        if ($rowCnt > 0) {
+            echo "<ul>";
+            while ($row = mysqli_fetch_array($res)) {
+                $result = explode(",", $row[0]);
+                ?>
+                <li><a href="/jbrowse/?data=<?php echo $result[0] ?>" title="JBrowse"><?php echo $result[1] ?></a>
+                <?php
+            }
+            echo "</ul>";
+        }
         if (file_exists($config['root_dir']."genotyping/marker_report_ref.php")) {
             ?><li><a href="<?php echo $config['base_url'];
             ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
+        <?php
+        }
+        $results = mysql_grab("SHOW tables like 'qtl_raw'");
+        if ($results == "qtl_raw") {
+            ?> 
             <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="GWAS Results">GWAS Results</a>
             <?php
         }
@@ -266,7 +285,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <li><a href="<?php echo $config['base_url']; ?>curator_data/instructions.php" title="Submit Data to T3">Data Submission</a>
     <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Traits and units used">Trait Descriptions</a>
     <li><a href="<?php echo $config['base_url']; ?>properties.php" title="Environment-independent line properties">Genetic Character Descriptions</a>
-    <li><a href="<?php echo $config['base_url']; ?>all_breed_css.php" title="Sources of the data">Contributing Data Programs</a>
+    <li><a href="<?php echo $config['base_url']; ?>resources/all_breed_css.php" title="Sources of the data">Contributing Data Programs</a>
     <li><a href="<?php echo $config['base_url']; ?>toronto.php" title="Toronto Statement">Data Usage Policy</a>
     <!-- <li><a href="<?php echo $config['base_url']; ?>acknowledge.php" title="Contributions from other projects">Acknowledgments</a> -->
     <!-- <li><a href="<?php echo $config['base_url']; ?>termsofuse.php" title="Restrictions on free use of the data">Terms of Use</a> -->

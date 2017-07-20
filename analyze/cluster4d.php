@@ -36,7 +36,7 @@ if ($count == 0) {
     $emailAddr = $_SESSION['username'];
     $emailAddr = "email <- \"$emailAddr\"\n";
     fwrite($setup, $emailAddr);
-    $result_url = $config['base_url'] . "cluster4_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
+    $result_url = $config['base_url'] . "analyze/cluster4_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
     $result_url = "result_url <- \"$result_url\"\n";
     fwrite($setup, $result_url);
 }
@@ -107,8 +107,8 @@ else {
  * Show the graphic.
  */
 ?>
-    <script type="text/javascript" src="X3DOM/x3dom-full.js"></script>
-    <link rel="stylesheet" type="text/css" href="X3DOM/x3dom.css" />
+    <script type="text/javascript" src="x3dom/x3dom-full.js"></script>
+    <link rel="stylesheet" type="text/css" href="x3dom/x3dom.css" />
     <!-- Box for line names to appear in -->
     <style type="text/css">
       #myoutput {
