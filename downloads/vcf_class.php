@@ -178,8 +178,8 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
         'NA' => './.',   //--
         '' => './.'
     );
-    $posUnk = 0;
-    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, alleles
+    $pos_index = 0;
+    $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, chrom, pos, alleles
         from allele_bymarker_exp_101, markers 
         where allele_bymarker_exp_101.marker_uid = markers.marker_uid
         AND experiment_uid = $geno_exp";
@@ -189,26 +189,29 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
         $marker_name = $row[1];
         $ref = $row[2];
         $alt = $row[3];
-        $alleles = $row[4];
+        $chrom = $row[4];
+        $pos = $row[5];
+        $alleles = $row[6];
         if (($ref == "") || ($alt == "")) {
             continue;
         }
         if (isset($marker_list_mapped[$marker_uid])) {
-            $chromosome = $marker_list_chr[$marker_uid];
+            $chrom = $marker_list_chr[$marker_uid];
             $pos = $marker_list_mapped[$marker_uid];
-        } else {
-            $chromosome = 0;
-            $pos = $posUnk;
-            $posUnk = $posUnk + 10;
         }
         if (isset($marker_lookup[$marker_uid])) {
+            if (empty($chrom)) {
+                $chrom = 'UNK';
+                $pos = $pos_index;
+                $pos_index += 10;
+            }
             $allele_ary = explode(",", $alleles);
             $allele_ary2 = array();
             foreach ($allele_ary as $i => $allele) {
                 $allele_ary2[] = $lookup[$allele];
             }
             $allele_str = implode("\t", $allele_ary2);
-            fwrite($fh1, "$chromosome\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n");
+            fwrite($fh1, "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n");
         }
     }
     fclose($fh1);
