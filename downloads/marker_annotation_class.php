@@ -81,7 +81,7 @@ class Downloads
                 }
                 echo "\n";
             }
-            echo "<table>";
+            echo "</table>";
         } else {
             echo "<br>No annotation entries found<br>\n";
         }
