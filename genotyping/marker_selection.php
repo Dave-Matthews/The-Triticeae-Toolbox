@@ -377,5 +377,5 @@ while ($row=mysqli_fetch_assoc($result)) {
 </div>
 </div>
 </div>
-<script type="text/javascript" src="genotyping/marker.js"></script>
+<script type="text/javascript" src="genotyping/marker01.js"></script>
 <?php require $config['root_dir'].'theme/footer.php'; ?>
