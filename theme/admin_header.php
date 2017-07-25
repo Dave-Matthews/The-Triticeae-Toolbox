@@ -145,7 +145,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>analyze/table.php" title="Boxplot">Traits and Trials Table</a>
         </ul>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
-        <li><a href="<?php echo $config['base_url']; ?>gensel2.php" title="GWAS">Genome-wide Associations Studies</a>
+        <!--li><a href="<?php echo $config['base_url']; ?>gensel2.php" title="GWAS">Genome-wide Associations Studies</a-->
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value for 2 Trials">Compare Trials</a>
         <li>
@@ -171,18 +171,6 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             }
             echo "</ul>";
         }
-        if (file_exists($config['root_dir']."genotyping/marker_report_ref.php")) {
-            ?><li><a href="<?php echo $config['base_url'];
-            ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
-        <?php
-        }
-        $results = mysql_grab("SHOW tables like 'qtl_raw'");
-        if ($results == "qtl_raw") {
-            ?> 
-            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="GWAS Results">GWAS Results</a>
-            <?php
-        }
         ?>
       </ul>
     <li><a href="" title="">Download</a>
@@ -204,7 +192,30 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             Weather Data</a>
         <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
-
+    <li><a href="" title"">Reports</a>
+      <ul>
+        <?php
+        $results = mysql_grab("SHOW tables like 'qtl_raw'");
+        if ($results == "qtl_raw") {
+            ?>
+            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="GWAS Results">GWAS Results</a>
+            <?php
+        }
+        $results = mysql_grab("SHOW tables like 'marker_report_reference'");
+        if ($results == "marker_report_reference") {
+            ?>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotatin Report</a>
+            <?php
+        }
+        $results = mysql_grab("SHOW tables like 'marker_report_synonyms'");
+        if ($results == "marker_report_synonyms") {
+            ?>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker synonyms Report</a>
+            <?php
+        }
+        ?>
+      </ul>
+   
     <?php
     if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
     ?> 
@@ -249,9 +260,9 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
             Phenotype Trials</a>
         </ul> <?php
-    } ?>
+    }
 
-    <?php if (authenticate(array( USER_TYPE_ADMINISTRATOR))) { ?>
+    if (authenticate(array( USER_TYPE_ADMINISTRATOR))) { ?>
     <li>
     <a href="" title="<?php echo $lang["desc_sc5"]; ?>">Administer</a>
     <ul>
@@ -266,7 +277,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     </ul>
     </li>
     <?php
-}
+    }
 
 /* //   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
 /*   if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
