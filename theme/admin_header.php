@@ -40,12 +40,7 @@ jQuery( document ).ready(function( $ ) {
 
 <?php
 global $mysqli;
-// get species
-if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {
-    $species = $match[1];
-} else {
-    $species = "";
-}
+
 // clear session if it contains variables from another database
 $database = mysql_grab("select database()");
 if ($_SESSION['database'] != $database) {
@@ -107,7 +102,6 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
         Lines by Genotype Experiment</a>
     <?php
-    $species = strtolower($species);  //needed for JBrowse link
     /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
     /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
     if (loginTest2()) : ?>
@@ -156,22 +150,6 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
           BLAST</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
-        <li><a href="/jbrowse">JBrowse - Genome Browser</a>
-        <?php
-        $sql = "select value from settings where name like 'assembly%'";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        $rowCnt = mysqli_num_rows($res);
-        if ($rowCnt > 0) {
-            echo "<ul>";
-            while ($row = mysqli_fetch_array($res)) {
-                $result = explode(",", $row[0]);
-                ?>
-                <li><a href="/jbrowse/?data=<?php echo $result[0] ?>" title="JBrowse"><?php echo $result[1] ?></a>
-                <?php
-            }
-            echo "</ul>";
-        }
-        ?>
       </ul>
     <li><a href="" title="">Download</a>
       <ul>
@@ -210,8 +188,24 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         $results = mysql_grab("SHOW tables like 'marker_report_synonyms'");
         if ($results == "marker_report_synonyms") {
             ?>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker synonyms Report</a>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
             <?php
+        }
+        ?>
+        <li><a href="/jbrowse">JBrowse - Genome Browser</a>
+        <?php
+        $sql = "select value from settings where name like 'assembly%'";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $rowCnt = mysqli_num_rows($res);
+        if ($rowCnt > 0) {
+            echo "<ul>";
+            while ($row = mysqli_fetch_array($res)) {
+                $result = explode(",", $row[0]);
+                ?>
+                <li><a href="/jbrowse/?data=<?php echo $result[0] ?>" title="JBrowse"><?php echo $result[1] ?></a>
+                <?php
+            }
+            echo "</ul>";
         }
         ?>
       </ul>
@@ -312,7 +306,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <?php if (isset($_SESSION['username']) && !isset($_REQUEST['logout'])) : ?>
     <li>
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
-            <?php else : ?>
+        <?php else : ?>
     <li>
       <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
     <?php endif; ?>
