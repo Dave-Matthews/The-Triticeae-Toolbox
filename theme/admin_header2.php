@@ -180,13 +180,13 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         $results = mysql_grab("SHOW tables like 'marker_report_reference'");
         if ($results == "marker_report_reference") {
             ?>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotatin Report</a>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation by Experiment</a>
             <?php
         }
         $results = mysql_grab("SHOW tables like 'marker_report_synonyms'");
         if ($results == "marker_report_synonyms") {
             ?>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms by Experiment</a>
             <?php
         }
         ?>
