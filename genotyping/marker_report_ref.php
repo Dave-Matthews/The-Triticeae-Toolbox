@@ -5,7 +5,7 @@ $mysqli = connecti();
 
 include $config['root_dir'].'theme/admin_header.php';
 
-if (!isset($EnsemblLink)) {
+if (!isset($ensemblLink)) {
     echo "Error: Please define EnsemblLink in directory config.php file";
 }
 
@@ -69,7 +69,7 @@ if (isset($_GET['uid1'])) {
       $marker1_name = $row[0];
       $contig = $row[1];
       $pos = $row[2];
-      echo "<tr><td>$marker1_name<td><a href=\"$EnsemblLink/Location/View?db=;r=$contig:$pos\" target=\"_blank\">$contig<td>$pos\n";
+      echo "<tr><td>$marker1_name<td><a href=\"$ensemblLink/Location/View?db=;r=$contig:$pos\" target=\"_blank\">$contig<td>$pos\n";
   }
   echo "</table>";
 } else {
