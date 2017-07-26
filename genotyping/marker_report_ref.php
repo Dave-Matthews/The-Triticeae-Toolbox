@@ -69,7 +69,7 @@ if (isset($_GET['uid1'])) {
       $marker1_name = $row[0];
       $contig = $row[1];
       $pos = $row[2];
-      echo "<tr><td>$marker1_name<td><a href=\"http://plants.ensembl.org/Triticum_aestivum/Location/View?db=;r=$contig:$pos\" target=\"_blank\">$contig <td>$pos\n";
+      echo "<tr><td>$marker1_name<td><a href=\"$EnsemblLink/Location/View?db=;r=$contig:$pos\" target=\"_blank\">$contig<td>$pos\n";
   }
   echo "</table>";
 } else {
