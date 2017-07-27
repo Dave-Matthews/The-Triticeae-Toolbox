@@ -12,7 +12,7 @@
 namespace T3;
 
 require_once 'config.php';
-require $config['root_dir'] . 'includes/bootstrap2.inc';
+require $config['root_dir'] . 'includes/bootstrap.inc';
 require $config['root_dir'] . 'downloads/downloads_class.php';
 
 $mysqli = connecti();
@@ -452,6 +452,5 @@ class Outlier
         }
         mysqli_stmt_close($stmt);
         return $output;
-
     }
 }

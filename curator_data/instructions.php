@@ -5,7 +5,7 @@
  * PHP version 5.3
  */
 require 'config.php';
-require $config['root_dir'].'includes/bootstrap2.inc';
+require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/admin_header2.php';
 ?>
 
