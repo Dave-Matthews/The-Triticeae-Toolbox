@@ -21,19 +21,19 @@ if (!empty($_POST)) {
     $_POST = array();
     // Now decode it back.
     $c = html_entity_decode($c);
-    $c = preg_replace('/\\\r/', '', $c );
-    $c = preg_replace('/\\\n/', "\n", $c );
-    $c = preg_replace("/\\\'/", "'", $c );
+    $c = preg_replace('/\\\r/', '', $c);
+    $c = preg_replace('/\\\n/', "\n", $c);
+    $c = preg_replace("/\\\'/", "'", $c);
 
   // Open the file and empty it.
-  $fname = $config['root_dir'] . 'whatsnew.html';
-  $outfile = fopen($fname, "w");
-  if ($outfile === FALSE) {
-      die("Unable to open file whatsnew.html.  Probably lack of write-permission.");
-  }
-  $status = fwrite($outfile, $c);
-  fclose($outfile);
-  echo "<p>Refresh this page to see the result in the WhatsNew box.";
+    $fname = $config['root_dir'] . 'whatsnew.html';
+    $outfile = fopen($fname, "w");
+    if ($outfile === false) {
+        die("Unable to open file whatsnew.html.  Probably lack of write-permission.");
+    }
+    $status = fwrite($outfile, $c);
+    fclose($outfile);
+    echo "<p>Refresh this page to see the result in the WhatsNew box.";
 }
 // Show the current contents in an edit box.
 echo "<form method=POST>";
