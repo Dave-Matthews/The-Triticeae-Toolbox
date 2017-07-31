@@ -69,7 +69,7 @@ require $config['root_dir'].'theme/admin_header2.php';
     <thead>
       <th>Topic
       <th>Link
-      <th>Version
+      <th>Modified
       <!-- <th>Template file name -->
       <th>Contents
     </thead>
@@ -82,6 +82,11 @@ require $config['root_dir'].'theme/admin_header2.php';
       <td>
       <td><?php filelink("Barley", "LineSubmissionForm_Barley.xls", "T3") ?>
       <td>Name, synonyms, pedigree for barley
+    </tr>
+    <tr>
+      <td>
+      <td><?php filelink("Oat", "LineSubmissionForm_Oat.xls", "T3") ?>
+      <td>Name, synonyms, pedigree for oat 
     </tr>
     <tr>
       <td>
