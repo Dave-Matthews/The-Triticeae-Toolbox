@@ -183,6 +183,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         if ($results == "marker_report_reference") {
             ?>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation by Experiment</a>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/vep_tool.php" title="Variant Effect Predictor">Variant Effect Predictor</a>
             <?php
         }
         $results = mysql_grab("SHOW tables like 'marker_report_synonyms'");
