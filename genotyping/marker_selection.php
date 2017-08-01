@@ -282,20 +282,26 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
   <form id="markerSelForm" action="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" method="post">
   <table id="markeSelTab">
   <thead>
-  <tr> <th>Maps</th><th>Range</th><th>Markers</th></tr>
+  <tr> <th>Maps</th><th>Chromosome</th><th>Range</th><th>Markers</th></tr>
   </thead>
   <tbody>
   <tr><td>
-  <select name='mapname' size=10 onClick="DispMapSel(this.value)" onchange="DispMapSel(this.value)">
+  <select name='mapname' size=10 onClick="DispMapLin(this.value)">
 <?php
-$result=mysqli_query($mysqli, "select map_name from map") or die(mysqli_error($mysqli));
+$sql = "select mapset_uid, mapset_name from mapset";
+if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+    $sql .= " where data_public_flag > 0";
+}
+$result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row=mysqli_fetch_assoc($result)) {
-    $selval=$row['map_name'];
-    print "<option value='$selval'>$selval</option>\n";
+    $seluid=$row['mapset_uid'];
+    $selval=$row['mapset_name'];
+    print "<option value='$seluid'>$selval</option>\n";
 }
 ?>
 </select>
-<td>Choose map.
+<td>Choose set.
+<td>
 <td>
 </tr>
 </tbody>

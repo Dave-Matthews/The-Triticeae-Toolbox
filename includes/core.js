@@ -2,22 +2,19 @@
  * THT Core Javascript Functions v.1.0
  */
 
-function toggleRow(rowNum) {
+function toggleRow(rowNum)
+{
+    var form = document.getElementById(rowNum);
+    var i;
 
-	var form = document.getElementById(rowNum);
-	var i;
+    disableRows(rowNum);
 
-	disableRows(rowNum);
-
-	if(form[1].disabled) {
-
-		for(i=0; i<form.length; i++) {
+    if (form[1].disabled) {
+		for (i=0; i<form.length; i++) {
 			form[i].disabled = false;
 		}
-
-	}
-	else {
-		for(i=1; i<form.length; i++) {
+	} else {
+		for (i=1; i<form.length; i++) {
 			form[i].disabled = true;
 		}
 	}
@@ -425,6 +422,26 @@ function ajaxRegister() {
              .replace(/\'/g, '%27');
  }
 
+
+/* display the map range in marker_selection.php */
+ function DispMapLin(value) {
+        var req = getXMLHttpRequest();
+        var qs = "?func=DispMapLin&mapname="+value;
+        if(!req) {
+                resp.innerHTML = "This function requires Ajax.\nPlease update your browser.\nhttp://www.getfirefox.com";
+        }
+        req.onreadystatechange = function(){
+                if(req.readyState == 4){
+                        var resp = document.getElementById("markeSelTab").rows[1].cells[1];
+                        resp.innerHTML = req.responseText;
+                }
+        }
+        req.open("GET", "includes/ajaxlib.php"+qs, true);
+        req.send(null);
+        resp = document.getElementById("markeSelTab").rows[1].cells[2];
+        resp.innerHTML = "Choose map.";
+}
+
  /* display the map range in marker_selection.php */
  function DispMapSel(value) {
   	var req = getXMLHttpRequest();
@@ -434,7 +451,7 @@ function ajaxRegister() {
 	}
   	req.onreadystatechange = function(){
  		if(req.readyState == 4){
- 			var resp = document.getElementById("markeSelTab").rows[1].cells[1];
+ 			var resp = document.getElementById("markeSelTab").rows[1].cells[2];
  			resp.innerHTML = req.responseText;
 		}
   	}
@@ -453,7 +470,7 @@ function DispMarkers (mapuid) {
 	}
   	req.onreadystatechange = function(){
  		if(req.readyState == 4){
- 			var resp = document.getElementById("markeSelTab").rows[1].cells[2];
+ 			var resp = document.getElementById("markeSelTab").rows[1].cells[3];
  			resp.innerHTML = req.responseText;
 		}
   	}
@@ -524,26 +541,29 @@ function DispPhenoSel(value, middle, phenotype_uid) {
  */
 function DispPropSel(val, middle) {
     var req = getXMLHttpRequest();
-    if(!req) 
-	document.getElementById('PropertySelTable').innerHTML = "This function requires Ajax.";
+    if(!req) {
+	document.getElementById("PropertySelTable").innerHTML = "This function requires Ajax.";
+    }
     var column = 1;
-    if(middle == "Property")
+    if (middle === "Property") {
 	column = 2; 
-    else 
+    } else {
     	document.getElementById("PropertySelTable").rows[1].cells[2].innerHTML = "";
+    }
     var resp = document.getElementById("PropertySelTable").rows[1].cells[column];
     var qs = "?func=Disp"+middle+"Sel&id="+val;
     req.onreadystatechange = function() {
-	if(req.readyState == 4) 
-	    if(middle == "PropValue") {
+	if (req.readyState == 4) {
+	    if (middle === "PropValue") {
 		// Clear rows[1].cells[1]. Required for Firefox but not Chrome or IE.
 		resp.innerHTML = "";  
 		// Display the final choice below the menus, appending to previous choices.
 		resp = document.getElementById("PropertySelTable").rows[2].cells[0];
 		resp.innerHTML += req.responseText;
 	    }
-	else
+	} else {
 	    resp.innerHTML = req.responseText;
+        }
     };
     req.open("GET", "includes/ajaxlib.php"+qs, true);
     req.send(null);

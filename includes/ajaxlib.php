@@ -915,10 +915,36 @@ function ajaxSubmitForm ($arr) {
 	echo $dom->saveXML();
 }
 
+
+/**
+ * Display the map linkage group based on the map name
+ */
+function DispMapLin($arr)
+{
+    global $mysqli;
+    if (! isset($arr['mapname']) || strlen($arr['mapname'])<1) {
+        print "Invalid input of map set";
+        return;
+    }
+    $mapname=$arr['mapname'];
+    ?>
+    <select name='mapname' size=10 onClick="DispMapSel(this.value)" onchange="DispMapSel(this.value)">
+    <?php
+    $result=mysqli_query($mysqli, "select map_name from map where mapset_uid=$mapname") or die("Invalid map name");
+    while ($row=mysqli_fetch_assoc($result)) {
+        $selval=$row['map_name'];
+        print "<option value='$selval'>$selval</option>\n";
+    }
+    ?>
+    </select>
+    <?php
+}
+
 /**
  * Display the map range based on the map name
  */
-function DispMapSel ($arr) {
+function DispMapSel($arr)
+{
     global $mysqli;
     if (! isset($arr['mapname']) || strlen($arr['mapname'])<1) {
 	print "Invalid input of map name";
