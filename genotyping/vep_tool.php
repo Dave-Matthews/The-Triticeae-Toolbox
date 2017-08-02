@@ -10,8 +10,7 @@ if (!isset($ensemblLinkVEP)) {
 }
 
 echo "<h2>Variant Effect Predictor</h2>\n";
-echo "VEP determines the effect of variants (SNPs, insertions, deletions, CNVs or structural variants) on genes, transcripts, and protein sequence, as well as regulatory regions.<br>";
-echo " To run Variant Effect Predictor, copy the data below and paste it into the text box on the website <a href=\"$ensemblLinkVEP\" target=\"_new\">Ensembl Plant VEP</a>.";
+echo "The Variant Effect Predictor (VEP) determines the effect of variants (SNPs, insertions, deletions, CNVs or structural variants) on genes, transcripts, and protein sequence, as well as regulatory regions.<br>";
 echo " For a description of the method see <a href=\"http://www.ncbi.nlm.nih.gov/pubmed/20562413\" target=\"_new\">McLaren et. al.</a>.<br>\n";
 
 if (isset($_SESSION['clicked_buttons'])) {
@@ -29,6 +28,27 @@ while ($row=mysqli_fetch_row($result)) {
 
 $notFound = "";
 $vepFound = "";
+$geneFound = "";
+$linkOut = "";
+
+//get latest assembly
+$sql = "select distinct(assembly_ver) from qtl_annotations order by assembly_ver";
+$result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($row = mysqli_fetch_row($result)) {
+    $assembly = $row[0];
+}
+echo "<br>Using assembly $assembly. \n";
+
+$count = 0;
+$sql = "select marker_name, gene, description from qtl_annotations where assembly_ver = \"$assembly\"";
+$result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($row = mysqli_fetch_row($result)) {
+    $count++;
+    $marker = $row[0];
+    $gene = $row[1];
+    $geneFound[$marker] = "<a target=\"_new\" href=$ensemblLink/Location/View?g=$gene>$gene</a>";
+}
+
 echo "<br><pre>\n";
 foreach ($selected_markers as $marker_uid) {
     $sql = "select markers.marker_name, chrom, bin, pos, A_allele, B_allele, strand from marker_report_reference, markers
@@ -36,13 +56,21 @@ foreach ($selected_markers as $marker_uid) {
     and marker_report_reference.marker_uid = $marker_uid";
     $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($result)) {
+        $marker = $row[0];
         $strand = $row[6];
         if ($strand == "F") {
             $strand = "+";
         } elseif ($strand == "R") {
             $strand = "-";
         }
-        $vepFound .= "$row[2] $row[3] $row[3] $row[4]/$row[5] $strand $row[0]\n";
+        $vepFound .= "<tr><td>$row[2] $row[3] $row[3] $row[4]/$row[5] $strand $row[0]\n";
+        $jbrowse = "<a target=\"_new\" href=$ensemblLink/Location/View?r=$row[2]:$row[3]>$row[2]</a>";
+        $linkOut .= "<tr><td>$row[0]<td>$jbrowse";
+        if (isset($geneFound[$marker])) {
+            $linkOut .= "<td>$geneFound[$marker]\n";
+        } else {
+            $linkOut .= "<td><td>\n";
+        }
     } else {
         $sql = "select marker_name from markers where marker_uid = $marker_uid";
         $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -54,8 +82,13 @@ foreach ($selected_markers as $marker_uid) {
     }
 }
 echo "</pre>";
+if ($linkOut != "") {
+    echo "The links in gene column will show precomputed variant effects at Ensembl Plants.<br><table>\n<tr><td>marker<td>region<td>gene\n$linkOut</table>\n";
+}
 if ($vepFound != "") {
-    echo "Data for VEP tool<br><br>\n$vepFound<br>\n";
+    echo "<br>To run Variant Effect Predictor, copy the data below and paste it into the text box on the website <a href=\"$ensemblLinkVEP\" target=\"_new\">Ensembl Plant VEP</a>. ";
+    echo "Calculations take about 5 minutes per marker.\n";
+    echo "<table>$vepFound</table>\n";
 }
 if ($notFound != "") {
     echo "<br>Markers that do not have BLAST match to assembly<br>$notFound<br>\n";
