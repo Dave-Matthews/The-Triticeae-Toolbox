@@ -1,6 +1,6 @@
 <?php
 require 'config.php';
-require $config['root_dir'].'includes/bootstrap2.inc';
+require $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
 
 require $config['root_dir'].'theme/admin_header2.php';

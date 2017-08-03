@@ -15,7 +15,7 @@ if (isset($footer_div)) {
     <?php
 }
 if (!isset($_COOKIE["T3terms"])) {
-    ?><link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    ?>
     <script src="theme/usage_popup.js" async></script>
     <div id="dialog-confirm" title="Please Note: Website Data Usage Policy">
     <p><span style="float:left;"></span>
@@ -49,7 +49,6 @@ project, supported by Agriculture and Food Research Initiative Competitive Grant
 <p style="margin: 0; font-size: 8pt;"> 
 Copyright &copy; 2006 - 2010 <a href="http://www.iastate.edu/" title="Iowa State University">Iowa State University</a>
 </p>
-</td>
 </tr>
 </table>
 </td>

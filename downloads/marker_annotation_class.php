@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * report map location and gene annotations for selected markers 
+ * if map not selected map not in SESSION then use value from settings table
+ */
+
 namespace T3;
 
 class Downloads
@@ -12,22 +17,31 @@ class Downloads
     public function displaySelection()
     {
         global $config;
+        global $mysqli;
         include($config['root_dir'].'theme/normal_header.php');
+
         echo "<h2>Download the annotation for selected markers or genotype experiment</h2>\n";
-        if (isset($_SESSION['geno_exps'])) {
-            $this->downloadGenoExp();
-        } elseif (isset($_SESSION['clicked_buttons'])) {
-            $this->downloadMarkers();
-        } elseif (isset($_SESSION['selected_lines'])) {
-            $this->downloadMarkers2();
+
+        if (!isset($_SESSION['geno_exps']) && !isset($_SESSION['clicked_buttons']) && !isset($_SESSION['selected_lines'])) {
+            echo "Please select a genotype experiment or a set of markers.<br>\n";
+        }
+        if (isset($_SESSION['selected_map'])) {
+            $selected_map = $_SESSION['selected_map'];
+            if (isset($_SESSION['geno_exps'])) {
+                $this->downloadGenoExp($selected_map);
+            } elseif (isset($_SESSION['clicked_buttons'])) {
+                $this->downloadMarkers($selected_map);
+            } else {
+                echo "Please select a genotype experiment or a set of markers<br>\n";
+            }
         } else {
-            echo "Please select a genotype experiment or a set of markers<br>\n";
+            echo "Please <a href='maps/select_map.php'>select a map</a>.<br>\n";
         }
         echo "</div>";
         include $config['root_dir'].'theme/footer.php';
     }
 
-    public function downloadMarkers()
+    public function downloadMarkers($map)
     {
         global $mysqli;
         echo "<h3>Marker annotation for slected markers</h3>";
@@ -35,64 +49,45 @@ class Downloads
         $markers_str = implode(",", $markers);
         $count = count($markers);
         echo "$count markers found<br>\n";
+
+        $sql = "select marker_uid, value, name_annotation, comments from marker_annotations, marker_annotation_types
+                where marker_annotations.marker_annotation_type_uid = marker_annotation_types.marker_annotation_type_uid
+                and marker_uid IN ($markers_str)";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
+            $marker_uid = $row[0];
+            $annot_list[$marker_uid][] = "$row[1]<td>$row[3]";
+        }
        
-        echo "<table>";
-        echo "<tr><td>Marker<td>Chromosome<td>Position\n";
-        $sql = "select marker_name, chromosome, start_position from markers_in_maps, markers, map
-            where markers.marker_uid IN ($markers_str) 
-            and markers_in_maps.marker_uid = markers.marker_uid
-            and markers_in_maps.map_uid = map.map_uid
-            and map.mapset_uid = 15";
-        if ($res = mysqli_query($mysqli, $sql)) {
+        $sql = "select marker_uid, marker_name from markers where marker_uid IN ($markers_str)";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $count = mysqli_num_rows($res);
+        if ($count > 0) {
+            echo "<table>";
+            echo "<tr><td>Marker<td>Entry<td>Description\n";
             while ($row = mysqli_fetch_array($res)) {
-                echo "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
-            }
-        }
-        echo "</table>";
-    }
-
-    public function downloadMarkers2()
-    {
-        global $mysqli;
-        echo "<h3>Marker annotation for slected lines</h3>";
-        $lines = $_SESSION['selected_lines'];
-        $selectedlines = implode(",", $lines);
-
-        $sql_exp = "SELECT DISTINCT e.experiment_uid AS exp_uid
-        FROM experiments e, experiment_types as et, line_records as lr, tht_base as tb
-        WHERE e.experiment_type_uid = et.experiment_type_uid
-        AND lr.line_record_uid = tb.line_record_uid
-        AND e.experiment_uid = tb.experiment_uid
-        AND lr.line_record_uid in ($selectedlines)
-        AND et.experiment_type_name = 'genotype'";
-        if ($res = mysqli_query($mysqli, $sql_exp)) {
-            if (mysqli_num_rows($res)>0) {
-                while ($row = mysqli_fetch_array($res)) {
-                    $exp[] = $row["exp_uid"];
+                $marker_uid = $row[0];
+                echo "<tr><td>$row[1]";
+                if (isset($annot_list[$marker_uid])) {
+                    $count = 1;
+                    foreach ($annot_list[$marker_uid] as $val) {
+                        if ($count == 1) {
+                            echo "<td>$val\n";
+                        } else {
+                            echo "<tr><td><td>$val";
+                        }
+                        $count++;
+                    }
                 }
-                $exp = implode(',', $exp);
+                echo "\n";
             }
-            echo "using markers from these experiments $exp<br>\n";
+            echo "</table>";
+        } else {
+            echo "<br>No annotation entries found<br>\n";
         }
-
-        echo "<table>";
-        echo "<tr><td>Marker<td>Chromosome<td>Position\n";
-        $sql = "select DISTINCT marker_name, chromosome, start_position from markers_in_maps,
-            allele_frequencies, map, markers
-            where allele_frequencies.experiment_uid in ($exp)
-            and markers.marker_uid = markers_in_maps.marker_uid
-            and markers_in_maps.marker_uid = allele_frequencies.marker_uid
-            and markers_in_maps.map_uid = map.map_uid
-            and map.mapset_uid = 15";
-        if ($res = mysqli_query($mysqli, $sql)) {
-            while ($row = mysqli_fetch_array($res)) {
-                echo "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
-            }
-        }
-        echo "</table>";
     }
 
-    public function downloadGenoExp()
+    public function downloadGenoExp($map)
     {
         global $mysqli;
         echo "<h3>Marker annotation for Genotype Experiment</h3>";
@@ -111,19 +106,43 @@ class Downloads
             $count = $row[0];
             echo "$count markers found in experiment $geno_name<br>\n";
         }
-       
-        echo "<table>";
-        echo "<tr><td>Marker<td>Chromosome<td>Position\n";
-        $sql = "select marker_name, chromosome, start_position from markers_in_maps, allele_bymarker_exp_101, map
+
+        $sql = "select marker_uid, value, name_annotation, comments from marker_annotations, marker_annotation_types
+                where marker_annotations.marker_annotation_type_uid = marker_annotation_types.marker_annotation_type_uid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
+            $marker_uid = $row[0];
+            $annot_list[$marker_uid][] = "$row[1]<td>$row[3]";
+        }
+
+        $sql = "select allele_bymarker_exp_101.marker_uid, marker_name, chromosome, start_position from markers_in_maps, allele_bymarker_exp_101, map
             where experiment_uid = $geno_str
             and markers_in_maps.marker_uid = allele_bymarker_exp_101.marker_uid
             and markers_in_maps.map_uid = map.map_uid
-            and map.mapset_uid = 15"; 
-        if ($res = mysqli_query($mysqli, $sql)) {
+            and map.mapset_uid = $map";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $count = mysqli_num_rows($res);
+        if ($count > 0) {
+            echo "<table>";
+            echo "<tr><td>Marker<td>Chromosome<td>Position<td>Entry<td>Description\n";
             while ($row = mysqli_fetch_array($res)) {
-                echo "<tr><td>$row[0]<td>$row[1]<td>$row[2]\n";
+                $marker_uid = $row[0];
+                echo "<tr><td>$row[1]<td>$row[2]<td>$row[3]\n";
+                if (isset($annot_list[$marker_uid])) {
+                    $count = 1;
+                    foreach ($annot_list[$marker_uid] as $val) {
+                        if ($count == 1) {
+                            echo "<td>$val\n";
+                        } else {
+                            echo "<tr><td><td><td><td>$val";
+                        }
+                        $count++;
+                    }
+                }
             }
+            echo "</table>";
+        } else {
+            echo "<br>No map entries found<br>\n";
         }
-        echo "</table>";
     }
 }

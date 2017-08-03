@@ -915,17 +915,44 @@ function ajaxSubmitForm ($arr) {
 	echo $dom->saveXML();
 }
 
+
+/**
+ * Display the map linkage group based on the map name
+ */
+function DispMapLin($arr)
+{
+    global $mysqli;
+    if (! isset($arr['mapname']) || strlen($arr['mapname'])<1) {
+        print "Invalid input of map set";
+        return;
+    }
+    $mapname=$arr['mapname'];
+    $sql = "select map_name from map where mapset_uid=$mapname order by map_name";
+    ?>
+    <select name='mapname' size=10 onClick="DispMapSel(this.value)">
+    <?php
+    $result=mysqli_query($mysqli, $sql) or die("Invalid map name");
+    while ($row=mysqli_fetch_assoc($result)) {
+        $selval=$row['map_name'];
+        print "<option value='$selval'>$selval</option>\n";
+    }
+    ?>
+    </select>
+    <?php
+}
+
 /**
  * Display the map range based on the map name
  */
-function DispMapSel ($arr) {
+function DispMapSel($arr)
+{
     global $mysqli;
     if (! isset($arr['mapname']) || strlen($arr['mapname'])<1) {
 	print "Invalid input of map name";
 	return;
     }
     $mapname=$arr['mapname'];
-    $result=mysqli_query($mysqli, "select map_uid from map where map_name=\"$mapname\"") or die("Invalid map name");
+    $result=mysqli_query($mysqli, "select map_uid from map where map_name=\"$mapname\" order by map_name") or die("Invalid map name");
     if (mysqli_num_rows($result)>0) {
         $row=mysqli_fetch_assoc($result);
 	$mapuid=$row['map_uid'];

@@ -3,7 +3,7 @@
 namespace weather;
 
 require 'config.php';
-require_once $config['root_dir'].'includes/bootstrap2.inc';
+require_once $config['root_dir'].'includes/bootstrap.inc';
 
 new Weather($_GET['function']);
 

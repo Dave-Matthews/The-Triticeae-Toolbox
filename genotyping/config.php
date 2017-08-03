@@ -5,3 +5,6 @@ $parent_dir = substr($root, 0, $pos1+1);//realpath("$root../");
 $root = '//'.$_SERVER['HTTP_HOST']/*.'/'*/.strtolower(str_replace('//'.$_SERVER['HTTP_HOST'], '', $parent_dir));
 $config['base_url'] = $root;//.'/';
 $config['root_dir'] = realpath(dirname(__FILE__).'/../').'/';
+$ensemblLink = "http://plants.ensembl.org/Triticum_aestivum";
+$ensemblLinkVEP = "http://plants.ensembl.org/Triticum_aestivum/Tools/VEP?db=core";
+$polymarkerLink = "http://polymarker.tgac.ac.uk";

@@ -40,12 +40,7 @@ jQuery( document ).ready(function( $ ) {
 
 <?php
 global $mysqli;
-// get species
-if (preg_match("/^\/([A-Za-z]+)/", $_SERVER['PHP_SELF'], $match)) {
-    $species = $match[1];
-} else {
-    $species = "";
-}
+
 // clear session if it contains variables from another database
 $database = mysql_grab("select database()");
 if ($_SESSION['database'] != $database) {
@@ -107,7 +102,6 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <li><a href="<?php echo $config['base_url']; ?>downloads/select_genotype.php" title="Select by Genotype Experiment">
         Lines by Genotype Experiment</a>
     <?php
-    $species = strtolower($species);  //needed for JBrowse link
     /* if( authenticate( array(USER_TYPE_PUBLIC, USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
     /* Everybody is USER_TYPE_PUBLIC.  Require he be signed in (therefore registered). */
     if (loginTest2()) : ?>
@@ -145,7 +139,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>analyze/table.php" title="Boxplot">Traits and Trials Table</a>
         </ul>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/cal_index.php" title="Canopy Spectral Reflectance">Canopy Spectral Reflectance</a>
-        <li><a href="<?php echo $config['base_url']; ?>gensel2.php" title="GWAS">Genome-wide Associations Studies</a>
+        <!--li><a href="<?php echo $config['base_url']; ?>gensel2.php" title="GWAS">Genome-wide Associations Studies</a-->
         <li><a href="<?php echo $config['base_url']; ?>gensel.php" title="Genomic selection">Genomic Association and Prediction</a>
         <li><a href="<?php echo $config['base_url']; ?>analyze/compare_trials.php" title="Compare Trait value for 2 Trials">Compare Trials</a>
         <li>
@@ -156,34 +150,6 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>viroblast" title="Find mapped sequences similar to yours">
           BLAST</a>
         <li><a href="<?php echo $config['base_url']; ?>pedigree/pedigree_markers.php" title="Show haplotype and phenotype for selected lines and markers">Haplotype Data</a>
-        <li><a href="/jbrowse">JBrowse - Genome Browser</a>
-        <?php
-        $sql = "select value from settings where name like 'assembly%'";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        $rowCnt = mysqli_num_rows($res);
-        if ($rowCnt > 0) {
-            echo "<ul>";
-            while ($row = mysqli_fetch_array($res)) {
-                $result = explode(",", $row[0]);
-                ?>
-                <li><a href="/jbrowse/?data=<?php echo $result[0] ?>" title="JBrowse"><?php echo $result[1] ?></a>
-                <?php
-            }
-            echo "</ul>";
-        }
-        if (file_exists($config['root_dir']."genotyping/marker_report_ref.php")) {
-            ?><li><a href="<?php echo $config['base_url'];
-            ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation Report</a>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms Report</a>
-        <?php
-        }
-        $results = mysql_grab("SHOW tables like 'qtl_raw'");
-        if ($results == "qtl_raw") {
-            ?> 
-            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="GWAS Results">GWAS Results</a>
-            <?php
-        }
-        ?>
       </ul>
     <li><a href="" title="">Download</a>
       <ul>
@@ -204,7 +170,47 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             Weather Data</a>
         <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
-
+    <li><a href="" title"">Reports</a>
+      <ul>
+        <?php
+        $results = mysql_grab("SHOW tables like 'qtl_raw'");
+        if ($results == "qtl_raw") {
+            ?>
+            <li><a href="<?php echo $config['base_url']; ?>qtl/qtl_report.php" title="GWAS Results">GWAS Results</a>
+            <?php
+        }
+        $results = mysql_grab("SHOW tables like 'marker_report_reference'");
+        if ($results == "marker_report_reference") {
+            ?>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Annotation by Experiment</a>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/vep_tool.php" title="Variant Effect Predictor">Variant Effect Predictor</a>
+            <?php
+        }
+        $results = mysql_grab("SHOW tables like 'marker_report_synonyms'");
+        if ($results == "marker_report_synonyms") {
+            ?>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_syn.php" title="BLAST Markers against themselves">Marker Synonyms by Experiment</a>
+            <?php
+        }
+        ?>
+        <li><a href="/jbrowse">JBrowse - Genome Browser</a>
+        <?php
+        $sql = "select value from settings where name like 'assembly%'";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $rowCnt = mysqli_num_rows($res);
+        if ($rowCnt > 0) {
+            echo "<ul>";
+            while ($row = mysqli_fetch_array($res)) {
+                $result = explode(",", $row[0]);
+                ?>
+                <li><a href="/jbrowse/?data=<?php echo $result[0] ?>" title="JBrowse"><?php echo $result[1] ?></a>
+                <?php
+            }
+            echo "</ul>";
+        }
+        ?>
+      </ul>
+   
     <?php
     if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
     ?> 
@@ -249,9 +255,9 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
             Phenotype Trials</a>
         </ul> <?php
-    } ?>
+    }
 
-    <?php if (authenticate(array( USER_TYPE_ADMINISTRATOR))) { ?>
+    if (authenticate(array( USER_TYPE_ADMINISTRATOR))) { ?>
     <li>
     <a href="" title="<?php echo $lang["desc_sc5"]; ?>">Administer</a>
     <ul>
@@ -266,7 +272,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     </ul>
     </li>
     <?php
-}
+    }
 
 /* //   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
 /*   if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
@@ -301,7 +307,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <?php if (isset($_SESSION['username']) && !isset($_REQUEST['logout'])) : ?>
     <li>
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
-            <?php else : ?>
+        <?php else : ?>
     <li>
       <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
     <?php endif; ?>

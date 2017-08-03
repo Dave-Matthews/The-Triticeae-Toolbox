@@ -12,7 +12,7 @@
 namespace T3;
 
 require_once 'config.php';
-require $config['root_dir'] . 'includes/bootstrap2.inc';
+require $config['root_dir'] . 'includes/bootstrap.inc';
 require $config['root_dir'] . 'downloads/marker_filter.php';
 require $config['root_dir'] . 'downloads/downloads_class.php';
 set_time_limit(0);
