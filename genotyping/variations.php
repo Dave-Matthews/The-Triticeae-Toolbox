@@ -88,8 +88,8 @@ foreach ($selected_markers as $marker_uid) {
 }
 echo "</pre>";
 if ($linkOut != "") {
-    echo "The links in the region column show known variations in a browser and their effects at Ensembl Plants. The region is shows 1000 bases to either side of marker. ";
-    echo "The links in the gene column show a table with known variaitions, consequence type, and SIFT score.<br><table>\n<tr><td>marker<td>region<td>gene\n$linkOut</table>\n";
+    echo "The links in the region column show known variations in a browser and their effects at Ensembl Plants. The region is 1000 bases to either side of marker. ";
+    echo "The links in the gene column show a table with known variations, consequence type, and SIFT score.<br><table>\n<tr><td>marker<td>region<td>gene\n$linkOut</table>\n";
 }
 if ($vepFound != "") {
     echo "<br>To run Variant Effect Predictor, copy the data below and paste it into the text box on the website <a href=\"$ensemblLinkVEP\" target=\"_new\">Ensembl Plant VEP</a>. ";
