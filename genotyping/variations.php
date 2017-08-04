@@ -11,11 +11,14 @@ if (!isset($ensemblLinkVEP)) {
 
 echo "<h2>Variant Effects</h2>\n";
 echo "This page provides links to Sorting Intolerant From Tolerant (SIFT) and Variant Effect Predictor (VEP) to predict whether an amino aid substitution affect protein function.<br>";
+echo "SIFT missense predictions for genomes. <a href=\"http://sift.bii.a-star.edu.sg/www/nprot2016_vaser.pdf\">Nature Protocols 2016; 11:1-9</a>. ";
+echo "The Ensembl Variant Effect Predictor. Genome Biology Jun 6;17(1):122. (2016) <a href=\"https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0974-4\">doi:10.1186/s13059-016-0974-4</a>.<br><br>";
 
 if (isset($_SESSION['clicked_buttons'])) {
     $selected_markers = $_SESSION['clicked_buttons'];
 } else {
     echo "<br>Please select one or more <a href = \"genotyping/marker_selection.php\">markers</a><br>\n";
+    $selected_markers = array();
 }
 
 $assembly_list = array();
