@@ -11,7 +11,7 @@
   - php-zip
   - Spreadsheet_Excel_Writer and OLE.  Can be installed with:
     % sudo pear install OLE-1.0.0RC2
-    % sudo pear install Spreadsheet_Excel_Writer-0.9.2
+    % sudo pear install Spreadsheet_Excel_Writer-0.9.4
     % sudo pear install Mail
   - R, version at least 3.0 
     - additional packages: rrBLUP, rpart, lme4, pheatmap, agricolae, lsmeans
@@ -27,6 +27,7 @@
       % sudo cpan BioPerl
     - sudo apt-get install libgd-gd2-perl
     - sudo apt-get install libcurl4-openssl-dev
+    - sudo apt-get install r-base-dev
     - NCBI BLAST+, ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
       Edit viroblast/viroblast.ini to use the path to these executables.
     - BLAST databases of the markers:
@@ -48,6 +49,7 @@ sudo apt-get install php7.0-gd
 sudo apt-get install php7.0-zip
 sudo apt-get install php7.0-xml
 sudo apt-get install r-base
+sudo apt-get install r-base-dev
 sudo apt-get install libcurl4-openssl-dev
 sudo R
 >install.packages("rrBLUP")
@@ -58,6 +60,8 @@ sudo R
 >install.packages("lsmeans")
 >install.packages("STPGA")
 >install.packages("weatherData")
+>install.packages("geosphere")
+>install.packages("rwunderground")
 sudo cpan DBD::CSV
 sudo cpan XML::DOM
 sudo cpan BioPerl

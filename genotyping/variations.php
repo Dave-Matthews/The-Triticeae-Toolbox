@@ -9,14 +9,16 @@ if (!isset($ensemblLinkVEP)) {
     echo "Error: Please define VEP in directory config.php file";
 }
 
-echo "<h2>Variant Effect Predictor</h2>\n";
-echo "The Variant Effect Predictor (VEP) determines the effect of variants (SNPs, insertions, deletions, CNVs or structural variants) on genes, transcripts, and protein sequence, as well as regulatory regions.<br>";
-echo " For a description of the method see <a href=\"http://www.ncbi.nlm.nih.gov/pubmed/20562413\" target=\"_new\">McLaren et. al.</a>.<br>\n";
+echo "<h2>Variant Effects</h2>\n";
+echo "This page provides links to Sorting Intolerant From Tolerant (SIFT) and Variant Effect Predictor (VEP) to predict whether an amino aid substitution affect protein function.<br>";
+echo "SIFT missense predictions for genomes. <a href=\"http://sift.bii.a-star.edu.sg/www/nprot2016_vaser.pdf\">Nature Protocols 2016; 11:1-9</a>. ";
+echo "The Ensembl Variant Effect Predictor. Genome Biology Jun 6;17(1):122. (2016) <a href=\"https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0974-4\">doi:10.1186/s13059-016-0974-4</a>.<br><br>";
 
 if (isset($_SESSION['clicked_buttons'])) {
     $selected_markers = $_SESSION['clicked_buttons'];
 } else {
     echo "<br>Please select one or more <a href = \"genotyping/marker_selection.php\">markers</a><br>\n";
+    $selected_markers = array();
 }
 
 $assembly_list = array();
@@ -46,7 +48,7 @@ while ($row = mysqli_fetch_row($result)) {
     $count++;
     $marker = $row[0];
     $gene = $row[1];
-    $geneFound[$marker] = "<a target=\"_new\" href=$ensemblLink/Location/View?g=$gene>$gene</a>";
+    $geneFound[$marker] = "<a target=\"_new\" href=$ensemblLink/Gene/Variation_Gene/Table?g=$gene>$gene</a>";
 }
 
 echo "<br><pre>\n";
@@ -57,14 +59,20 @@ foreach ($selected_markers as $marker_uid) {
     $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($result)) {
         $marker = $row[0];
+        $pos = $row[3];
         $strand = $row[6];
+        $start = $pos - 1000;
+        if ($start < 0) {
+            $start = 0;
+        }
+        $stop = $pos + 1000;
         if ($strand == "F") {
             $strand = "+";
         } elseif ($strand == "R") {
             $strand = "-";
         }
         $vepFound .= "<tr><td>$row[2] $row[3] $row[3] $row[4]/$row[5] $strand $row[0]\n";
-        $jbrowse = "<a target=\"_new\" href=$ensemblLink/Location/View?r=$row[2]:$row[3]>$row[2]</a>";
+        $jbrowse = "<a target=\"_new\" href=$ensemblLink/Location/View?r=$row[2]:$start-$stop>$row[2]</a>";
         $linkOut .= "<tr><td>$row[0]<td>$jbrowse";
         if (isset($geneFound[$marker])) {
             $linkOut .= "<td>$geneFound[$marker]\n";
@@ -83,7 +91,8 @@ foreach ($selected_markers as $marker_uid) {
 }
 echo "</pre>";
 if ($linkOut != "") {
-    echo "The links in gene column will show precomputed variant effects at Ensembl Plants.<br><table>\n<tr><td>marker<td>region<td>gene\n$linkOut</table>\n";
+    echo "The links in the region column show known variations in a browser and their effects at Ensembl Plants. The region is 1000 bases to either side of marker. ";
+    echo "The links in the gene column show a table with known variations, consequence type, and SIFT score.<br><table>\n<tr><td>marker<td>region<td>gene\n$linkOut</table>\n";
 }
 if ($vepFound != "") {
     echo "<br>To run Variant Effect Predictor, copy the data below and paste it into the text box on the website <a href=\"$ensemblLinkVEP\" target=\"_new\">Ensembl Plant VEP</a>. ";
