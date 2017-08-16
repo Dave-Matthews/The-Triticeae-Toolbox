@@ -1,6 +1,7 @@
 <?php
 require 'config.php';
 include $config['root_dir'].'includes/bootstrap.inc';
+$pageTitle = "Variant Effects";
 $mysqli = connecti();
 
 include $config['root_dir'].'theme/admin_header2.php';
