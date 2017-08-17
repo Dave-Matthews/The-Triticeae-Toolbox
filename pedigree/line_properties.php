@@ -11,6 +11,7 @@
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
 $mysqli = connecti();
+$pageTitle = "Select Lines by Properties";
 require $config['root_dir'] . 'theme/admin_header.php';
 
 // Clear propvals cookie on initial entry, or if the last action was to save $_SESSION['selected_lines'].
@@ -58,7 +59,7 @@ if (empty($_POST) or $_POST['WhichBtn']) {
 </style>
 <script type="text/javascript" src="theme/new.js"></script>
 
-<h2> Select Lines by Properties</h2>
+<h2>Select Lines by Properties</h2>
 <div class="boxContent">
 
   <table width="650px">
@@ -233,19 +234,19 @@ if (!empty($_POST)) {
             $word = str_replace('&amp;', '&', $word);  // Allow "&" character in line names.
             // First check line_records.line_record_name.
             $sql = "SELECT line_record_name from line_records where line_record_name like ?";
-                if ($stmt = mysqli_prepare($mysqli, $sql)) {
-                    mysqli_stmt_bind_param($stmt, "s", $word);
-                    mysqli_stmt_execute($stmt);
-                    mysqli_stmt_bind_result($stmt, $hits);
-                    while (mysqli_stmt_fetch($stmt)) {
-                        $linesFound[] = $hits;
-			$found = TRUE;
-                    }
-                    mysqli_stmt_close($stmt);
-                    /* if (isset($linesFound)) { */
-                    /*     $found = true; */
-                    /* } */
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "s", $word);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $hits);
+                while (mysqli_stmt_fetch($stmt)) {
+                    $linesFound[] = $hits;
+                    $found = true;
                 }
+                mysqli_stmt_close($stmt);
+                /* if (isset($linesFound)) { */
+                /*     $found = true; */
+                /* } */
+            }
 	// Now check line_synonyms.line_synonym_name.
         $sql = "select line_record_name from line_synonyms ls, line_records lr where line_synonym_name like ? and ls.line_record_uid = lr.line_record_uid";
                 if ($stmt = mysqli_prepare($mysqli, $sql)) {
