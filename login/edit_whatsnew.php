@@ -37,7 +37,7 @@ if (!empty($_POST)) {
 }
 // Show the current contents in an edit box.
 echo "<form method=POST>";
-echo "<textarea name='contents' rows=30 cols=90";
+echo "<textarea name='contents' rows=30 cols=90>";
 $content = file($config['root_dir'] . 'whatsnew.html');
 foreach ($content as $linenum => $str) {
     echo($str);
