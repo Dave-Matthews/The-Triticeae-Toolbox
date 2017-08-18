@@ -50,9 +50,13 @@ class Downloads
         ?>
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="qtl/menu08.js"></script><br>
+        <script type="text/javascript" src="qtl/menu10.js"></script><br>
         <?php
-        if (isset($_SESSION['selected_traits']) && isset($_SESSION['selected_trials'])) {
+        if (isset($_GET['pi'])) {
+            $var = $_GET['pi'];
+            $_SESSION['selected_traits'] = array($var);
+        }
+        if (isset($_SESSION['selected_traits']) || isset($_SESSION['selected_trials'])) {
             ?>
             <script type="text/javascript">
             if ( window.addEventListener ) {
@@ -82,19 +86,23 @@ class Downloads
     {
         global $mysqli;
         global $config;
+        if (isset($_GET['cmd'])) {
+            $cmd = $_GET['cmd'];
+        }
         ?>
-        <h2>QTL Report</h2>
+        <h2>GWAS Results</h2>
         This analysis can be used to identify quantitative trait locus (QTL) by displaying associations between
         markers and traits for trials within the T3 database.
         If <a href='<?php echo $config['base_url']; ?>/phenotype/phenotype_selection.php'>traits and trials</a>
         are selected then only results for the selected trials are shown otherwise results are shown for all
         trials.
-        <a href='<?php echo $config['base_url']; ?>/qtl/zbrowse.html'>ZBrowse instructions</a>
+        <a href='<?php echo $config['base_url']; ?>/qtl/zbrowse.html'>ZBrowse instructions</a>. 
+        Expression data is provided by "WheatExp: An Expression Database for Polyploid Wheat" and "Wheat Expression Browser: expVIP".
         <br><br>
         <b>Analysis Methods:</b> The analysis includes genotype and phenotype trials where there were more than 50
-        germplasm lines in common. The platforms include Infinium 9K, Infinium 90K, and GBS restriction site.<br>
-        1. GWAS is done on each phenotype trial, no fixed effects.<br>
-        2. GWAS is done on each phenotype experiment, which is a set of related phenotype trials 
+        germplasm lines in common.<br>
+        1. phenotype trial - GWAS with no fixed effects.<br>
+        2. phenotype experiment - GWAS on a set of related phenotype trials 
         (different location and same year or same location different year).
         Principle Components that accounted for more than 5% of the relationship matrix variance were included as fixed effects in the analysis.
         Each phenotype trial (if more than one) was included as a fixed effect.<br>
@@ -103,13 +111,35 @@ class Downloads
         <b>GWAS:</b> The analysis use rrBLUP GWAS package (Endleman, Jeffery, "Ridge Regression and Other Kernels for Genomic Selection with R package rrBLUP", The Plant Genome Vol 4 no. 3).
         The settings are: MAF > 0.05, P3D = TRUE (equivalent to EMMAX).
         The q-value is an estimate of significance given p-values from multiple comparisons using a false discovery rate of 0.05.
-        To view the p-value and q-value for each trial, select the trial count link.<br><br>
+        To view the p-value and q-value for each trial, select the trial count link.<br>
+        <b>External Links:</b> The "Pathway" column contains links to Plant Reactome from http://plantreactome.gramene.org/download/gene_ids_by_pathway_and_species.tab.<br><br>
         <?php
-        if (isset($_SESSION['selected_traits'])) {
+        $trialCount = 0;
+        $platforms = "";
+        $sql = "select count(*) from qtl_raw";
+        $res = mysqli_query($mysqli, $sql);
+        if ($row = mysqli_fetch_array($res)) {
+            $trialCount = $row[0];
+        }
+        $sql = "select distinct(platform_name) from qtl_raw, platform where qtl_raw.platform = platform.platform_uid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
+            if ($platforms == "") {
+                $platforms = $row[0];
+            } else {
+                $platforms .= ", $row[0]";
+            }
+        }
+        echo "<b>Phenotype Trials:</b> $trialCount<br>\n";
+        echo "<b>Genotype platforms:</b> $platforms<br><br>\n";
+        if ($cmd == "clear") {
+            unset($GLOBALS[_SESSION]['selected_traits']);
+            unset($GLOBALS[_SESSION]['selected_trials']);
+        } elseif (isset($_SESSION['selected_traits'])) {
             $ntraits=count($_SESSION['selected_traits']);
             echo "<table>";
             echo "<tr><th>Currently selected traits</th><td><th>Currently selected trials</th>";
-            print "<tr><td><select name=\"deselLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_phenotype_items(this.options)\">";
+            print "<tr><td><select name=\"deselLines[]\" multiple=\"multiple\">";
             $phenotype_ary = $_SESSION['selected_traits'];
             foreach ($phenotype_ary as $uid) {
                 $result=mysqli_query($mysqli, "select phenotypes_name from phenotypes where phenotype_uid=$uid") or die("invalid line uid\n");
@@ -119,7 +149,7 @@ class Downloads
                 }
             }
             print "</select>";
-            echo "<td><td><select name=\"deseLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_trial_items(this.options)\">";
+            echo "<td><td><select name=\"deseLines[]\" multiple=\"multiple\">";
             if (isset($_SESSION['selected_trials'])) {
                 $trials_ary = $_SESSION['selected_trials'];
                 foreach ($trials_ary as $uid) {
@@ -132,9 +162,8 @@ class Downloads
             }
             print "</select>";
             ?>
-            <tr><td><input type="button" value="Deselect highlighted traits" onclick="javascript:phenotype_deselect();" /></td><td><td>
-            <input type="button" value="Deselect highlighted trials" onclick="javascript:trials_deselect();" />
             </table>
+            <input type="button" value="Deselect traits and trials" onclick="javascript:deselect();" />
             <?php
         }
     }
@@ -150,7 +179,8 @@ class Downloads
             <tr><td>
             <select name="phenotype_categories" id="pheno_cat" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
             <?php
-            $sql = "SELECT phenotype_category_uid AS id, phenotype_category_name AS name from phenotype_category";
+            $sql = "SELECT distinct(phenotype_category.phenotype_category_uid) AS id, phenotype_category_name AS name from phenotype_category, phenotypes
+                    where phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             while ($row = mysqli_fetch_assoc($res)) { ?>
                 <option value="<?php echo $row['id'] ?>">
@@ -275,36 +305,41 @@ class Downloads
         } else {
             die("Error: no phenotypes selected\n");
         }
+        if (preg_match("/([A-Za-z]+)\/[^\/]+\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
+            $species = $match[1];
+        } else {
+            $species = "";
+        }
         if (isset($_GET['method'])) {
             if ($_GET['method'] == 'set') {
                 $database = "qtl_set";
                 $select_set = "checked";
                 $select_sig = "";
                 $select_imput = "";
-                $target_base = $config['root_dir'] . "raw/gwas/set/";
-                $target_url = $config['base_url'] . "raw/gwas/set/";
+                $target_base = $config['root_dir'] . "raw/gwas_$species/set/";
+                $target_url = $config['base_url'] . "raw/gwas_$species/set/";
             } elseif ($_GET['method'] == 'imput') {
                 $database = 'qtl_imputed';
                 $select_set = "";
                 $select_sig = "";
                 $select_imput = "checked";
-                $target_base = $config['root_dir'] . "raw/gwas/imput/";
-                $target_url = $config['base_url'] . "raw/gwas/imput/";
+                $target_base = $config['root_dir'] . "raw/gwas_$species/imput/";
+                $target_url = $config['base_url'] . "raw/gwas_$species/imput/";
             } else {
                 $database = "qtl_raw";
                 $select_set = "";
                 $select_sig = "checked";
                 $select_imput = "";
-                $target_base = $config['root_dir'] . "raw/gwas/single/";
-                $target_url = $config['base_url'] . "raw/gwas/single/";
+                $target_base = $config['root_dir'] . "raw/gwas_$species/single/";
+                $target_url = $config['base_url'] . "raw/gwas_$species/single/";
             }
         } else {
             $database = "qtl_raw";
             $select_set = "";
             $select_sig = "checked";
             $select_imput = "";
-            $target_base = $config['root_dir'] . "raw/gwas/single/";
-            $target_url = $config['base_url'] . "raw/gwas/single/";
+            $target_base = $config['root_dir'] . "raw/gwas_$species/single/";
+            $target_url = $config['base_url'] . "raw/gwas_$species/single/";
         }
 
         $sql = "select experiment_uid, trial_code from experiments";
@@ -346,16 +381,6 @@ class Downloads
             echo "<h2>QTL results for gene = $guid</h2>\n";
         }
 
-        $sql = "select marker_name, gene, description from qtl_annotation";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_array($res)) {
-            $marker = $row[0];
-            $gene = $row[1];
-            $desc = $row[2];
-            $annot_list1[$marker] = $gene;
-            $annot_list2[$marker] = $desc;
-        }
-
         $sql = "select experiment_uid, number_entries from phenotype_experiment_info";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
@@ -376,20 +401,14 @@ class Downloads
                 $marker = $val[0];
                 $chrom = $val[1];
                 $pos = $val[2];
-                $gene = $annot_list1[$marker];
                 if (($marker == $muid) || ($gene == $guid)) {
                     $zvalue = number_format($val[3], 3);
                     $qvalue = number_format($val[4], 3);
                     $pvalue = number_format($val[5], 5);
                     $location = "$chrom $pos";
                     $link1 = "/jbrowse/?data=wheat&loc=$chrom:$pos";
-                    if ($database == "qtl_imputed") {
-                        $link2 = "<a target=\"_new\" href=\"$target_url" . $chrom . "THTdownload_gwa1_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Manhattan</a>";
-                        $link3 = "<a target=\"_new\" href=\"$target_url" . $chrom . "THTdownload_gwa3_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Q-Q</a>";
-                    } else {
-                        $link2 = "<a target=\"_new\" href=\"$target_url" . "THTdownload_gwa1_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Manhattan</a>";
-                        $link3 = "<a target=\"_new\" href=\"$target_url" . "THTdownload_gwa3_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Q-Q</a>";
-                    }
+                    $link2 = "<a target=\"_new\" href=\"$target_url" . "THTdownload_gwa1_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Manhattan</a>";
+                    $link3 = "<a target=\"_new\" href=\"$target_url" . "THTdownload_gwa3_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Q-Q</a>";
                     if ($_GET['method'] == "set") {
                         $trial = $exp_list[$pexp];
                     } else {
@@ -420,14 +439,19 @@ class Downloads
             $database = "qtl_raw";
         }
 
-        $sql = "select marker_name, gene, description from qtl_annotation";
+        $sql = "select marker_name, assembly_ver, gene, description from qtl_annotations";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
-            $gene = $row[1];
-            $desc = $row[2];
-            $annot_list1[$marker] = $gene;
-            $annot_list2[$marker] = $desc;
+            $assembly = $row[1];
+            $gene = $row[2];
+            $desc = $row[3];
+            if ($assembly == "IWGSC.31") {
+                $annot_list[$marker] = $gene;
+            } else {
+                $annot_list2[$marker] = $gene;
+                $annot_list3[$marker] = $desc;
+            }
         }
 
         header('Content-type: application/vnd.ms-excel');
@@ -452,15 +476,19 @@ class Downloads
                     $gwas = json_decode($tmp);
                     foreach ($gwas as $val) {
                         $marker_name = $val[0];
-                        $zsum[$marker_name] += $val[3] * sqrt($linesInExp[$pheno_exp]);
+                        $zvalue = $val[3];
+                        $qvalue = $val[4];
+                        $zsum[$marker_name] += $zvalue;
                         $ztot[$marker_name]++;
-                        $wghtSum[$marker_name] += $linesInExp[$pheno_exp];
+                        if ($qvalue < 0.05) {
+                            $goodList[$marker_name] = 1;
+                        }
                     }
                 }
                 mysqli_stmt_close($stmt);
             }
             foreach ($zsum as $marker_name => $val) {
-                $zmeta[$marker_name] = $val/(sqrt($wghtSum[$marker_name]));
+                $zmeta[$marker_name] = $zsum[$marker_name] / $ztot[$marker_name];
             }
         }
 
@@ -493,10 +521,10 @@ class Downloads
                         } elseif (preg_match("/v44/", $chrom)) {
                             $chrom = "UNK";
                         }
-                        if ($pvalue < 0.05) {
-                            if (isset($annot_list1[$marker])) {
-                                $gene = $annot_list1[$marker];
-                                $feature = $annot_list2[$marker];
+                        if ($qvalue < 0.05) {
+                            if (isset($annot_list2[$marker])) {
+                                $gene = $annot_list2[$marker];
+                                $feature = $annot_list3[$marker];
                             } else {
                                 $gene = "";
                                 $feature = "";
@@ -519,12 +547,8 @@ class Downloads
         arsort($output_index);
         $count = 1;
         foreach ($output_index as $key => $val) {
-            if ($count > 2500) {
-                break;
-            } else {
-                $count++;
-                echo "$output_list[$key]\n";
-            }
+            $count++;
+            echo "$output_list[$key]\n";
         }
     }
 
@@ -533,6 +557,14 @@ class Downloads
         global $mysqli;
         if (isset($_GET['pi'])) {
             $puid_list = explode(",", $_GET['pi']);
+        }
+        if (isset($_SESSION['selected_traits'])) {
+            $phenotype_ary = $_SESSION['selected_traits'];
+            $puid = $phenotype_ary[0];
+        } elseif (isset($_GET['pi'])) {
+            $puid = $_GET['pi'];
+        } else {
+            die("Error: no phenotypes selected\n");
         }
         if (isset($_GET['method'])) {
             if ($_GET['method'] == 'set') {
@@ -546,14 +578,19 @@ class Downloads
             $database = "qtl_raw";
         }
 
-        $sql = "select marker_name, gene, description from qtl_annotation";
+        $sql = "select marker_name, assembly_ver, gene, description from qtl_annotations";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
-            $gene = $row[1];
-            $desc = $row[2];
-            $annot_list1[$marker] = $gene;
-            $annot_list2[$marker] = $desc;
+            $assembly = $row[1];
+            $gene = $row[2];
+            $desc = $row[3];
+            if ($assembly == "IWGSC.31") {
+                $annot_list1[$marker] = $gene;
+            } else {
+                $annot_list2[$marker] = $gene;
+                $annot_list3[$marker] = $desc;
+            }
         }
 
         $sql = "select experiment_uid, trial_code from experiments";
@@ -562,6 +599,49 @@ class Downloads
             $uid = $row[0];
             $trial_code = $row[1];
             $trial_list[$uid] = $trial_code;
+        }
+
+        if (isset($trial_str)) {
+            $sql = "select phenotype_exp, gwas from $database where phenotype_uid IN ($puid) and phenotype_exp IN ($trial_str)";
+            echo "$sql\n";
+        } else {
+            $sql = "select phenotype_exp, gwas from $database  where phenotype_uid IN ($puid)";
+        }
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        $zsum = array();
+        while ($row = mysqli_fetch_array($res)) {
+            $pheno_exp = $row[0];
+            $gwas = json_decode($row[1]);
+            if ($_GET['method'] == 'set') {
+                foreach ($gwas as $val) {
+                    $marker_name = $val[0];
+                    $zvalue = $val[3];
+                    $qvalue = $val[4];
+                    $zsum[$marker_name] += $zvalue;
+                    $ztot[$marker_name]++;
+                    if ($qvalue < 0.05) {
+                        $goodList[$marker_name] = 1;
+                    }
+                }
+            } else {
+                foreach ($gwas as $val) {
+                    $marker_name = $val[0];
+                    $zvalue = $val[3];
+                    $qvalue = $val[4];
+                    $zsum[$marker_name] += $zvalue;
+                    $ztot[$marker_name]++;
+                    if ($qvalue < 0.05) {
+                        $goodList[$marker_name] = 1;
+                    }
+                }
+            }
+        }
+        foreach ($zsum as $marker_name => $val) {
+            if (isset($goodList[$marker_name])) {
+                $zmeta[$marker_name] = $zsum[$marker_name] / $ztot[$marker_name];
+            } else {
+                $zmeta[$marker_name] = 0;
+            }
         }
 
         header('Content-type: application/vnd.ms-excel');
@@ -596,9 +676,9 @@ class Downloads
                         } elseif (preg_match("/v44/", $chrom)) {
                             $chrom = "UNK";
                         }
-                        if (isset($annot_list1[$marker])) {
-                            $gene = $annot_list1[$marker];
-                            $feature = $annot_list2[$marker];
+                        if (isset($annot_list2[$marker])) {
+                            $gene = $annot_list2[$marker];
+                            $feature = $annot_list3[$marker];
                         } else {
                             $gene = "";
                             $feature = "";
@@ -606,22 +686,20 @@ class Downloads
                         if (empty($pos)) {
                             $pos = 0;
                         }
-                        $output_index[] = $qvalue;
-                        $output_list[] =  "\"$name\",\"$marker\",\"$chrom\",$pos,$gene,$zvalue,$qvalue,$pvalue,\"$trial_list[$gexp] $trial_list[$pexp]\"";
+                        if (isset($goodList[$marker])) {
+                            $output_index[] = $zmeta[$marker];;
+                            $output_list[] =  "\"$name\",\"$marker\",\"$chrom\",$pos,$gene,$zvalue,$qvalue,$pvalue,\"$trial_list[$gexp] $trial_list[$pexp]\"";
+                        }
                     }
                 }
                 mysqli_stmt_close($stmt);
             }
         }
-        asort($output_index);
+        arsort($output_index);
         $count = 1;
         foreach ($output_index as $key => $val) {
-            if ($count > 2500) {
-                break;
-            } else {
-                $count++;
-                echo "$output_list[$key]\n";
-            }
+            $count++;
+            echo "$output_list[$key]\n";
         }
     }
 
@@ -719,14 +797,37 @@ class Downloads
         echo "<input type=\"radio\" name=\"sort\" id=\"sort\" onclick=\"sort('posit')\" $select_posit> position<br>";
         echo "</table><br>";
 
-        $sql = "select marker_name, gene, description from qtl_annotation";
+        $sql = "select distinct(assembly_ver) from qtl_annotations order by assembly_ver";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $assembly = $row[0];
+        }
+
+        $sql = "select marker_name, assembly_ver, gene, description from qtl_annotations where assembly_ver = \"IWGSC.31\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
-            $gene = $row[1];
-            $desc = $row[2];
+            $gene = $row[2];
+            $desc = $row[3];
             $annot_list1[$marker] = $gene;
-            $annot_list2[$marker] = $desc;
+        }
+
+        $sql = "select marker_name, assembly_ver, gene, description from qtl_annotations where assembly_ver = \"$assembly\"";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $marker = $row[0];
+            $gene = $row[2];
+            $desc = $row[3];
+            $annot_list2[$marker] = $gene;
+            $annot_list3[$marker] = $desc;
+        }
+
+        $sql = "select value, gene from gene_annotations";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $stableID = $row[0];
+            $gene = $row[1];
+            $annot_list4[$gene] = $stableID;
         }
         $sql = "select experiment_uid, number_entries from phenotype_experiment_info";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -739,6 +840,7 @@ class Downloads
 
 //get z-stat
 //get count of significant qtls when grouping by marker_name
+        $zsum = array();
         if ($gb == "marker") {
             if (isset($trial_str)) {
                 $sql = "select phenotype_exp, gwas from $database where phenotype_uid IN ($puid) and phenotype_exp IN ($trial_str)";
@@ -753,20 +855,30 @@ class Downloads
                 if ($_GET['method'] == 'set') {
                     foreach ($gwas as $val) {
                         $marker_name = $val[0];
-                        $zsum[$marker_name] += $val[3];
-                        $wghtSum[$marker_name]++;
+                        $zvalue = $val[3];
+                        $qvalue = $val[4];
+                        $zsum[$marker_name] += $zvalue;
+                        $ztot[$marker_name]++;
+                        if ($qvalue < 0.05) {
+                            $goodList[$marker_name] = 1;
+                        }
                     }
                 } else {
                     foreach ($gwas as $val) {
                         $marker_name = $val[0];
-                        $zsum[$marker_name] += $val[3] * $linesInExp[$pheno_exp];
-                        $wghtSum[$marker_name] += ($linesInExp[$pheno_exp] * $linesInExp[$pheno_exp]);
+                        $zvalue = $val[3];
+                        $qvalue = $val[4];
+                        $zsum[$marker_name] += $zvalue;
+                        $ztot[$marker_name]++;
+                        if ($qvalue < 0.05) {
+                            $goodList[$marker_name] = 1;
+                        }
                     }
                 }
             }
             foreach ($zsum as $marker_name => $val) {
-                if ($wghtSum[$marker_name] > 0) {
-                    $zmeta[$marker_name] = $val/(sqrt($wghtSum[$marker_name]));
+                if (isset($goodList[$marker_name])) {
+                    $zmeta[$marker_name] = $zsum[$marker_name] / $ztot[$marker_name];
                 } else {
                     $zmeta[$marker_name] = 0;
                 }
@@ -779,16 +891,16 @@ class Downloads
                 $gwas = json_decode($row[0]);
                 foreach ($gwas as $val) {
                     $marker_name = $val[0];
-                    if (isset($annot_list1[$marker_name])) {
-                        $gene = $annot_list1[$marker_name];
-                        $zsum[$gene] += $val[3] * $linesInExp[$pheno_exp];
+                    $zvalue = $val[3];
+                    if (isset($annot_list2[$marker_name])) {
+                        $gene = $annot_list2[$marker_name];
+                        $zsum[$gene] += $zvalue;
                         $ztot[$gene]++;
-                        $wghtSum[$gene] += $linesInExp[$pheno_exp];
                     }
                 }
             }
             foreach ($zsum as $gene => $val) {
-                $zmeta[$gene] = $zsum[$gene]/$wghtSum[$gene];
+                $zmeta[$gene] = $zsum[$gene] / $ztot[$gene];
             }
         }
 
@@ -804,17 +916,31 @@ class Downloads
                 $zvalue = $val[3];
                 $qvalue = $val[4];
                 $pvalue = $val[5];
-                if ($pvalue < 0.05) {
+                $reactome = "";
+                if ($qvalue < 0.05) {
                     $count++;
                     if (isset($annot_list1[$marker])) {
                         $gene = $annot_list1[$marker];
-                        $desc2 = $annot_list2[$marker];
-                        $wheatexp = "<a target=\"_new\" href=\"www.wheat-expression.com/genes";
-                        $wheatexp = "<a target=\"_new\" href=\"http://wheat.pw.usda.gov/WheatExp/graph_and_table.php?seq_id=$gene\">WheatExp</a>";
+                        $exp1 = "<a target=\"_new\" href=\"https://wheat.pw.usda.gov/WheatExp/graph_and_table.php?seq_id=$gene\">WheatExp</a>";
+                        $exp2 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/1?gene=$gene&studies%5B%5D=DRP000768&studies%5B%5D=ERP003465&studies%5B%5D=ERP004505&studies%5B%5D=SRP004884&studies%5B%5D=SRP013449&studies%5B%5D=SRP017303&studies%5B%5D=SRP022869&studies%5B%5D=SRP028357&studies%5B%5D=SRP029372&studies%5B%5D=SRP038912&studies%5B%5D=SRP041017&studies%5B%5D=SRP041022&studies%5B%5D=ERP008767&studies%5B%5D=SRP045409&studies%5B%5D=INRA-RNASeq&studies%5B%5D=SRP056412&studies%5B%5D=TGAC_genome\">expVIP</a>";
+                        $exp3 = "";
+                    } else {
+                        $exp1 = "";
+                        $exp2 = "";
+                        $exp3 = "";
+                    }
+                    if (isset($annot_list2[$marker])) {
+                        $gene = $annot_list2[$marker];
+                        $exp2 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/1?gene=$gene&studies%5B%5D=DRP000768&studies%5B%5D=ERP003465&studies%5B%5D=ERP004505&studies%5B%5D=SRP004884&studies%5B%5D=SRP013449&studies%5B%5D=SRP017303&studies%5B%5D=SRP022869&studies%5B%5D=SRP028357&studies%5B%5D=SRP029372&studies%5B%5D=SRP038912&studies%5B%5D=SRP041017&studies%5B%5D=SRP041022&studies%5B%5D=ERP008767&studies%5B%5D=SRP045409&studies%5B%5D=INRA-RNASeq&studies%5B%5D=SRP056412&studies%5B%5D=TGAC_genome\">expVIP</a>";
+                        $exp3 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
+                        $desc2 = $annot_list3[$marker];
+                        if (isset($annot_list4[$gene])) {
+                            $stableID = $annot_list4[$gene];
+                            $reactome = "<a target=\"_new\" href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$stableID\">Plant Reactome</a>";
+                        }
                     } else {
                         $gene = "";
                         $desc2 = "";
-                        $wheatexp = "";
                     }
                     if ($chrom == "UNK") {
                         $chrom_num = 4;
@@ -856,9 +982,15 @@ class Downloads
                         if (isset($marker_list[$marker])) {
                         } else {
                             $marker_list[$marker] = 1;
+                            $sql = "select marker_uid from markers where marker_name = \"$marker\"";
+                            $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                            $row2 = mysqli_fetch_row($res2);
+                            $uid = $row2[0];
+                            $marker_link = "<a href=\"$target_url" . "view.php?table=markers&uid=" . $uid . "\">$marker</a>";
                             $zvalue = number_format($zmeta[$marker], 3);
+                            $detail_link = "$ztot[$marker]<td><a id=\"detail\" onclick=\"detailM('$marker')\">Trial details</a>";
                             $output_index[] = $sort_index;
-                            $output_list[] = "<tr><td>$marker<td>$chrom<td>$pos<td>$gene<td>$desc2<td><a id=\"detail\" onclick=\"detailM('$marker')\">$zvalue</a><td>$ztot[$marker]<td>$jbrowse<td>$wheatexp";
+                            $output_list[] = "<tr><td>$marker_link<td>$chrom<td>$pos<td>$gene<td>$desc2<td>$zvalue<td>$detail_link<td>$jbrowse<td>$exp1 $exp2 $exp3<td>$reactome";
                         }
                     } else {
                         if ($gene == "") {
@@ -874,13 +1006,14 @@ class Downloads
             }
         }
         if ($count > 0) {
+            echo "using assembly $assembly<br>\n";
             echo "<a href=\"qtl/qtl_report.php?function=downloadQTL&pi=" . $puid . "&method=" . $_GET['method'] . "\">Download meta data</a>, ";
             echo "<a href=\"qtl/qtl_report.php?function=downloadDetailQTL&pi=" . $puid . "&method=" . $_GET['method'] . "\">Download detail data</a><br>";
             $count_display = 0;
             if ($gb == "marker") {
                 //echo "<table><tr><td>marker<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
                 echo "<table><tr><td>marker<td>chromosome<td>location";
-                echo "<td>gene<td>feature<td nowrap>Z-score<td>Trial Count<td>Genome Browser<td>Expression";
+                echo "<td>gene<td>feature<td nowrap>Z-score<td>Trial Count<td>Trial Details<td>Genome Browser<td>Expression<td>Pathway";
             } else {
                 //echo "<table><tr><td>gene<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
                 echo "<table><tr><td>gene<td>location";
@@ -890,10 +1023,8 @@ class Downloads
             if ($sort_type == "score") {
                 arsort($output_index);
                 foreach ($output_index as $key => $val) {
-                    $count_display++;
-                    echo "$output_list[$key]";
-                    if ($count_display > 100) {
-                        break;
+                    if ($val > 0) {
+                        echo "$output_list[$key]";
                     }
                 }
             } else {

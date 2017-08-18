@@ -1,6 +1,6 @@
 <?php
 require 'config.php';
-include($config['root_dir'].'includes/bootstrap.inc');
+include $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
 
 $rest = $_REQUEST[restrict];
@@ -24,12 +24,12 @@ where a.line_record_uid = l.line_record_uid
   and a.alleles != '--'
   $restriction
 order by l.line_record_name, m.marker_name, e.trial_code";
-$result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
 
 // Downloading?
 if (!empty($_REQUEST[download])) {
     header('Content-disposition: attachment;filename=allele_conflicts.csv');
     header('Content-Type: text/csv');
+    $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
     print "Line,Marker,Alleles,Experiment\n";
     while ($row=mysqli_fetch_row($result)) {
         $rowstring = implode(",", $row);
@@ -67,6 +67,7 @@ table th {text-align:left}
     </tr>
 
 <?php
+$result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
 while ($row=mysqli_fetch_row($result)) {
     print "<tr>";
     for ($i=0; $i<4; $i++) {

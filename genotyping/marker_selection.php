@@ -17,14 +17,14 @@
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
-//session_start();
+$pageTitle = "Select Markers";
 require $config['root_dir'].'theme/admin_header.php';
 ?>
 
 <div id="primaryContentContainer">
 <div id="primaryContent">
 <script type="text/javascript" src="theme/new.js"></script>
-<h2> Select Markers</h2>
+<h2>Select Markers</h2>
 <br>
 <div id= "current" class="boxContent">
 <h3>Currently selected markers</h3>
@@ -306,6 +306,7 @@ while ($row=mysqli_fetch_assoc($result)) {
 </tr>
 </tbody>
 </table>
+Select the markers of interest from the list of markers.<br>Select multiple markers by holding down the Ctrl or Cmd key while clicking.
 </form>
 </div>
 
