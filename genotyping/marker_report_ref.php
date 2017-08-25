@@ -14,9 +14,9 @@ $sql = "select experiment_uid, trial_code from experiments, experiment_types
    order by experiment_uid desc";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row=mysqli_fetch_row($result)) {
-  $uid = $row[0];
-  $name = $row[1];
-  $trial_name_list[$uid] = $name;
+    $uid = $row[0];
+    $name = $row[1];
+    $trial_name_list[$uid] = $name;
 }
 
 echo "<h2>Marker Annotation Report</h2>\n";
@@ -83,7 +83,7 @@ if (isset($_GET['uid1'])) {
     }
 
     $assembly_list = array();
-    $sql = "select distinct(assembly) from marker_report_reference";
+    $sql = "select distinct(assembly_name) from marker_report_reference";
     $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row=mysqli_fetch_row($result)) {
         $assembly_list[] = $row[0];
@@ -93,7 +93,7 @@ if (isset($_GET['uid1'])) {
     foreach ($assembly_list as $asm) {
         $sql = "select experiment_uid, count(distinct(marker_report_reference.marker_uid)), count(allele_frequencies.marker_uid) from marker_report_reference, allele_frequencies
         where marker_report_reference.marker_uid=allele_frequencies.marker_uid
-        and assembly = '$asm'
+        and assembly_name = '$asm'
         group by experiment_uid order by experiment_uid desc";
         $count = 1;
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));

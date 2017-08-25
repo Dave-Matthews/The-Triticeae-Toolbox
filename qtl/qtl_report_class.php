@@ -439,7 +439,7 @@ class Downloads
             $database = "qtl_raw";
         }
 
-        $sql = "select marker_name, assembly_ver, gene, description from qtl_annotations";
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
@@ -578,7 +578,7 @@ class Downloads
             $database = "qtl_raw";
         }
 
-        $sql = "select marker_name, assembly_ver, gene, description from qtl_annotations";
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
@@ -687,7 +687,7 @@ class Downloads
                             $pos = 0;
                         }
                         if (isset($goodList[$marker])) {
-                            $output_index[] = $zmeta[$marker];;
+                            $output_index[] = $zmeta[$marker];
                             $output_list[] =  "\"$name\",\"$marker\",\"$chrom\",$pos,$gene,$zvalue,$qvalue,$pvalue,\"$trial_list[$gexp] $trial_list[$pexp]\"";
                         }
                     }
@@ -797,13 +797,26 @@ class Downloads
         echo "<input type=\"radio\" name=\"sort\" id=\"sort\" onclick=\"sort('posit')\" $select_posit> position<br>";
         echo "</table><br>";
 
-        $sql = "select distinct(assembly_ver) from qtl_annotations order by assembly_ver";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_array($res)) {
-            $assembly = $row[0];
+        //get list of assemblies
+        $sql = "select distinct(qtl_annotations.assembly_name), data_public_flag from qtl_annotations, assemblies
+            where qtl_annotations.assembly_name = assemblies.assembly_name  order by assembly_name";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            //pick latest assembly as default
+            if ($row[1] == 1) {
+                $assembly = $row[0];
+                $assembly = $row[0];
+                $assemblyList[] = $row[0];
+                $assemblyFlag[] = $row[1];
+            // do not show ones that are private
+            } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+                $assembly = $row[0];
+                $assemblyList[] = $row[0];
+                $assemblyFlag[] = $row[1];
+            }
         }
 
-        $sql = "select marker_name, assembly_ver, gene, description from qtl_annotations where assembly_ver = \"IWGSC.31\"";
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"IWGSC.31\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
@@ -812,7 +825,7 @@ class Downloads
             $annot_list1[$marker] = $gene;
         }
 
-        $sql = "select marker_name, assembly_ver, gene, description from qtl_annotations where assembly_ver = \"$assembly\"";
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
