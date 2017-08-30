@@ -62,6 +62,19 @@ function showMarkerForLine($line_id, $order = "marker_name")
     global $mysqli;
     $found = 0;
 
+    $query = "SELECT experiments.trial_code, line_index
+        FROM experiments, allele_bymarker_expidx
+        where experiments.experiment_uid = allele_bymarker_expidx.experiment_uid";
+    $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($resource)) {
+        $trial_code = $row['trial_code'];
+        $lines = json_decode($row['line_index'], true);
+        if (in_array($line_id, $lines)) {
+            $found = 1;
+            echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><br>\n";
+        }
+    }
+
     $query = "SELECT experiments.trial_code, marker_name, alleles
         FROM experiments, allele_cache
         WHERE allele_cache.line_record_uid = '$line_id'
@@ -76,20 +89,8 @@ function showMarkerForLine($line_id, $order = "marker_name")
         <input type='submit' value='Export to CSV' />
         <input type='hidden' name='query_string' value='" . urlencode($query) ."' />
         </form>";
-    } else {
-        $query = "SELECT experiments.trial_code, line_index
-        FROM experiments, allele_bymarker_expidx
-        where experiments.experiment_uid = allele_bymarker_expidx.experiment_uid";
-        $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_assoc($resource)) {
-            $trial_code = $row['trial_code'];
-            $lines = json_decode($row['line_index']);
-            if (in_array($line_id, $lines)) {
-                $found = 1;
-                echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><br><br>\n";
-            }
-        }
     }
+    
     if ($found == 0) {
         echo "No genotype data found<br />";
     }
@@ -119,6 +120,20 @@ function showLineForMarker($marker_uid, $order = "line_record_name")
         echo "Error: $marker_uid\n";
         return;
     }
+
+    $query = "SELECT experiments.trial_code, marker_index
+        FROM experiments, allele_byline_expidx
+        where experiments.experiment_uid = allele_byline_expidx.experiment_uid";
+    $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_assoc($resource)) {
+        $trial_code = $row['trial_code'];
+        $lines = json_decode($row['marker_index'], true);
+        if (in_array($line_id, $lines)) {
+            $found = 1;
+            echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><br>\n";
+        }
+    }
+
     $query = "SELECT experiments.trial_code, line_record_name, alleles
           FROM experiments, allele_cache
           WHERE allele_cache.marker_uid = $marker_uid 
@@ -147,7 +162,6 @@ function showLineForMarker($marker_uid, $order = "line_record_name")
         }
     }
 }
-
 
 /**
  * This function determines whether or not a particular line record
