@@ -98,7 +98,7 @@ foreach ($selected_markers as $marker_uid) {
         }
         $vepFound .= "<tr><td>$row[2] $row[3] $row[3] $row[4]/$row[5] $strand $row[0]\n";
         $jbrowse = "<a target=\"_new\" href=$ensemblLink/Location/View?r=$row[2]:$start-$stop>$row[2]:$pos</a>";
-        $linkOut = "<tr><td>$marker<td>$jbrowse";
+        $linkOut = "<tr><td><a href=\"view.php?table=markers&name=$marker\"</a>$marker<td>$jbrowse";
         if (isset($geneFound[$marker])) {
             $linkOut .= "<td>$geneFound[$marker]\n";
         } else {
