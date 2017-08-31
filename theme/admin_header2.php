@@ -27,6 +27,7 @@
 <script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
+<!--script srt="js/site.js" type="text/javascript"></script-->
 
 <link href="theme/sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
@@ -114,6 +115,8 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <li>
     <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select by name or map position">
         Markers</a>
+    <li>
+    <a href="<?php echo $config['base_url']; ?>genotyping/pop-poly.php" title="Select by population variants">Subset by Markers Polymorphism</a>
     <li>
     <a href="<?php echo $config['base_url']; ?>maps/select_map.php" title="Select genetic map">Genetic Map</a>
     <li>
