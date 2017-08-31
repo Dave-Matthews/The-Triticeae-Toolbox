@@ -184,7 +184,7 @@ class SelectMarkers
                                     } else {
                                         $alleleList .= ",$allele";
                                     }
-                                    if ($allele == "N") {
+                                    if (($allele == "N") || ($allele == "NN")) {
                                     } elseif ($firstAllele == "") {
                                         $firstAllele = $allele;
                                     } elseif ($firstAllele != $allele) {
@@ -233,7 +233,7 @@ class SelectMarkers
                             } else {
                                 $alleleList .= ",$allele";
                             }
-                            if ($allele == "N") {
+                            if (($allele == "N") || ($allele == "NN")) {
                             } elseif ($firstAllele == "") {
                                 $firstAllele = $allele;
                             } elseif ($firstAllele != $allele) {

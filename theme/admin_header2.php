@@ -116,7 +116,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <a href="<?php echo $config['base_url']; ?>genotyping/marker_selection.php" title="Select by name or map position">
         Markers</a>
     <li>
-    <a href="<?php echo $config['base_url']; ?>genotyping/pop-poly.php" title="Select by population variants">Subset by Markers Polymorphism</a>
+    <a href="<?php echo $config['base_url']; ?>genotyping/pop-poly.php" title="Select by population variants">Subset by Marker Polymorphisms</a>
     <li>
     <a href="<?php echo $config['base_url']; ?>maps/select_map.php" title="Select genetic map">Genetic Map</a>
     <li>
