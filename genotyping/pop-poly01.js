@@ -1,10 +1,9 @@
 var php_self = document.location.href;
 
-function update_side()
-{
+function update_side() {
     jQuery.ajax({
         url: "side_menu.php",
-        done: function (data) {
+        done: function (data, textStatus) {
             jQuery("#quicklinks").html(data);
         },
         error: function () {
@@ -13,8 +12,7 @@ function update_side()
     });
 }
 
-function select_chrom()
-{
+function select_chrom() {
     "use strict";
     var chrom = document.getElementById("chrom").value;
     var start = document.getElementById("start").value;
@@ -22,7 +20,7 @@ function select_chrom()
     jQuery.ajax({
         url: php_self,
         data: "function=chrom&value=" + chrom + "&start=" + start + "&stop=" + stop,
-        done: function (data) {
+        done: function (data, textStatus) {
             jQuery("#step2").html(data);
         },
         error: function () {
@@ -31,12 +29,11 @@ function select_chrom()
     });
 }
 
-function save()
-{
+function save() {
     jQuery.ajax({
         url: php_self,
         data: "function=save",
-        done: function (data) {
+        done: function (data, textStatus) {
             jQuery("#step2").html(data);
             update_side();
         },
