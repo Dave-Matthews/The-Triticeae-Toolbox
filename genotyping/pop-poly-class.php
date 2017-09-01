@@ -298,9 +298,6 @@ class SelectMarkers
     private function displayChrom()
     {
         global $config;
-        ?>
-        <script type="text/javascript" src="genotyping/pop-poly.js"></script>
-        <?php
         $this->findMarkers();
     }
 }
