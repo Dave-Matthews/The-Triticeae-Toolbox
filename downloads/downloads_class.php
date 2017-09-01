@@ -589,23 +589,23 @@ class Downloads
             <th>Lines</th>
             <tr><td>
             <?php
-		if (isset($_SESSION['selected_lines'])) {
-			$selectedlines= $_SESSION['selected_lines'];
-	        $count = count($_SESSION['selected_lines']);
-		?>
-	    <select name="lines" multiple="multiple" style="height: 12em;">
-	    <?php
-	    foreach($selectedlines as $uid) {
-	      $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
-	      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-	      $row = mysqli_fetch_assoc($res)
-	      ?>
-	      <option disabled value="">
-	      <?php echo $row['line_record_name'] ?>
-	      </option>
-	      <?php
-	    }
-	    ?>
+            if (isset($_SESSION['selected_lines'])) {
+                $selectedlines= $_SESSION['selected_lines'];
+                $count = count($_SESSION['selected_lines']);
+                ?>
+                <select name="lines" multiple="multiple" style="height: 12em;">
+                <?php
+                foreach ($selectedlines as $uid) {
+                    $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
+                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                    $row = mysqli_fetch_assoc($res)
+                    ?>
+                    <option disabled value="">
+                    <?php echo $row['line_record_name'] ?>
+                    </option>
+                    <?php
+                }
+                ?>
 	    </select>
 	    </td>
 	    <?php 
@@ -975,14 +975,14 @@ class Downloads
              ?>
              <table border=0>
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
-             <td>SNP data coded as {A,C,T,G,N}<br>DArT data coded as {+,-,N}<br>used with <b>TASSEL</b> Version 3, 4, or 5 
+             <td>SNP data coded as {A,C,T,G,N,+,-}<br>tab delimited<br>used by <b>TASSEL</b>
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
-             <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>used by <b>rrBLUP</b>
+             <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>comma delimited<br>used by <b>rrBLUP</b>
              <?php 
              if ($typeGE == "true") {
                  ?>
                  <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcf');">
-                 <td><b>VCF</b> format
+                 <td><b>VCF</b> format<br>used by <b>TASSEL</b>
                  <?php
              } else {
                  ?>
