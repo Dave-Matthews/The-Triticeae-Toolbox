@@ -428,83 +428,89 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 	  } // end if(isset($_SESSION['selected_lines'])...
     } // end if ($linesfound > 0)
     print "</form>";
-  } // end if(!empty($_POST))
+} // end if(!empty($_POST))
 
 // Combine found lines with cookie, REPLACE/AND/OR.
 $verify_selected_lines = $_POST['selLines'];
 $verify_session = $_SESSION['selected_lines'];
-if (count($verify_selected_lines)!=0 OR count($verify_session)!=0) {
-  //  echo "</div><div class='boxContent'>";
-  if (isset($_POST['selLines'])) {  
-    if ($_POST['selectWithin'] == "Replace") 
-      $_SESSION['selected_lines'] = $_POST['selLines'];
-    elseif ($_POST['selectWithin'] == "Yes")
-      $_SESSION['selected_lines'] = array_intersect($_SESSION['selected_lines'], $_POST['selLines']);
-    else {  // Add.
-      $selLines = $_POST['selLines'];
-      $selected_lines = $_SESSION['selected_lines'];
-      if (!isset($selected_lines))
-	$selected_lines = array();
-      foreach($selLines as $line_uid) {
-	if (!in_array($line_uid, $selected_lines)) 
-	  array_push($selected_lines, $line_uid);
-      }
-      $_SESSION['selected_lines'] = $selected_lines;
+if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
+    //  echo "</div><div class='boxContent'>";
+    if (isset($_POST['selLines'])) {
+        if ($_POST['selectWithin'] == "Replace") {
+            $_SESSION['selected_lines'] = $_POST['selLines'];
+        } elseif ($_POST['selectWithin'] == "Yes") {
+            $_SESSION['selected_lines'] = array_intersect($_SESSION['selected_lines'], $_POST['selLines']);
+        } else {  // Add.
+            $selLines = $_POST['selLines'];
+            $selected_lines = $_SESSION['selected_lines'];
+            if (!isset($selected_lines)) {
+                $selected_lines = array();
+            }
+            foreach ($selLines as $line_uid) {
+                if (!in_array($line_uid, $selected_lines)) {
+                    array_push($selected_lines, $line_uid);
+                }
+            }
+            $_SESSION['selected_lines'] = $selected_lines;
+        }
+    ?>
+    <script type="text/javascript">
+       update_side_menu();
+    </script>
+    <?php
+    }
+    // Deselect highlighted cookie lines.
+    if (isset($_POST['deselLines'])) {
+        $selected_lines = $_SESSION['selected_lines'];
+        foreach ($_POST['deselLines'] as $line_uid) {
+            if (($lineidx = array_search($line_uid, $selected_lines)) !== false) {
+                array_splice($selected_lines, $lineidx, 1);
+            }
+            $_SESSION['selected_lines']=$selected_lines;
+        }
+    }
+    // If logged in, retrieve cookie selection from database.
+    $username=$_SESSION['username'];
+    if ($username && !isset($_SESSION['selected_lines'])) {
+        $stored = retrieve_session_variables('selected_lines', $username);
+        if (-1 != $stored) {
+            $_SESSION['selected_lines'] = $stored;
+        }
     }
     ?>
     <script type="text/javascript">
        update_side_menu();
     </script>
-	<?php
-	}
-  // Deselect highlighted cookie lines.
-  if (isset($_POST['deselLines'])) {
-    $selected_lines = $_SESSION['selected_lines'];
-    foreach ($_POST['deselLines'] as $line_uid) 
-      if (($lineidx = array_search($line_uid, $selected_lines)) !== false) 
-	array_splice($selected_lines, $lineidx,1);
-    $_SESSION['selected_lines']=$selected_lines;
-  }
-  // If logged in, retrieve cookie selection from database.
-  $username=$_SESSION['username'];
-  if ($username && !isset($_SESSION['selected_lines'])) {
-    $stored = retrieve_session_variables('selected_lines', $username);
-    if (-1 != $stored)
-      $_SESSION['selected_lines'] = $stored;
-    ?>
-    <script type="text/javascript">
-       update_side_menu();
-    </script>
-	<?php
-	}
-  // Show "Currently selected lines" box.
-  $selectedcount = count($_SESSION['selected_lines']);
-  $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
-  echo "<div id='squeeze' $display>";
-  echo "<td><b><font color=blue>Currently selected lines</font>: $selectedcount</b>";
-  //print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
-  print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\">";
-  print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 15em;width: 13em\">";
-  foreach ($_SESSION['selected_lines'] as $lineuid) {
-    $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-    while ($row=mysqli_fetch_assoc($result)) {
-      $selval=$row['line_record_name'];
-      print "<option value=\"$lineuid\" selected>$selval</option>\n";
+    <?php
+    // Show "Currently selected lines" box.
+    $selectedcount = count($_SESSION['selected_lines']);
+    $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
+    echo "<div id='squeeze' $display>";
+    echo "<td><b><font color=blue>Currently selected lines</font>: $selectedcount</b>";
+    //print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
+    print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\">";
+    print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 15em;width: 13em\">";
+    foreach ($_SESSION['selected_lines'] as $lineuid) {
+        $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+        while ($row=mysqli_fetch_assoc($result)) {
+            $selval=$row['line_record_name'];
+            print "<option value=\"$lineuid\" selected>$selval</option>\n";
+        }
     }
-  }
-  print "</select>";
-  print "<br><input type='submit' name='WhichBtn' value='Deselect highlighted lines' />";
-  print "</form>";
-	
-  $display1 = $_SESSION['selected_lines'] ? "":" style='display: none;'";
-  /* print "<form id='showPedigreeInfo' action='pedigree/pedigree_info.php' method='post' $display1>"; */
-  /* print "<input type='submit' name='WhichBtn' value='Show line information'></form>"; */
-  print "<button onclick=\"location.href='".$config['base_url']."pedigree/pedigree_info.php'\">Show line information</button>";
-  print "</div>";  // id=squeeze
-  print "</table>";
-  // Store the selected lines in the database.
-  if ($username)
-    store_session_variables('selected_lines', $username);
+    print "</select>";
+    print "<br><input type='submit' name='WhichBtn' value='Deselect highlighted lines' />";
+    print "</form>";
+
+    $display1 = $_SESSION['selected_lines'] ? "":" style='display: none;'";
+    /* print "<form id='showPedigreeInfo' action='pedigree/pedigree_info.php' method='post' $display1>"; */
+    /* print "<input type='submit' name='WhichBtn' value='Show line information'></form>"; */
+    print "<button onclick=\"location.href='".$config['base_url']."pedigree/pedigree_info.php'\">Show line information</button>";
+    print "</div>";  // id=squeeze
+    print "</table>";
+    // Store the selected lines in the database.
+    if ($username) {
+        store_session_variables('selected_lines', $username);
+    }
 }
 print "</table>";
 print "</div></div>";
