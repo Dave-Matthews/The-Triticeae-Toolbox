@@ -286,7 +286,7 @@ class SelectMarkers
         global $config;
         include $config['root_dir'].'theme/admin_header2.php';
         ?>
-        <script type="text/javascript" src="genotyping/pop-poly.js"></script>
+        <script type="text/javascript" src="genotyping/pop-poly01.js"></script>
         <div id="step2">
         <?php
       
