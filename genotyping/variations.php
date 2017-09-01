@@ -5,6 +5,9 @@ $pageTitle = "Variant Effects";
 $mysqli = connecti();
 
 include $config['root_dir'].'theme/admin_header2.php';
+?>
+<script type="text/javascript" src="genotyping/variations.js"></script>
+<?php
 
 if (!isset($ensemblLinkVEP)) {
     echo "Error: Please define VEP in directory config.php file";
@@ -22,28 +25,48 @@ if (isset($_SESSION['clicked_buttons'])) {
     $selected_markers = array();
 }
 
-$assembly_list = array();
-$sql = "select distinct(assembly) from marker_report_reference";
-$result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-while ($row=mysqli_fetch_row($result)) {
-    $assembly_list[] = $row[0];
-}
-
 $notFound = "";
 $vepFound = "";
 $geneFound = "";
-$linkOut = "";
 
-//get latest assembly
-$sql = "select distinct(assembly_ver) from qtl_annotations order by assembly_ver";
+//get list of assemblies
+$sql = "select distinct(qtl_annotations.assembly_name), data_public_flag from qtl_annotations, assemblies
+    where qtl_annotations.assembly_name = assemblies.assembly_name  order by assembly_name";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row = mysqli_fetch_row($result)) {
-    $assembly = $row[0];
+    //pick latest assembly as default
+    if ($row[1] == 1) {
+        $assembly = $row[0];
+        $assembly = $row[0];
+        $assemblyList[] = $row[0];
+        $assemblyFlag[] = $row[1];
+    // do not show ones that are private
+    } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+        $assembly = $row[0];
+        $assemblyList[] = $row[0];
+        $assemblyFlag[] = $row[1];
+    }
 }
-echo "<br>Using assembly $assembly. \n";
+if (isset($_GET['assembly'])) {
+    $assembly = $_GET['assembly'];
+} elseif (isset($_SESSION['assembly'])) {
+    $assembly = $_SESSION['assembly'];
+}
+
+//display list of assemblies
+echo "<br><select id=\"assembly\" onchange=\"reload()\">\n";
+foreach ($assemblyList as $key => $ver) {
+    if ($ver == $assembly) {
+        $selected = "selected";
+    } else {
+        $selected = "";
+    }
+    echo "<option value=$ver $selected $disabled>$ver</option>";
+}
+echo "</select><br><br>";
 
 $count = 0;
-$sql = "select marker_name, gene, description from qtl_annotations where assembly_ver = \"$assembly\"";
+$sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row = mysqli_fetch_row($result)) {
     $count++;
@@ -52,14 +75,15 @@ while ($row = mysqli_fetch_row($result)) {
     $geneFound[$marker] = "<a target=\"_new\" href=$ensemblLink/Gene/Variation_Gene/Table?g=$gene>$gene</a>";
 }
 
-echo "<br><pre>\n";
 foreach ($selected_markers as $marker_uid) {
     $sql = "select markers.marker_name, chrom, bin, pos, A_allele, B_allele, strand from marker_report_reference, markers
     where marker_report_reference.marker_uid = markers.marker_uid
+    and assembly_name = \"$assembly\"
     and marker_report_reference.marker_uid = $marker_uid";
-    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli . "<br>$sql<br>"));
     if ($row = mysqli_fetch_row($result)) {
         $marker = $row[0];
+        $chrom = $row[1];
         $pos = $row[3];
         $strand = $row[6];
         $start = $pos - 1000;
@@ -74,26 +98,52 @@ foreach ($selected_markers as $marker_uid) {
         }
         $vepFound .= "<tr><td>$row[2] $row[3] $row[3] $row[4]/$row[5] $strand $row[0]\n";
         $jbrowse = "<a target=\"_new\" href=$ensemblLink/Location/View?r=$row[2]:$start-$stop>$row[2]:$pos</a>";
-        $linkOut .= "<tr><td>$row[0]<td>$jbrowse";
+        $linkOut = "<tr><td><a href=\"view.php?table=markers&name=$marker\"</a>$marker<td>$jbrowse";
         if (isset($geneFound[$marker])) {
             $linkOut .= "<td>$geneFound[$marker]\n";
         } else {
             $linkOut .= "<td><td>\n";
         }
-    } else {
-        $sql = "select marker_name from markers where marker_uid = $marker_uid";
+        $linkOutSort[] = $linkOut;
+        $linkOutIndx[] = $chrom . $pos;
+    } elseif (isset($_SESSION['geno_exps'])) {
+        $geno_exp = $_SESSION['geno_exps'][0];
+        $sql = "select marker_name, chrom, pos from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp and marker_uid = $marker_uid";
         $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($result2)) {
-            $notFound .= "$row2[0]<br>\n";
+            $marker = $row2[0];
+            $chrom = $row2[1];
+            $pos = $row2[3];
+            $jbrowse = "<a target=\"_new\" href=$ensemblLink/Location/View?r=$row2[2]:$start-$stop>$row2[2]:$pos</a>";
+            $linkOut = "<tr><td><a href=\"view.php?table=markers&name=$marker\"</a>$marker<td>$jbrowse";
+            if (isset($geneFound[$marker])) {
+                $linkOut .= "<td>$geneFound[$marker]\n";
+            } else {
+                $linkOut .= "<td><td>\n";
+            }
+            $linkOutSort[] = $linkOut;
+            $linkOutIndx[] = $chrom . $pos;
         } else {
-            echo "Error: marker_uid = $marker_uid not found<br>\n";
+            $sql = "select marker_name from markers where marker_uid = $marker_uid";
+            $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row2 = mysqli_fetch_row($result2)) {
+                $notFound .= "$row2[0]<br>\n";
+            } else {
+                echo "Error: marker_uid = $marker_uid not found<br>\n";
+            }
         }
     }
 }
-echo "</pre>";
-if ($linkOut != "") {
+
+asort($linkOutIndx);
+if (!empty($linkOutSort)) {
     echo "The links in the region column show known variations in a browser and their effects at Ensembl Plants. The region is 1000 bases to either side of marker. ";
-    echo "The links in the gene column show a table with known variations, consequence type, and SIFT score.<br><table>\n<tr><td>marker<td>region<td>gene\n$linkOut</table>\n";
+    echo "The links in the gene column show a table with known variations, consequence type, and SIFT score.<br><table>\n";
+    echo "<tr><td>marker<td>region<td>gene\n";
+    foreach ($linkOutIndx as $key => $val) {
+        echo "$linkOutSort[$key]\n";
+    }
+    echo "</table>\n";
 }
 if ($vepFound != "") {
     echo "<br>To run Variant Effect Predictor, copy the data below and paste it into the text box on the website <a href=\"$ensemblLinkVEP\" target=\"_new\">Ensembl Plant VEP</a>. ";

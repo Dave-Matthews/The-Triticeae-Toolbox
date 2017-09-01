@@ -1,3 +1,9 @@
+/* add updated_on to track changes */
+
+alter table linepanels add updated_on datetime default current_timestamp;
+alter table allele_bymarker_expidx add updated_on datetime default current_timestamp;
+alter table allele_byline_expidx add updated_on datetime default current_timestamp;
+
 /* add option for private mapset, 10/2016  */
 
 alter table mapset add column data_public_flag tinyint default 1 after published_on;
