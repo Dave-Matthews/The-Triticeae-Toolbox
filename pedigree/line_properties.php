@@ -247,28 +247,29 @@ if (!empty($_POST)) {
                 /*     $found = true; */
                 /* } */
             }
-	// Now check line_synonyms.line_synonym_name.
-        $sql = "select line_record_name from line_synonyms ls, line_records lr where line_synonym_name like ? and ls.line_record_uid = lr.line_record_uid";
-                if ($stmt = mysqli_prepare($mysqli, $sql)) {
-                    mysqli_stmt_bind_param($stmt, "s", $word);
-                    mysqli_stmt_execute($stmt);
-                    mysqli_stmt_bind_result($stmt, $hits);
-                    while (mysqli_stmt_fetch($stmt)) {
-                        $linesFound[] = $hits;
-			$found = TRUE;
-                    }
-                    mysqli_stmt_close($stmt);
-                    /* if (isset($linesFound)) { */
-                    /*     $found = true; */
-                    /* } */
+            // Now check line_synonyms.line_synonym_name.
+            $sql = "select line_record_name from line_synonyms ls, line_records lr where line_synonym_name like ? and ls.line_record_uid = lr.line_record_uid";
+            if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                mysqli_stmt_bind_param($stmt, "s", $word);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $hits);
+                while (mysqli_stmt_fetch($stmt)) {
+                    $linesFound[] = $hits;
+                    $found = true;
                 }
-	if ($found === false) {
-	  $nonHits[] = $word;
+                mysqli_stmt_close($stmt);
+                /* if (isset($linesFound)) { */
+                /*     $found = true; */
+                /* } */
+            }
+            if ($found === false) {
+                $nonHits[] = $word;
+            }
         }
-      }
-      // Generate the translated line names
-      if (count($linesFound) > 0)
-	$linenames = implode("','", $linesFound);
+        // Generate the translated line names
+        if (count($linesFound) > 0) {
+            $linenames = implode("','", $linesFound);
+        }
     } // end if (strlen($linenames) != 0)
     if (count($breedingProgram) != 0) {
         $tmp = implode("','", $breedingProgram);
@@ -297,14 +298,15 @@ if (!empty($_POST)) {
 
     /* Build the search string $where. */
     $count = 0;
-    if (strlen($linenames) > 0)		{
-      if ($count == 0)    	
-    	$where .= "line_record_name in ('".$linenames."')";
-      else    	
-	$where .= " AND line_record_name in ('".$linenames."')";
-      $count++;
+    if (strlen($linenames) > 0) {
+        if ($count == 0) {
+            $where .= "line_record_name in ('".$linenames."')";
+        } else {
+            $where .= " AND line_record_name in ('".$linenames."')";
+        }
+        $count++;
     }
-    if (count($breedingProgram) != 0)    {
+    if (count($breedingProgram) != 0) {
       if ($count == 0)        
 	$where .= "breeding_program_code IN ('".$breedingCode."')";
       else	
@@ -492,9 +494,11 @@ if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
     print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 15em;width: 13em\">";
     foreach ($_SESSION['selected_lines'] as $lineuid) {
         $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-        while ($row=mysqli_fetch_assoc($result)) {
+        if ($row=mysqli_fetch_assoc($result)) {
             $selval=$row['line_record_name'];
             print "<option value=\"$lineuid\" selected>$selval</option>\n";
+        } else {
+            print "<option value=\"$lineuid\" selected>unknown</option>\n";
         }
     }
     print "</select>";
