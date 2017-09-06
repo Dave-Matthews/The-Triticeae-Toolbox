@@ -148,6 +148,8 @@ class SelectGenotypeExp
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             if ($row = mysqli_fetch_array($res)) {
                 $_SESSION['geno_exps_cnt'] = $row[0];
+                unset($_SESSION['clicked_buttons']);
+                unset($_SESSION['filtered_markers']);
             }
         }
         $username=$_SESSION['username'];
@@ -198,7 +200,7 @@ private function type1()
   $footer_div = 1;
   ?>
   </div>
-  <?php 
+  <?php
 }
 
 /**
@@ -214,12 +216,12 @@ private function type1_checksession()
   h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
   </style>
   <div id="title">
-  <?php 
+  <?php
   if (isset($_SESSION['selected_lines'])) {
     $countLines = count($_SESSION['selected_lines']);
     $lines = $_SESSION['selected_lines'];
   }
-  $this->refreshTitle(); 
+  $this->refreshTitle();
   ?>
   </div>
   <div id="step1" style="float: left; margin-bottom: 1.5em;">
@@ -231,7 +233,7 @@ private function type1_checksession()
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
   <script type="text/javascript" src="downloads/select_genotype03.js"></script>
   <?php
-  $this->step1_platform(); 
+  $this->step1_platform();
   //$this->type_GenoType_Display();
   ?>
   </div></div>
