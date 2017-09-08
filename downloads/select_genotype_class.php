@@ -144,7 +144,7 @@ class SelectGenotypeExp
             $exps_str = $_GET['exps'];
             $experiments = explode(',', $exps_str);
             $_SESSION['geno_exps'] = $experiments;
-            $sql = "select count(distinct(marker_uid)) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
+            $sql = "select sum(marker_count) from genotype_experiment_info where experiment_uid IN ($exps_str)";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             if ($row = mysqli_fetch_array($res)) {
                 $_SESSION['geno_exps_cnt'] = $row[0];
