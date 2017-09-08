@@ -111,9 +111,9 @@ class SelectGenotypeExp
                 } else {
                     die("Error: genotype experiment not found\n");
                 }
+            } else {
+                echo "error - no selection found";
             }
-        } else {
-            echo "error - no selection found";
         }
         if ($subset == "comb") {
             $experiments = $_GET['exps'];
@@ -159,8 +159,8 @@ class SelectGenotypeExp
         echo "<img alt='spinner' id='spinner' src='images/ajax-loader.gif' style='display:none;' /></p>";
         if (isset($_SESSION['selected_lines'])) {
             ?>
-           <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
-           <?php
+            <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
+            <?php
         }
     }
 
