@@ -210,12 +210,12 @@ class ShowData
         if (isset($_GET['mml']) && !empty($_GET['mml']) && is_numeric($_GET['mml'])) {
              $max_miss_line = $_GET['mml'];
         }
-        $sql_mstat = "SELECT marker_uid, maf, missing, total 
-           FROM allele_frequencies
-           WHERE experiment_uid = $experiment_uid";
-        $res = mysqli_query($mysqli, $sql_mstat) or
+        $sql = "select marker_count from genotype_experiment_info where experiment_uid = $experiment_uid";
+        $res = mysqli_query($mysqli, $sql) or
             die("Error: Unable to sum allele frequency values.<br>".mysqli_error($mysqli));
-        $num_mark = mysqli_num_rows($res);
+        if ($row = mysqli_fetch_row($res)) {
+            $num_mark = $row[0];
+        }
         $num_maf = $num_miss = 0;
 
         echo "<h3>Description</h3><p>";
@@ -286,7 +286,6 @@ class ShowData
 
     echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
     echo "</table>";
-  
     } /* End of function type_DataInformation*/
 
     private function type_Tab_Delimiter_GBS()
