@@ -32,7 +32,7 @@ if ($stmt = mysqli_prepare($mysqli, $sql)) {
     mysqli_stmt_bind_result($stmt, $trial_code);
     mysqli_stmt_fetch($stmt);
     mysqli_stmt_close($stmt);
-    echo "using experiment $trial_code\n";
+    echo "using experiment $trial_code<br>\n";
 } else {
     die("invalid experiment_uid\n");
 }
@@ -52,7 +52,7 @@ while ($row = mysqli_fetch_array($res)) {
     $exp_uid = $row[0];
     $marker_uid = $row[1];
     $index = $exp_uid . $marker_uid;
-    $exp101_list[$index] = 1;
+    $exp_list[$index] = 1;
 }
 
 $max_markers=0;
@@ -71,7 +71,7 @@ while ($row = mysqli_fetch_array($res)) {
     $marker_name_list[] = $marker_name;
     $max_markers++;
 }
-    echo "max_markers = $max_markers\n";
+    echo "max_markers = $max_markers<br>\n";
 
 $sql = "select marker_uid, A_allele, B_allele from markers";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -98,11 +98,9 @@ while ($row = mysqli_fetch_array($res)) {
     $line_name_list[$max_lines] = $line_record_name;
     $max_lines++;
 }
-echo "max_lines = $max_lines\n";
+echo "max_lines = $max_lines<br>\n";
 
 if ($max_markers > 0) {
-    //$line_uid_list_str = implode(",", $line_uid_list);
-    //$line_name_list_str = implode(",", $line_name_list);
     $line_uid_list_str = json_encode($line_uid_list);
     $line_name_list_str = json_encode($line_name_list);
     if (isset($index_list[$experiment_uid])) {
@@ -155,7 +153,7 @@ if ($max_markers > 0) {
             $k++;
             $index = $experiment_uid . $marker_uid;
             $string = implode(',', $alleles_101);
-            if (isset($exp101_list[$index])) {
+            if (isset($exp_list[$index])) {
                 $sql = "update allele_bymarker_exp_101 set alleles = \"$string\" where experiment_uid = $experiment_uid and marker_uid = $marker_uid";
                 $count_update++;
             } else {
@@ -163,12 +161,13 @@ if ($max_markers > 0) {
                 $count_new++;
             }
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            $string = implode(',', $alleles_ACTG);
-            if (isset($exp101_list[$index])) {
+            $string = implode('\t', $alleles_ACTG);
+            if (isset($exp_list[$index])) {
                 $sql = "update allele_bymarker_exp_ACTG set alleles = \"$string\" where experiment_uid = $experiment_uid and marker_uid = $marker_uid";
             } else {
                 $sql = "insert into allele_bymarker_exp_ACTG (experiment_uid, marker_uid, marker_name, alleles) values ($experiment_uid, $marker_uid, '$marker_name', '$string')";
             }
+            echo "$sql<br>\n";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         } else {
             echo "skip $experiment_uid $marker_uid\n";
