@@ -27,7 +27,7 @@ if (isset($_SESSION['clicked_buttons'])) {
     if ($row = mysqli_fetch_row($result)) {
         $selected_markers = json_decode($row[0], true);
         $count = count($selected_markers);
-        if ($count > 10000) {
+        if ($count > 1000) {
             echo "<br>Warning: $count markers selected. Truncating to 1000 markers.<br>\n";
             $selected_markers = array_slice($selected_markers, 0, 1000);
         }
@@ -66,12 +66,8 @@ if (isset($_GET['assembly'])) {
     $assembly = $_SESSION['assembly'];
 }
 
-if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
-    echo "<a href=\"login.php\">Login</a> to access additional assemblies.<br>";
-}
- 
 //display list of assemblies
-echo "<br><select id=\"assembly\" onchange=\"reload()\">\n";
+echo "<br>Genome Assembly <select id=\"assembly\" onchange=\"reload()\">\n";
 foreach ($assemblyList as $key => $ver) {
     if ($ver == $assembly) {
         $selected = "selected";
@@ -80,7 +76,11 @@ foreach ($assemblyList as $key => $ver) {
     }
     echo "<option value=$ver $selected $disabled>$ver</option>";
 }
-echo "</select><br><br>";
+echo "</select>";
+if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+    echo "  To access additional assemblies <a href=\"login.php\">Login</a>.<br>";
+}
+echo "<br><br>";
 
 $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -118,7 +118,6 @@ foreach ($selected_markers as $marker_uid) {
                 $start = 0;
             }
             $stop = $pos + 1000;
-            $vepList[] = "<tr><td>$row[1] $pos $pos $a_allele/$b_allele + $marker\n";
             $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "/Location/View?r=$chrom:$start-$stop\">$chrom:$pos</a>";
             $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker\">$marker</a><td>$jbrowse";
             if (isset($geneFound[$marker])) {
@@ -126,11 +125,12 @@ foreach ($selected_markers as $marker_uid) {
             } else {
                 $linkOut .= "<td><td>\n";
             }
-            $linkOutSort[] = $linkOut;
-            $linkOutIndx[] = $chrom . $pos;
         }
         if (preg_match("/[0-9]/", $chrom) && preg_match("/[0-9]/", $pos)) {
             $found = 1;
+            $vepList[] = "<tr><td>$row[1] $pos $pos $a_allele/$b_allele + $marker\n";
+            $linkOutSort[] = $linkOut;
+            $linkOutIndx[] = $chrom . $pos;
         }
     }
     if (!$found) {
@@ -215,7 +215,7 @@ if ($count > 0) {
 $count = count($vepList);
 if ($count > 0) {
     echo "<br>To run Variant Effect Predictor, copy the data below and paste it into the text box on the website <a href=\"$ensemblLinkVEP\" target=\"_new\">Ensembl Plant VEP</a>. ";
-    echo "Calculations take about 5 minutes per marker.\n";
+    echo "Calculations take about 5 minutes per marker.<br>\n";
     if ($count > 1000) {
         $filename = $dir . "vep_submission_" . $unique_str . ".html";
         ?>
