@@ -15,8 +15,8 @@ if (!isset($varLink)) {
 
 echo "<h2>Variant Effects</h2>\n";
 echo "This page provides links to Sorting Intolerant From Tolerant (SIFT) and Variant Effect Predictor (VEP) to predict whether an amino aid substitution affects protein function.<br>";
-echo "SIFT missense predictions for genomes. <a href=\"http://sift.bii.a-star.edu.sg/www/nprot2016_vaser.pdf\">Nature Protocols 2016; 11:1-9</a>. ";
-echo "The Ensembl Variant Effect Predictor. Genome Biology Jun 6;17(1):122. (2016) <a href=\"https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0974-4\">doi:10.1186/s13059-016-0974-4</a>.<br><br>";
+echo "SIFT missense predictions for genomes: <a target=\"_new\" href=\"http://www.nature.com/nprot/journal/v11/n1/abs/nprot.2015.123.html\">Nature Protocols 2016; 11:1-9</a>. ";
+echo "The Ensembl Variant Effect Predictor: Genome Biology Jun 6;17(1):122. (2016) <a target=\"_new\" href=\"https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0974-4\">doi:10.1186/s13059-016-0974-4</a>.<br><br>";
 
 if (isset($_SESSION['clicked_buttons'])) {
     $selected_markers = $_SESSION['clicked_buttons'];
@@ -26,6 +26,11 @@ if (isset($_SESSION['clicked_buttons'])) {
     $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($result)) {
         $selected_markers = json_decode($row[0], true);
+        $count = count($selected_markers);
+        if ($count > 10000) {
+            echo "<br>Warning: $count markers selected. Truncating to 1000 markers.<br>\n";
+            $selected_markers = array_slice($selected_markers, 0, 1000);
+        }
     } else {
         die("Genotype experiment not found\n");
     }
@@ -183,7 +188,7 @@ $count = count($linkOutIndx);
 $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
 if ($count > 0) {
     asort($linkOutIndx);
-    echo "The links in the region column show known variations in a browser and their effects at Ensembl Plants. The region is 1000 bases to either side of marker. ";
+    echo "The links in the region column show known variations in a genome browser and their effects. The region is 1000 bases to either side of marker. ";
     echo "The links in the gene column show a table with known variations, consequence type, and SIFT score.<br>\n";
     if ($count > 1000) {
         $dir = "/tmp/tht/";
