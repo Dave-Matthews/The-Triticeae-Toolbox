@@ -89,7 +89,7 @@ class SelectMarkers
             $chrom = $row[0];
             $start_list[$chrom] = $row[1];
             $stop_list[$chrom] = $row[2];
-            if (preg_match("/[0-9]/", $row[2])) {
+            if (preg_match("/[0-9]/", $row[0]) && preg_match("/[0-9]/", $row[2])) {
                 $count++;
             }
             if (isset($_GET['value'])) {
@@ -152,15 +152,14 @@ class SelectMarkers
                 }
                 $temp = count($map_list);
                 //echo "$temp found in map<br>\n";
-                $sql = "select marker_uid, marker_name, chrom, pos, alleles from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp";
+                $sql = "select marker_uid, marker_name, alleles from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp";
                 //echo "$sql<br>\n";
-                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql<br>");
+                $res = mysqli_query($mysqli, $sql, MYSQLI_USE_RESULT) or die(mysqli_error($mysqli) . "<br>$sql<br>");
                 while ($row = mysqli_fetch_array($res)) {
                     $count++;
                     $marker_uid = $row[0];
                     $marker_name = $row[1];
-                    $chrom = $row[2];
-                    $alleles = $row[4];
+                    $alleles = $row[2];
                     if (isset($map_list[$marker_uid])) {
                         $count_inmap++;
                         $map_pos = $map_list[$marker_uid];
@@ -194,7 +193,7 @@ class SelectMarkers
                             }
                             if ($found) {
                                 $found_list[] = $marker_uid;
-                                $poly[] = "$marker_name,$chrom,$pos,$alleleList";
+                                $poly[] = "$marker_name,$selected_chrom,$map_pos,$alleleList";
                             }
                         }
                     }
@@ -207,7 +206,7 @@ class SelectMarkers
             } else {
                 $sql = "select marker_uid, marker_name, chrom, pos, alleles from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp AND $option";
                 //echo "$sql<br>\n";
-                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql<br>");
+                $res = mysqli_query($mysqli, $sql, MYSQLI_USE_RESULT) or die(mysqli_error($mysqli) . "<br>$sql<br>");
                 while ($row = mysqli_fetch_array($res)) {
                     $count++;
                     $marker_uid = $row[0];
