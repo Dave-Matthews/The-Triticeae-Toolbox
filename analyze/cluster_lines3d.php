@@ -21,12 +21,12 @@ if (isset($_POST['mycluster'])) {
     $clustertable = preg_replace("/\n/", "", $clustertable);
     // Remove first line, "x".
     array_shift($clustertable);
-    for ($i=0;$i<count($clustertable);$i++) {
-        for ($j=0;$j<count($mycluster);$j++) {
+    for ($i=0; $i<count($clustertable); $i++) {
+        for ($j=0; $j<count($mycluster); $j++) {
             $line = explode("\t", $clustertable[$i]);
             if ($line[1] == $mycluster[$j]) {
-	        // Build query for line_record_uids for these names.
-	        $where_in .= "'".$line[0]."',";
+                // Build query for line_record_uids for these names.
+                $where_in .= "'".$line[0]."',";
             }
         }
     }
@@ -43,12 +43,13 @@ if (isset($_POST['mycluster'])) {
 
 // If only a few lines are selected, reduce the suggested number of clusters.
 $clusters = 5;
-if (isset($_POST['clusters'])) 
-  $clusters = $_POST['clusters'];
+if (isset($_POST['clusters'])) {
+    $clusters = $_POST['clusters'];
+}
 if (isset($_SESSION['selected_lines'])) {
-  $linecount = count($_SESSION['selected_lines']);
-  $clusters = min($clusters, $linecount - 1);
- }
+    $linecount = count($_SESSION['selected_lines']);
+    $clusters = min($clusters, $linecount - 1);
+}
 
 ?>
 
@@ -61,32 +62,32 @@ if (isset($_SESSION['selected_lines'])) {
   <font color=blue>Currently selected lines</font> will be clustered according to their 
   alleles for all markers, using the R procedure <b>pam()</b> (Partitioning Around Medoids).  
   The clusters will be displayed in three dimensions calculated by <b>Singular
-  Value Decomposition</b>, R procedure <b>svd()</b>.<p>
+  Value Decomposition</b>, R procedure <b>svd()</b>.
+  Analysis code <a href=<?php echo $config['base_url']; ?>R/Clust3D.R target="_new">Clust3D.R</a>.<p>
   When you have examined the results you can select the clusters you want to use
   as your new <font color=blue>Currently selected lines</font>.
 
 <?php
 $selectedcount = count($_SESSION['selected_lines']);
 echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
-if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
+if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0)) {
   // No lines selected so prompt to get some.
-  echo "<a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
-  echo "(Patience required for more than a few hundred lines.)";
- }
-else {
-  print "<textarea rows = 9>";
-  foreach ($_SESSION['selected_lines'] as $lineuid) {
-    $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-    while ($row=mysqli_fetch_assoc($result)) {
-      $selval=$row['line_record_name'];
-      print "$selval\n";
+    echo "<a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
+    echo "(Patience required for more than a few hundred lines.)";
+} else {
+    print "<textarea rows = 9>";
+    foreach ($_SESSION['selected_lines'] as $lineuid) {
+        $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+        while ($row=mysqli_fetch_assoc($result)) {
+          $selval=$row['line_record_name'];
+          print "$selval\n";
+        }
     }
-  }
-  print "</textarea>";
-  if (isset($_SESSION['geno_exps'])) {
-      echo "<br><br><font color=red>Error: This tool does not work with a Genotype Experiment selection</font>";
-      die();
-  }
+    print "</textarea>";
+    if (isset($_SESSION['geno_exps'])) {
+        echo "<br><br><font color=red>Error: This tool does not work with a Genotype Experiment selection</font>";
+        die();
+    }
 ?>
   <script type="text/javascript" src="analyze/cluster3.js"></script>
   <p>How many clusters?&nbsp;
@@ -116,6 +117,4 @@ else {
 
 echo "</div></div></div>";
 $footer_div=1;
-require $config['root_dir'].'theme/footer.php'; 
-
-?>
+require $config['root_dir'].'theme/footer.php';

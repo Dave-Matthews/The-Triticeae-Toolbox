@@ -16,31 +16,31 @@ if (isset($_POST['time'])) {
 // If we entered the script having picked a cluster in cluster3d.php,
 // load them into $_SESSION['selected_lines'].
 if (isset($_POST['mycluster'])) {
-  $mycluster = $_POST['mycluster'];
-  $where_in = "";
-  $clustertable = file("/tmp/tht/clustertable.txt".$time);
-  unlink("/tmp/tht/clustertable.txt".$time);
-  $clustertable = preg_replace("/\n/", "", $clustertable);
-  // Remove first line, "x".
-  array_shift($clustertable);
-  for ($i=0;$i<count($clustertable);$i++) {
-    for ($j=0;$j<count($mycluster);$j++) {
-      $line = explode("\t", $clustertable[$i]);
-      if ($line[1] == $mycluster[$j]) {
-	// Build query for line_record_uids for these names.
-	$where_in .= "'".$line[0]."',";
-      }
+    $mycluster = $_POST['mycluster'];
+    $where_in = "";
+    $clustertable = file("/tmp/tht/clustertable.txt".$time);
+    unlink("/tmp/tht/clustertable.txt".$time);
+    $clustertable = preg_replace("/\n/", "", $clustertable);
+    // Remove first line, "x".
+    array_shift($clustertable);
+    for ($i=0; $i<count($clustertable); $i++) {
+        for ($j=0; $j<count($mycluster); $j++) {
+            $line = explode("\t", $clustertable[$i]);
+            if ($line[1] == $mycluster[$j]) {
+                // Build query for line_record_uids for these names.
+                $where_in .= "'".$line[0]."',";
+            }
+        }
     }
-  }
-  $where_in = trim($where_in, ",");
-  $query = "select line_record_uid, line_record_name 
+    $where_in = trim($where_in, ",");
+    $query = "select line_record_uid, line_record_name 
      from line_records where line_record_name in (".$where_in.")
      order by line_record_name";
-  $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
-  $_SESSION['selected_lines'] = array();
-  while ($row = mysqli_fetch_row($result)) {
-    array_push($_SESSION['selected_lines'], $row[0]);
-  }
+    $result = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+    $_SESSION['selected_lines'] = array();
+    while ($row = mysqli_fetch_row($result)) {
+        array_push($_SESSION['selected_lines'], $row[0]);
+    }
 }
 
 // If only a few lines are selected, reduce the suggested number of clusters.
@@ -63,7 +63,9 @@ if (isset($_SESSION['selected_lines'])) {
   <font color=blue>Currently selected lines and traits</font> will be clustered according to their 
   distance computed from markers and trait values, using the R procedure <b>hclust()</b> (Hierarchical cluster analysis on a set of dissimilarities).  
   The clusters will be displayed in three dimensions calculated by <b>Singular
-  Value Decomposition</b>, R procedure <b>svd()</b>. This method of clustering typically requires at least 25 lines for the execution to complete.<p>
+  Value Decomposition</b>, R procedure <b>svd()</b>. 
+  Analysis code <a href=<?php echo $config['base_url']; ?>R/Clust4D.R target="_new">Cluster4D.R</a>.
+  This method of clustering typically requires at least 25 lines for the execution to complete.<p>
   When you have examined the results you can select the clusters you want to use
   as your new <font color=blue>Currently selected lines</font>. Reclustering a group of lines requires at least 25 members in a cluster.
 
