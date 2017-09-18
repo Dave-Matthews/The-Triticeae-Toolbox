@@ -77,8 +77,12 @@ foreach ($assemblyList as $key => $ver) {
     echo "<option value=$ver $selected $disabled>$ver</option>";
 }
 echo "</select>";
-if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
-    echo "  To access additional assemblies <a href=\"login.php\">Login</a>.<br>";
+$sql = "select * from assemblies where data_public_flag = 0";
+$result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+if ($row = mysqli_fetch_row($result)) {
+    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+        echo "  To access additional assemblies <a href=\"login.php\">Login</a>.<br>";
+    }
 }
 echo "<br><br>";
 
@@ -161,7 +165,7 @@ foreach ($selected_markers as $marker_uid) {
                 $bin = $chrom;
             }
             $vepList[] = "<tr><td>$bin $pos $pos $row[4]/$row[5] $strand $marker\n";
-            $jbrowse = "<a target=\"_new\" href=" . $browserLink[$assembly] . "/Location/View?r=$bin:$start-$stop>$bin:$pos</a>";
+            $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "/Location/View?r=$bin:$start-$stop\">$bin:$pos</a>";
             $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker\">$marker</a><td>$jbrowse";
             if (isset($geneFound[$marker])) {
                 $linkOut .= "<td>$geneFound[$marker]\n";
