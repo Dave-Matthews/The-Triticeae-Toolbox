@@ -122,7 +122,11 @@ foreach ($selected_markers as $marker_uid) {
                 $start = 0;
             }
             $stop = $pos + 1000;
-            $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "/Location/View?r=$chrom:$start-$stop\">$chrom:$pos</a>";
+            if (preg_match("/RefSeq/", $browserLink[$assembly])) {
+                $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom..$start-$stop\">$chrom:$pos</a>";
+            } else {
+                $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start-$stop\">$chrom:$pos</a>";
+            }
             $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker\">$marker</a><td>$jbrowse";
             if (isset($geneFound[$marker])) {
                 $linkOut .= "<td>$geneFound[$marker]\n";
@@ -165,7 +169,11 @@ foreach ($selected_markers as $marker_uid) {
                 $bin = $chrom;
             }
             $vepList[] = "<tr><td>$bin $pos $pos $row[4]/$row[5] $strand $marker\n";
-            $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "/Location/View?r=$bin:$start-$stop\">$bin:$pos</a>";
+            if (preg_match("/RefSeq/", $browserLink[$assembly])) {
+                $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom..$start-$stop\">$chrom:$pos</a>";
+            } else {
+                $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$bin:$start-$stop\">$bin:$pos</a>";
+            }
             $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker\">$marker</a><td>$jbrowse";
             if (isset($geneFound[$marker])) {
                 $linkOut .= "<td>$geneFound[$marker]\n";
