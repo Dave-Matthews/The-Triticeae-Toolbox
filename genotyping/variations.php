@@ -123,7 +123,7 @@ foreach ($selected_markers as $marker_uid) {
             }
             $stop = $pos + 1000;
             if (preg_match("/RefSeq/", $browserLink[$assembly])) {
-                $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom..$start-$stop\">$chrom:$pos</a>";
+                $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start..$stop\">$chrom:$pos</a>";
             } else {
                 $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start-$stop\">$chrom:$pos</a>";
             }
@@ -170,7 +170,7 @@ foreach ($selected_markers as $marker_uid) {
             }
             $vepList[] = "<tr><td>$bin $pos $pos $row[4]/$row[5] $strand $marker\n";
             if (preg_match("/RefSeq/", $browserLink[$assembly])) {
-                $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom..$start-$stop\">$chrom:$pos</a>";
+                $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start..$stop\">$chrom:$pos</a>";
             } else {
                 $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$bin:$start-$stop\">$bin:$pos</a>";
             }
