@@ -360,7 +360,6 @@ class Downloads
                 $filename = "snpfile.txt";
                 $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
                 $this->type2_build_markers_download($lines, $markers, $dtype, $h);
-                fwrite($h, $output);
                 fclose($h);
             }
             $filename = "genotype.hmp.txt";
@@ -606,10 +605,10 @@ class Downloads
                     <?php
                 }
                 ?>
-	    </select>
-	    </td>
-	    <?php 
-	    } else {
+            </select>
+            </td>
+            <?php
+            } else {
                 echo "none selected";
             }
             echo "</table>";
@@ -975,9 +974,10 @@ class Downloads
              ?>
              <table border=0>
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
-             <td>SNP data coded as {A,C,T,G,N,+,-}<br>tab delimited<br>used by <b>TASSEL</b>
+             <td>SNP data coded as {A,C,T,G,N,+,-}<br>tab delimited<br>used by <b>TASSEL</b><td>file type "Hapmap"
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
              <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>comma delimited<br>used by <b>rrBLUP</b>
+             <td>read.table("snpfile.txt", header=TRUE, check.names=FALSE)<br>read.table("genotyp.hmp.txt", header=TRUE, check.names=FALSE)
              <?php 
              if ($typeGE == "true") {
                  ?>
