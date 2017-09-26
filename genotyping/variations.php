@@ -26,8 +26,8 @@ if (isset($_SESSION['clicked_buttons'])) {
     $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($result)) {
         $selected_markers = json_decode($row[0], true);
-        $count = count($selected_markers);
-        if ($count > 1000) {
+        $selected_markers_count = count($selected_markers);
+        if ($selected_markers_count > 1000) {
             echo "<br>Warning: $count markers selected. Truncating to 1000 markers.<br>\n";
             $selected_markers = array_slice($selected_markers, 0, 1000);
         }
@@ -60,6 +60,17 @@ while ($row = mysqli_fetch_row($result)) {
         $assemblyFlag[] = $row[1];
     }
 }
+//get assembly from genotype experiment if available
+if (isset($_SESSION['geno_exps'])) {
+    $sql = "select assembly_name from genotype_experiment_info where experiment_uid = $geno_exp";
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($result)) {
+        if (preg_match("/[A-Z0-9]/", $row[0])) {
+            $assembly = $row[0];
+        }
+    }
+}
+
 if (isset($_GET['assembly'])) {
     $assembly = $_GET['assembly'];
 } elseif (isset($_SESSION['assembly'])) {
@@ -202,7 +213,7 @@ if ($count > 0) {
     asort($linkOutIndx);
     echo "The links in the region column show known variations in a genome browser and their effects. The region is 1000 bases to either side of marker. ";
     echo "The links in the gene column show a table with known variations, consequence type, and SIFT score.<br>\n";
-    if ($count > 1000) {
+    if ($selected_markers_count > 1000) {
         $dir = "/tmp/tht/";
         $filename = $dir . "ensembl_links_" . $unique_str . ".html";
         ?>
@@ -225,10 +236,10 @@ if ($count > 0) {
     }
 }
 $count = count($vepList);
-if ($count > 0) {
+if (($count > 0) && preg_match("/IWGSC/", $assembly)) {
     echo "<br>To run Variant Effect Predictor, copy the data below and paste it into the text box on the website <a href=\"$ensemblLinkVEP\" target=\"_new\">Ensembl Plant VEP</a>. ";
     echo "Calculations take about 5 minutes per marker.<br>\n";
-    if ($count > 1000) {
+    if ($selected_markers_count > 1000) {
         $filename = $dir . "vep_submission_" . $unique_str . ".html";
         ?>
         <input type="button" value="Open VEP input file"
