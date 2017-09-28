@@ -115,18 +115,18 @@ function InsertByAjax($arr)
         print "Invalid table name";
         return;
     }
-	$attributes=array_keys($arr);
+    $attributes=array_keys($arr);
 
-	$vals=array();
-	$isnum=array();
-	// start from 1 to allow for the first index row
-	for ($i=1; $i<count($attributes); $i++) {
-		if (in_array($attributes[$i]."_isnum", $attributes) && isset($arr[$attributes[$i]]) && $arr[$attributes[$i]]!=="") {
-			$vals[$attributes[$i]]=$arr[$attributes[$i]];
-			array_push($isnum, $arr[$attributes[$i]."_isnum"]);
-		}
-	}
-	// take care of created_on and updated_on
+    $vals=array();
+    $isnum=array();
+    // start from 1 to allow for the first index row
+    for ($i=1; $i<count($attributes); $i++) {
+        if (in_array($attributes[$i]."_isnum", $attributes) && isset($arr[$attributes[$i]]) && $arr[$attributes[$i]]!=="") {
+            $vals[$attributes[$i]]=$arr[$attributes[$i]];
+            array_push($isnum, $arr[$attributes[$i]."_isnum"]);
+        }
+    }
+    // take care of created_on and updated_on
 	$result=mysqli_query($mysqli, "show columns from $tablename");
 	$tbl_fields=array();
 	if (mysqli_num_rows($result)>0) {
@@ -1077,36 +1077,23 @@ function SelcExperiment($arr)
     }
     echo "Markers added from experiment(s) <b>$trial_code</b><p>";
     $_SESSION['geno_exps'] = $expt;
-    $sql = "select distinct(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($expt_str)";
+    $sql = "select sum(marker_count) from genotype_experiment_info where experiment_uid IN ($expt_str)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    $row_cnt = mysqli_num_rows($res);
-    $_SESSION['geno_exps_cnt'] = $row_cnt;
-    if ($row_cnt < 100000) {
-        while ($row = mysqli_fetch_row($res)) {
-            $clkmkrs[] = $row[0];
-        }
-        $_SESSION['clicked_buttons'] = $clkmkrs;
-        print "$row_cnt markers selected. ";
-    } else {
+    if ($row = mysqli_fetch_array($res)) {
+        $row_cnt = $row[0];
+        $_SESSION['geno_exps_cnt'] = $row_cnt;
         unset($_SESSION['clicked_buttons']);
         print "$row_cnt markers in experiment<br>\n";
     }
 
     $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($expt_str)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_array($res)) {
+    if ($row = mysqli_fetch_array($res)) {
         $lines = json_decode($row[0], true);
-        //*check for duplicates
-        foreach ($lines as $line_record) {
-            if (isset($unique_list[$line_record])) {
-                $skipped .= "$line_record ";
-            } else {
-                $lines_unique[] = $line_record;
-                $unique_list[$line_record] = 1;
-            }
-        }
+        $_SESSION['selected_lines'] = $lines;
+    } else {
+        die("Error: genotype experiment not found\n");
     }
-    $_SESSION['selected_lines'] = $lines_unique;
     if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
         print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
         print "<table><tr><td>\n";

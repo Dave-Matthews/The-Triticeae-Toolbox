@@ -5,7 +5,7 @@ $mysqli = connecti();
 
 include $config['root_dir'].'theme/admin_header.php';
 
-if (!isset($ensemblLink)) {
+if (!isset($browserLink)) {
     echo "Error: Please define EnsemblLink in directory config.php file";
 }
 
@@ -28,53 +28,38 @@ echo "1. the sequence homology is > 99% and aligment length is > 95% of the quer
 echo "2. there is only one mismatch and the alignment length is > 95% of the query sequence.<br>\n";
 echo "The analysis uses blastn v2.2.28+ with the following arguments \"-outfmt 6 -dust no -word_size 16 -task megablast -evalue 1e-08\".<br><br>\n";
 
-if (isset($_GET['uid1'])) {
-  $uid = intval($_GET['uid1']);
+if (isset($_GET['uid'])) {
+    $uid = intval($_GET['uid']);
+    $assembly = $_GET['asm'];
+    echo "BLAST matches for experiment $trial_name_list[$uid]<br>\n";
+    echo "Select link to view match in Ensembl Plant.<br><br>\n";
+    echo "<table>\n";
+    echo "<tr><td>Query<td>Reference Contig<td>position\n";
 
-  echo "BLAST matches for experiment $trial_name_list[$uid]<br>\n";
-  echo "Select link to view match in Ensembl genome browser.<br><br>\n";
-  echo "<table>\n";
-  echo "<tr><td>Query<td>Genomic Location\n";
-
-  $sql = "select marker1_name, chrom, pos from marker_report_ref_iwgs
-      inner join allele_frequencies af1
-      on marker1_uid = af1.marker_uid
-      and af1.experiment_uid = $uid
-      order by marker1_name";
-  $count = 0;
-  $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-  while ($row=mysqli_fetch_row($result)) {
-      $marker1_name = $row[0];
-      $chrom = $row[1];
-      $pos = $row[2];
-      echo "<tr><td>$marker1_name<td><a href=\"$EnsemblLink/Location/View?r=$chrom:$pos\" target=\"_blank\">$chrom:$pos\n";
-  }
-  echo "</table>";
-} elseif (isset($_GET['uid2'])) {
-  $uid = intval($_GET['uid2']);
-
-  echo "BLAST matches for experiment $trial_name_list[$uid]<br>\n";
-  echo "Select link to view match in Ensembl Plant.<br><br>\n";
-  echo "<table>\n";
-  echo "<tr><td>Query<td>Reference Contig<td>position\n";
-
-  $sql = "select marker_name, bin, pos from marker_report_reference
+    $sql = "select marker_name, chrom, bin, pos from marker_report_reference
       inner join allele_frequencies af1
       on marker_report_reference.marker_uid = af1.marker_uid
       and af1.experiment_uid = $uid
+      and assembly_name = \"$assembly\"
       order by marker_name";
-  $count = 0;
-  $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-  while ($row=mysqli_fetch_row($result)) {
-      $marker1_name = $row[0];
-      $contig = $row[1];
-      $pos = $row[2];
-      echo "<tr><td>$marker1_name<td><a href=\"$ensemblLink/Location/View?db=;r=$contig:$pos\" target=\"_blank\">$contig<td>$pos\n";
-  }
-  echo "</table>";
+    $count = 0;
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row=mysqli_fetch_row($result)) {
+        $marker1_name = $row[0];
+        $chrom = $row[1];
+        $contig = $row[2];
+        $pos = $row[3];
+        if (preg_match("/IWGS/", $assembly)) {
+            $jbrowse = "<tr><td>$marker1_name<td><a href=\"" . $browserLink[$assembly] . "$contig:$pos\" target=\"_blank\">$contig<td>$pos";
+        } else {
+            $jbrowse = "<tr><td>$marker1_name<td><a href=\"" . $browserLink[$assembly] . "$chrom:$pos\" target=\"_blank\">$chrom<td>$pos";
+        }
+        echo "$jbrowse\n";
+    }
+    echo "</table>";
 } else {
     $sql = "select experiment_uid, count(*) from allele_frequencies
-    group by experiment_uid"; 
+    group by experiment_uid";
     $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row=mysqli_fetch_row($result)) {
         $uid = $row[0];
@@ -98,13 +83,13 @@ if (isset($_GET['uid1'])) {
         $count = 1;
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row=mysqli_fetch_row($result)) {
-          $uid = $row[0];
-          $count1 = $row[1];
-          $count2 = $row[2];
-          $total = $total_marker_list[$uid];
-          $perc = round(100*$count1/$total,0);
-          $out_list[$uid] .= "$total<td><a href=genotyping/marker_report_ref.php?uid2=$uid>$count1</a> ($perc%)";
-          $count++;
+            $uid = $row[0];
+            $count1 = $row[1];
+            $count2 = $row[2];
+            $total = $total_marker_list[$uid];
+            $perc = round(100*$count1/$total, 0);
+            $out_list[$uid] .= "$total<td><a href=genotyping/marker_report_ref.php?uid=$uid&asm=$asm>$count1</a> ($perc%)";
+            $count++;
         }
     }
 

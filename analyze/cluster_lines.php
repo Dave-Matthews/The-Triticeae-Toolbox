@@ -58,7 +58,8 @@ if (isset($_SESSION['selected_lines'])) {
   <p>  This R program will cluster the 
   <a href="<?php echo $config['base_url']; ?>pedigree/line_properties.php">
   <font color=blue>currently selected lines</font></a> according to their 
-  alleles for all markers, using "pam" (Partitioning Around Medoids).  
+  alleles for all markers, using "pam" (Partitioning Around Medoids).
+  Analysis code <a href=<?php echo $config['base_url']; ?>R/VisualCluster.R target="_new">VisualCluster.R</a>.
 
   <p>The results will be displayed as a two-dimensional PCA plot with
   the clusters color-coded.  If you enter some line names below, the legend will indicate

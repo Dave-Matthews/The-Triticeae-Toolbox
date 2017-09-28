@@ -306,23 +306,22 @@ function show_CAPdata_programs($id)
 */
 function show_phenotypes($id)
 {
-  global $mysqli;
-  show_general("phenotypes", $id);
+    global $mysqli;
+    show_general("phenotypes", $id);
 
-  // Get selected experiments and verify that the user is authorized to see the experiment.
-  $sql="select distinct e.trial_code, e.experiment_year, e.experiment_uid
+    // Get selected experiments and verify that the user is authorized to see the experiment.
+    $sql="select distinct e.trial_code, e.experiment_year, e.experiment_uid
 		FROM tht_base as tb, phenotype_data as pd, experiments as e
 		WHERE pd.phenotype_uid='$id'
 			AND tb.tht_base_uid = pd.tht_base_uid
 			AND e.experiment_uid = tb.experiment_uid";
-  if (!authenticate(array(USER_TYPE_PARTICIPANT,
-			  USER_TYPE_CURATOR,
-			  USER_TYPE_ADMINISTRATOR)))
-    $sql .= " and e.data_public_flag > 0";
-  $sql .= " order by e.experiment_year, e.trial_code asc";
-  $res=mysqli_query($mysqli, $sql) or die("Error in show phenotypes");
-  if (mysqli_num_rows($res) > 0) {
-    ?>
+    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+        $sql .= " and e.data_public_flag > 0";
+    }
+    $sql .= " order by e.experiment_year, e.trial_code asc";
+    $res=mysqli_query($mysqli, $sql) or die("Error in show phenotypes");
+    if (mysqli_num_rows($res) > 0) {
+        ?>
 <h3>Available Datasets for this Phenotype</h3>
 <p>
   <table cellpadding="0" cellspacing="0">
@@ -331,19 +330,20 @@ function show_phenotypes($id)
       <th>Trial Name</th>
       <th>Traits</th>
     </tr>
-<?php
-     while($row_expuid=mysqli_fetch_array($res)) {
-       $trial_code=$row_expuid['trial_code'];
-       $year=$row_expuid['experiment_year'];
-       $expuid=$row_expuid['experiment_uid'];
-       $traits=experimentListPhenotypes($expuid);
-       echo( "<tr> <td>$year</td> <td><a href='display_phenotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
-     }
-    echo "</tbody></table>";
-  }
+        <?php
+        while ($row_expuid=mysqli_fetch_array($res)) {
+            $trial_code=$row_expuid['trial_code'];
+            $year=$row_expuid['experiment_year'];
+            $expuid=$row_expuid['experiment_uid'];
+            $traits=experimentListPhenotypes($expuid);
+            echo( "<tr> <td>$year</td> <td><a href='display_phenotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
+        }
+        echo "</tbody></table>";
+    }
 }
 
-function show_experiment_set ($id) {
+function show_experiment_set($id)
+{
   global $mysqli;
   $sql="select distinct e.trial_code, e.experiment_year, pei.location
         from experiments as e, 
@@ -386,7 +386,8 @@ function show_experiment_set ($id) {
 
 // Need a special function only because the foreign key is named 'category_uid'
 // instead of 'phenotype_category_uid'.
-function show_properties($id) {
+function show_properties($id)
+{
   global $mysqli;
   $sql = "select name, description from properties where properties_uid = $id";
   $res = mysqli_query($mysqli, $sql) or die("Error in show properties");
@@ -405,7 +406,8 @@ function show_properties($id) {
 
 // DEM apr2015: Need a special function to avert trying to show the users name, since we now 
 // disallow access to table 'users'.
-function show_rawfiles($id) {
+function show_rawfiles($id)
+{
   global $mysqli;
   $sql = "select experiment_uid, name, description, directory, updated_on from rawfiles where rawfile_uid = $id";
   $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -430,50 +432,67 @@ function show_rawfiles($id) {
  * This function is a general function that will display the contents of a particular row
  * in a particular table. It is used in correlation with view.php as the default action.
  *
- * Note: This function also supports getting the associated names of the foreign keys 
+ * Note: This function also supports getting the associated names of the foreign keys
  *       for readabilty with an option of viewing the foreign keys. This being generalized,
- *	 is a mechanism for browsing all the data in the database.
+ *       is a mechanism for browsing all the data in the database.
  *
  * @param $table - the table of which to search
  * @param $id - the unique id for that particular row
  * @resource - [OPTIONAL] optional param to hand this function a query resource as to prevent
- * 		querying the database again.
+ *       querying the database again.
  */
-function show_general($tabl, $id, $resource="") {
-  global $mysqli;
-  $pkey = get_pkey($tabl);
-  // Get foreign keys
-  $foreign_tables = chk_tbl_references($tabl);
-  $foreign_keys = array();
-  foreach($foreign_tables as $table) 
-    $foreign_keys[$table] = get_pkey($table);
-  if($resource == "") {	//if there is no resource, get a resource
-    $resource = mysqli_query($mysqli, "
+function show_general($tabl, $id, $resource = "")
+{
+    global $mysqli;
+    $pkey = get_pkey($tabl);
+    // Get foreign keys
+    $foreign_tables = chk_tbl_references($tabl);
+    $foreign_keys = array();
+    foreach ($foreign_tables as $table) {
+        $foreign_keys[$table] = get_pkey($table);
+    }
+    if ($resource == "") {  //if there is no resource, get a resource
+        $resource = mysqli_query($mysqli, "
 				SELECT *
 				FROM $tabl
 				WHERE $pkey = '$id'
 			") or die(mysqli_error($mysqli));
 
-    if(mysqli_num_rows($resource) < 1)
-      error(1, "No Record Found");
-  }
-  while($row = mysqli_fetch_assoc($resource)) {
-    // Display the main table
-    echo "<table class=\"tableclass1\">\n";				
-    foreach($row as $k=>$v) {
-      if(!in_array($k, $foreign_keys)) {
-	// Omit the _uid and created_on columns.
-	if (! strpos($k, "_uid") && ($k != "created_on")) {
-	  echo "\t<tr>\n";
-	  echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
-	  echo "\t\t<td>$v</td>\n";
-	  echo "\t</tr>\n";
-	}
-      }
+        if (mysqli_num_rows($resource) < 1) {
+            error(1, "No Record Found");
+        }
     }
+    while ($row = mysqli_fetch_assoc($resource)) {
+        // Display the main table
+        echo "<table class=\"tableclass1\">\n";
+        foreach ($row as $k => $v) {
+            if (!in_array($k, $foreign_keys)) {
+                if ($k == "sequence") {
+                    echo "<tr>\n";
+                    echo "<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
+                    echo "<td><pre><span style=\"font-size:1.2em\">\n";
+                    $len = strlen($v);
+                    $tmp = substr($v, 0, 80);
+                    while ($len > 80) {
+                        echo "$tmp\n";
+                        $v = substr($v, 80);
+                        $len = strlen($v);
+                        $tmp = substr($v, 0, 80);
+                    }
+                    echo "$tmp\n";
+                    echo "</scan></pre></tr>\n";
+                // Omit the _uid and created_on columns.
+                } elseif (! strpos($k, "_uid") && ($k != "created_on")) {
+                    echo "\t<tr>\n";
+                    echo "\t\t<td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong></td>\n";
+                    echo "\t\t<td>$v</td>\n";
+                    echo "\t</tr>\n";
+                }
+            }
+      }
     echo "</table>";
     // Display the associated tables
-    foreach($foreign_tables as $table) {
+    foreach ($foreign_tables as $table) {
       $fpkey = $foreign_keys[$table];
       $qstring = getQueryJoin($table, $tabl, $fpkey, $id);
       $q = mysqli_query($mysqli, $qstring) or die(mysqli_error($mysqli));
@@ -513,7 +532,6 @@ function getQueryJoin($foreign_table, $main_table, $foreign_key, $main_id) {
 		FROM $main_table, $foreign_table
 		WHERE $main_table.$pkey = '$main_id'
 			AND $main_table.$foreign_key = $foreign_table.$foreign_key";
-
 }
 
 /**
@@ -527,49 +545,49 @@ function getQueryJoin($foreign_table, $main_table, $foreign_key, $main_id) {
  * @return a string containing the HTML table. This does not echo its result.
  */
 function viewTable($resource, $table) {
-  $pkey = get_pkey($table);
-  // DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
-  //$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
-  $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
-  if(mysqli_num_rows($resource) < 1) 
-    return $ret  .=  "<p>No Records Found </p>";
-  $first = TRUE;
-  /* dem aug2013: Change style of all tables controlled by this function! Hope it's okay. */  
-  /* $ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n"; */                         
-  $ret .= "<table><thead><tr>";                                                               
-  while($row = mysqli_fetch_assoc($resource)) {
-    if($first) {
-      foreach($row as $k=>$v) {
-	if($k != $pkey)
-	  $ret .= "<th>" . ucwords(str_replace("_", " ", $k)) . "</th>";
-      }
-      $ret.= "<th></tr></thead><tbody>";
-      $first = FALSE;
+    $pkey = get_pkey($table);
+    // DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
+    //$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
+    $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
+    if(mysqli_num_rows($resource) < 1) 
+      return $ret  .=  "<p>No Records Found </p>";
+    $first = TRUE;
+    /* dem aug2013: Change style of all tables controlled by this function! Hope it's okay. */  
+    /* $ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n"; */                         
+    $ret .= "<table><thead><tr>";                                                               
+    while($row = mysqli_fetch_assoc($resource)) {
+        if($first) {
+          foreach($row as $k=>$v) {
+	    if($k != $pkey)
+	      $ret .= "<th>" . ucwords(str_replace("_", " ", $k)) . "</th>";
+          }
+          $ret.= "<th></tr></thead><tbody>";
+          $first = FALSE;
+        }
+        $ret .= "\t<tr>\n";
+        foreach ($row as $k => $v) {
+            if ($k != $pkey) {
+                $ret .= "\t<td>$v</td>\n";
+            }
+        }
+        $ret .= "\t<td><a href=\"view.php?table=$table&uid=$row[$pkey]\">View</a></td>\n\t</tr>\n";
     }
-    $ret .= "\t<tr>\n";
-    foreach($row as $k=>$v) {
-      if($k != $pkey)
-	$ret .= "\t<td>$v</td>\n";
-    }
-    $ret .= "\t<td><a href=\"view.php?table=$table&uid=$row[$pkey]\">View</a></td>\n\t</tr>\n";
-  }
-  $ret .= "</tbody>\n</table>\n";
-  return $ret;
+    $ret .= "</tbody>\n</table>\n";
+    return $ret;
 }
 
-
-
-function typecast($old_object, $new_classname) {
-    if(class_exists($new_classname)) {
+function typecast($old_object, $new_classname)
+{
+    if (class_exists($new_classname)) {
         $old_serialized_object = serialize($old_object);
         $old_object_name_length = strlen(get_class($old_object));
         $subtring_offset = $old_object_name_length + strlen($old_object_name_length) + 6;
         $new_serialized_object  = 'O:' . strlen($new_classname) . ':"' . $new_classname . '":';
         $new_serialized_object .= substr($old_serialized_object, $subtring_offset);
         return unserialize($new_serialized_object);
-     } else {
-         return false;
-     }
+    } else {
+        return false;
+    }
 }
 
 ?>

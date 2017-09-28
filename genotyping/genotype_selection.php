@@ -26,7 +26,8 @@ function check_session()
         return;
     }
     print "<h2>Selected genotype experiments</h2>\n";
-    print "<table border=0>"; print "<tr><td>Trial Code<td>year<td>description\n";
+    print "<table border=0>";
+    print "<tr><td>Trial Code<td>year<td>description\n";
     $selected = $_SESSION['geno_exps'];
     foreach ($selected as $uid) {
         $sql = $sql = "select trial_code, experiment_year, experiment_desc_name from experiments
@@ -40,7 +41,7 @@ function check_session()
         }
     }
     echo "</table><br><br>";
-} 
+}
     
 function display_list()
 {
@@ -71,7 +72,7 @@ function display_list()
         $short_name = $row[3];
         $date = $row[4];
         $desc = $row[5];
-        $sql = "select count(marker_uid) from allele_frequencies where experiment_uid = $experiment_uid";
+        $sql = "select marker_count from genotype_experiment_info where experiment_uid = $experiment_uid";
         $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($res2)) {
             $count = number_format($row2[0]);

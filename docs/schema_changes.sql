@@ -1,5 +1,7 @@
-/* add updated_on to track changes */
+/* increase size of marker sequence to aid primer design, 9/2017 */
+alter table markers modify sequence varchar(512);
 
+/* add updated_on to track changes, 8/2017 */
 alter table linepanels add updated_on datetime default current_timestamp;
 alter table allele_bymarker_expidx add updated_on datetime default current_timestamp;
 alter table allele_byline_expidx add updated_on datetime default current_timestamp;

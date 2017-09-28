@@ -1,44 +1,27 @@
 var php_self = document.location.href;
 
-function update_side() {
-    jQuery.ajax({
-        url: "side_menu.php",
-        done: function (data, textStatus) {
-            jQuery("#quicklinks").html(data);
-        },
-        error: function () {
-            alert("Error updating side menu");
-        }
+function update_side()
+{
+    var url = "side_menu.php";
+    jQuery.get(url, function( data ) {
+        jQuery("#quicklinks").html( data );
     });
 }
 
 function select_chrom() {
-    "use strict";
     var chrom = document.getElementById("chrom").value;
     var start = document.getElementById("start").value;
     var stop = document.getElementById("stop").value;
-    jQuery.ajax({
-        url: php_self,
-        data: "function=chrom&value=" + chrom + "&start=" + start + "&stop=" + stop,
-        done: function (data, textStatus) {
-            jQuery("#step2").html(data);
-        },
-        error: function () {
-            alert("Error in selecting map");
-        }
+    var url = php_self + "?function=chrom&value=" + chrom + "&start=" + start + "&stop=" + stop;
+    jQuery.get(url, function( data ) {
+        jQuery("#step2").html( data );
     });
 }
 
 function save() {
-    jQuery.ajax({
-        url: php_self,
-        data: "function=save",
-        done: function (data, textStatus) {
-            jQuery("#step2").html(data);
-            update_side();
-        },
-        error: function () {
-            alert("Error in selecting map");
-        }
+    var url = php_self + "?function=save";
+    jQuery.get(url, function( data ) {
+        jQuery("#step2").html( data );
+        update_side();
     });
 }

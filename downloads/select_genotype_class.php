@@ -75,7 +75,6 @@ class SelectGenotypeExp
             default:
                 $this->type1_select();
                 break;
-
         }
     }
 
@@ -87,7 +86,6 @@ class SelectGenotypeExp
     private function refreshTitle()
     {
         global $mysqli;
-        $lines_unique = array();
         $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
         $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
         // $subset = no (Replace), comb (Add, OR), yes (Intersect, AND)
@@ -107,69 +105,64 @@ class SelectGenotypeExp
                 $experiments = $_GET['exps'];
                 $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
                 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-                while ($row = mysqli_fetch_array($res)) {
-              $lines = json_decode($row[0], true);
-              //*check for duplicates
-              foreach ($lines as $line_record) {
-                  if (isset($unique_list[$line_record])) { 
-                      $skipped .= "$line_record ";
-                  } else {
-                      $lines_unique[] = $line_record;
-                      $unique_list[$line_record] = 1;
-                  }
-              }
-          }
-          $_SESSION['selected_lines'] = $lines_unique;
-      } else {
-          echo "error - no selection found";
-      }
-      if ($subset == "comb") {
-          $experiments = $_GET['exps'];
-          $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-          if ($row = mysqli_fetch_array($res)) {
-              $lines_fnd = json_decode($row[0], true);
-          } else {
-              echo "error - no selection found";
-          }
-          foreach ($lines_fnd as $line_uid) {
-            if (!in_array($line_uid,$lines)) {
-                array_push($lines,$row['id']);
+                if ($row = mysqli_fetch_array($res)) {
+                    $lines = json_decode($row[0], true);
+                    $_SESSION['selected_lines'] = $lines;
+                } else {
+                    die("Error: genotype experiment not found\n");
+                }
+            } else {
+                echo "error - no selection found";
             }
-          }
-          $_SESSION['selected_lines'] = $lines;
-      } elseif ($subset == "yes") {
-          $experiments = $_GET['exps'];
-          $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-          if ($row = mysqli_fetch_array($res)) {
-              $tmp = json_decode($row[0], true);
-          }
-          $lines = array_intersect($lines, $tmp);
-          $_SESSION['selected_lines'] = $lines;
-      }
-      if (!empty($_GET['exps'])) {
-          $exps_str = $_GET['exps'];
-          $experiments = explode(',', $exps_str);
-          $_SESSION['geno_exps'] = $experiments;
-          $sql = "select count(distinct(marker_uid)) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
-          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-          if ($row = mysqli_fetch_array($res)) {
-              $_SESSION['geno_exps_cnt'] = $row[0];
-          }
-      }
+        }
+        if ($subset == "comb") {
+            $experiments = $_GET['exps'];
+            $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_array($res)) {
+                $lines_fnd = json_decode($row[0], true);
+            } else {
+                echo "error - no selection found";
+            }
+            foreach ($lines_fnd as $line_uid) {
+                if (!in_array($line_uid, $lines)) {
+                    array_push($lines, $row['id']);
+                }
+            }
+            $_SESSION['selected_lines'] = $lines;
+        } elseif ($subset == "yes") {
+            $experiments = $_GET['exps'];
+            $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_array($res)) {
+                $tmp = json_decode($row[0], true);
+            }
+            $lines = array_intersect($lines, $tmp);
+            $_SESSION['selected_lines'] = $lines;
+        }
+        if (!empty($_GET['exps'])) {
+            $exps_str = $_GET['exps'];
+            $experiments = explode(',', $exps_str);
+            $_SESSION['geno_exps'] = $experiments;
+            $sql = "select sum(marker_count) from genotype_experiment_info where experiment_uid IN ($exps_str)";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_array($res)) {
+                $_SESSION['geno_exps_cnt'] = $row[0];
+                unset($_SESSION['clicked_buttons']);
+                unset($_SESSION['filtered_markers']);
+            }
+        }
         $username=$_SESSION['username'];
         if ($username) {
-          store_session_variables('selected_lines', $username);
+            store_session_variables('selected_lines', $username);
         }
-      }
-   echo "<img alt='spinner' id='spinner' src='images/ajax-loader.gif' style='display:none;' /></p>";
-   if (isset($_SESSION['selected_lines'])) {
-     ?>
-     <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
-     <?php
-   }
-}
+        echo "<img alt='spinner' id='spinner' src='images/ajax-loader.gif' style='display:none;' /></p>";
+        if (isset($_SESSION['selected_lines'])) {
+            ?>
+            <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
+            <?php
+        }
+    }
 
 /**
  * load header and footer
@@ -177,6 +170,7 @@ class SelectGenotypeExp
 private function type1_select()
 {
      global $config;
+     $pageTitle = "Select Lines by Genotype Experiment";
      include $config['root_dir'].'theme/normal_header.php';
      $this->type1_checksession();
      include $config['root_dir'].'theme/footer.php';
@@ -206,7 +200,7 @@ private function type1()
   $footer_div = 1;
   ?>
   </div>
-  <?php 
+  <?php
 }
 
 /**
@@ -222,12 +216,12 @@ private function type1_checksession()
   h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
   </style>
   <div id="title">
-  <?php 
+  <?php
   if (isset($_SESSION['selected_lines'])) {
     $countLines = count($_SESSION['selected_lines']);
     $lines = $_SESSION['selected_lines'];
   }
-  $this->refreshTitle(); 
+  $this->refreshTitle();
   ?>
   </div>
   <div id="step1" style="float: left; margin-bottom: 1.5em;">
@@ -239,7 +233,7 @@ private function type1_checksession()
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
   <script type="text/javascript" src="downloads/select_genotype03.js"></script>
   <?php
-  $this->step1_platform(); 
+  $this->step1_platform();
   //$this->type_GenoType_Display();
   ?>
   </div></div>
@@ -497,10 +491,7 @@ private function step3_lines()
   while ($row = mysqli_fetch_array($res)) {
       $array1 = json_decode($row[0], true);
       foreach ($array1 as $line_record_uid) {
-          if (isset($unique_list[$line_record_uid])) {
-          } else {
-            $line_index[] = $line_record_uid;
-          }
+          $line_index[] = $line_record_uid;
       }
   }
   $count1 = count($line_index);
@@ -770,22 +761,16 @@ private function type1_markers()
               $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
       }
       $skipped = 0;
-      $unique_all = array();
       $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-      while ($row = mysqli_fetch_array($res)) {
+      if ($row = mysqli_fetch_array($res)) {
           $array1 = json_decode($row[0], true);
           $unique_within = array();
           foreach ($array1 as $line_record_uid) {
-              if (isset($unique_within[$line_record_uid])) {
-                  $skipped++;
-              } elseif (isset($unique_all[$line_record_uid])) {
-              } else {
-                 $lines[] = $line_record_uid;
-                 $unique_within[$line_record_uid] = 1;
-                 $unique_all[$line_record_uid] = 1;
-              }
+             $lines[] = $line_record_uid;
           }
+      } else {
+          die("Error: genotype experiment not found\n");
       }
     }
     if ($skipped != 0) {
