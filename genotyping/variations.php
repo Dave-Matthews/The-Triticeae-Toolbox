@@ -62,8 +62,9 @@ while ($row = mysqli_fetch_row($result)) {
 }
 //get assembly from genotype experiment if available
 if (isset($_SESSION['geno_exps'])) {
+    $geno_exp = $_SESSION['geno_exps'][0];
     $sql = "select assembly_name from genotype_experiment_info where experiment_uid = $geno_exp";
-    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql<br>");
     if ($row = mysqli_fetch_row($result)) {
         if (preg_match("/[A-Z0-9]/", $row[0])) {
             $assembly = $row[0];
@@ -133,7 +134,7 @@ foreach ($selected_markers as $marker_uid) {
                 $start = 0;
             }
             $stop = $pos + 1000;
-            if (preg_match("/RefSeq/", $$assembly)) {
+            if (preg_match("/RefSeq/", $assembly)) {
                 $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start..$stop\">$chrom:$pos</a>";
             } else {
                 $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start-$stop\">$chrom:$pos</a>";
