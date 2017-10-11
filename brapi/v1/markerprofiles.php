@@ -80,9 +80,9 @@ if (($lineuid != "") && ($expuid != "")) {
         $linearray['extractDbId'] = null;
         $resultCount = $row[1];
         $analysisMethod = mysql_grab(
-                "select platform_name from platform p, genotype_experiment_info g
-                where p.platform_uid = g.platform_uid
-                and g.experiment_uid = $expuid"
+            "select platform_name from platform p, genotype_experiment_info g
+            where p.platform_uid = g.platform_uid
+            and g.experiment_uid = $expuid"
         );
         $linearray['analysisMethod'] = $analysisMethod;
         $linearray['resultCount'] = $resultCount;
@@ -208,7 +208,7 @@ if (($lineuid != "") && ($expuid != "")) {
     }
     $pageList = array();
     $linearray['metadata']['pagination'] = $pageList;
-    $linearray['metadata']['status'] = null;
+    $linearray['metadata']['status'] = array();
     $linearray['result']['markerprofileDbId'] = $profileid;
     $linearray['result']['germplasmDbId'] = $lineuid;
     $linearray['result']['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $lineuid");
@@ -277,7 +277,6 @@ if (($lineuid != "") && ($expuid != "")) {
     $tot_pag = ceil($num_rows / $pageSize);
     $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $response['metadata']['pagination'] = $pageList;
-    $response['metadata']['status'] = null;
     while ($row = mysqli_fetch_row($res)) {
         $line_uid = $row[0];
         $exp_uid = $row[1];
