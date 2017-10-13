@@ -65,7 +65,7 @@ if ($command) {
             $response['seedSource'] = null;
             $response['synonyms'] = null;
             $response['commonCropName'] = $species;
-            $response['instituteName'] = null;
+            $response['instituteCode'] = null;
         } else {
             $response = null;
             $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
