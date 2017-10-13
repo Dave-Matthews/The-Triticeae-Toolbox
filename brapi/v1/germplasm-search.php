@@ -62,7 +62,7 @@ if ($command) {
             $response['germplasmName'] = $line_record_name;
             $response['germplasmPUI'] = null;
             $response['pedigree'] = null;
-            $response['SeedSource'] = null;
+            $response['seedSource'] = null;
             $response['synonyms'] = null;
             $response['commonCropName'] = $species;
             $response['instituteName'] = null;
@@ -201,7 +201,7 @@ if ($command) {
         } else {
             $temp['pedigree'] = htmlentities($row[2]);
         }
-        $temp['SeedSource'] = null;
+        $temp['seedSource'] = null;
         $temp['synonyms'] = array();
         $temp['commonCropName'] = $species;
         $temp['instituteCode'] = null;
