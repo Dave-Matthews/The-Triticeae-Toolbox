@@ -42,8 +42,12 @@ if ($action == "list") {
     while ($row = mysqli_fetch_row($res)) {
         $count++;
         $temp["traitDbId"] = $row[0];
-        $temp["traitId"] = $row[1];
-        $temp["name"] = $row[2];
+        if (preg_match("/[A-Za-z]/", $row[2])) {
+            $temp["traitId"] = $row[2];
+        } else {
+            $temp["traitId"] = $row[1];
+        }
+        $temp["name"] = $row[1];
         $temp["description"] = $row[4];
         $temp["observationVariables"] = array($row[3]);
         $linearray['result']['data'][] = $temp;
