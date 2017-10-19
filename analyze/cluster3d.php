@@ -91,7 +91,8 @@ if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
 else {
   // Make the cluster coordinates file comma-separated and put it where we can download it.
   $inclust = fopen("/tmp/tht/clust3dCoords.csv".$time, "r");
-  $outclust = fopen($config[root_dir]."raw/genotype/clusters3D.csv", "w");
+  $fileout = $config[root_dir] . "raw/genotype/clusters3D.csv";
+  $outclust = fopen($fileout, "w") or die("Error: cound not open $fileout");
   fwrite($outclust, "Line,Cluster\n");
   while ($line = fgets($inclust)) {
     $line = trim($line);
