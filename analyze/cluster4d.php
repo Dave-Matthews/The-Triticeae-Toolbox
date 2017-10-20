@@ -33,75 +33,75 @@ if ($count == 0) {
     }
     $setup = fopen("/tmp/tht/setupclust3d.txt".$time, "w");
     if (isset($_SESSION['username'])) {
-    $emailAddr = $_SESSION['username'];
-    $emailAddr = "email <- \"$emailAddr\"\n";
-    fwrite($setup, $emailAddr);
-    $result_url = $config['base_url'] . "analyze/cluster4_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
-    $result_url = "result_url <- \"$result_url\"\n";
-    fwrite($setup, $result_url);
-}
+        $emailAddr = $_SESSION['username'];
+        $emailAddr = "email <- \"$emailAddr\"\n";
+        fwrite($setup, $emailAddr);
+        $result_url = $config['base_url'] . "analyze/cluster4_status.php?clusters=$nclusters&time=$time&mmaf=$min_maf";
+        $result_url = "result_url <- \"$result_url\"\n";
+        fwrite($setup, $result_url);
+    }
 
-fwrite($setup, "lineNames <-c('')\n");
-fwrite($setup, "nClust <- $nclusters\n");
-fwrite($setup, "setwd(\"/tmp/tht/\")\n");
-fwrite($setup, "mrkDataFile <-c('mrkData.csv".$time."')\n");
-fwrite($setup, "phenoDataFile <-c('phenoData.csv".$time."')\n");
-fwrite($setup, "clustInfoFile<-c('clustInfo.txt".$time."')\n");
-fwrite($setup, "clustertableFile <-c('/tmp/tht/clustertable.txt".$time."')\n");
-fwrite($setup, "clust3dCoords<-c('/tmp/tht/clust3dCoords.csv".$time."')\n");
-fclose($setup);
+    fwrite($setup, "lineNames <-c('')\n");
+    fwrite($setup, "nClust <- $nclusters\n");
+    fwrite($setup, "setwd(\"/tmp/tht/\")\n");
+    fwrite($setup, "mrkDataFile <-c('mrkData.csv".$time."')\n");
+    fwrite($setup, "phenoDataFile <-c('phenoData.csv".$time."')\n");
+    fwrite($setup, "clustInfoFile<-c('clustInfo.txt".$time."')\n");
+    fwrite($setup, "clustertableFile <-c('/tmp/tht/clustertable.txt".$time."')\n");
+    fwrite($setup, "clust3dCoords<-c('/tmp/tht/clust3dCoords.csv".$time."')\n");
+    fclose($setup);
 
-$starttime = time();
+    $starttime = time();
 //   For debugging, use this to show the R output:
 //   (Regardless, R error messages will be in the Apache error.log.)
 //echo "<pre>"; system("cat /tmp/tht/setupclust3d.txt$time R/Clust3D.R | R --vanilla 2>&1");
 
-$estimate = count($_SESSION['filtered_markers']) * count($_SESSION['filtered_lines']);
-$estimate = round($estimate/400000,0);
-if ($estiamate < 2) {
-  exec("cat /tmp/tht/setupclust3d.txt$time ../R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time");
-} else {
-    exec("cat /tmp/tht/setupclust3d.txt$time ../R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time &");
-    echo "Estimated analysis time is $estimate minutes.<br>";
-    $emailAddr = $_SESSION['username'];
-    if (isset($_SESSION['username'])) {
-        echo "An email will be sent to $emailAddr when the job is complete<br>\n";
+    $estimate = count($_SESSION['filtered_markers']) * count($_SESSION['filtered_lines']);
+    $estimate = round($estimate/400000, 0);
+    if ($estimate < 2) {
+        exec("cat /tmp/tht/setupclust3d.txt$time ../R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time");
     } else {
-        echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
-    }
-    ?>
+        exec("cat /tmp/tht/setupclust3d.txt$time ../R/Clust4D.R | R --vanilla > /dev/null 2> /tmp/tht/cluster4d.txt$time &");
+        echo "Estimated analysis time is $estimate minutes.<br>";
+        $emailAddr = $_SESSION['username'];
+        if (isset($_SESSION['username'])) {
+            echo "An email will be sent to $emailAddr when the job is complete<br>\n";
+        } else {
+            echo "If you <a href=login.php>Login</a> a notification will be sent upon completion<br>\n";
+        }
+        ?>
     <font color=red>Select the "Check Results" button to retrieve results.<br>
     <input type="button" value="Check Results" onclick="javascript: run_status('<?php echo $time; ?>');"/>
     </font>
     <?php
     die();
-}
-$elapsed = time() - $starttime;
+    }
+    $elapsed = time() - $starttime;
 
-if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
-  echo "Error - R script failed<br>\n";
-  $h = fopen("/tmp/tht/cluster4d.txt".$time,"r");
-  while ($line=fgets($h)) {
-    echo "$line<br>\n";
-  }
-  fclose($h);
-  die();
-}
-else {
-  // Make the cluster coordinates file comma-separated and put it where we can download it.
-  $inclust = fopen("/tmp/tht/clust3dCoords.csv".$time, "r");
-  $outclust = fopen($config[root_dir]."raw/genotype/clusters3D.csv", "w");
-  fwrite($outclust, "Line,Cluster\n");
-  while ($line = fgets($inclust)) {
-    $line = trim($line);
-    $fields = preg_split('/\t/', $line);
-    $fields[0] = preg_replace('/"/', '', $fields[0]);
-    $line = implode(',', $fields);
-    fwrite($outclust, $line."\n");
-  }
-  fclose($inclust);
-  fclose($outclust);
-}
+    if (!file_exists("/tmp/tht/clust3dCoords.csv".$time)) {
+        echo "Error - R script failed<br>\n";
+        $h = fopen("/tmp/tht/cluster4d.txt".$time, "r");
+        while ($line=fgets($h)) {
+            echo "$line<br>\n";
+        }
+        fclose($h);
+        die();
+    } else {
+    // Make the cluster coordinates file comma-separated and put it where we can download it.
+        $inclust = fopen("/tmp/tht/clust3dCoords.csv".$time, "r");
+        $fileout = $config[root_dir] . "raw/genotype/clusters3D.csv";
+        $outclust = fopen($fileout, "w") or die("Error: could not open $fileout");
+        fwrite($outclust, "Line,Cluster\n");
+        while ($line = fgets($inclust)) {
+            $line = trim($line);
+            $fields = preg_split('/\t/', $line);
+            $fields[0] = preg_replace('/"/', '', $fields[0]);
+            $line = implode(',', $fields);
+            fwrite($outclust, $line."\n");
+        }
+        fclose($inclust);
+        fclose($outclust);
+    }
 
 /*
  * Show the graphic.
@@ -130,7 +130,7 @@ else {
 
       <div id="myoutput"></div>
       <scene>
-	<viewpoint position='0 0 10' orientation="0 40 40 0" fieldOfView="0.785398"></viewpoint>
+      <viewpoint position='0 0 10' orientation="0 40 40 0" fieldOfView="0.785398"></viewpoint>
 <?php
 // Define the colors for the plotting symbols.
 $color = array('','black','red','limegreen','blue','cyan','magenta','orange','#ffff00');
@@ -279,5 +279,5 @@ system("find /tmp/tht -mtime +1 -name 'mrkData.csv*' -delete");
 
 print "</div></div></div>";
 $footer_div=1;
-include($config['root_dir'].'theme/footer.php');
+require $config['root_dir'].'theme/footer.php';
 ?>

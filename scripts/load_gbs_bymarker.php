@@ -1,6 +1,7 @@
 <?php
 /**
  * load 2D table where rows contain marker names and columns contain lines
+ * 10/2017 changed to generate csv file which can be loaded with "load data infile"
  *
  * PHP version 5
  *
@@ -13,6 +14,9 @@ if (!isset($argv) || ($argc != 4)) {
 $db_name = $argv[1];
 $file = $argv[2];
 $trialcode = $argv[3];
+$fileOut1 = $file . ".tassel";
+$fileOut2 = $file . ".rrblup";
+
 echo "using database = $db_name\n";
 echo "using file = $file\n";
 echo "using trial_code = $trialcode\n";
@@ -34,51 +38,53 @@ if (($fh = fopen($file, "r")) == false) {
     echo("can not open file $file\n");
     exit();
 }
+$fh1 = fopen($fileOut1, "w");
+$fh2 = fopen($fileOut2, "w");
 
 $header = fgets($fh);
 $header_ary = explode("\t", $header);
 $count = 0;
 $line_index = "";
 foreach ($header_ary as $line_name) {
-  $pattern = "/\s+/";
-  $line_name = preg_replace($pattern, "", $line_name);
-  $count++;
-  if ($count == 1) {
-    continue;
-  }
-  $sql = "select line_record_uid, line_record_name from line_records where line_record_name = \"$line_name\"";
-  $res = mysql_query($sql) or die(mysql_error());
-  if ($row = mysql_fetch_array($res)) {
-    $uid = $row[0];
-    $name = $row[1];
-  } else {
-    $sql = "select line_records.line_record_uid, line_record_name
-         from line_synonyms, line_records
-         where line_synonyms.line_record_uid = line_records.line_record_uid
-         and line_synonym_name = \"$line_name\"";
+    $pattern = "/\s+/";
+    $line_name = preg_replace($pattern, "", $line_name);
+    $count++;
+    if ($count == 1) {
+        continue;
+    }
+    $sql = "select line_record_uid, line_record_name from line_records where line_record_name = \"$line_name\"";
     $res = mysql_query($sql) or die(mysql_error());
     if ($row = mysql_fetch_array($res)) {
-      $uid = $row[0];
-      $name = $row[1];
+        $uid = $row[0];
+        $name = $row[1];
     } else {
-      echo "Error: $line_name not found\n";
-      continue;
+        $sql = "select line_records.line_record_uid, line_record_name
+          from line_synonyms, line_records
+          where line_synonyms.line_record_uid = line_records.line_record_uid
+          and line_synonym_name = \"$line_name\"";
+        $res = mysql_query($sql) or die(mysql_error());
+        if ($row = mysql_fetch_array($res)) {
+            $uid = $row[0];
+            $name = $row[1];
+        } else {
+            echo "Error: $line_name not found\n";
+            continue;
+        }
     }
-  }
-  if (isset($unique_line{$uid})) {
-     echo "Error: not unique line $line_name\n";
-  }  else {
-     $unique_line{$uid} = 1;
-  } 
-  if ($line_index == "") {
+    if (isset($unique_line{$uid})) {
+        echo "Error: not unique line $line_name\n";
+    } else {
+        $unique_line{$uid} = 1;
+    }
+    if ($line_index == "") {
         $line_index = $uid;
         $line_name_index = $name;
-  } else {
+    } else {
         $line_index = $line_index . ", $uid";
         $line_name_index = $line_name_index . ", $name";
-  }
-  $sql = "insert into tht_base (line_record_uid, experiment_uid) values ($uid, $experiment_uid)";
-  $res = mysql_query($sql) or die(mysql_error());
+    }
+    $sql = "insert into tht_base (line_record_uid, experiment_uid) values ($uid, $experiment_uid)";
+    $res = mysql_query($sql) or die(mysql_error());
 }
 $line_name_index = preg_replace("/\n/", "", $line_name_index);
 $line_name_index = str_replace(" ", "", $line_name_index);
@@ -101,7 +107,8 @@ while ($row = mysql_fetch_array($res)) {
     $marker_list_syn[$marker_name] = $marker_uid;
 }
 
-$sql = "insert into allele_bymarker_expidx(experiment_uid, line_index, line_name_index) values ($experiment_uid, \"$line_index\", \"$line_name_index\")";
+$sql = "insert into allele_bymarker_expidx(experiment_uid, line_index, line_name_index)
+     values ($experiment_uid, \"$line_index\", \"$line_name_index\")";
 //$res = mysql_query($sql) or die(mysql_error());
 $count = 0;
 $count_line_prev = "";
@@ -126,14 +133,16 @@ while (!feof($fh)) {
     $count++;
     if (isset($marker_list[$marker])) {
         $marker_uid = $marker_list[$marker];
-        $sql = "insert into allele_bymarker_exp_ACTG(experiment_uid, marker_uid, marker_name, chrom, pos, alleles)
-            values ($experiment_uid, $marker_uid, \"$marker\", \"$chrom\", \"$pos\", \"$alleles\")";
+        //$sql = "insert into allele_bymarker_exp_ACTG(experiment_uid, marker_uid, marker_name, chrom, pos, alleles)
+        //    values ($experiment_uid, $marker_uid, \"$marker\", \"$chrom\", \"$pos\", \"$alleles\")";
         //$sql = "insert into allele_bymarker_exp_101(experiment_uid, marker_uid, marker_name, chrom, pos, alleles)
         //    values ($experiment_uid, $marker_uid, \"$marker\", \"$chrom\", \"$pos\", \"$alleles\")";
-        $res = mysql_query($sql) or die(mysql_error() . $sql);
+        //$res = mysql_query($sql) or die(mysql_error() . $sql);
         if (($count % 10000) == 0) {
             echo "finished $count\n";
         }
+        fwrite($fh1, "$exp_uid\t$marker_uid\t$marker_name\t$alleles1\n");
+        fwrite($fh2, "$exp_uid\t$marker_uid\t$marker_name\t$alleles2\n");
     } elseif (isset($marker_list_syn[$marker])) {
         $marker_uid = $marker_list_syn[$marker];
         echo "error - can not insert duplicate for synonym $marker\n";
@@ -143,3 +152,5 @@ while (!feof($fh)) {
 }
 echo "$count lines from $file\n";
 fclose($fh);
+$sql = "update genotype_experiment_info set marker_count = $count where experiment_uid = $experiment_uid";
+mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));

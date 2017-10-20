@@ -110,12 +110,12 @@ if ($action == "list") {
         if ($row2 = mysqli_fetch_row($res2)) {
             $data["locationDbId"] = null;
             $data["locationName"] = $row2[0];
-            $data["optionalInfo"]["startDate"] = $row2[1];
-            $data["optionalInfo"]["endDate"] = $row2[2];
+            $data["additionalInfo"]["startDate"] = $row2[1];
+            $data["additionalInfo"]["endDate"] = $row2[2];
         } else {
             $data["locationDbId"] = null;
             $data["locationName"] = null;
-            $data["optionalInfo"] = null;
+            $data["additionalInfo"] = null;
         }
         $sql = "select data_program_name from CAPdata_programs where CAPdata_programs_uid = $CAP_uid";
         $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));

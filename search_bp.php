@@ -96,15 +96,16 @@ if ($num_rows == 0) {
             $expuid=$row_expuid['experiment_uid'];
             $trial_code=$row_expuid['trial_code'];
             $year=$row_expuid['experiment_year'];
-	    $experiment_type = $row_expuid['experiment_type_name'];
-	    $traits = experimentListPhenotypes($expuid);
-	    if ($experiment_type=='phenotype') 
-	        echo( "<tr> <td>$year</td> <td><a href='display_phenotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
-	    elseif ($experiment_type=='genotype') 
-	        echo( "<tr> <td>$year</td> <td><a href='display_genotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
+            $experiment_type = $row_expuid['experiment_type_name'];
+            $traits = experimentListPhenotypes($expuid);
+            if ($experiment_type=='phenotype') {
+                echo( "<tr> <td>$year</td> <td><a href='display_phenotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
+            } elseif ($experiment_type=='genotype') {
+                echo( "<tr> <td>$year</td> <td><a href='display_genotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
             }
+        }
         echo "</tbody></table>";
     }
-} 
+}
 $footer_div = 1;
 require $config['root_dir'].'theme/footer.php';

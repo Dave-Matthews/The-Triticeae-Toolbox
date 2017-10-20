@@ -28,7 +28,7 @@ function dieNice($code, $msg)
     global $results;
     $results['metadata']['pagination'] = null;
     $results['metadata']['status'][] = array("code" => $code, "message" => "$msg");
-    $results['result'] = null;
+    $results['result']['data'] = array();
     $return = json_encode($results);
     die("$return");
 }

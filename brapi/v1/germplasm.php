@@ -62,10 +62,10 @@ if ($command) {
             $response['germplasmName'] = $line_record_name;
             $response['germplasmPUI'] = null;
             $response['pedigree'] = null;
-            $response['germplasmSeedSource'] = null;
+            $response['seedSource'] = null;
             $response['synonyms'] = null;
             $response['commonCropName'] = $species;
-            $response['instituteName'] = null;
+            $response['instituteCode'] = null;
         } else {
             $response = null;
             $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
@@ -201,7 +201,7 @@ if ($command) {
         } else {
             $temp['pedigree'] = htmlentities($row[2]);
         }
-        $temp['germplasmSeedSource'] = null;
+        $temp['seedSource'] = null;
         $temp['synonyms'] = array();
         $temp['commonCropName'] = $species;
         $temp['instituteCode'] = null;
