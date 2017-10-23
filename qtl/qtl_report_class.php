@@ -50,7 +50,7 @@ class Downloads
         ?>
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="qtl/menu10.js"></script><br>
+        <script type="text/javascript" src="qtl/menu11.js"></script><br>
         <?php
         if (isset($_GET['pi'])) {
             $var = $_GET['pi'];
@@ -131,7 +131,49 @@ class Downloads
             }
         }
         echo "<b>Phenotype Trials:</b> $trialCount<br>\n";
-        echo "<b>Genotype platforms:</b> $platforms<br><br>\n";
+        echo "<b>Genotype platforms:</b> $platforms<br>\n";
+
+        //get list of assemblies
+        $sql = "select distinct(qtl_annotations.assembly_name), data_public_flag from qtl_annotations, assemblies
+            where qtl_annotations.assembly_name = assemblies.assembly_name  order by assembly_name";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            //pick latest assembly as default
+            if ($row[1] == 1) {
+                $assembly = $row[0];
+                $assembly = $row[0];
+                $assemblyList[] = $row[0];
+            // do not show ones that are private
+            } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+                $assembly = $row[0];
+                $assemblyList[] = $row[0];
+            }
+        }
+
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        }
+
+        //display list of assemblies
+        echo "<br>Genome Assembly <select id=\"assembly\" onchange=\"display_qtl()\">\n";
+        foreach ($assemblyList as $key => $ver) {
+            if ($ver == $assembly) {
+                $selected = "selected";
+            } else {
+                $selected = "";
+            }
+             echo "<option value=$ver $selected $disabled>$ver</option>";
+        }
+        echo "</select>";
+        $sql = "select * from assemblies where data_public_flag = 0";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_row($result)) {
+            if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+                echo "  To access additional assemblies <a href=\"login.php\">Login</a>.<br>";
+            }
+        }
+        echo "<br>";
+
         if ($cmd == "clear") {
             unset($GLOBALS[_SESSION]['selected_traits']);
             unset($GLOBALS[_SESSION]['selected_trials']);
@@ -783,6 +825,11 @@ class Downloads
             $select_sig = "checked";
             $select_imput = "";
         }
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        } else {
+            die("Error: select genome assembly\n");
+        }
 
         echo "<table><tr><td>Analysis Method<td>Group by<td>Sort by";
         echo "<tr><td>";
@@ -796,25 +843,6 @@ class Downloads
         echo "<input type=\"radio\" name=\"sort\" id=\"sort\" onclick=\"sort('score')\" $select_score> score<br>";
         echo "<input type=\"radio\" name=\"sort\" id=\"sort\" onclick=\"sort('posit')\" $select_posit> position<br>";
         echo "</table><br>";
-
-        //get list of assemblies
-        $sql = "select distinct(qtl_annotations.assembly_name), data_public_flag from qtl_annotations, assemblies
-            where qtl_annotations.assembly_name = assemblies.assembly_name  order by assembly_name";
-        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_row($result)) {
-            //pick latest assembly as default
-            if ($row[1] == 1) {
-                $assembly = $row[0];
-                $assembly = $row[0];
-                $assemblyList[] = $row[0];
-                $assemblyFlag[] = $row[1];
-            // do not show ones that are private
-            } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
-                $assembly = $row[0];
-                $assemblyList[] = $row[0];
-                $assemblyFlag[] = $row[1];
-            }
-        }
 
         $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"IWGSC.31\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -924,14 +952,21 @@ class Downloads
             $gwas = json_decode($row[0]);
             foreach ($gwas as $val) {
                 $marker = $val[0];
-                $chrom = $val[1];
-                $pos = $val[2];
                 $zvalue = $val[3];
                 $qvalue = $val[4];
                 $pvalue = $val[5];
                 $reactome = "";
                 if ($qvalue < 0.05) {
                     $count++;
+                    $sql = "select chrom, pos from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly\"";
+                    $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                    if ($row2 = mysqli_fetch_array($res2)) {
+                        $chrom = $row2[0];
+                        $pos = $row2[1];
+                    } else {
+                        $chrom = "not found";
+                        $pos = "not found";
+                    }
                     if (isset($annot_list1[$marker])) {
                         $gene = $annot_list1[$marker];
                         $exp1 = "<a target=\"_new\" href=\"https://wheat.pw.usda.gov/WheatExp/graph_and_table.php?seq_id=$gene\">WheatExp</a>";
@@ -1019,7 +1054,6 @@ class Downloads
             }
         }
         if ($count > 0) {
-            echo "using assembly $assembly<br>\n";
             echo "<a href=\"qtl/qtl_report.php?function=downloadQTL&pi=" . $puid . "&method=" . $_GET['method'] . "\">Download meta data</a>, ";
             echo "<a href=\"qtl/qtl_report.php?function=downloadDetailQTL&pi=" . $puid . "&method=" . $_GET['method'] . "\">Download detail data</a><br>";
             $count_display = 0;
