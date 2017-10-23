@@ -62,7 +62,7 @@ function detailG(gene) {
 
 function display_qtl() {
     document.title = 'Loading GWAS results';
-    assembly = document.getElementById("assembly").value;
+    assembly = $('input[name="assembly"]:checked').val();
 
     if (phenotype_items_str == "") {
         document.getElementById('step3').innerHTML = "Please select category and trait!";
