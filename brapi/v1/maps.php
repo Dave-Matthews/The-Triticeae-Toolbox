@@ -75,7 +75,7 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $uid = $row[1];
-        $temp["mapDbId"] = (integer) $row[1];
+        $temp["mapDbId"] = $row[1];
         $temp["name"] = $row[2];
         $temp["species"] = $row[3];
         $temp["type"] = $row[4];
@@ -207,7 +207,7 @@ if ($action == "list") {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
             while (mysqli_stmt_fetch($stmt)) {
-                 $temp2["markerDbId"] = (integer) $marker_uid;
+                 $temp2["markerDbId"] = $marker_uid;
                  $temp2["markerName"] = $marker_name;
                  $temp2["location"] = $start_position;
                  $temp2["linkageGroup"] = $chromosome;
