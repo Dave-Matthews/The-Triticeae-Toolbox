@@ -79,7 +79,11 @@ if ($action == "list") {
         $temp["name"] = $row[2];
         $temp["species"] = $row[3];
         $temp["type"] = $row[4];
-        $temp["unit"] = $row[5];
+        if ($row[5] == "cM") {
+            $temp["unit"] = $row[5];
+        } else {
+            $temp["unit"] = "Mb";
+        }
         if (empty($row[6])) {
             $temp["publishedDate"] = $row[7];
         } else {
@@ -126,7 +130,11 @@ if ($action == "list") {
         $results["mapDbId"] = $uid;
         $results["name"] = $mapset_name;
         $results["type"] = $map_type;
-        $results["unit"] = $map_unit;
+        if ($map_uint == "cM") {
+            $results["unit"] = $map_unit;
+        } else {
+            $results["unit"] = "Mb";
+        }
         mysqli_stmt_close($stmt);
     } else {
         $results['metadata']['status'][] = array("code" => "sql error", "message" => "error connecting to database");
