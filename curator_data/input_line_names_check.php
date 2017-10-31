@@ -156,23 +156,23 @@ class LineNames_Check
                 // Try to read the Breeding Program from row 4.
                 if (stripos($linedata['cells'][4][1], "*Breeding Program") !== false) {
                     // If it's there, all lines in this file are from one BP.
-                    $singleBP = ture;
+                    $singleBP = true;
                     $bp = $linedata['cells'][4][2];
                     if ((in_array($bp, $bpcodes) === false) or (strlen($bp) == 0)) {
                         die("Breeding Program '$bp' is not in the database. <a href=\"".$config['base_url']."all_breed_css.php\">Show codes.</a><br>");
                     }
                 }
-	// Initialize the column number for the first Property.  First column is 0.
-	// 23mar2015 Now Species is treated as a Genetic Character (Property). 
-	if ($singleBP)
-	  $firstprop = 5;
-	else 
-	  $firstprop = 6;
-
-	/* The following code allows the curator to put the columns in any order.
-	 * Any unrecognized column header will be warned as an unknown line property. */
-	// These are the standard columns. -1 means required, -2 means optional.
-	$columnOffsets = array('line_name' => -1,
+        // Initialize the column number for the first Property.  First column is 0.
+        // 23mar2015 Now Species is treated as a Genetic Character (Property).
+                if ($singleBP) {
+                    $firstprop = 5;
+                } else {
+                    $firstprop = 6;
+                }
+        /* The following code allows the curator to put the columns in any order.
+         * Any unrecognized column header will be warned as an unknown line property. */
+        // These are the standard columns. -1 means required, -2 means optional.
+	        $columnOffsets = array('line_name' => -1,
 			       'breeding_program' => -1,
 			       'species' => -1,
 			       'generation' => -1,
@@ -357,8 +357,8 @@ class LineNames_Check
 	    }
 	    // Filial Generation
 	    $generation = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['generation']]),"\0..\37!@\177..\377");
-	    if ( (empty($generation)) OR ($generation != (int)$generation) OR ($generation < 1) OR ($generation > 9) )
-	      die_nice("$line: Filial Generation (1-9) is required.");
+	    //if ( (empty($generation)) OR ($generation != (int)$generation) OR ($generation < 1) OR ($generation > 9) )
+	    //  die_nice("$line: Filial Generation (1-9) is required.");
 	    // Species
 	    $species = addcslashes(trim($linedata['cells'][$irow][$columnOffsets['species']]),"\0..\37!@\177..\377");
 	    $species = preg_replace("/^a$/", "aestivum", $species);
