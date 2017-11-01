@@ -165,7 +165,7 @@ class Downloads
             } else {
                 $selected = "";
             }
-            echo "<tr><td><input type=\"radio\" name=\"assembly\" value=\"$ver\" $selected> $ver<td>$assemblyDesc[$key]<br>";
+            echo "<tr><td nowrap><input type=\"radio\" name=\"assembly\" value=\"$ver\" $selected> $ver<td>$assemblyDesc[$key]<br>";
         }
         //echo "</select>";
         $sql = "select * from assemblies where data_public_flag = 0";
@@ -491,7 +491,7 @@ class Downloads
             $assembly = $row[1];
             $gene = $row[2];
             $desc = $row[3];
-            if ($assembly == "IWGSC.31") {
+            if ($assembly == "IWGSC1+popseq") {
                 $annot_list[$marker] = $gene;
             } else {
                 $annot_list2[$marker] = $gene;
@@ -630,7 +630,7 @@ class Downloads
             $assembly = $row[1];
             $gene = $row[2];
             $desc = $row[3];
-            if ($assembly == "IWGSC.31") {
+            if ($assembly == "IWGSC1+popseq") {
                 $annot_list1[$marker] = $gene;
             } else {
                 $annot_list2[$marker] = $gene;
@@ -848,7 +848,7 @@ class Downloads
         echo "</table><br>";
 
         /** get WheatExp **/
-        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"IWGSC.31\"";
+        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
@@ -857,7 +857,7 @@ class Downloads
             $annot_list1[$marker] = $gene;
         }
         /** get expVIP **/
-        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"IWGSC.37\"";
+        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"Wheat TGACv1\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
@@ -989,7 +989,7 @@ class Downloads
                     if (isset($annot_list2[$marker])) {
                         $gene = $annot_list2[$marker];
                         $exp2 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/1?gene=$gene&studies%5B%5D=DRP000768&studies%5B%5D=ERP003465&studies%5B%5D=ERP004505&studies%5B%5D=SRP004884&studies%5B%5D=SRP013449&studies%5B%5D=SRP017303&studies%5B%5D=SRP022869&studies%5B%5D=SRP028357&studies%5B%5D=SRP029372&studies%5B%5D=SRP038912&studies%5B%5D=SRP041017&studies%5B%5D=SRP041022&studies%5B%5D=ERP008767&studies%5B%5D=SRP045409&studies%5B%5D=INRA-RNASeq&studies%5B%5D=SRP056412&studies%5B%5D=TGAC_genome\">expVIP</a>";
-                       $exp3 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
+                        $exp3 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
                     } else {
                         $exp2 = "";
                         $exp3 = "";
