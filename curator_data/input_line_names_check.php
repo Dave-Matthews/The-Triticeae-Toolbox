@@ -226,8 +226,10 @@ class LineNames_Check
 	  else if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
 	    $columnOffsets['pedigree'] = $columnOffset+1;
 	  // Determine the column offset of "*Filial Generation".
-	  else if (preg_match('/^\s*filialgeneration\s*$/is', trim($columnName)))
+	  else if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName))) //needed for backward compatibility
 	    $columnOffsets['generation'] = $columnOffset+1;
+          else if (preg_match('/^\s*filialgeneration\s*$/is', trim($columnName)))
+            $columnOffsets['generation'] = $columnOffset+1;
 	  // Determine the column offset of "*aestivum / durum / other" or "*Species".
 	  else if (preg_match('/^\s*\*aestivum \/ durum \/ other\s*$/is', trim($columnName))
 		   OR preg_match('/^\s*\*species\s*$/is', trim($columnName))) {
@@ -702,8 +704,10 @@ class LineNames_Check
 	if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
 	  $columnOffsets['pedigree'] = $columnOffset+1;
 	// Determine the column offset of "*Filial Generation".
-	if (preg_match('/^\s*filialgeneration\s*$/is', trim($columnName)))
+	if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName))) //needed for backward compatibility
 	  $columnOffsets['generation'] = $columnOffset+1;
+        if (preg_match('/^\s*filialgeneration\s*$/is', trim($columnName)))
+          $columnOffsets['generation'] = $columnOffset+1;
 	// Determine the column offset of "*aestivum / durum / other".
 	/* if (preg_match('/^\s*\*aestivum \/ durum \/ other\s*$/is', trim($columnName)))  */
 	/*   $columnOffsets['species'] = $columnOffset+1; */
