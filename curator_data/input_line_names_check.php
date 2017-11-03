@@ -172,14 +172,14 @@ class LineNames_Check
         /* The following code allows the curator to put the columns in any order.
          * Any unrecognized column header will be warned as an unknown line property. */
         // These are the standard columns. -1 means required, -2 means optional.
-	        $columnOffsets = array('line_name' => -1,
-			       'breeding_program' => -1,
-			       'species' => -1,
-			       'generation' => -1,
-			       'synonyms' => -2,
-			       'grin' => -2,
-			       'pedigree' => -2,
-			       'comments' => -2 );
+                $columnOffsets = array('line_name' => -1,
+		       'breeding_program' => -1,
+		       'species' => -1,
+		       'generation' => -1,
+		       'synonyms' => -2,
+		       'grin' => -2,
+		       'pedigree' => -2,
+		       'comments' => -2 );
 	// Available line properties:
 	$res = mysqli_query($mysqli, "select name from properties") or die (mysqli_error($mysqli));
 	while ($r = mysqli_fetch_row($res))
@@ -226,7 +226,7 @@ class LineNames_Check
 	  else if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
 	    $columnOffsets['pedigree'] = $columnOffset+1;
 	  // Determine the column offset of "*Filial Generation".
-	  else if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
+	  else if (preg_match('/^\s*filialgeneration\s*$/is', trim($columnName)))
 	    $columnOffsets['generation'] = $columnOffset+1;
 	  // Determine the column offset of "*aestivum / durum / other" or "*Species".
 	  else if (preg_match('/^\s*\*aestivum \/ durum \/ other\s*$/is', trim($columnName))
@@ -702,7 +702,7 @@ class LineNames_Check
 	if (preg_match('/^\s*pedigree\s*$/is', trim($columnName)))
 	  $columnOffsets['pedigree'] = $columnOffset+1;
 	// Determine the column offset of "*Filial Generation".
-	if (preg_match('/^\s*\*filialgeneration\s*$/is', trim($columnName)))
+	if (preg_match('/^\s*filialgeneration\s*$/is', trim($columnName)))
 	  $columnOffsets['generation'] = $columnOffset+1;
 	// Determine the column offset of "*aestivum / durum / other".
 	/* if (preg_match('/^\s*\*aestivum \/ durum \/ other\s*$/is', trim($columnName)))  */
