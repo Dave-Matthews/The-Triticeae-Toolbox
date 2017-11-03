@@ -13,8 +13,8 @@ $mysqli = connecti();
 /*******************************/ ?>
 
 <div id="primaryContentContainer">
-	<div id="primaryContent">
-        <script type="text/javascript" src="theme/new.js"></script>
+<div id="primaryContent">
+<script type="text/javascript" src="theme/new.js"></script>
 <?php
 
 function dispCombinOpt()
@@ -50,8 +50,10 @@ function dispCombinOpt()
     <?php
 }
 
-  // Create temporary directory if necessary.
-  if (! file_exists('/tmp/tht')) mkdir('/tmp/tht');
+// Create temporary directory if necessary.
+if (! file_exists('/tmp/tht')) {
+     mkdir('/tmp/tht');
+}
 
 if (isset($_POST['deselLines'])) {
   $selected_lines = $_SESSION['selected_lines'];
@@ -222,7 +224,7 @@ $in_these_trials
         <?php
 
         if(mysqli_num_rows($search) > 0) {
-	  echo displayTableSigdig($search, TRUE, $sigdig);
+	  echo displayTableSigdig($search, true, $sigdig);
 	  echo "<form action='".$config['base_url']."dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . urlencode($query) ."' /></form>";
 	  //echo "<br /><form action='".$config['base_url']."pedigree/pedigree_markers.php'><input type='submit' value='View Common Marker Values' /></form>";
 	}
@@ -257,7 +259,14 @@ $in_these_trials
     <tr class="nohover">
     <td>
     <select name='phenotypecategory' size=10 onfocus="DispPhenoSel(this.value, 'Category')" onchange="DispPhenoSel(this.value, 'Category')">
-    <?php showTableOptions("phenotype_category"); ?>
+    <?php
+    $sql = "select distinct(phenotype_category.phenotype_category_uid), phenotype_category_name from phenotype_category, phenotypes
+      where phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_array($res)) {
+        echo "<option value=\"$row[0]\">$row[1]</option>\n";
+    }
+    //showTableOptions("phenotype_category"); ?>
 </select>
 </td>
 <td><p>Select a phenotype category.</p>
