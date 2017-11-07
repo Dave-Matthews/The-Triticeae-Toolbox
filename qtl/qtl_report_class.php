@@ -50,7 +50,7 @@ class Downloads
         ?>
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="qtl/menu11.js"></script><br>
+        <script type="text/javascript" src="qtl/menu12.js"></script><br>
         <?php
         if (isset($_GET['pi'])) {
             $var = $_GET['pi'];
@@ -838,7 +838,7 @@ class Downloads
         echo "<tr><td>";
         echo "<input type=\"radio\" name=\"meth\" id=\"meth\" onclick=\"selectDb('single')\" $select_sig> phenotype trial<br>";
         echo "<input type=\"radio\" name=\"meth\" id=\"meth\" onclick=\"selectDb('set')\" $select_set> phenotype experiment (set of trials)<br>";
-        echo "<input type=\"radio\" name=\"meth\" id=\"meth\" onclick=\"selectDb('imput')\" $select_imput> phenotype trial, genotype imputed";
+        //echo "<input type=\"radio\" name=\"meth\" id=\"meth\" onclick=\"selectDb('imput')\" $select_imput> phenotype trial, genotype imputed";
         echo "<td>";
         echo "<input type=\"radio\" name=\"group\" id=\"group\" onclick=\"group('marker')\" $select_m> marker<br>";
         echo "<input type=\"radio\" name=\"group\" id=\"group\" onclick=\"group('gene')\" $select_g> gene<br>";
