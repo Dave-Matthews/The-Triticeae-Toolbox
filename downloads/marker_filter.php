@@ -470,7 +470,7 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
             AND mim.map_uid = map.map_uid
             AND map.mapset_uid = $selected_map";
         } else {
-            $sql = "select markers.marker_uid, CAST(1000*mim.start_position SIGNED), mim.chromosome, mim.bin_name
+            $sql = "select markers.marker_uid, CAST(1000*mim.start_position as SIGNED), mim.chromosome, mim.bin_name
             from markers, markers_in_maps as mim, map
             where mim.marker_uid = markers.marker_uid
             AND mim.map_uid = map.map_uid
