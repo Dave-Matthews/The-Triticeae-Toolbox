@@ -199,33 +199,33 @@ function calculate_af($lines, $min_maf, $max_missing, $max_miss_line)
             return;
         }
     } else {
-    foreach ($marker_list as $i => $marker_uid) {
-        //if there are selected markers then only calculate allele frequencies for these
-        if (isset($_SESSION['clicked_buttons']) && !isset($selected_markers[$marker_uid])) {
-            continue;
+        foreach ($marker_list as $i => $marker_uid) {
+            //if there are selected markers then only calculate allele frequencies for these
+            if (isset($_SESSION['clicked_buttons']) && !isset($selected_markers[$marker_uid])) {
+                continue;
+            }
+            $total_af = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i];
+            $total = $total_af + $marker_misscnt[$i];
+            if ($total_af > 0) {
+                $maf1 = (2 * $marker_aacnt[$i] + $marker_abcnt[$i]) / (2 * $total_af);
+                $maf2 = ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / (2 * $total_af);
+                $maf = round(100 * min($maf1, $maf2), 1);
+                $miss = 100 * $marker_misscnt[$i]/$total;
+                if ($maf < $min_maf) {
+                    $num_maf++;
+                }
+                if ($miss > $max_missing) {
+                    //echo "$total_af $total $miss<br>\n";
+                    $num_miss++;
+                }
+                if (($miss > $max_missing) or ($maf < $min_maf)) {
+                    $num_removed++;
+                } else {
+                    $markers_filtered[] = $marker_uid;
+                }
+                $num_mark++;
+            }
         }
-        $total_af = $marker_aacnt[$i] + $marker_abcnt[$i] + $marker_bbcnt[$i];
-        $total = $total_af + $marker_misscnt[$i];
-        if ($total_af > 0) {
-            $maf1 = (2 * $marker_aacnt[$i] + $marker_abcnt[$i]) / (2 * $total_af);
-            $maf2 = ($marker_abcnt[$i] + 2 * $marker_bbcnt[$i]) / (2 * $total_af);
-            $maf = round(100 * min($maf1, $maf2), 1);
-            $miss = 100 * $marker_misscnt[$i]/$total;
-            if ($maf < $min_maf) {
-                $num_maf++;
-            }
-            if ($miss > $max_missing) {
-                //echo "$total_af $total $miss<br>\n";
-                $num_miss++;
-            }
-            if (($miss > $max_missing) or ($maf < $min_maf)) {
-                $num_removed++;
-            } else {
-                $markers_filtered[] = $marker_uid;
-            }
-            $num_mark++;
-        }
-    }
     }
     //echo "<br>num of markers with data = $num_mark<br>\n";
     $_SESSION['filtered_markers'] = $markers_filtered;
@@ -410,11 +410,11 @@ function findCommonLines($lines)
     /**
      * build genotype data files for tassel and rrBLUP using genotype experiment
      *
-     * @param integer	$geno_exp	genotype experiment
-     * @param float	$min_maf	minimum allele frequency
-     * @param float	$max_missing	max missing
-     * @param string	$dtype   file format
-     * @param resource	$h       file handle
+     * @param integer  $geno_exp    genotype experiment
+     * @param float    $min_maf     minimum allele frequency
+     * @param float    $max_missing max missing
+     * @param string   $dtype       file format
+     * @param resource $h           file handle
      *
      * @return null
      */
@@ -464,13 +464,13 @@ function type4BuildMarkersDownload($geno_exp, $min_maf, $max_missing, $dtype, $h
         $marker_list_chr = array();
     } else {
         if ($map_type == "Physical") {
-            $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome, mim.bin_name
+            $sql = "select markers.marker_uid, CAST(mim.start_position as SIGNED), mim.chromosome, mim.bin_name
             from markers, markers_in_maps as mim, map
             where mim.marker_uid = markers.marker_uid
             AND mim.map_uid = map.map_uid
             AND map.mapset_uid = $selected_map";
         } else {
-            $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome, mim.bin_name
+            $sql = "select markers.marker_uid, CAST(1000*mim.start_position SIGNED), mim.chromosome, mim.bin_name
             from markers, markers_in_maps as mim, map
             where mim.marker_uid = markers.marker_uid
             AND mim.map_uid = map.map_uid
