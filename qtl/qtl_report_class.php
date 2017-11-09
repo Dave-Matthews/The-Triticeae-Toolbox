@@ -483,20 +483,28 @@ class Downloads
         } else {
             $database = "qtl_raw";
         }
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        } else {
+            die("Error: select genome assembly\n");
+        }
 
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $marker = $row[0];
+            $gene = $row[2];
+            $desc = $row[3];
+            $annot_list[$marker] = $gene;
+        }
         $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
-            $assembly = $row[1];
             $gene = $row[2];
             $desc = $row[3];
-            if ($assembly == "IWGSC1+popseq") {
-                $annot_list[$marker] = $gene;
-            } else {
-                $annot_list2[$marker] = $gene;
-                $annot_list3[$marker] = $desc;
-            }
+            $annot_list2[$marker] = $gene;
+            $annot_list3[$marker] = $desc;
         }
 
         header('Content-type: application/vnd.ms-excel');
@@ -622,20 +630,27 @@ class Downloads
         } else {
             $database = "qtl_raw";
         }
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        } else {
+            die("Error: select genome assembly\n");
+        }
 
-        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations";
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
-            $assembly = $row[1];
+            $gene = $row[2];
+            $annot_list1[$marker] = $gene;
+        }
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $marker = $row[0];
             $gene = $row[2];
             $desc = $row[3];
-            if ($assembly == "IWGSC1+popseq") {
-                $annot_list1[$marker] = $gene;
-            } else {
-                $annot_list2[$marker] = $gene;
-                $annot_list3[$marker] = $desc;
-            }
+            $annot_list2[$marker] = $gene;
+            $annot_list3[$marker] = $desc;
         }
 
         $sql = "select experiment_uid, trial_code from experiments";
@@ -990,18 +1005,23 @@ class Downloads
                         $gene = $annot_list2[$marker];
                         $exp2 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/1?gene=$gene&studies%5B%5D=DRP000768&studies%5B%5D=ERP003465&studies%5B%5D=ERP004505&studies%5B%5D=SRP004884&studies%5B%5D=SRP013449&studies%5B%5D=SRP017303&studies%5B%5D=SRP022869&studies%5B%5D=SRP028357&studies%5B%5D=SRP029372&studies%5B%5D=SRP038912&studies%5B%5D=SRP041017&studies%5B%5D=SRP041022&studies%5B%5D=ERP008767&studies%5B%5D=SRP045409&studies%5B%5D=INRA-RNASeq&studies%5B%5D=SRP056412&studies%5B%5D=TGAC_genome\">expVIP</a>";
                         $exp3 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
+                        if (isset($annot_list5[$gene])) {
+                            $stableID = $annot_list5[$gene];
+                            $reactome = "<a target=\"_new\" href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$stableID\">Plant Reactome</a>";
+                        }
                     } else {
                         $exp2 = "";
                         $exp3 = "";
+                    }
+                    if (isset($annot_list3[$marker])) {
+                        $gene = $annot_list3[$marker];
+                    } else {
+                        $gene = "";
                     }
                     if (isset($annot_list4[$marker])) {
                         $desc2 = $annot_list4[$marker];
                     } else {
                         $desc2 = "";
-                    }
-                    if (isset($annot_list5[$gene])) {
-                        $stableID = $annot_list5[$gene];
-                        $reactome = "<a target=\"_new\" href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$stableID\">Plant Reactome</a>";
                     }
                     if ($chrom == "UNK") {
                         $chrom_num = 4;
@@ -1067,8 +1087,8 @@ class Downloads
             }
         }
         if ($count > 0) {
-            echo "<a href=\"qtl/qtl_report.php?function=downloadQTL&pi=" . $puid . "&method=" . $_GET['method'] . "\">Download meta data</a>, ";
-            echo "<a href=\"qtl/qtl_report.php?function=downloadDetailQTL&pi=" . $puid . "&method=" . $_GET['method'] . "\">Download detail data</a><br>";
+            echo "<a href=\"qtl/qtl_report.php?function=downloadQTL&pi=" . $puid . "&method=" . $_GET['method'] . "&assembly=" . $assembly ."\">Download meta data</a>, ";
+            echo "<a href=\"qtl/qtl_report.php?function=downloadDetailQTL&pi=" . $puid . "&method=" . $_GET['method'] . "&assembly=" . $assembly . "\">Download detail data</a><br>";
             $count_display = 0;
             if ($gb == "marker") {
                 //echo "<table><tr><td>marker<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
