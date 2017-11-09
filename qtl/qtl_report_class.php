@@ -857,7 +857,7 @@ class Downloads
             $annot_list1[$marker] = $gene;
         }
         /** get expVIP **/
-        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"Wheat TGACv1\"";
+        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"Wheat_TGACv1\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
