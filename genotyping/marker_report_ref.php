@@ -88,7 +88,10 @@ if (isset($_GET['uid'])) {
             $count2 = $row[2];
             $total = $total_marker_list[$uid];
             $perc = round(100*$count1/$total, 0);
-            $out_list[$uid] .= "$total<td><a href=genotyping/marker_report_ref.php?uid=$uid&asm=$asm>$count1</a> ($perc%)";
+            if (!isset($out_list[$uid])) {
+                $out_list[$uid] = $total;
+            }
+            $out_list[$uid] .= "<td><a href=genotyping/marker_report_ref.php?uid=$uid&asm=$asm>$count1</a> ($perc%)";
             $count++;
         }
     }
@@ -100,7 +103,11 @@ if (isset($_GET['uid'])) {
     }
 
     foreach ($out_list as $uid => $val) {
-        echo "<tr><td>$trial_name_list[$uid]";
+        if (isset($trial_name_list[$uid])) {
+            echo "<tr><td>$trial_name_list[$uid]";
+        } else {
+            echo "<tr><td>UID = $uid";
+        }
         echo "<td>$out_list[$uid]";
     }
 }
