@@ -1,11 +1,8 @@
 <?php
 /**
- * BRAPI/0.1/germplasm.php, DEM jul 2014
+ * brapi/v1/germplasm.php, DEM jul 2014
  * Deliver Line names according to http://docs.breeding.apiary.io/
  *
- * Cassavabase response:
- * % curl "http://cassava-test.sgn.cornell.edu/brapi/0.1/germplasm/find?q=95NA-00063"
- * [{"queryName":"95NA-00063","germplasmId":29417,"uniqueName":"95NA-00063"}]
  */
 
 require '../../includes/bootstrap.inc';
@@ -17,8 +14,12 @@ $rest = str_replace($script, "", $self);
 $rest = explode("/", $rest);
 header("Content-Type: application/json");
 
-$command = $rest[0];
-//echo "rest[0] = $rest[0]\n";
+if (!empty($rest[0])) {
+    $lineuid = $rest[0];
+} elseif (isset($_GET['germplasmDbId'])) {
+    $lineuid = $_GET['germplasmDbId'];
+}
+
 // Extract the URI's querystring, ie "name={name}".
 if (isset($_GET['matchMethod'])) {
     $matchMethod = $_GET['matchMethod'];
@@ -47,9 +48,8 @@ if ($row = mysqli_fetch_array($res)) {
     $species = null;
 }
 
-// Is there a command?
-if ($command) {
-    $lineuid = $command;
+// Is there a requiest for line_record_uid?
+if (isset($lineuid)) {
     $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $lineuid);
@@ -65,33 +65,31 @@ if ($command) {
             $response['seedSource'] = null;
             $response['synonyms'] = null;
             $response['commonCropName'] = $species;
-            $response['instituteCode'] = null;
+            $response['instituteCode'] = "";
         } else {
             $response = null;
             $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
         }
         mysqli_stmt_close($stmt);
     }
-    if (isset($lineuid)) {
-        $sql = "select line_synonym_name from line_synonyms where line_record_uid = ?";
-        $stmt = mysqli_prepare($mysqli, $sql);
-        mysqli_stmt_bind_param($stmt, "i", $lineuid);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $line_synonyms);
-        while (mysqli_stmt_fetch($stmt)) {
-            $response['synonyms'][] = $line_synonyms;
-        }
-        mysqli_stmt_close($stmt);
-        $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = ?";
-        $stmt = mysqli_prepare($mysqli, $sql);
-        mysqli_stmt_bind_param($stmt, "i", $lineuid);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $barley_ref_number);
-        if (mysqli_stmt_fetch($stmt)) {
-            $response['accessionNumber'] = $barley_ref_number;
-        }
-        mysqli_stmt_close($stmt);
+    $sql = "select line_synonym_name from line_synonyms where line_record_uid = ?";
+    $stmt = mysqli_prepare($mysqli, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $lineuid);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $line_synonyms);
+    while (mysqli_stmt_fetch($stmt)) {
+        $response['synonyms'][] = $line_synonyms;
     }
+    mysqli_stmt_close($stmt);
+    $sql = "select barley_ref_number from barley_pedigree_catalog_ref where line_record_uid = ?";
+    $stmt = mysqli_prepare($mysqli, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $lineuid);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $barley_ref_number);
+    if (mysqli_stmt_fetch($stmt)) {
+        $response['accessionNumber'] = $barley_ref_number;
+    }
+    mysqli_stmt_close($stmt);
     $r['metadata']['pagination']['pageSize'] = 1;
     $r['metadata']['pagination']['currentPage'] = $currentPage;
     $r['metadata']['pagination']['totalCount'] = 1;
@@ -204,7 +202,7 @@ if ($command) {
         $temp['seedSource'] = null;
         $temp['synonyms'] = array();
         $temp['commonCropName'] = $species;
-        $temp['instituteCode'] = null;
+        $temp['instituteCode'] = "";
         $response[] = $temp;
     }
   
