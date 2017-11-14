@@ -148,7 +148,7 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $temp['linkageGroupId'] = $row[2];
-        $temp['numberMarkers'] = (integer) $row[0];
+        $temp['markerCount'] = (integer) $row[0];
         $temp['maxPosition'] = (integer) $row[1];
         $results['linkageGroups'][] = $temp;
     }
