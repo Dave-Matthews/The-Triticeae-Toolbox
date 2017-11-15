@@ -128,9 +128,11 @@ function showLineForMarker($marker_uid, $order = "line_record_name")
     while ($row = mysqli_fetch_assoc($resource)) {
         $trial_code = $row['trial_code'];
         $lines = json_decode($row['marker_index'], true);
-        if (in_array($line_id, $lines)) {
-            $found = 1;
-            echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><br>\n";
+        if (isset($lines)) {
+            if (in_array($line_id, $lines)) {
+                $found = 1;
+                echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><br>\n";
+            }
         }
     }
 
