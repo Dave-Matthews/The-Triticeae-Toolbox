@@ -1,6 +1,10 @@
 <?php
 require "includes/bootstrap.inc";
 $mysqli = connecti();
+
+$nm = $_REQUEST['name'];
+$pageTitle = $nm;
+
 require "theme/normal_header.php";
 
 // Will take both uids and names
@@ -9,7 +13,6 @@ require "theme/normal_header.php";
 $table = strip_tags($_REQUEST['table']);
 $prettified = beautifulTableName($table, 0);
 $id = $_REQUEST['uid'];
-$nm = $_REQUEST['name'];
 $pattern = '/user/i';
 if (preg_match($pattern, $table)) {
     error(1, "No Record Found");
