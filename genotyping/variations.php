@@ -237,7 +237,7 @@ if ($count > 0) {
     }
 }
 $count = count($vepList);
-if (($count > 0) && preg_match("/IWGSC/", $assembly)) {
+if (($count > 0) && preg_match("/TGACv1/", $assembly)) {
     echo "<br>To run Variant Effect Predictor, copy the data below and paste it into the text box on the website <a href=\"$ensemblLinkVEP\" target=\"_new\">Ensembl Plant VEP</a>. ";
     echo "Calculations take about 5 minutes per marker.<br>\n";
     if ($selected_markers_count > 1000) {

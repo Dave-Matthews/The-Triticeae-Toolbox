@@ -67,7 +67,7 @@ if ($action == "list") {
     $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
-    $sql = "select count(*), mapset.mapset_uid, mapset_name, species, map_type, map_unit, DATE_FORMAT(published_on, '%Y-%m-%d'), comments
+    $sql = "select count(*), mapset.mapset_uid, mapset_name, species, map_type, map_unit, DATE_FORMAT(published_on, '%Y-%m-%d'), DATE_FORMAT(mapset.created_on, '%Y-%m-%d'), comments
     from mapset, markers_in_maps as mim, map
     WHERE mim.map_uid = map.map_uid
     AND map.mapset_uid = mapset.mapset_uid
@@ -75,12 +75,20 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $uid = $row[1];
-        $temp["mapDbId"] = (integer) $row[1];
+        $temp["mapDbId"] = $row[1];
         $temp["name"] = $row[2];
         $temp["species"] = $row[3];
         $temp["type"] = $row[4];
-        $temp["unit"] = $row[5];
-        $temp["publishedDate"] = $row[6];
+        if ($row[5] == "cM") {
+            $temp["unit"] = $row[5];
+        } else {
+            $temp["unit"] = "Mb";
+        }
+        if (empty($row[6])) {
+            $temp["publishedDate"] = $row[7];
+        } else {
+            $temp["publishedDate"] = $row[6];
+        }
         $temp["markerCount"] = (integer) $row[0];
         $sql = "select count(distinct(chromosome)) from markers_in_maps, map
         where map.map_uid = markers_in_maps.map_uid
@@ -122,7 +130,11 @@ if ($action == "list") {
         $results["mapDbId"] = $uid;
         $results["name"] = $mapset_name;
         $results["type"] = $map_type;
-        $results["unit"] = $map_unit;
+        if ($map_uint == "cM") {
+            $results["unit"] = $map_unit;
+        } else {
+            $results["unit"] = "Mb";
+        }
         mysqli_stmt_close($stmt);
     } else {
         $results['metadata']['status'][] = array("code" => "sql error", "message" => "error connecting to database");
@@ -136,8 +148,8 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $temp['linkageGroupId'] = $row[2];
-        $temp['numberMarkers'] = $row[0];
-        $temp['maxPosition'] = $row[1];
+        $temp['markerCount'] = (integer) $row[0];
+        $temp['maxPosition'] = (integer) $row[1];
         $results['linkageGroups'][] = $temp;
     }
     $linearray['result'] = $results;
@@ -203,7 +215,7 @@ if ($action == "list") {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
             while (mysqli_stmt_fetch($stmt)) {
-                 $temp2["markerDbId"] = (integer) $marker_uid;
+                 $temp2["markerDbId"] = $marker_uid;
                  $temp2["markerName"] = $marker_name;
                  $temp2["location"] = $start_position;
                  $temp2["linkageGroup"] = $chromosome;
@@ -225,7 +237,7 @@ if ($action == "list") {
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
                 while (mysqli_stmt_fetch($stmt)) {
-                    $temp2["markerId"] = (integer) $marker_uid;
+                    $temp2["markerDbId"] = $marker_uid;
                     $temp2["markerName"] = $marker_name;
                     $temp2["location"] = $start_position;
                     $temp2["linkageGroup"] = $chromosome;

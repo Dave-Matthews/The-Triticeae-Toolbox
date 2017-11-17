@@ -103,29 +103,29 @@ class Downloads
      */
     private function refresh_title()
     {
-      global $mysqli;
-      $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
-      ?>
-      <h2>Select Phenotypes</h2>
-      <em>Select multiple options by holding down the Ctrl(PC) Command(Mac) key while clicking.</em><br>
-      <em>Selecting traits and trials will NOT affect currently selected lines</em>
-      <br><br>
-      <?php 
-      if ($command == "save") {
-        if (isset($_GET['pi'])) {
-          $_SESSION['phenotype'] = $_GET['pi'];
-          $phenotype_ary = explode(",",$_SESSION['phenotype']);
-          $_SESSION['selected_traits'] = $phenotype_ary;
-        } else {
-          echo "error - no traits selection found";
-        }
-        if (isset($_GET['exps'])) {
-          $trials_ary = explode(",",$_GET['exps']);
-          $_SESSION['selected_trials'] = $trials_ary;  
-          $_SESSION['experiments'] = $_GET['exps'];
-        } else {
-          echo "error - no trials selection found";
-        }
+        global $mysqli;
+        $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
+        ?>
+        <h2>Select Phenotypes</h2>
+        <em>Select multiple options by holding down the Ctrl(PC) Command(Mac) key while clicking.</em><br>
+        <em>Selecting traits and trials will NOT affect currently selected lines</em>
+        <br><br>
+        <?php
+        if ($command == "save") {
+          if (isset($_GET['pi'])) {
+            $_SESSION['phenotype'] = $_GET['pi'];
+            $phenotype_ary = explode(",",$_SESSION['phenotype']);
+            $_SESSION['selected_traits'] = $phenotype_ary;
+          } else {
+            echo "error - no traits selection found";
+          }
+          if (isset($_GET['exps'])) {
+            $trials_ary = explode(",",$_GET['exps']);
+            $_SESSION['selected_trials'] = $trials_ary;  
+            $_SESSION['experiments'] = $_GET['exps'];
+          } else {
+            echo "error - no trials selection found";
+          }
       } elseif ($command == "deselect") {
         if (isset($_GET['pi'])) {
           $deselect_str = $_GET['pi'];
@@ -241,7 +241,8 @@ class Downloads
 	    <tr><td>
 	    <select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
             <?php
-		$sql = "SELECT phenotype_category_uid AS id, phenotype_category_name AS name from phenotype_category";
+                $sql = "select distinct(phenotype_category.phenotype_category_uid) as id, phenotype_category_name as name from phenotype_category, phenotypes
+                  where phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		while ($row = mysqli_fetch_assoc($res))
 		{

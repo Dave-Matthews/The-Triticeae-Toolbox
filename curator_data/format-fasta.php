@@ -107,8 +107,6 @@ echo "$count markers found<br>\n";
 $out = $config['root_dir'] . "viroblast/db/nucleotide";
 chdir($out);
 $cmd = "cd ../viroblast/db/nucleotide;" . $config['root_dir'] .
-    "viroblast/blastplus/bin/formatdb -i wheat-markers -p F -o T 2> /tmp/tht/tmp_formatdb.out";
-$cmd = "cd ../viroblast/db/nucleotide;" . $config['root_dir'] .
-    "viroblast/blastplus/bin/makeblastdb -in wheat-markers -out wheat-markers -title wheat-markers -dbtype nucl";
+    "viroblast/blastplus/bin/makeblastdb -in wheat-markers -out wheat-markers -title wheat-markers -parse_seqids -dbtype nucl";
 //echo "$cmd<br>\n";
 exec($cmd);

@@ -20,7 +20,7 @@ if (isset($_GET['datatype'])) {
 if (isset($_GET['pageSize'])) {
     $pageSize = $_GET['pageSize'];
 } else {
-    $pageSize = 10;
+    $pageSize = 100;
 }
 if (isset($_GET['page'])) {
     $currentPage = $_GET['page'];

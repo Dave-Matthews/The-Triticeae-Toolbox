@@ -28,7 +28,6 @@
 <script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
-<!--script srt="js/site.js" type="text/javascript"></script-->
 
 <link href="theme/sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
@@ -252,13 +251,12 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <!-- <li><a href="<?php echo $config['base_url']; ?>login/edit_anything.php"> -->
       <!-- Anything!</a></li> -->
       </ul> <?php
-    } else { ?>
+    } ?>
       <li> <a href="" title="Manage">Manage</a>
         <ul>
         <li><a href="<?php echo $config['base_url']; ?>curator_data/exp_design.php" title="Experiment Design">
             Phenotype Trials</a>
         </ul> <?php
-    }
 
     if (authenticate(array( USER_TYPE_ADMINISTRATOR))) { ?>
     <li>
@@ -292,6 +290,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
   <a href="" title="<?php echo $lang["desc_sc2"]; ?>">Resources</a>
   <ul>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
+    <li><a href="<?php echo $config['base_url']; ?>tutorials" title="Tutorials">Tutorials</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
     <li><a href="<?php echo $config['base_url']; ?>curator_data/instructions.php" title="Submit Data to T3">Data Submission</a>
     <li><a href="<?php echo $config['base_url']; ?>traits.php" title="Traits and units used">Trait Descriptions</a>

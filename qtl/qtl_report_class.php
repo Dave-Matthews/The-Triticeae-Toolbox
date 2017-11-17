@@ -50,7 +50,7 @@ class Downloads
         ?>
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="qtl/menu10.js"></script><br>
+        <script type="text/javascript" src="qtl/menu12.js"></script><br>
         <?php
         if (isset($_GET['pi'])) {
             $var = $_GET['pi'];
@@ -131,7 +131,52 @@ class Downloads
             }
         }
         echo "<b>Phenotype Trials:</b> $trialCount<br>\n";
-        echo "<b>Genotype platforms:</b> $platforms<br><br>\n";
+        echo "<b>Genotype platforms:</b> $platforms<br>\n";
+
+        //get list of assemblies
+        $sql = "select distinct(qtl_annotations.assembly_name), data_public_flag, assemblies.description from qtl_annotations, assemblies
+            where qtl_annotations.assembly_name = assemblies.assembly_name  order by assembly_name";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            //pick latest assembly as default
+            if ($row[1] == 1) {
+                $assembly = $row[0];
+                $assembly = $row[0];
+                $assemblyList[] = $row[0];
+                $assemblyDesc[] = $row[2];
+            // do not show ones that are private
+            } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+                $assembly = $row[0];
+                $assemblyList[] = $row[0];
+                $assemblyDesc[] = $row[2];
+            }
+        }
+
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        }
+
+        //display list of assemblies
+        //echo "<br>Genome Assembly <select id=\"assembly\" onchange=\"display_qtl()\">\n";
+        echo "<br><form><table><tr><td>Genome Assembly<td>Description";
+        foreach ($assemblyList as $key => $ver) {
+            if ($ver == $assembly) {
+                $selected = "checked";
+            } else {
+                $selected = "";
+            }
+            echo "<tr><td nowrap><input type=\"radio\" name=\"assembly\" value=\"$ver\" $selected> $ver<td>$assemblyDesc[$key]<br>";
+        }
+        //echo "</select>";
+        $sql = "select * from assemblies where data_public_flag = 0";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_row($result)) {
+            if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+                echo "<tr><td><a href=\"login.php\">Login</a><td>To access additional assemblies";
+            }
+        }
+        echo "</table></form><br>";
+
         if ($cmd == "clear") {
             unset($GLOBALS[_SESSION]['selected_traits']);
             unset($GLOBALS[_SESSION]['selected_trials']);
@@ -438,20 +483,28 @@ class Downloads
         } else {
             $database = "qtl_raw";
         }
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        } else {
+            die("Error: select genome assembly\n");
+        }
 
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $marker = $row[0];
+            $gene = $row[2];
+            $desc = $row[3];
+            $annot_list[$marker] = $gene;
+        }
         $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
-            $assembly = $row[1];
             $gene = $row[2];
             $desc = $row[3];
-            if ($assembly == "IWGSC.31") {
-                $annot_list[$marker] = $gene;
-            } else {
-                $annot_list2[$marker] = $gene;
-                $annot_list3[$marker] = $desc;
-            }
+            $annot_list2[$marker] = $gene;
+            $annot_list3[$marker] = $desc;
         }
 
         header('Content-type: application/vnd.ms-excel');
@@ -577,20 +630,27 @@ class Downloads
         } else {
             $database = "qtl_raw";
         }
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        } else {
+            die("Error: select genome assembly\n");
+        }
 
-        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations";
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
-            $assembly = $row[1];
+            $gene = $row[2];
+            $annot_list1[$marker] = $gene;
+        }
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $marker = $row[0];
             $gene = $row[2];
             $desc = $row[3];
-            if ($assembly == "IWGSC.31") {
-                $annot_list1[$marker] = $gene;
-            } else {
-                $annot_list2[$marker] = $gene;
-                $annot_list3[$marker] = $desc;
-            }
+            $annot_list2[$marker] = $gene;
+            $annot_list3[$marker] = $desc;
         }
 
         $sql = "select experiment_uid, trial_code from experiments";
@@ -783,12 +843,17 @@ class Downloads
             $select_sig = "checked";
             $select_imput = "";
         }
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        } else {
+            die("Error: select genome assembly\n");
+        }
 
         echo "<table><tr><td>Analysis Method<td>Group by<td>Sort by";
         echo "<tr><td>";
         echo "<input type=\"radio\" name=\"meth\" id=\"meth\" onclick=\"selectDb('single')\" $select_sig> phenotype trial<br>";
         echo "<input type=\"radio\" name=\"meth\" id=\"meth\" onclick=\"selectDb('set')\" $select_set> phenotype experiment (set of trials)<br>";
-        echo "<input type=\"radio\" name=\"meth\" id=\"meth\" onclick=\"selectDb('imput')\" $select_imput> phenotype trial, genotype imputed";
+        //echo "<input type=\"radio\" name=\"meth\" id=\"meth\" onclick=\"selectDb('imput')\" $select_imput> phenotype trial, genotype imputed";
         echo "<td>";
         echo "<input type=\"radio\" name=\"group\" id=\"group\" onclick=\"group('marker')\" $select_m> marker<br>";
         echo "<input type=\"radio\" name=\"group\" id=\"group\" onclick=\"group('gene')\" $select_g> gene<br>";
@@ -797,42 +862,33 @@ class Downloads
         echo "<input type=\"radio\" name=\"sort\" id=\"sort\" onclick=\"sort('posit')\" $select_posit> position<br>";
         echo "</table><br>";
 
-        //get list of assemblies
-        $sql = "select distinct(qtl_annotations.assembly_name), data_public_flag from qtl_annotations, assemblies
-            where qtl_annotations.assembly_name = assemblies.assembly_name  order by assembly_name";
-        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_row($result)) {
-            //pick latest assembly as default
-            if ($row[1] == 1) {
-                $assembly = $row[0];
-                $assembly = $row[0];
-                $assemblyList[] = $row[0];
-                $assemblyFlag[] = $row[1];
-            // do not show ones that are private
-            } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
-                $assembly = $row[0];
-                $assemblyList[] = $row[0];
-                $assemblyFlag[] = $row[1];
-            }
-        }
-
-        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"IWGSC.31\"";
+        /** get WheatExp **/
+        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
-            $gene = $row[2];
-            $desc = $row[3];
+            $gene = $row[1];
+            $desc = $row[2];
             $annot_list1[$marker] = $gene;
         }
-
-        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
+        /** get expVIP **/
+        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"Wheat_TGACv1\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
-            $gene = $row[2];
-            $desc = $row[3];
+            $gene = $row[1];
+            $desc = $row[2];
             $annot_list2[$marker] = $gene;
-            $annot_list3[$marker] = $desc;
+        }
+
+        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $marker = $row[0];
+            $gene = $row[1];
+            $desc = $row[2];
+            $annot_list3[$marker] = $gene;
+            $annot_list4[$marker] = $desc;
         }
 
         $sql = "select value, gene from gene_annotations";
@@ -840,7 +896,7 @@ class Downloads
         while ($row = mysqli_fetch_array($res)) {
             $stableID = $row[0];
             $gene = $row[1];
-            $annot_list4[$gene] = $stableID;
+            $annot_list5[$gene] = $stableID;
         }
         $sql = "select experiment_uid, number_entries from phenotype_experiment_info";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -905,8 +961,8 @@ class Downloads
                 foreach ($gwas as $val) {
                     $marker_name = $val[0];
                     $zvalue = $val[3];
-                    if (isset($annot_list2[$marker_name])) {
-                        $gene = $annot_list2[$marker_name];
+                    if (isset($annot_list3[$marker_name])) {
+                        $gene = $annot_list3[$marker_name];
                         $zsum[$gene] += $zvalue;
                         $ztot[$gene]++;
                     }
@@ -924,35 +980,47 @@ class Downloads
             $gwas = json_decode($row[0]);
             foreach ($gwas as $val) {
                 $marker = $val[0];
-                $chrom = $val[1];
-                $pos = $val[2];
                 $zvalue = $val[3];
                 $qvalue = $val[4];
                 $pvalue = $val[5];
                 $reactome = "";
                 if ($qvalue < 0.05) {
                     $count++;
+                    $sql = "select chrom, pos from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly\"";
+                    $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                    if ($row2 = mysqli_fetch_array($res2)) {
+                        $chrom = $row2[0];
+                        $pos = $row2[1];
+                    } else {
+                        $chrom = "not found";
+                        $pos = "not found";
+                    }
                     if (isset($annot_list1[$marker])) {
                         $gene = $annot_list1[$marker];
                         $exp1 = "<a target=\"_new\" href=\"https://wheat.pw.usda.gov/WheatExp/graph_and_table.php?seq_id=$gene\">WheatExp</a>";
-                        $exp2 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/1?gene=$gene&studies%5B%5D=DRP000768&studies%5B%5D=ERP003465&studies%5B%5D=ERP004505&studies%5B%5D=SRP004884&studies%5B%5D=SRP013449&studies%5B%5D=SRP017303&studies%5B%5D=SRP022869&studies%5B%5D=SRP028357&studies%5B%5D=SRP029372&studies%5B%5D=SRP038912&studies%5B%5D=SRP041017&studies%5B%5D=SRP041022&studies%5B%5D=ERP008767&studies%5B%5D=SRP045409&studies%5B%5D=INRA-RNASeq&studies%5B%5D=SRP056412&studies%5B%5D=TGAC_genome\">expVIP</a>";
-                        $exp3 = "";
                     } else {
                         $exp1 = "";
-                        $exp2 = "";
-                        $exp3 = "";
                     }
                     if (isset($annot_list2[$marker])) {
                         $gene = $annot_list2[$marker];
                         $exp2 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/1?gene=$gene&studies%5B%5D=DRP000768&studies%5B%5D=ERP003465&studies%5B%5D=ERP004505&studies%5B%5D=SRP004884&studies%5B%5D=SRP013449&studies%5B%5D=SRP017303&studies%5B%5D=SRP022869&studies%5B%5D=SRP028357&studies%5B%5D=SRP029372&studies%5B%5D=SRP038912&studies%5B%5D=SRP041017&studies%5B%5D=SRP041022&studies%5B%5D=ERP008767&studies%5B%5D=SRP045409&studies%5B%5D=INRA-RNASeq&studies%5B%5D=SRP056412&studies%5B%5D=TGAC_genome\">expVIP</a>";
                         $exp3 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
-                        $desc2 = $annot_list3[$marker];
-                        if (isset($annot_list4[$gene])) {
-                            $stableID = $annot_list4[$gene];
+                        if (isset($annot_list5[$gene])) {
+                            $stableID = $annot_list5[$gene];
                             $reactome = "<a target=\"_new\" href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$stableID\">Plant Reactome</a>";
                         }
                     } else {
+                        $exp2 = "";
+                        $exp3 = "";
+                    }
+                    if (isset($annot_list3[$marker])) {
+                        $gene = $annot_list3[$marker];
+                    } else {
                         $gene = "";
+                    }
+                    if (isset($annot_list4[$marker])) {
+                        $desc2 = $annot_list4[$marker];
+                    } else {
                         $desc2 = "";
                     }
                     if ($chrom == "UNK") {
@@ -1019,9 +1087,8 @@ class Downloads
             }
         }
         if ($count > 0) {
-            echo "using assembly $assembly<br>\n";
-            echo "<a href=\"qtl/qtl_report.php?function=downloadQTL&pi=" . $puid . "&method=" . $_GET['method'] . "\">Download meta data</a>, ";
-            echo "<a href=\"qtl/qtl_report.php?function=downloadDetailQTL&pi=" . $puid . "&method=" . $_GET['method'] . "\">Download detail data</a><br>";
+            echo "<a href=\"qtl/qtl_report.php?function=downloadQTL&pi=" . $puid . "&method=" . $_GET['method'] . "&assembly=" . $assembly ."\">Download meta data</a>, ";
+            echo "<a href=\"qtl/qtl_report.php?function=downloadDetailQTL&pi=" . $puid . "&method=" . $_GET['method'] . "&assembly=" . $assembly . "\">Download detail data</a><br>";
             $count_display = 0;
             if ($gb == "marker") {
                 //echo "<table><tr><td>marker<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
