@@ -54,6 +54,9 @@ if ($row = mysqli_fetch_row($res)) {
 } else {
     die("Can not identify database\n");
 }
+if (! file_exists('/tmp/tht')) {
+    mkdir('/tmp/tht');
+}
 $cachefile = '/tmp/tht/cache_' . $db . '.txt';
 if ($query == 'geno') {
     $count = 0;
@@ -146,6 +149,25 @@ if ($query == 'geno') {
             $count = $row2[0];
             print "<tr><td>$program_code<td>$count\n";
         }
+    }
+} elseif ($query == 'lineant') {
+    include $config['root_dir'].'theme/admin_header2.php';
+    print "Lines with annotation\n";
+    $sql = "select distinct(line_records.line_record_uid) from line_records, barley_pedigree_catalog_ref where line_records.line_record_uid = barley_pedigree_catalog_ref.line_record_uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $line_record_uid = $row[0];
+        $sql2 = "SELECT b_ref.barley_ref_number as value, b.link_out
+        FROM barley_pedigree_catalog_ref AS b_ref, barley_pedigree_catalog AS b
+        WHERE b_ref.line_record_uid = $line_record_uid 
+        AND b.barley_pedigree_catalog_uid = b_ref.barley_pedigree_catalog_uid";
+        $res2 = mysqli_query($mysqli, $sql2) or die($mysqli_error($mysqli));
+        while ($row2 = mysqli_fetch_assoc($res2)) {
+            $value = urlencode($row2['value']);
+            $url_bpc = str_replace('XXXX', $value, $row2['link_out']);
+            print "<a href=\"$url_bp\"c>$line_record_uid</a>";
+        }
+        print "<br>\n";
     }
 } elseif ($query == 'Lines') {
     include $config['root_dir'].'theme/admin_header2.php';
@@ -529,14 +551,20 @@ if ($query == 'geno') {
   $sql = "select count(distinct(line_records.line_record_uid)) from line_records, tht_base, phenotype_data where (line_records.line_record_uid = tht_base.line_record_uid) and (tht_base.tht_base_uid = phenotype_data.tht_base_uid)";
   $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
   if ($row = mysqli_fetch_row($res)) {
-    $count = $row[0];
+    $count1 = $row[0];
+  }
+  $sql = "select count(distinct(line_records.line_record_uid)) from line_records, barley_pedigree_catalog_ref where line_records.line_record_uid = barley_pedigree_catalog_ref.line_record_uid";
+  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
+  if ($row = mysqli_fetch_row($res)) {
+    $count2 = $row[0];
   }
   if ($output == "excel") {
     $worksheet->write(10, 0, "Lines with phenotype data");
     $worksheet->write(10, 1, $count);
     $worksheet->write(11, 0, "Species");
   } elseif ($output == "") {
-    print "<tr><td>Lines with phenotype data<td>$count<td><a href='".$config['base_url']."t3_report.php?query=linephen'>List lines with phenotype data</a>\n";
+    print "<tr><td>Lines with phenotype data<td>$count1<td><a href='".$config['base_url']."t3_report.php?query=linephen'>List lines with phenotype data</a>\n";
+    print "<tr><td>Lines with annotation links<td>$count2<td><a href='".$config['base_url']."t3_report.php?query=lineant'>List lines with annotation</a>\n";
     print "<tr><td>Species<td>";
   }
   $count = "";
