@@ -93,13 +93,14 @@ if (($data_public_flag == 0) and
         $exptset = mysql_grab("SELECT experiment_set_name from experiment_set where experiment_set_uid=$set_uid");
     }
     // Get CAPdata_program too.
-    $query="SELECT data_program_name, collaborator_name 
+    $query="SELECT data_program_name, collaborator_name, program_type 
 	  from CAPdata_programs, experiments
 	  where experiment_uid = $experiment_uid
 	  and experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid";
     $result_cdp=mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
     $row_cdp=mysqli_fetch_array($result_cdp);
     $dataprogram = $row_cdp['data_program_name'];
+    $programType = ucfirst($row_cdp['program_type']);
 
     echo "<table>";
     if ($exptset) {
@@ -124,7 +125,7 @@ if (($data_public_flag == 0) and
     echo "<tr> <td>Number of Entries</td><td>".$row_pei['number_entries']."</td></tr>";
     echo "<tr> <td>Number of Replications</td><td>".$row_pei['number_replications']."</td></tr>";
     echo "<tr> <td>Comments</td><td>".$row_pei['other_remarks']."</td></tr>";
-    echo "<tr> <td>Data Program</td><td>".$dataprogram."</td></tr>";
+    echo "<tr> <td>$programType Program</td><td>".$dataprogram."</td></tr>";
     echo "</table><p>";
 
     // get all line data for this experiment
@@ -392,20 +393,19 @@ for ($i = 0; $i < count($all_rows); $i++) {
     ?>
     <tr>
     <?php
-	for ($j = 0; $j < count($single_row); $j++)
-	{
-	?>
-	<!-- <td><div style="width: 75px; overflow-x: hidden;"> -->
-	<td><div style="width: 75px; word-wrap: break-word">
-	<?php echo $all_rows[$i][$j] ?>
-	</div></td> 
-	<?php
-	}/* end of for j loop */
-	?>
-	</tr>
-	<?php
-	}/* end of for i loop */
-	?>
+    for ($j = 0; $j < count($single_row); $j++) {
+        ?>
+        <!-- <td><div style="width: 75px; overflow-x: hidden;"> -->
+        <td><div style="width: 75px; word-wrap: break-word">
+        <?php echo $all_rows[$i][$j] ?>
+        </div></td> 
+        <?php
+    }/* end of for j loop */
+    ?>
+    </tr>
+    <?php
+}/* end of for i loop */
+?>
 </table>
 </div>
 <div style="padding: 0; width: <?php echo $tablewidth; ?>px; border: 1px solid #5b53a6; clear: both">
