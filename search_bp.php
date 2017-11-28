@@ -23,12 +23,10 @@ if ($stmt = mysqli_prepare($mysqli, $sql)) {
 }
 
 if (($dptype =='breeding') || ($dptype =='mapping')) {
-    $sql1 = "SELECT DISTINCT e.experiment_uid
-	   FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
-	   WHERE tb.line_record_uid = lr.line_record_uid
-           AND e.CAPdata_programs_uid = cp.CAPdata_programs_uid
-	   AND lr.breeding_program_code = cp.data_program_code
-	   AND tb.experiment_uid = e.experiment_uid
+    $sql1 = "SELECT e.experiment_uid
+	   FROM CAPdata_programs cp, experiments e
+           WHERE e.CAPdata_programs_uid = cp.CAPdata_programs_uid
+           AND cp.program_type = \"$dptype\"
 	   AND cp.CAPdata_programs_uid = ?";
 } else {
     $sql1 = "SELECT experiment_uid FROM experiments WHERE CAPdata_programs_uid = ?";
