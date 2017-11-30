@@ -8,6 +8,7 @@
       missing data in some trials.  Fixed bug in normalization.
    Todo: - Show correlation of each trait vs. Index.
          - Allow download of the result tables.
+  11/30/17 - allow any line to be sellected as common line then list as skip if not present
  */
 
 require 'config.php';
@@ -31,7 +32,11 @@ function scaled($rawvalue, $trait, $trial)
         return $normalized;
     }
     if ($scaling == 'percent') {
-        $percent = 100 * $rawvalue / $basevalue[$trait][$trial];
+        if (empty($basevalue[$trait][$trial])) {
+            $percent = null;
+        } else {
+            $percent = 100 * $rawvalue / $basevalue[$trait][$trial];
+        }
         return $percent;
     }
 }
@@ -74,10 +79,12 @@ $triallist = implode(',', $trialids);
 // Lines in common among all these trials, as array of (name, uid) pairs.
 $started = 0;
 foreach ($trialids as $tid) {
+    $counttmp = 0;
     $sql = "select line_record_uid from tht_base where experiment_uid = $tid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $entries = array();
     while ($row = mysqli_fetch_row($res)) {
+        $counttmp++;
         $entries[] = $row[0];
     }
     if ($started > 0) {
@@ -86,38 +93,39 @@ foreach ($trialids as $tid) {
         $commonlines = $entries;
         $started = 1;
     }
+    //echo "$tid $counttmp<br>\n";
 }
 
 if (empty($_GET) or $_REQUEST['reselect']) {
-  // Initial entry to the script or resetting parameters.
-?>
-Choose relative weights and a scaling method to combine the traits into an index.
-<br>If smaller values of a trait are better, reverse the scale.
-<br>Data will come from the <a href=<?php echo $config[base_url]?>phenotype/phenotype_selection.php>currently selected trials</a>.
-<br><br>
-<form>
-  <table>
+    // Initial entry to the script or resetting parameters.
+    ?>
+    Choose relative weights and a scaling method to combine the traits into an index.
+    <br>If smaller values of a trait are better, reverse the scale.
+    <br>Data will come from the <a href=<?php echo $config[base_url]?>phenotype/phenotype_selection.php>currently selected trials</a>.
+    <br><br>
+    <form>
+    <table>
     <tr><th>Trait<th>Weight<th>Reverse scale
 
-<?php
-  // If reselecting parameters, read in the old values.
-  $weight = $_REQUEST[wt];
-  $reverse = $_REQUEST[reverse];
-  // If user hasn't yet specified the relative weights, divide equally.
-  foreach ($traitnames as $tn) {
-    if (!$weight[$tn]) {
-      $weight[$tn] = intval(100 / $traitcount);
+    <?php
+    // If reselecting parameters, read in the old values.
+    $weight = $_REQUEST[wt];
+    $reverse = $_REQUEST[reverse];
+    // If user hasn't yet specified the relative weights, divide equally.
+    foreach ($traitnames as $tn) {
+        if (!$weight[$tn]) {
+            $weight[$tn] = intval(100 / $traitcount);
+        }
+        echo "<tr><td>$tn";
+        echo "<td><input type=text name='wt[$tn]' value=$weight[$tn] size=3>";
+        echo "<td style=text-align:center>";
+        // Previously reversed?
+        $ck = "";
+        if ($reverse[$tn] == 'on') {
+            $ck = "checked";
+        }
+        echo "<input type=checkbox name='reverse[$tn]' $ck>";
     }
-    echo "<tr><td>$tn";
-    echo "<td><input type=text name='wt[$tn]' value=$weight[$tn] size=3>";
-    echo "<td style=text-align:center>";
-    // Previously reversed?
-    $ck = "";
-    if ($reverse[$tn] == 'on') {
-      $ck = "checked";
-    }
-    echo "<input type=checkbox name='reverse[$tn]' $ck>";
-  }
 ?>
   </table>
 <br><h3>Scaling of trait values</h3>
@@ -125,20 +133,21 @@ Choose relative weights and a scaling method to combine the traits into an index
 <br><input type=radio name=scaling value=actual>Actual measured value
 
 <?php
-  // Disallow "Percent of common line" if there are no lines in common across all trials.
-  $dsbl = "";
-  $choices = "Choose...";
-  if (empty($commonlines)) {
+// Disallow "Percent of common line" if there are no lines in common across all trials.
+$dsbl = "";
+$choices = "Choose...";
+if (empty($commonlines)) {
     $dsbl = "disabled";
     $choices = "None";
-  }
-  echo "<br><input type=radio name=scaling value=percent $dsbl>Percent of common line: ";
-  echo "<select name=base-line>";
-  echo "<option value=0>$choices</option>";
-  foreach ($commonlines as $cl) {
+}
+echo "<br><input type=radio name=scaling value=percent $dsbl>Percent of common line: ";
+echo "<select name=base-line>";
+echo "<option value=0>$choices</option>";
+//foreach ($commonlines as $cl) {
+foreach ($entries as $cl) {
     $linename = mysql_grab("select line_record_name from line_records where line_record_uid = $cl");
     echo "<option value = $cl>$linename</option>";
-  }
+}
 ?>
 </select>
 <br><input type=radio name=scaling value=rank>Rank in trial
@@ -146,32 +155,32 @@ Choose relative weights and a scaling method to combine the traits into an index
 </form>
 
 <?php
+    // end of if (empty($_REQUEST))
+} else { // Submit button was clicked.
+    $weight = $_REQUEST[wt];
+    $totalwt = array_sum($weight); // Needn't add up to 100.
+    $reverse = $_REQUEST[reverse];
+    $scaling = $_REQUEST[scaling];
+    if ($_REQUEST['base-line'] != 0) {
+        $scaling = "percent";
+    }
+    echo "<form method=POST>";
+    echo "Scaling method: <b>$scaling</b>";
+    if ($scaling == 'percent') {
+        $baselineuid = $_REQUEST['base-line'];
+        $baselinename = mysql_grab("select line_record_name from line_records where line_record_uid = $baselineuid");
+        echo " of <b>$baselinename</b>";
+    }
+    echo ". Weights: <b>".implode($weight, ', ')."</b>. ";
+    echo "<input type=submit name=reselect value=Reselect>";
+    echo "</form>";
 
-    } // end of if (empty($_REQUEST))
-else { // Submit button was clicked.
-  $weight = $_REQUEST[wt];
-  $totalwt = array_sum($weight); // Needn't add up to 100.
-  $reverse = $_REQUEST[reverse];
-  $scaling = $_REQUEST[scaling];
-  if ($_REQUEST['base-line'] != 0) {
-    $scaling = "percent";
-  }
-  echo "<form method=POST>";
-  echo "Scaling method: <b>$scaling</b>";
-  if ($scaling == 'percent') {
-    $baselineuid = $_REQUEST['base-line'];
-    $baselinename = mysql_grab("select line_record_name from line_records where line_record_uid = $baselineuid");
-    echo " of <b>$baselinename</b>";
-  }
-  echo ". Weights: <b>".implode($weight, ', ')."</b>. ";
-  echo "<input type=submit name=reselect value=Reselect>";
-  echo "</form>";
-
-  $lines = array();
-  // Fetch the data.
-  if (!empty($triallist))
-    $trialsubset = "and tb.experiment_uid in ($triallist)";
-  $sql = "select pd.phenotype_uid, phenotypes_name, tb.experiment_uid, trial_code, 
+    $lines = array();
+    // Fetch the data.
+    if (!empty($triallist)) {
+        $trialsubset = "and tb.experiment_uid in ($triallist)";
+    }
+    $sql = "select pd.phenotype_uid, phenotypes_name, tb.experiment_uid, trial_code, 
             tb.line_record_uid, line_record_name, value
 	from phenotype_data pd, tht_base tb, phenotypes p, line_records lr, experiments e
 	where pd.phenotype_uid in ($traitlist)
@@ -181,61 +190,75 @@ else { // Submit button was clicked.
 	and lr.line_record_uid = tb.line_record_uid
 	and e.experiment_uid = tb.experiment_uid
         order by phenotypes_name, trial_code, abs(value) desc";
-  $res = mysqli_query($mysqli, $sql) or finish("<p>MySQL error: ". mysqli_error($mysqli));
+    $res = mysqli_query($mysqli, $sql) or finish("<p>MySQL error: ". mysqli_error($mysqli));
   // Read it into the master array $actual, indexed by (trait, trial, line).
-  while ($row = mysqli_fetch_array($res)) {
-    $actual[$row[phenotypes_name]][$row[trial_code]][$row[line_record_name]] = $row[value];
-    // Get the names of the lines.
-    if (!in_array($row[5], $lines))  
-      $lines[] = $row[5];
-  }
-
-  if ($scaling == 'normalized') {
-    // To normalize we need the mean and SD of each trait/trial combination.
-    foreach ($traitnames as $tn) {
-      foreach ($trialnames as $trial) {
-	$sum = 0; $linecount = 0; $devsq = 0;
-	foreach ($lines as $line) {
-	  if ($actual[$tn][$trial][$line]) {
-	  $sum += $actual[$tn][$trial][$line];
-	  $linecount++;
-	  }
-	} 
-	$mean[$tn][$trial] = $sum / $linecount;
-	foreach ($lines as $line) 
-	  if ($actual[$tn][$trial][$line]) {
-	    // Get the sum of (deviations from mean)^2.
-	    $devsq += pow($mean[$tn][$trial] - $actual[$tn][$trial][$line], 2);
-	    $SD[$tn][$trial] = sqrt($devsq / $linecount);
-	  }
-      }
-    }
-  }
-
-  if ($scaling == "rank") {
-    foreach ($traitnames as $tn) {
-      foreach ($trialnames as $trial) {
-        $sum = 0; $linecount = 0; $devsq = 0;
-        $tmp1 = array();
-        $tmp2 = array();
-        foreach ($lines as $line) {
-          if ($actual[$tn][$trial][$line]) {
-            $tmp1[] = $actual[$tn][$trial][$line];
-            $tmp2[] = $line;
-          }
+    while ($row = mysqli_fetch_array($res)) {
+        $actual[$row[phenotypes_name]][$row[trial_code]][$row[line_record_name]] = $row[value];
+        // Get the names of the lines.
+        if (!in_array($row[5], $lines)) {
+            $lines[] = $row[5];
         }
-        array_multisort($tmp1, $tmp2);
-        $rankIndex[$tn][$trial] = $tmp1;
-        $rankName[$tn][$trial] = $tmp2;
-      }
     }
-  }
 
-  if ($scaling == 'percent') {
-    // Get the values for the "base" line used as reference.
-    foreach ($traitnames as $tn) 
-      foreach ($trialnames as $trial) 
-	$basevalue[$tn][$trial] = $actual[$tn][$trial][$baselinename];
+    if ($scaling == 'normalized') {
+        // To normalize we need the mean and SD of each trait/trial combination.
+        foreach ($traitnames as $tn) {
+            foreach ($trialnames as $trial) {
+                $sum = 0;
+                $linecount = 0;
+                $devsq = 0;
+                foreach ($lines as $line) {
+                    if ($actual[$tn][$trial][$line]) {
+                        $sum += $actual[$tn][$trial][$line];
+                        $linecount++;
+                    }
+                }
+                $mean[$tn][$trial] = $sum / $linecount;
+                foreach ($lines as $line) {
+                    if ($actual[$tn][$trial][$line]) {
+                    // Get the sum of (deviations from mean)^2.
+                        $devsq += pow($mean[$tn][$trial] - $actual[$tn][$trial][$line], 2);
+                        if ($linecount == 0) {
+                            $SD[$tn][$trial] = 0;
+                        } else {
+                            $SD[$tn][$trial] = sqrt($devsq / $linecount);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if ($scaling == "rank") {
+        foreach ($traitnames as $tn) {
+            foreach ($trialnames as $trial) {
+                $sum = 0;
+                $linecount = 0;
+                $devsq = 0;
+                $tmp1 = array();
+                $tmp2 = array();
+                foreach ($lines as $line) {
+                    if ($actual[$tn][$trial][$line]) {
+                        $tmp1[] = $actual[$tn][$trial][$line];
+                        $tmp2[] = $line;
+                    }
+                }
+                array_multisort($tmp1, $tmp2);
+                $rankIndex[$tn][$trial] = $tmp1;
+                $rankName[$tn][$trial] = $tmp2;
+            }
+        }
+    }
+
+    if ($scaling == 'percent') {
+        // Get the values for the "base" line used as reference.
+        foreach ($traitnames as $tn) {
+            foreach ($trialnames as $trial) {
+                if (isset($actual[$tn][$trial][$baselinename])) {
+                    $basevalue[$tn][$trial] = $actual[$tn][$trial][$baselinename];
+                }
+            }
+        }
   }
 
   // Average the (scaled) trait scores over trials, for each line.
@@ -246,10 +269,14 @@ else { // Submit button was clicked.
 	if (!empty($actual[$tn][$trial][$line])) {
           if ($scaling == 'rank') {
             $sum += array_search($line, $rankName[$tn][$trial]);
+            $N++;
           } else {
-	    $sum += scaled($actual[$tn][$trial][$line], $tn, $trial);
+            $tmp = scaled($actual[$tn][$trial][$line], $tn, $trial);
+            if (!empty($tmp)){
+	      $sum += $tmp;
+              $N++;
+            }
           }
-	  $N++;
 	}
       }
       if ($N > 0)
