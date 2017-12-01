@@ -8,12 +8,12 @@
       missing data in some trials.  Fixed bug in normalization.
    Todo: - Show correlation of each trait vs. Index.
          - Allow download of the result tables.
-  11/30/17 - allow any line to be sellected as common line then list as skip if not present
+  11/30/17 - allow any line to be sellected as common line then skip if not present
  */
 
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
-require $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'theme/admin_header2.php';
 $mysqli = connecti();
 $row = loadUser($_SESSION['username']);
 
@@ -79,12 +79,10 @@ $triallist = implode(',', $trialids);
 // Lines in common among all these trials, as array of (name, uid) pairs.
 $started = 0;
 foreach ($trialids as $tid) {
-    $counttmp = 0;
     $sql = "select line_record_uid from tht_base where experiment_uid = $tid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $entries = array();
     while ($row = mysqli_fetch_row($res)) {
-        $counttmp++;
         $entries[] = $row[0];
     }
     if ($started > 0) {
@@ -93,7 +91,6 @@ foreach ($trialids as $tid) {
         $commonlines = $entries;
         $started = 1;
     }
-    //echo "$tid $counttmp<br>\n";
 }
 
 if (empty($_GET) or $_REQUEST['reselect']) {
@@ -259,48 +256,52 @@ foreach ($entries as $cl) {
                 }
             }
         }
-  }
-
-  // Average the (scaled) trait scores over trials, for each line.
-  foreach ($traitnames as $tn) {
-    foreach ($lines as $line) {
-      $sum = 0; $N = 0;
-      foreach ($trialnames as $trial) {
-	if (!empty($actual[$tn][$trial][$line])) {
-          if ($scaling == 'rank') {
-            $sum += array_search($line, $rankName[$tn][$trial]);
-            $N++;
-          } else {
-            $tmp = scaled($actual[$tn][$trial][$line], $tn, $trial);
-            if (!empty($tmp)){
-	      $sum += $tmp;
-              $N++;
-            }
-          }
-	}
-      }
-      if ($N > 0)
-	$avg[$tn][$line] = $sum / $N;
     }
-  }
 
-  // Calculate Index from the scaled average over trials.
-  foreach ($lines as $line) {
-    // Don't calculate an Index if there is no value for one or more traits.
-    $missing = FALSE;
+    // Average the (scaled) trait scores over trials, for each line.
     foreach ($traitnames as $tn) {
-      if (empty($avg[$tn][$line]))
-	$missing = TRUE;
-      else {
-	$weightedval = ($weight[$tn] * $avg[$tn][$line] ) / $totalwt;
-	if ($reverse[$tn] == 'on')
-	  $weightedval = - $weightedval;
-	$wv[$tn] = $weightedval;
-      }
+        foreach ($lines as $line) {
+            $sum = 0;
+            $N = 0;
+            foreach ($trialnames as $trial) {
+                if (!empty($actual[$tn][$trial][$line])) {
+                    if ($scaling == 'rank') {
+                        $sum += array_search($line, $rankName[$tn][$trial]);
+                        $N++;
+                    } else {
+                        $tmp = scaled($actual[$tn][$trial][$line], $tn, $trial);
+                        if (!empty($tmp)) {
+                            $sum += $tmp;
+                            $N++;
+                        }
+                    }
+                }
+            }
+            if ($N > 0) {
+                $avg[$tn][$line] = $sum / $N;
+            }
+        }
     }
-    if (!$missing)
-      $avgndx[$line] = round(array_sum($wv), 2);
-  }
+
+    // Calculate Index from the scaled average over trials.
+    foreach ($lines as $line) {
+        // Don't calculate an Index if there is no value for one or more traits.
+        $missing = false;
+        foreach ($traitnames as $tn) {
+            if (empty($avg[$tn][$line])) {
+                $missing = true;
+            } else {
+                $weightedval = ($weight[$tn] * $avg[$tn][$line] ) / $totalwt;
+                if ($reverse[$tn] == 'on') {
+                    $weightedval = - $weightedval;
+                }
+                $wv[$tn] = $weightedval;
+            }
+        }
+        if (!$missing) {
+            $avgndx[$line] = round(array_sum($wv), 2);
+        }
+    }
   // Sort with highest first.
   arsort($avgndx);
 
