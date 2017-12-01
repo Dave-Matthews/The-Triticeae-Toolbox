@@ -165,7 +165,13 @@ foreach ($entries as $cl) {
     echo "Scaling method: <b>$scaling</b>";
     if ($scaling == 'percent') {
         $baselineuid = $_REQUEST['base-line'];
-        $baselinename = mysql_grab("select line_record_name from line_records where line_record_uid = $baselineuid");
+        $sql = "select line_record_name from line_records where line_record_uid = $baselineuid";
+        $res = mysqli_query($mysqli, $sql) or finish("<p>MySQL error: ". mysqli_error($mysqli));
+        if ($row = mysqli_fetch_array($res)) {
+            $baselinename = $row[0];
+        } else {
+            finish("<br>Error: please select common line<br>\n");
+        }
         echo " of <b>$baselinename</b>";
     }
     echo ". Weights: <b>".implode($weight, ', ')."</b>. ";
