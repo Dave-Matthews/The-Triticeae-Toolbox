@@ -31,7 +31,7 @@ class SelectPhenotypeExp
                 $this->type1();
                 break;
             case 'type1experiments':
-                $this->type1_experiments();
+                $this->type1Experiments();
                 break;
             case 'step1dataprog':
                 $this->step1_dataprog();
@@ -1718,17 +1718,17 @@ class SelectPhenotypeExp
 	/**
 	 * display a list of experiments
 	 */
-	private function type1_experiments()
-	{
+    private function type1Experiments()
+    {
             global $mysqli;
-		$CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
-		$years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
-                $program_type = $_GET['pt'];
-                if ($program_type == "BreedingProgram") {
-                $program_type = "breeding";
-                } elseif ($program_type == "DataProgram") {
-                $program_type = "data";
-                }
+        $CAPdata_programs = $_GET['bp']; //"'" . implode("','", explode(',',$_GET['bp'])) . "'";
+        $years = $_GET['yrs']; //"'" . implode("','", explode(',',$_GET['yrs'])) . "'";
+        $program_type = $_GET['pt'];
+        if ($program_type == "BreedingProgram") {
+            $program_type = "breeding";
+        } elseif ($program_type == "DataProgram") {
+            $program_type = "data";
+        }
 
 ?>
 <p>3. 
@@ -1738,44 +1738,29 @@ class SelectPhenotypeExp
 <div>
 
 <table class="tableclass1">
-	<tr><th>Trials</th></tr>
-	<tr><td>
-		<select name="experiments" multiple="multiple"
-		  style="height: 12em" onchange="javascript: update_trials(this.options)">
-<?php
+<tr><th>Trials</th></tr>
+<tr><td>
+<select name="experiments" multiple="multiple"
+  style="height: 12em" onchange="javascript: update_trials(this.options)">
+        <?php
 //	List phenotype experiments associated with a list of breeding programs and years selected by the user,
 //  needs to used datasets/experiments 
 //	linking table.
 
-                if ($program_type == "data") {
                      $sql = "SELECT DISTINCT e.experiment_uid as id, e.trial_code as name, e.experiment_year AS year
-                     FROM experiments e, experiment_types AS et
-                     WHERE e.experiment_type_uid = et.experiment_type_uid
-                     AND et.experiment_type_name = 'phenotype'
-                     AND e.CAPdata_programs_uid IN ($CAPdata_programs)
-                     AND e.experiment_year IN ($years)";
-                } else {
-                     $sql = "SELECT DISTINCT e.experiment_uid as id, e.trial_code as name, e.experiment_year AS year
-                     FROM CAPdata_programs cp, experiments e, tht_base tb, line_records lr
+                     FROM CAPdata_programs cp, experiments e 
                      WHERE cp.CAPdata_programs_uid IN ($CAPdata_programs)
                      AND e.experiment_year IN ($years)
-                     AND e.CAPdata_programs_uid = cp.CAPdata_programs_uid
-                     AND lr.breeding_program_code = data_program_code
-                     AND tb.experiment_uid = e.experiment_uid
-                     AND tb.line_record_uid = lr.line_record_uid";
-                     /*on T3 wheat this is a better query but it does not work on T3 oat
-                     $sql = "SELECT DISTINCT e.experiment_uid as id, e.trial_code as name, e.experiment_year AS year
-                     FROM experiments e
-                     WHERE e.CAPdata_programs_uid IN ($CAPdata_programs)
-                     AND e.experiment_year IN ($years)";*/
-                }
-		        if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
-		        $sql .= " and data_public_flag > 0";
-				$sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
-		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-		$last_year = NULL;
-		while ($row = mysqli_fetch_assoc($res)) {			
-			if ($last_year == NULL) {
+                     AND cp.program_type = \"$program_type\"
+                     AND e.CAPdata_programs_uid = cp.CAPdata_programs_uid";
+        if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+            $sql .= " and data_public_flag > 0";
+        }
+        $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $last_year = null;
+        while ($row = mysqli_fetch_assoc($res)) {			
+            if ($last_year == NULL) {
 ?>
 			<optgroup label="<?php echo $row['year'] ?>">
 <?php
@@ -1791,7 +1776,6 @@ class SelectPhenotypeExp
 				<option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
 <?php
 		}
-                echo "$sql\n";
 ?>
 			</optgroup>
 		</select>
