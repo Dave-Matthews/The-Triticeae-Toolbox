@@ -1,12 +1,16 @@
 <?php
 
+/**
+ * Display map of fieldbook
+ **/
+
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'includes/bootstrap.inc';
 
 $mysqli = connecti();
 
 global $config;
-include $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'theme/admin_header.php';
 if (isset($_GET['uid'])) {
     $uid = $_GET['uid'];
 } else {
