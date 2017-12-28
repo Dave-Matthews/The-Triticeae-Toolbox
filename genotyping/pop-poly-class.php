@@ -270,7 +270,7 @@ class SelectMarkers
             $filename2 = $dir . "/map.tsv";
             $filename3 = $dir . "/markersT.tsv";
             $filename4 = $dir . "/proc_error.txt";
-            $filename5 = $dir . "/genotype.flapjack.tsv";
+            $filename5 = "genotype.flapjack.tsv";
 
             echo "$countp markers with polymorphisms<br><br>\n";
             $filename = "/tmp/tht/download_" . $unique_str . ".zip";
@@ -306,7 +306,7 @@ class SelectMarkers
             exec($cmd);
             if (file_exists("$filename3")) {
                 $h1 = fopen($filename3, "r");
-                $h2 = fopen($filename5, "w");
+                $h2 = fopen("$dir/$filename5", "w");
                 fwrite($h2, "\t");
                 while ($line=fgets($h1)) {
                     fwrite($h2, $line);
