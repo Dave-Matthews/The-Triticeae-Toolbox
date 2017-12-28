@@ -48,7 +48,7 @@ if (isset($_POST['enddate'])) {
 }
 
 $sql = "select database()";
-$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
 if ($row = mysqli_fetch_row($res)) {
     $db = $row[0];
 } else {
@@ -302,6 +302,7 @@ if ($query == 'geno') {
     }
     print "</table>";
 } elseif ($query == 'cache') {
+    echo "Cache slow queries\n";
     $sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $sql = "select count(genotyping_data_uid) from genotyping_data";
@@ -415,6 +416,7 @@ if ($query == 'geno') {
     $cachefile = '/tmp/tht/cache_' . $db . '.txt';
     $cachetime = 24 * 60 * 60; //24 hours
     $cmd = "wget --no-check-certificate " . $config['base_url'] . "t3_report.php?query=cache > /dev/null &";
+    $cmd = "curl -ks " . $config['base_url'] . "t3_report.php?query=cache > /dev/null &";
     if (file_exists($cachefile)) {
         $fp = fopen($cachefile, 'r');
         $allele_count = fgets($fp);
