@@ -19,14 +19,14 @@ class SelectMarkers
         }
     }
 
-    private function save()
+    public function save()
     {
         $count = count($_SESSION['selected_markers']);
         echo "Saved $count markers\n";
         $_SESSION['clicked_buttons'] = $_SESSION['selected_markers'];
     }
 
-    private function findMarkers()
+    public function findMarkers()
     {
         global $mysqli;
         global $config;
@@ -313,7 +313,7 @@ class SelectMarkers
                 }
                 fclose($h1);
                 fclose($h2);
-                exec("cd $dir; /usr/bin/zip -r $filename genotype.tsv map.tsv proc_error.txt");
+                exec("cd $dir; /usr/bin/zip -r $filename $filename5 map.tsv proc_error.txt");
             } else {
                 echo "Error: no output file from R script<br>\n";
             }
