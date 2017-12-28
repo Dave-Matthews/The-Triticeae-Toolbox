@@ -181,7 +181,7 @@ class SelectMarkers
                                 if (in_array($uid, $line_ary)) {
                                     if ($allele == "NN") {
                                         $allele = "--";
-                                    } elseif ($allene == "N") {
+                                    } elseif (($allele == "N") || ($allele == "+") || ($allele == "-")) {
                                         $allele = "-";
                                     }
                                     if ($alleleList == "") {
@@ -231,13 +231,13 @@ class SelectMarkers
                     $found = false;
                     $firstAllele = "";
                     $alleleList = "";
-                    //echo "$count $pos $alleles<br>\n";
+                    //convert to Flapjack format
                     foreach ($allele_ary as $key => $allele) {
                         $uid = $uid_list[$key];
                         if (in_array($uid, $line_ary)) {
                             if ($allele == "NN") {
                                 $allele = "--";
-                            } elseif ($allene == "N") {
+                            } elseif (($allele == "N") || ($allele == "+") || ($allele == "-")) {
                                 $allele = "-";
                             }
                             if ($alleleList == "") {
@@ -270,7 +270,7 @@ class SelectMarkers
             $filename2 = $dir . "/map.tsv";
             $filename3 = $dir . "/markersT.tsv";
             $filename4 = $dir . "/proc_error.txt";
-            $filename5 = $dir . "/genotype.tsv";
+            $filename5 = $dir . "/genotype.flapjack.tsv";
 
             echo "$countp markers with polymorphisms<br><br>\n";
             $filename = "/tmp/tht/download_" . $unique_str . ".zip";
@@ -316,7 +316,7 @@ class SelectMarkers
                 exec("cd $dir; /usr/bin/zip -r $filename genotype.tsv map.tsv proc_error.txt");
             } else {
                 echo "Error: no output file from R script<br>\n";
-            } 
+            }
             if (file_exists("$filename4")) {
                 $h = fopen($filename4, "r");
                 while ($line=fgets($h)) {
