@@ -185,7 +185,7 @@ class SelectMarkers
                                         $allele = "-";
                                     } elseif ($allele == "+") {
                                         $allele = 0;
-                                    } elseif ($allele = "-") {
+                                    } elseif ($allele == "-") {
                                         $allele = "1";
                                     }
                                     if ($alleleList == "") {
@@ -245,7 +245,7 @@ class SelectMarkers
                                 $allele = "-";
                             } elseif ($allele == "+") {
                                 $allele = 0;
-                            } elseif ($allele = "-") {
+                            } elseif ($allele == "-") {
                                 $allele = "1";
                             }
 
@@ -287,7 +287,7 @@ class SelectMarkers
             <input type="button" value="Save marker selection" onclick="save()"><br>
             <input type="button" value="Download file of results"
                 onclick="javascript:window.open('<?php echo $filename ?>');">
-                Flapjack format (ACTG, missing = "-", INS = 0, DEL = 1<br><br>
+                Flapjack format (ACTG, missing = "-", INS = 0, DEL = 1)<br><br>
             <?php
 
             if ($countp < 1000) {
