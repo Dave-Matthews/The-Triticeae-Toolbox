@@ -181,8 +181,12 @@ class SelectMarkers
                                 if (in_array($uid, $line_ary)) {
                                     if ($allele == "NN") {
                                         $allele = "--";
-                                    } elseif (($allele == "N") || ($allele == "+") || ($allele == "-")) {
+                                    } elseif ($allele == "N") {
                                         $allele = "-";
+                                    } elseif ($allele == "+") {
+                                        $allele = 0;
+                                    } elseif ($allele = "-") {
+                                        $allele = "1";
                                     }
                                     if ($alleleList == "") {
                                         $alleleList = "$allele";
@@ -237,9 +241,14 @@ class SelectMarkers
                         if (in_array($uid, $line_ary)) {
                             if ($allele == "NN") {
                                 $allele = "--";
-                            } elseif (($allele == "N") || ($allele == "+") || ($allele == "-")) {
+                            } elseif ($allele == "N") {
                                 $allele = "-";
+                            } elseif ($allele == "+") {
+                                $allele = 0;
+                            } elseif ($allele = "-") {
+                                $allele = "1";
                             }
+
                             if ($alleleList == "") {
                                 $alleleList = "$allele";
                             } else {
@@ -277,7 +286,8 @@ class SelectMarkers
             ?>
             <input type="button" value="Save marker selection" onclick="save()"><br>
             <input type="button" value="Download file of results"
-                onclick="javascript:window.open('<?php echo $filename ?>');"><br><br>
+                onclick="javascript:window.open('<?php echo $filename ?>');">
+                Flapjack format (ACTG, missing = "-", INS = 0, DEL = 1<br><br>
             <?php
 
             if ($countp < 1000) {
