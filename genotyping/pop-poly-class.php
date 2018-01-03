@@ -19,16 +19,17 @@ class SelectMarkers
         }
     }
 
-    private function save()
+    public function save()
     {
         $count = count($_SESSION['selected_markers']);
         echo "Saved $count markers\n";
         $_SESSION['clicked_buttons'] = $_SESSION['selected_markers'];
     }
 
-    private function findMarkers()
+    public function findMarkers()
     {
         global $mysqli;
+        global $config;
 
         echo "<h2>Polymorphisms for a population</h2>\n";
         echo "This tool finds polymorphisms between germplasm lines. Typically you will select the parent lines.<br>\n";
@@ -178,22 +179,34 @@ class SelectMarkers
                             foreach ($allele_ary as $key => $allele) {
                                 $uid = $uid_list[$key];
                                 if (in_array($uid, $line_ary)) {
+                                    if ($allele == "NN") {
+                                        $allele = "--";
+                                    } elseif ($allele == "N") {
+                                        $allele = "-";
+                                    } elseif ($allele == "+") {
+                                        $allele = 0;
+                                    } elseif ($allele == "-") {
+                                        $allele = "1";
+                                    }
                                     if ($alleleList == "") {
                                         $alleleList = "$allele";
                                     } else {
-                                        $alleleList .= ",$allele";
+                                        $alleleList .= "\t$allele";
                                     }
-                                    if (($allele == "N") || ($allele == "NN")) {
+                                    if (($allele == "-") || ($allele == "--")) {
                                     } elseif ($firstAllele == "") {
                                         $firstAllele = $allele;
                                     } elseif ($firstAllele != $allele) {
                                         $found = true;
                                     }
+                                } else {
+                                    echo "Error: $uid not found\n";
                                 }
                             }
                             if ($found) {
                                 $found_list[] = $marker_uid;
-                                $poly[] = "$marker_name,$selected_chrom,$map_pos,$alleleList";
+                                $poly[] = "$marker_name\t$alleleList";
+                                $marker_map[] = "$marker_name\t$selected_chrom\t$map_pos";
                             }
                         }
                     }
@@ -212,7 +225,7 @@ class SelectMarkers
                     $marker_uid = $row[0];
                     $marker_name = $row[1];
                     $chrom = $row[2];
-                    $pos = $row[3];
+                    $map_pos = $row[3];
                     $alleles = $row[4];
                     if (preg_match("/,/", $alleles)) {
                         $allele_ary = explode(",", $alleles);
@@ -222,17 +235,26 @@ class SelectMarkers
                     $found = false;
                     $firstAllele = "";
                     $alleleList = "";
-                    //echo "$count $pos $alleles<br>\n";
+                    //convert to Flapjack format
                     foreach ($allele_ary as $key => $allele) {
                         $uid = $uid_list[$key];
                         if (in_array($uid, $line_ary)) {
-                        //echo "$count $pos $alleles<br>\n";
+                            if ($allele == "NN") {
+                                $allele = "--";
+                            } elseif ($allele == "N") {
+                                $allele = "-";
+                            } elseif ($allele == "+") {
+                                $allele = 0;
+                            } elseif ($allele == "-") {
+                                $allele = "1";
+                            }
+
                             if ($alleleList == "") {
                                 $alleleList = "$allele";
                             } else {
-                                $alleleList .= ",$allele";
+                                $alleleList .= "\t$allele";
                             }
-                            if (($allele == "N") || ($allele == "NN")) {
+                            if (($allele == "-") || ($allele == "--")) {
                             } elseif ($firstAllele == "") {
                                 $firstAllele = $allele;
                             } elseif ($firstAllele != $allele) {
@@ -243,21 +265,29 @@ class SelectMarkers
                     }
                     if ($found) {
                         $found_list[] = $marker_uid;
-                        $poly[] = "$marker_name,$chrom,$pos,$alleleList";
+                        $poly[] = "$marker_name\t$alleleList";
+                        $marker_map[] = "$marker_name\t$selected_chrom\t$map_pos";
                     }
                 }
                 echo "$count markers within $option<br>\n";
             }
             $countp = count($poly);
-            $dir = "/tmp/tht/";
             $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
-            $filename = $dir . "selected_markers_" . $unique_str . ".csv";
+            $dir = "/tmp/tht/download_" . $unique_str;
+            mkdir($dir);
+            $filename1 = $dir . "/markers.hapmap";
+            $filename2 = $dir . "/map.tsv";
+            $filename3 = $dir . "/markersT.tsv";
+            $filename4 = $dir . "/proc_error.txt";
+            $filename5 = "genotype.flapjack.tsv";
 
             echo "$countp markers with polymorphisms<br><br>\n";
+            $filename = "/tmp/tht/download_" . $unique_str . ".zip";
             ?>
             <input type="button" value="Save marker selection" onclick="save()"><br>
             <input type="button" value="Download file of results"
-                onclick="javascript:window.open('<?php echo $filename ?>');"><br><br>
+                onclick="javascript:window.open('<?php echo $filename ?>');">
+                Flapjack format (ACTG, missing = "-", INS = 0, DEL = 1)<br><br>
             <?php
 
             if ($countp < 1000) {
@@ -265,19 +295,44 @@ class SelectMarkers
                     echo "$line<br>\n";
                 }
             }
-            $h = fopen($filename, "w");
-            fwrite($h, "marker,chromosome,position");
+            $h1 = fopen($filename1, "w") or die("Error: cannot create $filename1\n");
+            $h2 = fopen($filename2, "w") or die("Error: cannot create $filename2\n");
+            //fwrite($h, "marker,chromosome,position");
             foreach ($uid_list as $key => $uid) {
                 if (in_array($uid, $line_ary)) {
-                    fwrite($h, ",$name_list[$key]");
+                    fwrite($h1, "\t$name_list[$key]");
                 }
             }
-            fwrite($h, "\n");
-            foreach ($poly as $line) {
-                fwrite($h, "$line\n");
+            fwrite($h1, "\n");
+            foreach ($poly as $key => $line) {
+                fwrite($h1, "$line\n");
+                fwrite($h2, "$marker_map[$key]\n");
             }
-            fclose($h);
+            fclose($h1);
+            fclose($h2);
             $_SESSION['selected_markers'] = $found_list;
+            $cmd = "Rscript --vanilla " . $config['root_dir'] . "genotyping/transpose.R $filename1 $filename3 > /dev/null 2> $filename4";
+            //echo "$cmd<br>\n";
+            exec($cmd);
+            if (file_exists("$filename3")) {
+                $h1 = fopen($filename3, "r");
+                $h2 = fopen("$dir/$filename5", "w");
+                fwrite($h2, "\t");
+                while ($line=fgets($h1)) {
+                    fwrite($h2, $line);
+                }
+                fclose($h1);
+                fclose($h2);
+                exec("cd $dir; /usr/bin/zip -r $filename $filename5 map.tsv proc_error.txt");
+            } else {
+                echo "Error: no output file from R script<br>\n";
+            }
+            if (file_exists("$filename4")) {
+                $h = fopen($filename4, "r");
+                while ($line=fgets($h)) {
+                    echo "$line<br>\n";
+                }
+            }
         }
     }
     private function displayAll()

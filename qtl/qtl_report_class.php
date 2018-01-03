@@ -134,8 +134,8 @@ class Downloads
         echo "<b>Genotype platforms:</b> $platforms<br>\n";
 
         //get list of assemblies
-        $sql = "select distinct(qtl_annotations.assembly_name), data_public_flag, assemblies.description from qtl_annotations, assemblies
-            where qtl_annotations.assembly_name = assemblies.assembly_name  order by assembly_name";
+        $sql = "select distinct(qtl_annotations.assembly_name), data_public_flag, assemblies.description, created_on from qtl_annotations, assemblies
+            where qtl_annotations.assembly_name = assemblies.assembly_name  order by created_on";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
             //pick latest assembly as default
@@ -144,8 +144,8 @@ class Downloads
                 $assembly = $row[0];
                 $assemblyList[] = $row[0];
                 $assemblyDesc[] = $row[2];
-            // do not show ones that are private
-            } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+                // do not show ones that are private
+            } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
                 $assembly = $row[0];
                 $assemblyList[] = $row[0];
                 $assemblyDesc[] = $row[2];
@@ -157,7 +157,6 @@ class Downloads
         }
 
         //display list of assemblies
-        //echo "<br>Genome Assembly <select id=\"assembly\" onchange=\"display_qtl()\">\n";
         echo "<br><form><table><tr><td>Genome Assembly<td>Description";
         foreach ($assemblyList as $key => $ver) {
             if ($ver == $assembly) {
@@ -167,7 +166,6 @@ class Downloads
             }
             echo "<tr><td nowrap><input type=\"radio\" name=\"assembly\" value=\"$ver\" $selected> $ver<td>$assemblyDesc[$key]<br>";
         }
-        //echo "</select>";
         $sql = "select * from assemblies where data_public_flag = 0";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_row($result)) {
@@ -767,6 +765,10 @@ class Downloads
     private function displayQTL()
     {
         global $mysqli;
+        $browserLink['IWGSC1+popseq'] = "http://imar2016-plants.ensembl.org/Triticum_aestivum/Location/View?r=";
+        $browserLink['Wheat_TGACv1'] = "http://plants.ensembl.org/Triticum_aestivum/Location/View?r=";
+        $browserLink['RefSeq_v1'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2016&loc=";
+        $browserLink['Wheat_Pangenome'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2017&loc=";
         // get species
         if (preg_match("/([A-Za-z]+)\/[^\/]+\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
             $species = $match[1];
@@ -986,14 +988,22 @@ class Downloads
                 $reactome = "";
                 if ($qvalue < 0.05) {
                     $count++;
-                    $sql = "select chrom, pos from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly\"";
+                    $sql = "select chrom, pos, bin from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly\"";
                     $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
                     if ($row2 = mysqli_fetch_array($res2)) {
                         $chrom = $row2[0];
                         $pos = $row2[1];
+                        $bin = $row2[2];
+                        $start = $pos - 1000;
+                        if ($start < 0) {
+                            $start = 0;
+                        }
+                        $stop = $pos + 1000;
                     } else {
-                        $chrom = "not found";
-                        $pos = "not found";
+                        $chrom = "";
+                        $pos = "";
+                        $start = "";
+                        $stop = "";
                     }
                     if (isset($annot_list1[$marker])) {
                         $gene = $annot_list1[$marker];
@@ -1058,7 +1068,15 @@ class Downloads
                             $sort_index = $zmeta[$gene];
                         }
                     }
-                    $jbrowse = "<a target=\"_new\" href=\"/jbrowse/?data=$species&loc=$chrom:$pos\">JBrowse</a>";
+                    if ($pos == "") {
+                        $jbrowse = "";
+                    } elseif (preg_match("/RefSeq/", $assembly)) {
+                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start..$stop\">JBrowse</a>";
+                    } elseif (preg_match("/TGAC/", $assembly)) {
+                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$bin:$start-$stop\">Ensembl Browser</a>";
+                    } else {
+                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start-$stop\">JBrowse</a>";
+                    }
                     if ($gb == "marker") {
                         if (isset($marker_list[$marker])) {
                         } else {
