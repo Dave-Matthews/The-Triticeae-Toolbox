@@ -2,12 +2,9 @@
 /**
  * Login
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/login.php
- *
- * 12/14/2010 JLee  Change to use curator bootstrap
- *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/login.php
  */
 
 session_start();
@@ -138,11 +135,10 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
   <br />
   <table border="0" cellspacing=="0" cellpadding="0"
 	 style="border: none; background: none">
-    <tr><td><img id="captcha" src="./securimage/securimage_show.php"
-		 alt="CAPTCHA image"><br>
-	    <a href="#" onclick="document.getElementById('captcha').src = './securimage/securimage_show.php?' + Math.random();
-				 return false;"></td>
-      <td>CAPTCHA:
+    <tr><td><img id="captcha" src="./securimage/securimage_show.php" alt="CAPTCHA image"/>
+            <a href="#" title="Refresh Image" onclick="document.getElementById('captcha').src = './securimage/securimage_show.php?sid=' + Math.random(); this.blur(); return false">
+            <img height="32" width="32" src="./securimage/images/refresh.png" alt="Refresh Image" onclick="this.blur()" /></a>
+    <tr><td>Type the text:
 	<input type="text" name="captcha_code" size="10"
 		 maxlength="6"></td></tr></table>
    </table>
@@ -366,11 +362,13 @@ function HTMLProcessLogin()
     if (!isRegistered($email)) {
         $rv = HTMLLoginForm("Address <b>'$email'</b> has not registered in this T3 database.");
     } elseif (!isVerified($_POST['email'])) {
-        $rv = HTMLLoginForm("You cannot login until you confirm your email address, using the link was sent to you at the time of registration.
-              <form action=\"{$_SERVER['SCRIPT_NAME']}\" method=\"post\">
-              <input type=\"hidden\" name=\"email\" value=\"$email\">
-              <input type=\"submit\" name=\"resend_registration\" value=\"Send Register\" />
-              </form>");
+        $rv = HTMLLoginForm(
+            "You cannot login until you confirm your email address, using the link was sent to you at the time of registration.
+            <form action=\"{$_SERVER['SCRIPT_NAME']}\" method=\"post\">
+            <input type=\"hidden\" name=\"email\" value=\"$email\">
+            <input type=\"submit\" name=\"resend_registration\" value=\"Send Register\" />
+            </form>"
+        );
     } else {
         if (isUser($email, $password)) {
             // Successful login
@@ -392,8 +390,7 @@ function HTMLProcessLogin()
             $_SESSION['name'] = $row[2];
             $sql = "update users set lastaccess = now() where
             users_name = '$email'";
-            mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
-                                   "\n\n\n$sql.</pre>");
+            mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql.</pre>");
             // Retrieve stored selection of lines, markers and maps.
             $stored = retrieve_session_variables('selected_lines', $email);
             if (-1 != $stored) {
@@ -638,9 +635,9 @@ The Triticeae Toolbox Team
          $safe_usertype = USER_TYPE_PUBLIC;
      }
      $sql = "insert into users (user_types_uid, users_name, pass,
-name, email, institution) values ($safe_usertype, '$hash_email',
+name, email, institution, created_on) values ($safe_usertype, '$hash_email',
 '$hash_password', '$safe_name', '$hash_email',
-$safe_institution)";
+$safe_institution, now())";
      mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) .
 			      "\n\n\n$sql</pre>");
      $key = setting('encryptionkey');
