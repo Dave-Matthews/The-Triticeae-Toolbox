@@ -57,11 +57,13 @@ if (is_array($found)) {
         // Omit marker synonyms that are identical to marker name.
         $skip = "";
         if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
-            $msquery = mysqli_query($mysqli, "select marker_name 
-                    from markers, marker_synonyms 
-                    where marker_synonym_uid = '$line[2]'
-                    and markers.marker_uid = marker_synonyms.marker_uid
-                    and markers.marker_name = marker_synonyms.value");
+            $msquery = mysqli_query(
+                $mysqli, "select marker_name 
+                from markers, marker_synonyms 
+                where marker_synonym_uid = '$line[2]'
+                and markers.marker_uid = marker_synonyms.marker_uid
+                and markers.marker_name = marker_synonyms.value"
+            );
             if (mysqli_num_rows($msquery) > 0) {
                 $skip = "yes";
             }
@@ -129,6 +131,17 @@ for ($rw = 0; $rw < $numrows; $rw++) {
                 } else {
                     print "<td><a href='display_genotype.php?trial_code=$name'>$name</a>";
                 }
+            } elseif ($table == "qtl_annotations") {
+                if ($rw == 0) {
+                    print "<td>Marker<td>Assembly Name<td>Gene<td>Description<tr>";
+                }
+                $sql = "select assembly_name, gene, description from qtl_annotations where qtl_annotation_uid = \"$uid\"";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $record = mysqli_fetch_row($res);
+                $assembly = $record[0];
+                $gene = $record[1];
+                $desc = $record[2];
+                print "<td><a href='view.php?table=$table&uid=$uid'>$name</a><td>$assembly<td>$gene<td>$desc";
             } else {
                 print "<td><a href='view.php?table=$table&uid=$uid'>$name</a>";
             }
@@ -139,26 +152,27 @@ print "</table>";
 
 // Pager
 if ($numrecords > $pagesize) {
-  $numpages = ceil($numrecords / $pagesize);
-  print "Page ";
-  print "<input type=text size=3 value=$page onchange=\"window.open('browse.php?table=$table&page='+this.value+'&col=$_GET[col]&keywords=$_GET[keywords]', '_self')\">";
-  print " of <b>$numpages</b> <input type=button value='Go'><br>";
-  print "<select onchange=\"window.open('browse.php?table=$table&page='+this.options[this.selectedIndex].value+'&col=$_GET[col]&keywords=$_GET[keywords]', '_self')\">";
-  // Divide the number of pages into at most 20 lumps.
-  $lumps = $numpages;
-  while ($lumps > 20)
-    $lumps = ceil($lumps / 3);
-  $lumpsize = floor($numpages / $lumps);
-  for ($i = 0; $i < $lumps; $i++) {
-    // Calculate the $records[] index of the top left item on the first page of this lump.
-    $upperleft = $i * $lumpsize * $pagesize;
-    $lumpname = $records[$upperleft][1];
-    $lumppage = $i * $lumpsize + 1;
-    if ($lumppage == $page)
-      print "<option value=$lumppage selected>$lumpname ...</option>";
-    else
-      print "<option value=$lumppage>$lumpname ...</option>";
-  }
+    $numpages = ceil($numrecords / $pagesize);
+    print "Page ";
+    print "<input type=text size=3 value=$page onchange=\"window.open('browse.php?table=$table&page='+this.value+'&col=$_GET[col]&keywords=$_GET[keywords]', '_self')\">";
+    print " of <b>$numpages</b> <input type=button value='Go'><br>";
+    print "<select onchange=\"window.open('browse.php?table=$table&page='+this.options[this.selectedIndex].value+'&col=$_GET[col]&keywords=$_GET[keywords]', '_self')\">";
+    // Divide the number of pages into at most 20 lumps.
+    $lumps = $numpages;
+    while ($lumps > 20) {
+        $lumps = ceil($lumps / 3);
+    }
+    $lumpsize = floor($numpages / $lumps);
+    for ($i = 0; $i < $lumps; $i++) {
+        // Calculate the $records[] index of the top left item on the first page of this lump.
+        $upperleft = $i * $lumpsize * $pagesize;
+        $lumpname = $records[$upperleft][1];
+        $lumppage = $i * $lumpsize + 1;
+        if ($lumppage == $page)
+            print "<option value=$lumppage selected>$lumpname ...</option>";
+        else
+            print "<option value=$lumppage>$lumpname ...</option>";
+    }
   print "</select><p>";
 }
 
