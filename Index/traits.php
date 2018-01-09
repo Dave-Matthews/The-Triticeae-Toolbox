@@ -194,7 +194,7 @@ foreach ($entries as $cl) {
 	and e.experiment_uid = tb.experiment_uid
         order by phenotypes_name, trial_code, abs(value) desc";
     $res = mysqli_query($mysqli, $sql) or finish("<p>MySQL error: ". mysqli_error($mysqli));
-  // Read it into the master array $actual, indexed by (trait, trial, line).
+    // Read it into the master array $actual, indexed by (trait, trial, line).
     while ($row = mysqli_fetch_array($res)) {
         $actual[$row[phenotypes_name]][$row[trial_code]][$row[line_record_name]] = $row[value];
         // Get the names of the lines.
@@ -219,7 +219,7 @@ foreach ($entries as $cl) {
                 $mean[$tn][$trial] = $sum / $linecount;
                 foreach ($lines as $line) {
                     if ($actual[$tn][$trial][$line]) {
-                    // Get the sum of (deviations from mean)^2.
+                        // Get the sum of (deviations from mean)^2.
                         $devsq += pow($mean[$tn][$trial] - $actual[$tn][$trial][$line], 2);
                         if ($linecount == 0) {
                             $SD[$tn][$trial] = 0;
@@ -308,32 +308,35 @@ foreach ($entries as $cl) {
             $avgndx[$line] = round(array_sum($wv), 2);
         }
     }
-  // Sort with highest first.
-  arsort($avgndx);
+    // Sort with highest first.
+    arsort($avgndx);
 
-  // Calculate Index within each trial.
-  foreach ($trialnames as $trial) {
-    foreach ($lines as $line) {
-      // If the value of any trait is missing for this line and trial, ignore.
-      $missing = FALSE;
-      foreach ($traitnames as $tn) {
-        if (empty($actual[$tn][$trial][$line]))
-          $missing = TRUE;
-      }
-      // Otherwise calculate.
-      if (!$missing) {
-        foreach ($traitnames as $tn) {
-          if ($scaling == 'rank') {
-            $weightedval = ($weight[$tn] * array_search($line, $rankName[$tn][$trial])) / $totalwt; 
-          } else {
-	    $weightedval = ($weight[$tn] * scaled($actual[$tn][$trial][$line], $tn, $trial)) / $totalwt;
-          }
-	  if ($reverse[$tn] == 'on')
-	    $weightedval = - $weightedval;
-	  $wv[$tn] = $weightedval;
-	}
-	$Index[$trial][$line] = round(array_sum($wv), 2);
-      }
+    // Calculate Index within each trial.
+    $Index = array();
+    foreach ($trialnames as $trial) {
+        foreach ($lines as $line) {
+            // If the value of any trait is missing for this line and trial, ignore.
+            $missing = false;
+            foreach ($traitnames as $tn) {
+                if (empty($actual[$tn][$trial][$line])) {
+                    $missing = true;
+                }
+            }
+            // Otherwise calculate.
+            if (!$missing) {
+              foreach ($traitnames as $tn) {
+                if ($scaling == 'rank') {
+                  $weightedval = ($weight[$tn] * array_search($line, $rankName[$tn][$trial])) / $totalwt;
+                } else {
+                  $weightedval = ($weight[$tn] * scaled($actual[$tn][$trial][$line], $tn, $trial)) / $totalwt;
+              }
+              if ($reverse[$tn] == 'on') {
+	        $weightedval = - $weightedval;
+              }
+	      $wv[$tn] = $weightedval;
+	    }
+	    $Index[$trial][$line] = round(array_sum($wv), 2);
+        }
     }
   }
 
@@ -360,8 +363,9 @@ foreach ($entries as $cl) {
   // Show per-trial, with a column for each trait.
   echo "<h3>Details, by Trial</h3>";
   echo "<table><tr><th>Trial<th>Line<th>Index";
-  foreach ($traitnames as $tn)
+  foreach ($traitnames as $tn) {
     echo "<th>$tn";
+  }
   // table contents
   foreach ($Index as $trial => $linendx) {
     // Re-sort by Index value within this trial.
@@ -382,7 +386,7 @@ function finish($message) {
   echo $message;
   $footer_div = 1;
   global $config;
-  include($config['root_dir'].'theme/footer.php');
+  include $config['root_dir'].'theme/footer.php';
   exit;
 }
 
