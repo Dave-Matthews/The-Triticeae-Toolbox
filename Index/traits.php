@@ -290,6 +290,7 @@ foreach ($entries as $cl) {
     }
 
     // Calculate Index from the scaled average over trials.
+    $avgndx = array();
     foreach ($lines as $line) {
         // Don't calculate an Index if there is no value for one or more traits.
         $missing = false;
