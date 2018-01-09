@@ -36,7 +36,7 @@ if (!isset($_COOKIE["T3terms"])) {
 <td style="border: 0 !important">
 <a style="border: 0" href="https://nifa.usda.gov/international-wheat-yield-partnership-iwyp-program" title="USDA National Institute of Food and Agriculture"><img style="border: 0 !important;" src="images/sitelogo.gif" alt="NIFA Logo"></a>
 </td><td style="border: 0 !important; text-align: left;">
-<a style="border: 0" href="https://www.ars.usda.gov/research/project/?accnNo=430844" title="USDA Agricultural Research Service"><img style="border: 0 !important;" src="images/ars-logo.png" width="300" alt="ARS Logo"></a>
+<a style="border: 0" href="https://www.ars.usda.gov/research/project/?accnNo=430844" title="USDA Agricultural Research Service"><img style="border: 0 !important;" src="images/ars-logo.png" height="63" alt="ARS Logo"></a>
 </td><td style="border: 0 !important">
 <a style="border: 0" href="http://scabusa.org/" title="US Wheat and Barley Scab Initiative"><img style="border: 0 !important;" src="images/scablogo_notext_small_transparent.gif" alt="Scab Logo"></a>
 </td>
