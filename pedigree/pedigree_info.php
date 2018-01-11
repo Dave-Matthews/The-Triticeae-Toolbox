@@ -5,18 +5,17 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @author   Clay Birkett <cbirkett@gmail.com>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/pedigree/pedigree_info.php
- *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/pedigree/pedigree_info.php
  */
 
 session_start();
 require 'config.php';
-include $config['root_dir'] . 'includes/bootstrap.inc';
+require $config['root_dir'] . 'includes/bootstrap.inc';
 set_include_path(get_include_path() . PATH_SEPARATOR . '../lib/PHPExcel/Classes');
 set_time_limit(0);
-include '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
+require '../lib/PHPExcel/Classes/PHPExcel/IOFactory.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method == "GET") {
@@ -27,8 +26,9 @@ if ($method == "GET") {
 
 class Pedigree
 {
-    private $delimiter = "\t";
-    // Using the class's constructor to decide which action to perform
+    /**
+     * Using the class's constructor to decide which action to perform
+     **/
     public function __construct($function = null)
     {
         switch ($function) {
@@ -41,8 +41,10 @@ class Pedigree
         }
     }
 
-  // The wrapper action for the type1 download. Handles outputting the header
-  // and footer and calls the first real action of the type1 download.
+    /**
+     * The wrapper action for the type1 download. Handles outputting the header
+     * and footer and calls the first real action of the type1 download.
+     */
     private function typeLine()
     {
         global $config;
@@ -62,8 +64,11 @@ class Pedigree
             $linelist = $_SESSION['linesfound'];
             // Flag for the Download Line Data button to use:
             $lf = "&lf=yes";
-        } else {
+        } elseif (isset($_SESSION['selected_lines'])) {
             $linelist = $_SESSION['selected_lines'];
+        } else {
+            echo "Error: Please make line selection";
+            return;
         }
         // Find which Properties this set of lines has any values for.
         $ourprops = array();
@@ -109,10 +114,10 @@ function load_excel() {
       <th style="width: 40px;" class="marker">Gener ation</th>
       <th style="width: 80px;" class="marker">Comment</th>
 <?php
- foreach ($ourprops as $pr) {
-      $prname = mysql_grab("select name from properties where properties_uid = $pr");
-      echo "<th style='width: 50px; word-wrap: break-word' class=marker>".$prname."</th>";
-    }
+foreach ($ourprops as $pr) {
+    $prname = mysql_grab("select name from properties where properties_uid = $pr");
+    echo "<th style='width: 50px; word-wrap: break-word' class=marker>".$prname."</th>";
+}
 ?>
       <th style="width: 80px;" class="marker">Data<br>Available</th>
     </tr>
@@ -126,7 +131,8 @@ function load_excel() {
     foreach ($linelist as $lineuid) {
       $result=mysqli_query($mysqli, "select line_record_name, breeding_program_code, pedigree_string, generation, description from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
       $syn_result=mysqli_query($mysqli, "select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
-      $syn_names=""; $sn = "";
+      $syn_names="";
+      $sn = "";
       while ($syn_row = mysqli_fetch_assoc($syn_result)) 
 	$syn_names[] = $syn_row['line_synonym_name'];
       if (is_array($syn_names))
@@ -298,7 +304,7 @@ private function type_Line_Excel() {
 	/* $colname = chr($firstprop + $j); */
 	/* $objPHPExcel->getActiveSheet()->SetCellValue($colname.$i, "$propval",$format_row); */
 	$col = $firstprop + $j;
-	$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $i, "$propval", $format_row);
+        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $i, "$propval", $format_row);
       }
       $i++;
     } // end of while ($tok !== false)
@@ -310,5 +316,4 @@ private function type_Line_Excel() {
   $objPHPExcel->disconnectWorksheets();
   unset($objPHPExcel);
 }
-
 } /* End of class Pedigree */
