@@ -7,7 +7,6 @@
  * @author   Clay Birkett <clb343@cornell.edu>
  * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link     http://triticeaetoolbox.org/wheat/index.html
- *
  */
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
@@ -15,6 +14,7 @@ require $config['root_dir'].'theme/admin_header2.php';
 $mysqli = connecti();
 $name = get_unique_name("datasets");
 ?>
+<h2 style="color: Black">This USDA website will not be updated during a lapse in federal funding. Content on this website will not be current or maintained until funding issues have been resolved.</h1>
 
 <h1>Welcome to The Triticeae Toolbox (T3)</h1>
 
