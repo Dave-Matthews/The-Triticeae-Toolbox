@@ -161,7 +161,11 @@ if (isset($_POST['selMkrs']) || isset($_POST['selbyname'])) {
 }
 
 if (isset($_POST['deselMkrs'])) {
-    $selmkrs=$_SESSION['clicked_buttons'];
+    if (isset($_SESSION['clicked_buttons'])) {
+        $selmkrs=$_SESSION['clicked_buttons'];
+    } else {
+        die("Error: no markers selected");
+    }
     foreach ($_POST['deselMkrs'] as $mkr) {
         if (($mkridx=array_search($mkr, $selmkrs)) !== false) {
             array_splice($selmkrs, $mkridx, 1);
