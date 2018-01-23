@@ -45,9 +45,10 @@ new MarkersCheck($_GET['function']);
 
 /**
  * Using a PHP class to implement the marker import feature
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
  **/
 class MarkersCheck
 {
@@ -55,6 +56,7 @@ class MarkersCheck
     public $storageArr = array (array());
     /**
      * Using the class's constructor to decide which action to perform
+     *
      * @param string $function action to perform
      */
     public function __construct($function = null)
@@ -82,7 +84,7 @@ class MarkersCheck
     }
 
     /**
-     * display header footer and call load functions
+     * Display header footer and call load functions
      *
      * @return null
      */
@@ -1285,11 +1287,11 @@ class MarkersCheck
             }
         
 	        $lastmarker = $data[0];
-	        $lastline = $i-1;
                 $i++;
         }  
         unset ($value);
         fclose($reader);   
+        $lastline = $i - 1;
 
         //cache the marker and synonym names
         $sql = "SELECT marker_uid, marker_name FROM markers";
@@ -1452,15 +1454,15 @@ class MarkersCheck
             }
         }
         echo " <b>The Data is inserted/updated successfully </b><br>";
-    	echo "$lastline lines read, last marker = $lastmarker.<br>";
-    	echo "Size of storageArr = ".count($storageArr);
+    	echo "$lastline lines read, last marker = $lastmarker<br>";
+    	//echo "Size of storageArr = ".count($storageArr);
         echo "<br/><br/>";
 ?>
         <a href="./curator_data/markers_upload.php"> Go Back To Main Page </a>
     <?php
         $sql = "SELECT input_file_log_uid from input_file_log 
             WHERE file_name = '$filename'";
-        $res = mysqli_query($sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
         $rdata = mysqli_fetch_assoc($res);
         $input_uid = $rdata['input_file_log_uid'];
         
