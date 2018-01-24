@@ -5,10 +5,9 @@
  * PHP version 5.3
  * Prototype version 1.5.0
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/input_experiment_plot_check.php
- *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/input_experiment_plot_check.php
  */
 
 require 'config.php';
@@ -30,17 +29,18 @@ ob_end_flush();
 
 new DataCheck($_GET['function']);
 
-/** Using a PHP class to implement Phenotype Results import
+/**
+ * Using a PHP class to implement Phenotype Results import
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/input_experiment_plot_check.php
- *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/input_experiment_plot_check.php
  */
 class DataCheck
 {
     /**
      * Using the class's constructor to decide which action to perform
+     *
      * @param unknown_type $function
      */
     public function __construct($function = null)
@@ -69,9 +69,10 @@ class DataCheck
     }
 
     /**
-    * check experiment data before loading into database
-    */
-    private function type_Experiment_Name() {
+     * check experiment data before loading into database
+     */
+    private function type_Experiment_Name()
+    {
     global $mysqli;
 ?>
    <script type="text/javascript">
@@ -105,7 +106,7 @@ class DataCheck
     }
   } else {
     $filename0 = $_FILES['file']['name'][0];
-  } 
+  }
   if (($_FILES['file']['name'][0] == "") && ($metafile == "")){
      error(1, "No File Uploaded");
      print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
@@ -393,7 +394,8 @@ class DataCheck
          echo "The next step is to calculate the line and trial means from the plot data.";
          echo "<br>The model is chosen base on replication and block fields of the fieldbook data";
          echo "<ul><li>CRD: use simple averages<li>RCBC: use fixed effects and return LS means<li>blocks as random effects with no replication effect";
-         echo "<li>Incomplete block model: Replications fixed and blocks random</ul>";
+         echo "<li>Incomplete block model: Replications fixed and blocks random";
+         echo "<li>For analysis source code see <a href=" . $config['base_url'] . "R/getTrialMeans.R>getTrialMeans.R</a></ul>";
 
          echo "<table>";
          foreach ($trial_code_array as $experiment_uid=>$trial_code) {
@@ -410,7 +412,7 @@ class DataCheck
          }
          echo "</table>";
          $sql = "SELECT input_file_log_uid from input_file_log where file_name = '$filename0'";
-         $res = mysqli_query($mysqli,$sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
+         $res = mysqli_query($mysqli, $sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
          $rdata = mysqli_fetch_assoc($res);
          $input_uid = $rdata['input_file_log_uid'];
          if (empty($input_uid)) {
