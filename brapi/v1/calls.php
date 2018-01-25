@@ -40,6 +40,8 @@ $ourcalls['studies-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies-search/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['trials'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['trials/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['traits'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
