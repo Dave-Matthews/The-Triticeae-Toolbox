@@ -76,7 +76,7 @@ if (($lineuid != "") && ($expuid != "")) {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $linearray['uniqueDisplayName'] = $row[0];
-        $linearray['sampleDbId'] = null;
+        $linearray['sampleDbId'] = "";
         $linearray['extractDbId'] = "";
         $resultCount = intval($row[1]);
         $analysisMethod = mysql_grab(
@@ -126,7 +126,7 @@ if (($lineuid != "") && ($expuid != "")) {
         $linearray['markerProfileDbId'] = $lineuid . "_" . $row[0];
         $linearray['germplasmDbId'] = $lineuid;
         $linearray['uniqueDisplayName'] = $row[1];
-        $linearray['sampleDbId'] = null;
+        $linearray['sampleDbId'] = "";
         $linearray['extractDbId'] = "";
         $analysisMethod = mysql_grab(
             "select platform_name from platform p, genotype_experiment_info g
@@ -175,7 +175,7 @@ if (($lineuid != "") && ($expuid != "")) {
             $linearray['markerProfileDbId'] = $row[0] . "_" . $expuid;
             $linearray['germplasmDbId'] = $row[0];
             $linearray['uniqueDisplayName'] = $row[1];
-            $linearray['sampleDbId'] = null;
+            $linearray['sampleDbId'] = "";
             $linearray['extractDbId'] = "";
             $analysisMethod = mysql_grab(
                 "select platform_name from platform p, genotype_experiment_info g
@@ -212,7 +212,7 @@ if (($lineuid != "") && ($expuid != "")) {
     $linearray['result']['markerprofileDbId'] = $profileid;
     $linearray['result']['germplasmDbId'] = $lineuid;
     $linearray['result']['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $lineuid");
-    $linearray['sampleDbId'] = null;
+    $linearray['sampleDbId'] = "";
     $linearray['result']['extractDbId'] = "";
     $linearray['result']['encoding'] = "AA,BB,AB";
 
@@ -286,8 +286,8 @@ if (($lineuid != "") && ($expuid != "")) {
         $profileid = $line_uid . "_" . $exp_uid;
         $linearray['markerprofileDbId'] = $profileid;
         $linearray['germplasmDbId'] = $line_uid;
-        $linearray['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $lineuid");
-        $linearray['sampleDbId'] = null;
+        $linearray['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $line_uid");
+        $linearray['sampleDbId'] = "";
         $linearray['extractDbId'] = "";
         $analysisMethod = mysql_grab(
             "select platform_name from platform p, genotype_experiment_info g
