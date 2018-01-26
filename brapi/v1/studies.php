@@ -90,8 +90,13 @@ if ($action == "list") {
     while ($row = mysqli_fetch_row($res)) {
         $uid = $row[0];
         $trial = $row[1];
+        $set_uid = $row[1];
         $data["studyDbId"] = $row[0];
-        $data["trialDbId"] = $row[1];
+        if (preg_match("/[0-9]/", $set_uid)) {
+            $data["trialDbId"] = $row[1];
+        } else {
+            $data["trialDbId"] = "";
+        }
         $data["studyType"] = $row[2];
         $data["name"] = $row[3];
         $data["trialName"] = "";
@@ -151,7 +156,7 @@ if ($action == "list") {
         $type = $row[0];
         $set = $row[1];
     } else {
-        $set = null;
+        $set = "";
     }
     if ($type == "genotype") {
         $sql = "select trial_code, marker_type_uid, NULL, processing_date, data_program_name 
