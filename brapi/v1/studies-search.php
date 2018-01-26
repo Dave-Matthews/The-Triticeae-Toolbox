@@ -102,7 +102,7 @@ if ($action == "list") {
         $data["trialName"] = "";
         $CAP_uid = $row[4];
         $data["programDbId"] = $row[4];
-        if (isset($data["trialDbId"])) {
+        if (preg_match("/[0-9]/", $set_uid)) {
             $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $row[1]";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql");
             if ($row2 = mysqli_fetch_row($res2)) {
