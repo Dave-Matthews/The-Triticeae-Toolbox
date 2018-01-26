@@ -212,6 +212,7 @@ if (($lineuid != "") && ($expuid != "")) {
     $linearray['result']['markerprofileDbId'] = $profileid;
     $linearray['result']['germplasmDbId'] = $lineuid;
     $linearray['result']['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $lineuid");
+    $linearray['sampleDbId'] = null;
     $linearray['result']['extractDbId'] = "";
     $linearray['result']['encoding'] = "AA,BB,AB";
 
@@ -285,6 +286,8 @@ if (($lineuid != "") && ($expuid != "")) {
         $profileid = $line_uid . "_" . $exp_uid;
         $linearray['markerprofileDbId'] = $profileid;
         $linearray['germplasmDbId'] = $line_uid;
+        $linearray['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $lineuid");
+        $linearray['sampleDbId'] = null;
         $linearray['extractDbId'] = "";
         $analysisMethod = mysql_grab(
             "select platform_name from platform p, genotype_experiment_info g
