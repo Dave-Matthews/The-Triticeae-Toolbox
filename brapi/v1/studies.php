@@ -93,10 +93,9 @@ if ($action == "list") {
         $data["studyDbId"] = $row[0];
         $data["trialDbId"] = $row[1];
         $data["studyType"] = $row[2];
-        $data["studyName"] = $row[3];
-        $data["trialName"] = null;
+        $data["name"] = $row[3];
+        $data["trialName"] = "";
         $CAP_uid = $row[4];
-        $data["years"] = $row[5];
         $data["programDbId"] = $row[4];
         if (isset($data["trialDbId"])) {
             $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $row[1]";
@@ -108,13 +107,13 @@ if ($action == "list") {
         $sql = "select location, planting_date, harvest_date from phenotype_experiment_info where experiment_uid = $row[0]";
         $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($res2)) {
-            $data["locationDbId"] = null;
-            $data["locationName"] = $row2[0];
-            $data["additionalInfo"]["startDate"] = $row2[1];
-            $data["additionalInfo"]["endDate"] = $row2[2];
+            $data["locationDbId"] = "";
+            $data["locationName"] = "$row2[0]";
+            $data["startDate"] = $row2[1];
+            $data["endDate"] = $row2[2];
         } else {
-            $data["locationDbId"] = null;
-            $data["locationName"] = null;
+            $data["locationDbId"] = "";
+            $data["locationName"] = "";
             $data["additionalInfo"] = null;
         }
         $sql = "select data_program_name from CAPdata_programs where CAPdata_programs_uid = $CAP_uid";
@@ -161,7 +160,7 @@ if ($action == "list") {
          and experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
          and experiments.experiment_uid = $uid";
     } else {
-        $sql = "select trial_code, planting_date, collaborator, begin_weather_date, location, experiment_design
+        $sql = "select trial_code, planting_date, harvest_data, collaborator, begin_weather_date, location, experiment_design
          from experiments, phenotype_experiment_info
          where phenotype_experiment_info.experiment_uid = experiments.experiment_uid
          and experiments.experiment_uid = $uid";
@@ -171,13 +170,14 @@ if ($action == "list") {
         $results["studyDbId"] = $uid;
         $results["studyType"] = $type;
         $results["trialDbId"] = $set;
-        $results["trialName"] = null;
-        $results["studyName"] = $row[0];
+        $results["trialName"] = "";
+        $results["name"] = $row[0];
         $results["startDate"] = $row[1];
-        $results["contacts"] = $row[2];
-        $results["startDate"] = $row[3];
-        $results["location.locationDbId"] = null;
-        $results["location.name"] = $row[4];
+        $results["endDate"] = $row[2];
+        $results["contacts"] = $row[3];
+        $results["startDate"] = $row[4];
+        $results["location.locationDbId"] = "";
+        $results["location.name"] = $row[5];
     } else {
         $results = null;
         $return = json_encode($results);
