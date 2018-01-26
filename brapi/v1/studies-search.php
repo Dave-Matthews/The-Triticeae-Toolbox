@@ -173,12 +173,11 @@ if ($action == "list") {
         $results["trialDbId"] = $set;
         $results["trialName"] = null;
         $results["studyName"] = $row[0];
-        $results["objective"] = "";
         $results["startDate"] = $row[1];
         $results["contacts"] = $row[2];
         $results["startDate"] = $row[3];
-        $results["location"] = array("locationDbId" => null, "name" => "$row[4]");
-        //$results["designType"] = $row[4];
+        $results["location.locationDbId"] = null;
+        $results["location.name"] = $row[4];
     } else {
         $results = null;
         $return = json_encode($results);
