@@ -212,7 +212,7 @@ if (($lineuid != "") && ($expuid != "")) {
     $linearray['result']['markerprofileDbId'] = $profileid;
     $linearray['result']['germplasmDbId'] = $lineuid;
     $linearray['result']['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $lineuid");
-    $linearray['result']['extractDbId'] = null;
+    $linearray['result']['extractDbId'] = "";
     $linearray['result']['encoding'] = "AA,BB,AB";
 
     $linearray['result']['analysisMethod'] = mysql_grab(
@@ -281,11 +281,11 @@ if (($lineuid != "") && ($expuid != "")) {
     while ($row = mysqli_fetch_row($res)) {
         $line_uid = $row[0];
         $exp_uid = $row[1];
-        $resultCount = $row[2];
+        $resultCount = intval($row[2]);
         $profileid = $line_uid . "_" . $exp_uid;
         $linearray['markerprofileDbId'] = $profileid;
         $linearray['germplasmDbId'] = $line_uid;
-        $linearray['extractDbId'] = null;
+        $linearray['extractDbId'] = "";
         $analysisMethod = mysql_grab(
             "select platform_name from platform p, genotype_experiment_info g
             where p.platform_uid = g.platform_uid
@@ -293,7 +293,7 @@ if (($lineuid != "") && ($expuid != "")) {
         );
         // Restrict to the requested analysis method if any.
         if (!$analmeth or $analmeth == $analysisMethod) {
-            $linearray['extractDbId'] = null;
+            $linearray['extractDbId'] = "";
             $linearray['analysisMethod'] = $analysisMethod;
             $linearray['resultCount'] = $resultCount;
             $response['result']['data'][] = $linearray;
