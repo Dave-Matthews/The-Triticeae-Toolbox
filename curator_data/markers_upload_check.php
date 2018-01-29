@@ -24,7 +24,7 @@ require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 set_time_limit(3000);
 
-connect();
+$mysqli = connecti();
 loginTest();
 
 //needed for mac compatibility
@@ -45,9 +45,10 @@ new MarkersCheck($_GET['function']);
 
 /**
  * Using a PHP class to implement the marker import feature
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
+ *
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/curator_data/markers_upload_check.php
  **/
 class MarkersCheck
 {
@@ -55,6 +56,7 @@ class MarkersCheck
     public $storageArr = array (array());
     /**
      * Using the class's constructor to decide which action to perform
+     *
      * @param string $function action to perform
      */
     public function __construct($function = null)
@@ -82,11 +84,11 @@ class MarkersCheck
     }
 
     /**
-     * display header footer and call load functions
+     * Display header footer and call load functions
      *
      * @return null
      */
-    function typeMarkersCheck()
+    private function typeMarkersCheck()
     {
         global $config;
         include $config['root_dir'] . 'theme/admin_header.php';
@@ -106,7 +108,7 @@ class MarkersCheck
 
         $infile = $_GET['linedata'];
         if ($_FILES['file']['name'][0] != "") {
-            $this->_typeMarkersAnnot();
+            $this->typeMarkersAnnot();
         } elseif ($_FILES['file']['name'][1] != "") {
             $this->type_LoadFile1();
         } elseif ($infile != "") {
@@ -126,8 +128,9 @@ class MarkersCheck
      *
      * @return null
      */
-    function typeMarkersProgress()
+    private function typeMarkersProgress()
     {
+        global $mysqli;
         if (empty($_GET['linedata'])) {
             echo "missing data file\n";
         } else {
@@ -145,8 +148,8 @@ class MarkersCheck
         fclose($reader);
 
         $sql = "select count(*) from markers";
-        $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
-        if ($row = mysql_fetch_row($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker types lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        if ($row = mysqli_fetch_row($res)) {
             $count_db = $row[0];
             $exec_time = round(($count_total * $count_db)/500000000, 0);
             echo "<br>Checking marker name and sequence.<br>Predicted execution time is $exec_time seconds<br>\n";
@@ -164,7 +167,7 @@ class MarkersCheck
      *
      * @return null
      */
-    function typeCheckAlleleOrder(&$storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx)
+    private function typeCheckAlleleOrder(&$storageArr, $nameIdx, $alleleAIdx, $alleleBIdx, $sequenceIdx)
     {
         $count_allele = 0;
         $count_seq = 0;
@@ -218,7 +221,7 @@ class MarkersCheck
         echo "</table>";
     }
 
-    function revCmp($seq)
+    private function revCmp($seq)
     {
         $seq = strrev($seq);
         // change the sequence to upper case
@@ -239,7 +242,7 @@ class MarkersCheck
         $seq=str_replace("H", "d", $seq);
         $seq=str_replace("B", "v", $seq);
         // change the sequence to upper case again for output
-        $seq = strtoupper ($seq);
+        $seq = strtoupper($seq);
         return $seq;
     }
 
@@ -254,7 +257,7 @@ class MarkersCheck
      *
      * @return null
      */
-    function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand)
+    private function typeCheckSynonym(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand)
     {
         global $mysqli;
         $infile = $_GET['linedata'];
@@ -273,16 +276,16 @@ class MarkersCheck
             echo "Error creating change file $change_file4<br>\n";
         }
         $sql = "select marker_uid, value from marker_synonyms";
-        $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker types lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($row = mysqli_fetch_assoc($res)) {
             $name = $row['value'];
             $marker_syn_list[$name] = 1;
         }
         //convert SNP to IUPAC Ambiguity Code before checking for sequence matches
         $pheno_uid = 1;
         $sql = "select marker_name, sequence from markers where sequence is not NULL";
-        $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker types lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($row = mysqli_fetch_assoc($res)) {
             $name = $row['marker_name'];
             $seq = strtoupper($row['sequence']);
             if (preg_match("/([A-Za-z]*)\[([ACTG])\/([ACTG])\]([A-Za-z]*)/", $seq, $match)) {
@@ -471,7 +474,7 @@ class MarkersCheck
      *
      * @return null
      */
-    function typeCheckImport(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand, $excludeDuplicate)
+    private function typeCheckImport(&$storageArr, $nameIdx, $sequenceIdx, $overwrite, $expand, $excludeDuplicate)
     {
         $limit = count($storageArr);
         $marker_seq_dup = "";
@@ -489,7 +492,7 @@ class MarkersCheck
                 } else {
                     $marker_seq_dup = $marker_seq_dup . ", $name";
                 }
-                $storageArr[$i]["syn"] = "skip duplicate seq";;
+                $storageArr[$i]["syn"] = "skip duplicate seq";
             } else {
                 $marker_seq_import[$seq] = $name;
             }
@@ -520,52 +523,52 @@ class MarkersCheck
      *
      * @return null
      */
-    private function _typeMarkersAnnot()
+    private function typeMarkersAnnot()
     {
         ?>
         <script type="text/javascript">
-	
+
         function update_databaseAnnot(filepath, filename, username) {
             var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabaseAnnot&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
-	
+
             // Opens the url in the same window
             window.open(url, "_self");
         }
 
         </script>
-	
-	<style type="text/css">
-		th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
-		table {background: none; border-collapse: collapse}
-		td {border: 0px solid #eee !important;}
-		h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
-	</style>
-		
-	<style type="text/css">
+
+        <style type="text/css">
+        th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
+        table {background: none; border-collapse: collapse}
+        td {border: 0px solid #eee !important;}
+        h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
+        </style>
+
+        <style type="text/css">
         table.marker {background: none; border-collapse: collapse}
         th.marker { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
         td.marker { padding: 5px 0; border: 0 !important; }
-    </style>
-<?php
+        </style>
+        <?php
         $error_flag = 0;
         $row = loadUser($_SESSION['username']);
-		$username=$row['name'];
-                $username = preg_replace("/\s/", "", $username);
-		$tmp_dir="./uploads/tmpdir_".$username."_".rand();
+        $username=$row['name'];
+        $username = preg_replace("/\s/", "", $username);
+        $tmp_dir="./uploads/tmpdir_".$username."_".rand();
         //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
         //	copy($_FILES['file']['tmp_name'][1], $raw_path);
         umask(0);
-        
-        if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
+  
+        if (!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
             mkdir($tmp_dir, 0777);
         }
 
         $target_path=$tmp_dir."/";
- 	
- 		$uploadfile =$_FILES['file']['name'][0];
+
+        $uploadfile =$_FILES['file']['name'][0];
              
         $uftype=$_FILES['file']['type'][0];
-        if (strpos($uploadfile, ".txt") === FALSE) {
+        if (strpos($uploadfile, ".txt") === false) {
             error(1, "Expecting an tab-delimited text file. <br> The type of the uploaded file is ".$uftype);
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
         }
@@ -1178,6 +1181,7 @@ class MarkersCheck
      private function type_DatabaseAnnot() {
  
         global $config;
+        global $mysqli;
         include($config['root_dir'] . 'theme/admin_header.php');
 
         //echo "You are in DB portion of annotation import.<br>";
@@ -1195,24 +1199,19 @@ class MarkersCheck
         $mAnnotTypeHash = array ();
         $mSynmTypeHash = array ();
         
-        $linkID = connect();  
-        
         // Setup hash table for the various type lookup
         $sql = "SELECT marker_type_uid, marker_type_name 
             FROM marker_types";
-        $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker types lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($row = mysqli_fetch_assoc($res)) {
            $tempStr =  strtolower($row['marker_type_name']);
            $mTypeHash[$tempStr] =  $row['marker_type_uid'];     
         }
         
-        //print_r($mTypeHash);
-        //echo "<br>";
-        
         $sql = "SELECT marker_annotation_type_uid, name_annotation 
             FROM marker_annotation_types";
-        $res = mysql_query($sql) or die("Database Error: Marker annotation types lookup - ".mysql_error() ."<br>".$sql);
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker annotation types lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($row = mysqli_fetch_assoc($res)) {
             $tempStr =  strtolower($row['name_annotation']);
             $mAnnotTypeHash[$tempStr] = $row['marker_annotation_type_uid'];     
         }
@@ -1221,15 +1220,11 @@ class MarkersCheck
          
         $sql = "SELECT marker_synonym_type_uid, name 
             FROM marker_synonym_types";
-        $res = mysql_query($sql) or die("Database Error: Marker synonym types lookup - ".mysql_error() ."<br>".$sql);
-        while ($row = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker synonym types lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($row = mysqli_fetch_assoc($res)) {
             $tempStr =  strtolower($row['name']);
             $mSynmTypeHash[$tempStr] = $row['marker_synonym_type_uid'];     
         }
-        //print_r( $mSynmTypeHash);
-        //echo "<br>";
-
-        //exit(0);
          
         if (($reader = fopen($datafile, "r")) == FALSE) {
             error(1, "Unable to access file.");
@@ -1292,23 +1287,23 @@ class MarkersCheck
             }
         
 	        $lastmarker = $data[0];
-	        $lastline = $i-1;
                 $i++;
         }  
         unset ($value);
         fclose($reader);   
+        $lastline = $i - 1;
 
         //cache the marker and synonym names
         $sql = "SELECT marker_uid, marker_name FROM markers";
-        $res = mysql_query($sql) or die("Database Error: marker name lookup - ".mysql_error() ."<br>".$sql);
-        while ($rdata = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: marker name lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($rdata = mysqli_fetch_assoc($res)) {
             $m_uid=$rdata['marker_uid'];
             $m_nam=$rdata['marker_name'];
             $markerNameLookup[$m_nam] = $m_uid;
         }
         $sql = "SELECT marker_uid, value FROM marker_synonyms";
-        $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
-        while ($rdata = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym name lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($rdata = mysqli_fetch_assoc($res)) {
             $m_uid=$rdata['marker_uid'];
             $m_nam=$rdata['value'];
             $markerSynLookup[$m_nam] = $m_uid;
@@ -1377,17 +1372,17 @@ class MarkersCheck
                 if (empty($m_uid)) {
                     $sql = "INSERT INTO markers (marker_type_uid, marker_name, updated_on, created_on)
                             VALUES ($markerTypeID,  '$curMarker', NOW(),  NOW())"; 
-                    $res = mysql_query($sql) or die("Database Error: marker insert - ". mysql_error() ."<br>".$sql);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker insert - ". mysqli_error($mysqli) ."<br>".$sql);
                     $sql = "SELECT marker_uid
                         FROM markers
                         WHERE marker_name = '$marker'";
-                    $res = mysql_query($sql) or die("Database Error: marker uid lookup - ".mysql_error() ."<br>".$sql);
-                    $rdata = mysql_fetch_assoc($res);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker uid lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+                    $rdata = mysqli_fetch_assoc($res);
                     $markerUid = $rdata['marker_uid'];
                 } else {
                     $sql = "UPDATE markers SET marker_type_uid = '$markerTypeID', updated_on = NOW()
                         WHERE marker_uid = '$m_uid'"; 
-                    $res = mysql_query($sql) or die("Database Error: marker update - ". mysql_error() ."<br>".$sql);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker update - ". mysqli_error($mysqli) ."<br>".$sql);
                     $markerUid = $m_uid;
                 }
             }
@@ -1404,19 +1399,19 @@ class MarkersCheck
                 $sql = "SELECT marker_synonym_uid
                         FROM marker_synonyms
                         WHERE value = '$synonym'";
-                $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
-                $rdata = mysql_fetch_assoc($res);
+                $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym name lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+                $rdata = mysqli_fetch_assoc($res);
                 $mSynonym_uid=$rdata['marker_synonym_uid'];
                 
                 if (empty($mSynonym_uid)) {
                     $sql = "INSERT INTO marker_synonyms (marker_uid, marker_synonym_type_uid, value, updated_on)
                             VALUES ($markerUid, $synonymTypeID, '$synonym', NOW())"; 
-                    $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym insert - ". mysqli_error($mysqli). "<br>".$sql);
                 } else {
                     $sql = "UPDATE marker_synonyms SET marker_uid = '$markerUid', 
                         marker_synonym_type_uid = '$synonymTypeID', updated_on = NOW()
                         WHERE marker_synonym_uid = '$mSynonym_uid'"; 
-                    $res = mysql_query($sql) or die("Database Error: marker synonym update - ". mysql_error() ."<br>".$sql);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym update - ". mysqli_error($mysqli) ."<br>".$sql);
                 }
             }
             
@@ -1435,40 +1430,40 @@ class MarkersCheck
                     $sql = "SELECT marker_annotation_uid
                             FROM marker_annotations
                             WHERE marker_uid = '$markerUid' AND marker_annotation_type_uid = '$annotTypeID'";
-                    $res = mysql_query($sql) or die("Database Error: marker annotation lookup - ".mysql_error() ."<br>".$sql);
-                    $rdata = mysql_fetch_assoc($res);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker annotation lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+                    $rdata = mysqli_fetch_assoc($res);
                 } else {
                     $sql = "SELECT marker_annotation_uid
                             FROM marker_annotations
                             WHERE value = '$annotation' AND marker_uid = '$markerUid' AND marker_annotation_type_uid = '$annotTypeID'";
-                    $res = mysql_query($sql) or die("Database Error: marker annotation lookup - ".mysql_error() ."<br>".$sql);
-                    $rdata = mysql_fetch_assoc($res);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker annotation lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+                    $rdata = mysqli_fetch_assoc($res);
                 }
                 $mAnnot_uid = $rdata['marker_annotation_uid'];
                 
                 if (empty($mAnnot_uid)) {
                     $sql = "INSERT INTO marker_annotations (marker_uid, marker_annotation_type_uid, value, updated_on, created_on)
                             VALUES ($markerUid, $annotTypeID, '$annotation', NOW(), NOW())"; 
-                    $res = mysql_query($sql) or die("Database Error: marker annotation insert - ". mysql_error() ."<br>".$sql);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker annotation insert - ". mysqli_error($mysqli) ."<br>".$sql);
                 } else {
                     $sql = "UPDATE marker_annotations SET marker_uid = '$markerUid', 
                         marker_annotation_type_uid = '$annotTypeID', value = '$annotation', updated_on = NOW()
                         WHERE marker_annotation_uid = '$mAnnot_uid'"; 
-                    $res = mysql_query($sql) or die("Database Error: marker annotation update - ". mysql_error() ."<br>".$sql);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker annotation update - ". mysqli_error($mysqli) ."<br>".$sql);
                 }
             }
         }
         echo " <b>The Data is inserted/updated successfully </b><br>";
-    	echo "$lastline lines read, last marker = $lastmarker.<br>";
-    	echo "Size of storageArr = ".count($storageArr);
+    	echo "$lastline lines read, last marker = $lastmarker<br>";
+    	//echo "Size of storageArr = ".count($storageArr);
         echo "<br/><br/>";
 ?>
         <a href="./curator_data/markers_upload.php"> Go Back To Main Page </a>
     <?php
         $sql = "SELECT input_file_log_uid from input_file_log 
             WHERE file_name = '$filename'";
-        $res = mysql_query($sql) or die("Database Error: input_file lookup  - ". mysql_error() ."<br>".$sql);
-        $rdata = mysql_fetch_assoc($res);
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
+        $rdata = mysqli_fetch_assoc($res);
         $input_uid = $rdata['input_file_log_uid'];
         
          if (empty($input_uid)) {
@@ -1478,15 +1473,16 @@ class MarkersCheck
             $sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
                  WHERE input_file_log_uid = '$input_uid'"; 
         }
-        $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
+        $lin_table = mysqli_query($mysqli, $sql) or die("Database Error: Log record insertion failed - ". mysqli_error($mysqli) ."<br>".$sql);
         $footer_div = 1;
-        include($config['root_dir'].'theme/footer.php');
+        include $config['root_dir'].'theme/footer.php';
     } /* end of function type_databaseAnnot */
  
  //**************************************************************
     private function type_DatabaseSNP() {
 
         global $config;
+        global $mysqli;
         $progPath = realpath(dirname(__FILE__).'/../').'/';
         
         //echo "You are in DB portion of SNP import." . "<br>";
@@ -1529,8 +1525,8 @@ class MarkersCheck
         $sequenceIdx = implode(find("sequence", $header),"");
  
         $sql = "select marker_synonym_type_uid, name from marker_synonym_types"; 
-        $res = mysql_query($sql) or die("Database Error: Marker synonym lookup - ".mysql_error() ."<br>".$sql);
-        while ($rdata = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker synonym lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($rdata = mysqli_fetch_assoc($res)) {
             $name = $rdata['name'];
             $sTypeHash[$name] = $rdata['marker_synonym_type_uid'];            
         }
@@ -1579,15 +1575,15 @@ class MarkersCheck
 
         //cache the marker and synonym names
         $sql = "SELECT marker_uid, marker_name FROM markers";
-        $res = mysql_query($sql) or die("Database Error: marker name lookup - ".mysql_error() ."<br>".$sql);
-        while ($rdata = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: marker name lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($rdata = mysqli_fetch_assoc($res)) {
             $m_uid=$rdata['marker_uid'];
             $m_nam=$rdata['marker_name'];
             $markerNameLookup[$m_nam] = $m_uid;
         }
         $sql = "SELECT marker_uid, value FROM marker_synonyms";
-        $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
-        while ($rdata = mysql_fetch_assoc($res)) {
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym name lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+        while ($rdata = mysqli_fetch_assoc($res)) {
             $m_uid=$rdata['marker_uid'];
             $m_nam=$rdata['value'];
             $markerSynLookup[$m_nam] = $m_uid;
@@ -1603,7 +1599,6 @@ class MarkersCheck
             echo "ERROR DETECT: One or more fields contained blank values"."<br/>";
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
         } 	else {
-            $linkID = connect(); 
             $missing = 0;
             for ($i = 1; $i <= count($storageArr) ; $i++)  {
 
@@ -1659,13 +1654,13 @@ class MarkersCheck
                         $synonymTypeID = $sTypeHash["GBS sequence tag"];
                     } else {
                         $sql = "insert into marker_synonym_types (name, comments) values (\"GBS sequence tag\", \"N/A\")";
-                        $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
+                        $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym insert - ". mysqli_error($mysqli). "<br>".$sql);
                         echo "$sql<br>\n";
-                        $synonymTypeID = mysql_insert_id();
+                        $synonymTypeID = mysqli_insert_id();
                     }
                     $sql = "select marker_uid from markers where marker_name = \"$synonym\"";
-                    $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
-                    if ($row = mysql_fetch_assoc($res)) {
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym insert - ". mysqli_error($mysqli). "<br>".$sql);
+                    if ($row = mysqli_fetch_assoc($res)) {
                         $marker_uid = $row['marker_uid'];
                     } else {
                         die("Error: could not find synonym entry for $synonym<br>$sql\n");
@@ -1673,14 +1668,14 @@ class MarkersCheck
                     $sql = "SELECT marker_synonym_uid
                         FROM marker_synonyms
                         WHERE value = '$marker'";
-                    $res = mysql_query($sql) or die("Database Error: marker synonym name lookup - ".mysql_error() ."<br>".$sql);
-                    $rdata = mysql_fetch_assoc($res);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym name lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+                    $rdata = mysqli_fetch_assoc($res);
                     $mSynonym_uid=$rdata['marker_synonym_uid'];
  
                     if (empty($mSynonym_uid)) {
                         $sql = "INSERT INTO marker_synonyms (marker_uid, marker_synonym_type_uid, value, updated_on)
                         VALUES ($marker_uid, $synonymTypeID, '$marker', NOW())";
-                        $res = mysql_query($sql) or die("Database Error: marker synonym insert - ". mysql_error(). "<br>".$sql);
+                        $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym insert - ". mysqli_error($mysqli). "<br>".$sql);
                         $count_added_syn++;
                     } else {
                         echo "skipping marker $marker marker_uid $marker_uid synonym $marker, already in database<br>\n";
@@ -1688,8 +1683,8 @@ class MarkersCheck
                 } elseif (empty($marker_uid) && ($typeIdx != "")) {
                     $sql = "SELECT marker_type_uid, marker_type_name
                     FROM marker_types";
-                    $res = mysql_query($sql) or die("Database Error: Marker types lookup - ".mysql_error() ."<br>".$sql);
-                    while ($row = mysql_fetch_assoc($res)) {
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: Marker types lookup - ".mysqli_error($mysqli) ."<br>".$sql);
+                    while ($row = mysqli_fetch_assoc($res)) {
                         $tempStr = $row['marker_type_name'];
                         $mTypeHash[$tempStr] =  $row['marker_type_uid'];
                     }
@@ -1697,8 +1692,8 @@ class MarkersCheck
                         $markerTypeID = $mTypeHash["$markerType"];
                         $sql = "insert into markers (marker_type_uid, marker_name, A_allele, B_allele, sequence, updated_on, created_on) 
                         values ($markerTypeID, \"$marker\", \"$alleleA\", \"$alleleB\", \"$sequence\", NOW(), NOW())";
-                        $res = mysql_query($sql) or die("Database Error: " . mysql_error() . "<br>$sql");
-                        $marker_uid = mysql_insert_id();
+                        $res = mysqli_query($mysqli, $sql) or die("Database Error: " . mysqli_error($myslqi) . "<br>$sql");
+                        $marker_uid = mysqli_insert_id();
                         //echo "$sql<br>\n";
                         $count_added++;
                     } else {
@@ -1709,7 +1704,7 @@ class MarkersCheck
                 } else {
                     $sql = "UPDATE markers SET A_allele = '$alleleA', B_allele='$alleleB', sequence='$sequence', updated_on=NOW() 
                             WHERE marker_uid = '$marker_uid'";
-                    $res = mysql_query($sql) or die("Database Error: SNP sequence update failed - ". mysql_error() ."<br>".$sql);
+                    $res = mysqli_query($mysqli, $sql) or die("Database Error: SNP sequence update failed - ". mysqli_error($mysqli) ."<br>".$sql);
                     //echo "update $marker_uid<br>$sql<br>\n";
                 }
                   
@@ -1735,8 +1730,8 @@ class MarkersCheck
         <?php
         $sql = "SELECT input_file_log_uid from input_file_log 
             WHERE file_name = '$filename'";
-        $res = mysql_query($sql) or die("Database Error: input_file lookup  - ". mysql_error() ."<br>".$sql);
-        $rdata = mysql_fetch_assoc($res);
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
+        $rdata = mysqli_fetch_assoc($res);
         $input_uid = $rdata['input_file_log_uid'];
         if (empty($input_uid)) {
             $sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
@@ -1745,7 +1740,7 @@ class MarkersCheck
             $sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
                         WHERE input_file_log_uid = '$input_uid'";
         }
-        $lin_table = mysql_query($sql) or die("Database Error: Log record insertion failed - ". mysql_error() ."<br>".$sql);
+        $lin_table = mysqli_query($mysqli, $sql) or die("Database Error: Log record insertion failed - ". mysqli_error($mysqli) ."<br>".$sql);
         echo "<br><br>Running update of BLAST database<br>\n";
         $cmd = "/usr/bin/php " . $progPath . "curator_data/format-fasta.php";
         exec($cmd, $output);

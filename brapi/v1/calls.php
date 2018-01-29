@@ -1,10 +1,11 @@
 <?php
 /**
- * brapi/v1/calls.php, DEM jul2016
+ * Brapi/v1/calls.php, DEM jul2016
  * Document the data formats and HTTP methods we support.
  * http://docs.brapi.apiary.io/
  *
- * CLB 4/10/2017 - added traits, use empty list instead of null for status, added datafiles but not supported for this call
+ * CLB 4/10/2017 - added traits, use empty list instead of null for status
+ * CLB 1/22/2018 - added crops
  */
 
 require '../../includes/bootstrap.inc';
@@ -40,15 +41,19 @@ $ourcalls['studies-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies-search/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['trials'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['trials/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['traits'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps/id/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['crops'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {
     foreach (array_keys($ourcalls) as $ourcall) {
-        $data[] = ['call'=>$ourcall, 'datatypes'=>$ourcalls[$ourcall]['datatypes'], 'methods'=>$ourcalls[$ourcall]['methods']];
+        $data[] = ['call'=>$ourcall, 'datatypes'=>$ourcalls[$ourcall]['datatypes'],
+        'methods'=>$ourcalls[$ourcall]['methods']];
     }
     respond($data);
 }
@@ -63,7 +68,8 @@ if ($call) {
 if ($datatype) {
     foreach (array_keys($ourcalls) as $ourcall) {
         if (in_array($datatype, $ourcalls[$ourcall]['datatypes'])) {
-            $data[] = ['call'=>$ourcall, 'datatypes'=>$ourcalls[$ourcall]['datatypes'], 'methods'=>$ourcalls[$ourcall]['methods']];
+            $data[] = ['call'=>$ourcall, 'datatypes'=>$ourcalls[$ourcall]['datatypes'],
+            'methods'=>$ourcalls[$ourcall]['methods']];
         }
     }
     respond($data);

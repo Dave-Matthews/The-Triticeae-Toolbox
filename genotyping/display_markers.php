@@ -26,19 +26,6 @@ while ($row=mysqli_fetch_assoc($result)) {
             $synonym[$marker_uid] = $value;
     }
 }
-$sql = "select marker_uid from markers_in_maps";
-$result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-while ($row=mysqli_fetch_assoc($result)) {
-    $marker_uid = $row['marker_uid'];
-    $mapped[$marker_uid] = 1;
-}
-$sql = "select marker_uid, sum(total) from allele_frequencies group by marker_uid";
-$result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-while ($row=mysqli_fetch_assoc($result)) {
-    $marker_uid = $row['marker_uid'];
-    $sum = $row['sum(total)'];
-    $lines[$marker_uid] = $sum;
-}
 
 if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
     if ((count($_SESSION['clicked_buttons']) > 1000) || ($function == "download")) {
@@ -78,7 +65,9 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
             $b_allele=$row['B_allele'];
             $seq = $row['sequence'];
             $type = $row['marker_type_name'];
-            if (isset($mapped[$mkruid])) {
+            $sql1 = "select map_uid from markers_in_maps where marker_uid = $mkruid";
+            $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mydqli));
+            if ($row2 = mysqli_fetch_row($result2)) {
                 $mkr_mapped = "Yes";
             } else {
                 $mkr_mapped = "";
@@ -88,8 +77,10 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
             } else {
                 $syn = "";
             }
-            if (isset($lines[$mkruid])) {
-                $lines_geno = $lines[$mkruid];
+            $sql2 = "select sum(total) from allele_frequencies where marker_uid = $mkruid";
+            $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mydqli));
+            if ($row2 = mysqli_fetch_row($result2)) {
+                $lines_geno = $row2[0];
             } else {
                 $lines_geno = "";
             }
@@ -147,7 +138,9 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         $b_allele=$row['B_allele'];
         $seq = $row['sequence'];
         $type = $row['marker_type_name'];
-        if (isset($mapped[$mkruid])) {
+        $sql1 = "select map_uid from markers_in_maps where marker_uid = $mkruid";
+        $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mydqli));
+        if ($row2 = mysqli_fetch_row($result2)) {
             $mkr_mapped = "Yes";
         } else {
             $mkr_mapped = "";
@@ -157,8 +150,10 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         } else {
             $syn = "";
         }
-        if (isset($lines[$mkruid])) {
-            $lines_geno = $lines[$mkruid];
+        $sql2 = "select sum(total) from allele_frequencies where marker_uid = $mkruid";
+        $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mydqli));
+        if ($row2 = mysqli_fetch_row($result2)) {
+            $lines_geno = $row2[0];
         } else {
             $lines_geno = "";
         }
@@ -189,7 +184,9 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         $b_allele=$row['B_allele'];
         $seq = $row['sequence'];
         $type = $row['marker_type_name'];
-        if (isset($mapped[$mkruid])) {
+        $sql = "select map_uid from markers_in_maps where marker_uid = $mkruid";
+        $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mydqli));
+        if ($row2 = mysqli_fetch_row($result2)) {
             $mkr_mapped = "Yes";
         } else {
             $mkr_mapped = "";

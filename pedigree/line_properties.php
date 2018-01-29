@@ -307,19 +307,21 @@ if (!empty($_POST)) {
         $count++;
     }
     if (count($breedingProgram) != 0) {
-      if ($count == 0)        
-	$where .= "breeding_program_code IN ('".$breedingCode."')";
-      else	
-	$where .= " AND breeding_program_code IN ('".$breedingCode."')";
-      $count++;
+        if ($count == 0) {
+            $where .= "breeding_program_code IN ('".$breedingCode."')";
+        } else {
+            $where .= " AND breeding_program_code IN ('".$breedingCode."')";
+        }
+        $count++;
     }
-    if (count($year) != 0)      {
-      if ($count == 0)    	
-	$where .= "line_record_uid IN (select line_record_uid from tht_base, experiments
+    if (count($year) != 0) {
+        if ($count == 0) {
+          $where .= "line_record_uid IN (select line_record_uid from tht_base, experiments
 where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
-      else	  
-	$where .= " AND line_record_uid IN (select line_record_uid from tht_base, experiments 
+      } else {
+          $where .= " AND line_record_uid IN (select line_record_uid from tht_base, experiments 
 where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
+      }
       $count++;
     }
     if (count($species) != 0)    {
@@ -461,14 +463,25 @@ if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
     </script>
     <?php
     }
-    // Deselect highlighted cookie lines.
+    // Select/Deselect highlighted cookie lines.
     if (isset($_POST['deselLines'])) {
-        $selected_lines = $_SESSION['selected_lines'];
-        foreach ($_POST['deselLines'] as $line_uid) {
-            if (($lineidx = array_search($line_uid, $selected_lines)) !== false) {
-                array_splice($selected_lines, $lineidx, 1);
+        $sub = $_POST['WhichBtn'];
+        if (isset($sub["del"])) {
+            $selected_lines = $_SESSION['selected_lines'];
+            foreach ($_POST['deselLines'] as $line_uid) {
+                if (($lineidx = array_search($line_uid, $selected_lines)) !== false) {
+                    array_splice($selected_lines, $lineidx, 1);
+                }
+                $_SESSION['selected_lines']=$selected_lines;
             }
-            $_SESSION['selected_lines']=$selected_lines;
+        } elseif (isset($sub["sel"])) {
+            $selected_lines = array();
+            foreach ($_POST['deselLines'] as $line_uid) {
+                $selected_lines[] = $line_uid;
+            }
+            $_SESSION['selected_lines'] = $selected_lines;
+        } else {
+            echo "Error: bad selection";
         }
     }
     // If logged in, retrieve cookie selection from database.
@@ -502,7 +515,8 @@ if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
         }
     }
     print "</select>";
-    print "<br><input type='submit' name='WhichBtn' value='Deselect highlighted lines' />";
+    print "<br><input type='submit' name='WhichBtn[sel]' value='Select highlighted lines' />";
+    print "<br><input type='submit' name='WhichBtn[del]' value='Deselect highlighted lines' />";
     print "</form>";
 
     $display1 = $_SESSION['selected_lines'] ? "":" style='display: none;'";

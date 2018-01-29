@@ -1,10 +1,10 @@
 <?php
 require 'config.php';
-include $config['root_dir'].'includes/bootstrap.inc';
+require $config['root_dir'].'includes/bootstrap.inc';
 $pageTitle = "Variant Effects";
 $mysqli = connecti();
 
-include $config['root_dir'].'theme/admin_header2.php';
+require $config['root_dir'].'theme/admin_header2.php';
 ?>
 <script type="text/javascript" src="genotyping/variations.js"></script>
 <?php
@@ -53,7 +53,7 @@ while ($row = mysqli_fetch_row($result)) {
         $assembly = $row[0];
         $assemblyList[] = $row[0];
         $assemblyFlag[] = $row[1];
-    // do not show ones that are private
+        // do not show ones that are private
     } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
         $assembly = $row[0];
         $assemblyList[] = $row[0];
@@ -101,9 +101,9 @@ echo "<br><br>";
 $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row = mysqli_fetch_row($result)) {
-    $marker = $row[0];
+    $marker_name = $row[0];
     $gene = $row[1];
-    $geneFound[$marker] = "<a target=\"_new\" href=" . $varLink[$assembly] . "?g=$gene>$gene</a>";
+    $geneFound[$marker_name] = "<a target=\"_new\" href=" . $varLink[$assembly] . "?g=$gene>$gene</a>";
 }
 
 $linkOutIdx = array();
@@ -112,21 +112,21 @@ $vepList = array();
 /* check in loaded file first if not found then check marker_report_reference */
 foreach ($selected_markers as $marker_uid) {
     $found = 0;
+    $geno_exp = $_SESSION['geno_exps'][0];
+    $sql = "select marker_name, A_allele, B_allele from markers where marker_uid = $marker_uid";
+    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($result)) {
+        $marker_name = $row[0];
+        $a_allele = $row[1];
+        $b_allele = $row[2];
+    } else {
+        die("Error: invalid marker\n");
+    }
     if (isset($_SESSION['geno_exps'])) {
-        $geno_exp = $_SESSION['geno_exps'][0];
-        $sql = "select A_allele, B_allele from markers where marker_uid = $marker_uid";
-        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row = mysqli_fetch_row($result)) {
-            $a_allele = $row[0];
-            $b_allele = $row[1];
-        } else {
-            die("Error: invalid marker\n");
-        }
         $sql = "select marker_name, chrom, pos from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp and marker_uid = $marker_uid";
         //echo "$sql<br>\n";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_row($result)) {
-            $marker = $row[0];
             $chrom = $row[1];
             $pos = $row[2];
             $start = $pos - 1000;
@@ -139,18 +139,18 @@ foreach ($selected_markers as $marker_uid) {
             } else {
                 $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start-$stop\">$chrom:$pos</a>";
             }
-            $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker\">$marker</a><td>$jbrowse";
-            if (isset($geneFound[$marker])) {
-                $linkOut .= "<td>$geneFound[$marker]\n";
+            $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker_name\">$marker_name</a><td>$jbrowse";
+            if (isset($geneFound[$marker_name])) {
+                $linkOut .= "<td>$geneFound[$marker_name]\n";
             } else {
                 $linkOut .= "<td><td>\n";
             }
-        }
-        if (preg_match("/[0-9]/", $chrom) && preg_match("/[0-9]/", $pos)) {
-            $found = 1;
-            $vepList[] = "<tr><td>$row[1] $pos $pos $a_allele/$b_allele + $marker\n";
-            $linkOutSort[] = $linkOut;
-            $linkOutIndx[] = $chrom . $pos;
+            if (preg_match("/[0-9]/", $chrom) && preg_match("/[0-9]/", $pos)) {
+                $found = 1;
+                $vepList[] = "<tr><td>$row[1] $pos $pos $a_allele/$b_allele + $marker_name\n";
+                $linkOutSort[] = $linkOut;
+                $linkOutIndx[] = $chrom . $pos;
+            }
         }
     }
     if (!$found) {
@@ -162,7 +162,6 @@ foreach ($selected_markers as $marker_uid) {
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli . "<br>$sql<br>"));
         if ($row = mysqli_fetch_row($result)) {
             $found = 1;
-            $marker = $row[0];
             $chrom = $row[1];
             $bin = $row[2];
             $pos = $row[3];
@@ -180,29 +179,22 @@ foreach ($selected_markers as $marker_uid) {
             if (empty($bin)) {
                 $bin = $chrom;
             }
-            $vepList[] = "<tr><td>$bin $pos $pos $row[4]/$row[5] $strand $marker\n";
+            $vepList[] = "<tr><td>$bin $pos $pos $row[4]/$row[5] $strand $marker_name\n";
             if (preg_match("/RefSeq/", $assembly)) {
                 $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start..$stop\">$chrom:$pos</a>";
             } else {
                 $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$bin:$start-$stop\">$bin:$pos</a>";
             }
-            $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker\">$marker</a><td>$jbrowse";
-            if (isset($geneFound[$marker])) {
-                $linkOut .= "<td>$geneFound[$marker]\n";
+            $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker_name\">$marker_name</a><td>$jbrowse";
+            if (isset($geneFound[$marker_name])) {
+                $linkOut .= "<td>$geneFound[$marker_name]\n";
             } else {
                 $linkOut .= "<td><td>\n";
             }
             $linkOutSort[] = $linkOut;
             $linkOutIndx[] = $chrom . $pos;
-        }
-    }
-    if (!$found) {
-        $sql = "select marker_name from markers where marker_uid = $marker_uid";
-        $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row2 = mysqli_fetch_row($result2)) {
-            $notFound .= "$row2[0]<br>\n";
         } else {
-            echo "Error: marker_uid = $marker_uid not found<br>\n";
+            $notFound .= "$marker_name<br>\n";
         }
     }
 }
@@ -265,4 +257,4 @@ if ($notFound != "") {
     echo "<br>Markers that do not have BLAST match to assembly<br>$notFound<br>\n";
 }
 echo "</div>";
-include $config['root_dir'].'theme/footer.php';
+require $config['root_dir'].'theme/footer.php';
