@@ -1,7 +1,9 @@
 <?php
 
-# Function connect() below requires the connection information in
-# /data/tht_data/mysql_connections/T3wheat+_readonly.inc
+/**
+ * Function connect() below requires the connection information in
+ * /data/tht_data/mysql_connections/T3wheat+_readonly.inc
+ */
 
 if (!isset($dontconnect)) {
     $dontconnect = false;
@@ -19,11 +21,8 @@ session_start();
  * maintenance. If true, then you will not be able to access the site until you
  * attach ?maintenence=override to the url. You only have to do this once. If
  * false, everyone has access to the site as normal.
- *
  */
 $maintenance = false;
-
-$usegbrowse = true; /* set to false if GBrowse not installed*/
 
 /******************************************************************************/
 if (!isset($_SESSION['maintenance_override'])) {
@@ -46,7 +45,7 @@ if (!$maintenance && isset($_SESSION['maintenance_override'])) {
 /******************************************************************************/
 
 if (!(isset($config['base_url']) && isset($config['root_dir']))) {
-	require 'config.php';
+    include 'config.php';
 }
 
 /****************************************************
@@ -55,39 +54,31 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
  * include all files in the includes directory
  */
 
-	// universal libraries
-	require('common.inc');
-	require('error.inc');
-	require('login.inc');
+// universal libraries
+require 'common.inc';
+require 'error.inc';
+require 'login.inc';
 
-	// specific libraries
-	require('general.inc');
-	require('traits.inc');
-	require('pedigree.inc');
-	require('image.inc');
-        require('marker.inc');
-	require('search.inc');
-	require('globals.inc');
-        require('phpids.inc');
+// specific libraries
+require 'general.inc';
+require 'traits.inc';
+require 'pedigree.inc';
+require 'image.inc';
+require 'marker.inc';
+require 'search.inc';
+require 'globals.inc';
 
 /*
  * Applying Word Filter
  */
 
-//	Comment out if you want to get rid of the censoring.
-	censor();
+//  Comment out if you want to get rid of the censoring.
+censor();
 
-//	Starting the Session, why? because everything uses the damn session array
-	if(session_test())
-	{
-		session_start();
-	}
-
-// 	Comment out if you don't want to set the memory limit
-//	ini_set("memory_limit","36M");
-
-
-
+//  Starting the Session, why? because everything uses the damn session array
+if (session_test()) {
+    session_start();
+}
 
 /*
  *  End of Initialization
@@ -96,55 +87,51 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
 
 function array_merge_recursive_unique($array0, $array1)
 {
-   $arrays = func_get_args();
-   $remains = $arrays;
+    $arrays = func_get_args();
+    $remains = $arrays;
 
-   // We walk through each arrays and put value in the results (without
-   // considering previous value).
-   $result = array();
+    // We walk through each arrays and put value in the results (without
+    // considering previous value).
+    $result = array();
 
-   // loop available array
-   foreach($arrays as $array) {
+    // loop available array
+    foreach ($arrays as $array) {
+        // The first remaining array is $array. We are processing it. So
+        // we remove it from remaing arrays.
+        array_shift($remains);
 
-       // The first remaining array is $array. We are processing it. So
-       // we remove it from remaing arrays.
-       array_shift($remains);
+        // We don't care non array param, like array_merge since PHP 5.0.
+        if (is_array($array)) {
+            // Loop values
+            foreach ($array as $key => $value) {
+                if (is_array($value)) {
+                    // we gather all remaining arrays that have such key available
+                    $args = array();
+                    foreach ($remains as $remain) {
+                        if (array_key_exists($key, $remain)) {
+                            array_push($args, $remain[$key]);
+                        }
+                    }
 
-       // We don't care non array param, like array_merge since PHP 5.0.
-       if(is_array($array)) {
-           // Loop values
-           foreach($array as $key => $value) {
-               if(is_array($value)) {
-                   // we gather all remaining arrays that have such key available
-                   $args = array();
-                   foreach($remains as $remain) {
-                       if(array_key_exists($key, $remain)) {
-                           array_push($args, $remain[$key]);
-                       }
-                   }
-
-                   if(count($args) > 2) {
-                       // put the recursion
-                       $result[$key] = call_user_func_array(__FUNCTION__, $args);
-                   } else {
-                       foreach($value as $vkey => $vval) {
-                           $result[$key][$vkey] = $vval;
-                       }
-                   }
-               } else {
-                   // simply put the value
-                   $result[$key] = $value;
-               }
-           }
-       }
-   }
-   return $result;
+                    if (count($args) > 2) {
+                        // put the recursion
+                        $result[$key] = call_user_func_array(__FUNCTION__, $args);
+                    } else {
+                        foreach ($value as $vkey => $vval) {
+                            $result[$key][$vkey] = $vval;
+                        }
+                    }
+                } else {
+                    // simply put the value
+                    $result[$key] = $value;
+                }
+            }
+        }
+    }
+    return $result;
 }
 
-
-
 /*
- * No longer used but included for compatibility
  * Function that simplifies the connection process
  * Use this function if you want to connect to the database.
  *
@@ -163,16 +150,16 @@ function connect() {
  *
  * @return $mysqli
  */
-function connecti() {
+function connecti()
+{
   global $dontconnect;
   $ini_path = dirname(__FILE__) . '/tht.ini';
   $ini_config = is_readable($ini_path) ?
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat_readonly.inc');
-  $db_config = array_merge_recursive_unique($db_config,
-                                            $ini_config);
+  include '/data/tht_data/mysql_connections/T3wheat+_readonly.inc';
+  $db_config = array_merge_recursive_unique($db_config, $ini_config);
   extract($db_config);
   $mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
   if ($mysqli->connect_error) {
@@ -189,14 +176,19 @@ function connecti() {
  *
  * Just stick this function in the page if you want it to be a password protected page.
  */
-function loginTest() {
+function loginTest()
+{
 	// Has the Session been started?
-	if(session_test()) {
+	if (session_test()) {
 		session_start();
 	}
-	if(!isLoggedIn($_SESSION['username'], $_SESSION['password'])) {
+	if (!isLoggedIn($_SESSION['username'], $_SESSION['password'])) {
+            if (headers_sent()) {
+                echo "Error: Login required";
+            } else {
 	   	header("Location: ".$config['base_url']."403.php");
-	   	die();
+            }
+	   die();
 	}
 
 }
@@ -204,11 +196,12 @@ function loginTest() {
 /**
  * @author Gavin Monroe
  */
-function loginTest2() {
-	if(session_test()) {
-		session_start();
-	}
-	return isLoggedIn($_SESSION['username'], $_SESSION['password']);
+function loginTest2()
+{
+    if (session_test()) {
+        session_start();
+    }
+    return isLoggedIn($_SESSION['username'], $_SESSION['password']);
 }
 
 
@@ -224,20 +217,20 @@ function loginTest2() {
  *
  * Also: the word "sex" is in a line record name, so do not filter.
  */
-function censor() {
-
-	$words = array('shit', 'bitch', 'blowjob', 'clit', 'fuck', 'ass',
-			'asshole', 'b!tch', 'b1tch', 'bastard', 'bi+ch',
-			'boiolas','buceta', 'c0ck','cawk', 'chink',
-			'clits', 'cock','cum','cunt','dildo','dirsa','ejakulate',
-			'fatass', 'fcuk','fuk','fux0r', 'hoer', 'hore', 'jism',
-			'kawk', 'l3itch', 'l3i+ch', 'lesbian','masturbate',
-			'masterbat*', 'masterbat3','motherfucker', 's.o.b.', 'mofo',
-			'nazi', 'nigga', 'nigger', 'nutsack',  'phuck', 'pimpis',
-			'pusse', 'pussy', 'scrotum','sh!t','shemale','shit',
-			'shi+','sh!+', 'slut', 'smut', 'teets','tits', 'boobs', 'b00bs',
-			'teez','testical', 'testicle', 'tit','w00se','jackoff',
-			'wank','whoar','whore');
+function censor()
+{
+    $words = array('shit', 'bitch', 'blowjob', 'clit', 'fuck', 'ass',
+	'asshole', 'b!tch', 'b1tch', 'bastard', 'bi+ch',
+	'boiolas','buceta', 'c0ck','cawk', 'chink',
+	'clits', 'cock','cum','cunt','dildo','dirsa','ejakulate',
+	'fatass', 'fcuk','fuk','fux0r', 'hoer', 'hore', 'jism',
+	'kawk', 'l3itch', 'l3i+ch', 'lesbian','masturbate',
+	'masterbat*', 'masterbat3','motherfucker', 's.o.b.', 'mofo',
+	'nazi', 'nigga', 'nigger', 'nutsack',  'phuck', 'pimpis',
+	'pusse', 'pussy', 'scrotum','sh!t','shemale','shit',
+	'shi+','sh!+', 'slut', 'smut', 'teets','tits', 'boobs', 'b00bs',
+	'teez','testical', 'testicle', 'tit','w00se','jackoff',
+	'wank','whoar','whore');
 
 	/*
 	 * Place the / wrappers around each word, add case insensitive searching and place a
@@ -250,13 +243,13 @@ function censor() {
 	$replace = array_fill(0, count($words), "[censored]");
 
 	// Walking through the globals....
-	foreach($_POST as $k=>$v) {
+	foreach ($_POST as $k => $v) {
 		$_POST[$k] = preg_replace($words, $replace, $v);
 	}
-	foreach($_REQUEST as $k=>$v) {
+	foreach ($_REQUEST as $k => $v) {
 		$_REQUEST[$k] = preg_replace($words, $replace, $v);
 	}
-	foreach($_GET as $k=>$v) {
+	foreach ($_GET as $k => $v) {
 		$_GET[$k] = preg_replace($words, $replace, $v);
 	}
 
@@ -268,58 +261,56 @@ function censor() {
  *
  * @returns TRUE if the session has been started, FALSE if not.
  */
-function session_test() {
-	return (session_id() == "");
+function session_test()
+{
+    return (session_id() == "");
 }
 
 /*
  * This session cleans up extra session variables that don't need to be there.
  * These are mostly leftovers from various places.
  */
-function tht_session_cleanup() {
+function tht_session_cleanup()
+{
+    /* Safely close the session */
+    if(! session_test()) {
 
-	/* Safely close the session */
-	if(! session_test()) {
+	// unregister the PMA session variables
+	session_unregister("PMA_Config");
+	session_unregister("PMA_Theme_Manager");
+	session_unregister("PMA_Theme");
+	session_unregister(" PMA_token ");
 
-		// unregister the PMA session variables
-		session_unregister("PMA_Config");
-		session_unregister("PMA_Theme_Manager");
-		session_unregister("PMA_Theme");
-		session_unregister(" PMA_token ");
-
-		//safely close session
-		session_write_close();
-	}
-
+	//safely close session
+	session_write_close();
+    }
 }
 
 /**
  * Updated method of authenticating users.
  * @author Gavin Monroe
  */
-function authenticate_redirect($allowed_user_types){
-	if(!authenticate($allowed_user_types)){
-		header("Location: ".$config['base_url']."401.php");
-		die();
-	}
+function authenticate_redirect($allowed_user_types)
+{
+    if (!authenticate($allowed_user_types)) {
+	header("Location: ".$config['base_url']."401.php");
+	die();
+    }
 }
 
 /**
  * Update method of authenticating users.
  * @author Gavin Monroe
  */
-function authenticate($allowed_user_types){
-	connect();
-	if(loginTest2()){
-		$row = loadUser($_SESSION['username']);
-		$user_type_id = $row['user_types_uid'];
-	}else{
-		$user_type_id = USER_TYPE_PUBLIC;
-	}
-	return in_array($user_type_id, $allowed_user_types);
+function authenticate($allowed_user_types)
+{
+    if (loginTest2()) {
+	$row = loadUser($_SESSION['username']);
+        $user_type_id = $row['user_types_uid'];
+    } else {
+        $user_type_id = USER_TYPE_PUBLIC;
+    }
+    return in_array($user_type_id, $allowed_user_types);
 }
 
-
 define("ROOTURL", "http://localhost"); /* I'd like to rewrite some scripts so that they no longer depend on this */
-
-?>
