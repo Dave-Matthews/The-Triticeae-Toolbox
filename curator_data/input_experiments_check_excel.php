@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 /**
  * Phenotype Experiment Results
@@ -25,9 +25,9 @@ ob_end_flush();
 // Define reserved words that are trial summary statistics instead of Line names.
 $stats = array('*Trial Mean', '*Std. Error', '*Replications');
 // Translate to the corresponding column name in table phenotype_mean_data.
-$col_lookup = array('trialmean' => 'mean_value', 'std.error' => 'standard_error', 
-		    'std.errordiff.' => 'std_err_diff', 'prob>f' => 'prob_gt_F', 
-		    'coef.var.' => 'cv', 'replications' => 'number_replicates');
+$col_lookup = array('trialmean' => 'mean_value', 'std.error' => 'standard_error',
+	    'std.errordiff.' => 'std_err_diff', 'prob>f' => 'prob_gt_F', 
+	    'coef.var.' => 'cv', 'replications' => 'number_replicates');
 
 /* Returns $arg1 if it is set, else fatal with error message $msg. */
 function ForceValue(& $arg1, $msg) {
@@ -87,12 +87,11 @@ class LineNames_Check {
     if ($_FILES['file']['name'][0] == ""){
       error(1, "No File Uploaded");
       print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-    }
-    else {
+    } else {
       $uploadfile=$_FILES['file']['name'][0];
       /* $rawdatafile = $_FILES['file']['name'][1]; */
       $uftype=$_FILES['file']['type'][0];
-      if (strpos($uploadfile, ".xls") === FALSE) {
+      if (preg_match('/\.xls$/', $uploadfile) == 0) {
 	error(1, "Expecting an Excel .xls file. <br> The type of the uploaded file is ".$uftype);
 	print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
       }
