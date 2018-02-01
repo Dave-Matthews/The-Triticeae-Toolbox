@@ -37,13 +37,24 @@ function showLines($page, $start = 0, $limit = 40)
 function show_barley_pedigree_catalog_ref($id)
 {
     global $mysqli;
-    // Show the associated line_record.
-    $sql = "select l.line_record_uid, line_record_name from barley_pedigree_catalog_ref b, line_records l where barley_pedigree_catalog_ref_uid = $id and b.line_record_uid = l.line_record_uid";
+    /* // Show the associated line_record. */
+    /* $sql = "select l.line_record_uid, line_record_name from barley_pedigree_catalog_ref b, line_records l where barley_pedigree_catalog_ref_uid = $id and b.line_record_uid = l.line_record_uid"; */
+    /* $res= mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)); */
+    /* $row = mysqli_fetch_row($res); */
+    /* print "<p>Please see Line Record <a href='view.php?table=line_records&uid=$row[0]'>$row[1]</a><p>"; */
+    /* // Display the basics. */
+    /* show_general("barley_pedigree_catalog_ref", $id); */
+    // Jump directly to the report for this line record.
+    $sql = "select line_record_uid
+    from barley_pedigree_catalog_ref
+    where barley_pedigree_catalog_ref_uid = $id
+    and barley_pedigree_catalog_uid in
+       (select barley_pedigree_catalog_uid
+       from barley_pedigree_catalog
+       where barley_pedigree_catalog_name = 'GRIN')";
     $res= mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $row = mysqli_fetch_row($res);
-    print "<p>Please see Line Record <a href='view.php?table=line_records&uid=$row[0]'>$row[1]</a><p>";
-    // Display the basics.
-    show_general("barley_pedigree_catalog_ref", $id);
+    show_line_records($row[0]);
 }
 
 /*
@@ -701,7 +712,7 @@ function getBarleyPedigreeCatalogIDs($id)
     }
 
     while ($row = mysqli_fetch_array($sql_bpc)) {
-        $bpc[] = $row['catname'].": ".$row['value'];
+        $bpc[] = urlencode($row['catname'].": ".$row['value']);
     }
     return $bpc;
 }
