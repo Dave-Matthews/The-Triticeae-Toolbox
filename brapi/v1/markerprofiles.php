@@ -55,7 +55,7 @@ function dieNice($msg)
 {
     $linearray['metadata']['pagination'] = null;
     $linearray['metadata']['status'] = array("code" => 1, "message" => "Error: $msg");
-    $linearray['result'] = null;
+    $linearray['result'] = array();
     $return = json_encode($linearray);
     header("Content-Type: application/json");
     die("$return");
@@ -102,6 +102,7 @@ if (($lineuid != "") && ($expuid != "")) {
     echo json_encode($response);
 } elseif ($lineuid != "") {
     $pageList = array();
+    $data = array();
     $response['metadata']['pagination'] = $pageList;
     $sql = "select experiment_uid, line_record_name, count from allele_byline_exp
         where line_record_uid = $lineuid";
@@ -119,11 +120,10 @@ if (($lineuid != "") && ($expuid != "")) {
         $sql .= " limit $offset, $pageSize";
     }
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-
     while ($row = mysqli_fetch_row($res)) {
         $expuid = $row[0];
         $resultCount = intval($row[1]);
-        $linearray['markerProfileDbId'] = $lineuid . "_" . $row[0];
+        $linearray['markerprofileDbId'] = $lineuid . "_" . $row[0];
         $linearray['germplasmDbId'] = $lineuid;
         $linearray['uniqueDisplayName'] = $row[1];
         $linearray['sampleDbId'] = "";
@@ -146,6 +146,7 @@ if (($lineuid != "") && ($expuid != "")) {
     echo json_encode($response);
 } elseif ($expuid != "") {
     $pageList = array();
+    $data = array();
     $response['metadata']['pagination'] = $pageList;
     $sql = "select line_record_uid, line_record_name, count from allele_byline_exp
             where experiment_uid = $expuid";
@@ -172,7 +173,7 @@ if (($lineuid != "") && ($expuid != "")) {
         while ($row = mysqli_fetch_row($res)) {
             $count++;
             $line_record_uid = $row[0];
-            $linearray['markerProfileDbId'] = $row[0] . "_" . $expuid;
+            $linearray['markerprofileDbId'] = $row[0] . "_" . $expuid;
             $linearray['germplasmDbId'] = $row[0];
             $linearray['uniqueDisplayName'] = $row[1];
             $linearray['sampleDbId'] = "";
