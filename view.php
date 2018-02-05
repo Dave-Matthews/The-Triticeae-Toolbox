@@ -3,12 +3,13 @@ require "includes/bootstrap.inc";
 $mysqli = connecti();
 
 $nm = $_REQUEST['name'];
-$pageTitle = $nm;
+$grin = $_REQUEST['grin'];
 
 require "theme/normal_header.php";
 
 // Will take both uids and names
 // DEM sep2014: But treat them differently!
+// DEM feb2018: Allow GRIN ID parameter too, for line_record searches.
 
 $table = strip_tags($_REQUEST['table']);
 $prettified = beautifulTableName($table, 0);
@@ -71,6 +72,31 @@ if (preg_match($pattern, $table)) {
             mysqli_stmt_close($stmt);
         }
     } else {
+        error(1, "No Record Found");
+    }
+} elseif ($grin) {
+    // Argument is a GRIN accession ID.
+    $sql = "select line_record_uid
+    from barley_pedigree_catalog_ref
+    where barley_ref_number like ?
+    and barley_pedigree_catalog_uid in
+    (select barley_pedigree_catalog_uid
+       from barley_pedigree_catalog
+       where barley_pedigree_catalog_name = 'GRIN')";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $grin);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $rec);
+        if (mysqli_stmt_fetch($stmt)) {
+            mysqli_stmt_close($stmt);
+            echo "<h1>Line Record for GRIN $grin</h1>";
+            echo "<div class=boxContent>";
+            show_line_records($rec);
+            echo "</div>";
+        }
+        error(1, "No Record Found");
+    } else {
+        mysqli_stmt_close($stmt);
         error(1, "No Record Found");
     }
 }
